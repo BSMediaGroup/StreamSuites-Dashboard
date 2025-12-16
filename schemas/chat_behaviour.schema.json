@@ -1,1 +1,72 @@
-{}
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "StreamSuites Chat Behaviour",
+  "type": "object",
+  "additionalProperties": false,
+
+  "required": [
+    "poll_seconds",
+    "send_cooldown_seconds",
+    "baseline_mode",
+    "baseline_grace_seconds",
+    "enable_startup_announcement",
+    "startup_announcement",
+    "triggers"
+  ],
+
+  "properties": {
+    "poll_seconds": {
+      "type": "number",
+      "minimum": 0
+    },
+
+    "send_cooldown_seconds": {
+      "type": "number",
+      "minimum": 0
+    },
+
+    "baseline_mode": {
+      "type": "string",
+      "enum": ["latest_seen"]
+    },
+
+    "baseline_grace_seconds": {
+      "type": "number",
+      "minimum": 0
+    },
+
+    "enable_startup_announcement": {
+      "type": "boolean"
+    },
+
+    "startup_announcement": {
+      "type": "string"
+    },
+
+    "triggers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["match", "match_mode", "response"],
+        "properties": {
+          "match": {
+            "type": "string",
+            "minLength": 1
+          },
+          "match_mode": {
+            "type": "string",
+            "enum": ["equals_icase", "contains_icase"]
+          },
+          "response": {
+            "type": "string"
+          },
+          "cooldown_seconds": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      }
+    }
+  }
+}

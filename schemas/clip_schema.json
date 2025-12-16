@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "StreamSuites Clip Trigger",
+  "type": "object",
+  "additionalProperties": false,
+
+  "required": [
+    "trigger",
+    "duration_seconds",
+    "pre_roll_seconds",
+    "cooldown_seconds",
+    "destination"
+  ],
+
+  "properties": {
+    "trigger": {
+      "type": "string",
+      "minLength": 1
+    },
+
+    "duration_seconds": {
+      "type": "number",
+      "minimum": 1
+    },
+
+    "pre_roll_seconds": {
+      "type": "number",
+      "minimum": 0
+    },
+
+    "cooldown_seconds": {
+      "type": "number",
+      "minimum": 0
+    },
+
+    "destination": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["platform", "channel_url"],
+      "properties": {
+        "platform": {
+          "type": "string",
+          "enum": ["rumble"]
+        },
+        "channel_url": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    }
+  }
+}

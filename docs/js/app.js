@@ -1,6 +1,6 @@
 /* ======================================================================
    StreamSuites Dashboard — app.js
-   Central bootstrap + lightweight view router
+   Central bootstrap + lightweight view router + storage layer
    ====================================================================== */
 
 /*
@@ -9,6 +9,7 @@
   - Deterministic load order
   - Works on GitHub Pages + iframe embeds (Wix)
   - All feature logic lives in per-view files
+  - Storage abstraction supports JSON import/export
 */
 
 /* ----------------------------------------------------------------------
@@ -19,6 +20,7 @@ const App = {
   currentView: null,
   views: {},
   initialized: false,
+  storage: {}
 };
 
 /* ----------------------------------------------------------------------
@@ -34,6 +36,119 @@ function $all(selector, scope = document) {
 }
 
 /* ----------------------------------------------------------------------
+   STORAGE LAYER (AUTHORITATIVE)
+   ---------------------------------------------------------------------- */
+
+App.storage = {
+  /* ------------------------------------------------------------
+     Legacy / Low-level helpers (DO NOT REMOVE)
+     ------------------------------------------------------------ */
+
+  load(key, fallback = null) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return fallback;
+      return JSON.parse(raw);
+    } catch (err) {
+      console.error("[Dashboard][Storage] Load failed:", err);
+      return fallback;
+    }
+  },
+
+  save(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value, null, 2));
+    } catch (err) {
+      console.error("[Dashboard][Storage] Save failed:", err);
+    }
+  },
+
+  downloadJson(filename, data) {
+    try {
+      const blob = new Blob(
+        [JSON.stringify(data, null, 2)],
+        { type: "application/json" }
+      );
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("[Dashboard][Storage] Download failed:", err);
+    }
+  },
+
+  uploadJson(file) {
+    return new Promise((resolve, reject) => {
+      if (!file) {
+        reject(new Error("No file provided"));
+        return;
+      }
+
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          resolve(parsed);
+        } catch (err) {
+          reject(err);
+        }
+      };
+
+      reader.onerror = () => reject(reader.error);
+      reader.readAsText(file);
+    });
+  },
+
+  /* ------------------------------------------------------------
+     Shared Dashboard Storage Utilities (NEW, AUTHORITATIVE)
+     Namespace: streamsuites.*
+     ------------------------------------------------------------ */
+
+  namespace: "streamsuites",
+
+  buildKey(key) {
+    return `${this.namespace}.${key}`;
+  },
+
+  loadFromLocalStorage(key, fallback = null) {
+    return this.load(this.buildKey(key), fallback);
+  },
+
+  saveToLocalStorage(key, value) {
+    this.save(this.buildKey(key), value);
+  },
+
+  exportJsonToDownload(filename, data) {
+    this.downloadJson(filename, {
+      meta: {
+        exportedAt: new Date().toISOString(),
+        source: "StreamSuites-Dashboard"
+      },
+      payload: data
+    });
+  },
+
+  importJsonFromFile(file) {
+    return this.uploadJson(file).then((data) => {
+      // Allow either raw payloads or wrapped exports
+      if (data && typeof data === "object" && "payload" in data) {
+        return data.payload;
+      }
+      return data;
+    });
+  }
+};
+
+/* ----------------------------------------------------------------------
    View Registration
    ---------------------------------------------------------------------- */
 
@@ -42,7 +157,7 @@ function registerView(name, config) {
     name,
     onLoad: config.onLoad || (() => {}),
     onUnload: config.onUnload || (() => {}),
-    containerId: config.containerId || "view-root",
+    containerId: config.containerId || "view-root"
   };
 }
 
@@ -164,11 +279,10 @@ function initApp() {
 
 /* ----------------------------------------------------------------------
    Register Core Views
-   (Logic loaded later via per-view JS files)
    ---------------------------------------------------------------------- */
 
 registerView("overview", {
-  containerId: "view-root",
+  containerId: "view-root"
 });
 
 registerView("creators", {
@@ -177,7 +291,7 @@ registerView("creators", {
     if (window.CreatorsView?.init) {
       window.CreatorsView.init();
     }
-  },
+  }
 });
 
 registerView("triggers", {
@@ -186,7 +300,7 @@ registerView("triggers", {
     if (window.TriggersView?.init) {
       window.TriggersView.init();
     }
-  },
+  }
 });
 
 /* ----------------------------------------------------------------------

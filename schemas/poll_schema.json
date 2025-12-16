@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "StreamSuites Poll Definition",
+  "type": "object",
+  "additionalProperties": false,
+
+  "required": [
+    "poll_id",
+    "creator_id",
+    "title",
+    "description",
+    "options",
+    "vote_trigger",
+    "active"
+  ],
+
+  "properties": {
+    "poll_id": {
+      "type": "string",
+      "minLength": 1
+    },
+
+    "creator_id": {
+      "type": "string",
+      "minLength": 1
+    },
+
+    "title": {
+      "type": "string"
+    },
+
+    "description": {
+      "type": "string"
+    },
+
+    "vote_trigger": {
+      "type": "string",
+      "minLength": 1
+    },
+
+    "active": {
+      "type": "boolean"
+    },
+
+    "options": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

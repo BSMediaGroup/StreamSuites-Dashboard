@@ -9,32 +9,63 @@
   <!-- Core styles -->
   <link rel="stylesheet" href="../css/base.css" />
   <link rel="stylesheet" href="../css/theme-dark.css" />
-
+  <link rel="stylesheet" href="../css/layout.css" />
+  <link rel="stylesheet" href="../css/components.css" />
 </head>
+
 <body class="ss-app ss-dark">
 
   <!-- =========================================================
        HEADER
        ========================================================= -->
   <header class="ss-header">
-    <h1>Chat Triggers</h1>
-    <p class="ss-subtitle">
-      Configure chat commands and automated responses
-    </p>
+    <div class="ss-header-left">
+      <h1 class="ss-title">StreamSuites</h1>
+      <span class="ss-subtitle">Chat Triggers</span>
+    </div>
   </header>
 
   <!-- =========================================================
-       ACTION BAR
+       TOOLBAR
        ========================================================= -->
   <section class="ss-toolbar">
-    <button id="btn-add-trigger" class="ss-btn">
-      + Add Trigger
-    </button>
+    <div class="ss-toolbar-left">
+      <button id="btn-add-trigger" class="ss-btn ss-btn-primary">
+        + Add Trigger
+      </button>
 
-    <button id="btn-refresh-triggers" class="ss-btn ss-btn-secondary">
-      Refresh
-    </button>
+      <button id="btn-refresh-triggers" class="ss-btn ss-btn-secondary">
+        Refresh
+      </button>
+    </div>
+
+    <div class="ss-toolbar-right">
+      <button id="btn-export-triggers" class="ss-btn ss-btn-secondary">
+        Export JSON
+      </button>
+
+      <label class="ss-btn ss-btn-secondary ss-file-btn">
+        Import JSON
+        <input
+          type="file"
+          id="input-import-triggers"
+          accept="application/json"
+          hidden
+        />
+      </label>
+    </div>
   </section>
+
+  <!-- =========================================================
+       ERROR MESSAGE
+       ========================================================= -->
+  <div
+    id="triggers-import-error"
+    class="ss-alert ss-alert-danger hidden"
+    style="margin: 0 1rem;"
+  >
+    <span id="triggers-import-error-text"></span>
+  </div>
 
   <!-- =========================================================
        TRIGGERS TABLE
@@ -52,7 +83,7 @@
       </thead>
 
       <tbody id="triggers-table-body">
-        <!-- injected by triggers.js -->
+        <!-- populated dynamically -->
       </tbody>
     </table>
 
@@ -65,84 +96,121 @@
        TRIGGER EDITOR
        ========================================================= -->
   <section id="trigger-editor" class="ss-panel hidden">
-    <h2 id="trigger-editor-title">Add Trigger</h2>
+    <header class="ss-panel-header">
+      <h2 id="trigger-editor-title">Add Trigger</h2>
+    </header>
 
-    <form id="trigger-form" autocomplete="off">
+    <div class="ss-panel-body">
+      <form id="trigger-form" autocomplete="off">
 
-      <!-- Match -->
-      <div class="ss-field">
-        <label for="trigger-match">Match Text</label>
-        <input
-          type="text"
-          id="trigger-match"
-          placeholder="e.g. !ping"
-          required
-        />
-      </div>
+        <div class="ss-form-row">
+          <label for="trigger-match">Match Text</label>
+          <input
+            type="text"
+            id="trigger-match"
+            placeholder="e.g. !ping"
+            required
+          />
+        </div>
 
-      <!-- Match Mode -->
-      <div class="ss-field">
-        <label for="trigger-match-mode">Match Mode</label>
-        <select id="trigger-match-mode">
-          <option value="equals_icase">Equals (case-insensitive)</option>
-          <option value="contains_icase">Contains (case-insensitive)</option>
-        </select>
-      </div>
+        <div class="ss-form-row">
+          <label for="trigger-match-mode">Match Mode</label>
+          <select id="trigger-match-mode">
+            <option value="equals_icase">Equals (case-insensitive)</option>
+            <option value="contains_icase">Contains (case-insensitive)</option>
+          </select>
+        </div>
 
-      <!-- Response -->
-      <div class="ss-field">
-        <label for="trigger-response">Response</label>
-        <input
-          type="text"
-          id="trigger-response"
-          placeholder="e.g. pong"
-          required
-        />
-      </div>
+        <div class="ss-form-row">
+          <label for="trigger-response">Response</label>
+          <input
+            type="text"
+            id="trigger-response"
+            placeholder="e.g. pong"
+            required
+          />
+        </div>
 
-      <!-- Cooldown -->
-      <div class="ss-field">
-        <label for="trigger-cooldown">
-          Cooldown (seconds)
-        </label>
-        <input
-          type="number"
-          id="trigger-cooldown"
-          min="0"
-          step="0.1"
-          placeholder="0.75"
-        />
-      </div>
+        <div class="ss-form-row">
+          <label for="trigger-cooldown">Cooldown (seconds)</label>
+          <input
+            type="number"
+            id="trigger-cooldown"
+            min="0"
+            step="0.1"
+            placeholder="0.75"
+          />
+        </div>
 
-      <!-- Buttons -->
-      <div class="ss-actions">
-        <button type="submit" class="ss-btn">
-          Save Trigger
-        </button>
+        <div class="ss-form-actions">
+          <button type="submit" class="ss-btn ss-btn-primary">
+            Save Trigger
+          </button>
 
-        <button
-          type="button"
-          id="btn-cancel-trigger"
-          class="ss-btn ss-btn-secondary"
-        >
-          Cancel
-        </button>
-      </div>
+          <button
+            type="button"
+            id="btn-cancel-trigger"
+            class="ss-btn ss-btn-secondary"
+          >
+            Cancel
+          </button>
+        </div>
 
-    </form>
+      </form>
+    </div>
   </section>
 
   <!-- =========================================================
        FOOTER
        ========================================================= -->
-  <footer class="ss-footer muted">
-    Triggers affect live chat behaviour across supported platforms.
+  <footer class="ss-footer">
+    <span class="muted">
+      Triggers affect live chat behaviour across supported platforms.
+    </span>
   </footer>
 
   <!-- =========================================================
        SCRIPTS
        ========================================================= -->
+  <script src="../js/app.js"></script>
   <script src="../js/triggers.js"></script>
+
+  <!-- =========================================================
+       IMPORT / EXPORT WIRING
+       ========================================================= -->
+  <script>
+    (function () {
+      const btnExport = document.getElementById("btn-export-triggers");
+      const fileInput = document.getElementById("input-import-triggers");
+
+      const errorBox = document.getElementById("triggers-import-error");
+      const errorText = document.getElementById("triggers-import-error-text");
+
+      function showError(msg) {
+        errorText.textContent = msg;
+        errorBox.classList.remove("hidden");
+      }
+
+      function clearError() {
+        errorBox.classList.add("hidden");
+        errorText.textContent = "";
+      }
+
+      btnExport.addEventListener("click", () => {
+        clearError();
+        window.TriggersView?.exportTriggers();
+      });
+
+      fileInput.addEventListener("change", () => {
+        clearError();
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        window.TriggersView?.importTriggersFromFile(file, showError);
+        fileInput.value = "";
+      });
+    })();
+  </script>
 
 </body>
 </html>

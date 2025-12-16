@@ -20,6 +20,12 @@
   "use strict";
 
   /* ------------------------------------------------------------
+     CONSTANTS
+     ------------------------------------------------------------ */
+
+  const STORAGE_KEY = "creators";
+
+  /* ------------------------------------------------------------
      DOM REFERENCES
      ------------------------------------------------------------ */
 
@@ -42,7 +48,7 @@
   const inputRumbleWatchUrl = document.getElementById("rumble-watch-url");
 
   /* ------------------------------------------------------------
-     IN-MEMORY STORE (TEMPORARY)
+     STATE
      ------------------------------------------------------------ */
 
   /** @type {Array<Object>} */
@@ -80,21 +86,16 @@
   }
 
   /* ------------------------------------------------------------
-     DATA LOADING (PLACEHOLDER)
+     DATA LOADING / PERSISTENCE
      ------------------------------------------------------------ */
 
   function loadCreators() {
-    /*
-      TEMP:
-      Later this will fetch from:
-        - local JSON
-        - API
-        - IndexedDB
-        - IPC bridge (desktop)
+    const stored = App.storage.loadFromLocalStorage(STORAGE_KEY, []);
+    creators = Array.isArray(stored) ? stored : [];
+  }
 
-      For now: start empty
-    */
-    creators = [];
+  function persistCreators() {
+    App.storage.saveToLocalStorage(STORAGE_KEY, creators);
   }
 
   /* ------------------------------------------------------------
@@ -148,7 +149,6 @@
   }
 
   function renderStatus(_creator) {
-    /* Placeholder for future health checks */
     return `<span class="muted">Idle</span>`;
   }
 
@@ -219,6 +219,7 @@
       creators.push(payload);
     }
 
+    persistCreators();
     closeEditor();
     renderCreators();
   }
@@ -226,7 +227,49 @@
   function deleteCreator(creatorId) {
     if (!confirm(`Delete creator "${creatorId}"?`)) return;
     creators = creators.filter(c => c.creator_id !== creatorId);
+    persistCreators();
     renderCreators();
+  }
+
+  /* ------------------------------------------------------------
+     IMPORT / EXPORT (LOGIC ONLY)
+     ------------------------------------------------------------ */
+
+  function exportCreators() {
+    App.storage.exportJsonToDownload("streamsuites-creators.json", creators);
+  }
+
+  function importCreatorsFromFile(file, onError) {
+    App.storage.importJsonFromFile(file)
+      .then((data) => {
+        if (!validateCreatorsPayload(data)) {
+          onError?.("Invalid creators file structure");
+          return;
+        }
+        creators = data;
+        persistCreators();
+        renderCreators();
+      })
+      .catch((err) => {
+        console.error("[Creators] Import failed", err);
+        onError?.("Failed to import file");
+      });
+  }
+
+  /* ------------------------------------------------------------
+     LIGHTWEIGHT SCHEMA VALIDATION
+     ------------------------------------------------------------ */
+
+  function validateCreatorsPayload(data) {
+    if (!Array.isArray(data)) return false;
+
+    return data.every((c) => {
+      if (typeof c !== "object") return false;
+      if (typeof c.creator_id !== "string") return false;
+      if ("display_name" in c && typeof c.display_name !== "string") return false;
+      if ("platforms" in c && typeof c.platforms !== "object") return false;
+      return true;
+    });
   }
 
   /* ------------------------------------------------------------
@@ -241,5 +284,15 @@
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
   }
+
+  /* ------------------------------------------------------------
+     PUBLIC API (for view wiring)
+     ------------------------------------------------------------ */
+
+  window.CreatorsView = {
+    init,
+    exportCreators,
+    importCreatorsFromFile
+  };
 
 })();

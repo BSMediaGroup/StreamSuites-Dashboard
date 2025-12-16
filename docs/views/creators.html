@@ -25,6 +25,12 @@
     </div>
 
     <div class="ss-header-right">
+      <button id="btn-import-creators" class="ss-btn ss-btn-secondary">
+        Import
+      </button>
+      <button id="btn-export-creators" class="ss-btn ss-btn-secondary">
+        Export
+      </button>
       <button id="btn-refresh-creators" class="ss-btn ss-btn-secondary">
         Refresh
       </button>
@@ -48,6 +54,11 @@
       </header>
 
       <div class="ss-panel-body">
+
+        <!-- Import error message -->
+        <div id="creators-import-error" class="ss-alert ss-alert-danger hidden">
+          <span id="creators-import-error-text"></span>
+        </div>
 
         <!-- Empty state -->
         <div id="creators-empty" class="ss-empty-state hidden">
@@ -152,10 +163,62 @@
   </footer>
 
   <!-- ========================================================= -->
+  <!-- HIDDEN FILE INPUT -->
+  <!-- ========================================================= -->
+  <input
+    type="file"
+    id="creators-import-file"
+    accept="application/json"
+    class="hidden"
+  />
+
+  <!-- ========================================================= -->
   <!-- SCRIPTS -->
   <!-- ========================================================= -->
   <script src="../js/app.js"></script>
   <script src="../js/creators.js"></script>
+
+  <!-- ========================================================= -->
+  <!-- IMPORT / EXPORT WIRING -->
+  <!-- ========================================================= -->
+  <script>
+    (function () {
+      const btnImport = document.getElementById("btn-import-creators");
+      const btnExport = document.getElementById("btn-export-creators");
+      const fileInput = document.getElementById("creators-import-file");
+
+      const errorBox = document.getElementById("creators-import-error");
+      const errorText = document.getElementById("creators-import-error-text");
+
+      function showError(msg) {
+        errorText.textContent = msg;
+        errorBox.classList.remove("hidden");
+      }
+
+      function clearError() {
+        errorBox.classList.add("hidden");
+        errorText.textContent = "";
+      }
+
+      btnExport.addEventListener("click", () => {
+        clearError();
+        window.CreatorsView?.exportCreators();
+      });
+
+      btnImport.addEventListener("click", () => {
+        clearError();
+        fileInput.value = "";
+        fileInput.click();
+      });
+
+      fileInput.addEventListener("change", () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        window.CreatorsView?.importCreatorsFromFile(file, showError);
+      });
+    })();
+  </script>
 
 </body>
 </html>
