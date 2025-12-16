@@ -86,6 +86,7 @@ Source:
 - Exported/imported by user
 
 Payload Shape:
+```
 {
   "creator_id": "As5TyU",
   "display_name": "Example Creator",
@@ -96,6 +97,7 @@ Payload Shape:
     "twitch": true
   }
 }
+```
 
 Rules:
 - creator_id is required and immutable
@@ -111,6 +113,7 @@ Runtime target:
 shared/config/chat_behaviour.json
 
 Payload Shape:
+```
 {
   "poll_seconds": 2,
   "send_cooldown_seconds": 0.75,
@@ -127,6 +130,7 @@ Payload Shape:
     }
   ]
 }
+```
 
 Rules:
 - triggers is an ordered list
@@ -145,6 +149,7 @@ Target UI:
 docs/views/platforms/rumble.html
 
 Payload Shape:
+```
 {
   "platform": "rumble",
   "bot_status": "online",
@@ -164,6 +169,7 @@ Payload Shape:
     "polls": false
   }
 }
+```
 
 Rules:
 - Missing fields imply unknown
@@ -176,6 +182,7 @@ Rules:
 
 ### 5.1 Poll Definition (Dashboard → Bot)
 
+```
 {
   "poll_id": "poll_abc123",
   "creator_id": "As5TyU",
@@ -188,6 +195,7 @@ Rules:
   "vote_trigger": "!vote",
   "active": true
 }
+```
 
 Rules:
 - Polls are explicitly started and stopped
@@ -202,6 +210,7 @@ Rules:
 Target UI:
 docs/polls/results.html
 
+```
 {
   "poll_id": "poll_abc123",
   "title": "Which platform?",
@@ -212,6 +221,7 @@ docs/polls/results.html
     { "id": 2, "label": "YouTube", "votes": 8 }
   ]
 }
+```
 
 Rules:
 - Public page is read-only
@@ -224,6 +234,7 @@ Rules:
 
 ### 6.1 Clip Trigger Definition
 
+```
 {
   "trigger": "!clip",
   "duration_seconds": 30,
@@ -234,6 +245,7 @@ Rules:
     "channel_url": "https://rumble.com/user/clips"
   }
 }
+```
 
 Rules:
 - Clip execution is bot-controlled
