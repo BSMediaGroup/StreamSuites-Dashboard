@@ -1,1 +1,59 @@
-{}
+{}{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://streamsuites.dev/schemas/triggers.schema.json",
+  "title": "StreamSuites Chat Triggers Schema",
+  "description": "Defines chat trigger rules used by StreamSuites chat workers across platforms.",
+  "type": "array",
+
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+
+    "required": [
+      "match",
+      "match_mode",
+      "response"
+    ],
+
+    "properties": {
+      "match": {
+        "type": "string",
+        "description": "Text or token to match against incoming chat messages.",
+        "minLength": 1
+      },
+
+      "match_mode": {
+        "type": "string",
+        "description": "How the match string is evaluated.",
+        "enum": [
+          "equals_icase",
+          "contains_icase"
+        ]
+      },
+
+      "response": {
+        "type": "string",
+        "description": "Text sent to chat when the trigger fires.",
+        "minLength": 1
+      },
+
+      "cooldown_seconds": {
+        "type": "number",
+        "description": "Optional per-trigger cooldown override (seconds).",
+        "minimum": 0,
+        "default": null
+      },
+
+      "enabled": {
+        "type": "boolean",
+        "description": "Whether this trigger is active.",
+        "default": true
+      },
+
+      "notes": {
+        "type": "string",
+        "description": "Optional human-readable notes for dashboard use."
+      }
+    }
+  }
+}

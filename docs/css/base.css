@@ -1,0 +1,250 @@
+/* ============================================================
+   StreamSuites Dashboard — BASE STYLES
+   Purpose: Layout, structure, typography (NO THEME COLORS)
+   ============================================================ */
+
+/* ------------------------------
+   CSS Reset / Normalization
+   ------------------------------ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: "SuiGenerisRg", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+/* ------------------------------
+   Root App Container
+   ------------------------------ */
+
+#app {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  height: 100vh;
+  width: 100%;
+}
+
+/* ------------------------------
+   Header
+   ------------------------------ */
+
+#app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid transparent;
+}
+
+.header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.app-title {
+  font-family: "RechargeBd", sans-serif;
+  font-size: 22px;
+  letter-spacing: 0.5px;
+}
+
+.app-subtitle {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.status-indicator {
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  user-select: none;
+}
+
+/* ------------------------------
+   Navigation
+   ------------------------------ */
+
+#app-nav {
+  border-bottom: 1px solid transparent;
+}
+
+#app-nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+}
+
+#app-nav li {
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  user-select: none;
+  white-space: nowrap;
+}
+
+/* ------------------------------
+   Main Content Area
+   ------------------------------ */
+
+#app-main {
+  overflow: auto;
+}
+
+#view-container {
+  padding: 20px;
+  min-height: 100%;
+}
+
+/* ------------------------------
+   Footer
+   ------------------------------ */
+
+#app-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-size: 11px;
+  opacity: 0.7;
+  border-top: 1px solid transparent;
+}
+
+.footer-sep {
+  opacity: 0.5;
+}
+
+/* ------------------------------
+   Utility Classes
+   ------------------------------ */
+
+.hidden {
+  display: none !important;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gap-xs { gap: 4px; }
+.gap-sm { gap: 8px; }
+.gap-md { gap: 16px; }
+.gap-lg { gap: 24px; }
+
+/* ------------------------------
+   Typography Helpers
+   ------------------------------ */
+
+h1, h2, h3, h4, h5 {
+  font-family: "RechargeBd", sans-serif;
+  font-weight: 700;
+}
+
+p {
+  margin-bottom: 0.75em;
+}
+
+small {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* ------------------------------
+   Tables (base only)
+   ------------------------------ */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+th,
+td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid transparent;
+}
+
+th {
+  font-weight: 600;
+}
+
+/* ------------------------------
+   Forms (structure only)
+   ------------------------------ */
+
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+  font-size: 13px;
+}
+
+input,
+select,
+textarea {
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  outline: none;
+}
+
+button {
+  padding: 6px 12px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: none;
+}
+
+/* ------------------------------
+   Scrollbars (neutral baseline)
+   ------------------------------ */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}

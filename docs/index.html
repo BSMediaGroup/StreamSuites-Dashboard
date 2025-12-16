@@ -1,1 +1,107 @@
-<!doctype html><html><body>StreamSuites Dashboard</body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>StreamSuites Dashboard</title>
+
+  <!-- Viewport -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Basic metadata -->
+  <meta name="description" content="StreamSuites Dashboard — configuration and control panel" />
+  <meta name="robots" content="noindex, nofollow" />
+
+  <!-- ============================= -->
+  <!-- Fonts (Authoritative) -->
+  <!-- ============================= -->
+  <style>
+    @font-face {
+      font-family: "RechargeBd";
+      src: url("https://raw.githubusercontent.com/BSMediaGroup/Resources/master/FONTS/Recharge%20Bd.otf")
+           format("opentype");
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "SuiGenerisRg";
+      src: url("https://raw.githubusercontent.com/BSMediaGroup/Resources/master/FONTS/Sui%20Generis%20Rg.otf")
+           format("opentype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+  </style>
+
+  <!-- ============================= -->
+  <!-- Core Styles -->
+  <!-- ============================= -->
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/theme-dark.css" />
+
+</head>
+<body>
+
+  <!-- ============================= -->
+  <!-- App Root -->
+  <!-- ============================= -->
+  <div id="app">
+
+    <!-- Header -->
+    <header id="app-header">
+      <div class="header-left">
+        <h1 class="app-title">StreamSuites</h1>
+        <span class="app-subtitle">Dashboard</span>
+      </div>
+
+      <div class="header-right">
+        <span id="app-status" class="status-indicator">
+          ● idle
+        </span>
+      </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav id="app-nav">
+      <ul>
+        <li data-view="overview">Overview</li>
+        <li data-view="creators">Creators</li>
+        <li data-view="triggers">Chat Triggers</li>
+        <li data-view="clips">Clips</li>
+        <li data-view="rumble">Rumble</li>
+        <li data-view="youtube">YouTube</li>
+        <li data-view="twitch">Twitch</li>
+        <li data-view="twitter">Twitter</li>
+        <li data-view="discord">Discord</li>
+      </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="app-main">
+      <!-- Views are dynamically injected here -->
+      <div id="view-container">
+        <noscript>
+          <p style="padding:20px;color:#f66;">
+            This dashboard requires JavaScript to run.
+          </p>
+        </noscript>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer id="app-footer">
+      <span>StreamSuites Dashboard</span>
+      <span class="footer-sep">•</span>
+      <span>Brainstream Media Group</span>
+    </footer>
+
+  </div>
+
+  <!-- ============================= -->
+  <!-- Core Scripts -->
+  <!-- ============================= -->
+  <script src="js/app.js"></script>
+
+</body>
+</html>

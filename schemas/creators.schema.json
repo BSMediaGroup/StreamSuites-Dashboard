@@ -1,1 +1,143 @@
-{}
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "StreamSuites Creators Configuration",
+  "description": "Defines creators, their platform enablement, and livestream configuration for StreamSuites.",
+  "type": "object",
+  "required": ["creators"],
+  "properties": {
+    "creators": {
+      "type": "object",
+      "description": "Map of creator IDs to creator configuration objects",
+      "additionalProperties": {
+        "$ref": "#/definitions/creator"
+      }
+    }
+  },
+  "additionalProperties": false,
+
+  "definitions": {
+    "creator": {
+      "type": "object",
+      "required": [
+        "creator_id",
+        "display_name",
+        "enabled",
+        "platforms"
+      ],
+      "properties": {
+        "creator_id": {
+          "type": "string",
+          "description": "Unique internal identifier for the creator",
+          "pattern": "^[a-z0-9_-]+$"
+        },
+        "display_name": {
+          "type": "string",
+          "description": "Human-readable name for dashboards and logs",
+          "minLength": 1
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Master enable/disable switch for the creator"
+        },
+        "platforms": {
+          "type": "object",
+          "description": "Platform-specific configuration blocks",
+          "properties": {
+            "rumble": {
+              "$ref": "#/definitions/rumble_platform"
+            },
+            "youtube": {
+              "$ref": "#/definitions/youtube_platform"
+            },
+            "twitch": {
+              "$ref": "#/definitions/twitch_platform"
+            },
+            "discord": {
+              "$ref": "#/definitions/discord_platform"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "rumble_platform": {
+      "type": "object",
+      "required": [
+        "enabled",
+        "manual_watch_url"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable Rumble integration for this creator"
+        },
+        "manual_watch_url": {
+          "type": "string",
+          "description": "Full Rumble livestream watch URL",
+          "format": "uri",
+          "pattern": "^https://rumble\\.com/"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional internal notes",
+          "default": ""
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "youtube_platform": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable YouTube integration for this creator"
+        },
+        "channel_id": {
+          "type": "string",
+          "description": "YouTube channel ID (if applicable)",
+          "default": ""
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "twitch_platform": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable Twitch integration for this creator"
+        },
+        "channel_name": {
+          "type": "string",
+          "description": "Twitch channel name",
+          "default": ""
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "discord_platform": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable Discord integration for this creator"
+        },
+        "guild_id": {
+          "type": "string",
+          "description": "Discord server (guild) ID",
+          "pattern": "^[0-9]+$",
+          "default": ""
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
