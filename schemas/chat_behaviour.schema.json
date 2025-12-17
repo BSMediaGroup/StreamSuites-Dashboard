@@ -1,9 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "StreamSuites Chat Behaviour",
+  "title": "StreamSuites Chat Behaviour Configuration",
+  "description": "Defines chat polling, baseline behavior, and trigger rules. Derived from CONTRACTS.md v1.2.",
   "type": "object",
-  "additionalProperties": false,
-
   "required": [
     "poll_seconds",
     "send_cooldown_seconds",
@@ -13,58 +12,81 @@
     "startup_announcement",
     "triggers"
   ],
+  "additionalProperties": true,
 
   "properties": {
     "poll_seconds": {
       "type": "number",
-      "minimum": 0
+      "minimum": 0,
+      "description": "Chat poll interval in seconds"
     },
 
     "send_cooldown_seconds": {
       "type": "number",
-      "minimum": 0
+      "minimum": 0,
+      "description": "Global minimum cooldown between bot messages"
     },
 
     "baseline_mode": {
       "type": "string",
+      "description": "Initial chat baseline strategy",
       "enum": ["latest_seen"]
     },
 
     "baseline_grace_seconds": {
       "type": "number",
-      "minimum": 0
+      "minimum": 0,
+      "description": "Grace period applied to baseline detection"
     },
 
     "enable_startup_announcement": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Whether the bot announces itself on startup"
     },
 
     "startup_announcement": {
-      "type": "string"
+      "type": "string",
+      "description": "Startup announcement message"
     },
 
     "triggers": {
       "type": "array",
+      "description": "Ordered list of chat triggers (first match wins)",
       "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["match", "match_mode", "response"],
-        "properties": {
-          "match": {
-            "type": "string",
-            "minLength": 1
-          },
-          "match_mode": {
-            "type": "string",
-            "enum": ["equals_icase", "contains_icase"]
-          },
-          "response": {
-            "type": "string"
-          },
-          "cooldown_seconds": {
-            "type": "number",
-            "minimum": 0
-          }
+        "$ref": "#/definitions/trigger"
+      }
+    }
+  },
+
+  "definitions": {
+    "trigger": {
+      "type": "object",
+      "required": ["match", "match_mode", "response"],
+      "additionalProperties": true,
+
+      "properties": {
+        "match": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Text to match against chat messages"
+        },
+
+        "match_mode": {
+          "type": "string",
+          "enum": ["equals_icase", "contains_icase"],
+          "description": "Matching strategy"
+        },
+
+        "response": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Bot response message"
+        },
+
+        "cooldown_seconds": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Optional per-trigger cooldown override"
         }
       }
     }
