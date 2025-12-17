@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "StreamSuites Clip Trigger",
+  "title": "StreamSuites Clip Trigger Definition",
+  "description": "Defines a chat-triggered clip rule configured in the dashboard and enforced by the bot. Derived from CONTRACTS.md v1.2.",
   "type": "object",
-  "additionalProperties": false,
 
   "required": [
     "trigger",
@@ -12,39 +12,55 @@
     "destination"
   ],
 
+  "additionalProperties": true,
+
   "properties": {
     "trigger": {
       "type": "string",
-      "minLength": 1
+      "minLength": 1,
+      "description": "Chat command that triggers clip creation (e.g. !clip)"
     },
 
     "duration_seconds": {
       "type": "number",
-      "minimum": 1
+      "minimum": 1,
+      "description": "Total length of the clip in seconds"
     },
 
     "pre_roll_seconds": {
       "type": "number",
-      "minimum": 0
+      "minimum": 0,
+      "description": "Seconds captured before trigger invocation"
     },
 
     "cooldown_seconds": {
       "type": "number",
-      "minimum": 0
+      "minimum": 0,
+      "description": "Cooldown before this clip trigger can be used again"
     },
 
     "destination": {
+      "$ref": "#/definitions/clip_destination"
+    }
+  },
+
+  "definitions": {
+    "clip_destination": {
       "type": "object",
-      "additionalProperties": false,
       "required": ["platform", "channel_url"],
+      "additionalProperties": true,
+
       "properties": {
         "platform": {
           "type": "string",
-          "enum": ["rumble"]
+          "enum": ["rumble"],
+          "description": "Target platform for clip publishing"
         },
+
         "channel_url": {
           "type": "string",
-          "format": "uri"
+          "format": "uri",
+          "description": "Destination channel where clips are published"
         }
       }
     }
