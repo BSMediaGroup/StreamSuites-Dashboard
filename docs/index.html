@@ -12,9 +12,9 @@
   <meta name="robots" content="noindex, nofollow" />
 
   <!-- ============================= -->
-  <!-- Favicon (GLOBAL, REQUIRED) -->
+  <!-- Favicon (GitHub Pages safe) -->
   <!-- ============================= -->
-  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
 
   <!-- ============================= -->
   <!-- Fonts (Authoritative) -->
@@ -44,8 +44,8 @@
   <!-- ============================= -->
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/theme-dark.css" />
-
 </head>
+
 <body>
 
   <!-- ============================= -->
@@ -86,7 +86,7 @@
     <!-- Main Content -->
     <main id="app-main">
       <!-- Views are dynamically injected here -->
-      <div id="view-root">
+      <div id="view-container">
         <noscript>
           <p style="padding:20px;color:#f66;">
             This dashboard requires JavaScript to run.
@@ -115,7 +115,6 @@
   <script>
     (function () {
       const statusEl = document.getElementById("app-status");
-
       if (!statusEl) return;
 
       function setActive() {
