@@ -132,14 +132,44 @@
 
               <div class="ss-form-row">
                 <label for="rumble-api-key">Livestream API Key</label>
-                <input type="text" id="rumble-api-key" placeholder="Loaded from .env at runtime" disabled />
+                <input
+                  type="text"
+                  id="rumble-api-key"
+                  placeholder="Loaded from .env at runtime"
+                  disabled
+                />
               </div>
+            </div>
+          </fieldset>
+
+          <!-- ----------------------------------------------------- -->
+          <!-- ADMIN / TIER CONFIG (INTENTIONALLY HIDDEN) -->
+          <!-- ----------------------------------------------------- -->
+          <!--
+            This block is reserved for administrator-only controls.
+            It is NOT wired, NOT visible, and NOT editable yet.
+            The dashboard already persists `tier` as the source of truth.
+          -->
+          <fieldset class="ss-fieldset hidden" id="creator-tier-admin">
+            <legend>Tier (Admin Only)</legend>
+
+            <div class="ss-form-row">
+              <label for="creator-tier">Tier</label>
+              <select id="creator-tier" name="tier">
+                <option value="open">Open</option>
+                <option value="gold">Gold</option>
+                <option value="pro">Pro</option>
+              </select>
             </div>
           </fieldset>
 
           <!-- ACTIONS -->
           <div class="ss-form-actions">
-            <button type="button" id="btn-cancel-edit" class="ss-btn ss-btn-secondary">
+            <button
+              type="button"
+              id="btn-cancel-edit"
+              class="ss-btn ss-btn-secondary"
+            >
               Cancel
             </button>
 

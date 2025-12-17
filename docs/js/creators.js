@@ -48,6 +48,17 @@
   const inputRumbleWatchUrl = document.getElementById("rumble-watch-url");
 
   /* ------------------------------------------------------------
+     ADDITIVE: ADVANCED / ADMIN FIELDS (NO UI YET)
+     ------------------------------------------------------------ */
+
+  // These fields are intentionally NOT exposed in the UI yet.
+  // They are persisted so the dashboard becomes the source of truth.
+  //
+  // Future UI will surface these behind an admin gate.
+
+  const ADMIN_DEFAULT_TIER = "open";
+
+  /* ------------------------------------------------------------
      STATE
      ------------------------------------------------------------ */
 
@@ -202,6 +213,7 @@
     const payload = {
       creator_id: creatorId,
       display_name: inputDisplayName.value.trim(),
+      tier: ADMIN_DEFAULT_TIER, // admin-controlled, persisted
       platforms: {}
     };
 
@@ -214,7 +226,10 @@
 
     if (editingCreatorId) {
       const idx = creators.findIndex(c => c.creator_id === editingCreatorId);
-      if (idx !== -1) creators[idx] = payload;
+      if (idx !== -1) {
+        payload.tier = creators[idx].tier || ADMIN_DEFAULT_TIER;
+        creators[idx] = payload;
+      }
     } else {
       creators.push(payload);
     }
@@ -268,6 +283,7 @@
       if (typeof c.creator_id !== "string") return false;
       if ("display_name" in c && typeof c.display_name !== "string") return false;
       if ("platforms" in c && typeof c.platforms !== "object") return false;
+      if ("tier" in c && typeof c.tier !== "string") return false;
       return true;
     });
   }
