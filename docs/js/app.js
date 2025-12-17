@@ -109,7 +109,7 @@ App.storage = {
   },
 
   /* ------------------------------------------------------------
-     Shared Dashboard Storage Utilities (NEW, AUTHORITATIVE)
+     Shared Dashboard Storage Utilities (AUTHORITATIVE)
      Namespace: streamsuites.*
      ------------------------------------------------------------ */
 
@@ -139,7 +139,6 @@ App.storage = {
 
   importJsonFromFile(file) {
     return this.uploadJson(file).then((data) => {
-      // Allow either raw payloads or wrapped exports
       if (data && typeof data === "object" && "payload" in data) {
         return data.payload;
       }
@@ -157,7 +156,7 @@ function registerView(name, config) {
     name,
     onLoad: config.onLoad || (() => {}),
     onUnload: config.onUnload || (() => {}),
-    containerId: config.containerId || "view-root"
+    containerId: config.containerId || "view-container"
   };
 }
 
@@ -208,8 +207,8 @@ async function loadView(name) {
     console.error(`[Dashboard] Failed to load view ${name}`, err);
     container.innerHTML = `
       <div class="panel">
-        <h3>Error</h3>
-        <p class="text-muted">Failed to load view: ${name}</p>
+        <h3>${name}</h3>
+        <p class="text-muted">This module is not yet implemented.</p>
       </div>
     `;
   }
@@ -278,15 +277,12 @@ function initApp() {
 }
 
 /* ----------------------------------------------------------------------
-   Register Core Views
+   Register Views
    ---------------------------------------------------------------------- */
 
-registerView("overview", {
-  containerId: "view-root"
-});
+registerView("overview", {});
 
 registerView("creators", {
-  containerId: "view-root",
   onLoad: () => {
     if (window.CreatorsView?.init) {
       window.CreatorsView.init();
@@ -295,13 +291,22 @@ registerView("creators", {
 });
 
 registerView("triggers", {
-  containerId: "view-root",
   onLoad: () => {
     if (window.TriggersView?.init) {
       window.TriggersView.init();
     }
   }
 });
+
+/* Placeholder modules (wired, no logic yet) */
+
+registerView("clips", {});
+registerView("polls", {});
+registerView("rumble", {});
+registerView("youtube", {});
+registerView("twitch", {});
+registerView("twitter", {});
+registerView("discord", {});
 
 /* ----------------------------------------------------------------------
    Boot
