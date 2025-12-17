@@ -57,6 +57,12 @@ body {
   gap: 10px;
 }
 
+/* Logo alignment: nudge down to visually align with title baseline */
+.header-left img {
+  position: relative;
+  top: 0.18em;
+}
+
 .app-title {
   font-family: "RechargeBd", sans-serif;
   font-size: 22px;

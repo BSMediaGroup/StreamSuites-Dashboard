@@ -59,14 +59,14 @@
         <img
           src="assets/logos/LOG2-3D-SML.png"
           alt="StreamSuites Logo"
-          style="height:32px; width:auto;"
+          style="height:32px; width:auto; position:relative; top:2px;"
         />
         <h1 class="app-title">StreamSuites</h1>
         <span class="app-subtitle">Dashboard</span>
       </div>
 
       <div class="header-right">
-        <span id="app-status" class="status-indicator">
+        <span id="app-status" class="status-indicator idle">
           ● idle
         </span>
       </div>
@@ -78,6 +78,7 @@
         <li data-view="overview">Overview</li>
         <li data-view="creators">Creators</li>
         <li data-view="triggers">Chat Triggers</li>
+        <li data-view="jobs">Jobs</li>
         <li data-view="clips">Clips</li>
         <li data-view="polls">Polls</li>
         <li data-view="rumble">Rumble</li>
@@ -124,6 +125,7 @@
 
       function setActive() {
         statusEl.textContent = "● active";
+        statusEl.classList.remove("idle");
         statusEl.classList.add("active");
       }
 
