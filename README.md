@@ -84,52 +84,74 @@ Crucially, **none of these require rewriting the dashboard**.
 ```
 StreamSuites-Dashboard/
 ├── README.md
+├── favicon.ico
+│
+├── dev-notes/             # Internal planning and compatibility notes
+│   ├── compatibility.md
+│   ├── decisions.md
+│   └── roadmap.md
 │
 ├── docs/                    # GitHub Pages root
-│   ├── index.html           # App entry point
+│   ├── CONTRACTS.md        # Contract notes for schema consumers
+│   ├── TIERS.md            # Tier documentation
+│   ├── favicon.ico         # Static site icon
+│   ├── index.html          # App entry point
+│   ├── Thumbs.db           # Placeholder artifact (do not delete)
+│   │
+│   ├── assets/
+│   │   └── logos/
 │   │
 │   ├── css/
 │   │   ├── base.css         # Layout, resets, typography
+│   │   ├── components.css   # Buttons, tables, panels
 │   │   ├── layout.css       # Structural layout rules
-│   │   ├── components.css  # Buttons, tables, panels
+│   │   ├── overrides.css    # Custom overrides for components/themes
 │   │   └── theme-dark.css   # Dark theme (authoritative)
 │   │
 │   ├── js/
-│   │   ├── app.js           # App bootstrap & routing
 │   │   ├── api.js           # Data loading / persistence layer
+│   │   ├── app.js           # App bootstrap & routing
 │   │   ├── auth.js          # Placeholder for future auth hooks
-│   │   ├── render.js        # Shared render helpers
-│   │   ├── creators.js     # Creator configuration UI
-│   │   ├── triggers.js     # Chat trigger configuration UI
+│   │   ├── charts.js        # Metrics / visualization
+│   │   ├── creators.js      # Creator configuration UI
 │   │   ├── jobs.js          # Job visibility (clips, etc.)
-│   │   ├── permissions.js  # Future permissions UI
-│   │   └── charts.js       # Metrics / visualization
+│   │   ├── permissions.js   # Future permissions UI
+│   │   ├── ratelimits.js    # Ratelimit editor/visualization
+│   │   ├── render.js        # Shared render helpers
+│   │   ├── state.js         # Client-side state helpers
+│   │   └── triggers.js      # Chat trigger configuration UI
 │   │
-│   ├── views/
-│   │   ├── overview.html
-│   │   ├── creators.html
-│   │   ├── triggers.html
-│   │   ├── clips.html
-│   │   ├── rumble.html
-│   │   ├── youtube.html
-│   │   ├── twitch.html
-│   │   ├── twitter.html
-│   │   └── discord.html
+│   ├── polls/
+│   │   └── results.html
 │   │
-│   └── assets/
-│       ├── icons/
-│       └── logos/
+│   └── views/
+│       ├── clips.html
+│       ├── creators.html
+│       ├── jobs.html
+│       ├── overview.html
+│       ├── polls.html
+│       ├── ratelimits.html
+│       ├── settings.html
+│       └── triggers.html
 │
 └── schemas/
-    ├── system.schema.json
-    ├── creators.schema.json
-    ├── triggers.schema.json
-    ├── services.schema.json
-    ├── ratelimits.schema.json
     ├── chat_behaviour.schema.json
-    ├── clip_rules.schema.json
+    ├── clip_schema.json
+    ├── creators.schema.json
     ├── jobs.schema.json
-    └── twitter.schema.json
+    ├── permissions.schema.json
+    ├── poll_schema.json
+    ├── ratelimits.schema.json
+    ├── services.schema.json
+    ├── system.schema.json
+    ├── tiers.schema.json
+    ├── triggers.schema.json
+    └── platform/
+        ├── discord.schema.json
+        ├── rumble.schema.json
+        ├── twitch.schema.json
+        ├── twitter.schema.json
+        └── youtube.schema.json
 ```
 
 ---
