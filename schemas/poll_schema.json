@@ -1,9 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "StreamSuites Poll Definition",
+  "description": "Defines a poll configuration sent from the dashboard to the bot. Derived from CONTRACTS.md v1.2.",
   "type": "object",
-  "additionalProperties": false,
-
   "required": [
     "poll_id",
     "creator_id",
@@ -13,51 +12,73 @@
     "vote_trigger",
     "active"
   ],
+  "additionalProperties": true,
 
   "properties": {
     "poll_id": {
       "type": "string",
-      "minLength": 1
+      "minLength": 1,
+      "description": "Runtime-generated poll identifier"
     },
 
     "creator_id": {
       "type": "string",
-      "minLength": 1
+      "description": "Authoritative creator identifier",
+      "pattern": "^[A-Za-z0-9]{6}$",
+      "minLength": 6,
+      "maxLength": 6
     },
 
     "title": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1,
+      "description": "Poll title"
     },
 
     "description": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1,
+      "description": "Instructions shown to users"
     },
 
     "vote_trigger": {
       "type": "string",
-      "minLength": 1
+      "minLength": 1,
+      "description": "Chat command used to cast votes"
     },
 
     "active": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Whether the poll is currently active"
     },
 
     "options": {
       "type": "array",
       "minItems": 2,
+      "description": "List of poll options",
       "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["id", "label"],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "minimum": 1
-          },
-          "label": {
-            "type": "string",
-            "minLength": 1
-          }
+        "$ref": "#/definitions/poll_option"
+      }
+    }
+  },
+
+  "definitions": {
+    "poll_option": {
+      "type": "object",
+      "required": ["id", "label"],
+      "additionalProperties": true,
+
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Numeric option identifier used for voting"
+        },
+
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable option label"
         }
       }
     }
