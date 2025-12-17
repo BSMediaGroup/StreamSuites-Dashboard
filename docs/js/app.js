@@ -298,6 +298,18 @@ registerView("triggers", {
   }
 });
 
+/* ------------------------------------------------------------
+   C1: Jobs (READ-ONLY visibility)
+   ------------------------------------------------------------ */
+
+registerView("jobs", {
+  onLoad: () => {
+    if (window.JobsView?.init) {
+      window.JobsView.init();
+    }
+  }
+});
+
 /* Placeholder modules (wired, no logic yet) */
 
 registerView("clips", {});
