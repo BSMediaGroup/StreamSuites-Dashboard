@@ -1,1 +1,8 @@
-{}
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://streamsuites.dev/schemas/platform/discord.schema.json",
+  "$comment": "Discord control-plane runtime schema placeholder. The dashboard consumes presence/status metadata in a read-only, non-authoritative fashion when the runtime is deployed. No fields are required and the runtime remains the authority over actual bot behavior.",
+  "type": "object",
+  "additionalProperties": true,
+  "description": "Planned control-plane visibility for the Discord runtime; fields may include heartbeat timestamp, connection state, guild count, and presence text/emoji when exposed."
+}

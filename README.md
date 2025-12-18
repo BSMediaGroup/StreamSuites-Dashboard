@@ -108,6 +108,12 @@ Crucially, **none of these require rewriting the dashboard**.
 
 The dashboard is intentionally **runtime-agnostic**. Multiple runtimes (e.g., streaming orchestration and Discord control-plane) can consume the same schemas without changing the UI. The dashboard remains a static artifact that can be opened locally or hosted on GitHub Pages and still reflect the latest schema set.
 
+## Discord Control-Plane Integration
+
+The StreamSuites ecosystem includes an optional **Discord control-plane runtime**. It is deployment-gated and may or may not be running alongside the streaming runtime. The dashboard treats Discord as a **read-only status surface** for now: it consumes exported metadata but does not issue commands or assume the runtime is enabled.
+
+When present, the Discord control-plane runtime is expected to expose non-authoritative status signals such as heartbeat, connection state, guild count, and the current status text/emoji. These signals help operators verify liveness without coupling the dashboard to Discord bot execution. Future iterations may expand visibility, but no interactive Discord controls are implemented in this repository.
+
 ### Runtime Compatibility Matrix
 
 | Runtime entrypoint | Status | Notes |
@@ -203,7 +209,7 @@ StreamSuites-Dashboard/
     ├── tiers.schema.json
     ├── triggers.schema.json
     └── platform/
-        ├── discord.schema.json
+        ├── discord.schema.json   # Control-plane runtime visibility (optional, read-only)
         ├── rumble.schema.json
         ├── twitch.schema.json
         ├── twitter.schema.json
