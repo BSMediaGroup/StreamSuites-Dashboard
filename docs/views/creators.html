@@ -124,7 +124,12 @@
               </label>
             </div>
 
+            <!-- ===================================================== -->
+            <!-- RUMBLE CONFIG (SCHEMA-COMPLETE PLACEHOLDERS) -->
+            <!-- ===================================================== -->
             <div id="rumble-config" class="ss-subpanel hidden">
+
+              <!-- EXISTING (UNCHANGED) -->
               <div class="ss-form-row">
                 <label for="rumble-watch-url">Rumble Watch URL</label>
                 <input type="url" id="rumble-watch-url" />
@@ -139,17 +144,53 @@
                   disabled
                 />
               </div>
+
+              <!-- ADDITIVE — REQUIRED BY creators.json SCHEMA -->
+              <div class="ss-form-row">
+                <label for="rumble-channel-url">Rumble Channel URL</label>
+                <input
+                  type="url"
+                  id="rumble-channel-url"
+                  placeholder="https://rumble.com/c/YourChannel"
+                  disabled
+                />
+                <small class="muted">
+                  Required for channel association (runtime uses this value).
+                </small>
+              </div>
+
+              <div class="ss-form-row">
+                <label for="rumble-manual-watch-url">Manual Watch URL</label>
+                <input
+                  type="url"
+                  id="rumble-manual-watch-url"
+                  placeholder="https://rumble.com/vXXXX-live.html"
+                  disabled
+                />
+                <small class="muted">
+                  Optional manual livestream override.
+                </small>
+              </div>
+
+              <div class="ss-form-row">
+                <label for="rumble-api-env-key">Livestream API Env Key</label>
+                <input
+                  type="text"
+                  id="rumble-api-env-key"
+                  placeholder="RUMBLE_LIVESTREAM_KEY_NAME"
+                  disabled
+                />
+                <small class="muted">
+                  Read-only. Resolved from <code>.env</code> at runtime.
+                </small>
+              </div>
+
             </div>
           </fieldset>
 
           <!-- ----------------------------------------------------- -->
           <!-- ADMIN / TIER CONFIG (INTENTIONALLY HIDDEN) -->
           <!-- ----------------------------------------------------- -->
-          <!--
-            This block is reserved for administrator-only controls.
-            It is NOT wired, NOT visible, and NOT editable yet.
-            The dashboard already persists `tier` as the source of truth.
-          -->
           <fieldset class="ss-fieldset hidden" id="creator-tier-admin">
             <legend>Tier (Admin Only)</legend>
 
