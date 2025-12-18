@@ -18,26 +18,26 @@
       <h3>What is StreamSuites?</h3>
       <p>
         <strong>StreamSuites</strong> is a modular, multi-platform livestream automation
-        system designed to give creators structured, deterministic control over
-        how their live streams interact with chat, generate clips, run polls,
-        and publish content across platforms.
+        system designed to give creators structured, deterministic control over how
+        their live streams interact with chat, generate clips, run polls, and publish
+        content across platforms.
       </p>
       <p>
-        The project is intentionally split into two major components:
+        The system is intentionally split into two major components:
       </p>
       <ul class="ss-list">
         <li>
-          <strong>StreamSuites Runtime</strong> — the backend execution engine that
-          connects to livestream platforms, listens to chat, and performs actions.
+          <strong>StreamSuites Runtime</strong> — the execution engine that connects to
+          livestream platforms, listens to chat, evaluates rules, and performs actions.
         </li>
         <li>
-          <strong>StreamSuites Dashboard</strong> — a static, browser-based control
-          surface used to configure, inspect, and export runtime-ready configuration.
+          <strong>StreamSuites Dashboard</strong> — a static, browser-based configuration
+          and inspection surface that produces runtime-ready configuration.
         </li>
       </ul>
       <p>
-        This separation ensures clarity, safety, and portability: configuration
-        and execution are deliberately decoupled.
+        This separation is deliberate. Configuration and execution are decoupled to
+        ensure safety, clarity, portability, and auditability.
       </p>
     </section>
 
@@ -47,42 +47,41 @@
     <section>
       <h3>Design Philosophy</h3>
       <ul class="ss-list">
-        <li><strong>No magic:</strong> all configuration is explicit, inspectable, and exportable.</li>
+        <li><strong>No magic:</strong> all behavior is defined by explicit configuration.</li>
         <li><strong>No frameworks:</strong> minimal dependencies, predictable behavior.</li>
-        <li><strong>Deterministic behavior:</strong> the same input always yields the same output.</li>
-        <li><strong>Read-only safety:</strong> the dashboard never controls live bots directly.</li>
-        <li><strong>Platform-agnostic core:</strong> platform specifics live at the edges.</li>
+        <li><strong>Deterministic execution:</strong> identical input produces identical output.</li>
+        <li><strong>Read-only safety:</strong> dashboards never directly control live bots.</li>
+        <li><strong>Platform-agnostic core:</strong> platform logic lives at the edges.</li>
       </ul>
       <p>
-        StreamSuites is designed to be boring in the best possible way: stable,
-        inspectable, and resilient to platform changes.
+        StreamSuites is intentionally designed to be boring in the best sense:
+        inspectable, debuggable, and resistant to platform churn.
       </p>
     </section>
 
     <!-- ============================================================ -->
-    <!-- ARCHITECTURE -->
+    <!-- REPOSITORY & SYSTEM TOPOLOGY -->
     <!-- ============================================================ -->
     <section>
-      <h3>High-Level Architecture</h3>
+      <h3>System & Repository Topology</h3>
       <ul class="ss-list">
         <li>
-          <strong>Dashboard (this app):</strong>
-          Static HTML, CSS, and vanilla JavaScript. Runs on GitHub Pages or inside
-          an iframe (e.g. Wix Studio). Stores configuration in localStorage.
+          <strong>StreamSuites (Runtime repository):</strong>
+          Python-based execution environment that consumes exported configuration and
+          performs live automation.
         </li>
         <li>
-          <strong>Runtime:</strong>
-          A separate execution environment (Python-based) that consumes exported
-          JSON and performs live automation.
-        </li>
-        <li>
-          <strong>Configuration Flow:</strong>
-          Dashboard → JSON Export → Runtime Import → Live Execution
+          <strong>StreamSuites Dashboard (this repository):</strong>
+          Static HTML, CSS, and vanilla JavaScript served via GitHub Pages or embedded
+          as an iframe (e.g. Wix Studio).
         </li>
       </ul>
+      <p>
+        The dashboard stores configuration locally (via <code>localStorage</code>) and
+        exports JSON that is explicitly imported into the runtime.
+      </p>
       <p class="muted">
-        The dashboard is intentionally incapable of directly controlling live
-        streams. This is a safety and stability guarantee.
+        Dashboard → JSON Export → Runtime Import → Live Execution
       </p>
     </section>
 
@@ -94,7 +93,7 @@
 
       <h4>Overview</h4>
       <ul class="ss-list">
-        <li>High-level system status indicators</li>
+        <li>High-level system and storage status indicators</li>
         <li>Configuration summary counts</li>
         <li>Read-only visibility into stored configuration</li>
       </ul>
@@ -103,15 +102,15 @@
       <ul class="ss-list">
         <li>Create and edit creator profiles</li>
         <li>Platform enablement (e.g. Rumble)</li>
-        <li>Schema-complete placeholders for runtime requirements</li>
-        <li>Import/export creators as JSON</li>
+        <li>Schema-complete placeholders required by the runtime</li>
+        <li>Import and export creators as JSON</li>
       </ul>
 
       <h4>Chat Triggers</h4>
       <ul class="ss-list">
         <li>Define trigger phrases and match modes</li>
         <li>Configure responses and cooldowns</li>
-        <li>Import/export trigger definitions</li>
+        <li>Import and export trigger definitions</li>
       </ul>
 
       <h4>Jobs</h4>
@@ -120,7 +119,7 @@
         <li>Breakdowns by status, type, and creator</li>
       </ul>
 
-      <h4>Placeholder Modules</h4>
+      <h4>Placeholder & Scaffolded Modules</h4>
       <ul class="ss-list">
         <li>Clips</li>
         <li>Polls</li>
@@ -141,13 +140,12 @@
         <li>Live polls driven by chat voting</li>
         <li>Per-creator and per-platform rate limiting</li>
         <li>Historical chat replay and visualization</li>
-        <li>Multi-platform posting rules</li>
+        <li>Multi-platform posting and automation rules</li>
+        <li>Expanded job diagnostics and observability</li>
         <li>Role-aware dashboard presentation (Creator vs Admin)</li>
-        <li>Expanded job inspection and diagnostics</li>
       </ul>
       <p class="muted">
-        Planned features are intentionally staged and may evolve as platforms
-        and requirements change.
+        Features are staged intentionally and may evolve as platforms and constraints change.
       </p>
     </section>
 
@@ -170,9 +168,9 @@
         </li>
       </ul>
       <p>
-        At present, all features are visible and no authentication or permission
-        system is enforced. This dashboard is UI-ready for future role indication
-        without introducing premature complexity.
+        At present, all features are visible and no authentication or permission system
+        is enforced. The UI is structured to support future role indication without
+        introducing premature complexity.
       </p>
     </section>
 
@@ -190,7 +188,7 @@
     </section>
 
     <!-- ============================================================ -->
-    <!-- CLOSING -->
+    <!-- PROJECT STATUS -->
     <!-- ============================================================ -->
     <section>
       <h3>Project Status</h3>
@@ -200,7 +198,8 @@
         alongside the runtime as new capabilities are added.
       </p>
       <p class="muted">
-        This page exists to provide continuity and orientation as the project grows.
+        This page exists to provide continuity, orientation, and shared understanding
+        as the project grows.
       </p>
     </section>
 
