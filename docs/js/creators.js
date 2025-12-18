@@ -48,13 +48,21 @@
   const inputRumbleWatchUrl = document.getElementById("rumble-watch-url");
 
   /* ------------------------------------------------------------
-     ADDITIVE: ADVANCED / ADMIN FIELDS (NO UI YET)
+     ADDITIVE: RUNTIME / ADMIN FIELDS (NOW WIRED)
      ------------------------------------------------------------ */
 
-  // These fields are intentionally NOT exposed in the UI yet.
-  // They are persisted so the dashboard becomes the source of truth.
-  //
-  // Future UI will surface these behind an admin gate.
+  const inputRumbleChannelUrl =
+    document.getElementById("rumble-channel-url");
+
+  const inputRumbleManualWatchUrl =
+    document.getElementById("rumble-manual-watch-url");
+
+  const inputRumbleApiEnvKey =
+    document.getElementById("rumble-api-env-key");
+
+  /* ------------------------------------------------------------
+     ADDITIVE: ADVANCED / ADMIN FIELDS (NO UI YET)
+     ------------------------------------------------------------ */
 
   const ADMIN_DEFAULT_TIER = "open";
 
@@ -184,6 +192,16 @@
       rumbleConfig.classList.toggle("hidden", !checkboxRumble.checked);
       inputRumbleWatchUrl.value = rumble?.watch_url || "";
 
+      /* ADDITIVE: runtime fields */
+      inputRumbleChannelUrl.value =
+        creator.rumble_channel_url || "";
+
+      inputRumbleManualWatchUrl.value =
+        creator.rumble_manual_watch_url || "";
+
+      inputRumbleApiEnvKey.value =
+        creator.rumble_livestream_api_env_key || "";
+
     } else {
       editingCreatorId = null;
       editorTitle.textContent = "Add Creator";
@@ -213,7 +231,7 @@
     const payload = {
       creator_id: creatorId,
       display_name: inputDisplayName.value.trim(),
-      tier: ADMIN_DEFAULT_TIER, // admin-controlled, persisted
+      tier: ADMIN_DEFAULT_TIER,
       platforms: {}
     };
 
@@ -224,8 +242,26 @@
       };
     }
 
+    /* ADDITIVE: runtime fields */
+    if (inputRumbleChannelUrl.value.trim()) {
+      payload.rumble_channel_url =
+        inputRumbleChannelUrl.value.trim();
+    }
+
+    if (inputRumbleManualWatchUrl.value.trim()) {
+      payload.rumble_manual_watch_url =
+        inputRumbleManualWatchUrl.value.trim();
+    }
+
+    if (inputRumbleApiEnvKey.value.trim()) {
+      payload.rumble_livestream_api_env_key =
+        inputRumbleApiEnvKey.value.trim();
+    }
+
     if (editingCreatorId) {
-      const idx = creators.findIndex(c => c.creator_id === editingCreatorId);
+      const idx = creators.findIndex(
+        c => c.creator_id === editingCreatorId
+      );
       if (idx !== -1) {
         payload.tier = creators[idx].tier || ADMIN_DEFAULT_TIER;
         creators[idx] = payload;
@@ -251,7 +287,10 @@
      ------------------------------------------------------------ */
 
   function exportCreators() {
-    App.storage.exportJsonToDownload("streamsuites-creators.json", creators);
+    App.storage.exportJsonToDownload(
+      "streamsuites-creators.json",
+      creators
+    );
   }
 
   function importCreatorsFromFile(file, onError) {
