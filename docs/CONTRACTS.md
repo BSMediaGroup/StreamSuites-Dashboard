@@ -176,6 +176,33 @@ Rules:
 - Dashboard MUST degrade gracefully
 - Bot MAY omit unsupported modules
 
+### 4.2 Discord Control-Plane Runtime Status (Planned, Read-Only)
+
+Target UI:
+- Read-only visibility cards within dashboard (no commands)
+
+Conceptual payload (illustrative only — non-authoritative, optional):
+```
+{
+  "platform": "discord",
+  "runtime_role": "control-plane",
+  "enabled": true,
+  "heartbeat": "2025-01-17T09:21:33Z",
+  "connection_state": "connected",
+  "guild_count": 12,
+  "presence": {
+    "status_text": "Monitoring",
+    "status_emoji": "👀"
+  }
+}
+```
+
+Rules:
+- **Planned only**: dashboard consumes this shape when exposed; bots remain authoritative.
+- **Read-only**: dashboard MUST NOT issue Discord commands or assume mutability.
+- **Optional/Deployment-gated**: absence of Discord status MUST NOT be treated as an error.
+- **Non-authoritative**: runtime decides whether to expose any field; omissions imply unknown.
+
 -------------------------------------------------------------------------------
 
 ## 5. POLLS MODULE (PHASE 2-READY)
