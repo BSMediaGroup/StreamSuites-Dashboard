@@ -1,0 +1,383 @@
+/* ======================================================================
+   StreamSuites Dashboard — components.css
+   Purpose:
+   - Component-level styles for SS view modules (ss-*)
+   - Works inside dynamically injected views (docs/views/*.html)
+   - Dark-theme compatible by default (uses theme-dark.css variables)
+   ====================================================================== */
+
+/* ----------------------------------------------------------------------
+   Layout Shell (per-view)
+   ---------------------------------------------------------------------- */
+
+.ss-app {
+  width: 100%;
+  height: 100%;
+  color: var(--text-primary);
+}
+
+.ss-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.ss-header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.ss-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ss-title {
+  font-family: "RechargeBd", sans-serif;
+  font-size: 20px;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.ss-subtitle {
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+/* ----------------------------------------------------------------------
+   Panels
+   ---------------------------------------------------------------------- */
+
+.ss-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.ss-panel + .ss-panel {
+  margin-top: 16px;
+}
+
+.ss-panel-header {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+}
+
+.ss-panel-header h2,
+.ss-panel-header h3 {
+  margin: 0;
+  font-family: "RechargeBd", sans-serif;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+}
+
+.ss-panel-body {
+  padding: 14px;
+}
+
+/* ----------------------------------------------------------------------
+   Toolbar
+   ---------------------------------------------------------------------- */
+
+.ss-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.ss-toolbar-left,
+.ss-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ----------------------------------------------------------------------
+   Buttons (FIX: visible + usable on dark theme)
+   ---------------------------------------------------------------------- */
+
+.ss-btn {
+  appearance: none;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-panel-alt);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  user-select: none;
+}
+
+.ss-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.ss-btn:active {
+  transform: translateY(1px);
+}
+
+.ss-btn:disabled,
+.ss-btn.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.ss-btn-small {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.ss-btn-primary {
+  background: linear-gradient(
+    180deg,
+    rgba(140, 199, 54, 0.85),
+    rgba(140, 199, 54, 0.65)
+  );
+  border-color: rgba(140, 199, 54, 0.9);
+  color: #0b1205;
+  box-shadow: 0 0 12px var(--glow-soft);
+}
+
+.ss-btn-primary:hover {
+  box-shadow: 0 0 18px var(--glow-hard);
+}
+
+.ss-btn-secondary {
+  background: var(--bg-panel-alt);
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.ss-btn-danger {
+  background: rgba(217, 83, 79, 0.14);
+  border-color: rgba(217, 83, 79, 0.55);
+  color: #ffb3b0;
+}
+
+.ss-btn-danger:hover {
+  background: rgba(217, 83, 79, 0.22);
+  border-color: rgba(217, 83, 79, 0.85);
+}
+
+/* File button wrapper (label acting as button) */
+.ss-file-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.ss-file-btn input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* ----------------------------------------------------------------------
+   Alerts / Empty states
+   ---------------------------------------------------------------------- */
+
+.ss-alert {
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.ss-alert-danger {
+  border-color: rgba(217, 83, 79, 0.55);
+  background: rgba(217, 83, 79, 0.12);
+  color: #ffb3b0;
+}
+
+.ss-empty-state,
+.ss-empty {
+  padding: 14px;
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  margin-top: 12px;
+}
+
+/* ----------------------------------------------------------------------
+   Tables (component-level)
+   ---------------------------------------------------------------------- */
+
+.ss-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.ss-table th {
+  font-family: "RechargeBd", sans-serif;
+  color: var(--text-secondary);
+  text-align: left;
+  padding: 10px;
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.ss-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.ss-table tr:hover td {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ss-table-compact th,
+.ss-table-compact td {
+  padding: 8px 10px;
+}
+
+/* ----------------------------------------------------------------------
+   Forms
+   ---------------------------------------------------------------------- */
+
+.ss-fieldset {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin-bottom: 14px;
+}
+
+.ss-fieldset legend {
+  padding: 0 8px;
+  color: var(--text-secondary);
+  font-family: "RechargeBd", sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.ss-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.ss-form-row label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.ss-form-row input,
+.ss-form-row select,
+.ss-form-row textarea {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  outline: none;
+}
+
+.ss-form-row input:focus,
+.ss-form-row select:focus,
+.ss-form-row textarea:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 1px var(--accent-primary);
+}
+
+.ss-form-row input:disabled,
+.ss-form-row select:disabled,
+.ss-form-row textarea:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.checkbox-row label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
+/* Subpanels inside editor */
+.ss-subpanel {
+  padding: 12px;
+  margin-top: 10px;
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+/* Form actions */
+.ss-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+/* ----------------------------------------------------------------------
+   Lists / minor helpers
+   ---------------------------------------------------------------------- */
+
+.ss-list {
+  margin-left: 18px;
+  color: var(--text-secondary);
+}
+
+.muted {
+  color: var(--text-muted) !important;
+}
+
+.align-right {
+  text-align: right;
+}
+
+/* Match your existing .hidden utility if present */
+.hidden {
+  display: none !important;
+}
+
+/* ----------------------------------------------------------------------
+   Link styling requirement (global clickable objects behavior)
+   - You asked: color #F49900 and underline on hover
+   - Applies to anchors and elements explicitly marked clickable
+   ---------------------------------------------------------------------- */
+
+a,
+.ss-link {
+  color: #F49900;
+  text-decoration: none;
+}
+
+a:hover,
+.ss-link:hover {
+  text-decoration: underline;
+}
+
+/* Optional: make table row action buttons feel clickable */
+button,
+[role="button"],
+[data-view] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ====================================================================== */

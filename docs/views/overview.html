@@ -81,6 +81,12 @@
                 —
               </td>
             </tr>
+            <tr>
+              <td>Rumble Enabled Creators</td>
+              <td id="ov-rumble-enabled-count" class="align-right">
+                —
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -123,31 +129,60 @@
       const elStorageState = document.getElementById("ov-storage-state");
       const elCreatorsCount = document.getElementById("ov-creators-count");
       const elTriggersCount = document.getElementById("ov-triggers-count");
+      const elRumbleEnabledCount = document.getElementById("ov-rumble-enabled-count");
 
-      // Dashboard active indicator
-      elDashboardState.textContent = "active";
+      function safeSetText(el, value) {
+        if (!el) return;
+        el.textContent = value;
+      }
+
+      // Dashboard active indicator (read-only view)
+      safeSetText(elDashboardState, "active");
 
       // Storage availability
       try {
         localStorage.setItem("__ss_test__", "1");
         localStorage.removeItem("__ss_test__");
-        elStorageState.textContent = "available";
+        safeSetText(elStorageState, "available");
       } catch {
-        elStorageState.textContent = "unavailable";
+        safeSetText(elStorageState, "unavailable");
+      }
+
+      // If App/storage isn't ready yet, keep placeholders deterministic
+      const hasAppStorage =
+        typeof window.App === "object" &&
+        window.App &&
+        window.App.storage &&
+        typeof window.App.storage.loadFromLocalStorage === "function";
+
+      if (!hasAppStorage) {
+        safeSetText(elCreatorsCount, "—");
+        safeSetText(elTriggersCount, "—");
+        safeSetText(elRumbleEnabledCount, "—");
+        return;
       }
 
       // Creators count
-      const creators = App?.storage?.loadFromLocalStorage("creators", []);
-      elCreatorsCount.textContent = Array.isArray(creators)
-        ? creators.length
-        : "—";
+      const creators = window.App.storage.loadFromLocalStorage("creators", []);
+      const creatorsArr = Array.isArray(creators) ? creators : [];
+      safeSetText(elCreatorsCount, String(creatorsArr.length));
 
-      // Triggers count
-      const chatBehaviour = App?.storage?.loadFromLocalStorage("chat_behaviour", {});
-      const triggers = Array.isArray(chatBehaviour?.triggers)
-        ? chatBehaviour.triggers
-        : [];
-      elTriggersCount.textContent = triggers.length;
+      // Rumble enabled creators (supports both shapes:
+      // 1) platforms.rumble.enabled === true  (dashboard shape)
+      // 2) platforms.rumble === true          (runtime-like shape)
+      let rumbleEnabled = 0;
+      for (const c of creatorsArr) {
+        const pr = c?.platforms?.rumble;
+        if (pr === true || pr?.enabled === true) {
+          rumbleEnabled += 1;
+        }
+      }
+      safeSetText(elRumbleEnabledCount, String(rumbleEnabled));
+
+      // Triggers count (expects chat_behaviour.triggers as array)
+      const chatBehaviour = window.App.storage.loadFromLocalStorage("chat_behaviour", {});
+      const triggers = Array.isArray(chatBehaviour?.triggers) ? chatBehaviour.triggers : [];
+      safeSetText(elTriggersCount, String(triggers.length));
     })();
   </script>
 
