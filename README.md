@@ -6,6 +6,12 @@
 
 It is designed to provide a **human-friendly interface** over StreamSuites’ JSON-driven configuration model, without introducing server dependencies, platform lock-in, or runtime coupling.
 
+**Dashboard purpose**
+- **Configuration** — edit and validate runtime contracts without needing a live backend
+- **Visualization** — render schemas, tiers, triggers, and limits in human-readable form
+- **State inspection** — review static state snapshots and exported runtime metadata
+- **Schema-driven UI** — the UI is generated from JSON schemas shared by all runtimes
+
 The dashboard is intentionally lightweight, schema-driven, and portable.
 
 ---
@@ -21,6 +27,11 @@ This repository is a **separate but companion project** to the main `StreamSuite
 
 The dashboard **does not execute jobs** and **does not run bots**.  
 It **edits, validates, and visualizes configuration** that the runtime consumes.
+
+The dashboard **does not depend on any specific runtime being active**. It may be used with:
+- Streaming runtime only
+- Discord runtime only
+- Both runtimes together sharing the same schemas
 
 ---
 
@@ -76,6 +87,25 @@ Crucially, **none of these require rewriting the dashboard**.
 - **Platform-neutral** — not tied to Wix, Electron, or a specific backend
 - **Future-proof** — supports growth without architectural resets
 - **Human-readable** — prioritizes clarity over abstraction
+
+The dashboard is intentionally **runtime-agnostic**. Multiple runtimes (e.g., streaming orchestration and Discord control-plane) can consume the same schemas without changing the UI. The dashboard remains a static artifact that can be opened locally or hosted on GitHub Pages and still reflect the latest schema set.
+
+### Runtime Compatibility Matrix
+
+| Runtime entrypoint | Status | Notes |
+|--------------------|--------|-------|
+| `app.py` (Streaming Runtime) | **SUPPORTED** | Produces and consumes the schemas surfaced by the dashboard |
+| `discord_app.py` (Discord Runtime) | **SUPPORTED** | Control-plane consumer of the same schemas; can operate independently |
+| Rumble Chat Runtime | **PAUSED** | Upstream API restriction; schemas remain valid and authoritative |
+
+### Discord Control-Plane Notes (Documentation Only)
+
+Discord integrations may expose:
+- **System status** (control-plane visibility)
+- **Livestream notifications** (control-plane notifications)
+- **Admin actions** (control-plane execution)
+
+These are **control-plane only** capabilities that complement, but do not replace, the dashboard. The dashboard continues to serve as the schema-driven configuration and inspection layer shared across runtimes.
 
 ---
 
@@ -184,6 +214,8 @@ Benefits:
 - Safe UI generation without hardcoding assumptions
 
 Schemas are treated as **contract files** between the dashboard and the runtime.
+
+Rumble platform schemas remain **authoritative and unchanged** even while the Rumble runtime is temporarily paused due to upstream API restrictions. No dashboard features have been removed, and runtime re-enablement is expected to occur without schema changes.
 
 ---
 
