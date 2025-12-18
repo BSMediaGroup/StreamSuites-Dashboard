@@ -81,6 +81,56 @@
   </section>
 
   <!-- --------------------------------------------------------- -->
+  <!-- DISCORD CONTROL-PLANE (READ-ONLY) -->
+  <!-- --------------------------------------------------------- -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Discord Control-Plane</h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <table class="ss-table ss-table-compact">
+        <tbody>
+          <tr>
+            <td>Enabled</td>
+            <td id="ov-discord-enabled" class="align-right muted">
+              unknown
+            </td>
+          </tr>
+          <tr>
+            <td>Connection State</td>
+            <td id="ov-discord-connection" class="align-right muted">
+              —
+            </td>
+          </tr>
+          <tr>
+            <td>Last Heartbeat</td>
+            <td id="ov-discord-heartbeat" class="align-right muted">
+              —
+            </td>
+          </tr>
+          <tr>
+            <td>Guilds Connected</td>
+            <td id="ov-discord-guilds" class="align-right muted">
+              —
+            </td>
+          </tr>
+          <tr>
+            <td>Presence</td>
+            <td id="ov-discord-presence" class="align-right muted">
+              —
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="muted" style="margin-top: 0.5rem;">
+        Discord status is read-only and may be unavailable if the control-plane runtime is not deployed.
+      </p>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------------- -->
   <!-- NEXT MODULES (PLACEHOLDER, READ-ONLY) -->
   <!-- --------------------------------------------------------- -->
   <section class="ss-panel">
@@ -119,6 +169,12 @@
   const elTriggersCount = document.getElementById("ov-triggers-count");
   const elRumbleEnabledCount = document.getElementById("ov-rumble-enabled-count");
 
+  const elDiscordEnabled = document.getElementById("ov-discord-enabled");
+  const elDiscordConnection = document.getElementById("ov-discord-connection");
+  const elDiscordHeartbeat = document.getElementById("ov-discord-heartbeat");
+  const elDiscordGuilds = document.getElementById("ov-discord-guilds");
+  const elDiscordPresence = document.getElementById("ov-discord-presence");
+
   function safeSetText(el, value) {
     if (!el) return;
     el.textContent = value;
@@ -147,6 +203,12 @@
     safeSetText(elCreatorsCount, "—");
     safeSetText(elTriggersCount, "—");
     safeSetText(elRumbleEnabledCount, "—");
+
+    safeSetText(elDiscordEnabled, "unknown");
+    safeSetText(elDiscordConnection, "—");
+    safeSetText(elDiscordHeartbeat, "—");
+    safeSetText(elDiscordGuilds, "—");
+    safeSetText(elDiscordPresence, "—");
     return;
   }
 
@@ -172,5 +234,19 @@
     ? chatBehaviour.triggers
     : [];
   safeSetText(elTriggersCount, String(triggers.length));
+
+  // ---------------------------------------------------------
+  // Discord control-plane (read-only, placeholder)
+  // ---------------------------------------------------------
+
+  // For now, Discord status is not wired to a live source.
+  // These values remain placeholders until an explicit
+  // export or API bridge is introduced.
+
+  safeSetText(elDiscordEnabled, "unknown");
+  safeSetText(elDiscordConnection, "unknown");
+  safeSetText(elDiscordHeartbeat, "—");
+  safeSetText(elDiscordGuilds, "—");
+  safeSetText(elDiscordPresence, "—");
 })();
 </script>
