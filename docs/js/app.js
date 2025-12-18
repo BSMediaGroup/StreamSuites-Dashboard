@@ -188,7 +188,7 @@ async function loadView(name) {
   const viewPath = `views/${name}.html`;
 
   try {
-    const res = await fetch(viewPath);
+    const res = await fetch(new URL(viewPath, document.baseURI));
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const html = await res.text();
@@ -328,9 +328,6 @@ document.addEventListener("DOMContentLoaded", initApp);
 
 /* ======================================================================
    ADDITIVE: RUNTIME EXPORT (DO NOT REMOVE OR INLINE)
-   Purpose:
-   - Convert dashboard creators into bot-runtime creators.json
-   - This is the ONLY sanctioned transform layer
    ====================================================================== */
 
 App.exportRuntimeCreators = function () {
@@ -346,9 +343,7 @@ App.exportRuntimeCreators = function () {
         limits: c.limits || {}
       };
 
-      if (c.tier) {
-        out.tier = c.tier;
-      }
+      if (c.tier) out.tier = c.tier;
 
       if (c.platforms?.rumble?.enabled) {
         out.platforms.rumble = true;
