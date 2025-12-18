@@ -1,8 +1,60 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://streamsuites.dev/schemas/platform/discord.schema.json",
-  "$comment": "Discord control-plane runtime schema placeholder. The dashboard consumes presence/status metadata in a read-only, non-authoritative fashion when the runtime is deployed. No fields are required and the runtime remains the authority over actual bot behavior.",
+  "$comment": "Discord control-plane runtime visibility schema. This schema defines an optional, read-only status snapshot that may be exposed by the Discord runtime for dashboard consumption. The runtime remains authoritative; absence of this data must never be treated as an error.",
+  "title": "Discord Control-Plane Runtime Status",
+  "description": "Optional, non-authoritative status metadata emitted by the Discord control-plane runtime when deployed. This schema is used for read-only dashboard visibility and inspection only.",
   "type": "object",
   "additionalProperties": true,
-  "description": "Planned control-plane visibility for the Discord runtime; fields may include heartbeat timestamp, connection state, guild count, and presence text/emoji when exposed."
+  "properties": {
+    "platform": {
+      "type": "string",
+      "const": "discord",
+      "description": "Platform identifier. Always 'discord' when present."
+    },
+    "runtime_role": {
+      "type": "string",
+      "const": "control-plane",
+      "description": "Indicates that this runtime operates as a control-plane rather than a streaming data-plane."
+    },
+    "enabled": {
+      "type": "boolean",
+      "description": "Whether the Discord control-plane runtime is enabled for this deployment."
+    },
+    "connection_state": {
+      "type": "string",
+      "enum": ["connected", "connecting", "disconnected", "unknown"],
+      "description": "Best-effort connection state of the Discord client when visible."
+    },
+    "heartbeat": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the most recent heartbeat tick emitted by the Discord runtime (UTC, ISO 8601)."
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp indicating when the Discord runtime was started (UTC, ISO 8601)."
+    },
+    "guild_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of Discord guilds the bot is currently connected to, if available."
+    },
+    "presence": {
+      "type": "object",
+      "description": "Current visible Discord presence, if exposed by the runtime.",
+      "additionalProperties": true,
+      "properties": {
+        "status_text": {
+          "type": "string",
+          "description": "Custom status text currently applied to the bot."
+        },
+        "status_emoji": {
+          "type": "string",
+          "description": "Unicode emoji associated with the current status, if any."
+        }
+      }
+    }
+  }
 }
