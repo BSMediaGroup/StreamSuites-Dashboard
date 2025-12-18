@@ -37,6 +37,21 @@
       font-style: normal;
       font-display: swap;
     }
+
+    /* ---------------------------------------------------------- */
+    /* Header alignment fix (PHASE 0 safe) */
+    /* ---------------------------------------------------------- */
+    #app-header .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #app-header .header-left img {
+      height: 32px;
+      width: auto;
+      display: block;
+    }
   </style>
 
   <!-- ============================= -->
@@ -61,7 +76,6 @@
         <img
           src="./assets/logos/LOG2-3D-SML.png"
           alt="StreamSuites Logo"
-          style="height:32px; width:auto; position:relative; top:2px;"
         />
         <h1 class="app-title">StreamSuites</h1>
         <span class="app-subtitle">Dashboard</span>
@@ -83,6 +97,11 @@
         <li data-view="jobs">Jobs</li>
         <li data-view="clips">Clips</li>
         <li data-view="polls">Polls</li>
+
+        <li data-view="ratelimits">Rate Limits</li>
+        <li data-view="settings">Settings</li>
+        <li data-view="chat-replay">Chat Replay</li>
+
         <li data-view="rumble">Rumble</li>
         <li data-view="youtube">YouTube</li>
         <li data-view="twitch">Twitch</li>
@@ -93,7 +112,6 @@
 
     <!-- Main Content -->
     <main id="app-main">
-      <!-- Views are dynamically injected here -->
       <div id="view-container">
         <noscript>
           <p style="padding:20px;color:#f66;">

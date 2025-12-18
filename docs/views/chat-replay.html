@@ -1,48 +1,83 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Historical Chat Replay (Planned)</title>
-  <!--
-    Placeholder view for a future Historical Chat Replay surface.
+<!-- ========================================================= -->
+<!-- StreamSuites — Historical Chat Replay (VIEW PARTIAL) -->
+<!-- NOTE:
+     - Read-only visualization surface
+     - No bot control
+     - No outbound actions
+     - No scripting wired in PHASE 0
+   ========================================================= -->
 
-    Intended experience (descriptive only):
-    - Load a pre-recorded chat log JSON (platform-agnostic) from local storage or a provided URL.
-    - Render messages chronologically with timestamps, author display names, and platform hints.
-    - Provide playback controls (play/pause, seek, speed) that emulate the original pacing without executing bot actions.
-    - Support stream-specific lookup (by stream_id) to filter or load relevant logs.
-    - Remain fully read-only with no outbound actions or bot control hooks.
+<!-- ========================================================= -->
+<!-- HEADER -->
+<!-- ========================================================= -->
+<header class="ss-header">
+  <div class="ss-header-left">
+    <h1 class="ss-title">StreamSuites</h1>
+    <span class="ss-subtitle">Historical Chat Replay</span>
+  </div>
+</header>
 
-    No scripting is wired yet. This file is a scaffold only.
-  -->
-</head>
-<body>
-  <main>
-    <h1>Historical Chat Replay (Planned)</h1>
-    <p>
-      This placeholder documents the intended layout for a future chat replay view.
-      The final implementation will remain static and read-only, consuming exported chat logs
-      without controlling live bots or altering runtime behavior.
-    </p>
-    <section>
+<!-- ========================================================= -->
+<!-- MAIN -->
+<!-- ========================================================= -->
+<main class="ss-main">
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Planned Capability</h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <p class="muted">
+        This view will provide a read-only interface for replaying previously
+        captured livestream chat logs without interacting with live bots
+        or altering runtime behavior.
+      </p>
+    </div>
+  </section>
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
       <h2>Planned UI Blocks</h2>
-      <ul>
+    </header>
+
+    <div class="ss-panel-body">
+      <ul class="ss-list muted">
         <li>Chat log source selector (file picker or URL input)</li>
-        <li>Stream lookup field (e.g., by stream_id)</li>
-        <li>Chronological message list with timestamp and author labels</li>
-        <li>Playback controls for pacing (play, pause, seek, speed)</li>
+        <li>Stream lookup field (e.g. by <code>stream_id</code>)</li>
+        <li>Chronological message list with timestamps and author labels</li>
+        <li>Playback controls (play, pause, seek, speed)</li>
         <li>Platform indicator badges for multi-platform logs</li>
       </ul>
-    </section>
-    <section>
-      <h2>Notes</h2>
-      <p>
-        This view will not modify data, trigger bots, or manage authentication. It is intended for
-        visualization of previously captured chat activity only.
-      </p>
-    </section>
-  </main>
-</body>
-</html>
+    </div>
+  </section>
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Constraints</h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <ul class="ss-list muted">
+        <li>No data modification</li>
+        <li>No bot commands or outbound requests</li>
+        <li>No authentication or permissions logic</li>
+        <li>Visualization only</li>
+      </ul>
+
+      <div class="ss-placeholder">
+        Historical chat replay is not yet implemented.
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ========================================================= -->
+<!-- FOOTER -->
+<!-- ========================================================= -->
+<footer class="ss-footer">
+  <span class="muted">
+    Historical Chat Replay — planned read-only visualization surface.
+  </span>
+</footer>

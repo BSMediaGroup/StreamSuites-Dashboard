@@ -1,190 +1,176 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>StreamSuites — Overview</title>
+<!-- ========================================================= -->
+<!-- StreamSuites — Overview (VIEW PARTIAL) -->
+<!-- NOTE: CSS and app bootstrap are loaded by index.html -->
+<!-- ========================================================= -->
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- ========================================================= -->
+<!-- HEADER -->
+<!-- ========================================================= -->
+<header class="ss-header">
+  <div class="ss-header-left">
+    <h1 class="ss-title">StreamSuites</h1>
+    <span class="ss-subtitle">Overview</span>
+  </div>
+</header>
 
-  <!-- Core styles -->
-  <link rel="stylesheet" href="../css/base.css" />
-  <link rel="stylesheet" href="../css/theme-dark.css" />
-  <link rel="stylesheet" href="../css/layout.css" />
-  <link rel="stylesheet" href="../css/components.css" />
-</head>
+<!-- ========================================================= -->
+<!-- MAIN -->
+<!-- ========================================================= -->
+<main class="ss-main">
 
-<body class="ss-app ss-dark">
+  <!-- --------------------------------------------------------- -->
+  <!-- SYSTEM STATUS -->
+  <!-- --------------------------------------------------------- -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>System Status</h2>
+    </header>
 
-  <!-- ========================================================= -->
-  <!-- HEADER -->
-  <!-- ========================================================= -->
-  <header class="ss-header">
-    <div class="ss-header-left">
-      <h1 class="ss-title">StreamSuites</h1>
-      <span class="ss-subtitle">Overview</span>
+    <div class="ss-panel-body">
+      <table class="ss-table ss-table-compact">
+        <tbody>
+          <tr>
+            <td>Dashboard State</td>
+            <td id="ov-dashboard-state" class="align-right muted">
+              idle
+            </td>
+          </tr>
+          <tr>
+            <td>Local Storage Available</td>
+            <td id="ov-storage-state" class="align-right muted">
+              unknown
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-  </header>
+  </section>
 
-  <!-- ========================================================= -->
-  <!-- MAIN -->
-  <!-- ========================================================= -->
-  <main class="ss-main">
+  <!-- --------------------------------------------------------- -->
+  <!-- CONFIG SUMMARY -->
+  <!-- --------------------------------------------------------- -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Configuration Summary</h2>
+    </header>
 
-    <!-- --------------------------------------------------------- -->
-    <!-- SYSTEM STATUS -->
-    <!-- --------------------------------------------------------- -->
-    <section class="ss-panel">
-      <header class="ss-panel-header">
-        <h2>System Status</h2>
-      </header>
+    <div class="ss-panel-body">
+      <table class="ss-table ss-table-compact">
+        <tbody>
+          <tr>
+            <td>Creators Configured</td>
+            <td id="ov-creators-count" class="align-right">
+              —
+            </td>
+          </tr>
+          <tr>
+            <td>Chat Triggers Configured</td>
+            <td id="ov-triggers-count" class="align-right">
+              —
+            </td>
+          </tr>
+          <tr>
+            <td>Rumble Enabled Creators</td>
+            <td id="ov-rumble-enabled-count" class="align-right">
+              —
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-      <div class="ss-panel-body">
-        <table class="ss-table ss-table-compact">
-          <tbody>
-            <tr>
-              <td>Dashboard State</td>
-              <td id="ov-dashboard-state" class="align-right muted">
-                idle
-              </td>
-            </tr>
-            <tr>
-              <td>Local Storage Available</td>
-              <td id="ov-storage-state" class="align-right muted">
-                unknown
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+  <!-- --------------------------------------------------------- -->
+  <!-- NEXT MODULES (PLACEHOLDER, READ-ONLY) -->
+  <!-- --------------------------------------------------------- -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Upcoming Modules</h2>
+    </header>
 
-    <!-- --------------------------------------------------------- -->
-    <!-- CONFIG SUMMARY -->
-    <!-- --------------------------------------------------------- -->
-    <section class="ss-panel">
-      <header class="ss-panel-header">
-        <h2>Configuration Summary</h2>
-      </header>
+    <div class="ss-panel-body">
+      <ul class="ss-list muted">
+        <li>Chat-triggered clip generation</li>
+        <li>Live polls (chat-driven voting)</li>
+        <li>Multi-platform posting rules</li>
+      </ul>
+    </div>
+  </section>
 
-      <div class="ss-panel-body">
-        <table class="ss-table ss-table-compact">
-          <tbody>
-            <tr>
-              <td>Creators Configured</td>
-              <td id="ov-creators-count" class="align-right">
-                —
-              </td>
-            </tr>
-            <tr>
-              <td>Chat Triggers Configured</td>
-              <td id="ov-triggers-count" class="align-right">
-                —
-              </td>
-            </tr>
-            <tr>
-              <td>Rumble Enabled Creators</td>
-              <td id="ov-rumble-enabled-count" class="align-right">
-                —
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+</main>
 
-    <!-- --------------------------------------------------------- -->
-    <!-- NEXT MODULES (PLACEHOLDER, READ-ONLY) -->
-    <!-- --------------------------------------------------------- -->
-    <section class="ss-panel">
-      <header class="ss-panel-header">
-        <h2>Upcoming Modules</h2>
-      </header>
+<!-- ========================================================= -->
+<!-- FOOTER -->
+<!-- ========================================================= -->
+<footer class="ss-footer">
+  <span class="muted">
+    Overview is read-only and reflects locally stored configuration.
+  </span>
+</footer>
 
-      <div class="ss-panel-body">
-        <ul class="ss-list muted">
-          <li>Chat-triggered clip generation</li>
-          <li>Live polls (chat-driven voting)</li>
-          <li>Multi-platform posting rules</li>
-        </ul>
-      </div>
-    </section>
+<!-- ========================================================= -->
+<!-- LOGIC (VIEW-SCOPED) -->
+<!-- ========================================================= -->
+<script>
+(function () {
+  const elDashboardState = document.getElementById("ov-dashboard-state");
+  const elStorageState = document.getElementById("ov-storage-state");
+  const elCreatorsCount = document.getElementById("ov-creators-count");
+  const elTriggersCount = document.getElementById("ov-triggers-count");
+  const elRumbleEnabledCount = document.getElementById("ov-rumble-enabled-count");
 
-  </main>
+  function safeSetText(el, value) {
+    if (!el) return;
+    el.textContent = value;
+  }
 
-  <!-- ========================================================= -->
-  <!-- FOOTER -->
-  <!-- ========================================================= -->
-  <footer class="ss-footer">
-    <span class="muted">
-      Overview is read-only and reflects locally stored configuration.
-    </span>
-  </footer>
+  // Dashboard active indicator (read-only view)
+  safeSetText(elDashboardState, "active");
 
-  <!-- ========================================================= -->
-  <!-- LOGIC -->
-  <!-- ========================================================= -->
-  <script>
-    (function () {
-      const elDashboardState = document.getElementById("ov-dashboard-state");
-      const elStorageState = document.getElementById("ov-storage-state");
-      const elCreatorsCount = document.getElementById("ov-creators-count");
-      const elTriggersCount = document.getElementById("ov-triggers-count");
-      const elRumbleEnabledCount = document.getElementById("ov-rumble-enabled-count");
+  // Storage availability
+  try {
+    localStorage.setItem("__ss_test__", "1");
+    localStorage.removeItem("__ss_test__");
+    safeSetText(elStorageState, "available");
+  } catch {
+    safeSetText(elStorageState, "unavailable");
+  }
 
-      function safeSetText(el, value) {
-        if (!el) return;
-        el.textContent = value;
-      }
+  // If App/storage isn't ready yet, keep placeholders deterministic
+  const hasAppStorage =
+    typeof window.App === "object" &&
+    window.App &&
+    window.App.storage &&
+    typeof window.App.storage.loadFromLocalStorage === "function";
 
-      // Dashboard active indicator (read-only view)
-      safeSetText(elDashboardState, "active");
+  if (!hasAppStorage) {
+    safeSetText(elCreatorsCount, "—");
+    safeSetText(elTriggersCount, "—");
+    safeSetText(elRumbleEnabledCount, "—");
+    return;
+  }
 
-      // Storage availability
-      try {
-        localStorage.setItem("__ss_test__", "1");
-        localStorage.removeItem("__ss_test__");
-        safeSetText(elStorageState, "available");
-      } catch {
-        safeSetText(elStorageState, "unavailable");
-      }
+  // Creators count
+  const creators = window.App.storage.loadFromLocalStorage("creators", []);
+  const creatorsArr = Array.isArray(creators) ? creators : [];
+  safeSetText(elCreatorsCount, String(creatorsArr.length));
 
-      // If App/storage isn't ready yet, keep placeholders deterministic
-      const hasAppStorage =
-        typeof window.App === "object" &&
-        window.App &&
-        window.App.storage &&
-        typeof window.App.storage.loadFromLocalStorage === "function";
+  // Rumble enabled creators
+  let rumbleEnabled = 0;
+  for (const c of creatorsArr) {
+    const pr = c?.platforms?.rumble;
+    if (pr === true || pr?.enabled === true) {
+      rumbleEnabled += 1;
+    }
+  }
+  safeSetText(elRumbleEnabledCount, String(rumbleEnabled));
 
-      if (!hasAppStorage) {
-        safeSetText(elCreatorsCount, "—");
-        safeSetText(elTriggersCount, "—");
-        safeSetText(elRumbleEnabledCount, "—");
-        return;
-      }
-
-      // Creators count
-      const creators = window.App.storage.loadFromLocalStorage("creators", []);
-      const creatorsArr = Array.isArray(creators) ? creators : [];
-      safeSetText(elCreatorsCount, String(creatorsArr.length));
-
-      // Rumble enabled creators (supports both shapes:
-      // 1) platforms.rumble.enabled === true  (dashboard shape)
-      // 2) platforms.rumble === true          (runtime-like shape)
-      let rumbleEnabled = 0;
-      for (const c of creatorsArr) {
-        const pr = c?.platforms?.rumble;
-        if (pr === true || pr?.enabled === true) {
-          rumbleEnabled += 1;
-        }
-      }
-      safeSetText(elRumbleEnabledCount, String(rumbleEnabled));
-
-      // Triggers count (expects chat_behaviour.triggers as array)
-      const chatBehaviour = window.App.storage.loadFromLocalStorage("chat_behaviour", {});
-      const triggers = Array.isArray(chatBehaviour?.triggers) ? chatBehaviour.triggers : [];
-      safeSetText(elTriggersCount, String(triggers.length));
-    })();
-  </script>
-
-</body>
-</html>
+  // Triggers count
+  const chatBehaviour =
+    window.App.storage.loadFromLocalStorage("chat_behaviour", {});
+  const triggers = Array.isArray(chatBehaviour?.triggers)
+    ? chatBehaviour.triggers
+    : [];
+  safeSetText(elTriggersCount, String(triggers.length));
+})();
+</script>

@@ -1,69 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>StreamSuites — Clips</title>
+<!-- ========================================================= -->
+<!-- StreamSuites — Clips (VIEW PARTIAL) -->
+<!-- NOTE: CSS and app bootstrap are loaded by index.html -->
+<!-- ========================================================= -->
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- ========================================================= -->
+<!-- HEADER -->
+<!-- ========================================================= -->
+<header class="ss-header">
+  <div class="ss-header-left">
+    <h1 class="ss-title">StreamSuites</h1>
+    <span class="ss-subtitle">Clips</span>
+  </div>
+</header>
 
-  <!-- Core styles -->
-  <link rel="stylesheet" href="../css/base.css" />
-  <link rel="stylesheet" href="../css/theme-dark.css" />
-  <link rel="stylesheet" href="../css/layout.css" />
-  <link rel="stylesheet" href="../css/components.css" />
-</head>
+<!-- ========================================================= -->
+<!-- MAIN -->
+<!-- ========================================================= -->
+<main class="ss-main">
 
-<body class="ss-app ss-dark">
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Clip Automation</h2>
+    </header>
 
-  <!-- ========================================================= -->
-  <!-- HEADER -->
-  <!-- ========================================================= -->
-  <header class="ss-header">
-    <div class="ss-header-left">
-      <h1 class="ss-title">StreamSuites</h1>
-      <span class="ss-subtitle">Clips</span>
-    </div>
-  </header>
+    <div class="ss-panel-body">
+      <p class="muted">
+        This module will allow creators to configure chat-triggered video clips
+        from live streams and automatically post them to a dedicated channel.
+      </p>
 
-  <!-- ========================================================= -->
-  <!-- MAIN -->
-  <!-- ========================================================= -->
-  <main class="ss-main">
+      <ul class="ss-list muted">
+        <li>Trigger phrases (e.g. !clip)</li>
+        <li>Clip duration and timing rules</li>
+        <li>Destination channel configuration</li>
+        <li>Posting cooldowns and limits</li>
+      </ul>
 
-    <section class="ss-panel">
-      <header class="ss-panel-header">
-        <h2>Clip Automation</h2>
-      </header>
-
-      <div class="ss-panel-body">
-        <p class="muted">
-          This module will allow creators to configure chat-triggered video clips
-          from live streams and automatically post them to a dedicated channel.
-        </p>
-
-        <ul class="ss-list muted">
-          <li>Trigger phrases (e.g. !clip)</li>
-          <li>Clip duration and timing rules</li>
-          <li>Destination channel configuration</li>
-          <li>Posting cooldowns and limits</li>
-        </ul>
-
-        <div class="ss-placeholder">
-          Module not yet implemented.
-        </div>
+      <div class="ss-placeholder">
+        Module not yet implemented.
       </div>
-    </section>
+    </div>
+  </section>
 
-  </main>
+</main>
 
-  <!-- ========================================================= -->
-  <!-- FOOTER -->
-  <!-- ========================================================= -->
-  <footer class="ss-footer">
-    <span class="muted">
-      Clips module placeholder — functionality coming in Phase 2.
-    </span>
-  </footer>
-
-</body>
-</html>
+<!-- ========================================================= -->
+<!-- FOOTER -->
+<!-- ========================================================= -->
+<footer class="ss-footer">
+  <span class="muted">
+    Clips module placeholder — functionality coming in Phase 2.
+  </span>
+</footer>
