@@ -320,6 +320,14 @@ registerView("twitch", {});
 registerView("twitter", {});
 registerView("discord", {});
 
+/* ------------------------------------------------------------
+   ADDITIVE PLACEHOLDER VIEWS (PHASE 0 COMPLETE)
+   ------------------------------------------------------------ */
+
+registerView("ratelimits", {});
+registerView("settings", {});
+registerView("chat-replay", {});
+
 /* ----------------------------------------------------------------------
    Boot
    ---------------------------------------------------------------------- */
