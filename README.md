@@ -99,7 +99,12 @@ StreamSuites-Dashboard/
 │   ├── Thumbs.db           # Placeholder artifact (do not delete)
 │   │
 │   ├── assets/
-│   │   └── logos/
+│   │   ├── backgrounds/    # Hero/gradient backdrops and texture fills
+│   │   ├── fonts/          # Self-hosted font files when needed
+│   │   ├── icons/          # UI icons and small glyphs
+│   │   ├── illustrations/  # Informational or empty-state art
+│   │   ├── logos/          # Product and partner marks
+│   │   └── placeholders/   # Temporary stock imagery and avatar fallbacks
 │   │
 │   ├── css/
 │   │   ├── base.css         # Layout, resets, typography
