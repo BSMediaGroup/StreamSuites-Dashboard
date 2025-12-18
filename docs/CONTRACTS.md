@@ -346,7 +346,17 @@ The following data MUST be considered backup-eligible:
 
 -------------------------------------------------------------------------------
 
-## 11. DERIVATION RULE (IMPORTANT)
+## 11. Chat Log Contracts (Planned)
+
+- The dashboard may consume externally generated chat logs for historical replay.
+- Logs may originate from the StreamSuites runtime or compatible exporters.
+- Schema compatibility is governed by `schemas/chat_log.schema.json` and matching contract notes here.
+- Consumption is read-only: no bot execution, no runtime control, and no authentication requirements.
+- Platform-agnostic structure ensures consistent rendering across Rumble, YouTube, Twitch, etc.
+
+---
+
+## 12. DERIVATION RULE (IMPORTANT)
 
 This document is the only place behavior is defined.
 

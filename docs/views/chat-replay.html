@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Historical Chat Replay (Planned)</title>
+  <!--
+    Placeholder view for a future Historical Chat Replay surface.
+
+    Intended experience (descriptive only):
+    - Load a pre-recorded chat log JSON (platform-agnostic) from local storage or a provided URL.
+    - Render messages chronologically with timestamps, author display names, and platform hints.
+    - Provide playback controls (play/pause, seek, speed) that emulate the original pacing without executing bot actions.
+    - Support stream-specific lookup (by stream_id) to filter or load relevant logs.
+    - Remain fully read-only with no outbound actions or bot control hooks.
+
+    No scripting is wired yet. This file is a scaffold only.
+  -->
+</head>
+<body>
+  <main>
+    <h1>Historical Chat Replay (Planned)</h1>
+    <p>
+      This placeholder documents the intended layout for a future chat replay view.
+      The final implementation will remain static and read-only, consuming exported chat logs
+      without controlling live bots or altering runtime behavior.
+    </p>
+    <section>
+      <h2>Planned UI Blocks</h2>
+      <ul>
+        <li>Chat log source selector (file picker or URL input)</li>
+        <li>Stream lookup field (e.g., by stream_id)</li>
+        <li>Chronological message list with timestamp and author labels</li>
+        <li>Playback controls for pacing (play, pause, seek, speed)</li>
+        <li>Platform indicator badges for multi-platform logs</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Notes</h2>
+      <p>
+        This view will not modify data, trigger bots, or manage authentication. It is intended for
+        visualization of previously captured chat activity only.
+      </p>
+    </section>
+  </main>
+</body>
+</html>
