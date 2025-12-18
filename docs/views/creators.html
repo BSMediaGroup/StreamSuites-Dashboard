@@ -1,149 +1,295 @@
-<!-- ========================================================= -->
-<!-- CREATORS VIEW (INJECTED FRAGMENT) -->
-<!-- ========================================================= -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>StreamSuites — Creators</title>
 
-<!-- APP HEADER -->
-<header class="ss-header">
-  <div class="ss-header-left">
-    <h1 class="ss-title">StreamSuites</h1>
-    <span class="ss-subtitle">Creators</span>
-  </div>
+  <!-- Core styles -->
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/theme-dark.css" />
+  <link rel="stylesheet" href="../css/layout.css" />
+  <link rel="stylesheet" href="../css/components.css" />
 
-  <div class="ss-header-right">
-    <button id="btn-import-creators" class="ss-btn ss-btn-secondary">
-      Import
-    </button>
-    <button id="btn-export-creators" class="ss-btn ss-btn-secondary">
-      Export
-    </button>
-    <button id="btn-refresh-creators" class="ss-btn ss-btn-secondary">
-      Refresh
-    </button>
-    <button id="btn-add-creator" class="ss-btn ss-btn-primary">
-      Add Creator
-    </button>
-  </div>
-</header>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
 
-<!-- MAIN CONTENT -->
-<main class="ss-main">
+<body class="ss-app">
 
-  <!-- CREATOR LIST -->
-  <section class="ss-panel">
-    <header class="ss-panel-header">
-      <h2>Registered Creators</h2>
-    </header>
-
-    <div class="ss-panel-body">
-
-      <div id="creators-import-error" class="ss-alert ss-alert-danger hidden">
-        <span id="creators-import-error-text"></span>
-      </div>
-
-      <div id="creators-empty" class="ss-empty-state hidden">
-        <p>No creators configured.</p>
-        <p class="muted">Add a creator to begin managing livestream automation.</p>
-      </div>
-
-      <table id="creators-table" class="ss-table">
-        <thead>
-          <tr>
-            <th>Creator ID</th>
-            <th>Display Name</th>
-            <th>Platforms</th>
-            <th>Status</th>
-            <th class="align-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="creators-table-body"></tbody>
-      </table>
-
+  <!-- ========================================================= -->
+  <!-- APP HEADER -->
+  <!-- ========================================================= -->
+  <header class="ss-header">
+    <div class="ss-header-left">
+      <h1 class="ss-title">StreamSuites</h1>
+      <span class="ss-subtitle">Creators</span>
     </div>
-  </section>
 
-  <!-- CREATOR EDITOR -->
-  <section id="creator-editor" class="ss-panel hidden">
-    <header class="ss-panel-header">
-      <h2 id="creator-editor-title">Edit Creator</h2>
-    </header>
+    <div class="ss-header-right">
+      <button id="btn-import-creators" class="ss-btn ss-btn-secondary">
+        Import
+      </button>
+      <button id="btn-export-creators" class="ss-btn ss-btn-secondary">
+        Export
+      </button>
+      <button id="btn-refresh-creators" class="ss-btn ss-btn-secondary">
+        Refresh
+      </button>
+      <button id="btn-add-creator" class="ss-btn ss-btn-primary">
+        Add Creator
+      </button>
+    </div>
+  </header>
 
-    <div class="ss-panel-body">
-      <form id="creator-form" autocomplete="off">
+  <!-- ========================================================= -->
+  <!-- MAIN CONTENT -->
+  <!-- ========================================================= -->
+  <main class="ss-main">
 
-        <!-- BASIC INFO -->
-        <fieldset class="ss-fieldset">
-          <legend>Basic Information</legend>
+    <!-- --------------------------------------------------------- -->
+    <!-- CREATOR LIST -->
+    <!-- --------------------------------------------------------- -->
+    <section class="ss-panel">
+      <header class="ss-panel-header">
+        <h2>Registered Creators</h2>
+      </header>
 
-          <div class="ss-form-row">
-            <label for="creator-id">Creator ID</label>
-            <input type="text" id="creator-id" required />
-          </div>
+      <div class="ss-panel-body">
 
-          <div class="ss-form-row">
-            <label for="creator-name">Display Name</label>
-            <input type="text" id="creator-name" />
-          </div>
-        </fieldset>
-
-        <!-- PLATFORMS -->
-        <fieldset class="ss-fieldset">
-          <legend>Platforms</legend>
-
-          <div class="ss-form-row checkbox-row">
-            <label>
-              <input type="checkbox" id="platform-rumble" />
-              Rumble
-            </label>
-          </div>
-
-          <!-- RUMBLE CONFIG (SCHEMA-COMPLETE PLACEHOLDERS) -->
-          <div id="rumble-config" class="ss-subpanel hidden">
-
-            <div class="ss-form-row">
-              <label for="rumble-watch-url">Rumble Watch URL</label>
-              <input type="url" id="rumble-watch-url" />
-            </div>
-
-            <div class="ss-form-row">
-              <label for="rumble-api-key">Livestream API Key</label>
-              <input type="text" id="rumble-api-key" disabled />
-            </div>
-
-            <div class="ss-form-row">
-              <label for="rumble-channel-url">Rumble Channel URL</label>
-              <input type="url" id="rumble-channel-url" disabled />
-            </div>
-
-            <div class="ss-form-row">
-              <label for="rumble-manual-watch-url">Manual Watch URL</label>
-              <input type="url" id="rumble-manual-watch-url" disabled />
-            </div>
-
-            <div class="ss-form-row">
-              <label for="rumble-api-env-key">Livestream API Env Key</label>
-              <input type="text" id="rumble-api-env-key" disabled />
-            </div>
-
-          </div>
-        </fieldset>
-
-        <!-- ACTIONS -->
-        <div class="ss-form-actions">
-          <button type="button" id="btn-cancel-edit" class="ss-btn ss-btn-secondary">
-            Cancel
-          </button>
-          <button type="submit" class="ss-btn ss-btn-primary">
-            Save Creator
-          </button>
+        <!-- Import error message -->
+        <div id="creators-import-error" class="ss-alert ss-alert-danger hidden">
+          <span id="creators-import-error-text"></span>
         </div>
 
-      </form>
-    </div>
-  </section>
+        <!-- Empty state -->
+        <div id="creators-empty" class="ss-empty-state hidden">
+          <p>No creators configured.</p>
+          <p class="muted">Add a creator to begin managing livestream automation.</p>
+        </div>
 
-</main>
+        <!-- Creator table -->
+        <table id="creators-table" class="ss-table">
+          <thead>
+            <tr>
+              <th>Creator ID</th>
+              <th>Display Name</th>
+              <th>Platforms</th>
+              <th>Status</th>
+              <th class="align-right">Actions</th>
+            </tr>
+          </thead>
 
-<!-- FOOTER -->
-<footer class="ss-footer">
-  <span class="muted">StreamSuites Dashboard — Beta</span>
-</footer>
+          <tbody id="creators-table-body">
+            <!-- populated dynamically -->
+          </tbody>
+        </table>
+
+      </div>
+    </section>
+
+    <!-- --------------------------------------------------------- -->
+    <!-- CREATOR DETAIL / EDIT PANEL -->
+    <!-- --------------------------------------------------------- -->
+    <section id="creator-editor" class="ss-panel hidden">
+      <header class="ss-panel-header">
+        <h2 id="creator-editor-title">Edit Creator</h2>
+      </header>
+
+      <div class="ss-panel-body">
+
+        <form id="creator-form" autocomplete="off">
+
+          <!-- BASIC INFO -->
+          <fieldset class="ss-fieldset">
+            <legend>Basic Information</legend>
+
+            <div class="ss-form-row">
+              <label for="creator-id">Creator ID</label>
+              <input type="text" id="creator-id" name="creator_id" required />
+            </div>
+
+            <div class="ss-form-row">
+              <label for="creator-name">Display Name</label>
+              <input type="text" id="creator-name" name="display_name" />
+            </div>
+          </fieldset>
+
+          <!-- PLATFORM CONFIG -->
+          <fieldset class="ss-fieldset">
+            <legend>Platforms</legend>
+
+            <div class="ss-form-row checkbox-row">
+              <label>
+                <input type="checkbox" id="platform-rumble" />
+                Rumble
+              </label>
+            </div>
+
+            <!-- ===================================================== -->
+            <!-- RUMBLE CONFIG (SCHEMA-COMPLETE PLACEHOLDERS) -->
+            <!-- ===================================================== -->
+            <div id="rumble-config" class="ss-subpanel hidden">
+
+              <!-- EXISTING (UNCHANGED) -->
+              <div class="ss-form-row">
+                <label for="rumble-watch-url">Rumble Watch URL</label>
+                <input type="url" id="rumble-watch-url" />
+              </div>
+
+              <div class="ss-form-row">
+                <label for="rumble-api-key">Livestream API Key</label>
+                <input
+                  type="text"
+                  id="rumble-api-key"
+                  placeholder="Loaded from .env at runtime"
+                  disabled
+                />
+              </div>
+
+              <!-- ADDITIVE — REQUIRED BY creators.json SCHEMA -->
+              <div class="ss-form-row">
+                <label for="rumble-channel-url">Rumble Channel URL</label>
+                <input
+                  type="url"
+                  id="rumble-channel-url"
+                  placeholder="https://rumble.com/c/YourChannel"
+                  disabled
+                />
+                <small class="muted">
+                  Required for channel association (runtime uses this value).
+                </small>
+              </div>
+
+              <div class="ss-form-row">
+                <label for="rumble-manual-watch-url">Manual Watch URL</label>
+                <input
+                  type="url"
+                  id="rumble-manual-watch-url"
+                  placeholder="https://rumble.com/vXXXX-live.html"
+                  disabled
+                />
+                <small class="muted">
+                  Optional manual livestream override.
+                </small>
+              </div>
+
+              <div class="ss-form-row">
+                <label for="rumble-api-env-key">Livestream API Env Key</label>
+                <input
+                  type="text"
+                  id="rumble-api-env-key"
+                  placeholder="RUMBLE_LIVESTREAM_KEY_NAME"
+                  disabled
+                />
+                <small class="muted">
+                  Read-only. Resolved from <code>.env</code> at runtime.
+                </small>
+              </div>
+
+            </div>
+          </fieldset>
+
+          <!-- ----------------------------------------------------- -->
+          <!-- ADMIN / TIER CONFIG (INTENTIONALLY HIDDEN) -->
+          <!-- ----------------------------------------------------- -->
+          <fieldset class="ss-fieldset hidden" id="creator-tier-admin">
+            <legend>Tier (Admin Only)</legend>
+
+            <div class="ss-form-row">
+              <label for="creator-tier">Tier</label>
+              <select id="creator-tier" name="tier">
+                <option value="open">Open</option>
+                <option value="gold">Gold</option>
+                <option value="pro">Pro</option>
+              </select>
+            </div>
+          </fieldset>
+
+          <!-- ACTIONS -->
+          <div class="ss-form-actions">
+            <button
+              type="button"
+              id="btn-cancel-edit"
+              class="ss-btn ss-btn-secondary"
+            >
+              Cancel
+            </button>
+
+            <button type="submit" class="ss-btn ss-btn-primary">
+              Save Creator
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- FOOTER -->
+  <!-- ========================================================= -->
+  <footer class="ss-footer">
+    <span class="muted">StreamSuites Dashboard — Beta</span>
+  </footer>
+
+  <!-- ========================================================= -->
+  <!-- HIDDEN FILE INPUT -->
+  <!-- ========================================================= -->
+  <input
+    type="file"
+    id="creators-import-file"
+    accept="application/json"
+    class="hidden"
+  />
+
+  <!-- ========================================================= -->
+  <!-- SCRIPTS -->
+  <!-- ========================================================= -->
+  <script src="../js/app.js"></script>
+  <script src="../js/creators.js"></script>
+
+  <!-- ========================================================= -->
+  <!-- IMPORT / EXPORT WIRING -->
+  <!-- ========================================================= -->
+  <script>
+    (function () {
+      const btnImport = document.getElementById("btn-import-creators");
+      const btnExport = document.getElementById("btn-export-creators");
+      const fileInput = document.getElementById("creators-import-file");
+
+      const errorBox = document.getElementById("creators-import-error");
+      const errorText = document.getElementById("creators-import-error-text");
+
+      function showError(msg) {
+        errorText.textContent = msg;
+        errorBox.classList.remove("hidden");
+      }
+
+      function clearError() {
+        errorBox.classList.add("hidden");
+        errorText.textContent = "";
+      }
+
+      btnExport.addEventListener("click", () => {
+        clearError();
+        window.CreatorsView?.exportCreators();
+      });
+
+      btnImport.addEventListener("click", () => {
+        clearError();
+        fileInput.value = "";
+        fileInput.click();
+      });
+
+      fileInput.addEventListener("change", () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        window.CreatorsView?.importCreatorsFromFile(file, showError);
+      });
+    })();
+  </script>
+
+</body>
+</html>
