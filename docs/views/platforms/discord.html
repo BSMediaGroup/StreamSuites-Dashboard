@@ -1,0 +1,138 @@
+<!-- ========================================================= -->
+<!-- StreamSuites — Discord Control-Plane (VIEW PARTIAL) -->
+<!-- NOTE:
+     - Read-only platform visibility
+     - No runtime control
+     - No assumptions about deployment
+     - CSS and app bootstrap are loaded by index.html
+   ========================================================= -->
+
+<!-- ========================================================= -->
+<!-- HEADER -->
+<!-- ========================================================= -->
+<header class="ss-header">
+  <div class="ss-header-left">
+    <h1 class="ss-title">StreamSuites</h1>
+    <span class="ss-subtitle">Discord Control-Plane</span>
+  </div>
+</header>
+
+<!-- ========================================================= -->
+<!-- MAIN -->
+<!-- ========================================================= -->
+<main class="ss-main">
+
+  <!-- --------------------------------------------------------- -->
+  <!-- RUNTIME STATUS -->
+  <!-- --------------------------------------------------------- -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Runtime Status</h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <table class="ss-table ss-table-compact">
+        <tbody>
+          <tr>
+            <td>Enabled</td>
+            <td id="dc-enabled" class="align-right muted">unknown</td>
+          </tr>
+          <tr>
+            <td>Connection State</td>
+            <td id="dc-connection" class="align-right muted">unknown</td>
+          </tr>
+          <tr>
+            <td>Started At</td>
+            <td id="dc-started-at" class="align-right muted">—</td>
+          </tr>
+          <tr>
+            <td>Last Heartbeat</td>
+            <td id="dc-heartbeat" class="align-right muted">—</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="muted" style="margin-top: 0.5rem;">
+        Status is provided by the Discord control-plane runtime when deployed.
+        Absence of data indicates the runtime is disabled or not running.
+      </p>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------------- -->
+  <!-- CONNECTION DETAILS -->
+  <!-- --------------------------------------------------------- -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Connection Details</h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <table class="ss-table ss-table-compact">
+        <tbody>
+          <tr>
+            <td>Guilds Connected</td>
+            <td id="dc-guild-count" class="align-right muted">—</td>
+          </tr>
+          <tr>
+            <td>Presence</td>
+            <td id="dc-presence" class="align-right muted">—</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="muted" style="margin-top: 0.5rem;">
+        Presence reflects the last known custom status applied by the runtime.
+      </p>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------------- -->
+  <!-- NOTES -->
+  <!-- --------------------------------------------------------- -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Notes</h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <ul class="ss-list muted">
+        <li>This page is read-only.</li>
+        <li>The dashboard never issues Discord commands.</li>
+        <li>The Discord runtime remains the sole authority.</li>
+        <li>Fields may be omitted when unavailable.</li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<!-- ========================================================= -->
+<!-- FOOTER -->
+<!-- ========================================================= -->
+<footer class="ss-footer">
+  <span class="muted">
+    Discord control-plane visibility only — no live control.
+  </span>
+</footer>
+
+<!-- ========================================================= -->
+<!-- LOGIC (VIEW-SCOPED, PLACEHOLDER ONLY) -->
+<!-- ========================================================= -->
+<script>
+(function () {
+  function safeSetText(id, value) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = value;
+  }
+
+  // Placeholder values until an explicit export / API bridge exists
+  safeSetText("dc-enabled", "unknown");
+  safeSetText("dc-connection", "unknown");
+  safeSetText("dc-started-at", "—");
+  safeSetText("dc-heartbeat", "—");
+  safeSetText("dc-guild-count", "—");
+  safeSetText("dc-presence", "—");
+})();
+</script>
