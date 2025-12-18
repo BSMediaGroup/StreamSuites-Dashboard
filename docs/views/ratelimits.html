@@ -1,9 +1,12 @@
 <!-- ========================================================= -->
-<!-- StreamSuites — Ratelimits (VIEW PARTIAL) -->
-<!-- NOTE:
-     - This is a PHASE 0 placeholder
-     - No logic, no wiring, no schema assumptions
-     - CSS and app bootstrap are loaded by index.html
+<!-- StreamSuites — Rate Limits (VIEW PARTIAL) -->
+<!-- PHASE 1B: CONFIGURATION SHAPE DEFINITION ONLY -->
+<!--
+     GUARANTEES:
+     - No runtime enforcement
+     - No timers, no logic
+     - Pure authoring + documentation surface
+     - Safe for GitHub Pages and iframe embedding
    ========================================================= -->
 
 <!-- ========================================================= -->
@@ -12,7 +15,7 @@
 <header class="ss-header">
   <div class="ss-header-left">
     <h1 class="ss-title">StreamSuites</h1>
-    <span class="ss-subtitle">Ratelimits</span>
+    <span class="ss-subtitle">Rate Limits</span>
   </div>
 </header>
 
@@ -21,26 +24,171 @@
 <!-- ========================================================= -->
 <main class="ss-main">
 
+  <!-- ======================================================= -->
+  <!-- INTRODUCTION -->
+  <!-- ======================================================= -->
   <section class="ss-panel">
     <header class="ss-panel-header">
-      <h2>Platform Ratelimits</h2>
+      <h2>About Rate Limits</h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <p>
+        Rate limits define <strong>how frequently the runtime is allowed to
+        perform actions</strong> such as sending messages, responding to chat
+        triggers, polling APIs, or executing automated jobs.
+      </p>
+
+      <p>
+        This dashboard view is <strong>configuration-only</strong>. It does not
+        enforce limits or interact with live bots. All values authored here are
+        exported as JSON and consumed by the StreamSuites runtime.
+      </p>
+
+      <p class="muted">
+        Think of this page as a contract: it defines intent, not behavior.
+      </p>
+    </div>
+  </section>
+
+  <!-- ======================================================= -->
+  <!-- GLOBAL DEFAULT LIMITS -->
+  <!-- ======================================================= -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Global Default Limits</h2>
     </header>
 
     <div class="ss-panel-body">
       <p class="muted">
-        This module will allow configuration and visualization of
-        per-platform and per-action rate limits enforced by the runtime.
+        These limits apply system-wide unless overridden by a creator or
+        platform-specific rule.
       </p>
 
-      <ul class="ss-list muted">
-        <li>Message send limits</li>
-        <li>Chat read / poll intervals</li>
-        <li>API request throttling</li>
-        <li>Per-creator and per-platform overrides</li>
-      </ul>
+      <table class="ss-table ss-table-compact">
+        <thead>
+          <tr>
+            <th>Action Type</th>
+            <th>Default Limit</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Chat Messages</td>
+            <td>—</td>
+            <td class="muted">Messages per minute</td>
+          </tr>
+          <tr>
+            <td>Trigger Responses</td>
+            <td>—</td>
+            <td class="muted">Responses per minute</td>
+          </tr>
+          <tr>
+            <td>API Requests</td>
+            <td>—</td>
+            <td class="muted">Requests per minute</td>
+          </tr>
+          <tr>
+            <td>Job Executions</td>
+            <td>—</td>
+            <td class="muted">Jobs per minute</td>
+          </tr>
+        </tbody>
+      </table>
 
       <div class="ss-placeholder">
-        Ratelimits configuration is not yet implemented.
+        Global rate limits will be editable in a future update.
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================= -->
+  <!-- PER-CREATOR OVERRIDES -->
+  <!-- ======================================================= -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Per-Creator Overrides</h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <p class="muted">
+        Creator overrides allow individual channels to operate under stricter
+        or looser limits than the global defaults.
+      </p>
+
+      <table class="ss-table">
+        <thead>
+          <tr>
+            <th>Creator</th>
+            <th>Override Scope</th>
+            <th>Limit</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="muted">—</td>
+            <td class="muted">—</td>
+            <td class="muted">—</td>
+            <td class="muted">No overrides defined</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="ss-placeholder">
+        Creator-specific rate limits are not yet configurable.
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================= -->
+  <!-- PLATFORM-SPECIFIC LIMITS -->
+  <!-- ======================================================= -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Platform-Specific Limits</h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <p class="muted">
+        Platforms may impose different constraints or best-practice limits.
+        These values allow the runtime to adapt behavior per platform.
+      </p>
+
+      <table class="ss-table">
+        <thead>
+          <tr>
+            <th>Platform</th>
+            <th>Action</th>
+            <th>Limit</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Rumble</td>
+            <td class="muted">—</td>
+            <td class="muted">—</td>
+            <td class="muted">Placeholder</td>
+          </tr>
+          <tr>
+            <td>YouTube</td>
+            <td class="muted">—</td>
+            <td class="muted">—</td>
+            <td class="muted">Placeholder</td>
+          </tr>
+          <tr>
+            <td>Twitch</td>
+            <td class="muted">—</td>
+            <td class="muted">—</td>
+            <td class="muted">Placeholder</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="ss-placeholder">
+        Platform-specific limits will be introduced in Phase 1C.
       </div>
     </div>
   </section>
@@ -52,6 +200,6 @@
 <!-- ========================================================= -->
 <footer class="ss-footer">
   <span class="muted">
-    Ratelimits module placeholder — functionality scheduled for Phase 1.
+    Rate limits are configuration-only and do not affect live bots at this stage.
   </span>
 </footer>
