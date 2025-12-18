@@ -1,0 +1,209 @@
+<!-- ================================================================
+     StreamSuites — About This Project
+     Read-only informational view
+     ================================================================ -->
+
+<section class="ss-panel">
+
+  <header class="ss-panel-header">
+    <h2>About StreamSuites</h2>
+  </header>
+
+  <div class="ss-panel-body">
+
+    <!-- ============================================================ -->
+    <!-- OVERVIEW -->
+    <!-- ============================================================ -->
+    <section>
+      <h3>What is StreamSuites?</h3>
+      <p>
+        <strong>StreamSuites</strong> is a modular, multi-platform livestream automation
+        system designed to give creators structured, deterministic control over
+        how their live streams interact with chat, generate clips, run polls,
+        and publish content across platforms.
+      </p>
+      <p>
+        The project is intentionally split into two major components:
+      </p>
+      <ul class="ss-list">
+        <li>
+          <strong>StreamSuites Runtime</strong> — the backend execution engine that
+          connects to livestream platforms, listens to chat, and performs actions.
+        </li>
+        <li>
+          <strong>StreamSuites Dashboard</strong> — a static, browser-based control
+          surface used to configure, inspect, and export runtime-ready configuration.
+        </li>
+      </ul>
+      <p>
+        This separation ensures clarity, safety, and portability: configuration
+        and execution are deliberately decoupled.
+      </p>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- DESIGN PHILOSOPHY -->
+    <!-- ============================================================ -->
+    <section>
+      <h3>Design Philosophy</h3>
+      <ul class="ss-list">
+        <li><strong>No magic:</strong> all configuration is explicit, inspectable, and exportable.</li>
+        <li><strong>No frameworks:</strong> minimal dependencies, predictable behavior.</li>
+        <li><strong>Deterministic behavior:</strong> the same input always yields the same output.</li>
+        <li><strong>Read-only safety:</strong> the dashboard never controls live bots directly.</li>
+        <li><strong>Platform-agnostic core:</strong> platform specifics live at the edges.</li>
+      </ul>
+      <p>
+        StreamSuites is designed to be boring in the best possible way: stable,
+        inspectable, and resilient to platform changes.
+      </p>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- ARCHITECTURE -->
+    <!-- ============================================================ -->
+    <section>
+      <h3>High-Level Architecture</h3>
+      <ul class="ss-list">
+        <li>
+          <strong>Dashboard (this app):</strong>
+          Static HTML, CSS, and vanilla JavaScript. Runs on GitHub Pages or inside
+          an iframe (e.g. Wix Studio). Stores configuration in localStorage.
+        </li>
+        <li>
+          <strong>Runtime:</strong>
+          A separate execution environment (Python-based) that consumes exported
+          JSON and performs live automation.
+        </li>
+        <li>
+          <strong>Configuration Flow:</strong>
+          Dashboard → JSON Export → Runtime Import → Live Execution
+        </li>
+      </ul>
+      <p class="muted">
+        The dashboard is intentionally incapable of directly controlling live
+        streams. This is a safety and stability guarantee.
+      </p>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- CURRENT DASHBOARD FEATURES -->
+    <!-- ============================================================ -->
+    <section>
+      <h3>Current Dashboard Features</h3>
+
+      <h4>Overview</h4>
+      <ul class="ss-list">
+        <li>High-level system status indicators</li>
+        <li>Configuration summary counts</li>
+        <li>Read-only visibility into stored configuration</li>
+      </ul>
+
+      <h4>Creators</h4>
+      <ul class="ss-list">
+        <li>Create and edit creator profiles</li>
+        <li>Platform enablement (e.g. Rumble)</li>
+        <li>Schema-complete placeholders for runtime requirements</li>
+        <li>Import/export creators as JSON</li>
+      </ul>
+
+      <h4>Chat Triggers</h4>
+      <ul class="ss-list">
+        <li>Define trigger phrases and match modes</li>
+        <li>Configure responses and cooldowns</li>
+        <li>Import/export trigger definitions</li>
+      </ul>
+
+      <h4>Jobs</h4>
+      <ul class="ss-list">
+        <li>Read-only visibility into job statistics</li>
+        <li>Breakdowns by status, type, and creator</li>
+      </ul>
+
+      <h4>Placeholder Modules</h4>
+      <ul class="ss-list">
+        <li>Clips</li>
+        <li>Polls</li>
+        <li>Rate Limits</li>
+        <li>Settings</li>
+        <li>Chat Replay</li>
+        <li>Platform-specific views (Rumble, YouTube, Twitch, Twitter, Discord)</li>
+      </ul>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PLANNED FEATURES -->
+    <!-- ============================================================ -->
+    <section>
+      <h3>Planned & Future Features</h3>
+      <ul class="ss-list">
+        <li>Chat-triggered clip generation with timing rules</li>
+        <li>Live polls driven by chat voting</li>
+        <li>Per-creator and per-platform rate limiting</li>
+        <li>Historical chat replay and visualization</li>
+        <li>Multi-platform posting rules</li>
+        <li>Role-aware dashboard presentation (Creator vs Admin)</li>
+        <li>Expanded job inspection and diagnostics</li>
+      </ul>
+      <p class="muted">
+        Planned features are intentionally staged and may evolve as platforms
+        and requirements change.
+      </p>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- CREATOR VS ADMIN MODES -->
+    <!-- ============================================================ -->
+    <section>
+      <h3>Creator vs Admin Dashboard Modes</h3>
+      <p>
+        StreamSuites is being designed with a future dual-mode dashboard in mind:
+      </p>
+      <ul class="ss-list">
+        <li>
+          <strong>Creator Mode:</strong>
+          Focused on configuring personal automation behavior.
+        </li>
+        <li>
+          <strong>Admin Mode:</strong>
+          Expanded visibility and control across multiple creators and systems.
+        </li>
+      </ul>
+      <p>
+        At present, all features are visible and no authentication or permission
+        system is enforced. This dashboard is UI-ready for future role indication
+        without introducing premature complexity.
+      </p>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- NON-GOALS -->
+    <!-- ============================================================ -->
+    <section>
+      <h3>Explicit Non-Goals</h3>
+      <ul class="ss-list">
+        <li>No live bot control from the dashboard</li>
+        <li>No authentication or account system at this stage</li>
+        <li>No opaque automation or hidden behavior</li>
+        <li>No reliance on third-party frontend frameworks</li>
+      </ul>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- CLOSING -->
+    <!-- ============================================================ -->
+    <section>
+      <h3>Project Status</h3>
+      <p>
+        StreamSuites is under active development. This dashboard represents the
+        canonical configuration surface for the system and is expected to evolve
+        alongside the runtime as new capabilities are added.
+      </p>
+      <p class="muted">
+        This page exists to provide continuity and orientation as the project grows.
+      </p>
+    </section>
+
+  </div>
+
+</section>

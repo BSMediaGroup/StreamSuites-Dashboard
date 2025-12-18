@@ -25,7 +25,7 @@
   <meta name="twitter:image" content="./assets/logos/seodash.jpg" />
 
   <!-- ============================= -->
-  <!-- Favicon (GitHub Pages safe) -->
+  <!-- Favicon -->
   <!-- ============================= -->
   <link rel="icon" href="./favicon.ico" type="image/x-icon" />
 
@@ -52,7 +52,7 @@
     }
 
     /* ---------------------------------------------------------- */
-    /* Header alignment fix (PHASE 0 safe) */
+    /* Header alignment + dashboard badge (PHASE 0 SAFE) */
     /* ---------------------------------------------------------- */
     #app-header .header-left {
       display: flex;
@@ -65,10 +65,23 @@
       width: auto;
       display: block;
     }
+
+    .dashboard-badge {
+      margin-left: 6px;
+      padding: 4px 10px;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ddd;
+      font-family: "SuiGenerisRg", system-ui, sans-serif;
+      text-transform: uppercase;
+    }
   </style>
 
   <!-- ============================= -->
-  <!-- Core Styles (FIXED PATHS) -->
+  <!-- Core Styles -->
   <!-- ============================= -->
   <link rel="stylesheet" href="./css/base.css" />
   <link rel="stylesheet" href="./css/theme-dark.css" />
@@ -78,20 +91,16 @@
 
 <body>
 
-  <!-- ============================= -->
-  <!-- App Root -->
-  <!-- ============================= -->
   <div id="app">
 
     <!-- Header -->
     <header id="app-header">
       <div class="header-left">
-        <img
-          src="./assets/logos/LOG2-3D-SML.png"
-          alt="StreamSuites Logo"
-        />
+        <img src="./assets/logos/LOG2-3D-SML.png" alt="StreamSuites Logo" />
         <h1 class="app-title">StreamSuites</h1>
-        <span class="app-subtitle">Dashboard</span>
+        <span class="dashboard-badge" id="dashboard-mode">
+          CREATOR DASHBOARD
+        </span>
       </div>
 
       <div class="header-right">
@@ -115,6 +124,8 @@
         <li data-view="settings">Settings</li>
         <li data-view="chat-replay">Chat Replay</li>
 
+        <li data-view="about">About</li>
+
         <li data-view="rumble">Rumble</li>
         <li data-view="youtube">YouTube</li>
         <li data-view="twitch">Twitch</li>
@@ -123,7 +134,7 @@
       </ul>
     </nav>
 
-    <!-- Main Content -->
+    <!-- Main -->
     <main id="app-main">
       <div id="view-container">
         <noscript>
@@ -143,14 +154,10 @@
 
   </div>
 
-  <!-- ============================= -->
   <!-- Core Scripts -->
-  <!-- ============================= -->
   <script src="./js/app.js"></script>
 
-  <!-- ============================= -->
   <!-- Minimal Status Wiring -->
-  <!-- ============================= -->
   <script>
     (function () {
       const statusEl = document.getElementById("app-status");

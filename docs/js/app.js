@@ -327,6 +327,7 @@ registerView("discord", {});
 registerView("ratelimits", {});
 registerView("settings", {});
 registerView("chat-replay", {});
+registerView("about", {});
 
 /* ----------------------------------------------------------------------
    Boot
