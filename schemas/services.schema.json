@@ -1,1 +1,21 @@
-{}
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "StreamSuites Services Configuration",
+  "description": "Deployment-level service enablement flags. Services are optional and disabled by default unless explicitly enabled.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "discord": {
+      "type": "object",
+      "description": "Discord control-plane runtime configuration",
+      "additionalProperties": true,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable the Discord control-plane runtime when running under the scheduler",
+          "default": false
+        }
+      }
+    }
+  }
+}
