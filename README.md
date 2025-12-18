@@ -113,6 +113,7 @@ StreamSuites-Dashboard/
 │   │   ├── app.js           # App bootstrap & routing
 │   │   ├── auth.js          # Placeholder for future auth hooks
 │   │   ├── charts.js        # Metrics / visualization
+│   │   ├── chatReplay.js    # Placeholder for planned historical chat replay
 │   │   ├── creators.js      # Creator configuration UI
 │   │   ├── jobs.js          # Job visibility (clips, etc.)
 │   │   ├── permissions.js   # Future permissions UI
@@ -125,6 +126,7 @@ StreamSuites-Dashboard/
 │   │   └── results.html
 │   │
 │   └── views/
+│       ├── chat-replay.html
 │       ├── clips.html
 │       ├── creators.html
 │       ├── jobs.html
@@ -135,6 +137,7 @@ StreamSuites-Dashboard/
 │       └── triggers.html
 │
 └── schemas/
+    ├── chat_log.schema.json
     ├── chat_behaviour.schema.json
     ├── clip_schema.json
     ├── creators.schema.json
@@ -153,6 +156,15 @@ StreamSuites-Dashboard/
         ├── twitter.schema.json
         └── youtube.schema.json
 ```
+
+---
+
+## Planned Feature: Chat Replay
+
+- Read-only historical chat replay using exported logs
+- Optional embed or extension; no control over bots
+- Intended to remain static and decoupled from runtime execution
+- May be extended via browser extensions without altering core routing
 
 ---
 
@@ -214,6 +226,11 @@ Visual styling is influenced by existing dark-UI work (e.g. Mapbox dashboards, S
 - Job visibility (clips, queues)
 - Read-only runtime state inspection
 - Log / activity views
+
+### Historical Visibility (Planned)
+- Chat replay views
+- Stream-specific lookup
+- Platform-agnostic rendering
 
 ### Phase 3 — Control Surface
 - Action triggers (manual clip, reload config)

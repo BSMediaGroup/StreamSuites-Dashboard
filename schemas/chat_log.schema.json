@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/BSMediaGroup/StreamSuites-Dashboard/schemas/chat_log.schema.json",
+  "title": "Chat Log (Planned)",
+  "description": "Placeholder schema defining the contract for historical chat logs consumed by the dashboard.",
+  "type": "object",
+  "properties": {
+    "platform": {
+      "type": "string",
+      "description": "Source platform identifier (e.g., rumble, youtube, twitch)."
+    },
+    "stream_id": {
+      "type": "string",
+      "description": "Identifier for the stream or broadcast the chat log belongs to."
+    },
+    "messages": {
+      "type": "array",
+      "description": "Ordered list of chat events in chronological order.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 UTC timestamp for when the message was observed."
+          },
+          "author": {
+            "type": "string",
+            "description": "Display name or identifier of the message author."
+          },
+          "message": {
+            "type": "string",
+            "description": "Chat message content as originally captured."
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Optional metadata such as moderation flags, badge info, or platform-specific attributes.",
+            "additionalProperties": true
+          }
+        },
+        "required": ["timestamp", "author", "message"],
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": ["platform", "stream_id", "messages"],
+  "additionalProperties": true
+}
