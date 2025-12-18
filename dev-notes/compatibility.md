@@ -1,8 +1,18 @@
 # Runtime Compatibility Notes
 
-## Rumble Runtime Status
+## Discord Integration (Planned)
 
-- **Current state:** Paused due to an upstream Rumble API restriction that blocks active runtime execution.
-- **Schemas:** Rumble-related schemas remain valid and authoritative; no deprecations or schema removals are planned.
-- **Dashboard features:** No dashboard capabilities are removed or hidden while the runtime is paused; the UI remains schema-driven and ready to consume Rumble configuration.
-- **Forward plan:** Rumble runtime re-enablement is expected once upstream access is restored, without requiring schema changes or dashboard rewrites.
+- **Guild-based configuration:** Discord runtimes will read the same schemas per guild/server, keeping dashboard edits authoritative without per-guild forks.
+- **Status reporting:** Bot presence/health is intended to be surfaced in the dashboard; a heartbeat endpoint is planned but not yet implemented.
+- **Command parity:** Command sets exposed via Discord should mirror dashboard-visible capabilities to avoid drift between control surfaces.
+
+## Authentication Constraints
+
+- **GitHub Pages limitations:** The dashboard currently ships as static assets with no server-side execution, preventing secure secret storage or OAuth redirects.
+- **OAuth deferral:** OAuth and token brokering are postponed until the Wix Studio migration provides a controlled, authenticated backend surface.
+
+## Rumble Platform Status
+
+- **API state:** The Rumble runtime is blocked by an upstream DDoS protection layer that currently prevents bot operation.
+- **Support posture:** All Rumble-specific features are paused but not removed; schemas remain intact and should not be pruned.
+- **Resume plan:** Re-enablement will occur once the platform’s API access stabilizes, without expected schema rewrites.

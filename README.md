@@ -6,6 +6,8 @@
 
 It is designed to provide a **human-friendly interface** over StreamSuites’ JSON-driven configuration model, without introducing server dependencies, platform lock-in, or runtime coupling.
 
+**This dashboard currently operates in read-only / static mode.**
+
 **Dashboard purpose**
 - **Configuration** — edit and validate runtime contracts without needing a live backend
 - **Visualization** — render schemas, tiers, triggers, and limits in human-readable form
@@ -20,9 +22,24 @@ The dashboard is intentionally lightweight, schema-driven, and portable.
 
 This repository is a **separate but companion project** to the main `StreamSuites` runtime.
 
+### Textual System Overview Diagram
+
+```
+[StreamSuites Runtime] <— consumes schemas — [StreamSuites-Dashboard (static, read-only)]
+         |                                              |
+         |                                              +— planned status surface (no heartbeat yet)
+         |
+[Discord Bot Runtime] <— shared schemas ——————> [Dashboard surfaces bot status (planned visibility)]
+         |
+         +— Rumble bot paused (API protection layer; schemas intact)
+```
+
+### Component Relationships
+
 | Component | Responsibility |
 |---------|----------------|
 | **StreamSuites (main repo)** | Runtime execution, chat bots, livestream automation, job orchestration |
+| **Discord Bot** | First-class runtime peer that consumes the same schemas; planned dashboard status surfacing and command parity |
 | **StreamSuites-Dashboard** | Configuration UI, inspection, visualization, and admin control |
 
 The dashboard **does not execute jobs** and **does not run bots**.  
@@ -71,6 +88,7 @@ Account gating, permissions, or UI framing can be handled **outside** the dashbo
 
 Possible future evolutions (not required now):
 
+- Migration to **Wix Studio** as the hosting surface when authenticated backends are needed
 - Optional connection to a local or remote API
 - Read/write access to live runtime state
 - Multi-user permission layers (externally enforced)
@@ -95,8 +113,8 @@ The dashboard is intentionally **runtime-agnostic**. Multiple runtimes (e.g., st
 | Runtime entrypoint | Status | Notes |
 |--------------------|--------|-------|
 | `app.py` (Streaming Runtime) | **SUPPORTED** | Produces and consumes the schemas surfaced by the dashboard |
-| `discord_app.py` (Discord Runtime) | **SUPPORTED** | Control-plane consumer of the same schemas; can operate independently |
-| Rumble Chat Runtime | **PAUSED** | Upstream API restriction; schemas remain valid and authoritative |
+| `discord_app.py` (Discord Runtime) | **SUPPORTED** | First-class runtime peer; planned dashboard visibility for bot presence and command parity; heartbeat endpoint planned but not yet implemented |
+| Rumble Chat Runtime | **PAUSED** | Upstream API restriction (DDoS protection layer); schemas remain valid and authoritative while support is paused |
 
 ### Discord Control-Plane Notes (Documentation Only)
 
