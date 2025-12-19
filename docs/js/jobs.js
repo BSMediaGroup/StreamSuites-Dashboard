@@ -1,8 +1,6 @@
 (() => {
   "use strict";
 
-  const JOBS_STATE_PATH = "../shared/state/jobs.json";
-
   const elTotal = document.getElementById("jobs-total");
   const elByStatus = document.getElementById("jobs-by-status");
   const elByType = document.getElementById("jobs-by-type");
@@ -27,12 +25,15 @@
     hideError();
 
     try {
-      const res = await fetch(JOBS_STATE_PATH, { cache: "no-store" });
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
+      const loadState = window.StreamSuitesState?.loadStateJson;
+      const data = loadState
+        ? await loadState("jobs.json")
+        : null;
+
+      if (!data) {
+        throw new Error("No job state available");
       }
 
-      const data = await res.json();
       const jobs = Array.isArray(data.jobs) ? data.jobs : [];
 
       renderMetrics(jobs);
