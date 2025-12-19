@@ -92,33 +92,33 @@
       <table class="ss-table ss-table-compact">
         <tbody>
           <tr>
-            <td>Enabled</td>
-            <td id="ov-discord-enabled" class="align-right muted">
-              unknown
+            <td>Discord Runtime</td>
+            <td id="ov-discord-runtime" class="align-right muted">
+              Loading…
             </td>
           </tr>
           <tr>
-            <td>Connection State</td>
+            <td>Connection</td>
             <td id="ov-discord-connection" class="align-right muted">
-              —
+              Loading…
             </td>
           </tr>
           <tr>
             <td>Last Heartbeat</td>
             <td id="ov-discord-heartbeat" class="align-right muted">
-              —
+              Loading…
             </td>
           </tr>
           <tr>
             <td>Guilds Connected</td>
             <td id="ov-discord-guilds" class="align-right muted">
-              —
+              Loading…
             </td>
           </tr>
           <tr>
-            <td>Presence</td>
+            <td>Status</td>
             <td id="ov-discord-presence" class="align-right muted">
-              —
+              Loading…
             </td>
           </tr>
         </tbody>
@@ -157,96 +157,3 @@
     Overview is read-only and reflects locally stored configuration.
   </span>
 </footer>
-
-<!-- ========================================================= -->
-<!-- LOGIC (VIEW-SCOPED) -->
-<!-- ========================================================= -->
-<script>
-(function () {
-  const elDashboardState = document.getElementById("ov-dashboard-state");
-  const elStorageState = document.getElementById("ov-storage-state");
-  const elCreatorsCount = document.getElementById("ov-creators-count");
-  const elTriggersCount = document.getElementById("ov-triggers-count");
-  const elRumbleEnabledCount = document.getElementById("ov-rumble-enabled-count");
-
-  const elDiscordEnabled = document.getElementById("ov-discord-enabled");
-  const elDiscordConnection = document.getElementById("ov-discord-connection");
-  const elDiscordHeartbeat = document.getElementById("ov-discord-heartbeat");
-  const elDiscordGuilds = document.getElementById("ov-discord-guilds");
-  const elDiscordPresence = document.getElementById("ov-discord-presence");
-
-  function safeSetText(el, value) {
-    if (!el) return;
-    el.textContent = value;
-  }
-
-  // Dashboard active indicator (read-only view)
-  safeSetText(elDashboardState, "active");
-
-  // Storage availability
-  try {
-    localStorage.setItem("__ss_test__", "1");
-    localStorage.removeItem("__ss_test__");
-    safeSetText(elStorageState, "available");
-  } catch {
-    safeSetText(elStorageState, "unavailable");
-  }
-
-  // If App/storage isn't ready yet, keep placeholders deterministic
-  const hasAppStorage =
-    typeof window.App === "object" &&
-    window.App &&
-    window.App.storage &&
-    typeof window.App.storage.loadFromLocalStorage === "function";
-
-  if (!hasAppStorage) {
-    safeSetText(elCreatorsCount, "—");
-    safeSetText(elTriggersCount, "—");
-    safeSetText(elRumbleEnabledCount, "—");
-
-    safeSetText(elDiscordEnabled, "unknown");
-    safeSetText(elDiscordConnection, "—");
-    safeSetText(elDiscordHeartbeat, "—");
-    safeSetText(elDiscordGuilds, "—");
-    safeSetText(elDiscordPresence, "—");
-    return;
-  }
-
-  // Creators count
-  const creators = window.App.storage.loadFromLocalStorage("creators", []);
-  const creatorsArr = Array.isArray(creators) ? creators : [];
-  safeSetText(elCreatorsCount, String(creatorsArr.length));
-
-  // Rumble enabled creators
-  let rumbleEnabled = 0;
-  for (const c of creatorsArr) {
-    const pr = c?.platforms?.rumble;
-    if (pr === true || pr?.enabled === true) {
-      rumbleEnabled += 1;
-    }
-  }
-  safeSetText(elRumbleEnabledCount, String(rumbleEnabled));
-
-  // Triggers count
-  const chatBehaviour =
-    window.App.storage.loadFromLocalStorage("chat_behaviour", {});
-  const triggers = Array.isArray(chatBehaviour?.triggers)
-    ? chatBehaviour.triggers
-    : [];
-  safeSetText(elTriggersCount, String(triggers.length));
-
-  // ---------------------------------------------------------
-  // Discord control-plane (read-only, placeholder)
-  // ---------------------------------------------------------
-
-  // For now, Discord status is not wired to a live source.
-  // These values remain placeholders until an explicit
-  // export or API bridge is introduced.
-
-  safeSetText(elDiscordEnabled, "unknown");
-  safeSetText(elDiscordConnection, "unknown");
-  safeSetText(elDiscordHeartbeat, "—");
-  safeSetText(elDiscordGuilds, "—");
-  safeSetText(elDiscordPresence, "—");
-})();
-</script>

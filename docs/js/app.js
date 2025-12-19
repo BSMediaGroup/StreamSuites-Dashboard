@@ -280,7 +280,14 @@ function initApp() {
    Register Views
    ---------------------------------------------------------------------- */
 
-registerView("overview", {});
+registerView("overview", {
+  onLoad: () => {
+    window.OverviewView?.init?.();
+  },
+  onUnload: () => {
+    window.OverviewView?.destroy?.();
+  }
+});
 
 registerView("creators", {
   onLoad: () => {
@@ -318,7 +325,14 @@ registerView("rumble", {});
 registerView("youtube", {});
 registerView("twitch", {});
 registerView("twitter", {});
-registerView("discord", {});
+registerView("discord", {
+  onLoad: () => {
+    window.DiscordView?.init?.();
+  },
+  onUnload: () => {
+    window.DiscordView?.destroy?.();
+  }
+});
 
 /* ------------------------------------------------------------
    ADDITIVE PLACEHOLDER VIEWS (PHASE 0 COMPLETE)
