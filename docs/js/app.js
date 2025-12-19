@@ -159,7 +159,8 @@ function registerView(name, config) {
     name,
     onLoad: config.onLoad || (() => {}),
     onUnload: config.onUnload || (() => {}),
-    containerId: config.containerId || "view-container"
+    containerId: config.containerId || "view-container",
+    templatePath: config.templatePath || name
   };
 }
 
@@ -188,7 +189,7 @@ async function loadView(name) {
     return;
   }
 
-  const viewPath = `views/${name}.html`;
+  const viewPath = `views/${view.templatePath}.html`;
 
   try {
     const res = await fetch(new URL(viewPath, document.baseURI));
@@ -326,7 +327,15 @@ registerView("clips", {});
 registerView("polls", {});
 registerView("rumble", {});
 registerView("youtube", {});
-registerView("twitch", {});
+registerView("twitch", {
+  templatePath: "platforms/twitch",
+  onLoad: () => {
+    window.TwitchView?.init?.();
+  },
+  onUnload: () => {
+    window.TwitchView?.destroy?.();
+  }
+});
 registerView("twitter", {});
 registerView("discord", {
   onLoad: () => {

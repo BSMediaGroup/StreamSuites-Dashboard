@@ -75,6 +75,12 @@
               —
             </td>
           </tr>
+          <tr>
+            <td>Twitch Enabled Creators</td>
+            <td id="ov-twitch-enabled-count" class="align-right">
+              —
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -126,6 +132,38 @@
 
       <p class="muted" style="margin-top: 0.5rem;">
         Discord status is read-only and may be unavailable if the control-plane runtime is not deployed.
+      </p>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------------- -->
+  <!-- TWITCH FOUNDATIONS -->
+  <!-- --------------------------------------------------------- -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Twitch Integration</h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <table class="ss-table ss-table-compact">
+        <tbody>
+          <tr>
+            <td>Local Config</td>
+            <td id="ov-twitch-config" class="align-right muted">
+              Loading…
+            </td>
+          </tr>
+          <tr>
+            <td>Runtime</td>
+            <td id="ov-twitch-runtime" class="align-right muted">
+              offline / unknown
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="muted" style="margin-top: 0.5rem;">
+        Twitch runtime connectivity is optional and currently expected to be offline in this static dashboard.
       </p>
     </div>
   </section>

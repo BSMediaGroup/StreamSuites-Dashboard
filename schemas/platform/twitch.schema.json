@@ -1,1 +1,92 @@
-{}
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://streamsuites.dev/schemas/platform/twitch.schema.json",
+  "$comment": "Planned Twitch configuration + runtime visibility surface for the dashboard. Derived from CONTRACTS.md §4.3. Optional, read-only, and non-authoritative.",
+  "title": "Twitch Platform — Configuration + Runtime Snapshot",
+  "description": "Defines the planned Twitch-facing fields surfaced in the dashboard. Captures both exported configuration and optional runtime snapshots emitted by the StreamSuites runtime. Absence of data is expected in static deployments.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "platform": {
+      "type": "string",
+      "const": "twitch",
+      "description": "Platform identifier. Always 'twitch' when present."
+    },
+    "config": {
+      "type": "object",
+      "description": "Optional, exported Twitch configuration used by the runtime. Stored locally or produced by the runtime repo.",
+      "additionalProperties": true,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable Twitch integration for this deployment."
+        },
+        "channel_login": {
+          "type": "string",
+          "description": "Primary Twitch channel login/username."
+        },
+        "channel_id": {
+          "type": "string",
+          "description": "Numeric Twitch channel ID, if known."
+        },
+        "bot_user": {
+          "type": "string",
+          "description": "Bot account login used for chat I/O. Non-authoritative."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Operator notes or provenance for this config export."
+        }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "description": "Optional runtime visibility snapshot exported by the StreamSuites runtime. Read-only for dashboards.",
+      "additionalProperties": true,
+      "properties": {
+        "running": {
+          "type": "boolean",
+          "description": "Whether the Twitch runtime worker/supervisor is running."
+        },
+        "connected": {
+          "type": "boolean",
+          "description": "Whether the Twitch chat connection is active."
+        },
+        "last_heartbeat_ts": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Timestamp of the most recent heartbeat tick emitted by the Twitch runtime (UTC, ISO 8601)."
+        },
+        "last_seen_message": {
+          "type": ["object", "null"],
+          "description": "Latest chat message observed or sent by the runtime.",
+          "additionalProperties": true,
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "Message contents."
+            },
+            "author": {
+              "type": "string",
+              "description": "Username associated with the message."
+            },
+            "ts": {
+              "type": ["string", "null"],
+              "format": "date-time",
+              "description": "Timestamp of the message (UTC, ISO 8601)."
+            }
+          }
+        },
+        "last_seen_trigger": {
+          "type": "string",
+          "description": "Last trigger observed in Twitch chat, if applicable."
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Optional debugging/diagnostic metadata emitted by the runtime.",
+          "additionalProperties": true
+        }
+      }
+    }
+  }
+}

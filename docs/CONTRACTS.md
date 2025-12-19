@@ -203,6 +203,39 @@ Rules:
 - **Optional/Deployment-gated**: absence of Discord status MUST NOT be treated as an error.
 - **Non-authoritative**: runtime decides whether to expose any field; omissions imply unknown.
 
+### 4.3 Twitch Runtime Visibility (Planned, Read-Only)
+
+Target UI:
+- docs/views/platforms/twitch.html (dashboard scaffold only; static, iframe-safe)
+
+Conceptual payload (illustrative only — non-authoritative, optional):
+```
+{
+  "platform": "twitch",
+  "config": {
+    "enabled": true,
+    "channel_login": "example_channel",
+    "channel_id": "123456789"
+  },
+  "runtime": {
+    "running": true,
+    "connected": true,
+    "last_heartbeat_ts": "2025-01-17T09:21:33Z",
+    "last_seen_message": {
+      "text": "pong",
+      "author": "example_user",
+      "ts": "2025-01-17T09:21:33Z"
+    }
+  }
+}
+```
+
+Rules:
+- **Optional**: the Twitch runtime may not be deployed; absence of this payload is expected.
+- **Read-only**: the dashboard surfaces exported snapshots only; it never connects to Twitch directly.
+- **Non-authoritative**: the StreamSuites runtime remains the single source of truth for connectivity, chat I/O, and trigger execution.
+- **Graceful degradation**: unknown/missing fields MUST NOT crash UI rendering.
+
 -------------------------------------------------------------------------------
 
 ## 5. POLLS MODULE (PHASE 2-READY)
