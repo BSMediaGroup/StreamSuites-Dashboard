@@ -140,6 +140,13 @@ These are **control-plane only** capabilities that complement, but do not replac
 - A deterministic **“No runtime connected”** banner is shown because the dashboard does not connect to Twitch directly and expects offline mode by default.
 - Future runtime exports can hydrate the Twitch view without changing the dashboard scaffold.
 
+## YouTube Scaffold (Dashboard-Only)
+
+- A **YouTube platform scaffold** now exists in `docs/views/platforms/youtube.html`, matching the planned contract in `schemas/platform/youtube.schema.json`.
+- The dashboard remains **static and read-only** for YouTube; all chat execution and livestream handling stay in the StreamSuites runtime repo.
+- Runtime snapshots (heartbeat, connection state, last seen message) are optional exports from the runtime; absence of data is expected in static deployments.
+- Platform sequencing remains **Twitch foundation first**, with **YouTube hydration next** and **Rumble alignment after upstream access stabilizes**.
+
 ---
 
 ## Directory Structure

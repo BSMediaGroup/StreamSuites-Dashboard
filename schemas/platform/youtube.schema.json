@@ -1,1 +1,96 @@
-{}
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://streamsuites.dev/schemas/platform/youtube.schema.json",
+  "$comment": "Planned YouTube configuration + runtime visibility surface for the dashboard. Derived from CONTRACTS.md §4.3. Optional, read-only, and non-authoritative.",
+  "title": "YouTube Platform — Configuration + Runtime Snapshot",
+  "description": "Defines the planned YouTube-facing fields surfaced in the dashboard. Captures both exported configuration and optional runtime snapshots emitted by the StreamSuites runtime. Absence of data is expected in static deployments.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "platform": {
+      "type": "string",
+      "const": "youtube",
+      "description": "Platform identifier. Always 'youtube' when present."
+    },
+    "config": {
+      "type": "object",
+      "description": "Optional, exported YouTube configuration used by the runtime. Stored locally or produced by the runtime repo.",
+      "additionalProperties": true,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable YouTube integration for this deployment."
+        },
+        "channel_id": {
+          "type": "string",
+          "description": "YouTube channel ID used for livestream discovery and chat."
+        },
+        "channel_handle": {
+          "type": "string",
+          "description": "Human-readable YouTube handle for operators."
+        },
+        "bot_identity": {
+          "type": "string",
+          "description": "Bot identity or service account expected to post messages."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Operator notes or provenance for this config export."
+        }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "description": "Optional runtime visibility snapshot exported by the StreamSuites runtime. Read-only for dashboards.",
+      "additionalProperties": true,
+      "properties": {
+        "running": {
+          "type": "boolean",
+          "description": "Whether the YouTube runtime worker/supervisor is running."
+        },
+        "connected": {
+          "type": "boolean",
+          "description": "Whether the YouTube live chat connection is active."
+        },
+        "active_livestream_id": {
+          "type": ["string", "null"],
+          "description": "Currently tracked livestream ID, if any."
+        },
+        "last_heartbeat_ts": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Timestamp of the most recent heartbeat tick emitted by the YouTube runtime (UTC, ISO 8601)."
+        },
+        "last_seen_message": {
+          "type": ["object", "null"],
+          "description": "Latest chat message observed or sent by the runtime.",
+          "additionalProperties": true,
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "Message contents."
+            },
+            "author": {
+              "type": "string",
+              "description": "Display name associated with the message."
+            },
+            "ts": {
+              "type": ["string", "null"],
+              "format": "date-time",
+              "description": "Timestamp of the message (UTC, ISO 8601)."
+            }
+          }
+        },
+        "last_seen_trigger": {
+          "type": "string",
+          "description": "Last trigger observed in YouTube chat, if applicable."
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Optional debugging/diagnostic metadata emitted by the runtime.",
+          "additionalProperties": true
+        }
+      }
+    }
+  }
+}

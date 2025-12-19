@@ -19,6 +19,7 @@
   - Allow dashboard surfaces to consume exported runtime snapshots for Twitch and YouTube
   - Keep read-only stance while aligning schema shapes across platforms
   - Reuse the same static hosting model and CSS
+  - Ship static YouTube scaffold ahead of runtime hydration
 
 - **Phase: Wix Studio Migration**
   - Move hosting from GitHub Pages to Wix Studio to enable authenticated backends

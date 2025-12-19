@@ -16,3 +16,9 @@
 - **API state:** The Rumble runtime is blocked by an upstream DDoS protection layer that currently prevents bot operation.
 - **Support posture:** All Rumble-specific features are paused but not removed; schemas remain intact and should not be pruned.
 - **Resume plan:** Re-enablement will occur once the platform’s API access stabilizes, without expected schema rewrites.
+
+## YouTube Platform Status
+
+- **Dashboard scaffold:** A static YouTube view is available for configuration visibility; it does not initiate runtime calls.
+- **Runtime ownership:** Chat ingestion, livestream tracking, and message dispatch remain in the StreamSuites runtime repo; the dashboard only reflects exported snapshots when present.
+- **Hydration posture:** Offline/“not connected” states are expected until runtime exports are wired; schema alignment is documented in `schemas/platform/youtube.schema.json`.

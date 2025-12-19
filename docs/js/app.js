@@ -326,7 +326,15 @@ registerView("jobs", {
 registerView("clips", {});
 registerView("polls", {});
 registerView("rumble", {});
-registerView("youtube", {});
+registerView("youtube", {
+  templatePath: "platforms/youtube",
+  onLoad: () => {
+    window.YouTubeView?.init?.();
+  },
+  onUnload: () => {
+    window.YouTubeView?.destroy?.();
+  }
+});
 registerView("twitch", {
   templatePath: "platforms/twitch",
   onLoad: () => {
