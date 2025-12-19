@@ -1,11 +1,51 @@
 (() => {
   "use strict";
 
-  const STATE_ROOT = "./shared/state/";
+  const DEFAULT_STATE_ROOTS = [
+    "./shared/state/",
+    // Runtime repo fallback (read-only, GitHub raw)
+    "https://raw.githubusercontent.com/BSMediaGroup/StreamSuites/main/shared/state/"
+  ];
 
-  function buildStateUrl(relativePath) {
+  const STORAGE_KEY = "streamsuites.stateRootOverride";
+
+  function normalizeRoot(root) {
+    if (typeof root !== "string" || !root.trim()) return null;
+    return root.trim().replace(/\/+$/, "/");
+  }
+
+  function getConfiguredStateRoots() {
+    const roots = [];
+
     try {
-      return new URL(`${STATE_ROOT}${relativePath}`, document.baseURI);
+      const params = new URLSearchParams(window.location.search);
+      const overrideParam = normalizeRoot(params.get("stateRoot"));
+      if (overrideParam) {
+        localStorage.setItem(STORAGE_KEY, overrideParam);
+        roots.push(overrideParam);
+      }
+
+      const storedOverride = normalizeRoot(localStorage.getItem(STORAGE_KEY));
+      if (storedOverride && !roots.includes(storedOverride)) {
+        roots.push(storedOverride);
+      }
+    } catch (err) {
+      console.warn("[Dashboard][State] Failed to read state root override", err);
+    }
+
+    for (const root of DEFAULT_STATE_ROOTS) {
+      const normalized = normalizeRoot(root);
+      if (normalized && !roots.includes(normalized)) {
+        roots.push(normalized);
+      }
+    }
+
+    return roots;
+  }
+
+  function buildStateUrl(root, relativePath) {
+    try {
+      return new URL(`${root}${relativePath}`, document.baseURI);
     } catch (err) {
       console.warn("[Dashboard][State] Failed to build URL", err);
       return null;
@@ -13,19 +53,33 @@
   }
 
   async function loadStateJson(relativePath) {
-    const url = buildStateUrl(relativePath);
-    if (!url) return null;
+    const roots = getConfiguredStateRoots();
 
-    try {
-      const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
+    for (const root of roots) {
+      const url = buildStateUrl(root, relativePath);
+      if (!url) continue;
+
+      try {
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) {
+          console.warn(
+            `[Dashboard][State] ${relativePath} from ${url} failed: HTTP ${res.status}`
+          );
+          continue;
+        }
+        return await res.json();
+      } catch (err) {
+        console.warn(
+          `[Dashboard][State] Error loading ${relativePath} from ${url}`,
+          err
+        );
       }
-      return await res.json();
-    } catch (err) {
-      console.warn(`[Dashboard][State] Unable to load ${relativePath}`, err);
-      return null;
     }
+
+    console.warn(
+      `[Dashboard][State] Unable to load ${relativePath} from any configured state roots.`
+    );
+    return null;
   }
 
   function pickString(...values) {
