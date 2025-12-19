@@ -133,6 +133,15 @@ These are **control-plane only** capabilities that complement, but do not replac
 
 ---
 
+## Twitch Foundations (Dashboard-Only Scaffold)
+
+- The dashboard now includes a **Twitch foundation view** (read-only) that mirrors the planned configuration/runtime fields defined in `schemas/platform/twitch.schema.json`.
+- Twitch execution, chat I/O, and authoritative state **live exclusively in the main StreamSuites runtime repository**. The dashboard only visualizes exported snapshots or locally stored configuration.
+- A deterministic **“No runtime connected”** banner is shown because the dashboard does not connect to Twitch directly and expects offline mode by default.
+- Future runtime exports can hydrate the Twitch view without changing the dashboard scaffold.
+
+---
+
 ## Directory Structure
 
 ```
