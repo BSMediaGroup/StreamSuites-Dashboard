@@ -1,26 +1,22 @@
 {
-  "platform": "discord",
-  "runtime_role": "control-plane",
   "running": false,
   "connected": false,
-  "guild_count": 0,
+  "last_heartbeat_ts": "2025-12-19T09:14:07.555134+00:00",
   "task_count": 0,
-  "last_heartbeat_ts": null,
-  "heartbeat": {
-    "started_at": null,
-    "last_tick_at": null,
-    "connected": null
-  },
+  "tasks": 0,
+  "guild_count": null,
   "status": {
-    "text": "Discord runtime not yet configured",
-    "emoji": "❔"
+    "text": "\ud83c\udf0e streamsuites.app",
+    "emoji": null
   },
   "presence": {
-    "status_text": "Discord runtime not yet configured",
-    "status_emoji": "❔"
+    "status_text": "\ud83c\udf0e streamsuites.app",
+    "status_emoji": null
   },
-  "notes": [
-    "This placeholder file prevents 404 errors when the dashboard looks for the Discord runtime snapshot.",
-    "Replace this data with the live control-plane state when deploying the Discord bot."
-  ]
+  "heartbeat": {
+    "started_at": "2025-12-19T07:25:25.981433+00:00",
+    "last_tick_at": "2025-12-19T09:14:07.555134+00:00",
+    "connected": false,
+    "metadata": {}
+  }
 }
