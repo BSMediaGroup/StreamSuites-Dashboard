@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const STATE_ROOT = "../shared/state/";
+  const STATE_ROOT = "./shared/state/";
 
   function buildStateUrl(relativePath) {
     try {
