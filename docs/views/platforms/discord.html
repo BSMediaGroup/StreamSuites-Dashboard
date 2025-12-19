@@ -34,27 +34,26 @@
       <table class="ss-table ss-table-compact">
         <tbody>
           <tr>
-            <td>Enabled</td>
-            <td id="dc-enabled" class="align-right muted">unknown</td>
+            <td>Runtime</td>
+            <td id="dc-runtime-state" class="align-right muted">Loading…</td>
           </tr>
           <tr>
-            <td>Connection State</td>
-            <td id="dc-connection" class="align-right muted">unknown</td>
+            <td>Connection</td>
+            <td id="dc-connection" class="align-right muted">Loading…</td>
           </tr>
           <tr>
             <td>Started At</td>
-            <td id="dc-started-at" class="align-right muted">—</td>
+            <td id="dc-started-at" class="align-right muted">Loading…</td>
           </tr>
           <tr>
             <td>Last Heartbeat</td>
-            <td id="dc-heartbeat" class="align-right muted">—</td>
+            <td id="dc-heartbeat" class="align-right muted">Loading…</td>
           </tr>
         </tbody>
       </table>
 
-      <p class="muted" style="margin-top: 0.5rem;">
-        Status is provided by the Discord control-plane runtime when deployed.
-        Absence of data indicates the runtime is disabled or not running.
+      <p id="dc-runtime-note" class="muted" style="margin-top: 0.5rem;">
+        Waiting for runtime snapshot…
       </p>
     </div>
   </section>
@@ -72,11 +71,11 @@
         <tbody>
           <tr>
             <td>Guilds Connected</td>
-            <td id="dc-guild-count" class="align-right muted">—</td>
+            <td id="dc-guild-count" class="align-right muted">Loading…</td>
           </tr>
           <tr>
             <td>Presence</td>
-            <td id="dc-presence" class="align-right muted">—</td>
+            <td id="dc-presence" class="align-right muted">Loading…</td>
           </tr>
         </tbody>
       </table>
@@ -115,24 +114,3 @@
     Discord control-plane visibility only — no live control.
   </span>
 </footer>
-
-<!-- ========================================================= -->
-<!-- LOGIC (VIEW-SCOPED, PLACEHOLDER ONLY) -->
-<!-- ========================================================= -->
-<script>
-(function () {
-  function safeSetText(id, value) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.textContent = value;
-  }
-
-  // Placeholder values until an explicit export / API bridge exists
-  safeSetText("dc-enabled", "unknown");
-  safeSetText("dc-connection", "unknown");
-  safeSetText("dc-started-at", "—");
-  safeSetText("dc-heartbeat", "—");
-  safeSetText("dc-guild-count", "—");
-  safeSetText("dc-presence", "—");
-})();
-</script>
