@@ -14,6 +14,7 @@
     el.triggersCount = document.getElementById("ov-triggers-count");
     el.rumbleEnabledCount = document.getElementById("ov-rumble-enabled-count");
     el.twitchEnabledCount = document.getElementById("ov-twitch-enabled-count");
+    el.youtubeEnabledCount = document.getElementById("ov-youtube-enabled-count");
 
     el.discordRuntime = document.getElementById("ov-discord-runtime");
     el.discordConnection = document.getElementById("ov-discord-connection");
@@ -23,6 +24,8 @@
 
     el.twitchConfig = document.getElementById("ov-twitch-config");
     el.twitchRuntime = document.getElementById("ov-twitch-runtime");
+    el.youtubeConfig = document.getElementById("ov-youtube-config");
+    el.youtubeRuntime = document.getElementById("ov-youtube-runtime");
   }
 
   function setText(target, value) {
@@ -48,7 +51,9 @@
       setText(el.triggersCount, "Not available");
       setText(el.rumbleEnabledCount, "Not available");
       setText(el.twitchEnabledCount, "Not available");
+      setText(el.youtubeEnabledCount, "Not available");
       setText(el.twitchConfig, "Not available");
+      setText(el.youtubeConfig, "Not available");
       return;
     }
 
@@ -58,6 +63,7 @@
 
     let rumbleEnabled = 0;
     let twitchEnabled = 0;
+    let youtubeEnabled = 0;
     for (const c of creatorsArr) {
       const pr = c?.platforms?.rumble;
       if (pr === true || pr?.enabled === true) {
@@ -68,9 +74,15 @@
       if (tw === true || tw?.enabled === true) {
         twitchEnabled += 1;
       }
+
+      const yt = c?.platforms?.youtube;
+      if (yt === true || yt?.enabled === true) {
+        youtubeEnabled += 1;
+      }
     }
     setText(el.rumbleEnabledCount, String(rumbleEnabled));
     setText(el.twitchEnabledCount, String(twitchEnabled));
+    setText(el.youtubeEnabledCount, String(youtubeEnabled));
 
     const chatBehaviour = storage.loadFromLocalStorage("chat_behaviour", {});
     const triggers = Array.isArray(chatBehaviour?.triggers)
@@ -86,6 +98,17 @@
         );
       } else {
         setText(el.twitchConfig, "disabled / not configured");
+      }
+    }
+
+    if (el.youtubeConfig) {
+      if (youtubeEnabled > 0) {
+        setText(
+          el.youtubeConfig,
+          `enabled for ${youtubeEnabled} creator${youtubeEnabled === 1 ? "" : "s"}`
+        );
+      } else {
+        setText(el.youtubeConfig, "disabled / not configured");
       }
     }
   }
@@ -156,6 +179,7 @@
     updateLocalMetrics();
     refreshDiscord();
     setText(el.twitchRuntime, "offline / unknown");
+    setText(el.youtubeRuntime, "offline / not connected");
 
     if (refreshHandle) clearInterval(refreshHandle);
     refreshHandle = setInterval(refreshDiscord, REFRESH_INTERVAL_MS);
