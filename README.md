@@ -77,6 +77,7 @@ The dashboard is designed to be:
 This allows it to be embedded into an external site such as:
 
 ```
+https://streamsuites.app
 https://danielclancy.net/streamsuites
 ```
 
