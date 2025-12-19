@@ -23,6 +23,9 @@ const App = {
   storage: {}
 };
 
+// Expose the App object on window for cross-file access (e.g., Overview view)
+window.App = App;
+
 /* ----------------------------------------------------------------------
    DOM Helpers
    ---------------------------------------------------------------------- */
