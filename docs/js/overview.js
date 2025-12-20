@@ -7,6 +7,10 @@
 
   const el = {};
 
+  /* ============================================================
+     ELEMENT CACHE
+     ============================================================ */
+
   function cacheElements() {
     el.dashboardState = document.getElementById("ov-dashboard-state");
     el.storageState = document.getElementById("ov-storage-state");
@@ -31,12 +35,24 @@
     el.youtubeConfig = document.getElementById("ov-youtube-config");
     el.youtubeRuntime = document.getElementById("ov-youtube-runtime");
 
-    // Platform badges (optional, non-fatal)
+    /* Platform badges */
     el.badgeDiscord = document.getElementById("badge-discord");
     el.badgeRumble = document.getElementById("badge-rumble");
     el.badgeTwitch = document.getElementById("badge-twitch");
     el.badgeYouTube = document.getElementById("badge-youtube");
+
+    /* Quota bars (Overview placeholders) */
+    el.quotaDailyFill = document.querySelector(
+      ".ss-quota-row .ss-quota-fill"
+    );
+    el.quotaMinuteFill = document.querySelectorAll(
+      ".ss-quota-row .ss-quota-fill"
+    )[1];
   }
+
+  /* ============================================================
+     UTILITIES
+     ============================================================ */
 
   function setText(target, value) {
     if (!target) return;
@@ -53,6 +69,10 @@
     }
     return null;
   }
+
+  /* ============================================================
+     LOCAL CONFIG METRICS
+     ============================================================ */
 
   function updateLocalMetrics() {
     const storage = getAppStorage();
@@ -77,14 +97,12 @@
     let youtubeEnabled = 0;
 
     for (const c of creatorsArr) {
-      const pr = c?.platforms?.rumble;
-      if (pr === true || pr?.enabled === true) rumbleEnabled++;
-
-      const tw = c?.platforms?.twitch;
-      if (tw === true || tw?.enabled === true) twitchEnabled++;
-
-      const yt = c?.platforms?.youtube;
-      if (yt === true || yt?.enabled === true) youtubeEnabled++;
+      if (c?.platforms?.rumble === true || c?.platforms?.rumble?.enabled)
+        rumbleEnabled++;
+      if (c?.platforms?.twitch === true || c?.platforms?.twitch?.enabled)
+        twitchEnabled++;
+      if (c?.platforms?.youtube === true || c?.platforms?.youtube?.enabled)
+        youtubeEnabled++;
     }
 
     setText(el.rumbleEnabledCount, String(rumbleEnabled));
@@ -97,33 +115,31 @@
       : [];
     setText(el.triggersCount, String(triggers.length));
 
-    if (el.rumbleConfig) {
-      setText(
-        el.rumbleConfig,
-        rumbleEnabled > 0
-          ? `enabled for ${rumbleEnabled} creator${rumbleEnabled === 1 ? "" : "s"}`
-          : "disabled / not configured"
-      );
-    }
+    setText(
+      el.rumbleConfig,
+      rumbleEnabled
+        ? `enabled for ${rumbleEnabled} creator${rumbleEnabled === 1 ? "" : "s"}`
+        : "disabled / not configured"
+    );
 
-    if (el.twitchConfig) {
-      setText(
-        el.twitchConfig,
-        twitchEnabled > 0
-          ? `enabled for ${twitchEnabled} creator${twitchEnabled === 1 ? "" : "s"}`
-          : "disabled / not configured"
-      );
-    }
+    setText(
+      el.twitchConfig,
+      twitchEnabled
+        ? `enabled for ${twitchEnabled} creator${twitchEnabled === 1 ? "" : "s"}`
+        : "disabled / not configured"
+    );
 
-    if (el.youtubeConfig) {
-      setText(
-        el.youtubeConfig,
-        youtubeEnabled > 0
-          ? `enabled for ${youtubeEnabled} creator${youtubeEnabled === 1 ? "" : "s"}`
-          : "disabled / not configured"
-      );
-    }
+    setText(
+      el.youtubeConfig,
+      youtubeEnabled
+        ? `enabled for ${youtubeEnabled} creator${youtubeEnabled === 1 ? "" : "s"}`
+        : "disabled / not configured"
+    );
   }
+
+  /* ============================================================
+     DISCORD SNAPSHOT (READ-ONLY)
+     ============================================================ */
 
   function formatPresence(runtime) {
     const parts = [];
@@ -170,12 +186,51 @@
     setText(el.discordGuilds, formatGuildCount(runtime));
     setText(el.discordPresence, formatPresence(runtime));
 
-    // Badge state (purely informational)
     if (el.badgeDiscord) {
       el.badgeDiscord.textContent =
         runtime && runtime.running ? "Foundation" : "Offline";
     }
   }
+
+  /* ============================================================
+     API QUOTA (DEV PLACEHOLDER)
+     ============================================================ */
+
+  function animateQuotaBar(fillEl, used, max) {
+    if (!fillEl) return;
+
+    const percent = Math.min((used / max) * 100, 100);
+
+    fillEl.classList.remove("warn", "danger");
+    fillEl.style.transition = "none";
+    fillEl.style.width = "0%";
+
+    void fillEl.offsetWidth;
+
+    fillEl.style.transition =
+      "width 1200ms cubic-bezier(0.19, 1, 0.22, 1)";
+    fillEl.style.width = percent + "%";
+
+    if (used >= max - 10000) {
+      fillEl.classList.add("danger");
+    } else if (used >= max - 50000) {
+      fillEl.classList.add("warn");
+    }
+  }
+
+  function updateQuotaPlaceholders() {
+    /* DEV-ONLY simulated values */
+    const DAILY_MAX = 200000;
+    const simulatedDailyUsed = 82000; // change freely for testing
+    const simulatedPerMinuteUsed = 120;
+
+    animateQuotaBar(el.quotaDailyFill, simulatedDailyUsed, DAILY_MAX);
+    animateQuotaBar(el.quotaMinuteFill, simulatedPerMinuteUsed, 1000);
+  }
+
+  /* ============================================================
+     SYSTEM STATUS
+     ============================================================ */
 
   function updateSystemStatus() {
     setText(el.dashboardState, "active");
@@ -213,11 +268,16 @@
     });
   }
 
+  /* ============================================================
+     VIEW LIFECYCLE
+     ============================================================ */
+
   function init() {
     cacheElements();
     updateSystemStatus();
     updateLocalMetrics();
     refreshDiscord();
+    updateQuotaPlaceholders();
 
     setText(el.rumbleRuntime, "offline / unknown");
     setText(el.twitchRuntime, "offline / unknown");

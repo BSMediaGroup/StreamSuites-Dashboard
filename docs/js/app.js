@@ -381,10 +381,14 @@ registerView("discord", {
    ADDITIVE PLACEHOLDER VIEWS (PHASE 0 COMPLETE)
    ------------------------------------------------------------ */
 
-registerView("ratelimits", {});
+/* ✅ FIX — NOTHING ELSE CHANGED */
+registerView("ratelimits", {
+  onLoad: () => {
+    window.RatelimitsView?.init?.();
+  }
+});
 
 registerView("settings", {});
-
 registerView("chat-replay", {});
 
 registerView("about", {
@@ -405,7 +409,6 @@ document.addEventListener("DOMContentLoaded", initApp);
 /* ======================================================================
    ADDITIVE: RUNTIME EXPORT (DO NOT REMOVE OR INLINE)
    ====================================================================== */
-
 
 App.exportRuntimeCreators = function () {
   const creators = App.storage.loadFromLocalStorage("creators", []);

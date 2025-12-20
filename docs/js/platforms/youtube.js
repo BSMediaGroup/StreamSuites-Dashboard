@@ -3,6 +3,10 @@
 
   const el = {};
 
+  /* ============================================================
+     ELEMENT CACHE
+     ============================================================ */
+
   function cacheElements() {
     el.foundationStatus = document.getElementById("yt-foundation-status");
     el.runtimeBanner = document.getElementById("yt-runtime-banner");
@@ -15,7 +19,19 @@
     el.configChannel = document.getElementById("yt-config-channel");
     el.configBot = document.getElementById("yt-config-bot");
     el.configSource = document.getElementById("yt-config-source");
+
+    /* API quota placeholders (non-fatal if missing) */
+    el.quotaDailyFill = document.querySelector(
+      ".ss-quota-row .ss-quota-fill"
+    );
+    el.quotaMinuteFill = document.querySelectorAll(
+      ".ss-quota-row .ss-quota-fill"
+    )[1];
   }
+
+  /* ============================================================
+     UTILITIES
+     ============================================================ */
 
   function setText(target, value) {
     if (!target) return;
@@ -33,6 +49,10 @@
     return null;
   }
 
+  /* ============================================================
+     CONFIG DESCRIPTION HELPERS
+     ============================================================ */
+
   function describeEnabled(creators) {
     if (!Array.isArray(creators) || creators.length === 0) {
       return "disabled (no creators configured)";
@@ -47,7 +67,9 @@
       return "disabled (no YouTube flags set)";
     }
 
-    return `enabled for ${youtubeCreators.length} creator${youtubeCreators.length > 1 ? "s" : ""}`;
+    return `enabled for ${youtubeCreators.length} creator${
+      youtubeCreators.length > 1 ? "s" : ""
+    }`;
   }
 
   function describeChannel(creators) {
@@ -75,11 +97,7 @@
       youtubeCreator.youtube_handle ||
       youtubeCreator.display_name;
 
-    if (!handle) {
-      return "not configured";
-    }
-
-    return handle;
+    return handle || "not configured";
   }
 
   function describeBot(creators) {
@@ -103,12 +121,12 @@
       youtubeCreator.youtube_bot ||
       youtubeCreator.bot_identity;
 
-    if (!bot) {
-      return "not configured";
-    }
-
-    return bot;
+    return bot || "not configured";
   }
+
+  /* ============================================================
+     LOCAL CONFIG HYDRATION
+     ============================================================ */
 
   function hydrateConfig() {
     const storage = getStorage();
@@ -126,8 +144,17 @@
     setText(el.configEnabled, describeEnabled(creatorsArr));
     setText(el.configChannel, describeChannel(creatorsArr));
     setText(el.configBot, describeBot(creatorsArr));
-    setText(el.configSource, creatorsArr.length > 0 ? "local creators config" : "no creators loaded");
+    setText(
+      el.configSource,
+      creatorsArr.length > 0
+        ? "local creators config"
+        : "no creators loaded"
+    );
   }
+
+  /* ============================================================
+     RUNTIME PLACEHOLDER
+     ============================================================ */
 
   function hydrateRuntimePlaceholder() {
     setText(el.runtimeStatus, "offline / unknown");
@@ -152,15 +179,54 @@
     el.foundationStatus.textContent = "● YouTube integration: Scaffold";
   }
 
+  /* ============================================================
+     API QUOTA (DEV PLACEHOLDER)
+     ============================================================ */
+
+  function animateQuotaBar(fillEl, used, max) {
+    if (!fillEl) return;
+
+    const percent = Math.min((used / max) * 100, 100);
+
+    fillEl.classList.remove("warn", "danger");
+    fillEl.style.width = "0%";
+
+    /* force reflow */
+    void fillEl.offsetWidth;
+
+    fillEl.style.width = percent + "%";
+
+    if (used >= max - 10000) {
+      fillEl.classList.add("danger");
+    } else if (used >= max - 50000) {
+      fillEl.classList.add("warn");
+    }
+  }
+
+  function updateQuotaPlaceholders() {
+    /* DEV-ONLY simulated values */
+    const DAILY_MAX = 200000;
+    const simulatedDailyUsed = 82000;   // tweak freely
+    const simulatedPerMinuteUsed = 120; // arbitrary placeholder
+
+    animateQuotaBar(el.quotaDailyFill, simulatedDailyUsed, DAILY_MAX);
+    animateQuotaBar(el.quotaMinuteFill, simulatedPerMinuteUsed, 1000);
+  }
+
+  /* ============================================================
+     VIEW LIFECYCLE
+     ============================================================ */
+
   function init() {
     cacheElements();
     setFoundationStatus();
     hydrateConfig();
     hydrateRuntimePlaceholder();
+    updateQuotaPlaceholders();
   }
 
   function destroy() {
-    // No intervals or listeners to clean up yet.
+    /* nothing to clean up yet */
   }
 
   window.YouTubeView = {

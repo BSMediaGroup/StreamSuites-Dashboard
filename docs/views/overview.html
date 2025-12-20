@@ -31,15 +31,11 @@
         <tbody>
           <tr>
             <td>Dashboard State</td>
-            <td id="ov-dashboard-state" class="align-right muted">
-              idle
-            </td>
+            <td id="ov-dashboard-state" class="align-right muted">idle</td>
           </tr>
           <tr>
             <td>Local Storage Available</td>
-            <td id="ov-storage-state" class="align-right muted">
-              unknown
-            </td>
+            <td id="ov-storage-state" class="align-right muted">unknown</td>
           </tr>
         </tbody>
       </table>
@@ -59,36 +55,65 @@
         <tbody>
           <tr>
             <td>Creators Configured</td>
-            <td id="ov-creators-count" class="align-right">
-              —
-            </td>
+            <td id="ov-creators-count" class="align-right">—</td>
           </tr>
           <tr>
             <td>Chat Triggers Configured</td>
-            <td id="ov-triggers-count" class="align-right">
-              —
-            </td>
+            <td id="ov-triggers-count" class="align-right">—</td>
           </tr>
           <tr>
             <td>Rumble Enabled Creators</td>
-            <td id="ov-rumble-enabled-count" class="align-right">
-              —
-            </td>
+            <td id="ov-rumble-enabled-count" class="align-right">—</td>
           </tr>
           <tr>
             <td>Twitch Enabled Creators</td>
-            <td id="ov-twitch-enabled-count" class="align-right">
-              —
-            </td>
+            <td id="ov-twitch-enabled-count" class="align-right">—</td>
           </tr>
           <tr>
             <td>YouTube Enabled Creators</td>
-            <td id="ov-youtube-enabled-count" class="align-right">
-              —
-            </td>
+            <td id="ov-youtube-enabled-count" class="align-right">—</td>
           </tr>
         </tbody>
       </table>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------------- -->
+  <!-- API QUOTA USAGE (PLACEHOLDER) -->
+  <!-- --------------------------------------------------------- -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>YouTube API Quota Usage</h2>
+    </header>
+
+    <div class="ss-panel-body">
+
+      <p class="muted">
+        Static placeholder indicators. Values will populate once runtime reporting is enabled.
+      </p>
+
+      <!-- DAILY QUOTA -->
+      <div class="ss-quota-row">
+        <div class="ss-quota-label">
+          <span>Daily Units Used</span>
+          <span class="muted">0 / 200,000</span>
+        </div>
+        <div class="ss-quota-track">
+          <div class="ss-quota-fill"></div>
+        </div>
+      </div>
+
+      <!-- PER-MINUTE QUOTA -->
+      <div class="ss-quota-row">
+        <div class="ss-quota-label">
+          <span>Per-Minute Usage</span>
+          <span class="muted">0 / limit</span>
+        </div>
+        <div class="ss-quota-track">
+          <div class="ss-quota-fill"></div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -108,33 +133,23 @@
         <tbody>
           <tr>
             <td>Discord Runtime</td>
-            <td id="ov-discord-runtime" class="align-right muted">
-              Loading…
-            </td>
+            <td id="ov-discord-runtime" class="align-right muted">Loading…</td>
           </tr>
           <tr>
             <td>Connection</td>
-            <td id="ov-discord-connection" class="align-right muted">
-              Loading…
-            </td>
+            <td id="ov-discord-connection" class="align-right muted">Loading…</td>
           </tr>
           <tr>
             <td>Last Heartbeat</td>
-            <td id="ov-discord-heartbeat" class="align-right muted">
-              Loading…
-            </td>
+            <td id="ov-discord-heartbeat" class="align-right muted">Loading…</td>
           </tr>
           <tr>
             <td>Guilds Connected</td>
-            <td id="ov-discord-guilds" class="align-right muted">
-              Loading…
-            </td>
+            <td id="ov-discord-guilds" class="align-right muted">Loading…</td>
           </tr>
           <tr>
             <td>Status</td>
-            <td id="ov-discord-presence" class="align-right muted">
-              Loading…
-            </td>
+            <td id="ov-discord-presence" class="align-right muted">Loading…</td>
           </tr>
         </tbody>
       </table>
@@ -161,22 +176,14 @@
         <tbody>
           <tr>
             <td>Local Config</td>
-            <td id="ov-rumble-config" class="align-right muted">
-              Loading…
-            </td>
+            <td id="ov-rumble-config" class="align-right muted">Loading…</td>
           </tr>
           <tr>
             <td>Runtime</td>
-            <td id="ov-rumble-runtime" class="align-right muted">
-              offline / unknown
-            </td>
+            <td id="ov-rumble-runtime" class="align-right muted">offline / unknown</td>
           </tr>
         </tbody>
       </table>
-
-      <p class="muted" style="margin-top: 0.5rem;">
-        Rumble runtime connectivity is optional and currently expected to be offline in this static dashboard.
-      </p>
     </div>
   </section>
 
@@ -196,22 +203,14 @@
         <tbody>
           <tr>
             <td>Local Config</td>
-            <td id="ov-twitch-config" class="align-right muted">
-              Loading…
-            </td>
+            <td id="ov-twitch-config" class="align-right muted">Loading…</td>
           </tr>
           <tr>
             <td>Runtime</td>
-            <td id="ov-twitch-runtime" class="align-right muted">
-              offline / unknown
-            </td>
+            <td id="ov-twitch-runtime" class="align-right muted">offline / unknown</td>
           </tr>
         </tbody>
       </table>
-
-      <p class="muted" style="margin-top: 0.5rem;">
-        Twitch runtime connectivity is optional and currently expected to be offline in this static dashboard.
-      </p>
     </div>
   </section>
 
@@ -231,27 +230,19 @@
         <tbody>
           <tr>
             <td>Local Config</td>
-            <td id="ov-youtube-config" class="align-right muted">
-              Loading…
-            </td>
+            <td id="ov-youtube-config" class="align-right muted">Loading…</td>
           </tr>
           <tr>
             <td>Runtime</td>
-            <td id="ov-youtube-runtime" class="align-right muted">
-              offline / not connected
-            </td>
+            <td id="ov-youtube-runtime" class="align-right muted">offline / not connected</td>
           </tr>
         </tbody>
       </table>
-
-      <p class="muted" style="margin-top: 0.5rem;">
-        YouTube runtime connectivity is optional and currently expected to be offline in this static dashboard.
-      </p>
     </div>
   </section>
 
   <!-- --------------------------------------------------------- -->
-  <!-- NEXT MODULES (PLACEHOLDER, READ-ONLY) -->
+  <!-- NEXT MODULES -->
   <!-- --------------------------------------------------------- -->
   <section class="ss-panel">
     <header class="ss-panel-header">
