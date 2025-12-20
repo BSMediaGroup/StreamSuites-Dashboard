@@ -84,6 +84,18 @@
       font-family: "SuiGenerisRg", system-ui, sans-serif;
       text-transform: uppercase;
     }
+
+    /* ---------------------------------------------------------- */
+    /* Footer link hover behavior (SAFE, SCOPED) */
+    /* ---------------------------------------------------------- */
+    #app-footer a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    #app-footer a:hover {
+      text-decoration: underline;
+    }
   </style>
 
   <!-- ============================= -->
@@ -153,9 +165,13 @@
 
     <!-- Footer -->
     <footer id="app-footer">
-      <span>StreamSuites Dashboard</span>
+      <span>StreamSuites™ Dashboard</span>
       <span class="footer-sep">•</span>
-      <span>Brainstream Media Group</span>
+      <span>©2025 Brainstream Media Group</span>
+      <span class="footer-sep">•</span>
+      <a href="https://brainstream.media" target="_blank" rel="noopener noreferrer">
+        https://brainstream.media
+      </a>
     </footer>
 
   </div>
@@ -170,7 +186,6 @@
   <script src="./js/platforms/youtube.js"></script>
   <script src="./js/platforms/twitch.js"></script>
   <script src="./js/platforms/discord.js"></script>
-
 
   <!-- Minimal Status Wiring -->
   <script>

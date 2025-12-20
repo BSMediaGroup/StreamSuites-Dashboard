@@ -40,23 +40,29 @@
         globally. Changes require a full StreamSuites runtime restart.
       </p>
 
-      <div class="ss-form-row">
-        <label>Rumble Service Enabled</label>
-
-        <label class="switch-button">
-          <div class="switch-outer">
-            <input
-              type="checkbox"
-              disabled
-              data-service="rumble"
-            >
-            <div class="button">
-              <span class="button-toggle"></span>
-              <span class="button-indicator"></span>
-            </div>
-          </div>
-        </label>
-      </div>
+      <!-- Compact horizontal layout (matches Settings / YouTube / Twitch) -->
+      <table class="ss-table ss-table-compact">
+        <tbody>
+          <tr>
+            <td>Rumble Service Enabled</td>
+            <td class="align-right">
+              <label class="switch-button" aria-label="Rumble global service toggle">
+                <div class="switch-outer">
+                  <input
+                    type="checkbox"
+                    disabled
+                    data-service="rumble"
+                  />
+                  <div class="button">
+                    <span class="button-toggle"></span>
+                    <span class="button-indicator"></span>
+                  </div>
+                </div>
+              </label>
+            </td>
+          </tr>
+        </tbody>
+      </table>
 
     </div>
   </section>
