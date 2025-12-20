@@ -17,10 +17,14 @@
     <section>
       <h3>Current Phase</h3>
       <p>
-        StreamSuites is in a stabilization phase focused on deterministic configuration, static visibility, and platform-aligned scaffolds. The dashboard remains a static, read-only surface that mirrors the runtime contracts without driving live automation.
+        StreamSuites is in a stabilization and contract-lock phase focused on
+        deterministic runtime enforcement, schema-backed state, and static
+        visibility. The dashboard remains a static, read-only surface that
+        mirrors authoritative runtime exports without driving live automation.
       </p>
       <p class="muted">
-        Scope for this repo: documentation-grade UI, local storage inspection, and JSON exports only.
+        Scope for this repo: documentation-grade UI, local storage inspection,
+        and read-only visibility into runtime-exported JSON snapshots.
       </p>
     </section>
 
@@ -32,19 +36,25 @@
       <ul class="ss-list">
         <li>
           <strong>StreamSuites Unified Runtime:</strong>
-          Executes automation, connects to platforms, and remains the source of truth for chat triggers, jobs, and live state.
+          Executes automation, enforces limits and quotas, connects to platforms,
+          and remains the sole source of truth for chat triggers, jobs, and live state.
         </li>
         <li>
           <strong>StreamSuites Dashboard (this repo):</strong>
-          Static HTML/CSS/JS that runs in-browser, stores configuration locally, and exports JSON for the runtime. No backend calls or live control paths are present.
+          Static HTML/CSS/JS that runs in-browser, stores configuration locally,
+          and visualizes runtime-exported state. No backend calls or live control
+          paths are present.
         </li>
         <li>
           <strong>Platform Clients:</strong>
-          Per-platform adapters (Discord, Twitch, YouTube, Rumble, Twitter) live alongside the runtime and consume exported configuration. The dashboard only reflects their expected contracts.
+          Per-platform adapters (Discord, Twitch, YouTube, Rumble, Twitter)
+          live alongside the runtime and consume exported configuration. The
+          dashboard reflects their expected contracts only.
         </li>
       </ul>
       <p class="muted">
-        Configuration, observability, and execution are intentionally decoupled to preserve safety and auditability.
+        Configuration, enforcement, observability, and execution are intentionally
+        decoupled to preserve safety, auditability, and deterministic behavior.
       </p>
     </section>
 
@@ -57,7 +67,7 @@
       <h4>Overview</h4>
       <ul class="ss-list">
         <li>High-level storage status and configuration counts</li>
-        <li>Snapshot visibility for creators, triggers, and jobs</li>
+        <li>Snapshot visibility for creators, triggers, jobs, and limits</li>
       </ul>
 
       <h4>Creators</h4>
@@ -122,7 +132,9 @@
     <section>
       <h3>Project Status</h3>
       <p>
-        The dashboard tracks the StreamSuites runtime but does not replace it. Each view is intentionally static, mapping to stable DOM IDs and schemas so runtime exports can hydrate them later without restructuring the UI.
+        The dashboard tracks the StreamSuites runtime but does not replace it.
+        Runtime contracts for jobs, triggers, and quotas are now stabilized,
+        enabling future hydration without UI restructuring.
       </p>
     </section>
 
@@ -200,22 +212,10 @@
       }
     </style>
 
-    <div class="ss-progress-row ss-skill-row" data-score="5.5">
+    <div class="ss-progress-row ss-skill-row" data-score="6.5">
       <div class="ss-progress-label">
         StreamSuites Unified Runtime
-        <span class="ss-progress-meta">55% · Stabilization</span>
-      </div>
-      <div class="ss-skill-wrapper">
-        <div class="ss-skill-track">
-          <div class="ss-skill-fill"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="ss-progress-row ss-skill-row" data-score="5.5">
-      <div class="ss-progress-label">
-        Administrator Dashboard UI
-        <span class="ss-progress-meta">55% · Core Control Surface Complete</span>
+        <span class="ss-progress-meta">65% · Contracts Locked + Quota Enforcement</span>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -224,10 +224,22 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="3.5">
+    <div class="ss-progress-row ss-skill-row" data-score="6.0">
+      <div class="ss-progress-label">
+        Administrator Dashboard UI
+        <span class="ss-progress-meta">60% · Runtime Parity Achieved</span>
+      </div>
+      <div class="ss-skill-wrapper">
+        <div class="ss-skill-track">
+          <div class="ss-skill-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ss-progress-row ss-skill-row" data-score="4.0">
       <div class="ss-progress-label">
         Creator Dashboard UI
-        <span class="ss-progress-meta">35% · Active Development</span>
+        <span class="ss-progress-meta">40% · Runtime Contracts Available</span>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -248,10 +260,10 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="3.5">
+    <div class="ss-progress-row ss-skill-row" data-score="4.0">
       <div class="ss-progress-label">
         Rumble Client
-        <span class="ss-progress-meta">35% · Scaffold + Global Service Control</span>
+        <span class="ss-progress-meta">40% · Runtime-Orchestrated Control</span>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -260,10 +272,10 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="4.5">
+    <div class="ss-progress-row ss-skill-row" data-score="5.5">
       <div class="ss-progress-label">
         YouTube Client
-        <span class="ss-progress-meta">45% · Foundation + Quota Surface</span>
+        <span class="ss-progress-meta">55% · Quota Enforcement + Snapshot Export</span>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -308,10 +320,10 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="2.5">
+    <div class="ss-progress-row ss-skill-row" data-score="3.0">
       <div class="ss-progress-label">
         Unified Live Chat Replay Module
-        <span class="ss-progress-meta">25% · Scaffold</span>
+        <span class="ss-progress-meta">30% · Runtime Signals Available</span>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
