@@ -320,47 +320,5 @@
       </div>
     </div>
 
-    <script>
-      (function () {
-        function initSkillBars() {
-          var rows = document.querySelectorAll('.ss-skill-row');
-          if (!rows || rows.length === 0) return;
-
-          rows.forEach(function (wrapper) {
-            var fill = wrapper.querySelector('.ss-skill-fill');
-            if (!fill) return;
-
-            var scoreAttr = wrapper.getAttribute('data-score');
-            var score = parseFloat(scoreAttr);
-            if (isNaN(score) || score < 0) score = 0;
-            if (score > 10) score = 10;
-
-            var targetWidth = (score / 10) * 100;
-            var transitionTiming = 'width 1200ms cubic-bezier(0.19, 1, 0.22, 1)';
-
-            function animateFill() {
-              fill.classList.remove('pulsing');
-              fill.style.transition = 'none';
-              fill.style.width = '0%';
-
-              void fill.offsetWidth;
-
-              fill.style.transition = transitionTiming;
-              fill.style.width = targetWidth + '%';
-
-              setTimeout(function () {
-                fill.classList.add('pulsing');
-              }, 1300);
-            }
-
-            animateFill();
-            wrapper.addEventListener('mouseenter', animateFill);
-          });
-        }
-
-        initSkillBars();
-      })();
-    </script>
-
   </div>
 </section>
