@@ -242,6 +242,23 @@ function bindNavigation() {
 }
 
 /* ----------------------------------------------------------------------
+   ADDITIVE: Delegated navigation for dynamically injected views
+   ---------------------------------------------------------------------- */
+
+function bindDelegatedNavigation() {
+  const container = $("#view-container");
+  if (!container) return;
+
+  container.addEventListener("click", (e) => {
+    const target = e.target.closest("[data-view]");
+    if (!target) return;
+
+    const view = target.dataset.view;
+    if (view) loadView(view);
+  });
+}
+
+/* ----------------------------------------------------------------------
    URL Hash Routing (Optional, Non-Breaking)
    ---------------------------------------------------------------------- */
 
@@ -272,6 +289,7 @@ function initApp() {
   console.info("[Dashboard] Initializing StreamSuites dashboard");
 
   bindNavigation();
+  bindDelegatedNavigation();
   bindHashChange();
 
   const initialView = resolveInitialView();
