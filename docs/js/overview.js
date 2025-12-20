@@ -30,6 +30,12 @@
     el.twitchRuntime = document.getElementById("ov-twitch-runtime");
     el.youtubeConfig = document.getElementById("ov-youtube-config");
     el.youtubeRuntime = document.getElementById("ov-youtube-runtime");
+
+    // Platform badges (optional, non-fatal)
+    el.badgeDiscord = document.getElementById("badge-discord");
+    el.badgeRumble = document.getElementById("badge-rumble");
+    el.badgeTwitch = document.getElementById("badge-twitch");
+    el.badgeYouTube = document.getElementById("badge-youtube");
   }
 
   function setText(target, value) {
@@ -72,19 +78,13 @@
 
     for (const c of creatorsArr) {
       const pr = c?.platforms?.rumble;
-      if (pr === true || pr?.enabled === true) {
-        rumbleEnabled += 1;
-      }
+      if (pr === true || pr?.enabled === true) rumbleEnabled++;
 
       const tw = c?.platforms?.twitch;
-      if (tw === true || tw?.enabled === true) {
-        twitchEnabled += 1;
-      }
+      if (tw === true || tw?.enabled === true) twitchEnabled++;
 
       const yt = c?.platforms?.youtube;
-      if (yt === true || yt?.enabled === true) {
-        youtubeEnabled += 1;
-      }
+      if (yt === true || yt?.enabled === true) youtubeEnabled++;
     }
 
     setText(el.rumbleEnabledCount, String(rumbleEnabled));
@@ -98,36 +98,30 @@
     setText(el.triggersCount, String(triggers.length));
 
     if (el.rumbleConfig) {
-      if (rumbleEnabled > 0) {
-        setText(
-          el.rumbleConfig,
-          `enabled for ${rumbleEnabled} creator${rumbleEnabled === 1 ? "" : "s"}`
-        );
-      } else {
-        setText(el.rumbleConfig, "disabled / not configured");
-      }
+      setText(
+        el.rumbleConfig,
+        rumbleEnabled > 0
+          ? `enabled for ${rumbleEnabled} creator${rumbleEnabled === 1 ? "" : "s"}`
+          : "disabled / not configured"
+      );
     }
 
     if (el.twitchConfig) {
-      if (twitchEnabled > 0) {
-        setText(
-          el.twitchConfig,
-          `enabled for ${twitchEnabled} creator${twitchEnabled === 1 ? "" : "s"}`
-        );
-      } else {
-        setText(el.twitchConfig, "disabled / not configured");
-      }
+      setText(
+        el.twitchConfig,
+        twitchEnabled > 0
+          ? `enabled for ${twitchEnabled} creator${twitchEnabled === 1 ? "" : "s"}`
+          : "disabled / not configured"
+      );
     }
 
     if (el.youtubeConfig) {
-      if (youtubeEnabled > 0) {
-        setText(
-          el.youtubeConfig,
-          `enabled for ${youtubeEnabled} creator${youtubeEnabled === 1 ? "" : "s"}`
-        );
-      } else {
-        setText(el.youtubeConfig, "disabled / not configured");
-      }
+      setText(
+        el.youtubeConfig,
+        youtubeEnabled > 0
+          ? `enabled for ${youtubeEnabled} creator${youtubeEnabled === 1 ? "" : "s"}`
+          : "disabled / not configured"
+      );
     }
   }
 
@@ -135,8 +129,7 @@
     const parts = [];
     if (runtime?.statusEmoji) parts.push(runtime.statusEmoji);
     if (runtime?.statusText) parts.push(runtime.statusText);
-    if (parts.length === 0) return "Not available";
-    return parts.join(" ");
+    return parts.length ? parts.join(" ") : "Not available";
   }
 
   function formatHeartbeat(runtime) {
@@ -147,10 +140,9 @@
   }
 
   function formatGuildCount(runtime) {
-    if (Number.isInteger(runtime?.guildCount)) {
-      return String(runtime.guildCount);
-    }
-    return "Not available";
+    return Number.isInteger(runtime?.guildCount)
+      ? String(runtime.guildCount)
+      : "Not available";
   }
 
   function formatConnection(runtime) {
@@ -177,6 +169,12 @@
     setText(el.discordHeartbeat, formatHeartbeat(runtime));
     setText(el.discordGuilds, formatGuildCount(runtime));
     setText(el.discordPresence, formatPresence(runtime));
+
+    // Badge state (purely informational)
+    if (el.badgeDiscord) {
+      el.badgeDiscord.textContent =
+        runtime && runtime.running ? "Foundation" : "Offline";
+    }
   }
 
   function updateSystemStatus() {
@@ -191,6 +189,30 @@
     }
   }
 
+  function bindBadgeClicks() {
+    const map = {
+      badgeDiscord: "discord",
+      badgeRumble: "rumble",
+      badgeTwitch: "twitch",
+      badgeYouTube: "youtube"
+    };
+
+    Object.entries(map).forEach(([key, view]) => {
+      const node = el[key];
+      if (!node) return;
+
+      node.style.cursor = "pointer";
+      node.title = `Open ${view} module`;
+
+      node.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (window.App?.views?.[view]) {
+          window.location.hash = `#${view}`;
+        }
+      });
+    });
+  }
+
   function init() {
     cacheElements();
     updateSystemStatus();
@@ -200,6 +222,8 @@
     setText(el.rumbleRuntime, "offline / unknown");
     setText(el.twitchRuntime, "offline / unknown");
     setText(el.youtubeRuntime, "offline / not connected");
+
+    bindBadgeClicks();
 
     if (refreshHandle) clearInterval(refreshHandle);
     refreshHandle = setInterval(refreshDiscord, REFRESH_INTERVAL_MS);
