@@ -1,10 +1,9 @@
 <!-- ========================================================= -->
-<!-- StreamSuites — Discord Control-Plane (VIEW PARTIAL) -->
+<!-- StreamSuites — Discord Platform (VIEW PARTIAL) -->
 <!-- NOTE:
      - Read-only platform visibility
-     - No runtime control
-     - No assumptions about deployment
-     - CSS and app bootstrap are loaded by index.html
+     - Uses existing dashboard styles only
+     - Populated by docs/js/platforms/discord.js
    ========================================================= -->
 
 <!-- ========================================================= -->
@@ -13,7 +12,13 @@
 <header class="ss-header">
   <div class="ss-header-left">
     <h1 class="ss-title">StreamSuites</h1>
-    <span class="ss-subtitle">Discord Control-Plane</span>
+    <span class="ss-subtitle">Discord Platform</span>
+  </div>
+
+  <div class="ss-header-right">
+    <span id="dc-foundation-status" class="status-indicator idle">
+      ● Discord integration: Foundation
+    </span>
   </div>
 </header>
 
@@ -23,18 +28,22 @@
 <main class="ss-main">
 
   <!-- --------------------------------------------------------- -->
-  <!-- RUNTIME STATUS -->
+  <!-- RUNTIME CONNECTIVITY (DETERMINISTIC PLACEHOLDER) -->
   <!-- --------------------------------------------------------- -->
   <section class="ss-panel">
     <header class="ss-panel-header">
-      <h2>Runtime Status</h2>
+      <h2>Runtime Connectivity</h2>
     </header>
 
     <div class="ss-panel-body">
+      <div id="dc-runtime-banner" class="ss-alert ss-alert-danger">
+        No runtime connected. This dashboard is static and does not talk to Discord.
+      </div>
+
       <table class="ss-table ss-table-compact">
         <tbody>
           <tr>
-            <td>Runtime</td>
+            <td>Runtime State</td>
             <td id="dc-runtime-state" class="align-right muted">Loading…</td>
           </tr>
           <tr>
@@ -53,7 +62,7 @@
       </table>
 
       <p id="dc-runtime-note" class="muted" style="margin-top: 0.5rem;">
-        Waiting for runtime snapshot…
+        Runtime visibility is optional and provided by the StreamSuites runtime repo when exported.
       </p>
     </div>
   </section>
@@ -87,19 +96,18 @@
   </section>
 
   <!-- --------------------------------------------------------- -->
-  <!-- NOTES -->
+  <!-- DISCORD MODULES (PLANNED) -->
   <!-- --------------------------------------------------------- -->
   <section class="ss-panel">
     <header class="ss-panel-header">
-      <h2>Notes</h2>
+      <h2>Discord Modules (Planned)</h2>
     </header>
 
     <div class="ss-panel-body">
       <ul class="ss-list muted">
-        <li>This page is read-only.</li>
-        <li>The dashboard never issues Discord commands.</li>
-        <li>The Discord runtime remains the sole authority.</li>
-        <li>Fields may be omitted when unavailable.</li>
+        <li>Command registry visibility will surface here.</li>
+        <li>Guild-specific snapshots may hydrate when exported.</li>
+        <li>All Discord execution remains in the StreamSuites runtime repository.</li>
       </ul>
     </div>
   </section>
@@ -111,6 +119,6 @@
 <!-- ========================================================= -->
 <footer class="ss-footer">
   <span class="muted">
-    Discord control-plane visibility only — no live control.
+    Discord foundation is scaffolded only — no live bot control.
   </span>
 </footer>

@@ -350,6 +350,7 @@ registerView("twitter", {
   templatePath: "platforms/twitter"
 });
 registerView("discord", {
+  templatePath: "platforms/discord",
   onLoad: () => {
     window.DiscordView?.init?.();
   },

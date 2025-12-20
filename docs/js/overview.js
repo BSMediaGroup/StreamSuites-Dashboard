@@ -12,6 +12,7 @@
     el.storageState = document.getElementById("ov-storage-state");
     el.creatorsCount = document.getElementById("ov-creators-count");
     el.triggersCount = document.getElementById("ov-triggers-count");
+
     el.rumbleEnabledCount = document.getElementById("ov-rumble-enabled-count");
     el.twitchEnabledCount = document.getElementById("ov-twitch-enabled-count");
     el.youtubeEnabledCount = document.getElementById("ov-youtube-enabled-count");
@@ -21,6 +22,9 @@
     el.discordHeartbeat = document.getElementById("ov-discord-heartbeat");
     el.discordGuilds = document.getElementById("ov-discord-guilds");
     el.discordPresence = document.getElementById("ov-discord-presence");
+
+    el.rumbleConfig = document.getElementById("ov-rumble-config");
+    el.rumbleRuntime = document.getElementById("ov-rumble-runtime");
 
     el.twitchConfig = document.getElementById("ov-twitch-config");
     el.twitchRuntime = document.getElementById("ov-twitch-runtime");
@@ -52,6 +56,7 @@
       setText(el.rumbleEnabledCount, "Not available");
       setText(el.twitchEnabledCount, "Not available");
       setText(el.youtubeEnabledCount, "Not available");
+      setText(el.rumbleConfig, "Not available");
       setText(el.twitchConfig, "Not available");
       setText(el.youtubeConfig, "Not available");
       return;
@@ -64,6 +69,7 @@
     let rumbleEnabled = 0;
     let twitchEnabled = 0;
     let youtubeEnabled = 0;
+
     for (const c of creatorsArr) {
       const pr = c?.platforms?.rumble;
       if (pr === true || pr?.enabled === true) {
@@ -80,6 +86,7 @@
         youtubeEnabled += 1;
       }
     }
+
     setText(el.rumbleEnabledCount, String(rumbleEnabled));
     setText(el.twitchEnabledCount, String(twitchEnabled));
     setText(el.youtubeEnabledCount, String(youtubeEnabled));
@@ -89,6 +96,17 @@
       ? chatBehaviour.triggers
       : [];
     setText(el.triggersCount, String(triggers.length));
+
+    if (el.rumbleConfig) {
+      if (rumbleEnabled > 0) {
+        setText(
+          el.rumbleConfig,
+          `enabled for ${rumbleEnabled} creator${rumbleEnabled === 1 ? "" : "s"}`
+        );
+      } else {
+        setText(el.rumbleConfig, "disabled / not configured");
+      }
+    }
 
     if (el.twitchConfig) {
       if (twitchEnabled > 0) {
@@ -122,10 +140,10 @@
   }
 
   function formatHeartbeat(runtime) {
-    const formatted =
+    return (
       window.StreamSuitesState?.formatTimestamp?.(runtime?.lastHeartbeat) ||
-      "Not available";
-    return formatted;
+      "Not available"
+    );
   }
 
   function formatGuildCount(runtime) {
@@ -136,10 +154,10 @@
   }
 
   function formatConnection(runtime) {
-    const label =
+    return (
       window.StreamSuitesState?.describeDiscordConnection?.(runtime) ||
-      "Unknown";
-    return label;
+      "Unknown"
+    );
   }
 
   function formatConnectionDetail(runtime) {
@@ -178,6 +196,8 @@
     updateSystemStatus();
     updateLocalMetrics();
     refreshDiscord();
+
+    setText(el.rumbleRuntime, "offline / unknown");
     setText(el.twitchRuntime, "offline / unknown");
     setText(el.youtubeRuntime, "offline / not connected");
 
