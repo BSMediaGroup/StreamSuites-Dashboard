@@ -6,7 +6,7 @@
 
 It is designed to provide a **human-friendly interface** over StreamSuites’ JSON-driven configuration model, without introducing server dependencies, platform lock-in, or runtime coupling.
 
-**This dashboard currently operates in read-only / static mode.**
+**This dashboard currently operates in read-only / static mode.** It performs **no API calls**, never issues live commands, and intentionally ships **without runtime control hooks**. All runtime facts shown in the UI come from **exported artifacts**, and those exports remain the **single source of truth**.
 
 **Dashboard purpose**
 - **Configuration** — edit and validate runtime contracts without needing a live backend
@@ -15,6 +15,14 @@ It is designed to provide a **human-friendly interface** over StreamSuites’ JS
 - **Schema-driven UI** — the UI is generated from JSON schemas shared by all runtimes
 
 The dashboard is intentionally lightweight, schema-driven, and portable.
+
+### Operational Boundary
+
+- **Read-only control surface** — zero ability to mutate runtimes or send actions
+- **Offline-first** — no live connections; everything is rendered from shipped or downloaded JSON
+- **No API calls** — the browser bundle deliberately omits live fetches
+- **Runtime exports are authoritative** — whatever the runtime exports, the dashboard simply renders
+- **Visual-only philosophy** — dashboards illuminate runtime exports; control and execution stay in the runtimes
 
 ---
 
@@ -165,9 +173,9 @@ StreamSuites-Dashboard/
 ├── docs/                    # GitHub Pages root
 │   ├── CONTRACTS.md        # Contract notes for schema consumers
 │   ├── TIERS.md            # Tier documentation
+│   ├── Thumbs.db           # Placeholder artifact (do not delete)
 │   ├── favicon.ico         # Static site icon
 │   ├── index.html          # App entry point
-│   ├── Thumbs.db           # Placeholder artifact (do not delete)
 │   │
 │   ├── assets/
 │   │   ├── backgrounds/    # Hero/gradient backdrops and texture fills
@@ -202,6 +210,7 @@ StreamSuites-Dashboard/
 │   │   └── theme-dark.css   # Dark theme (authoritative)
 │   │
 │   ├── js/
+│   │   ├── about.js         # About view wiring
 │   │   ├── api.js           # Data loading / persistence layer
 │   │   ├── app.js           # App bootstrap & routing
 │   │   ├── auth.js          # Placeholder for future auth hooks
@@ -209,9 +218,11 @@ StreamSuites-Dashboard/
 │   │   ├── chatReplay.js    # Placeholder for planned historical chat replay
 │   │   ├── creators.js      # Creator configuration UI
 │   │   ├── jobs.js          # Job visibility (clips, etc.)
+│   │   ├── overview.js      # Overview dashboard wiring
 │   │   ├── permissions.js   # Future permissions UI
 │   │   ├── ratelimits.js    # Ratelimit editor/visualization
 │   │   ├── render.js        # Shared render helpers
+│   │   ├── settings.js      # Settings view wiring
 │   │   ├── state.js         # Client-side state helpers
 │   │   ├── triggers.js      # Chat trigger configuration UI
 │   │   └── platforms/       # Platform-specific view logic
@@ -228,6 +239,7 @@ StreamSuites-Dashboard/
 │   │   └── state/
 │   │       ├── README.md
 │   │       ├── jobs.json
+│   │       ├── quotas.json
 │   │       └── discord/
 │   │           └── runtime.json
 │   │
@@ -251,24 +263,25 @@ StreamSuites-Dashboard/
 │           └── youtube.html
 │
 └── schemas/
-    ├── chat_log.schema.json
     ├── chat_behaviour.schema.json
+    ├── chat_log.schema.json
     ├── clip_schema.json
     ├── creators.schema.json
     ├── jobs.schema.json
     ├── permissions.schema.json
+    ├── platform/
+    │   ├── discord.schema.json   # Control-plane runtime visibility (optional, read-only)
+    │   ├── rumble.schema.json
+    │   ├── twitch.schema.json
+    │   ├── twitter.schema.json
+    │   └── youtube.schema.json
     ├── poll_schema.json
+    ├── quotas.schema.json
     ├── ratelimits.schema.json
     ├── services.schema.json
     ├── system.schema.json
     ├── tiers.schema.json
-    ├── triggers.schema.json
-    └── platform/
-        ├── discord.schema.json   # Control-plane runtime visibility (optional, read-only)
-        ├── rumble.schema.json
-        ├── twitch.schema.json
-        ├── twitter.schema.json
-        └── youtube.schema.json
+    └── triggers.schema.json
 ```
 
 ---
@@ -295,6 +308,12 @@ Benefits:
 Schemas are treated as **contract files** between the dashboard and the runtime.
 
 Rumble platform schemas remain **authoritative and unchanged** even while the Rumble runtime is temporarily paused due to upstream API restrictions. No dashboard features have been removed, and runtime re-enablement is expected to occur without schema changes.
+
+### Quota Visibility (Visual-Only)
+
+- **Schema:** `schemas/quotas.schema.json` defines the runtime-exported quota contract (v1), including per-platform windows, usage, remaining units, reset times, and runtime-evaluated health status.
+- **Snapshot example:** `docs/shared/state/quotas.json` provides a representative export so the dashboard can render quota health without a live runtime.
+- **Readiness:** quotas are **visual-only**; the dashboard does **no API calls**, mutations, or live polling. Fresh exports must be generated by the runtime and dropped into the expected path.
 
 ---
 
@@ -342,6 +361,7 @@ Visual styling is influenced by existing dark-UI work (e.g. Mapbox dashboards, S
 - Job visibility (clips, queues)
 - Read-only runtime state inspection
 - Log / activity views
+- Quota health visualization (powered by exported snapshots; still visual-only)
 
 ### Historical Visibility (Planned)
 - Chat replay views
