@@ -20,7 +20,8 @@ const App = {
   currentView: null,
   views: {},
   initialized: false,
-  storage: {}
+  storage: {},
+  state: {} // ✅ ADDITIVE — read-only runtime snapshots live here
 };
 
 // Expose the App object on window for cross-file access (e.g., Overview view)
@@ -147,6 +148,59 @@ App.storage = {
       }
       return data;
     });
+  }
+};
+
+/* ======================================================================
+   ADDITIVE: RUNTIME SNAPSHOT FEED (READ-ONLY) — QUOTAS
+   - Pulls shared/state/quotas.json (runtime-published)
+   - Safe for GitHub Pages (silent if missing)
+   - No UI binding here; views can read App.state.quotas.latest
+   ====================================================================== */
+
+App.state.quotas = {
+  latest: null,
+  lastFetchedAt: null,
+  lastError: null,
+  intervalMs: 3000,
+  _timer: null,
+
+  async fetchOnce() {
+    try {
+      const url = new URL("shared/state/quotas.json", document.baseURI);
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) return;
+
+      const data = await res.json();
+
+      this.latest = data;
+      this.lastFetchedAt = Date.now();
+      this.lastError = null;
+    } catch (e) {
+      this.lastError = String(e);
+      // Silent failure: runtime may not be present
+    }
+  },
+
+  start() {
+    if (this._timer) return;
+
+    // Initial attempt (non-blocking)
+    this.fetchOnce();
+
+    this._timer = setInterval(() => {
+      this.fetchOnce();
+    }, this.intervalMs);
+  },
+
+  stop() {
+    if (!this._timer) return;
+    clearInterval(this._timer);
+    this._timer = null;
+  },
+
+  getSnapshot() {
+    return this.latest;
   }
 };
 
@@ -291,6 +345,9 @@ function initApp() {
   bindNavigation();
   bindDelegatedNavigation();
   bindHashChange();
+
+  // ✅ ADDITIVE: start quota feed (silent if file missing)
+  App.state.quotas.start();
 
   const initialView = resolveInitialView();
   loadView(initialView);

@@ -4,6 +4,7 @@
   const REFRESH_INTERVAL_MS = 15000;
 
   let refreshHandle = null;
+  let quotaRefreshHandle = null;
 
   const el = {};
 
@@ -42,12 +43,9 @@
     el.badgeYouTube = document.getElementById("badge-youtube");
 
     /* Quota bars (Overview placeholders) */
-    el.quotaDailyFill = document.querySelector(
-      ".ss-quota-row .ss-quota-fill"
-    );
-    el.quotaMinuteFill = document.querySelectorAll(
-      ".ss-quota-row .ss-quota-fill"
-    )[1];
+    const fills = document.querySelectorAll(".ss-quota-row .ss-quota-fill");
+    el.quotaDailyFill = fills[0] || null;
+    el.quotaMinuteFill = fills[1] || null;
   }
 
   /* ============================================================
@@ -193,11 +191,11 @@
   }
 
   /* ============================================================
-     API QUOTA (DEV PLACEHOLDER)
+     API QUOTA — RUNTIME-BACKED
      ============================================================ */
 
-  function animateQuotaBar(fillEl, used, max) {
-    if (!fillEl) return;
+  function animateQuotaBar(fillEl, used, max, status) {
+    if (!fillEl || !max) return;
 
     const percent = Math.min((used / max) * 100, 100);
 
@@ -211,21 +209,26 @@
       "width 1200ms cubic-bezier(0.19, 1, 0.22, 1)";
     fillEl.style.width = percent + "%";
 
-    if (used >= max - 10000) {
+    if (status === "exhausted") {
       fillEl.classList.add("danger");
-    } else if (used >= max - 50000) {
+    } else if (status === "buffer") {
       fillEl.classList.add("warn");
     }
   }
 
-  function updateQuotaPlaceholders() {
-    /* DEV-ONLY simulated values */
-    const DAILY_MAX = 200000;
-    const simulatedDailyUsed = 82000; // change freely for testing
-    const simulatedPerMinuteUsed = 120;
+  function updateQuotaFromRuntime() {
+    const snap = window.App?.state?.quotas?.getSnapshot?.();
+    if (!snap || typeof snap !== "object") return;
 
-    animateQuotaBar(el.quotaDailyFill, simulatedDailyUsed, DAILY_MAX);
-    animateQuotaBar(el.quotaMinuteFill, simulatedPerMinuteUsed, 1000);
+    // Current scope: YouTube daily units
+    if (snap.platform !== "youtube") return;
+
+    animateQuotaBar(
+      el.quotaDailyFill,
+      snap.used,
+      snap.max,
+      snap.status
+    );
   }
 
   /* ============================================================
@@ -277,13 +280,15 @@
     updateSystemStatus();
     updateLocalMetrics();
     refreshDiscord();
-    updateQuotaPlaceholders();
 
     setText(el.rumbleRuntime, "offline / unknown");
     setText(el.twitchRuntime, "offline / unknown");
     setText(el.youtubeRuntime, "offline / not connected");
 
     bindBadgeClicks();
+
+    updateQuotaFromRuntime();
+    quotaRefreshHandle = setInterval(updateQuotaFromRuntime, 3000);
 
     if (refreshHandle) clearInterval(refreshHandle);
     refreshHandle = setInterval(refreshDiscord, REFRESH_INTERVAL_MS);
@@ -293,6 +298,10 @@
     if (refreshHandle) {
       clearInterval(refreshHandle);
       refreshHandle = null;
+    }
+    if (quotaRefreshHandle) {
+      clearInterval(quotaRefreshHandle);
+      quotaRefreshHandle = null;
     }
   }
 

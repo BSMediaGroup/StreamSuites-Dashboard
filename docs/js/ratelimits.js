@@ -65,12 +65,35 @@
   let ratelimits = null;
 
   /* ------------------------------------------------------------
+     ELEMENT CACHE (READ-ONLY VISIBILITY)
+     ------------------------------------------------------------ */
+
+  const el = {};
+
+  function cacheElements() {
+    const rows = document.querySelectorAll(".ss-quota-row");
+
+    if (rows.length >= 2) {
+      el.daily = {
+        fill: rows[0].querySelector(".ss-quota-fill"),
+        label: rows[0].querySelector(".ss-quota-label span.muted")
+      };
+
+      el.minute = {
+        fill: rows[1].querySelector(".ss-quota-fill"),
+        label: rows[1].querySelector(".ss-quota-label span.muted")
+      };
+    }
+  }
+
+  /* ------------------------------------------------------------
      INIT
      ------------------------------------------------------------ */
 
   function init() {
     loadRatelimits();
-    // No rendering yet — view is documentation-only in Phase 1B
+    cacheElements();
+    hydrateQuotaVisibility(); // READ-ONLY
     console.info("[Ratelimits] Loaded configuration (Phase 1B)");
   }
 
@@ -174,6 +197,96 @@
     if ("creators" in data && typeof data.creators !== "object") return false;
     if ("platforms" in data && typeof data.platforms !== "object") return false;
     return true;
+  }
+
+  /* ------------------------------------------------------------
+     QUOTA VISIBILITY (READ-ONLY, RUNTIME-SOURCED)
+     ------------------------------------------------------------ */
+
+  function hydrateQuotaVisibility() {
+    if (
+      !window.StreamSuitesState?.loadQuotasSnapshot ||
+      !el.daily?.fill
+    ) {
+      hydrateQuotaFallback();
+      return;
+    }
+
+    Promise.resolve(window.StreamSuitesState.loadQuotasSnapshot())
+      .then((snapshots) => {
+        if (!Array.isArray(snapshots)) {
+          hydrateQuotaFallback();
+          return;
+        }
+
+        const yt = snapshots.find((q) => q.platform === "youtube");
+        if (!yt) {
+          hydrateQuotaFallback();
+          return;
+        }
+
+        animateQuotaBar(el.daily.fill, yt.used, yt.max);
+        setText(
+          el.daily.label,
+          `${yt.used.toLocaleString()} / ${yt.max.toLocaleString()}`
+        );
+
+        setText(el.minute.label, "runtime reported");
+      })
+      .catch(() => hydrateQuotaFallback());
+  }
+
+  function hydrateQuotaFallback() {
+    const DAILY_MAX = 200000;
+    const simulatedUsed = 82000;
+
+    if (el.daily?.fill) {
+      animateQuotaBar(el.daily.fill, simulatedUsed, DAILY_MAX);
+    }
+
+    if (el.daily?.label) {
+      setText(
+        el.daily.label,
+        `${simulatedUsed.toLocaleString()} / ${DAILY_MAX.toLocaleString()}`
+      );
+    }
+
+    if (el.minute?.label) {
+      setText(el.minute.label, "not enforced");
+    }
+  }
+
+  /* ------------------------------------------------------------
+     VISUALS ONLY (NO LOGIC)
+     ------------------------------------------------------------ */
+
+  function animateQuotaBar(fillEl, used, max) {
+    if (!fillEl || !max) return;
+
+    const percent = Math.min((used / max) * 100, 100);
+
+    fillEl.classList.remove("warn", "danger");
+    fillEl.style.transition = "none";
+    fillEl.style.width = "0%";
+
+    void fillEl.offsetWidth;
+
+    fillEl.style.transition =
+      "width 1200ms cubic-bezier(0.19, 1, 0.22, 1)";
+    fillEl.style.width = percent + "%";
+
+    if (used >= max) {
+      fillEl.classList.add("danger");
+    } else if (used >= max - 10000) {
+      fillEl.classList.add("danger");
+    } else if (used >= max - 50000) {
+      fillEl.classList.add("warn");
+    }
+  }
+
+  function setText(target, value) {
+    if (!target) return;
+    target.textContent = value;
   }
 
   /* ------------------------------------------------------------

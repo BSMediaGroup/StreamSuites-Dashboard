@@ -3,6 +3,8 @@
 
   const el = {};
 
+  const PLATFORM = "youtube";
+
   /* ============================================================
      ELEMENT CACHE
      ============================================================ */
@@ -20,13 +22,18 @@
     el.configBot = document.getElementById("yt-config-bot");
     el.configSource = document.getElementById("yt-config-source");
 
-    /* API quota placeholders (non-fatal if missing) */
+    /* API quota bars */
     el.quotaDailyFill = document.querySelector(
       ".ss-quota-row .ss-quota-fill"
     );
     el.quotaMinuteFill = document.querySelectorAll(
       ".ss-quota-row .ss-quota-fill"
     )[1];
+
+    /* Quota labels */
+    el.quotaDailyLabel = document.querySelector(
+      ".ss-quota-row .ss-quota-label span.muted"
+    );
   }
 
   /* ============================================================
@@ -45,6 +52,13 @@
       typeof window.App.storage.loadFromLocalStorage === "function"
     ) {
       return window.App.storage;
+    }
+    return null;
+  }
+
+  function getRuntimeQuotas() {
+    if (window.StreamSuitesState?.loadQuotasSnapshot) {
+      return window.StreamSuitesState.loadQuotasSnapshot();
     }
     return null;
   }
@@ -82,22 +96,17 @@
       return youtube === true || youtube?.enabled === true;
     });
 
-    if (!youtubeCreator) {
-      return "not configured";
-    }
+    if (!youtubeCreator) return "not configured";
 
     const youtube = youtubeCreator.platforms?.youtube || {};
-
-    const handle =
+    return (
       youtube.channel_handle ||
       youtube.handle ||
       youtube.channel ||
       youtube.channel_id ||
-      youtubeCreator.youtube_channel ||
-      youtubeCreator.youtube_handle ||
-      youtubeCreator.display_name;
-
-    return handle || "not configured";
+      youtubeCreator.display_name ||
+      "not configured"
+    );
   }
 
   function describeBot(creators) {
@@ -110,18 +119,15 @@
       return youtube === true || youtube?.enabled === true;
     });
 
-    if (!youtubeCreator) {
-      return "not configured";
-    }
+    if (!youtubeCreator) return "not configured";
 
     const youtube = youtubeCreator.platforms?.youtube || {};
-    const bot =
+    return (
       youtube.bot_identity ||
       youtube.bot ||
-      youtubeCreator.youtube_bot ||
-      youtubeCreator.bot_identity;
-
-    return bot || "not configured";
+      youtubeCreator.bot_identity ||
+      "not configured"
+    );
   }
 
   /* ============================================================
@@ -146,9 +152,7 @@
     setText(el.configBot, describeBot(creatorsArr));
     setText(
       el.configSource,
-      creatorsArr.length > 0
-        ? "local creators config"
-        : "no creators loaded"
+      creatorsArr.length ? "local creators config" : "no creators loaded"
     );
   }
 
@@ -180,53 +184,86 @@
   }
 
   /* ============================================================
-     API QUOTA (DEV PLACEHOLDER)
+     API QUOTA (RUNTIME-AWARE)
      ============================================================ */
 
   function animateQuotaBar(fillEl, used, max) {
-    if (!fillEl) return;
+    if (!fillEl || !max) return;
 
     const percent = Math.min((used / max) * 100, 100);
 
     fillEl.classList.remove("warn", "danger");
+    fillEl.style.transition = "none";
     fillEl.style.width = "0%";
 
-    /* force reflow */
     void fillEl.offsetWidth;
 
+    fillEl.style.transition =
+      "width 1200ms cubic-bezier(0.19, 1, 0.22, 1)";
     fillEl.style.width = percent + "%";
 
-    if (used >= max - 10000) {
+    if (used >= max) {
       fillEl.classList.add("danger");
-    } else if (used >= max - 50000) {
+    } else if (used >= max * 0.75) {
       fillEl.classList.add("warn");
     }
   }
 
-  function updateQuotaPlaceholders() {
-    /* DEV-ONLY simulated values */
+  async function hydrateQuotaFromRuntime() {
+    const snapshots = await getRuntimeQuotas();
+    if (!Array.isArray(snapshots)) return false;
+
+    const yt = snapshots.find(
+      (q) => q.platform === PLATFORM
+    );
+
+    if (!yt) return false;
+
+    animateQuotaBar(el.quotaDailyFill, yt.used, yt.max);
+
+    if (el.quotaDailyLabel) {
+      setText(
+        el.quotaDailyLabel,
+        `${yt.used.toLocaleString()} / ${yt.max.toLocaleString()}`
+      );
+    }
+
+    return true;
+  }
+
+  function updateQuotaFallback() {
+    /* DEV fallback */
     const DAILY_MAX = 200000;
-    const simulatedDailyUsed = 82000;   // tweak freely
-    const simulatedPerMinuteUsed = 120; // arbitrary placeholder
+    const simulatedDailyUsed = 82000;
+    const simulatedPerMinuteUsed = 120;
 
     animateQuotaBar(el.quotaDailyFill, simulatedDailyUsed, DAILY_MAX);
     animateQuotaBar(el.quotaMinuteFill, simulatedPerMinuteUsed, 1000);
+
+    if (el.quotaDailyLabel) {
+      setText(
+        el.quotaDailyLabel,
+        `${simulatedDailyUsed.toLocaleString()} / ${DAILY_MAX.toLocaleString()}`
+      );
+    }
   }
 
   /* ============================================================
      VIEW LIFECYCLE
      ============================================================ */
 
-  function init() {
+  async function init() {
     cacheElements();
     setFoundationStatus();
     hydrateConfig();
     hydrateRuntimePlaceholder();
-    updateQuotaPlaceholders();
+
+    const hydrated = await hydrateQuotaFromRuntime();
+    if (!hydrated) updateQuotaFallback();
   }
 
   function destroy() {
-    /* nothing to clean up yet */
+    /* no-op */
   }
 
   window.YouTubeView = {
