@@ -382,9 +382,19 @@ registerView("discord", {
    ------------------------------------------------------------ */
 
 registerView("ratelimits", {});
+
 registerView("settings", {});
+
 registerView("chat-replay", {});
-registerView("about", {});
+
+registerView("about", {
+  onLoad: () => {
+    window.AboutView?.init?.();
+  },
+  onUnload: () => {
+    window.AboutView?.destroy?.();
+  }
+});
 
 /* ----------------------------------------------------------------------
    Boot
@@ -395,6 +405,7 @@ document.addEventListener("DOMContentLoaded", initApp);
 /* ======================================================================
    ADDITIVE: RUNTIME EXPORT (DO NOT REMOVE OR INLINE)
    ====================================================================== */
+
 
 App.exportRuntimeCreators = function () {
   const creators = App.storage.loadFromLocalStorage("creators", []);
