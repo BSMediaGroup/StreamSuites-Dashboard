@@ -171,11 +171,28 @@ StreamSuites-Dashboard/
 │   │
 │   ├── assets/
 │   │   ├── backgrounds/    # Hero/gradient backdrops and texture fills
+│   │   │   ├── .gitkeep
+│   │   │   └── seodash.jpg
 │   │   ├── fonts/          # Self-hosted font files when needed
+│   │   │   └── .gitkeep
 │   │   ├── icons/          # UI icons and small glyphs
+│   │   │   ├── .gitkeep
+│   │   │   ├── favicon.ico
+│   │   │   └── win1.ico
 │   │   ├── illustrations/  # Informational or empty-state art
+│   │   │   └── .gitkeep
 │   │   ├── logos/          # Product and partner marks
+│   │   │   ├── LOG2-3D-SML.png
+│   │   │   ├── LOG2-3D.png
+│   │   │   ├── LOG2TRIM-SML.png
+│   │   │   ├── LOG2TRIM.png
+│   │   │   ├── Thumbs.db
+│   │   │   ├── logo.png
+│   │   │   ├── seodash.jpg
+│   │   │   ├── sswm.png
+│   │   │   └── streamsuites.svg
 │   │   └── placeholders/   # Temporary stock imagery and avatar fallbacks
+│   │       └── .gitkeep
 │   │
 │   ├── css/
 │   │   ├── base.css         # Layout, resets, typography
@@ -196,21 +213,42 @@ StreamSuites-Dashboard/
 │   │   ├── ratelimits.js    # Ratelimit editor/visualization
 │   │   ├── render.js        # Shared render helpers
 │   │   ├── state.js         # Client-side state helpers
-│   │   └── triggers.js      # Chat trigger configuration UI
+│   │   ├── triggers.js      # Chat trigger configuration UI
+│   │   └── platforms/       # Platform-specific view logic
+│   │       ├── discord.js
+│   │       ├── rumble.js
+│   │       ├── twitch.js
+│   │       ├── twitter.js
+│   │       └── youtube.js
 │   │
 │   ├── polls/
 │   │   └── results.html
 │   │
+│   ├── shared/
+│   │   └── state/
+│   │       ├── README.md
+│   │       ├── jobs.json
+│   │       └── discord/
+│   │           └── runtime.json
+│   │
 │   └── views/
+│       ├── about.html
 │       ├── chat-replay.html
 │       ├── clips.html
 │       ├── creators.html
+│       ├── discord.html
 │       ├── jobs.html
 │       ├── overview.html
 │       ├── polls.html
 │       ├── ratelimits.html
 │       ├── settings.html
-│       └── triggers.html
+│       ├── triggers.html
+│       └── platforms/
+│           ├── discord.html
+│           ├── rumble.html
+│           ├── twitch.html
+│           ├── twitter.html
+│           └── youtube.html
 │
 └── schemas/
     ├── chat_log.schema.json
