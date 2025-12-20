@@ -28,6 +28,42 @@
 <main class="ss-main">
 
   <!-- ------------------------------------------------------- -->
+  <!-- GLOBAL PLATFORM SERVICE -->
+  <!-- ------------------------------------------------------- -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Global Service Status</h2>
+    </header>
+
+    <div class="ss-panel-body">
+
+      <p class="muted">
+        This toggle controls whether the Twitch platform runtime is enabled
+        globally. Changes require a full StreamSuites runtime restart.
+      </p>
+
+      <div class="ss-form-row">
+        <label>Twitch Service Enabled</label>
+
+        <label class="switch-button">
+          <div class="switch-outer">
+            <input
+              type="checkbox"
+              disabled
+              data-service="twitch"
+            >
+            <div class="button">
+              <span class="button-toggle"></span>
+              <span class="button-indicator"></span>
+            </div>
+          </div>
+        </label>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------- -->
   <!-- RUNTIME CONNECTIVITY (DETERMINISTIC PLACEHOLDER) -->
   <!-- ------------------------------------------------------- -->
   <section class="ss-panel">
@@ -102,7 +138,8 @@
       </table>
 
       <p class="muted" style="margin-top: 0.5rem;">
-        Configuration is read from local storage exports (creators/services). The runtime remains authoritative.
+        Configuration is read from local storage exports (creators/services).
+        The runtime remains authoritative.
       </p>
     </div>
   </section>
@@ -117,9 +154,15 @@
 
     <div class="ss-panel-body">
       <ul class="ss-list muted">
-        <li id="tw-trigger-placeholder">Trigger registry groundwork will surface here.</li>
-        <li>Chat visibility will hydrate from exported snapshots when available.</li>
-        <li>All Twitch execution remains in the StreamSuites runtime repository.</li>
+        <li id="tw-trigger-placeholder">
+          Trigger registry groundwork will surface here.
+        </li>
+        <li>
+          Chat visibility will hydrate from exported snapshots when available.
+        </li>
+        <li>
+          All Twitch execution remains in the StreamSuites runtime repository.
+        </li>
       </ul>
     </div>
   </section>

@@ -26,6 +26,42 @@
 <main class="ss-main">
 
   <!-- ------------------------------------------------------- -->
+  <!-- GLOBAL PLATFORM SERVICE -->
+  <!-- ------------------------------------------------------- -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Global Service Status</h2>
+    </header>
+
+    <div class="ss-panel-body">
+
+      <p class="muted">
+        This toggle controls whether the Rumble platform runtime is enabled
+        globally. Changes require a full StreamSuites runtime restart.
+      </p>
+
+      <div class="ss-form-row">
+        <label>Rumble Service Enabled</label>
+
+        <label class="switch-button">
+          <div class="switch-outer">
+            <input
+              type="checkbox"
+              disabled
+              data-service="rumble"
+            >
+            <div class="button">
+              <span class="button-toggle"></span>
+              <span class="button-indicator"></span>
+            </div>
+          </div>
+        </label>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------- -->
   <!-- RUNTIME CONNECTIVITY (STATIC PLACEHOLDER) -->
   <!-- ------------------------------------------------------- -->
   <section class="ss-panel">
@@ -112,7 +148,8 @@
       </table>
 
       <p class="muted" style="margin-top: 0.5rem;">
-        Configuration is read from local storage exports (creators/services). The runtime remains authoritative.
+        Configuration is read from local storage exports (creators/services).
+        The runtime remains authoritative.
       </p>
     </div>
   </section>
@@ -127,9 +164,15 @@
 
     <div class="ss-panel-body">
       <ul class="ss-list muted">
-        <li id="rumble-trigger-placeholder">Trigger registry groundwork will surface here.</li>
-        <li>Chat visibility will hydrate from exported snapshots when available.</li>
-        <li>Clip and poll support remain deferred to the runtime repository.</li>
+        <li id="rumble-trigger-placeholder">
+          Trigger registry groundwork will surface here.
+        </li>
+        <li>
+          Chat visibility will hydrate from exported snapshots when available.
+        </li>
+        <li>
+          Clip and poll support remain deferred to the runtime repository.
+        </li>
       </ul>
     </div>
   </section>
