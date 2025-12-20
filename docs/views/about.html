@@ -1,7 +1,7 @@
-<!-- ================================================================
-     StreamSuites — About This Project
-     Read-only informational view
-     ================================================================ -->
+<!-- ================================================================ -->
+<!-- StreamSuites — About This Project (Dashboard scope only) -->
+<!-- Read-only informational view -->
+<!-- ================================================================ -->
 
 <section class="ss-panel">
 
@@ -12,179 +12,108 @@
   <div class="ss-panel-body">
 
     <!-- ============================================================ -->
-    <!-- OVERVIEW -->
+    <!-- CURRENT PHASE -->
     <!-- ============================================================ -->
     <section>
-      <h3>What is StreamSuites?</h3>
+      <h3>Current Phase</h3>
       <p>
-        <strong>StreamSuites</strong> is a modular, multi-platform livestream automation
-        system designed to give creators structured, deterministic control over how
-        their live streams interact with chat, generate clips, run polls, and publish
-        content across platforms.
-      </p>
-      <p>
-        The system is intentionally split into two major components:
-      </p>
-      <ul class="ss-list">
-        <li>
-          <strong>StreamSuites Runtime</strong> — the execution engine that connects to
-          livestream platforms, listens to chat, evaluates rules, and performs actions.
-        </li>
-        <li>
-          <strong>StreamSuites Dashboard</strong> — a static, browser-based configuration
-          and inspection surface that produces runtime-ready configuration.
-        </li>
-      </ul>
-      <p>
-        This separation is deliberate. Configuration and execution are decoupled to
-        ensure safety, clarity, portability, and auditability.
-      </p>
-    </section>
-
-    <!-- ============================================================ -->
-    <!-- DESIGN PHILOSOPHY -->
-    <!-- ============================================================ -->
-    <section>
-      <h3>Design Philosophy</h3>
-      <ul class="ss-list">
-        <li><strong>No magic:</strong> all behavior is defined by explicit configuration.</li>
-        <li><strong>No frameworks:</strong> minimal dependencies, predictable behavior.</li>
-        <li><strong>Deterministic execution:</strong> identical input produces identical output.</li>
-        <li><strong>Read-only safety:</strong> dashboards never directly control live bots.</li>
-        <li><strong>Platform-agnostic core:</strong> platform logic lives at the edges.</li>
-      </ul>
-      <p>
-        StreamSuites is intentionally designed to be boring in the best sense:
-        inspectable, debuggable, and resistant to platform churn.
-      </p>
-    </section>
-
-    <!-- ============================================================ -->
-    <!-- REPOSITORY & SYSTEM TOPOLOGY -->
-    <!-- ============================================================ -->
-    <section>
-      <h3>System & Repository Topology</h3>
-      <ul class="ss-list">
-        <li>
-          <strong>StreamSuites (Runtime repository):</strong>
-          Python-based execution environment that consumes exported configuration and
-          performs live automation.
-        </li>
-        <li>
-          <strong>StreamSuites Dashboard (this repository):</strong>
-          Static HTML, CSS, and vanilla JavaScript served via GitHub Pages or embedded
-          as an iframe (e.g. Wix Studio).
-        </li>
-      </ul>
-      <p>
-        The dashboard stores configuration locally (via <code>localStorage</code>) and
-        exports JSON that is explicitly imported into the runtime.
+        StreamSuites is in a stabilization phase focused on deterministic configuration, static visibility, and platform-aligned scaffolds. The dashboard remains a static, read-only surface that mirrors the runtime contracts without driving live automation.
       </p>
       <p class="muted">
-        Dashboard → JSON Export → Runtime Import → Live Execution
+        Scope for this repo: documentation-grade UI, local storage inspection, and JSON exports only.
       </p>
     </section>
 
     <!-- ============================================================ -->
-    <!-- CURRENT DASHBOARD FEATURES -->
+    <!-- ARCHITECTURE & SEPARATION OF CONCERNS -->
     <!-- ============================================================ -->
     <section>
-      <h3>Current Dashboard Features</h3>
+      <h3>Architecture & Separation of Concerns</h3>
+      <ul class="ss-list">
+        <li>
+          <strong>StreamSuites Unified Runtime:</strong>
+          Executes automation, connects to platforms, and remains the source of truth for chat triggers, jobs, and live state.
+        </li>
+        <li>
+          <strong>StreamSuites Dashboard (this repo):</strong>
+          Static HTML/CSS/JS that runs in-browser, stores configuration locally, and exports JSON for the runtime. No backend calls or live control paths are present.
+        </li>
+        <li>
+          <strong>Platform Clients:</strong>
+          Per-platform adapters (Discord, Twitch, YouTube, Rumble, Twitter) live alongside the runtime and consume exported configuration. The dashboard only reflects their expected contracts.
+        </li>
+      </ul>
+      <p class="muted">
+        Configuration, observability, and execution are intentionally decoupled to preserve safety and auditability.
+      </p>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- DASHBOARD CAPABILITIES (READ-ONLY) -->
+    <!-- ============================================================ -->
+    <section>
+      <h3>Dashboard Capabilities (Static)</h3>
 
       <h4>Overview</h4>
       <ul class="ss-list">
-        <li>High-level system and storage status indicators</li>
-        <li>Configuration summary counts</li>
-        <li>Read-only visibility into stored configuration</li>
+        <li>High-level storage status and configuration counts</li>
+        <li>Snapshot visibility for creators, triggers, and jobs</li>
       </ul>
 
       <h4>Creators</h4>
       <ul class="ss-list">
         <li>Create and edit creator profiles</li>
-        <li>Platform enablement (e.g. Rumble)</li>
-        <li>Schema-complete placeholders required by the runtime</li>
+        <li>Platform enablement fields aligned with runtime schemas</li>
         <li>Import and export creators as JSON</li>
       </ul>
 
       <h4>Chat Triggers</h4>
       <ul class="ss-list">
-        <li>Define trigger phrases and match modes</li>
-        <li>Configure responses and cooldowns</li>
+        <li>Define trigger phrases, match modes, responses, and cooldowns</li>
         <li>Import and export trigger definitions</li>
       </ul>
 
       <h4>Jobs</h4>
       <ul class="ss-list">
-        <li>Read-only visibility into job statistics</li>
-        <li>Breakdowns by status, type, and creator</li>
+        <li>Read-only statistics and breakdowns</li>
       </ul>
 
       <h4>Placeholder & Scaffolded Modules</h4>
       <ul class="ss-list">
-        <li>Clips</li>
-        <li>Polls</li>
-        <li>Rate Limits</li>
-        <li>Settings</li>
-        <li>Chat Replay</li>
-        <li>Platform-specific views (Rumble, YouTube, Twitch, Twitter, Discord)</li>
+        <li>Clips, Polls, Rate Limits, Settings, Chat Replay</li>
+        <li>Platform views for Rumble, YouTube, Twitch, Twitter, Discord (static visibility only)</li>
       </ul>
     </section>
 
     <!-- ============================================================ -->
-    <!-- PLANNED FEATURES -->
+    <!-- CURRENT LIMITATIONS & DEFERRED FEATURES -->
     <!-- ============================================================ -->
     <section>
-      <h3>Planned & Future Features</h3>
+      <h3>Current Limitations & Deferred Features</h3>
       <ul class="ss-list">
-        <li>Chat-triggered clip generation with timing rules</li>
-        <li>Live polls driven by chat voting</li>
-        <li>Per-creator and per-platform rate limiting</li>
-        <li>Historical chat replay and visualization</li>
-        <li>Multi-platform posting and automation rules</li>
-        <li>Expanded job diagnostics and observability</li>
-        <li>Role-aware dashboard presentation (Creator vs Admin)</li>
+        <li>No live platform connectivity from the dashboard; runtime exports remain authoritative.</li>
+        <li>No authentication, permissions, or role gating in this phase.</li>
+        <li>Chat Replay, Rate Limits, Clips, and Polls are UI placeholders pending runtime support.</li>
+        <li>Platform pages are read-only scaffolds; they do not initiate API calls or bot actions.</li>
+        <li>No backend APIs or live data bindings are assumed or invoked.</li>
+      </ul>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- DASHBOARD MODES (FUTURE-FACING) -->
+    <!-- ============================================================ -->
+    <section>
+      <h3>Dashboard Modes (Creator vs Admin)</h3>
+      <p>
+        The layout reserves space for future mode differentiation without enforcing it today:
+      </p>
+      <ul class="ss-list">
+        <li><strong>Creator Mode:</strong> personal automation setup and visibility.</li>
+        <li><strong>Admin Mode:</strong> cross-creator observability and system controls.</li>
       </ul>
       <p class="muted">
-        Features are staged intentionally and may evolve as platforms and constraints change.
+        Mode-aware behavior is deferred until authentication and authorization are introduced.
       </p>
-    </section>
-
-    <!-- ============================================================ -->
-    <!-- CREATOR VS ADMIN MODES -->
-    <!-- ============================================================ -->
-    <section>
-      <h3>Creator vs Admin Dashboard Modes</h3>
-      <p>
-        StreamSuites is being designed with a future dual-mode dashboard in mind:
-      </p>
-      <ul class="ss-list">
-        <li>
-          <strong>Creator Mode:</strong>
-          Focused on configuring personal automation behavior.
-        </li>
-        <li>
-          <strong>Admin Mode:</strong>
-          Expanded visibility and control across multiple creators and systems.
-        </li>
-      </ul>
-      <p>
-        At present, all features are visible and no authentication or permission system
-        is enforced. The UI is structured to support future role indication without
-        introducing premature complexity.
-      </p>
-    </section>
-
-    <!-- ============================================================ -->
-    <!-- NON-GOALS -->
-    <!-- ============================================================ -->
-    <section>
-      <h3>Explicit Non-Goals</h3>
-      <ul class="ss-list">
-        <li>No live bot control from the dashboard</li>
-        <li>No authentication or account system at this stage</li>
-        <li>No opaque automation or hidden behavior</li>
-        <li>No reliance on third-party frontend frameworks</li>
-      </ul>
     </section>
 
     <!-- ============================================================ -->
@@ -193,16 +122,126 @@
     <section>
       <h3>Project Status</h3>
       <p>
-        StreamSuites is under active development. This dashboard represents the
-        canonical configuration surface for the system and is expected to evolve
-        alongside the runtime as new capabilities are added.
-      </p>
-      <p class="muted">
-        This page exists to provide continuity, orientation, and shared understanding
-        as the project grows.
+        The dashboard tracks the StreamSuites runtime but does not replace it. Each view is intentionally static, mapping to stable DOM IDs and schemas so runtime exports can hydrate them later without restructuring the UI.
       </p>
     </section>
 
   </div>
 
+</section>
+
+<!-- ================================================================ -->
+<!-- VISUAL ROADMAP (STATIC) -->
+<!-- ================================================================ -->
+<section class="ss-panel" style="margin-top: 16px;">
+  <header class="ss-panel-header">
+    <h2>Roadmap (Visual Only)</h2>
+  </header>
+
+  <div class="ss-panel-body">
+    <p class="muted">
+      Percentages are static and intended for manual updates. No runtime logic is attached.
+    </p>
+
+    <div class="ss-progress-row">
+      <div class="ss-progress-label">
+        StreamSuites Unified Runtime
+        <span class="ss-progress-meta">55%</span>
+      </div>
+      <div class="ss-progress">
+        <div class="ss-progress-bar" style="width:55%;"></div>
+      </div>
+    </div>
+
+    <div class="ss-progress-row">
+      <div class="ss-progress-label">
+        Administrator Dashboard UI
+        <span class="ss-progress-meta">40%</span>
+      </div>
+      <div class="ss-progress">
+        <div class="ss-progress-bar" style="width:40%;"></div>
+      </div>
+    </div>
+
+    <div class="ss-progress-row">
+      <div class="ss-progress-label">
+        Creator Dashboard UI
+        <span class="ss-progress-meta">35%</span>
+      </div>
+      <div class="ss-progress">
+        <div class="ss-progress-bar" style="width:35%;"></div>
+      </div>
+    </div>
+
+    <div class="ss-progress-row">
+      <div class="ss-progress-label">
+        Discord Client
+        <span class="ss-progress-meta">45%</span>
+      </div>
+      <div class="ss-progress">
+        <div class="ss-progress-bar" style="width:45%;"></div>
+      </div>
+    </div>
+
+    <div class="ss-progress-row">
+      <div class="ss-progress-label">
+        Rumble Client
+        <span class="ss-progress-meta">30%</span>
+      </div>
+      <div class="ss-progress">
+        <div class="ss-progress-bar" style="width:30%;"></div>
+      </div>
+    </div>
+
+    <div class="ss-progress-row">
+      <div class="ss-progress-label">
+        YouTube Client
+        <span class="ss-progress-meta">35%</span>
+      </div>
+      <div class="ss-progress">
+        <div class="ss-progress-bar" style="width:35%;"></div>
+      </div>
+    </div>
+
+    <div class="ss-progress-row">
+      <div class="ss-progress-label">
+        Twitch Client
+        <span class="ss-progress-meta">40%</span>
+      </div>
+      <div class="ss-progress">
+        <div class="ss-progress-bar" style="width:40%;"></div>
+      </div>
+    </div>
+
+    <div class="ss-progress-row">
+      <div class="ss-progress-label">
+        Twitter Client / Integration
+        <span class="ss-progress-meta">10%</span>
+      </div>
+      <div class="ss-progress">
+        <div class="ss-progress-bar" style="width:10%;"></div>
+      </div>
+    </div>
+
+    <div class="ss-progress-row">
+      <div class="ss-progress-label">
+        WinForms GUI (Admin & System Controls)
+        <span class="ss-progress-meta">20%</span>
+      </div>
+      <div class="ss-progress">
+        <div class="ss-progress-bar" style="width:20%;"></div>
+      </div>
+    </div>
+
+    <div class="ss-progress-row">
+      <div class="ss-progress-label">
+        Unified Live Chat Replay Module
+        <span class="ss-progress-meta">25%</span>
+      </div>
+      <div class="ss-progress">
+        <div class="ss-progress-bar" style="width:25%;"></div>
+      </div>
+    </div>
+
+  </div>
 </section>

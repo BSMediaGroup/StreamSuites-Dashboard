@@ -325,7 +325,9 @@ registerView("jobs", {
 
 registerView("clips", {});
 registerView("polls", {});
-registerView("rumble", {});
+registerView("rumble", {
+  templatePath: "platforms/rumble"
+});
 registerView("youtube", {
   templatePath: "platforms/youtube",
   onLoad: () => {
@@ -344,7 +346,9 @@ registerView("twitch", {
     window.TwitchView?.destroy?.();
   }
 });
-registerView("twitter", {});
+registerView("twitter", {
+  templatePath: "platforms/twitter"
+});
 registerView("discord", {
   onLoad: () => {
     window.DiscordView?.init?.();
