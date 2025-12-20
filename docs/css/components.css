@@ -609,5 +609,33 @@ button,
   cursor: not-allowed;
 }
 
+/* ------------------------------------------------------------------
+   Toggle Hardening — prevent global dashboard styles from breaking it
+   ------------------------------------------------------------------ */
+
+.switch-button *,
+.switch-button *::before,
+.switch-button *::after {
+  box-sizing: content-box !important;
+  line-height: normal !important;
+  transform: none;
+  filter: none;
+}
+
+.switch-button span {
+  display: block;
+  flex-shrink: 0;
+}
+
+.switch-button .button {
+  overflow: visible;
+}
+
+.switch-button .button-toggle,
+.switch-button .button-indicator {
+  overflow: visible;
+  aspect-ratio: 1 / 1;
+}
+
 
 /* ====================================================================== */
