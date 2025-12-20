@@ -1,1 +1,31 @@
-{}
+{
+  "global": {
+    "chat_messages_per_minute": null,
+    "trigger_responses_per_minute": null,
+    "api_requests_per_minute": null,
+    "jobs_per_minute": null,
+
+    "youtube_daily_units_max": 200000,
+    "youtube_daily_units_buffer": 50000
+  },
+  "creators": {
+    "creator_id_here": {
+      "overrides": {
+        "chat_messages_per_minute": 10,
+        "api_requests_per_minute": null,
+        "youtube_daily_units_max": 200000,
+        "youtube_daily_units_buffer": 50000
+      }
+    }
+  },
+  "platforms": {
+    "youtube": {
+      "chat_messages_per_minute": 20,
+      "api_requests_per_minute": 120,
+      "youtube_daily_units_max": 200000,
+      "youtube_daily_units_buffer": 50000
+    },
+    "twitch": {},
+    "rumble": {}
+  }
+}
