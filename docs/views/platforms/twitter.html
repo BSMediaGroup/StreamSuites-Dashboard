@@ -40,26 +40,39 @@
         globally. Changes require a full StreamSuites runtime restart.
       </p>
 
-      <div class="ss-form-row">
-        <label>Twitter Service Enabled</label>
+      <!-- Horizontal / space-efficient layout using existing table component styles -->
+      <table class="ss-table ss-table-compact">
+        <tbody>
 
-        <label class="switch-button">
-          <div class="switch-outer">
-            <input
-              type="checkbox"
-              disabled
-              data-service="twitter"
-            >
-            <div class="button">
-              <span class="button-toggle"></span>
-              <span class="button-indicator"></span>
-            </div>
-          </div>
-        </label>
-      </div>
+          <tr>
+            <td>Twitter Service Enabled</td>
+            <td class="align-right">
+              <label class="switch-button" aria-label="Twitter service toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input
+                      type="checkbox"
+                      disabled
+                      data-service="twitter"
+                    />
+                    <div class="button">
+                      <span class="button-toggle"></span>
+                      <span class="button-indicator"></span>
+                    </div>
+                  </div>
+                </div>
+              </label>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
 
     </div>
   </section>
+
+</main>
+
 
   <!-- ------------------------------------------------------- -->
   <!-- INTEGRATION STATE -->
