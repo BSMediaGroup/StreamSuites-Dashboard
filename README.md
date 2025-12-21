@@ -156,6 +156,12 @@ These are **control-plane only** capabilities that complement, but do not replac
 - Runtime snapshots (heartbeat, connection state, last seen message) are optional exports from the runtime; absence of data is expected in static deployments.
 - Platform sequencing remains **Twitch foundation first**, with **YouTube hydration next** and **Rumble alignment after upstream access stabilizes**.
 
+### New Dashboard Views
+
+- **Scoreboards** (`docs/views/scoreboards.html`) — static scoreboard visibility surface registered in the router; ready for schema-driven hydration.
+- **Scoreboard Management** (`docs/views/scoreboard-management.html`) — administrative scaffold for planned scoreboard curation and edits.
+- **Support** (`docs/views/support.html`) — documentation-forward view for operational and support workflows.
+
 ---
 
 ## Directory Structure
@@ -249,10 +255,13 @@ StreamSuites-Dashboard/
 │       ├── clips.html
 │       ├── creators.html
 │       ├── discord.html
+│       ├── support.html
+│       ├── scoreboards.html
 │       ├── jobs.html
 │       ├── overview.html
 │       ├── polls.html
 │       ├── ratelimits.html
+│       ├── scoreboard-management.html
 │       ├── settings.html
 │       ├── triggers.html
 │       └── platforms/
