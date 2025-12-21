@@ -400,6 +400,10 @@ registerView("jobs", {
 
 registerView("clips", {});
 registerView("polls", {});
+registerView("scoreboards", {});
+registerView("scoreboard-management", {
+  templatePath: "scoreboard-management"
+});
 registerView("rumble", {
   templatePath: "platforms/rumble"
 });
@@ -432,6 +436,9 @@ registerView("discord", {
   onUnload: () => {
     window.DiscordView?.destroy?.();
   }
+});
+registerView("support", {
+  templatePath: "support"
 });
 
 /* ------------------------------------------------------------

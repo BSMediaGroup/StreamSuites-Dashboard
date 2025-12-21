@@ -1,0 +1,94 @@
+<!-- ========================================================= -->
+<!-- StreamSuites — Scoreboard Management (VIEW PARTIAL) -->
+<!-- Creator/Admin-facing scoreboard controls (placeholder only) -->
+<!-- ========================================================= -->
+
+<header class="ss-header">
+  <div class="ss-header-left">
+    <h1 class="ss-title">StreamSuites</h1>
+    <span class="ss-subtitle">Scoreboard Management</span>
+  </div>
+</header>
+
+<main class="ss-main">
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Scoreboard Management</h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <p class="muted">
+        Creator and admin-only visibility for scoreboard configuration. All
+        execution, tally resets, and data handling remain runtime-owned; this
+        dashboard page surfaces placeholders for the planned controls.
+      </p>
+
+      <div
+        class="ss-grid two-cols"
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; align-items: start;"
+      >
+        <div class="ss-tile">
+          <h3>Manage Scoreboards</h3>
+          <p class="muted">
+            Placeholder controls for enabling, disabling, and reviewing
+            scoreboards per creator. Runtime APIs will enforce changes; this UI
+            stays read-only until contracts are published.
+          </p>
+          <button class="ss-btn ss-btn-secondary" disabled>
+            Edit selected scoreboard (placeholder)
+          </button>
+        </div>
+
+        <div class="ss-tile">
+          <h3>Reset Tallies</h3>
+          <p class="muted">
+            Placeholder reset action for monthly or ad-hoc scoreboard clears.
+            Execution will be handled by the runtime; this control will trigger
+            visible status only once wiring is available.
+          </p>
+          <button class="ss-btn ss-btn-secondary" disabled>
+            Reset tallies (placeholder)
+          </button>
+        </div>
+
+        <div class="ss-tile">
+          <h3>Import / Export</h3>
+          <p class="muted">
+            JSON and CSV formats are planned for scoreboard import/export.
+            Buttons are placeholders until runtime schema alignment is ready.
+          </p>
+          <div class="ss-inline" style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="ss-btn ss-btn-secondary" disabled>
+              Import JSON / CSV
+            </button>
+            <button class="ss-btn ss-btn-secondary" disabled>
+              Export JSON / CSV
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ss-panel" style="margin-top: 16px;">
+        <header class="ss-panel-header">
+          <h3>Visibility Only</h3>
+        </header>
+        <div class="ss-panel-body">
+          <ul class="ss-list muted">
+            <li>Configuration-first view — no live scoreboard mutation.</li>
+            <li>Import/export and reset flows defer to runtime enforcement.</li>
+            <li>Designed for registered creators and system admins.</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="ss-footer">
+  <span class="muted">
+    Configuration and visibility surface — runtime executes all changes.
+  </span>
+</footer>

@@ -145,7 +145,7 @@
 <!-- ================================================================ -->
 <!-- VISUAL ROADMAP (STATIC) -->
 <!-- ================================================================ -->
-<section class="ss-panel" style="margin-top: 16px;">
+<section class="ss-panel" id="roadmap" style="margin-top: 16px;">
   <header class="ss-panel-header">
     <h2>Roadmap (Visual Only)</h2>
   </header>
@@ -332,6 +332,52 @@
       </div>
     </div>
 
+    <p class="muted" style="margin-top: 12px;">
+      Mechanics are not finalized; implementation details remain pending and will follow runtime design updates.
+    </p>
+
+    <div style="margin-top: 12px;">
+      <h3>Planned Modules</h3>
+
+      <section style="margin-top: 8px;">
+        <h4>Levelling System</h4>
+        <ul class="ss-list">
+          <li>Tracks live chat participation per user</li>
+          <li>Each message contributes configurable score values</li>
+          <li>Scores accrue per registered creator</li>
+          <li>Long-term goal: unify viewer identities across Rumble, Twitch, and YouTube using regex/exact name matching</li>
+          <li>Where successful, a user’s scoreboard reflects their true global score for that creator</li>
+        </ul>
+        <p class="muted">Status: Planned / Experimental — Implementation: Runtime-owned (placeholder only)</p>
+      </section>
+
+      <section style="margin-top: 12px;">
+        <h4>Fake Gambling / Game Mechanics</h4>
+        <ul class="ss-list">
+          <li>Purely fictional, no real money</li>
+          <li>Text-triggered chat games (e.g. !steal, !loot @user)</li>
+          <li>Randomized success/failure outcomes</li>
+          <li>Failed attempts may incur in-game penalties</li>
+          <li>Randomness may be true RNG or pattern-based as long as it convincingly appears random</li>
+          <li>All balances and tallies are in-game only</li>
+        </ul>
+        <p class="muted">Status: Planned — Implementation: Runtime-owned (placeholder only)</p>
+      </section>
+
+      <section style="margin-top: 12px;">
+        <h4>Paid Interaction Detection</h4>
+        <ul class="ss-list">
+          <li>Detects gifted subscriptions and paid messages (Rumble Rants, YouTube Super Chats, etc.)</li>
+          <li>Detection may be regex-based or platform-native</li>
+          <li>Monthly gifter scoreboard visualized as a pie chart</li>
+          <li>Pie slice size correlates to gifts per user</li>
+          <li>Scoreboard resets each calendar month</li>
+          <li>Monthly winner is publicly visible</li>
+          <li>Registered creators can view and award winners</li>
+        </ul>
+        <p class="muted">Status: Planned / Design In Progress — Implementation: Runtime-owned (placeholder only)</p>
+      </section>
+    </div>
+
   </div>
 </section>
-
