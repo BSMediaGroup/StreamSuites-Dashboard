@@ -86,13 +86,13 @@
     }
 
     /* ---------------------------------------------------------- */
-    /* Footer layout + link behavior (SAFE, SCOPED) */
+    /* Footer layout — TRUE CENTERED GRID (SAFE, SCOPED) */
     /* ---------------------------------------------------------- */
     #app-footer {
-      display: flex;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
       align-items: center;
-      justify-content: space-between;
-      gap: 20px;
+      column-gap: 20px;
     }
 
     #app-footer .footer-left,
@@ -105,7 +105,8 @@
     }
 
     #app-footer .footer-center {
-      margin: 0 auto;
+      justify-content: center;
+      text-align: center;
     }
 
     #app-footer a {
@@ -206,7 +207,7 @@
         <span>(support server)</span>
       </div>
 
-      <!-- Center -->
+      <!-- Center (TRUE CENTERED) -->
       <div class="footer-center">
         <span>StreamSuites™ Dashboard</span>
         <span class="footer-sep">•</span>
