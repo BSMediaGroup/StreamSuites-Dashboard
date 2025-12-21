@@ -86,13 +86,30 @@
     }
 
     /* ---------------------------------------------------------- */
-    /* Footer layout — TRUE CENTERED GRID (SAFE, SCOPED) */
+    /* Footer link hover behavior (SAFE, SCOPED) */
     /* ---------------------------------------------------------- */
+    #app-footer a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    #app-footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* ---------------------------------------------------------- */
+    /* Footer layout — HARD LEFT / TRUE CENTER / HARD RIGHT
+       NOTE: base.css sets #app-footer { display:flex; justify-content:center }
+       Since base.css loads AFTER this <style>, we must override deterministically.
+       ---------------------------------------------------------- */
     #app-footer {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: center;
-      column-gap: 20px;
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
+      align-items: center !important;
+      column-gap: 20px !important;
+
+      /* Defensive: neutralize any flex-centric props from base.css */
+      justify-content: stretch !important;
     }
 
     #app-footer .footer-left,
@@ -104,18 +121,20 @@
       white-space: nowrap;
     }
 
+    #app-footer .footer-left {
+      justify-self: start;
+    }
+
     #app-footer .footer-center {
+      justify-self: center;
       justify-content: center;
       text-align: center;
     }
 
-    #app-footer a {
-      text-decoration: none;
-      color: inherit;
-    }
-
-    #app-footer a:hover {
-      text-decoration: underline;
+    #app-footer .footer-right {
+      justify-self: end;
+      justify-content: flex-end;
+      text-align: right;
     }
 
     #app-footer .discord-icon {
@@ -207,7 +226,7 @@
         <span>(support server)</span>
       </div>
 
-      <!-- Center (TRUE CENTERED) -->
+      <!-- Center -->
       <div class="footer-center">
         <span>StreamSuites™ Dashboard</span>
         <span class="footer-sep">•</span>
