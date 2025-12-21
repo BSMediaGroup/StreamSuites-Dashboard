@@ -86,8 +86,28 @@
     }
 
     /* ---------------------------------------------------------- */
-    /* Footer link hover behavior (SAFE, SCOPED) */
+    /* Footer layout + link behavior (SAFE, SCOPED) */
     /* ---------------------------------------------------------- */
+    #app-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    #app-footer .footer-left,
+    #app-footer .footer-center,
+    #app-footer .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    #app-footer .footer-center {
+      margin: 0 auto;
+    }
+
     #app-footer a {
       text-decoration: none;
       color: inherit;
@@ -95,6 +115,13 @@
 
     #app-footer a:hover {
       text-decoration: underline;
+    }
+
+    #app-footer .discord-icon {
+      height: 1em;
+      width: auto;
+      vertical-align: middle;
+      opacity: 0.9;
     }
   </style>
 
@@ -165,13 +192,34 @@
 
     <!-- Footer -->
     <footer id="app-footer">
-      <span>StreamSuites™ Dashboard</span>
-      <span class="footer-sep">•</span>
-      <span>© 2025 Brainstream Media Group</span>
-      <span class="footer-sep">•</span>
-      <a href="https://brainstream.media" target="_blank" rel="noopener noreferrer">
-        brainstream.media
-      </a>
+
+      <!-- Left -->
+      <div class="footer-left">
+        <img
+          src="./assets/icons/discord-silver.svg"
+          alt="Discord"
+          class="discord-icon"
+        />
+        <a href="https://streamsuites.online" target="_blank" rel="noopener noreferrer">
+          streamsuites.online
+        </a>
+        <span>(support server)</span>
+      </div>
+
+      <!-- Center -->
+      <div class="footer-center">
+        <span>StreamSuites™ Dashboard</span>
+        <span class="footer-sep">•</span>
+        <span>© 2025 Brainstream Media Group</span>
+      </div>
+
+      <!-- Right -->
+      <div class="footer-right">
+        <a href="https://brainstream.media" target="_blank" rel="noopener noreferrer">
+          brainstream.media
+        </a>
+      </div>
+
     </footer>
 
   </div>
