@@ -1,0 +1,72 @@
+<!-- ========================================================= -->
+<!-- StreamSuites — Public Scoreboards (VIEW PARTIAL) -->
+<!-- Read-only, shareable scoreboard visibility -->
+<!-- ========================================================= -->
+
+<header class="ss-header">
+  <div class="ss-header-left">
+    <h1 class="ss-title">StreamSuites</h1>
+    <span class="ss-subtitle">Public Scoreboards</span>
+  </div>
+</header>
+
+<main class="ss-main">
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Public viewer-facing scoreboards</h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <p class="muted">
+        Shareable, read-only leaderboard snapshots surfaced for viewers. Data is
+        exported from the runtime; this page remains a static visualization
+        surface that can be filtered by registered creator.
+      </p>
+
+      <div class="ss-form-row" style="max-width: 360px;">
+        <label for="scoreboard-creator-select">Creator</label>
+        <select id="scoreboard-creator-select" disabled>
+          <option selected>Choose a creator (placeholder)</option>
+        </select>
+        <p class="muted" style="margin-top: 4px;">
+          Creator selector placeholder — wired to runtime snapshots when
+          published.
+        </p>
+      </div>
+
+      <div class="ss-panel" style="margin-top: 16px;">
+        <header class="ss-panel-header">
+          <h3>Scoreboard</h3>
+        </header>
+        <div class="ss-panel-body">
+          <table class="ss-table">
+            <thead>
+              <tr>
+                <th>Viewer</th>
+                <th>Score</th>
+                <th>Last Activity</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="3" class="muted" style="text-align: center;">
+                  Public scoreboard visualization placeholder — populated from
+                  runtime exports only.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="ss-footer">
+  <span class="muted">
+    Read-only viewer leaderboard — no write paths, no live execution.
+  </span>
+</footer>
