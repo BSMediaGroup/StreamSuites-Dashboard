@@ -1,0 +1,85 @@
+{
+  "meta": {
+    "exported_at": "2025-01-05T16:30:12Z",
+    "source": "StreamSuites runtime (state_exporter)",
+    "notes": "Placeholder snapshot — replace with live runtime export"
+  },
+  "clips": [
+    {
+      "clip_id": "rumble-clip-001",
+      "title": "Rumble rally highlight",
+      "source_platform": "rumble",
+      "clipper_username": "mod_alex",
+      "state": "queued",
+      "created_at": "2025-01-05T16:18:04Z",
+      "destination": {
+        "platform": "rumble",
+        "channel": "https://rumble.com/c/stream-suite-highlights"
+      }
+    },
+    {
+      "clip_id": "yt-encoding-992",
+      "title": "Quick AMA answer",
+      "source_platform": "youtube",
+      "clipper_username": "producer_jamie",
+      "state": "encoding",
+      "created_at": "2025-01-05T16:19:42Z",
+      "updated_at": "2025-01-05T16:20:15Z",
+      "destination": {
+        "platform": "youtube",
+        "channel_name": "StreamSuites Highlights"
+      }
+    },
+    {
+      "clip_id": "twch-encoded-214",
+      "title": "Twitch shoutout",
+      "platform": "twitch",
+      "clipper_username": "viewer42",
+      "state": "encoded",
+      "created_at": "2025-01-05T15:58:10Z",
+      "updated_at": "2025-01-05T16:00:02Z",
+      "destination": {
+        "platform": "rumble",
+        "channel": "https://rumble.com/c/streamsuites-twitch-drops"
+      }
+    },
+    {
+      "clip_id": "rumble-upload-711",
+      "title": "Long-form upload",
+      "platform": "rumble",
+      "clipper_username": "ops_bot",
+      "state": "uploading",
+      "created_at": "2025-01-05T15:40:22Z",
+      "updated_at": "2025-01-05T16:01:37Z",
+      "destination": {
+        "platform": "rumble",
+        "channel": "https://rumble.com/c/streamsuites"
+      }
+    },
+    {
+      "clip_id": "yt-published-022",
+      "title": "Creator Q&A short",
+      "source_platform": "youtube",
+      "clipper_username": "host_kate",
+      "state": "published",
+      "created_at": "2025-01-04T21:00:00Z",
+      "published_at": "2025-01-04T21:05:00Z",
+      "destination": {
+        "platform": "youtube",
+        "channel_url": "https://youtube.com/@streamsuites"
+      }
+    },
+    {
+      "clip_id": "twch-failed-889",
+      "title": "Clip failed to encode",
+      "platform": "twitch",
+      "clipper_username": "viewer_mia",
+      "state": "failed",
+      "created_at": "2025-01-05T14:55:10Z",
+      "updated_at": "2025-01-05T14:56:40Z",
+      "destination": {
+        "platform": "rumble"
+      }
+    }
+  ]
+}

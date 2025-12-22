@@ -165,6 +165,21 @@ These are **control-plane only** capabilities that complement, but do not replac
 - Runtime integration is underway; the dashboard will hydrate via runtime-exported JSON snapshots once the SSE pipeline exports data.
 - The dashboard remains neutral to ingestion method (polling vs SSE) and will not introduce live requests—runtime exports stay authoritative.
 
+## Clips View (Runtime Export Visibility)
+
+- **Read-only lifecycle surface:** `docs/views/clips.html` + `docs/js/clips.js` render every clip emitted by the runtime export pipeline, including queued, encoding, uploaded, published, and failed items.
+- **Authoritative data only:** the view hydrates from `docs/shared/state/clips.json` (or the equivalent runtime export path) without inferring or mutating states. Pending and failed clips remain visible until the runtime evicts them.
+- **Safe polling:** lightweight polling (10s cadence) tolerates missing or partial data and will not retry aggressively on errors.
+- **State vocabulary (display-only):**
+  - `queued` — received by the runtime and awaiting worker capacity
+  - `encoding` — actively being transcoded
+  - `encoded` — packaged and ready to upload
+  - `uploading` — being delivered to the destination platform/channel
+  - `published` — confirmed as successfully posted
+  - `failed` — marked unsuccessful by the runtime; stays visible for operators
+
+Clips remain **read-only** inside the dashboard: no edit, retry, or delete controls are surfaced. The dashboard simply mirrors what the runtime exports.
+
 ### New Dashboard Views & State Layer
 
 - **Config State Layer** — `docs/js/state.js` + `docs/js/telemetry.js` provide normalized loading of `docs/data/*.json`, localStorage drafts, and optional runtime snapshots for telemetry panels.
@@ -243,6 +258,7 @@ StreamSuites-Dashboard/
 │   │   ├── chatReplay.js    # Placeholder for planned historical chat replay
 │   │   ├── creators.js      # Creator configuration UI (local drafts + exports)
 │   │   ├── jobs.js          # Job visibility (clips, etc.)
+│   │   ├── clips.js         # Runtime clip lifecycle surface (read-only, polling)
 │   │   ├── overview.js      # Overview dashboard wiring + telemetry
 │   │   ├── permissions.js   # Future permissions UI
 │   │   ├── platforms.js     # Global platform toggle wiring
@@ -265,6 +281,7 @@ StreamSuites-Dashboard/
 │   ├── shared/
 │   │   └── state/
 │   │       ├── README.md
+│   │       ├── clips.json
 │   │       ├── jobs.json
 │   │       ├── quotas.json
 │   │       └── discord/
