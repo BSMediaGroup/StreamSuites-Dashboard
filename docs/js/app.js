@@ -401,7 +401,14 @@ registerView("jobs", {
 
 /* Placeholder modules (wired, no logic yet) */
 
-registerView("clips", {});
+registerView("clips", {
+  onLoad: () => {
+    window.ClipsView?.init?.();
+  },
+  onUnload: () => {
+    window.ClipsView?.destroy?.();
+  }
+});
 registerView("polls", {});
 registerView("scoreboards", {});
 registerView("scoreboard-management", {

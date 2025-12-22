@@ -37,7 +37,62 @@
       </ul>
 
       <div class="ss-placeholder">
-        Module not yet implemented.
+        Configuration editing remains planned — runtime clips are displayed
+        read-only below.
+      </div>
+    </div>
+  </section>
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Runtime Clip Exports</h2>
+      <p class="muted" style="margin:6px 0 0;">
+        Displays every exported clip, including queued, encoding, uploaded, published, and failed items.
+        Data is hydrated directly from the runtime’s JSON snapshots and remains read-only.
+      </p>
+    </header>
+
+    <div class="ss-toolbar">
+      <div class="ss-toolbar-left">
+        <button id="clips-refresh" class="ss-btn ss-btn-secondary ss-btn-small">
+          Refresh now
+        </button>
+        <span id="clips-status" class="muted">Waiting for snapshot…</span>
+      </div>
+      <div class="ss-toolbar-right">
+        <span class="muted">
+          States: queued • encoding • encoded • uploading • published • failed
+        </span>
+      </div>
+    </div>
+
+    <div class="ss-panel-body">
+      <div id="clips-error" class="ss-alert ss-alert-danger hidden"></div>
+
+      <div class="ss-meta-row">
+        <div><strong>Total clips:</strong> <span id="clips-total">—</span></div>
+        <div><strong>Last export:</strong> <span id="clips-exported-at">—</span></div>
+      </div>
+
+      <table class="ss-table ss-table-compact" id="clips-table">
+        <caption>Runtime-exported clips (read-only)</caption>
+        <thead>
+          <tr>
+            <th>Clip ID</th>
+            <th>Title</th>
+            <th>Source</th>
+            <th>Clipper</th>
+            <th>State</th>
+            <th>Created</th>
+            <th>Updated</th>
+            <th>Destination</th>
+          </tr>
+        </thead>
+        <tbody id="clips-tbody"></tbody>
+      </table>
+
+      <div id="clips-empty" class="ss-empty hidden">
+        No runtime clips exported yet. Pending, encoding, and failed items remain visible until the runtime purges them.
       </div>
     </div>
   </section>
