@@ -348,6 +348,35 @@ function scheduleNavRedistribute() {
   });
 }
 
+function measureToggleWidth() {
+  if (!navOverflow.toggle || !navOverflow.container) return 0;
+  const wasHidden = navOverflow.toggle.classList.contains("is-hidden");
+
+  if (wasHidden) {
+    navOverflow.toggle.classList.remove("is-hidden");
+    navOverflow.container.setAttribute("aria-hidden", "false");
+  }
+
+  const width = navOverflow.toggle.getBoundingClientRect().width || 0;
+
+  if (wasHidden) {
+    navOverflow.toggle.classList.add("is-hidden");
+    navOverflow.container.setAttribute("aria-hidden", "true");
+  }
+
+  return width;
+}
+
+function scheduleNavRedistribute() {
+  if (navOverflow.rafId) {
+    cancelAnimationFrame(navOverflow.rafId);
+  }
+  navOverflow.rafId = window.requestAnimationFrame(() => {
+    navOverflow.rafId = null;
+    redistributeNavItems();
+  });
+}
+
 function redistributeNavItems() {
   if (!initNavOverflowElements()) return;
 
