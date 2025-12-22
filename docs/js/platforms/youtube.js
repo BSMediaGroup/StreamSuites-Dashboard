@@ -67,7 +67,11 @@
      CONFIG DESCRIPTION HELPERS
      ============================================================ */
 
-  function describeEnabled(creators) {
+  function describeEnabled(creators, platformConfig) {
+    if (platformConfig && platformConfig.enabled === false) {
+      return "disabled globally";
+    }
+
     if (!Array.isArray(creators) || creators.length === 0) {
       return "disabled (no creators configured)";
     }
@@ -86,7 +90,11 @@
     }`;
   }
 
-  function describeChannel(creators) {
+  function describeChannel(creators, platformConfig) {
+    if (platformConfig && platformConfig.enabled === false) {
+      return "disabled globally";
+    }
+
     if (!Array.isArray(creators) || creators.length === 0) {
       return "not configured";
     }
@@ -109,7 +117,11 @@
     );
   }
 
-  function describeBot(creators) {
+  function describeBot(creators, platformConfig) {
+    if (platformConfig && platformConfig.enabled === false) {
+      return "disabled globally";
+    }
+
     if (!Array.isArray(creators) || creators.length === 0) {
       return "not configured";
     }
@@ -134,25 +146,35 @@
      LOCAL CONFIG HYDRATION
      ============================================================ */
 
-  function hydrateConfig() {
-    const storage = getStorage();
-    if (!storage) {
-      setText(el.configEnabled, "not available");
-      setText(el.configChannel, "not available");
-      setText(el.configBot, "not available");
-      setText(el.configSource, "no storage access");
-      return;
+  async function loadCreatorsDraft() {
+    try {
+      return (
+        (await window.ConfigState?.loadCreators?.()) ||
+        []
+      );
+    } catch (err) {
+      const storage = getStorage();
+      const creators = storage?.loadFromLocalStorage?.("creators", []);
+      return Array.isArray(creators) ? creators : [];
     }
+  }
 
-    const creators = storage.loadFromLocalStorage("creators", []);
-    const creatorsArr = Array.isArray(creators) ? creators : [];
+  async function hydrateConfig() {
+    const creatorsArr = await loadCreatorsDraft();
+    const platforms =
+      (await window.ConfigState?.loadPlatforms?.()) || null;
+    const platformConfig = platforms?.platforms?.[PLATFORM];
 
-    setText(el.configEnabled, describeEnabled(creatorsArr));
-    setText(el.configChannel, describeChannel(creatorsArr));
-    setText(el.configBot, describeBot(creatorsArr));
+    setText(el.configEnabled, describeEnabled(creatorsArr, platformConfig));
+    setText(el.configChannel, describeChannel(creatorsArr, platformConfig));
+    setText(el.configBot, describeBot(creatorsArr, platformConfig));
     setText(
       el.configSource,
-      creatorsArr.length ? "local creators config" : "no creators loaded"
+      platformConfig && platformConfig.enabled === false
+        ? "disabled globally"
+        : creatorsArr.length
+          ? "local creators config"
+          : "no creators loaded"
     );
   }
 
@@ -255,7 +277,7 @@
   async function init() {
     cacheElements();
     setFoundationStatus();
-    hydrateConfig();
+    await hydrateConfig();
     hydrateRuntimePlaceholder();
 
     const hydrated = await hydrateQuotaFromRuntime();

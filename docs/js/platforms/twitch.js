@@ -31,7 +31,11 @@
     return null;
   }
 
-  function describeEnabled(creators) {
+  function describeEnabled(creators, platformConfig) {
+    if (platformConfig && platformConfig.enabled === false) {
+      return "disabled globally";
+    }
+
     if (!Array.isArray(creators) || creators.length === 0) {
       return "disabled (no creators configured)";
     }
@@ -48,7 +52,11 @@
     return `enabled for ${twitchCreators.length} creator${twitchCreators.length > 1 ? "s" : ""}`;
   }
 
-  function describeChannel(creators) {
+  function describeChannel(creators, platformConfig) {
+    if (platformConfig && platformConfig.enabled === false) {
+      return "disabled globally";
+    }
+
     if (!Array.isArray(creators) || creators.length === 0) {
       return "not configured";
     }
@@ -80,21 +88,35 @@
     return channel;
   }
 
-  function hydrateConfig() {
-    const storage = getStorage();
-    if (!storage) {
-      setText(el.configEnabled, "not available");
-      setText(el.configChannel, "not available");
-      setText(el.configSource, "no storage access");
-      return;
+  async function loadCreatorsDraft() {
+    try {
+      return (
+        (await window.ConfigState?.loadCreators?.()) ||
+        []
+      );
+    } catch (err) {
+      const storage = getStorage();
+      const creators = storage?.loadFromLocalStorage?.("creators", []);
+      return Array.isArray(creators) ? creators : [];
     }
+  }
 
-    const creators = storage.loadFromLocalStorage("creators", []);
-    const creatorsArr = Array.isArray(creators) ? creators : [];
+  async function hydrateConfig() {
+    const creatorsArr = await loadCreatorsDraft();
+    const platforms =
+      (await window.ConfigState?.loadPlatforms?.()) || null;
+    const platformConfig = platforms?.platforms?.twitch;
 
-    setText(el.configEnabled, describeEnabled(creatorsArr));
-    setText(el.configChannel, describeChannel(creatorsArr));
-    setText(el.configSource, creatorsArr.length > 0 ? "local creators config" : "no creators loaded");
+    setText(el.configEnabled, describeEnabled(creatorsArr, platformConfig));
+    setText(el.configChannel, describeChannel(creatorsArr, platformConfig));
+    setText(
+      el.configSource,
+      platformConfig && platformConfig.enabled === false
+        ? "disabled globally"
+        : creatorsArr.length > 0
+          ? "local creators config"
+          : "no creators loaded"
+    );
   }
 
   function hydrateRuntimePlaceholder() {
@@ -119,10 +141,10 @@
     el.foundationStatus.textContent = "● Twitch integration: Foundation";
   }
 
-  function init() {
+  async function init() {
     cacheElements();
     setFoundationStatus();
-    hydrateConfig();
+    await hydrateConfig();
     hydrateRuntimePlaceholder();
   }
 

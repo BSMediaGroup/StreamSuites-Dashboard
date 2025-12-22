@@ -64,6 +64,7 @@
             <th>Display Name</th>
             <th>Platforms</th>
             <th>Status</th>
+            <th>Notes</th>
             <th class="align-right">Actions</th>
           </tr>
         </thead>
@@ -101,11 +102,42 @@
             <label for="creator-name">Display Name</label>
             <input type="text" id="creator-name" name="display_name" />
           </div>
+
+          <div class="ss-form-row checkbox-row">
+            <label>
+              <input type="checkbox" id="creator-active" checked />
+              Creator enabled (soft-disable only)
+            </label>
+          </div>
+
+          <div class="ss-form-row">
+            <label for="creator-notes">Admin Notes</label>
+            <textarea
+              id="creator-notes"
+              name="creator_notes"
+              rows="2"
+              placeholder="Internal notes about this creator (not exported publicly)"
+            ></textarea>
+          </div>
         </fieldset>
 
         <!-- PLATFORM CONFIG -->
         <fieldset class="ss-fieldset">
           <legend>Platforms</legend>
+
+          <div class="ss-form-row checkbox-row">
+            <label>
+              <input type="checkbox" id="platform-youtube" />
+              YouTube
+            </label>
+          </div>
+
+          <div class="ss-form-row checkbox-row">
+            <label>
+              <input type="checkbox" id="platform-twitch" />
+              Twitch
+            </label>
+          </div>
 
           <div class="ss-form-row checkbox-row">
             <label>
@@ -173,6 +205,13 @@
               </small>
             </div>
 
+          </div>
+
+          <div class="ss-form-row checkbox-row">
+            <label>
+              <input type="checkbox" id="platform-discord" />
+              Discord (control-plane)
+            </label>
           </div>
         </fieldset>
 

@@ -1,0 +1,25 @@
+{
+  "generated_at": "2025-01-15T12:00:00Z",
+  "platforms": {
+    "youtube": {
+      "last_seen": "2025-01-15T11:59:00Z",
+      "status": "online",
+      "error_state": null
+    },
+    "twitch": {
+      "last_seen": null,
+      "status": "offline",
+      "error_state": "credentials_missing"
+    },
+    "rumble": {
+      "last_seen": "2025-01-15T11:55:30Z",
+      "status": "online",
+      "error_state": null
+    },
+    "discord": {
+      "last_seen": "2025-01-15T11:57:10Z",
+      "status": "online",
+      "error_state": null
+    }
+  }
+}

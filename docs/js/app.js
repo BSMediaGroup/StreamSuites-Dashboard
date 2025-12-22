@@ -373,6 +373,9 @@ registerView("creators", {
     if (window.CreatorsView?.init) {
       window.CreatorsView.init();
     }
+  },
+  onUnload: () => {
+    window.CreatorsView?.destroy?.();
   }
 });
 
@@ -452,7 +455,14 @@ registerView("ratelimits", {
   }
 });
 
-registerView("settings", {});
+registerView("settings", {
+  onLoad: () => {
+    window.SettingsView?.init?.();
+  },
+  onUnload: () => {
+    window.SettingsView?.destroy?.();
+  }
+});
 registerView("chat-replay", {});
 
 registerView("about", {
@@ -474,38 +484,53 @@ document.addEventListener("DOMContentLoaded", initApp);
    ADDITIVE: RUNTIME EXPORT (DO NOT REMOVE OR INLINE)
    ====================================================================== */
 
-App.exportRuntimeCreators = function () {
-  const creators = App.storage.loadFromLocalStorage("creators", []);
+App.exportRuntimeCreators = async function () {
+  const creators =
+    (await window.ConfigState?.loadCreators?.()) ||
+    App.storage.loadFromLocalStorage("creators", []);
 
   const runtime = {
-    creators: creators.map((c) => {
-      const out = {
-        creator_id: c.creator_id,
-        display_name: c.display_name || c.creator_id,
-        enabled: true,
-        platforms: {},
-        limits: c.limits || {}
-      };
+    creators: creators
+      .filter((c) => c && c.creator_id)
+      .map((c) => {
+        const out = {
+          creator_id: c.creator_id,
+          display_name: c.display_name || c.creator_id,
+          enabled: c.disabled ? false : true,
+          platforms: {},
+          limits: c.limits || {}
+        };
 
-      if (c.tier) out.tier = c.tier;
+        if (c.tier) out.tier = c.tier;
 
-      if (c.platforms?.rumble?.enabled) {
-        out.platforms.rumble = true;
-        out.rumble_manual_watch_url =
-          c.platforms.rumble.watch_url || "";
-      }
+        if (c.platforms?.rumble?.enabled) {
+          out.platforms.rumble = true;
+          out.rumble_manual_watch_url = c.platforms.rumble.watch_url || "";
+        }
 
-      if (c.rumble_channel_url) {
-        out.rumble_channel_url = c.rumble_channel_url;
-      }
+        if (c.platforms?.youtube?.enabled) {
+          out.platforms.youtube = true;
+        }
 
-      if (c.rumble_livestream_api_env_key) {
-        out.rumble_livestream_api_env_key =
-          c.rumble_livestream_api_env_key;
-      }
+        if (c.platforms?.twitch?.enabled) {
+          out.platforms.twitch = true;
+        }
 
-      return out;
-    })
+        if (c.platforms?.discord?.enabled) {
+          out.platforms.discord = true;
+        }
+
+        if (c.rumble_channel_url) {
+          out.rumble_channel_url = c.rumble_channel_url;
+        }
+
+        if (c.rumble_livestream_api_env_key) {
+          out.rumble_livestream_api_env_key =
+            c.rumble_livestream_api_env_key;
+        }
+
+        return out;
+      })
   };
 
   App.storage.downloadJson("creators.json", runtime);
