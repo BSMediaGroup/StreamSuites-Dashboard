@@ -278,25 +278,25 @@ async function loadView(name) {
 
 const navOverflow = {
   list: null,
-  menu: null,
   toggle: null,
   container: null,
   shell: null,
   resizeHandler: null,
   outsideHandler: null,
+  keydownHandler: null,
+  resizeTimer: null,
+  rafId: null,
   bound: false
 };
 
 function initNavOverflowElements() {
   navOverflow.list = $("#app-nav-list");
-  navOverflow.menu = $("#app-nav-overflow-menu");
   navOverflow.toggle = $("#app-nav-overflow-toggle");
   navOverflow.container = $("#app-nav-overflow");
   navOverflow.shell = $("#app-nav .nav-shell");
 
   return Boolean(
     navOverflow.list &&
-    navOverflow.menu &&
     navOverflow.toggle &&
     navOverflow.container &&
     navOverflow.shell
@@ -304,108 +304,130 @@ function initNavOverflowElements() {
 }
 
 function resetNavOverflowItems() {
-  if (!navOverflow.list || !navOverflow.menu) return;
-  while (navOverflow.menu.firstChild) {
-    navOverflow.list.appendChild(navOverflow.menu.firstChild);
-  }
+  if (!navOverflow.list) return;
+  const allItems = [...navOverflow.list.children];
+
+  allItems.forEach((item, index) => {
+    if (!item.dataset.originalIndex) {
+      item.dataset.originalIndex = index.toString();
+    }
+  });
+
+  allItems
+    .sort((a, b) => {
+      const aIndex = Number(a.dataset.originalIndex) || 0;
+      const bIndex = Number(b.dataset.originalIndex) || 0;
+      return aIndex - bIndex;
+    })
+    .forEach((item) => {
+      navOverflow.list.appendChild(item);
+    });
 }
 
 function syncNavOverflowActiveIndicator() {
-  if (!navOverflow.toggle || !navOverflow.menu) return;
-  const hasActive = Boolean(navOverflow.menu.querySelector("li.active"));
-  const isOpen = navOverflow.menu.classList.contains("open");
-  navOverflow.toggle.classList.toggle("active", hasActive || isOpen);
+  if (!navOverflow.toggle) return;
+  const isOverflowing = navOverflow.toggle.getAttribute("data-overflowing") === "true";
+  navOverflow.toggle.classList.toggle("active", isOverflowing);
 }
 
 function closeNavOverflowMenu() {
-  if (!navOverflow.menu || !navOverflow.toggle) return;
-  navOverflow.menu.classList.remove("open");
-  navOverflow.toggle.setAttribute("aria-expanded", "false");
-  syncNavOverflowActiveIndicator();
+  // Dropdown removed; keep function as no-op for compatibility
 }
 
 function openNavOverflowMenu() {
-  if (!navOverflow.menu || !navOverflow.toggle) return;
-  if (navOverflow.toggle.classList.contains("is-hidden")) return;
-  if (!navOverflow.menu.children.length) return;
-  navOverflow.menu.classList.add("open");
-  navOverflow.toggle.setAttribute("aria-expanded", "true");
-  syncNavOverflowActiveIndicator();
+  // Dropdown removed; keep function as no-op for compatibility
+}
+
+function scheduleNavRedistribute() {
+  if (navOverflow.rafId) {
+    cancelAnimationFrame(navOverflow.rafId);
+  }
+  navOverflow.rafId = window.requestAnimationFrame(() => {
+    navOverflow.rafId = null;
+    redistributeNavItems();
+  });
 }
 
 function redistributeNavItems() {
   if (!initNavOverflowElements()) return;
 
   resetNavOverflowItems();
-  closeNavOverflowMenu();
-
   const containerWidth = navOverflow.shell?.clientWidth || 0;
   if (!navOverflow.list || !containerWidth) {
     navOverflow.toggle.classList.add("is-hidden");
     navOverflow.container?.setAttribute("aria-hidden", "true");
+    navOverflow.toggle.setAttribute("data-overflowing", "false");
     syncNavOverflowActiveIndicator();
     return;
   }
 
-  if (navOverflow.list.scrollWidth <= containerWidth) {
-    navOverflow.toggle.classList.add("is-hidden");
-    navOverflow.container.setAttribute("aria-hidden", "true");
-    syncNavOverflowActiveIndicator();
-    return;
-  }
+  const list = navOverflow.list;
+  const isOverflowing = list.scrollWidth > list.clientWidth + 1;
 
-  navOverflow.toggle.classList.remove("is-hidden");
-  navOverflow.container.setAttribute("aria-hidden", "false");
-
-  const toggleWidth = navOverflow.toggle?.offsetWidth || 0;
-  const buffer = 12;
-  const availableWidth = containerWidth - toggleWidth - buffer;
-
-  while (navOverflow.list.scrollWidth > availableWidth && navOverflow.list.children.length > 1) {
-    const lastItem = navOverflow.list.lastElementChild;
-    if (!lastItem) break;
-    navOverflow.menu.prepend(lastItem);
-  }
-
-  if (!navOverflow.menu.children.length) {
-    navOverflow.toggle.classList.add("is-hidden");
-    navOverflow.container.setAttribute("aria-hidden", "true");
-  }
-
+  navOverflow.toggle.classList.toggle("is-hidden", !isOverflowing);
+  navOverflow.container?.setAttribute("aria-hidden", isOverflowing ? "false" : "true");
+  navOverflow.toggle.setAttribute("data-overflowing", String(isOverflowing));
   syncNavOverflowActiveIndicator();
 }
 
 function bindNavOverflow() {
   if (!initNavOverflowElements()) return;
   if (navOverflow.bound) {
-    redistributeNavItems();
+    scheduleNavRedistribute();
     return;
   }
 
   navOverflow.toggle.addEventListener("click", (event) => {
     event.stopPropagation();
-    if (navOverflow.menu?.classList.contains("open")) {
-      closeNavOverflowMenu();
-    } else {
-      openNavOverflowMenu();
-    }
+    if (!navOverflow.list) return;
+    const delta = Math.max(navOverflow.list.clientWidth * 0.6, 120);
+    const next = navOverflow.list.scrollLeft + delta;
+    navOverflow.list.scrollTo({ left: next, behavior: "smooth" });
+    setTimeout(scheduleNavRedistribute, 250);
   });
 
   navOverflow.resizeHandler = () => {
-    window.requestAnimationFrame(redistributeNavItems);
+    if (navOverflow.resizeTimer) {
+      clearTimeout(navOverflow.resizeTimer);
+    }
+    navOverflow.resizeTimer = setTimeout(() => {
+      scheduleNavRedistribute();
+    }, 120);
   };
   window.addEventListener("resize", navOverflow.resizeHandler);
 
   navOverflow.outsideHandler = (event) => {
-    if (!navOverflow.menu || !navOverflow.menu.classList.contains("open")) return;
-    if (!navOverflow.container?.contains(event.target)) {
+    if (!navOverflow.container) return;
+    if (!navOverflow.container.contains(event.target)) {
       closeNavOverflowMenu();
     }
   };
   document.addEventListener("click", navOverflow.outsideHandler);
 
+  navOverflow.keydownHandler = (event) => {
+    if (event.key === "Escape") {
+      closeNavOverflowMenu();
+    }
+  };
+  document.addEventListener("keydown", navOverflow.keydownHandler);
+
   navOverflow.bound = true;
-  redistributeNavItems();
+  scheduleNavRedistribute();
+  window.requestAnimationFrame(() => {
+    scheduleNavRedistribute();
+  });
+
+  if (document.fonts?.ready) {
+    document.fonts.ready.then(() => {
+      scheduleNavRedistribute();
+    });
+  }
+
+  if (navOverflow.list) {
+    navOverflow.list.addEventListener("scroll", () => {
+      scheduleNavRedistribute();
+    }, { passive: true });
+  }
 }
 
 function updateNavActiveState(viewName) {
@@ -416,8 +438,9 @@ function updateNavActiveState(viewName) {
       el.classList.remove("active");
     }
   });
-  closeNavOverflowMenu();
   syncNavOverflowActiveIndicator();
+  ensureActiveNavVisibility();
+  scheduleNavRedistribute();
 }
 
 function bindNavigation() {
@@ -426,6 +449,17 @@ function bindNavigation() {
       const view = el.dataset.view;
       if (view) loadView(view);
     });
+  });
+}
+
+function ensureActiveNavVisibility() {
+  if (!navOverflow.list) return;
+  const active = navOverflow.list.querySelector("li.active");
+  if (!active) return;
+  active.scrollIntoView({
+    behavior: "smooth",
+    block: "nearest",
+    inline: "center"
   });
 }
 
