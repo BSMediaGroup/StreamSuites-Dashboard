@@ -361,16 +361,7 @@ function redistributeNavItems() {
   const buffer = 12;
   const availableWidth = containerWidth - toggleWidth - buffer;
 
-  if (availableWidth <= 0) {
-    navOverflow.toggle.classList.add("is-hidden");
-    navOverflow.container.setAttribute("aria-hidden", "true");
-    syncNavOverflowActiveIndicator();
-    return;
-  }
-
-  navOverflow.container.setAttribute("aria-hidden", "false");
-
-  while (navOverflow.list.scrollWidth > availableWidth && navOverflow.list.children.length) {
+  while (navOverflow.list.scrollWidth > availableWidth && navOverflow.list.children.length > 1) {
     const lastItem = navOverflow.list.lastElementChild;
     if (!lastItem) break;
     navOverflow.menu.prepend(lastItem);
