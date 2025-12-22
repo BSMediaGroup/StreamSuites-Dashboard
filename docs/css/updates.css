@@ -82,8 +82,72 @@
   color: var(--text-muted);
 }
 
+.updates-last-updated {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel-alt);
+  color: var(--text-muted);
+  font-size: 12px;
+  width: fit-content;
+}
+
 .updates-status-error {
   color: var(--accent-danger);
+}
+
+.updates-diff-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 6px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.updates-diff-summary-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.updates-diff-count {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.updates-diff-add {
+  color: #2fa36d;
+  font-weight: 600;
+}
+
+.updates-diff-remove {
+  color: #c44c4c;
+  font-weight: 600;
+}
+
+.updates-diff-summary-muted {
+  color: var(--text-muted);
+}
+
+.updates-file-list {
+  margin: 0 0 4px;
+  padding-left: 16px;
+  color: var(--text-muted);
+  font-size: 12px;
+  list-style: disc;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.updates-file-item {
+  margin: 2px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .diff-line {
