@@ -246,20 +246,8 @@
   </header>
 
   <div class="ss-panel-body">
-    <p class="muted">
-      Percentages are static and intended for manual updates. No runtime logic is attached.
-    </p>
 
     <style>
-      .ss-skill-wrapper {
-        width: 100%;
-        height: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        cursor: pointer;
-      }
-
       .ss-skill-track {
         position: relative;
         width: 100%;
@@ -331,11 +319,13 @@
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        padding: 4px 8px;
-        border: 1px solid rgba(255, 255, 255, 0.35);
-        border-radius: 10px;
+        padding: 3px 8px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
         cursor: pointer;
         user-select: none;
+        font-size: 0.88em;
+        letter-spacing: 0.01em;
       }
 
       .ss-legend-summary::-webkit-details-marker {
@@ -345,30 +335,166 @@
       .ss-legend-body {
         margin-top: 6px;
         padding: 8px 10px;
-        border: 1px solid rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 8px;
-        background: rgba(255, 255, 255, 0.04);
+        background: rgba(255, 255, 255, 0.035);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-        max-width: 520px;
+        max-width: none;
+        font-size: 0.84em;
+        color: var(--text-muted);
+        line-height: 1.5;
+        width: 100%;
+        font-family: "SuiGenerisRg", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       }
 
       .ss-legend-row {
-        font-size: 0.92em;
-        line-height: 1.4;
+        font-size: 0.84em;
+        line-height: 1.45;
       }
 
       .ss-legend-row + .ss-legend-row {
-        margin-top: 4px;
+        margin-top: 6px;
+      }
+
+      .ss-legend-outer {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        width: 100%;
+      }
+
+      .ss-legend-outer summary {
+        margin-right: 10px;
+      }
+
+      .ss-progress-card {
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        padding: 10px 12px;
+        transition: border-color 0.2s ease, background 0.2s ease;
+        background: rgba(255, 255, 255, 0.02);
+        cursor: pointer;
+      }
+
+      .ss-progress-card + .ss-progress-card {
+        margin-top: 10px;
+      }
+
+      .ss-progress-row {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .ss-progress-row.is-open {
+        border-color: rgba(0, 198, 255, 0.5);
+        background: radial-gradient(circle at 15% 20%, rgba(0, 198, 255, 0.08), rgba(255, 255, 255, 0.02));
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+      }
+
+      .ss-progress-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+      }
+
+      .ss-progress-main {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+      }
+
+      .ss-progress-right {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+      }
+
+      .ss-progress-meta {
+        white-space: nowrap;
+      }
+
+      .ss-progress-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+      }
+
+      .ss-progress-toggle:hover {
+        border-color: rgba(0, 198, 255, 0.4);
+        color: var(--text-primary);
+        background: rgba(0, 198, 255, 0.08);
+      }
+
+      .ss-progress-toggle span {
+        display: inline-block;
+        transition: transform 0.18s ease;
+      }
+
+      .ss-progress-row.is-open .ss-progress-toggle span {
+        transform: rotate(90deg) translateX(-2px);
+      }
+
+      .ss-skill-description {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.35s ease;
+        color: var(--text-muted);
+      }
+
+      .ss-skill-description p {
+        margin: 0;
+        line-height: 1.55;
+        font-size: 0.95em;
+      }
+
+      .ss-skill-description-inner {
+        padding: 6px 10px 0 0;
+      }
+
+      .ss-skill-wrapper {
+        width: 100%;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+      }
+
+      .ss-skill-track {
+        cursor: default;
       }
     </style>
 
-    <div class="ss-progress-row ss-skill-row" data-score="6.8" title="68% · 65–75% Locked — Contracts stabilized. Runtime behavior considered production-safe barring bug fixes.">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="6.8" title="68% · 65–75% Locked — Contracts stabilized. Runtime behavior considered production-safe barring bug fixes." role="button" tabindex="0">
       <div class="ss-progress-label">
-        <span class="ss-progress-title">
-          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
-          StreamSuites Unified Runtime
-        </span>
-        <span class="ss-progress-meta">68% · Contracts Locked + Quota Enforcement</span>
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
+            StreamSuites Unified Runtime
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">68% · Contracts Locked + Quota Enforcement</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">The runtime core owns automation, quotas, and platform orchestration. “Locked” reflects that contracts and enforcement paths are stabilized, with remaining work focused on minor refinements rather than structural changes.</p>
+        </div>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -377,13 +503,25 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="6.0" title="60% · 55–60% Integrated — Integrated with runtime orchestration, quotas, or control planes. Stable but evolving.">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="6.0" title="60% · 55–60% Integrated — Integrated with runtime orchestration, quotas, or control planes. Stable but evolving." role="button" tabindex="0">
       <div class="ss-progress-label">
-        <span class="ss-progress-title">
-          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/uiscreen.svg');"></span>
-          Administrator Dashboard UI
-        </span>
-        <span class="ss-progress-meta">60% · Runtime Parity Achieved</span>
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/uiscreen.svg');"></span>
+            Administrator Dashboard UI
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">60% · Runtime Parity Achieved</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">Admin-facing panels visually mirror runtime exports for jobs, triggers, and quotas. Integration here means layouts and states match the runtime contract, while interactivity remains intentionally read-only.</p>
+        </div>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -392,13 +530,25 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="4.5" title="45% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete.">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="4.5" title="45% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete." role="button" tabindex="0">
       <div class="ss-progress-label">
-        <span class="ss-progress-title">
-          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/uiscreen.svg');"></span>
-          Creator Dashboard UI
-        </span>
-        <span class="ss-progress-meta">45% · Runtime Contracts Available</span>
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/uiscreen.svg');"></span>
+            Creator Dashboard UI
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">45% · Runtime Contracts Available</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">Creator views have contract-aligned scaffolding and deterministic layouts. The “functional” label notes that the UI covers expected flows visually, while hydration waits on runtime export cadence.</p>
+        </div>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -407,13 +557,25 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="4.5" title="45% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete.">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="4.5" title="45% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete." role="button" tabindex="0">
       <div class="ss-progress-label">
-        <span class="ss-progress-title">
-          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/discord-silver.svg');"></span>
-          Discord Client
-        </span>
-        <span class="ss-progress-meta">45% · Foundation + Heartbeat Plan</span>
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/discord-silver.svg');"></span>
+            Discord Client
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">45% · Foundation + Heartbeat Plan</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">Discord messaging is scaffolded with heartbeat planning and baseline event coverage. The progress score highlights that runtime alignment is underway but intentionally cautious pending export locks.</p>
+        </div>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -422,13 +584,25 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="5.0" title="50% · 40–50% Functional — Architecture solved; runtime export alignment pending.">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="5.0" title="50% · 40–50% Functional — Architecture solved; runtime export alignment pending." role="button" tabindex="0">
       <div class="ss-progress-label">
-        <span class="ss-progress-title">
-          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/rumble-silver.svg');"></span>
-          Rumble Chat SSE Pipeline
-        </span>
-        <span class="ss-progress-meta">50% · Architecture Solved (SSE) · Export alignment pending</span>
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/rumble-silver.svg');"></span>
+            Rumble Chat SSE Pipeline
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">50% · Architecture Solved (SSE) · Export alignment pending</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">Rumble has a confirmed SSE endpoint and message model. The dashboard will visualize exported snapshots once the runtime publishes them; current visuals reflect the solved architecture, not live data.</p>
+        </div>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -437,13 +611,25 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="3.0" title="30% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution.">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="3.0" title="30% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution." role="button" tabindex="0">
       <div class="ss-progress-label">
-        <span class="ss-progress-title">
-          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/twitch-0.svg');"></span>
-          Twitch Chat Runtime
-        </span>
-        <span class="ss-progress-meta">30% · Foundation + Planned runtime hydration</span>
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/twitch-0.svg');"></span>
+            Twitch Chat Runtime
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">30% · Foundation + Planned runtime hydration</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">Twitch paths include schema groundwork and normalization targets. The current state signals preparedness for IRC-aligned hydration once the runtime begins emitting stable exports.</p>
+        </div>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -452,13 +638,25 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="3.0" title="30% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution.">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="3.0" title="30% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution." role="button" tabindex="0">
       <div class="ss-progress-label">
-        <span class="ss-progress-title">
-          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/youtube-silver.svg');"></span>
-          YouTube Chat Runtime
-        </span>
-        <span class="ss-progress-meta">30% · Scaffold; runtime exports planned</span>
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/youtube-silver.svg');"></span>
+            YouTube Chat Runtime
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">30% · Scaffold; runtime exports planned</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">YouTube support is scaffolded for message ingestion and export mapping. Progress reflects planned JSON shapes and UI shells awaiting authoritative runtime drops.</p>
+        </div>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -467,13 +665,25 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="0.5" title="5% · 0–5% Concept — Conceptual only. No runtime scaffolding or contracts exist yet.">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="0.5" title="5% · 0–5% Concept — Conceptual only. No runtime scaffolding or contracts exist yet." role="button" tabindex="0">
       <div class="ss-progress-label">
-        <span class="ss-progress-title">
-          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/twitter-silver.svg');"></span>
-          Twitter Client / Integration
-        </span>
-        <span class="ss-progress-meta">5% · Concept / Deferred</span>
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/twitter-silver.svg');"></span>
+            Twitter Client / Integration
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">5% · Concept / Deferred</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">Twitter remains a conceptual placeholder with no active scaffolding. The dashboard simply reserves surface area for future event ingestion and moderation views.</p>
+        </div>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -482,13 +692,25 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="2.5" title="25% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution.">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="2.5" title="25% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution." role="button" tabindex="0">
       <div class="ss-progress-label">
-        <span class="ss-progress-title">
-          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/automation.svg');"></span>
-          Cross-Platform Chat Abstraction
-        </span>
-        <span class="ss-progress-meta">25% · Planned normalization layer</span>
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/automation.svg');"></span>
+            Cross-Platform Chat Abstraction
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">25% · Planned normalization layer</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">Normalization schemes for aligning Rumble, Twitch, and YouTube messages are drafted. Current visuals show intent for unified abstractions without asserting runtime enforcement.</p>
+        </div>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -497,13 +719,25 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="2.0" title="20% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution.">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="2.0" title="20% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution." role="button" tabindex="0">
       <div class="ss-progress-label">
-        <span class="ss-progress-title">
-          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/automation.svg');"></span>
-          Telemetry Export Surface
-        </span>
-        <span class="ss-progress-meta">20% · Planned runtime health export</span>
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/automation.svg');"></span>
+            Telemetry Export Surface
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">20% · Planned runtime health export</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">Health, quota, and heartbeat metrics are planned for export, with UI placeholders ready to visualize those payloads. The percentage marks early scaffolding without active feeds.</p>
+        </div>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -512,13 +746,25 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="2.5" title="25% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution.">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="2.5" title="25% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution." role="button" tabindex="0">
       <div class="ss-progress-label">
-        <span class="ss-progress-title">
-          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/options.svg');"></span>
-          Dashboard ↔ Runtime Schema Contract
-        </span>
-        <span class="ss-progress-meta">25% · Planned contract lock once exports publish</span>
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/options.svg');"></span>
+            Dashboard ↔ Runtime Schema Contract
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">25% · Planned contract lock once exports publish</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">Schema alignment work is underway to cement how the dashboard consumes exported JSON. The score reflects planned contract locking once the runtime publishes final shapes.</p>
+        </div>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -527,13 +773,25 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="3.0" title="30% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution.">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="3.0" title="30% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution." role="button" tabindex="0">
       <div class="ss-progress-label">
-        <span class="ss-progress-title">
-          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/extension.svg');"></span>
-          Unified Live Chat Replay Module
-        </span>
-        <span class="ss-progress-meta">30% · Runtime signals available</span>
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/extension.svg');"></span>
+            Unified Live Chat Replay Module
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">30% · Runtime signals available</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">Replay visualizations are ready to reflect runtime-provided message archives. The module tracks available signals but waits on stabilized export streams before rendering live artifacts.</p>
+        </div>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -542,13 +800,25 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="2.0" title="20% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution.">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="2.0" title="20% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution." role="button" tabindex="0">
       <div class="ss-progress-label">
-        <span class="ss-progress-title">
-          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/windows.svg');"></span>
-          WinForms GUI (Admin & System Controls)
-        </span>
-        <span class="ss-progress-meta">20% · Planning</span>
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/windows.svg');"></span>
+            WinForms GUI (Admin & System Controls)
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">20% · Planning</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">A WinForms-based control surface is scoped for administrative tasks. Planning is focused on parity with web dashboard contracts without asserting runtime coupling yet.</p>
+        </div>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -557,13 +827,25 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="1.0" title="10% · 10–15% Planned — Planned and documented. Architecture discussed, but no executable runtime scaffolding.">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="1.0" title="10% · 10–15% Planned — Planned and documented. Architecture discussed, but no executable runtime scaffolding." role="button" tabindex="0">
       <div class="ss-progress-label">
-        <span class="ss-progress-title">
-          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/widget.svg');"></span>
-          Levelling System
-        </span>
-        <span class="ss-progress-meta">10% · Planned / Experimental</span>
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/widget.svg');"></span>
+            Levelling System
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">10% · Planned / Experimental</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">Levelling is envisioned as a fictional progression system tied to chat activity. The low percentage indicates early ideation without runtime scaffolding or confirmed data shapes.</p>
+        </div>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -572,13 +854,25 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="1.0" title="10% · 10–15% Planned — Planned and documented. Architecture discussed, but no executable runtime scaffolding.">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="1.0" title="10% · 10–15% Planned — Planned and documented. Architecture discussed, but no executable runtime scaffolding." role="button" tabindex="0">
       <div class="ss-progress-label">
-        <span class="ss-progress-title">
-          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/widget.svg');"></span>
-          Fake Gambling / Game Mechanics
-        </span>
-        <span class="ss-progress-meta">10% · Planned</span>
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/widget.svg');"></span>
+            Fake Gambling / Game Mechanics
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">10% · Planned</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">Game mechanics are scoped as playful, zero-stakes chat interactions. The plan is visual-first and deliberately avoids implying gambling mechanics beyond fictional tallies.</p>
+        </div>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -587,13 +881,25 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="1.5" title="15% · 10–15% Planned — Planned and documented. Architecture discussed, but no executable runtime scaffolding.">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="1.5" title="15% · 10–15% Planned — Planned and documented. Architecture discussed, but no executable runtime scaffolding." role="button" tabindex="0">
       <div class="ss-progress-label">
-        <span class="ss-progress-title">
-          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/widget.svg');"></span>
-          Paid Interaction Detection
-        </span>
-        <span class="ss-progress-meta">15% · Planned / Design In Progress</span>
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/widget.svg');"></span>
+            Paid Interaction Detection
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">15% · Planned / Design In Progress</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">Detection concepts for gifted subs and paid callouts are in design. The dashboard will render monthly visibility once the runtime formalizes export feeds for these signals.</p>
+        </div>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">

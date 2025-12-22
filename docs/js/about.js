@@ -1,8 +1,10 @@
 (() => {
   "use strict";
 
-  function initSkillBars() {
-    const rows = document.querySelectorAll(".ss-skill-row");
+  let cleanupFns = [];
+  let openRow = null;
+
+  function initSkillBars(rows) {
     if (!rows || rows.length === 0) return;
 
     rows.forEach((wrapper) => {
@@ -34,19 +36,104 @@
       }
 
       animateFill();
-      wrapper.addEventListener("mouseenter", animateFill);
+      const mouseHandler = animateFill;
+      wrapper.addEventListener("mouseenter", mouseHandler);
+      cleanupFns.push(() => wrapper.removeEventListener("mouseenter", mouseHandler));
     });
+  }
+
+  function setRowExpanded(row, shouldExpand) {
+    const desc = row.querySelector(".ss-skill-description");
+    const toggle = row.querySelector(".ss-skill-toggle");
+    if (!desc || !toggle) return;
+
+    if (shouldExpand) {
+      row.classList.add("is-open");
+      desc.style.maxHeight = `${desc.scrollHeight}px`;
+      desc.setAttribute("aria-hidden", "false");
+      toggle.setAttribute("aria-expanded", "true");
+      openRow = row;
+      return;
+    }
+
+    row.classList.remove("is-open");
+    desc.style.maxHeight = "0px";
+    desc.setAttribute("aria-hidden", "true");
+    toggle.setAttribute("aria-expanded", "false");
+  }
+
+  function initSkillToggles(rows) {
+    if (!rows || rows.length === 0) return;
+
+    rows.forEach((row) => {
+      const desc = row.querySelector(".ss-skill-description");
+      const toggle = row.querySelector(".ss-skill-toggle");
+      if (desc) {
+        desc.style.maxHeight = "0px";
+        desc.setAttribute("aria-hidden", "true");
+      }
+
+      const handler = () => {
+        const isOpen = row.classList.contains("is-open");
+        if (openRow && openRow !== row) {
+          setRowExpanded(openRow, false);
+          openRow = null;
+        }
+
+        setRowExpanded(row, !isOpen);
+        if (isOpen) {
+          openRow = null;
+        }
+      };
+
+      const clickTargets = [row];
+      if (toggle) clickTargets.push(toggle);
+
+      clickTargets.forEach((target) => {
+        const boundHandler = (event) => {
+          if (target !== row) {
+            event.stopPropagation();
+          }
+          event.preventDefault();
+          handler();
+        };
+
+        target.addEventListener("click", boundHandler);
+        cleanupFns.push(() => target.removeEventListener("click", boundHandler));
+      });
+
+      const keyHandler = (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        handler();
+      };
+
+      row.addEventListener("keydown", keyHandler);
+      cleanupFns.push(() => row.removeEventListener("keydown", keyHandler));
+    });
+
+    const resizeHandler = () => {
+      if (!openRow) return;
+      setRowExpanded(openRow, true);
+    };
+
+    window.addEventListener("resize", resizeHandler);
+    cleanupFns.push(() => window.removeEventListener("resize", resizeHandler));
   }
 
   function init() {
     // Delay ensures DOM is fully injected by SPA
     requestAnimationFrame(() => {
-      initSkillBars();
+      const rows = Array.from(document.querySelectorAll(".ss-skill-row"));
+      initSkillBars(rows);
+      initSkillToggles(rows);
     });
   }
 
   function destroy() {
-    // No-op (kept for symmetry & future use)
+    cleanupFns.forEach((fn) => fn());
+    cleanupFns = [];
+    openRow = null;
   }
 
   window.AboutView = {
