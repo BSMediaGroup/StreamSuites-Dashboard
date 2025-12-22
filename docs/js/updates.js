@@ -17,6 +17,7 @@
       elements: {
         title: "updates-runtime-title",
         author: "updates-runtime-author",
+        avatar: "updates-runtime-avatar",
         date: "updates-runtime-date",
         link: "updates-runtime-link",
         sha: "updates-runtime-sha",
@@ -33,6 +34,7 @@
       elements: {
         title: "updates-dashboard-title",
         author: "updates-dashboard-author",
+        avatar: "updates-dashboard-avatar",
         date: "updates-dashboard-date",
         link: "updates-dashboard-link",
         sha: "updates-dashboard-sha",
@@ -70,6 +72,21 @@
     } else {
       el.removeAttribute("href");
       el.textContent = label || "Unavailable";
+    }
+  }
+
+  function setAvatar(id, url, alt) {
+    const el = getEl(id);
+    if (!el) return;
+
+    if (url) {
+      el.style.backgroundImage = `url(${url})`;
+      el.title = alt || "Commit author avatar";
+      el.classList.add("has-image");
+    } else {
+      el.style.backgroundImage = "";
+      el.removeAttribute("title");
+      el.classList.remove("has-image");
     }
   }
 
@@ -166,6 +183,7 @@
     setText(repoConfig.elements.author, "—");
     setText(repoConfig.elements.date, "—");
     setText(repoConfig.elements.sha, "—");
+    setAvatar(repoConfig.elements.avatar, null);
     setLink(repoConfig.elements.link, "#", "Unavailable");
 
     const desc = getEl(repoConfig.elements.description);
@@ -224,6 +242,7 @@
     setText(elements.author, "—");
     setText(elements.date, "—");
     setText(elements.sha, "—");
+    setAvatar(elements.avatar, null);
     setLink(elements.link, "#", "Unavailable");
 
     const desc = getEl(elements.description);
@@ -449,6 +468,10 @@
       commit?.author?.login ||
       "Unknown";
     setText(elements.author, authorName);
+    const avatarUrl =
+      commit?.author?.avatar_url ||
+      (!commit?.author && commit?.committer?.avatar_url ? commit.committer.avatar_url : null);
+    setAvatar(elements.avatar, avatarUrl, authorName ? `${authorName} avatar` : "Commit author avatar");
 
     const date = commit?.commit?.author?.date;
     setText(elements.date, formatDate(date));
@@ -487,6 +510,7 @@
     setText(repoConfig.elements.author, "—");
     setText(repoConfig.elements.date, "—");
     setText(repoConfig.elements.sha, "—");
+    setAvatar(repoConfig.elements.avatar, null);
     setLink(repoConfig.elements.link, "#", "Fetching…");
 
     const desc = getEl(repoConfig.elements.description);

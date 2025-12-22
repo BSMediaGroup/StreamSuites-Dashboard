@@ -102,12 +102,77 @@ a:hover {
   text-decoration: underline;
 }
 
+#app-nav {
+  background: rgba(20, 22, 27, 0.78);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+}
+
+#app-nav .nav-shell {
+  background: linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.02),
+      rgba(255, 255, 255, 0.01)
+    ),
+    rgba(16, 18, 22, 0.65);
+  border-color: var(--border-subtle);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 8px 18px rgba(0, 0, 0, 0.28);
+}
+
 #app-nav li {
-  color: var(--link-accent);
+  color: var(--text-secondary);
 }
 
 #app-nav li:hover {
-  text-decoration: underline;
+  color: var(--link-accent);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+#app-nav li.active {
+  color: var(--link-accent);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 -2px 0 var(--link-accent);
+}
+
+#app-nav .nav-more-toggle {
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+}
+
+#app-nav .nav-more-toggle:hover,
+#app-nav .nav-more-toggle:focus-visible {
+  color: var(--link-accent);
+  background: rgba(255, 255, 255, 0.02);
+  outline: none;
+}
+
+#app-nav .nav-more-toggle.active {
+  color: var(--link-accent);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--border-subtle);
+  box-shadow: inset 0 -2px 0 var(--link-accent);
+}
+
+#app-nav .nav-overflow-menu {
+  background: rgba(16, 18, 22, 0.9);
+  border-color: var(--border-subtle);
+}
+
+#app-nav .nav-overflow-menu li {
+  color: var(--text-secondary);
+  padding: 10px 16px;
+}
+
+#app-nav .nav-overflow-menu li:hover {
+  color: var(--link-accent);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+#app-nav .nav-overflow-menu li.active {
+  color: var(--link-accent);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 /* ----------------------------------------------------------------------
