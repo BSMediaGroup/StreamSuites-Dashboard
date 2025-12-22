@@ -36,6 +36,7 @@
         <div class="updates-status">
           <div class="muted" id="updates-cache-message">No cached update data. Click Refresh to fetch latest commits.</div>
           <div class="updates-cache-timestamp" id="updates-cache-timestamp">—</div>
+          <div class="updates-last-updated" id="updates-last-updated">Last updated: never</div>
         </div>
         <button type="button" class="ss-btn ss-btn-primary" id="updates-refresh-btn">Refresh updates</button>
       </div>
@@ -81,6 +82,12 @@
       <div class="updates-description" id="updates-runtime-description">
         Loading commit details…
       </div>
+
+      <div class="updates-diff-summary" id="updates-runtime-summary">
+        Diff summary unavailable
+      </div>
+
+      <ul class="updates-file-list" id="updates-runtime-files"></ul>
 
       <div class="updates-diff" id="updates-runtime-diff">
         <p class="updates-empty">Loading diff preview…</p>
@@ -128,6 +135,12 @@
       <div class="updates-description" id="updates-dashboard-description">
         Loading commit details…
       </div>
+
+      <div class="updates-diff-summary" id="updates-dashboard-summary">
+        Diff summary unavailable
+      </div>
+
+      <ul class="updates-file-list" id="updates-dashboard-files"></ul>
 
       <div class="updates-diff" id="updates-dashboard-diff">
         <p class="updates-empty">Loading diff preview…</p>

@@ -22,6 +22,9 @@
         sha: "updates-runtime-sha",
         description: "updates-runtime-description",
         diff: "updates-runtime-diff"
+        ,
+        summary: "updates-runtime-summary",
+        files: "updates-runtime-files"
       }
     },
     {
@@ -35,6 +38,9 @@
         sha: "updates-dashboard-sha",
         description: "updates-dashboard-description",
         diff: "updates-dashboard-diff"
+        ,
+        summary: "updates-dashboard-summary",
+        files: "updates-dashboard-files"
       }
     }
   ];
@@ -109,6 +115,17 @@
     return `Cache last updated: ${formatDate(value)}`;
   }
 
+  function formatLastUpdated(value) {
+    if (!value) return "Last updated: never";
+    return `Last updated: ${formatDate(value)}`;
+  }
+
+  function setLastUpdatedFromTimestamp(value) {
+    const lastUpdated = getEl("updates-last-updated");
+    if (!lastUpdated) return;
+    lastUpdated.textContent = formatLastUpdated(value);
+  }
+
   function loadCachedUpdates() {
     if (typeof localStorage === "undefined") return null;
     try {
@@ -137,6 +154,7 @@
     try {
       localStorage.setItem(UPDATES_CACHE_KEY, JSON.stringify(cache));
       setCacheTimestamp(formatCacheTimestamp(cache.timestamp));
+      setLastUpdatedFromTimestamp(cache.timestamp);
       setCacheMessage("Cache updated from the latest refresh.");
     } catch (err) {
       console.warn("[Updates] Unable to persist cached data", err);
@@ -155,6 +173,14 @@
       desc.textContent = "No cached data. Click Refresh to fetch latest commits.";
       desc.classList.remove("updates-error");
     }
+
+    const summary = getEl(repoConfig.elements.summary);
+    if (summary) {
+      summary.textContent = "Diff summary unavailable";
+      summary.classList.add("updates-diff-summary-muted");
+    }
+
+    renderFileList(repoConfig.elements.files, null);
 
     const diff = getEl(repoConfig.elements.diff);
     if (diff) {
@@ -187,6 +213,7 @@
     if (hasData) {
       setCacheMessage("Showing cached data. Click Refresh to fetch the latest commits.");
       setCacheTimestamp(formatCacheTimestamp(cache.timestamp));
+      setLastUpdatedFromTimestamp(cache.timestamp);
     }
 
     return hasData;
@@ -204,6 +231,14 @@
       desc.textContent = message;
       desc.classList.add("updates-error");
     }
+
+    const summary = getEl(elements.summary);
+    if (summary) {
+      summary.textContent = "Diff summary unavailable";
+      summary.classList.add("updates-diff-summary-muted");
+    }
+
+    renderFileList(elements.files, null);
 
     const diff = getEl(elements.diff);
     if (diff) {
@@ -275,6 +310,31 @@
     return lines;
   }
 
+  function renderFileList(listId, files) {
+    const list = getEl(listId);
+    if (!list) return;
+    list.innerHTML = "";
+
+    if (!Array.isArray(files) || !files.length) return;
+
+    const maxItems = 10;
+    files.slice(0, maxItems).forEach((file) => {
+      const item = document.createElement("li");
+      item.classList.add("updates-file-item");
+      item.title = file?.filename || "Unknown file";
+      item.textContent = file?.filename || "Unknown file";
+      list.appendChild(item);
+    });
+
+    if (files.length > maxItems) {
+      const remaining = files.length - maxItems;
+      const moreItem = document.createElement("li");
+      moreItem.classList.add("updates-file-item");
+      moreItem.textContent = `…and ${remaining} more`;
+      list.appendChild(moreItem);
+    }
+  }
+
   function renderDiffPreview(targetId, files) {
     const container = getEl(targetId);
     if (!container) return;
@@ -331,6 +391,52 @@
     container.appendChild(pre);
   }
 
+  function renderDiffSummary(elements, commit) {
+    const summaryEl = getEl(elements.summary);
+    const files = Array.isArray(commit?.files) ? commit.files : null;
+    const additions = typeof commit?.stats?.additions === "number" ? commit.stats.additions : null;
+    const deletions = typeof commit?.stats?.deletions === "number" ? commit.stats.deletions : null;
+    const fileCount = Array.isArray(files) ? files.length : null;
+
+    if (summaryEl) {
+      summaryEl.classList.remove("updates-diff-summary-muted");
+      summaryEl.innerHTML = "";
+    }
+
+    if (!summaryEl) {
+      renderFileList(elements.files, files);
+      return;
+    }
+
+    if (fileCount === null || additions === null || deletions === null) {
+      summaryEl.textContent = "Diff summary unavailable";
+      summaryEl.classList.add("updates-diff-summary-muted");
+      renderFileList(elements.files, files);
+      return;
+    }
+
+    const summaryLine = document.createElement("div");
+    summaryLine.classList.add("updates-diff-summary-line");
+
+    const filesSpan = document.createElement("span");
+    filesSpan.classList.add("updates-diff-count");
+    filesSpan.textContent = `${fileCount} files changed`;
+    summaryLine.appendChild(filesSpan);
+
+    const additionsSpan = document.createElement("span");
+    additionsSpan.classList.add("updates-diff-add");
+    additionsSpan.textContent = `+${additions}`;
+    summaryLine.appendChild(additionsSpan);
+
+    const deletionsSpan = document.createElement("span");
+    deletionsSpan.classList.add("updates-diff-remove");
+    deletionsSpan.textContent = `-${deletions}`;
+    summaryLine.appendChild(deletionsSpan);
+
+    summaryEl.appendChild(summaryLine);
+    renderFileList(elements.files, files);
+  }
+
   function populateCommit(elements, commit) {
     const message = commit?.commit?.message || "";
     const [title, ...rest] = message.split("\n");
@@ -359,6 +465,7 @@
       descEl.classList.remove("updates-error");
     }
 
+    renderDiffSummary(elements, commit);
     renderDiffPreview(elements.diff, commit?.files);
   }
 
@@ -387,6 +494,14 @@
       desc.textContent = "Loading commit details…";
       desc.classList.remove("updates-error");
     }
+
+    const summary = getEl(repoConfig.elements.summary);
+    if (summary) {
+      summary.textContent = "Loading diff summary…";
+      summary.classList.add("updates-diff-summary-muted");
+    }
+
+    renderFileList(repoConfig.elements.files, null);
 
     const diff = getEl(repoConfig.elements.diff);
     if (diff) {
@@ -447,9 +562,11 @@
 
         setCacheMessage("Unable to refresh all updates. Showing cached data where available.", true);
         setCacheTimestamp(formatCacheTimestamp(cached.timestamp));
+        setLastUpdatedFromTimestamp(cached.timestamp);
       } else {
         setCacheMessage("Unable to refresh updates right now. Please try again.", true);
         setCacheTimestamp("Cache last updated: —");
+        setLastUpdatedFromTimestamp(null);
       }
     }
 
@@ -481,6 +598,7 @@
     if (!cached || !renderCachedCommits(cached)) {
       setCacheMessage(NO_CACHE_MESSAGE);
       setCacheTimestamp("Cache last updated: —");
+      setLastUpdatedFromTimestamp(null);
       repositories.forEach((repo) => {
         setAwaitingRefresh(repo);
       });
