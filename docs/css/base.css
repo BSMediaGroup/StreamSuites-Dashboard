@@ -93,10 +93,26 @@ body {
   border-bottom: 1px solid transparent;
 }
 
+#app-nav .nav-shell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  width: 100%;
+}
+
 #app-nav ul {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  align-items: center;
   list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  gap: 2px;
+  flex: 1;
 }
 
 #app-nav li {
@@ -105,6 +121,50 @@ body {
   font-size: 13px;
   user-select: none;
   white-space: nowrap;
+  border-radius: var(--radius-sm);
+  transition: color 0.2s ease, background 0.2s ease;
+  flex-shrink: 0;
+}
+
+#app-nav .nav-overflow {
+  position: relative;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+#app-nav .nav-more-toggle {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  border-radius: var(--radius-sm);
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+#app-nav .nav-overflow-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  list-style: none;
+  margin: 0;
+  padding: 6px 0;
+  min-width: 180px;
+  display: none;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+#app-nav .nav-overflow-menu.open {
+  display: block;
+}
+
+#app-nav .is-hidden {
+  display: none !important;
 }
 
 /* ------------------------------
