@@ -281,6 +281,7 @@ const navOverflow = {
   menu: null,
   toggle: null,
   container: null,
+  shell: null,
   resizeHandler: null,
   outsideHandler: null,
   bound: false
@@ -291,12 +292,14 @@ function initNavOverflowElements() {
   navOverflow.menu = $("#app-nav-overflow-menu");
   navOverflow.toggle = $("#app-nav-overflow-toggle");
   navOverflow.container = $("#app-nav-overflow");
+  navOverflow.shell = $("#app-nav .nav-shell");
 
   return Boolean(
     navOverflow.list &&
     navOverflow.menu &&
     navOverflow.toggle &&
-    navOverflow.container
+    navOverflow.container &&
+    navOverflow.shell
   );
 }
 
@@ -336,7 +339,7 @@ function redistributeNavItems() {
   resetNavOverflowItems();
   closeNavOverflowMenu();
 
-  const containerWidth = navOverflow.container?.clientWidth || 0;
+  const containerWidth = navOverflow.shell?.clientWidth || 0;
   if (!navOverflow.list || !containerWidth) {
     navOverflow.toggle.classList.add("is-hidden");
     navOverflow.container?.setAttribute("aria-hidden", "true");
