@@ -1,0 +1,103 @@
+/* ======================================================================
+   StreamSuites Dashboard — updates.css
+   Purpose:
+   - Styles for the Updates view
+   - GitHub-like diff presentation for latest commit previews
+   ====================================================================== */
+
+.updates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.updates-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.updates-label {
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.updates-value {
+  font-size: 14px;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.updates-description {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel-alt);
+  border: 1px dashed var(--border-subtle);
+  color: var(--text-primary);
+  white-space: pre-wrap;
+}
+
+.updates-diff {
+  margin-top: 12px;
+}
+
+.updates-diff pre {
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  overflow-x: auto;
+  white-space: pre;
+  max-height: 420px;
+}
+
+.updates-diff code {
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.diff-line {
+  display: block;
+  padding: 0 6px;
+  border-left: 3px solid transparent;
+}
+
+.diff-add {
+  color: #b6f0c0;
+  background: rgba(82, 183, 136, 0.08);
+  border-left-color: rgba(82, 183, 136, 0.8);
+}
+
+.diff-remove {
+  color: #f2b6b6;
+  background: rgba(201, 82, 82, 0.08);
+  border-left-color: rgba(201, 82, 82, 0.8);
+}
+
+.diff-hunk {
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.02);
+  border-left-color: var(--border-subtle);
+}
+
+.updates-link {
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+
+.updates-link:hover {
+  text-decoration: underline;
+}
+
+.updates-error,
+.updates-empty {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin: 8px 0;
+}
