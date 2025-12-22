@@ -12,6 +12,52 @@
   <div class="ss-panel-body">
 
     <!-- ============================================================ -->
+    <!-- PLANNED MODULES -->
+    <!-- ============================================================ -->
+    <section>
+      <h3>Planned Modules</h3>
+
+      <section style="margin-top: 8px;">
+        <h4>Levelling System</h4>
+        <ul class="ss-list">
+          <li>Tracks live chat participation per user</li>
+          <li>Each message contributes configurable score values</li>
+          <li>Scores accrue per registered creator</li>
+          <li>Long-term goal: unify viewer identities across Rumble, Twitch, and YouTube using regex/exact name matching</li>
+          <li>Where successful, a user’s scoreboard reflects their true global score for that creator</li>
+        </ul>
+        <p class="muted">Status: Planned / Experimental — Implementation: Runtime-owned (placeholder only)</p>
+      </section>
+
+      <section style="margin-top: 12px;">
+        <h4>Fake Gambling / Game Mechanics</h4>
+        <ul class="ss-list">
+          <li>Purely fictional, no real money</li>
+          <li>Text-triggered chat games (e.g. !steal, !loot @user)</li>
+          <li>Randomized success/failure outcomes</li>
+          <li>Failed attempts may incur in-game penalties</li>
+          <li>Randomness may be true RNG or pattern-based as long as it convincingly appears random</li>
+          <li>All balances and tallies are in-game only</li>
+        </ul>
+        <p class="muted">Status: Planned — Implementation: Runtime-owned (placeholder only)</p>
+      </section>
+
+      <section style="margin-top: 12px;">
+        <h4>Paid Interaction Detection</h4>
+        <ul class="ss-list">
+          <li>Detects gifted subscriptions and paid messages (Rumble Rants, YouTube Super Chats, etc.)</li>
+          <li>Detection may be regex-based or platform-native</li>
+          <li>Monthly gifter scoreboard visualized as a pie chart</li>
+          <li>Pie slice size correlates to gifts per user</li>
+          <li>Scoreboard resets each calendar month</li>
+          <li>Monthly winner is publicly visible</li>
+          <li>Registered creators can view and award winners</li>
+        </ul>
+        <p class="muted">Status: Planned / Design In Progress — Implementation: Runtime-owned (placeholder only)</p>
+      </section>
+    </section>
+
+    <!-- ============================================================ -->
     <!-- CURRENT PHASE -->
     <!-- ============================================================ -->
     <section>
@@ -210,11 +256,29 @@
             0 0 38px rgba(0, 210, 255, 0.55);
         }
       }
+
+      .ss-progress-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .ss-progress-icon {
+        display: inline-flex;
+        width: 16px;
+        height: 16px;
+        background-color: currentColor;
+        mask: var(--progress-icon) center / contain no-repeat;
+        -webkit-mask: var(--progress-icon) center / contain no-repeat;
+      }
     </style>
 
     <div class="ss-progress-row ss-skill-row" data-score="6.5">
       <div class="ss-progress-label">
-        StreamSuites Unified Runtime
+        <span class="ss-progress-title">
+          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
+          StreamSuites Unified Runtime
+        </span>
         <span class="ss-progress-meta">65% · Contracts Locked + Quota Enforcement</span>
       </div>
       <div class="ss-skill-wrapper">
@@ -226,7 +290,10 @@
 
     <div class="ss-progress-row ss-skill-row" data-score="6.0">
       <div class="ss-progress-label">
-        Administrator Dashboard UI
+        <span class="ss-progress-title">
+          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
+          Administrator Dashboard UI
+        </span>
         <span class="ss-progress-meta">60% · Runtime Parity Achieved</span>
       </div>
       <div class="ss-skill-wrapper">
@@ -238,7 +305,10 @@
 
     <div class="ss-progress-row ss-skill-row" data-score="4.0">
       <div class="ss-progress-label">
-        Creator Dashboard UI
+        <span class="ss-progress-title">
+          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
+          Creator Dashboard UI
+        </span>
         <span class="ss-progress-meta">40% · Runtime Contracts Available</span>
       </div>
       <div class="ss-skill-wrapper">
@@ -250,7 +320,10 @@
 
     <div class="ss-progress-row ss-skill-row" data-score="4.5">
       <div class="ss-progress-label">
-        Discord Client
+        <span class="ss-progress-title">
+          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
+          Discord Client
+        </span>
         <span class="ss-progress-meta">45% · Foundation</span>
       </div>
       <div class="ss-skill-wrapper">
@@ -262,7 +335,10 @@
 
     <div class="ss-progress-row ss-skill-row" data-score="4.0">
       <div class="ss-progress-label">
-        Rumble Client
+        <span class="ss-progress-title">
+          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
+          Rumble Client
+        </span>
         <span class="ss-progress-meta">40% · Runtime-Orchestrated Control</span>
       </div>
       <div class="ss-skill-wrapper">
@@ -274,7 +350,10 @@
 
     <div class="ss-progress-row ss-skill-row" data-score="5.5">
       <div class="ss-progress-label">
-        YouTube Client
+        <span class="ss-progress-title">
+          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
+          YouTube Client
+        </span>
         <span class="ss-progress-meta">55% · Quota Enforcement + Snapshot Export</span>
       </div>
       <div class="ss-skill-wrapper">
@@ -286,7 +365,10 @@
 
     <div class="ss-progress-row ss-skill-row" data-score="4.5">
       <div class="ss-progress-label">
-        Twitch Client
+        <span class="ss-progress-title">
+          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
+          Twitch Client
+        </span>
         <span class="ss-progress-meta">45% · Foundation + Global Service Control</span>
       </div>
       <div class="ss-skill-wrapper">
@@ -298,7 +380,10 @@
 
     <div class="ss-progress-row ss-skill-row" data-score="1.0">
       <div class="ss-progress-label">
-        Twitter Client / Integration
+        <span class="ss-progress-title">
+          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
+          Twitter Client / Integration
+        </span>
         <span class="ss-progress-meta">10% · Deferred</span>
       </div>
       <div class="ss-skill-wrapper">
@@ -310,7 +395,10 @@
 
     <div class="ss-progress-row ss-skill-row" data-score="2.0">
       <div class="ss-progress-label">
-        WinForms GUI (Admin & System Controls)
+        <span class="ss-progress-title">
+          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
+          WinForms GUI (Admin & System Controls)
+        </span>
         <span class="ss-progress-meta">20% · Planning</span>
       </div>
       <div class="ss-skill-wrapper">
@@ -322,8 +410,56 @@
 
     <div class="ss-progress-row ss-skill-row" data-score="3.0">
       <div class="ss-progress-label">
-        Unified Live Chat Replay Module
+        <span class="ss-progress-title">
+          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
+          Unified Live Chat Replay Module
+        </span>
         <span class="ss-progress-meta">30% · Runtime Signals Available</span>
+      </div>
+      <div class="ss-skill-wrapper">
+        <div class="ss-skill-track">
+          <div class="ss-skill-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ss-progress-row ss-skill-row" data-score="1.0">
+      <div class="ss-progress-label">
+        <span class="ss-progress-title">
+          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
+          Levelling System
+        </span>
+        <span class="ss-progress-meta">10% · Planned / Experimental</span>
+      </div>
+      <div class="ss-skill-wrapper">
+        <div class="ss-skill-track">
+          <div class="ss-skill-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ss-progress-row ss-skill-row" data-score="1.0">
+      <div class="ss-progress-label">
+        <span class="ss-progress-title">
+          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
+          Fake Gambling / Game Mechanics
+        </span>
+        <span class="ss-progress-meta">10% · Planned</span>
+      </div>
+      <div class="ss-skill-wrapper">
+        <div class="ss-skill-track">
+          <div class="ss-skill-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ss-progress-row ss-skill-row" data-score="1.5">
+      <div class="ss-progress-label">
+        <span class="ss-progress-title">
+          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
+          Paid Interaction Detection
+        </span>
+        <span class="ss-progress-meta">15% · Planned / Design In Progress</span>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -335,49 +471,6 @@
     <p class="muted" style="margin-top: 12px;">
       Mechanics are not finalized; implementation details remain pending and will follow runtime design updates.
     </p>
-
-    <div style="margin-top: 12px;">
-      <h3>Planned Modules</h3>
-
-      <section style="margin-top: 8px;">
-        <h4>Levelling System</h4>
-        <ul class="ss-list">
-          <li>Tracks live chat participation per user</li>
-          <li>Each message contributes configurable score values</li>
-          <li>Scores accrue per registered creator</li>
-          <li>Long-term goal: unify viewer identities across Rumble, Twitch, and YouTube using regex/exact name matching</li>
-          <li>Where successful, a user’s scoreboard reflects their true global score for that creator</li>
-        </ul>
-        <p class="muted">Status: Planned / Experimental — Implementation: Runtime-owned (placeholder only)</p>
-      </section>
-
-      <section style="margin-top: 12px;">
-        <h4>Fake Gambling / Game Mechanics</h4>
-        <ul class="ss-list">
-          <li>Purely fictional, no real money</li>
-          <li>Text-triggered chat games (e.g. !steal, !loot @user)</li>
-          <li>Randomized success/failure outcomes</li>
-          <li>Failed attempts may incur in-game penalties</li>
-          <li>Randomness may be true RNG or pattern-based as long as it convincingly appears random</li>
-          <li>All balances and tallies are in-game only</li>
-        </ul>
-        <p class="muted">Status: Planned — Implementation: Runtime-owned (placeholder only)</p>
-      </section>
-
-      <section style="margin-top: 12px;">
-        <h4>Paid Interaction Detection</h4>
-        <ul class="ss-list">
-          <li>Detects gifted subscriptions and paid messages (Rumble Rants, YouTube Super Chats, etc.)</li>
-          <li>Detection may be regex-based or platform-native</li>
-          <li>Monthly gifter scoreboard visualized as a pie chart</li>
-          <li>Pie slice size correlates to gifts per user</li>
-          <li>Scoreboard resets each calendar month</li>
-          <li>Monthly winner is publicly visible</li>
-          <li>Registered creators can view and award winners</li>
-        </ul>
-        <p class="muted">Status: Planned / Design In Progress — Implementation: Runtime-owned (placeholder only)</p>
-      </section>
-    </div>
 
   </div>
 </section>
