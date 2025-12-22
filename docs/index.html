@@ -174,30 +174,38 @@
 
     <!-- Navigation -->
     <nav id="app-nav">
-      <ul>
-        <li data-view="overview">Overview</li>
-        <li data-view="creators">Creators</li>
-        <li data-view="triggers">Chat Triggers</li>
-        <li data-view="jobs">Jobs</li>
-        <li data-view="clips">Clips</li>
-        <li data-view="polls">Polls</li>
-        <li data-view="scoreboards">Scoreboards</li>
-        <li data-view="scoreboard-management">Manage Scores</li>
+      <div class="nav-shell">
+        <ul id="app-nav-list">
+          <li data-view="overview">Overview</li>
+          <li data-view="creators">Creators</li>
+          <li data-view="triggers">Chat Triggers</li>
+          <li data-view="jobs">Jobs</li>
+          <li data-view="clips">Clips</li>
+          <li data-view="polls">Polls</li>
+          <li data-view="scoreboards">Scoreboards</li>
+          <li data-view="scoreboard-management">Manage Scores</li>
 
-        <li data-view="ratelimits">Rate Limits</li>
-        <li data-view="settings">Settings</li>
-        <li data-view="chat-replay">Chat Replay</li>
+          <li data-view="ratelimits">Rate Limits</li>
+          <li data-view="settings">Settings</li>
+          <li data-view="chat-replay">Chat Replay</li>
 
-        <li data-view="rumble">Rumble</li>
-        <li data-view="youtube">YouTube</li>
-        <li data-view="twitch">Twitch</li>
-        <li data-view="twitter">Twitter</li>
-        <li data-view="discord">Discord</li>
-        <li data-view="support">Support</li>
+          <li data-view="rumble">Rumble</li>
+          <li data-view="youtube">YouTube</li>
+          <li data-view="twitch">Twitch</li>
+          <li data-view="twitter">Twitter</li>
+          <li data-view="discord">Discord</li>
+          <li data-view="support">Support</li>
 
-        <li data-view="updates">Updates</li>
-        <li data-view="about">About</li>
-      </ul>
+          <li data-view="updates">Updates</li>
+          <li data-view="about">About</li>
+        </ul>
+        <div class="nav-overflow" id="app-nav-overflow" aria-hidden="true">
+          <button type="button" class="nav-more-toggle" id="app-nav-overflow-toggle" aria-expanded="false">
+            ▼ More
+          </button>
+          <ul class="nav-overflow-menu" id="app-nav-overflow-menu"></ul>
+        </div>
+      </div>
     </nav>
 
     <!-- Main -->
