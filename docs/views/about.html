@@ -17,17 +17,23 @@
     <section>
       <h3>Current Phase</h3>
       <p>
-        StreamSuites is advancing through a stabilization phase with a confirmed
-        architectural win for Rumble chat via the platform’s canonical SSE
-        stream. The dashboard remains a static surface that mirrors
-        authoritative runtime exports without driving live automation, and now
-        ships with a config state layer that hydrates from bundled JSON
-        defaults or localStorage drafts and can export runtime-ready
-        configuration for creators and platforms.
+        StreamSuites is a modular automation runtime for multi-platform
+        livestream operations. It favors deterministic, schema-driven
+        automation over platform-native bot UIs and keeps orchestration
+        centralized in the runtime so connectors for Rumble, Twitch, YouTube,
+        and Discord stay coordinated without per-platform divergence.
+      </p>
+      <p>
+        The dashboard you are viewing is deliberately static and read-only. It
+        hydrates from exported JSON bundles, mirrors runtime contracts, and
+        never issues live commands or API calls. Runtime state remains
+        authoritative; the dashboard is a separate artifact for visibility and
+        configuration drafting only.
       </p>
       <p class="muted">
-        Scope for this repo: documentation-grade UI, local storage inspection,
-        and read-only visibility into runtime-exported JSON snapshots.
+        Early-stage / alpha: contracts and exports are still being aligned, the
+        dashboard stays documentation-grade, and runtime drops remain the source
+        of truth for any visible data.
       </p>
     </section>
 
@@ -230,8 +236,8 @@
 <!-- ================================================================ -->
 <!-- VISUAL ROADMAP (STATIC) -->
 <!-- ================================================================ -->
-<section class="ss-panel" id="roadmap" style="margin-top: 16px;">
-  <header class="ss-panel-header">
+<section class="ss-panel" style="margin-top: 16px;">
+  <header class="ss-panel-header" id="roadmap">
     <h2>Roadmap (Visual Only)
       <details class="ss-roadmap-legend">
         <summary class="ss-legend-summary">Legend</summary>
