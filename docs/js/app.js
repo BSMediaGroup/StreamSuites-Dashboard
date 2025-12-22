@@ -276,6 +276,147 @@ async function loadView(name) {
    Navigation Handling
    ---------------------------------------------------------------------- */
 
+const navOverflow = {
+  list: null,
+  menu: null,
+  toggle: null,
+  container: null,
+  shell: null,
+  resizeHandler: null,
+  outsideHandler: null,
+  bound: false
+};
+
+function initNavOverflowElements() {
+  navOverflow.list = $("#app-nav-list");
+  navOverflow.menu = $("#app-nav-overflow-menu");
+  navOverflow.toggle = $("#app-nav-overflow-toggle");
+  navOverflow.container = $("#app-nav-overflow");
+  navOverflow.shell = $("#app-nav .nav-shell");
+
+  return Boolean(
+    navOverflow.list &&
+    navOverflow.menu &&
+    navOverflow.toggle &&
+    navOverflow.container &&
+    navOverflow.shell
+  );
+}
+
+function resetNavOverflowItems() {
+  if (!navOverflow.list || !navOverflow.menu) return;
+  while (navOverflow.menu.firstChild) {
+    navOverflow.list.appendChild(navOverflow.menu.firstChild);
+  }
+}
+
+function syncNavOverflowActiveIndicator() {
+  if (!navOverflow.toggle || !navOverflow.menu) return;
+  const hasActive = Boolean(navOverflow.menu.querySelector("li.active"));
+  const isOpen = navOverflow.menu.classList.contains("open");
+  navOverflow.toggle.classList.toggle("active", hasActive || isOpen);
+}
+
+function closeNavOverflowMenu() {
+  if (!navOverflow.menu || !navOverflow.toggle) return;
+  navOverflow.menu.classList.remove("open");
+  navOverflow.toggle.setAttribute("aria-expanded", "false");
+  syncNavOverflowActiveIndicator();
+}
+
+function openNavOverflowMenu() {
+  if (!navOverflow.menu || !navOverflow.toggle) return;
+  if (navOverflow.toggle.classList.contains("is-hidden")) return;
+  if (!navOverflow.menu.children.length) return;
+  navOverflow.menu.classList.add("open");
+  navOverflow.toggle.setAttribute("aria-expanded", "true");
+  syncNavOverflowActiveIndicator();
+}
+
+function redistributeNavItems() {
+  if (!initNavOverflowElements()) return;
+
+  resetNavOverflowItems();
+  closeNavOverflowMenu();
+
+  const containerWidth = navOverflow.shell?.clientWidth || 0;
+  if (!navOverflow.list || !containerWidth) {
+    navOverflow.toggle.classList.add("is-hidden");
+    navOverflow.container?.setAttribute("aria-hidden", "true");
+    syncNavOverflowActiveIndicator();
+    return;
+  }
+
+  if (navOverflow.list.scrollWidth <= containerWidth) {
+    navOverflow.toggle.classList.add("is-hidden");
+    navOverflow.container.setAttribute("aria-hidden", "true");
+    syncNavOverflowActiveIndicator();
+    return;
+  }
+
+  navOverflow.toggle.classList.remove("is-hidden");
+  navOverflow.container.setAttribute("aria-hidden", "false");
+
+  const toggleWidth = navOverflow.toggle?.offsetWidth || 0;
+  const buffer = 12;
+  const availableWidth = containerWidth - toggleWidth - buffer;
+
+  if (availableWidth <= 0) {
+    navOverflow.toggle.classList.add("is-hidden");
+    navOverflow.container.setAttribute("aria-hidden", "true");
+    syncNavOverflowActiveIndicator();
+    return;
+  }
+
+  navOverflow.container.setAttribute("aria-hidden", "false");
+
+  while (navOverflow.list.scrollWidth > availableWidth && navOverflow.list.children.length) {
+    const lastItem = navOverflow.list.lastElementChild;
+    if (!lastItem) break;
+    navOverflow.menu.prepend(lastItem);
+  }
+
+  if (!navOverflow.menu.children.length) {
+    navOverflow.toggle.classList.add("is-hidden");
+    navOverflow.container.setAttribute("aria-hidden", "true");
+  }
+
+  syncNavOverflowActiveIndicator();
+}
+
+function bindNavOverflow() {
+  if (!initNavOverflowElements()) return;
+  if (navOverflow.bound) {
+    redistributeNavItems();
+    return;
+  }
+
+  navOverflow.toggle.addEventListener("click", (event) => {
+    event.stopPropagation();
+    if (navOverflow.menu?.classList.contains("open")) {
+      closeNavOverflowMenu();
+    } else {
+      openNavOverflowMenu();
+    }
+  });
+
+  navOverflow.resizeHandler = () => {
+    window.requestAnimationFrame(redistributeNavItems);
+  };
+  window.addEventListener("resize", navOverflow.resizeHandler);
+
+  navOverflow.outsideHandler = (event) => {
+    if (!navOverflow.menu || !navOverflow.menu.classList.contains("open")) return;
+    if (!navOverflow.container?.contains(event.target)) {
+      closeNavOverflowMenu();
+    }
+  };
+  document.addEventListener("click", navOverflow.outsideHandler);
+
+  navOverflow.bound = true;
+  redistributeNavItems();
+}
+
 function updateNavActiveState(viewName) {
   $all("[data-view]").forEach((el) => {
     if (el.dataset.view === viewName) {
@@ -284,6 +425,8 @@ function updateNavActiveState(viewName) {
       el.classList.remove("active");
     }
   });
+  closeNavOverflowMenu();
+  syncNavOverflowActiveIndicator();
 }
 
 function bindNavigation() {
@@ -343,6 +486,7 @@ function initApp() {
   console.info("[Dashboard] Initializing StreamSuites dashboard");
 
   bindNavigation();
+  bindNavOverflow();
   bindDelegatedNavigation();
   bindHashChange();
 
