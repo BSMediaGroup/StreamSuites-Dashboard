@@ -95,20 +95,20 @@ body {
 
 #app-nav .nav-shell {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
   padding: 5px 12px;
   min-width: 0;
   border-radius: var(--radius-md);
   border: 1px solid transparent;
   width: 100%;
-  overflow: hidden;
+  overflow: visible;
   white-space: nowrap;
 }
 
 #app-nav ul {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
   list-style: none;
   margin: 0;
@@ -116,14 +116,7 @@ body {
   gap: 4px;
   flex: 1;
   min-width: 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-#app-nav ul::-webkit-scrollbar {
-  display: none;
+  overflow: visible;
 }
 
 #app-nav li {
@@ -141,7 +134,7 @@ body {
   position: relative;
   flex-shrink: 0;
   z-index: 10;
-  display: flex;
+  display: none;
   align-items: stretch;
 }
 

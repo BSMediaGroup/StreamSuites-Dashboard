@@ -348,25 +348,6 @@ function scheduleNavRedistribute() {
   });
 }
 
-function measureToggleWidth() {
-  if (!navOverflow.toggle || !navOverflow.container) return 0;
-  const wasHidden = navOverflow.toggle.classList.contains("is-hidden");
-
-  if (wasHidden) {
-    navOverflow.toggle.classList.remove("is-hidden");
-    navOverflow.container.setAttribute("aria-hidden", "false");
-  }
-
-  const width = navOverflow.toggle.getBoundingClientRect().width || 0;
-
-  if (wasHidden) {
-    navOverflow.toggle.classList.add("is-hidden");
-    navOverflow.container.setAttribute("aria-hidden", "true");
-  }
-
-  return width;
-}
-
 function scheduleNavRedistribute() {
   if (navOverflow.rafId) {
     cancelAnimationFrame(navOverflow.rafId);
@@ -377,25 +358,10 @@ function scheduleNavRedistribute() {
   });
 }
 
-function redistributeNavItems() {
-  if (!initNavOverflowElements()) return;
-
   resetNavOverflowItems();
-  const containerWidth = navOverflow.shell?.clientWidth || 0;
-  if (!navOverflow.list || !containerWidth) {
-    navOverflow.toggle.classList.add("is-hidden");
-    navOverflow.container?.setAttribute("aria-hidden", "true");
-    navOverflow.toggle.setAttribute("data-overflowing", "false");
-    syncNavOverflowActiveIndicator();
-    return;
-  }
-
-  const list = navOverflow.list;
-  const isOverflowing = list.scrollWidth > list.clientWidth + 1;
-
-  navOverflow.toggle.classList.toggle("is-hidden", !isOverflowing);
-  navOverflow.container?.setAttribute("aria-hidden", isOverflowing ? "false" : "true");
-  navOverflow.toggle.setAttribute("data-overflowing", String(isOverflowing));
+  navOverflow.toggle.classList.add("is-hidden");
+  navOverflow.container?.setAttribute("aria-hidden", "true");
+  navOverflow.toggle.setAttribute("data-overflowing", "false");
   syncNavOverflowActiveIndicator();
 }
 
@@ -409,10 +375,7 @@ function bindNavOverflow() {
   navOverflow.toggle.addEventListener("click", (event) => {
     event.stopPropagation();
     if (!navOverflow.list) return;
-    const delta = Math.max(navOverflow.list.clientWidth * 0.6, 120);
-    const next = navOverflow.list.scrollLeft + delta;
-    navOverflow.list.scrollTo({ left: next, behavior: "smooth" });
-    setTimeout(scheduleNavRedistribute, 250);
+    navOverflow.list.scrollTo({ left: navOverflow.list.scrollWidth, behavior: "smooth" });
   });
 
   navOverflow.resizeHandler = () => {
