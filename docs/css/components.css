@@ -250,6 +250,14 @@
   padding: 8px 10px;
 }
 
+.ss-table th:has(.switch-button),
+.ss-table td:has(.switch-button),
+.ss-table-compact th:has(.switch-button),
+.ss-table-compact td:has(.switch-button) {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
 /* ----------------------------------------------------------------------
    Forms
    ---------------------------------------------------------------------- */
