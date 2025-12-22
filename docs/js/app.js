@@ -472,6 +472,15 @@ registerView("settings", {
 });
 registerView("chat-replay", {});
 
+registerView("updates", {
+  onLoad: () => {
+    window.UpdatesView?.init?.();
+  },
+  onUnload: () => {
+    window.UpdatesView?.destroy?.();
+  }
+});
+
 registerView("about", {
   onLoad: () => {
     window.AboutView?.init?.();
