@@ -1,0 +1,9 @@
+{
+  "schema": "streamsuites.dashboard_state.v1",
+  "last_loaded_at": null,
+  "last_export_at": null,
+  "draft_sources": {
+    "creators": "data/creators.json",
+    "platforms": "data/platforms.json"
+  }
+}

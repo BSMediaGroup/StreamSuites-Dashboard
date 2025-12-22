@@ -28,45 +28,21 @@
 
   const STORAGE_KEY = "settings";
 
-  /*
-    Canonical shape (dashboard intent only):
-
-    {
-      system: {
-        mode: "local" | "production",
-        autosave_interval_seconds: number | null,
-        verbose_logging: boolean
-      },
-      platform_defaults: {
-        chat_cooldown_seconds: number | null,
-        default_response_mode: "equals_icase" | "contains_icase",
-        enable_global_chat_responses: boolean
-      },
-      security: {
-        confirm_destructive_actions: boolean,
-        read_only_mode: boolean
-      },
-      advanced: {
-        runtime_export_format: "creators.json",
-        schema_version: string
-      }
-    }
-  */
-
-  /* ------------------------------------------------------------
-     STATE
-     ------------------------------------------------------------ */
+  const el = {};
 
   let settings = null;
+  let wired = false;
 
   /* ------------------------------------------------------------
      INIT
      ------------------------------------------------------------ */
 
-  function init() {
+  async function init() {
+    cacheElements();
+    wireEvents();
     loadSettings();
-    // Phase 1B: UI is read-only; no wiring yet
-    console.info("[Settings] Loaded dashboard settings (Phase 1B)");
+    await hydratePlatforms();
+    await renderDashboardState();
   }
 
   /* ------------------------------------------------------------
@@ -81,8 +57,7 @@
       return;
     }
 
-    settings = createDefaultSettings();
-    persist();
+    settings = settings || createDefaultSettings();
   }
 
   function persist() {
@@ -194,5 +169,86 @@
     exportSettings,
     importSettingsFromFile
   };
+
+  /* ------------------------------------------------------------
+     PLATFORM + CONFIG EXPORT WIRING
+     ------------------------------------------------------------ */
+
+  function cacheElements() {
+    el.exportAll = document.getElementById("btn-export-config");
+    el.importAll = document.getElementById("btn-import-config");
+    el.importInput = document.getElementById("config-import-file");
+    el.dashboardState = document.getElementById("dashboard-config-state");
+    el.dashboardExport = document.getElementById("dashboard-export-state");
+  }
+
+  function wireEvents() {
+    if (wired) return;
+
+    el.exportAll?.addEventListener("click", async () => {
+      await window.ConfigState?.exportAllConfigs?.();
+      await renderDashboardState(true);
+    });
+
+    el.importAll?.addEventListener("click", () => {
+      if (!el.importInput) return;
+      el.importInput.value = "";
+      el.importInput.click();
+    });
+
+    el.importInput?.addEventListener("change", async () => {
+      const file = el.importInput.files?.[0];
+      if (!file) return;
+      try {
+        await window.ConfigState?.importConfigBundle?.(file);
+        await PlatformsManager?.refresh?.(true);
+        await renderDashboardState(true);
+      } catch (err) {
+        console.error("[Settings] Import failed", err);
+        alert("Import failed: invalid configuration payload");
+      }
+    });
+
+    wired = true;
+  }
+
+  async function hydratePlatforms() {
+    if (window.PlatformsManager?.initSettingsView) {
+      await window.PlatformsManager.initSettingsView();
+    }
+  }
+
+  async function renderDashboardState(forceReload = false) {
+    const state =
+      (await window.ConfigState?.loadDashboardState?.({
+        forceReload
+      })) || null;
+
+    const loaded = state?.last_loaded_at
+      ? formatTimestamp(state.last_loaded_at)
+      : "No drafts loaded";
+    const exported = state?.last_export_at
+      ? formatTimestamp(state.last_export_at)
+      : "Not exported yet";
+
+    if (el.dashboardState) el.dashboardState.textContent = loaded;
+    if (el.dashboardExport) el.dashboardExport.textContent = exported;
+  }
+
+  function formatTimestamp(value) {
+    return (
+      window.StreamSuitesState?.formatTimestamp?.(value) ||
+      value ||
+      "—"
+    );
+  }
+
+  function destroy() {
+    wired = false;
+    window.PlatformsManager?.destroy?.();
+  }
+
+  window.SettingsView.init = init;
+  window.SettingsView.destroy = destroy;
 
 })();

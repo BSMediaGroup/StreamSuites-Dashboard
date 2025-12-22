@@ -1,0 +1,25 @@
+{
+  "schema": "streamsuites.platforms.v1",
+  "platforms": {
+    "youtube": {
+      "enabled": true,
+      "telemetry_enabled": true,
+      "notes": "Primary VOD + live ingestion."
+    },
+    "twitch": {
+      "enabled": false,
+      "telemetry_enabled": true,
+      "notes": "Enable when Twitch credentials are provisioned."
+    },
+    "rumble": {
+      "enabled": true,
+      "telemetry_enabled": true,
+      "notes": "SSE chat ingest ready; live testing complete."
+    },
+    "discord": {
+      "enabled": true,
+      "telemetry_enabled": true,
+      "notes": "Control-plane routing for admin commands."
+    }
+  }
+}

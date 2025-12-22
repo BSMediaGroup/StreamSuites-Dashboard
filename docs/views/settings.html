@@ -68,17 +68,25 @@
         Enable or disable platform runtimes globally. Changes require a full StreamSuites runtime restart to take effect.
       </p>
 
-      <table class="ss-table ss-table-compact">
+      <table class="ss-table ss-table-compact" id="platforms-config">
+        <thead>
+          <tr>
+            <th>Platform</th>
+            <th class="align-right">Enabled</th>
+            <th class="align-right">Telemetry</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
         <tbody>
 
           <!-- YouTube -->
-          <tr>
+          <tr data-platform-row="youtube">
             <td>YouTube</td>
             <td class="align-right">
               <label class="switch-button" aria-label="YouTube service toggle">
                 <div class="switch-scale">
                   <div class="switch-outer">
-                    <input type="checkbox" disabled data-service="youtube" />
+                    <input type="checkbox" data-service="youtube" data-field="enabled" />
                     <div class="ss-switch-inner">
                       <span class="ss-switch-toggle"></span>
                       <span class="ss-switch-indicator"></span>
@@ -87,16 +95,37 @@
                 </div>
               </label>
             </td>
+            <td class="align-right">
+              <label class="switch-button" aria-label="YouTube telemetry toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input type="checkbox" data-field="telemetry_enabled" />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
+              </label>
+            </td>
+            <td>
+              <textarea
+                class="ss-input"
+                rows="2"
+                data-field="notes"
+                placeholder="Operational notes for YouTube runtime"
+              ></textarea>
+            </td>
           </tr>
 
           <!-- Twitch -->
-          <tr>
+          <tr data-platform-row="twitch">
             <td>Twitch</td>
             <td class="align-right">
               <label class="switch-button" aria-label="Twitch service toggle">
                 <div class="switch-scale">
                   <div class="switch-outer">
-                    <input type="checkbox" disabled data-service="twitch" />
+                    <input type="checkbox" data-service="twitch" data-field="enabled" />
                     <div class="ss-switch-inner">
                       <span class="ss-switch-toggle"></span>
                       <span class="ss-switch-indicator"></span>
@@ -105,16 +134,11 @@
                 </div>
               </label>
             </td>
-          </tr>
-
-          <!-- Rumble -->
-          <tr>
-            <td>Rumble</td>
             <td class="align-right">
-              <label class="switch-button" aria-label="Rumble service toggle">
+              <label class="switch-button" aria-label="Twitch telemetry toggle">
                 <div class="switch-scale">
                   <div class="switch-outer">
-                    <input type="checkbox" disabled data-service="rumble" />
+                    <input type="checkbox" data-field="telemetry_enabled" />
                     <div class="ss-switch-inner">
                       <span class="ss-switch-toggle"></span>
                       <span class="ss-switch-indicator"></span>
@@ -122,6 +146,53 @@
                   </div>
                 </div>
               </label>
+            </td>
+            <td>
+              <textarea
+                class="ss-input"
+                rows="2"
+                data-field="notes"
+                placeholder="Operational notes for Twitch runtime"
+              ></textarea>
+            </td>
+          </tr>
+
+          <!-- Rumble -->
+          <tr data-platform-row="rumble">
+            <td>Rumble</td>
+            <td class="align-right">
+              <label class="switch-button" aria-label="Rumble service toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input type="checkbox" data-service="rumble" data-field="enabled" />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
+              </label>
+            </td>
+            <td class="align-right">
+              <label class="switch-button" aria-label="Rumble telemetry toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input type="checkbox" data-field="telemetry_enabled" />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
+              </label>
+            </td>
+            <td>
+              <textarea
+                class="ss-input"
+                rows="2"
+                data-field="notes"
+                placeholder="Operational notes for Rumble runtime"
+              ></textarea>
             </td>
           </tr>
 
@@ -141,10 +212,31 @@
                 </div>
               </label>
             </td>
+            <td class="align-right">
+              <label class="switch-button" aria-label="Twitter telemetry toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input type="checkbox" disabled />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
+              </label>
+            </td>
+            <td>
+              <textarea
+                class="ss-input"
+                rows="2"
+                placeholder="Control-plane telemetry for Twitter coming later"
+                disabled
+              ></textarea>
+            </td>
           </tr>
 
           <!-- Discord -->
-          <tr>
+          <tr data-platform-row="discord">
             <td>
               Discord
               <span class="muted">(control-plane)</span>
@@ -153,7 +245,7 @@
               <label class="switch-button" aria-label="Discord service toggle">
                 <div class="switch-scale">
                   <div class="switch-outer">
-                    <input type="checkbox" disabled data-service="discord" />
+                    <input type="checkbox" data-service="discord" data-field="enabled" />
                     <div class="ss-switch-inner">
                       <span class="ss-switch-toggle"></span>
                       <span class="ss-switch-indicator"></span>
@@ -161,6 +253,27 @@
                   </div>
                 </div>
               </label>
+            </td>
+            <td class="align-right">
+              <label class="switch-button" aria-label="Discord telemetry toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input type="checkbox" data-field="telemetry_enabled" />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
+              </label>
+            </td>
+            <td>
+              <textarea
+                class="ss-input"
+                rows="2"
+                data-field="notes"
+                placeholder="Operational notes for Discord control-plane"
+              ></textarea>
             </td>
           </tr>
 
@@ -190,14 +303,27 @@
       </p>
 
       <div class="ss-form-actions">
-        <button class="ss-btn ss-btn-secondary" disabled>
+        <button class="ss-btn ss-btn-secondary" id="btn-export-config">
           Export All Config
         </button>
 
-        <button class="ss-btn ss-btn-secondary" disabled>
+        <button class="ss-btn ss-btn-secondary" id="btn-import-config">
           Import Config
         </button>
       </div>
+
+      <p class="muted" style="margin-top:0.5rem;">
+        Draft source: <span id="dashboard-config-state">Loading…</span>
+        <br />
+        Last export: <span id="dashboard-export-state">Not exported yet</span>
+      </p>
+
+      <input
+        type="file"
+        id="config-import-file"
+        accept="application/json"
+        class="hidden"
+      />
 
     </div>
   </section>
