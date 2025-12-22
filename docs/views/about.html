@@ -17,10 +17,12 @@
     <section>
       <h3>Current Phase</h3>
       <p>
-        StreamSuites is in a stabilization and contract-lock phase focused on
-        deterministic runtime enforcement, schema-backed state, and static
-        visibility. The dashboard remains a static, read-only surface that
-        mirrors authoritative runtime exports without driving live automation.
+        StreamSuites is advancing through a stabilization phase with a confirmed
+        architectural win for Rumble chat via the platform’s canonical SSE
+        stream. The dashboard remains a static, read-only surface that mirrors
+        authoritative runtime exports without driving live automation, and it is
+        poised to hydrate once the runtime begins exporting the updated chat
+        pipeline data.
       </p>
       <p class="muted">
         Scope for this repo: documentation-grade UI, local storage inspection,
@@ -55,6 +57,22 @@
       <p class="muted">
         Configuration, enforcement, observability, and execution are intentionally
         decoupled to preserve safety, auditability, and deterministic behavior.
+      </p>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- MILESTONE: RUMBLE SSE INGESTION -->
+    <!-- ============================================================ -->
+    <section>
+      <h3>Milestone: Rumble SSE Chat Ingestion</h3>
+      <ul class="ss-list">
+        <li>Rumble chat now uses the canonical SSE endpoint: <code>https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream</code>.</li>
+        <li>SSE stream emits <code>init</code> and <code>messages</code> events for reliable, scalable ingestion.</li>
+        <li>Runtime export alignment is in progress; dashboard hydration will follow once JSON snapshots are published.</li>
+        <li>Dashboard language stays neutral to polling vs SSE and renders runtime-exported state only.</li>
+      </ul>
+      <p class="muted">
+        No deprecated Rumble endpoints are assumed. The dashboard will remain read-only and rely on runtime-produced data drops.
       </p>
     </section>
 
@@ -181,6 +199,24 @@
         The dashboard tracks the StreamSuites runtime but does not replace it.
         Runtime contracts for jobs, triggers, and quotas are now stabilized,
         enabling future hydration without UI restructuring.
+      </p>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- ROADMAP UPDATES -->
+    <!-- ============================================================ -->
+    <section>
+      <h3>Roadmap Updates</h3>
+      <ul class="ss-list">
+        <li><strong>Rumble Chat:</strong> ARCHITECTURE SOLVED via SSE; awaiting runtime snapshot export.</li>
+        <li><strong>Twitch Chat:</strong> In progress/planned; runtime IRC foundation continues.</li>
+        <li><strong>YouTube Chat:</strong> Planned; scaffold exists, hydration depends on runtime exports.</li>
+        <li><strong>Cross-platform Chat Abstraction:</strong> Planned; will follow once platform feeds are normalized.</li>
+        <li><strong>Telemetry Export:</strong> Planned; dashboard will render exported health and quotas only.</li>
+        <li><strong>Dashboard ↔ Runtime Schema Contract:</strong> Planned; contract locks once export shapes are published.</li>
+      </ul>
+      <p class="muted">
+        Progress is intentionally conservative; no live bindings are assumed until runtime JSON exports land.
       </p>
     </section>
 
@@ -356,13 +392,13 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="4.2" title="42% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete.">
+    <div class="ss-progress-row ss-skill-row" data-score="4.5" title="45% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete.">
       <div class="ss-progress-label">
         <span class="ss-progress-title">
           <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/uiscreen.svg');"></span>
           Creator Dashboard UI
         </span>
-        <span class="ss-progress-meta">42% · Runtime Contracts Available</span>
+        <span class="ss-progress-meta">45% · Runtime Contracts Available</span>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -377,7 +413,7 @@
           <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/discord-silver.svg');"></span>
           Discord Client
         </span>
-        <span class="ss-progress-meta">45% · Foundation</span>
+        <span class="ss-progress-meta">45% · Foundation + Heartbeat Plan</span>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -386,13 +422,13 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="4.0" title="40% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete.">
+    <div class="ss-progress-row ss-skill-row" data-score="5.0" title="50% · 40–50% Functional — Architecture solved; runtime export alignment pending.">
       <div class="ss-progress-label">
         <span class="ss-progress-title">
           <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/rumble-silver.svg');"></span>
-          Rumble Client
+          Rumble Chat SSE Pipeline
         </span>
-        <span class="ss-progress-meta">40% · Runtime-Orchestrated Control</span>
+        <span class="ss-progress-meta">50% · Architecture Solved (SSE) · Export alignment pending</span>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -401,28 +437,13 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="5.5" title="55% · 55–60% Integrated — Integrated with runtime orchestration, quotas, or control planes. Stable but evolving.">
-      <div class="ss-progress-label">
-        <span class="ss-progress-title">
-          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/youtube-silver.svg');"></span>
-          YouTube Client
-        </span>
-        <span class="ss-progress-meta">55% · Quota Enforcement + Snapshot Export</span>
-      </div>
-      <div class="ss-skill-wrapper">
-        <div class="ss-skill-track">
-          <div class="ss-skill-fill"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="ss-progress-row ss-skill-row" data-score="4.5" title="45% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete.">
+    <div class="ss-progress-row ss-skill-row" data-score="3.0" title="30% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution.">
       <div class="ss-progress-label">
         <span class="ss-progress-title">
           <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/twitch-0.svg');"></span>
-          Twitch Client
+          Twitch Chat Runtime
         </span>
-        <span class="ss-progress-meta">45% · Foundation + Global Service Control</span>
+        <span class="ss-progress-meta">30% · Foundation + Planned runtime hydration</span>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -431,13 +452,73 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="0.5" title="5% · 0–5% Concept — Conceptual only. No runtime scaffolding or contracts exist yet.">
+    <div class="ss-progress-row ss-skill-row" data-score="3.0" title="30% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution.">
       <div class="ss-progress-label">
         <span class="ss-progress-title">
-          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/webhook.svg');"></span>
-          Twitter Client / Integration
+          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/youtube-silver.svg');"></span>
+          YouTube Chat Runtime
         </span>
-        <span class="ss-progress-meta">5% · Concept / Deferred</span>
+        <span class="ss-progress-meta">30% · Scaffold; runtime exports planned</span>
+      </div>
+      <div class="ss-skill-wrapper">
+        <div class="ss-skill-track">
+          <div class="ss-skill-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ss-progress-row ss-skill-row" data-score="2.5" title="25% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution.">
+      <div class="ss-progress-label">
+        <span class="ss-progress-title">
+          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/extension.svg');"></span>
+          Cross-Platform Chat Abstraction
+        </span>
+        <span class="ss-progress-meta">25% · Planned normalization layer</span>
+      </div>
+      <div class="ss-skill-wrapper">
+        <div class="ss-skill-track">
+          <div class="ss-skill-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ss-progress-row ss-skill-row" data-score="2.0" title="20% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution.">
+      <div class="ss-progress-label">
+        <span class="ss-progress-title">
+          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/extension.svg');"></span>
+          Telemetry Export Surface
+        </span>
+        <span class="ss-progress-meta">20% · Planned runtime health export</span>
+      </div>
+      <div class="ss-skill-wrapper">
+        <div class="ss-skill-track">
+          <div class="ss-skill-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ss-progress-row ss-skill-row" data-score="2.5" title="25% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution.">
+      <div class="ss-progress-label">
+        <span class="ss-progress-title">
+          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
+          Dashboard ↔ Runtime Schema Contract
+        </span>
+        <span class="ss-progress-meta">25% · Planned contract lock once exports publish</span>
+      </div>
+      <div class="ss-skill-wrapper">
+        <div class="ss-skill-track">
+          <div class="ss-skill-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ss-progress-row ss-skill-row" data-score="3.0" title="30% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution.">
+      <div class="ss-progress-label">
+        <span class="ss-progress-title">
+          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/extension.svg');"></span>
+          Unified Live Chat Replay Module
+        </span>
+        <span class="ss-progress-meta">30% · Runtime signals available</span>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -453,21 +534,6 @@
           WinForms GUI (Admin & System Controls)
         </span>
         <span class="ss-progress-meta">20% · Planning</span>
-      </div>
-      <div class="ss-skill-wrapper">
-        <div class="ss-skill-track">
-          <div class="ss-skill-fill"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="ss-progress-row ss-skill-row" data-score="3.0" title="30% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution.">
-      <div class="ss-progress-label">
-        <span class="ss-progress-title">
-          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/extension.svg');"></span>
-          Unified Live Chat Replay Module
-        </span>
-        <span class="ss-progress-meta">30% · Runtime Signals Available</span>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
@@ -513,6 +579,21 @@
           Paid Interaction Detection
         </span>
         <span class="ss-progress-meta">15% · Planned / Design In Progress</span>
+      </div>
+      <div class="ss-skill-wrapper">
+        <div class="ss-skill-track">
+          <div class="ss-skill-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ss-progress-row ss-skill-row" data-score="0.5" title="5% · 0–5% Concept — Conceptual only. No runtime scaffolding or contracts exist yet.">
+      <div class="ss-progress-label">
+        <span class="ss-progress-title">
+          <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/webhook.svg');"></span>
+          Twitter Client / Integration
+        </span>
+        <span class="ss-progress-meta">5% · Concept / Deferred</span>
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
