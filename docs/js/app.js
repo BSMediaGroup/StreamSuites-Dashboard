@@ -348,8 +348,15 @@ function scheduleNavRedistribute() {
   });
 }
 
-function redistributeNavItems() {
-  if (!initNavOverflowElements()) return;
+function scheduleNavRedistribute() {
+  if (navOverflow.rafId) {
+    cancelAnimationFrame(navOverflow.rafId);
+  }
+  navOverflow.rafId = window.requestAnimationFrame(() => {
+    navOverflow.rafId = null;
+    redistributeNavItems();
+  });
+}
 
   resetNavOverflowItems();
   navOverflow.toggle.classList.add("is-hidden");
