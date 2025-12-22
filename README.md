@@ -39,7 +39,7 @@ This repository is a **separate but companion project** to the main `StreamSuite
          |
 [Discord Bot Runtime] <— shared schemas ——————> [Dashboard surfaces bot status (planned visibility)]
          |
-         +— Rumble bot paused (API protection layer; schemas intact)
+         +— Rumble chat SSE ingestion (architecture solved; runtime export alignment underway)
 ```
 
 ### Component Relationships
@@ -129,7 +129,7 @@ When present, the Discord control-plane runtime is expected to expose non-author
 |--------------------|--------|-------|
 | `app.py` (Streaming Runtime) | **SUPPORTED** | Produces and consumes the schemas surfaced by the dashboard |
 | `discord_app.py` (Discord Runtime) | **SUPPORTED** | First-class runtime peer; planned dashboard visibility for bot presence and command parity; heartbeat endpoint planned but not yet implemented |
-| Rumble Chat Runtime | **PAUSED** | Upstream API restriction (DDoS protection layer); schemas remain valid and authoritative while support is paused |
+| Rumble Chat Runtime | **ARCHITECTURE SOLVED** | Canonical SSE ingestion via `https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream`; runtime export alignment is underway |
 
 ### Discord Control-Plane Notes (Documentation Only)
 
@@ -154,7 +154,14 @@ These are **control-plane only** capabilities that complement, but do not replac
 - A **YouTube platform scaffold** now exists in `docs/views/platforms/youtube.html`, matching the planned contract in `schemas/platform/youtube.schema.json`.
 - The dashboard remains **static and read-only** for YouTube; all chat execution and livestream handling stay in the StreamSuites runtime repo.
 - Runtime snapshots (heartbeat, connection state, last seen message) are optional exports from the runtime; absence of data is expected in static deployments.
-- Platform sequencing remains **Twitch foundation first**, with **YouTube hydration next** and **Rumble alignment after upstream access stabilizes**.
+- Platform sequencing remains **Twitch foundation first**, with **YouTube hydration next** and **Rumble alignment now focused on the new SSE architecture**.
+
+## Rumble Chat SSE Breakthrough
+
+- The canonical Rumble chat ingestion path now uses SSE at `https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream`, emitting `init` and `messages` events.
+- This endpoint replaces prior DOM-scrape or restricted mechanisms and is considered the canonical path forward.
+- Runtime integration is underway; the dashboard will hydrate via runtime-exported JSON snapshots once the SSE pipeline exports data.
+- The dashboard remains neutral to ingestion method (polling vs SSE) and will not introduce live requests—runtime exports stay authoritative.
 
 ### New Dashboard Views
 
@@ -316,7 +323,7 @@ Benefits:
 
 Schemas are treated as **contract files** between the dashboard and the runtime.
 
-Rumble platform schemas remain **authoritative and unchanged** even while the Rumble runtime is temporarily paused due to upstream API restrictions. No dashboard features have been removed, and runtime re-enablement is expected to occur without schema changes.
+Rumble platform schemas remain **authoritative and unchanged** while the runtime pivots to the canonical SSE ingestion path. No dashboard features have been removed, and runtime export alignment will hydrate the dashboard without schema changes.
 
 ### Quota Visibility (Visual-Only)
 

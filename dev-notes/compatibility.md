@@ -13,9 +13,9 @@
 
 ## Rumble Platform Status
 
-- **API state:** The Rumble runtime is blocked by an upstream DDoS protection layer that currently prevents bot operation.
-- **Support posture:** All Rumble-specific features are paused but not removed; schemas remain intact and should not be pruned.
-- **Resume plan:** Re-enablement will occur once the platform’s API access stabilizes, without expected schema rewrites.
+- **API state:** Canonical chat ingestion now uses SSE at `https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream`, emitting `init` and `messages` events.
+- **Support posture:** Runtime integration is resuming against the SSE endpoint; schemas remain intact and should not be pruned.
+- **Alignment plan:** Dashboard hydration will ride on runtime-exported JSON snapshots once the SSE pipeline lands; no dashboard-side live calls are introduced.
 
 ## YouTube Platform Status
 

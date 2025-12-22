@@ -167,7 +167,7 @@
     <header class="ss-panel-header">
       <h2>
         Rumble Integration
-        <span class="ss-platform-badge scaffold" id="badge-rumble">Scaffold</span>
+        <span class="ss-platform-badge scaffold" id="badge-rumble">Architecture Solved (SSE)</span>
       </h2>
     </header>
 
@@ -184,6 +184,11 @@
           </tr>
         </tbody>
       </table>
+
+      <p class="muted" style="margin-top: 0.5rem;">
+        Rumble chat now ingests via the canonical SSE stream (<code>https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream</code>).
+        Dashboard hydration will rely on runtime-exported snapshots; no live calls are issued here.
+      </p>
     </div>
   </section>
 
