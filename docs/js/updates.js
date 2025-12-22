@@ -3,6 +3,9 @@
 
   const GITHUB_PRIMARY_OWNER = "BSMediaGroup";
   const GITHUB_FALLBACK_OWNER = "DanielClancy";
+  const UPDATES_CACHE_KEY = "updates_cache_v1";
+  const CACHE_VERSION = 1;
+  const NO_CACHE_MESSAGE = "No cached update data. Click Refresh to fetch latest commits.";
 
   const MAX_PATCH_LINES = 200;
   const MAX_PATCH_CHARS = 12000;
@@ -37,6 +40,8 @@
   ];
 
   let abortController = null;
+  let refreshButton = null;
+  let refreshListenerBound = false;
 
   function getEl(id) {
     return document.getElementById(id);
@@ -78,6 +83,113 @@
       console.warn("[Updates] Failed to format date", e);
       return "Unknown";
     }
+  }
+
+  function setCacheMessage(message, isError = false) {
+    const cacheMessage = getEl("updates-cache-message");
+    if (!cacheMessage) return;
+    cacheMessage.textContent = message;
+    cacheMessage.classList.toggle("updates-status-error", Boolean(isError));
+  }
+
+  function setCacheTimestamp(text) {
+    const cacheTimestamp = getEl("updates-cache-timestamp");
+    if (!cacheTimestamp) return;
+    cacheTimestamp.textContent = text;
+  }
+
+  function setRefreshButtonState(isLoading) {
+    if (!refreshButton) return;
+    refreshButton.disabled = isLoading;
+    refreshButton.textContent = isLoading ? "Refreshing…" : "Refresh updates";
+  }
+
+  function formatCacheTimestamp(value) {
+    if (!value) return "Cache last updated: —";
+    return `Cache last updated: ${formatDate(value)}`;
+  }
+
+  function loadCachedUpdates() {
+    if (typeof localStorage === "undefined") return null;
+    try {
+      const raw = localStorage.getItem(UPDATES_CACHE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || parsed.version !== CACHE_VERSION) return null;
+      return parsed;
+    } catch (err) {
+      console.warn("[Updates] Unable to read cached data", err);
+      return null;
+    }
+  }
+
+  function persistCachedUpdates(payload) {
+    if (typeof localStorage === "undefined") return;
+    if (!payload?.runtime || !payload?.dashboard) return;
+
+    const cache = {
+      version: CACHE_VERSION,
+      timestamp: new Date().toISOString(),
+      runtime: payload.runtime,
+      dashboard: payload.dashboard
+    };
+
+    try {
+      localStorage.setItem(UPDATES_CACHE_KEY, JSON.stringify(cache));
+      setCacheTimestamp(formatCacheTimestamp(cache.timestamp));
+      setCacheMessage("Cache updated from the latest refresh.");
+    } catch (err) {
+      console.warn("[Updates] Unable to persist cached data", err);
+    }
+  }
+
+  function setAwaitingRefresh(repoConfig) {
+    setText(repoConfig.elements.title, "Awaiting refresh");
+    setText(repoConfig.elements.author, "—");
+    setText(repoConfig.elements.date, "—");
+    setText(repoConfig.elements.sha, "—");
+    setLink(repoConfig.elements.link, "#", "Unavailable");
+
+    const desc = getEl(repoConfig.elements.description);
+    if (desc) {
+      desc.textContent = "No cached data. Click Refresh to fetch latest commits.";
+      desc.classList.remove("updates-error");
+    }
+
+    const diff = getEl(repoConfig.elements.diff);
+    if (diff) {
+      diff.innerHTML = `<p class="updates-empty">No cached data for this repository.</p>`;
+    }
+  }
+
+  function renderCachedCommits(cache) {
+    if (!cache) return false;
+
+    const runtimeRepo = repositories.find((repo) => repo.key === "runtime");
+    const dashboardRepo = repositories.find((repo) => repo.key === "dashboard");
+
+    let hasData = false;
+
+    if (cache.runtime && runtimeRepo) {
+      populateCommit(runtimeRepo.elements, cache.runtime);
+      hasData = true;
+    } else if (runtimeRepo) {
+      setAwaitingRefresh(runtimeRepo);
+    }
+
+    if (cache.dashboard && dashboardRepo) {
+      populateCommit(dashboardRepo.elements, cache.dashboard);
+      hasData = true;
+    } else if (dashboardRepo) {
+      setAwaitingRefresh(dashboardRepo);
+    }
+
+    if (hasData) {
+      setCacheMessage("Showing cached data. Click Refresh to fetch the latest commits.");
+      setCacheTimestamp(formatCacheTimestamp(cache.timestamp));
+    }
+
+    return hasData;
   }
 
   function renderError(elements, message) {
@@ -254,10 +366,12 @@
     try {
       const commit = await fetchLatestCommit(repoConfig.repo, signal);
       populateCommit(repoConfig.elements, commit);
+      return commit;
     } catch (err) {
-      if (err?.name === "AbortError") return;
+      if (err?.name === "AbortError") throw err;
       console.error(`[Updates] Failed to load ${repoConfig.repo}`, err);
       renderError(repoConfig.elements, "Unable to load commit details at this time.");
+      return null;
     }
   }
 
@@ -280,14 +394,97 @@
     }
   }
 
-  function init() {
+  async function refreshUpdates() {
     abort();
     abortController = new AbortController();
 
+    setRefreshButtonState(true);
+    setCacheMessage("Refreshing updates from GitHub…");
+    setCacheTimestamp("Cache last updated: —");
+
+    const results = {};
+    let hadError = false;
+
     repositories.forEach((repo) => {
       setLoadingState(repo);
-      loadRepository(repo, abortController.signal);
     });
+
+    for (const repo of repositories) {
+      try {
+        const commit = await loadRepository(repo, abortController.signal);
+        if (commit) {
+          results[repo.key] = commit;
+        } else {
+          hadError = true;
+        }
+      } catch (err) {
+        if (err?.name === "AbortError") {
+          setRefreshButtonState(false);
+          return;
+        }
+        hadError = true;
+      }
+    }
+
+    if (!hadError && results.runtime && results.dashboard) {
+      persistCachedUpdates({
+        runtime: results.runtime,
+        dashboard: results.dashboard
+      });
+    } else {
+      const cached = loadCachedUpdates();
+      if (cached) {
+        const runtimeRepo = repositories.find((repo) => repo.key === "runtime");
+        const dashboardRepo = repositories.find((repo) => repo.key === "dashboard");
+
+        if (!results.runtime && cached.runtime && runtimeRepo) {
+          populateCommit(runtimeRepo.elements, cached.runtime);
+        }
+
+        if (!results.dashboard && cached.dashboard && dashboardRepo) {
+          populateCommit(dashboardRepo.elements, cached.dashboard);
+        }
+
+        setCacheMessage("Unable to refresh all updates. Showing cached data where available.", true);
+        setCacheTimestamp(formatCacheTimestamp(cached.timestamp));
+      } else {
+        setCacheMessage("Unable to refresh updates right now. Please try again.", true);
+        setCacheTimestamp("Cache last updated: —");
+      }
+    }
+
+    setRefreshButtonState(false);
+  }
+
+  function setupRefreshButton() {
+    refreshButton = getEl("updates-refresh-btn");
+    if (refreshButton && !refreshListenerBound) {
+      refreshButton.addEventListener("click", refreshUpdates);
+      refreshListenerBound = true;
+    }
+    setRefreshButtonState(false);
+  }
+
+  function teardownRefreshButton() {
+    if (refreshButton && refreshListenerBound) {
+      refreshButton.removeEventListener("click", refreshUpdates);
+      refreshListenerBound = false;
+    }
+    refreshButton = null;
+  }
+
+  function init() {
+    abort();
+    setupRefreshButton();
+
+    const cached = loadCachedUpdates();
+    if (!cached || !renderCachedCommits(cached)) {
+      setCacheMessage(NO_CACHE_MESSAGE);
+      setCacheTimestamp("Cache last updated: —");
+      repositories.forEach((repo) => {
+        setAwaitingRefresh(repo);
+      });
+    }
   }
 
   function abort() {
@@ -299,6 +496,7 @@
 
   function destroy() {
     abort();
+    teardownRefreshButton();
   }
 
   window.UpdatesView = {
