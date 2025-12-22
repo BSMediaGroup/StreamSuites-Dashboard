@@ -193,7 +193,20 @@
 <!-- ================================================================ -->
 <section class="ss-panel" id="roadmap" style="margin-top: 16px;">
   <header class="ss-panel-header">
-    <h2>Roadmap (Visual Only)</h2>
+    <h2>Roadmap (Visual Only)
+      <details class="ss-roadmap-legend">
+        <summary class="ss-legend-summary">Legend</summary>
+        <div class="ss-legend-body">
+          <div class="ss-legend-row"><strong>0–5% · Concept:</strong> Conceptual only. No runtime scaffolding or contracts exist yet.</div>
+          <div class="ss-legend-row"><strong>10–15% · Planned:</strong> Planned and documented. Architecture discussed, but no executable runtime scaffolding.</div>
+          <div class="ss-legend-row"><strong>20–30% · Scaffolded:</strong> Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution.</div>
+          <div class="ss-legend-row"><strong>40–50% · Functional:</strong> Core runtime behavior exists and executes deterministically. Not feature-complete.</div>
+          <div class="ss-legend-row"><strong>55–60% · Integrated:</strong> Integrated with runtime orchestration, quotas, or control planes. Stable but evolving.</div>
+          <div class="ss-legend-row"><strong>65–75% · Locked:</strong> Contracts stabilized. Runtime behavior considered production-safe barring bug fixes.</div>
+          <div class="ss-legend-row"><strong>80%+ · Mature:</strong> Feature-complete, stable, and unlikely to change without versioned migration.</div>
+        </div>
+      </details>
+    </h2>
   </header>
 
   <div class="ss-panel-body">
@@ -271,9 +284,49 @@
         mask: var(--progress-icon) center / contain no-repeat;
         -webkit-mask: var(--progress-icon) center / contain no-repeat;
       }
+
+      .ss-roadmap-legend {
+        display: inline-block;
+        margin-left: 10px;
+        font-size: 0.9em;
+      }
+
+      .ss-legend-summary {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        border-radius: 10px;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .ss-legend-summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .ss-legend-body {
+        margin-top: 6px;
+        padding: 8px 10px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.04);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        max-width: 520px;
+      }
+
+      .ss-legend-row {
+        font-size: 0.92em;
+        line-height: 1.4;
+      }
+
+      .ss-legend-row + .ss-legend-row {
+        margin-top: 4px;
+      }
     </style>
 
-    <div class="ss-progress-row ss-skill-row" data-score="6.8">
+    <div class="ss-progress-row ss-skill-row" data-score="6.8" title="68% · 65–75% Locked — Contracts stabilized. Runtime behavior considered production-safe barring bug fixes.">
       <div class="ss-progress-label">
         <span class="ss-progress-title">
           <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
@@ -288,7 +341,7 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="6.0">
+    <div class="ss-progress-row ss-skill-row" data-score="6.0" title="60% · 55–60% Integrated — Integrated with runtime orchestration, quotas, or control planes. Stable but evolving.">
       <div class="ss-progress-label">
         <span class="ss-progress-title">
           <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
@@ -303,7 +356,7 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="4.2">
+    <div class="ss-progress-row ss-skill-row" data-score="4.2" title="42% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete.">
       <div class="ss-progress-label">
         <span class="ss-progress-title">
           <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
@@ -318,7 +371,7 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="4.5">
+    <div class="ss-progress-row ss-skill-row" data-score="4.5" title="45% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete.">
       <div class="ss-progress-label">
         <span class="ss-progress-title">
           <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
@@ -333,7 +386,7 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="4.0">
+    <div class="ss-progress-row ss-skill-row" data-score="4.0" title="40% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete.">
       <div class="ss-progress-label">
         <span class="ss-progress-title">
           <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
@@ -348,7 +401,7 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="5.5">
+    <div class="ss-progress-row ss-skill-row" data-score="5.5" title="55% · 55–60% Integrated — Integrated with runtime orchestration, quotas, or control planes. Stable but evolving.">
       <div class="ss-progress-label">
         <span class="ss-progress-title">
           <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
@@ -363,7 +416,7 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="4.5">
+    <div class="ss-progress-row ss-skill-row" data-score="4.5" title="45% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete.">
       <div class="ss-progress-label">
         <span class="ss-progress-title">
           <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
@@ -378,7 +431,7 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="0.5">
+    <div class="ss-progress-row ss-skill-row" data-score="0.5" title="5% · 0–5% Concept — Conceptual only. No runtime scaffolding or contracts exist yet.">
       <div class="ss-progress-label">
         <span class="ss-progress-title">
           <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
@@ -393,7 +446,7 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="2.0">
+    <div class="ss-progress-row ss-skill-row" data-score="2.0" title="20% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution.">
       <div class="ss-progress-label">
         <span class="ss-progress-title">
           <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
@@ -408,7 +461,7 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="3.0">
+    <div class="ss-progress-row ss-skill-row" data-score="3.0" title="30% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution.">
       <div class="ss-progress-label">
         <span class="ss-progress-title">
           <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
@@ -423,7 +476,7 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="1.0">
+    <div class="ss-progress-row ss-skill-row" data-score="1.0" title="10% · 10–15% Planned — Planned and documented. Architecture discussed, but no executable runtime scaffolding.">
       <div class="ss-progress-label">
         <span class="ss-progress-title">
           <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
@@ -438,7 +491,7 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="1.0">
+    <div class="ss-progress-row ss-skill-row" data-score="1.0" title="10% · 10–15% Planned — Planned and documented. Architecture discussed, but no executable runtime scaffolding.">
       <div class="ss-progress-label">
         <span class="ss-progress-title">
           <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
@@ -453,7 +506,7 @@
       </div>
     </div>
 
-    <div class="ss-progress-row ss-skill-row" data-score="1.5">
+    <div class="ss-progress-row ss-skill-row" data-score="1.5" title="15% · 10–15% Planned — Planned and documented. Architecture discussed, but no executable runtime scaffolding.">
       <div class="ss-progress-label">
         <span class="ss-progress-title">
           <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
