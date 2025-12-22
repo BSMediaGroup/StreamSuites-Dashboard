@@ -397,6 +397,8 @@ Visual styling is influenced by existing dark-UI work (e.g. Mapbox dashboards, S
 
 ## Roadmap
 
+The About page includes a **static, informational roadmap** that mirrors runtime progress without acting as a control surface. It lists current modules (including the new **Clips Module**) with honest state notes pulled from runtime reality. Items are read-only and exist to communicate progress; they do not change contracts, trigger actions, or alter runtime behavior from the dashboard.
+
 ### Phase 1 — Foundation (Current)
 - Static GitHub Pages deployment
 - Creators editor (local drafts + deterministic export/import)

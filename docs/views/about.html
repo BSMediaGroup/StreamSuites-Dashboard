@@ -496,7 +496,7 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">The runtime core owns automation, quotas, and platform orchestration. “Locked” reflects that contracts and enforcement paths are stabilized, with remaining work focused on minor refinements rather than structural changes.</p>
+          <p class="muted">The unified runtime is the automation engine that enforces quotas, schedules jobs, and coordinates platform adapters. Its goal is deterministic execution of the full StreamSuites feature set. Contracts and enforcement are already locked in the runtime; remaining effort is incremental tuning rather than structural rewrites.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
@@ -523,7 +523,7 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">Admin-facing panels visually mirror runtime exports for jobs, triggers, and quotas. Integration here means layouts and states match the runtime contract, while interactivity remains intentionally read-only.</p>
+          <p class="muted">Admin panels present read-only snapshots for jobs, triggers, quotas, and telemetry in the same shapes the runtime exports. The intent is a reliable visibility layer that stays aligned with ConfigState and telemetry snapshots. It is integrated with the runtime contracts but remains static and non-interactive by design.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
@@ -550,7 +550,7 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">Creator views have contract-aligned scaffolding and deterministic layouts. The “functional” label notes that the UI covers expected flows visually, while hydration waits on runtime export cadence.</p>
+          <p class="muted">Creator-facing flows surface profiles, platform toggles, and trigger scaffolding in a schema-aligned layout. The vision is to let creators assemble export-ready bundles without touching the runtime directly. The current UI is functional scaffolding tied to the schemas; it renders cleanly but still waits on routine runtime exports for hydration.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
@@ -577,7 +577,7 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">Discord messaging is scaffolded with heartbeat planning and baseline event coverage. The progress score highlights that runtime alignment is underway but intentionally cautious pending export locks.</p>
+          <p class="muted">The Discord adapter targets bot presence, notifications, and command parity with other platforms. It is meant to expose heartbeat and connection signals while staying in lockstep with runtime quotas. Foundations and heartbeat planning exist, but export alignment is still underway and carefully staged.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
@@ -604,7 +604,34 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">Rumble has a confirmed SSE endpoint and message model. The dashboard will visualize exported snapshots once the runtime publishes them; current visuals reflect the solved architecture, not live data.</p>
+          <p class="muted">Rumble chat now ingests via the canonical SSE stream with a defined message model. The target is reliable livestream chat handling that exports stable payloads for the dashboard. Runtime ingestion is implemented with the solved architecture, but dashboard hydration still depends on published exports.</p>
+        </div>
+      </div>
+      <div class="ss-skill-wrapper">
+        <div class="ss-skill-track">
+          <div class="ss-skill-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="4.8" title="48% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete." role="button" tabindex="0">
+      <div class="ss-progress-label">
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/automation.svg');"></span>
+            Clips Module
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">48% · Runtime clipping (alpha)</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">The clips module automates livestream clipping, encodes segments with FFmpeg inside the runtime, and marches each clip through deterministic lifecycle states. Finished clips upload to the default StreamSuites Rumble channel today; future paid tiers will let operators set custom destinations. The dashboard surfaces every clip, including queued, pending, and failed jobs, reflecting runtime truth. Current state: implemented in the runtime, visible in the dashboard, early-stage alpha quality, and expected to iterate.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
@@ -631,7 +658,7 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">Twitch paths include schema groundwork and normalization targets. The current state signals preparedness for IRC-aligned hydration once the runtime begins emitting stable exports.</p>
+          <p class="muted">The Twitch runtime path is designed around IRC ingestion, trigger matching, and export-ready normalization. It should surface chat state and automation outcomes once finalized. Today it carries foundational schemas and message mapping plans, pending stable exports to drive the dashboard.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
@@ -658,7 +685,7 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">YouTube support is scaffolded for message ingestion and export mapping. Progress reflects planned JSON shapes and UI shells awaiting authoritative runtime drops.</p>
+          <p class="muted">YouTube support is scoped to ingest live chat, align payloads with runtime schemas, and export snapshots the dashboard can render. The end-state is parity with other platforms for triggers and moderation surfaces. Current progress is scaffold-only with defined JSON shapes and UI shells awaiting runtime drops.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
@@ -685,7 +712,7 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">Twitter remains a conceptual placeholder with no active scaffolding. The dashboard simply reserves surface area for future event ingestion and moderation views.</p>
+          <p class="muted">Twitter integration is purely conceptual, aimed at future ingestion of mentions, DMs, or chat-like events. The intent is a moderation and announcement surface once platform rules allow it. No scaffolding or exports exist yet; the dashboard only reserves a placeholder.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
@@ -712,7 +739,7 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">Normalization schemes for aligning Rumble, Twitch, and YouTube messages are drafted. Current visuals show intent for unified abstractions without asserting runtime enforcement.</p>
+          <p class="muted">A cross-platform layer will normalize chat events across Rumble, Twitch, and YouTube so triggers, scoreboards, and moderation tools work uniformly. The desired outcome is consistent payloads regardless of source. Draft normalization rules exist, but runtime enforcement and exports are still early.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
@@ -739,7 +766,7 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">Health, quota, and heartbeat metrics are planned for export, with UI placeholders ready to visualize those payloads. The percentage marks early scaffolding without active feeds.</p>
+          <p class="muted">Telemetry exports are intended to expose health, quota, and heartbeat signals the dashboard can graph without live calls. The goal is passive observability sourced from runtime drops. Scaffolding exists for the feeds, but no active exports are wired in yet.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
@@ -766,7 +793,7 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">Schema alignment work is underway to cement how the dashboard consumes exported JSON. The score reflects planned contract locking once the runtime publishes final shapes.</p>
+          <p class="muted">The schema contract defines exactly how the dashboard consumes exported JSON for creators, platforms, and telemetry. It should guarantee deterministic imports/exports once finalized. Current work aligns ConfigState with runtime expectations, with final locking pending published export shapes.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
@@ -793,7 +820,7 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">Replay visualizations are ready to reflect runtime-provided message archives. The module tracks available signals but waits on stabilized export streams before rendering live artifacts.</p>
+          <p class="muted">Chat replay is meant to store and rehydrate message archives for post-stream review across platforms. The UI is staged to visualize those transcripts alongside metadata. Runtime signals exist, but stabilized export streams are still needed before artifacts can render.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
@@ -820,7 +847,7 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">A WinForms-based control surface is scoped for administrative tasks. Planning is focused on parity with web dashboard contracts without asserting runtime coupling yet.</p>
+          <p class="muted">A WinForms control surface is planned for operators who prefer a desktop UI. It is intended to mirror admin views and telemetry without bypassing runtime safety. Planning and layout considerations are in place, but no runtime coupling or exports are implemented yet.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
@@ -847,7 +874,7 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">Levelling is envisioned as a fictional progression system tied to chat activity. The low percentage indicates early ideation without runtime scaffolding or confirmed data shapes.</p>
+          <p class="muted">Levelling is envisioned as a fictional progression track where chat participation earns experience toward ranks or perks. It should eventually respect cross-platform identity mapping once available. This remains early ideation with no runtime scaffolding beyond concept notes.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
@@ -874,7 +901,7 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">Game mechanics are scoped as playful, zero-stakes chat interactions. The plan is visual-first and deliberately avoids implying gambling mechanics beyond fictional tallies.</p>
+          <p class="muted">The game mechanics are lightweight chat commands (e.g., !steal, !loot @user) that award or deduct fictional balances. The intent is playful, zero-stakes engagement surfaced in dashboards only. It stays in the planned phase with placeholder UI and no runtime enforcement.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
@@ -901,7 +928,7 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">Detection concepts for gifted subs and paid callouts are in design. The dashboard will render monthly visibility once the runtime formalizes export feeds for these signals.</p>
+          <p class="muted">Paid interaction detection will surface gifted subscriptions and paid shout-outs (Rumble Rants, Super Chats, etc.) with monthly rollups. The dashboard aims to visualize those exports alongside leaderboards. Design work is underway, but runtime feeds are not yet finalized.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
