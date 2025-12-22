@@ -99,16 +99,12 @@
 
     /* ---------------------------------------------------------- */
     /* Footer layout — HARD LEFT / TRUE CENTER / HARD RIGHT
-       NOTE: base.css sets #app-footer { display:flex; justify-content:center }
-       Since base.css loads AFTER this <style>, we must override deterministically.
        ---------------------------------------------------------- */
     #app-footer {
       display: grid !important;
       grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
       align-items: center !important;
       column-gap: 20px !important;
-
-      /* Defensive: neutralize any flex-centric props from base.css */
       justify-content: stretch !important;
     }
 
@@ -232,7 +228,9 @@
       <div class="footer-center">
         <span>StreamSuites™ Dashboard v0.02</span>
         <span class="footer-sep">•</span>
-        <span>© 2025 Brainstream Media Group</span>
+        <a href="https://brainstream.media" target="_blank" rel="noopener noreferrer">
+          © 2025 Brainstream Media Group
+        </a>
       </div>
 
       <!-- Right -->
