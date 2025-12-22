@@ -2,11 +2,13 @@
 
 ## Overview
 
-**StreamSuites Dashboard** is a **static, client-side control panel** for configuring and inspecting the StreamSuites automation system.
+**StreamSuites Dashboard** is a **static, client-side control panel** for configuring and inspecting the StreamSuites automation system without embedding runtime logic.
 
-It is designed to provide a **human-friendly interface** over StreamSuites’ JSON-driven configuration model, without introducing server dependencies, platform lock-in, or runtime coupling.
+StreamSuites itself is a **modular, multi-platform livestream runtime**. It centralizes orchestration for Rumble, Twitch, YouTube, and Discord connectors, favors **deterministic, schema-driven automation** over platform-native bot UIs, and keeps live execution inside the runtime rather than the dashboard.
 
-**This dashboard remains static (GitHub Pages safe) and performs no live API calls**, but it now includes a **config state layer** that hydrates from localStorage drafts or bundled JSON defaults, and can export deterministic `creators.json` / `platforms.json` bundles for runtime consumption. All runtime facts shown in the UI come from **exported artifacts**, and those exports remain the **single source of truth**.
+**The dashboard stays read-only (GitHub Pages safe) and performs no live API calls.** It includes a **config state layer** that hydrates from localStorage drafts or bundled JSON defaults, and can export deterministic `creators.json` / `platforms.json` bundles for runtime consumption. All runtime facts shown in the UI come from **exported artifacts**, and those exports remain the **single source of truth**. The dashboard is an inspection and drafting surface; execution is runtime-owned.
+
+**Current phase:** early-stage / alpha. Runtime exports and schema contracts continue to stabilize, and the dashboard will mirror those exports without assuming live connectivity.
 
 **Dashboard purpose**
 - **Configuration** — edit and validate runtime contracts without needing a live backend
@@ -397,7 +399,7 @@ Visual styling is influenced by existing dark-UI work (e.g. Mapbox dashboards, S
 
 ## Roadmap
 
-The About page includes a **static, informational roadmap** that mirrors runtime progress without acting as a control surface. It lists current modules (including the new **Clips Module**) with honest state notes pulled from runtime reality. Items are read-only and exist to communicate progress; they do not change contracts, trigger actions, or alter runtime behavior from the dashboard.
+The About page includes a **static, informational roadmap** that mirrors runtime progress without acting as a control surface. It lists current modules (including the new **Clips Module**) with honest state notes pulled from runtime reality. Items are read-only and exist to communicate progress; they do not change contracts, trigger actions, or alter runtime behavior from the dashboard. The roadmap section now supports direct linking via `#roadmap` for deep-linking to the visual roadmap panel.
 
 ### Phase 1 — Foundation (Current)
 - Static GitHub Pages deployment
