@@ -5,116 +5,116 @@
    Responsibilities:
    - Manage creator records (UI-side)
    - Populate creators table
-   - Handle add/edit/delete flows
+   - Handle add/edit/soft-disable flows
    - Toggle platform-specific config blocks
-   - Prepare data for future API / file persistence
-
-   This file is SAFE for:
-   - GitHub Pages
-   - iframe embedding (Wix)
-   - later backend replacement
+   - Persist drafts to localStorage (via ConfigState)
+   - Export deterministic creators.json for runtime consumption
 
    ============================================================ */
 
 (() => {
   "use strict";
 
-  /* ------------------------------------------------------------
-     CONSTANTS
-     ------------------------------------------------------------ */
-
-  const STORAGE_KEY = "creators";
-
-  /* ------------------------------------------------------------
-     DOM REFERENCES
-     ------------------------------------------------------------ */
-
-  const tableBody = document.getElementById("creators-table-body");
-  const emptyState = document.getElementById("creators-empty");
-
-  const btnAddCreator = document.getElementById("btn-add-creator");
-  const btnRefresh = document.getElementById("btn-refresh-creators");
-  const btnCancelEdit = document.getElementById("btn-cancel-edit");
-
-  const editorPanel = document.getElementById("creator-editor");
-  const editorTitle = document.getElementById("creator-editor-title");
-  const creatorForm = document.getElementById("creator-form");
-
-  const inputCreatorId = document.getElementById("creator-id");
-  const inputDisplayName = document.getElementById("creator-name");
-
-  const checkboxRumble = document.getElementById("platform-rumble");
-  const rumbleConfig = document.getElementById("rumble-config");
-  const inputRumbleWatchUrl = document.getElementById("rumble-watch-url");
-
-  /* ------------------------------------------------------------
-     ADDITIVE: RUNTIME / ADMIN FIELDS (NOW WIRED)
-     ------------------------------------------------------------ */
-
-  const inputRumbleChannelUrl =
-    document.getElementById("rumble-channel-url");
-
-  const inputRumbleManualWatchUrl =
-    document.getElementById("rumble-manual-watch-url");
-
-  const inputRumbleApiEnvKey =
-    document.getElementById("rumble-api-env-key");
-
-  /* ------------------------------------------------------------
-     ADDITIVE: ADVANCED / ADMIN FIELDS (NO UI YET)
-     ------------------------------------------------------------ */
-
   const ADMIN_DEFAULT_TIER = "open";
+  const PLATFORM_KEYS = ["youtube", "twitch", "rumble", "discord"];
 
-  /* ------------------------------------------------------------
-     STATE
-     ------------------------------------------------------------ */
+  const el = {};
 
-  /** @type {Array<Object>} */
   let creators = [];
-
-  /** @type {string|null} */
   let editingCreatorId = null;
+  let wired = false;
 
   /* ------------------------------------------------------------
-     INIT
+     INIT / DESTROY
      ------------------------------------------------------------ */
 
-  document.addEventListener("DOMContentLoaded", init);
-
-  function init() {
+  async function init() {
+    cacheElements();
     wireEvents();
-    loadCreators();
+    await hydrateCreators();
+  }
+
+  function destroy() {
+    creators = [];
+    editingCreatorId = null;
+    wired = false;
+  }
+
+  /* ------------------------------------------------------------
+     DOM CACHE + EVENTS
+     ------------------------------------------------------------ */
+
+  function cacheElements() {
+    el.tableBody = document.getElementById("creators-table-body");
+    el.emptyState = document.getElementById("creators-empty");
+
+    el.btnAddCreator = document.getElementById("btn-add-creator");
+    el.btnRefresh = document.getElementById("btn-refresh-creators");
+    el.btnCancelEdit = document.getElementById("btn-cancel-edit");
+    el.btnImport = document.getElementById("btn-import-creators");
+    el.btnExport = document.getElementById("btn-export-creators");
+    el.importInput = document.getElementById("creators-import-file");
+
+    el.editorPanel = document.getElementById("creator-editor");
+    el.editorTitle = document.getElementById("creator-editor-title");
+    el.creatorForm = document.getElementById("creator-form");
+
+    el.inputCreatorId = document.getElementById("creator-id");
+    el.inputDisplayName = document.getElementById("creator-name");
+    el.inputNotes = document.getElementById("creator-notes");
+    el.checkboxActive = document.getElementById("creator-active");
+
+    el.checkboxYouTube = document.getElementById("platform-youtube");
+    el.checkboxTwitch = document.getElementById("platform-twitch");
+    el.checkboxRumble = document.getElementById("platform-rumble");
+    el.checkboxDiscord = document.getElementById("platform-discord");
+
+    el.rumbleConfig = document.getElementById("rumble-config");
+    el.inputRumbleWatchUrl = document.getElementById("rumble-watch-url");
+    el.inputRumbleChannelUrl = document.getElementById("rumble-channel-url");
+    el.inputRumbleManualWatchUrl = document.getElementById("rumble-manual-watch-url");
+    el.inputRumbleApiEnvKey = document.getElementById("rumble-api-env-key");
+  }
+
+  function wireEvents() {
+    if (wired) return;
+
+    el.btnAddCreator?.addEventListener("click", () => openEditor());
+    el.btnRefresh?.addEventListener("click", () => hydrateCreators(true));
+    el.btnCancelEdit?.addEventListener("click", closeEditor);
+
+    el.checkboxRumble?.addEventListener("change", () => {
+      if (!el.rumbleConfig) return;
+      el.rumbleConfig.classList.toggle(
+        "hidden",
+        !el.checkboxRumble.checked
+      );
+    });
+
+    el.creatorForm?.addEventListener("submit", onSubmitCreator);
+
+    wired = true;
+  }
+
+  /* ------------------------------------------------------------
+     DATA HYDRATION
+     ------------------------------------------------------------ */
+
+  async function hydrateCreators(forceReload = false) {
+    try {
+      creators =
+        (await window.ConfigState?.loadCreators({ forceReload })) || [];
+    } catch (err) {
+      console.warn("[Creators] Failed to load creators, using empty list", err);
+      creators = [];
+    }
+
     renderCreators();
   }
 
-  /* ------------------------------------------------------------
-     EVENT WIRING
-     ------------------------------------------------------------ */
-
-  function wireEvents() {
-    btnAddCreator.addEventListener("click", () => openEditor());
-    btnRefresh.addEventListener("click", renderCreators);
-    btnCancelEdit.addEventListener("click", closeEditor);
-
-    checkboxRumble.addEventListener("change", () => {
-      rumbleConfig.classList.toggle("hidden", !checkboxRumble.checked);
-    });
-
-    creatorForm.addEventListener("submit", onSubmitCreator);
-  }
-
-  /* ------------------------------------------------------------
-     DATA LOADING / PERSISTENCE
-     ------------------------------------------------------------ */
-
-  function loadCreators() {
-    const stored = App.storage.loadFromLocalStorage(STORAGE_KEY, []);
-    creators = Array.isArray(stored) ? stored : [];
-  }
-
   function persistCreators() {
-    App.storage.saveToLocalStorage(STORAGE_KEY, creators);
+    if (!window.ConfigState?.saveCreators) return;
+    creators = window.ConfigState.saveCreators(creators);
   }
 
   /* ------------------------------------------------------------
@@ -122,14 +122,15 @@
      ------------------------------------------------------------ */
 
   function renderCreators() {
-    tableBody.innerHTML = "";
+    if (!el.tableBody) return;
+    el.tableBody.innerHTML = "";
 
     if (!creators.length) {
-      emptyState.classList.remove("hidden");
+      el.emptyState?.classList.remove("hidden");
       return;
     }
 
-    emptyState.classList.add("hidden");
+    el.emptyState?.classList.add("hidden");
 
     creators.forEach((creator) => {
       const tr = document.createElement("tr");
@@ -139,36 +140,42 @@
         <td>${escapeHtml(creator.display_name || "")}</td>
         <td>${renderPlatforms(creator)}</td>
         <td>${renderStatus(creator)}</td>
+        <td>${renderNotes(creator)}</td>
         <td class="align-right">
           <button class="ss-btn ss-btn-small" data-action="edit">Edit</button>
-          <button class="ss-btn ss-btn-small ss-btn-danger" data-action="delete">Delete</button>
+          <button class="ss-btn ss-btn-small ${creator.disabled ? "ss-btn-primary" : "ss-btn-secondary"}" data-action="toggle">
+            ${creator.disabled ? "Enable" : "Disable"}
+          </button>
         </td>
       `;
 
-      tr.querySelector('[data-action="edit"]').addEventListener("click", () => {
+      tr.querySelector('[data-action="edit"]')?.addEventListener("click", () => {
         openEditor(creator);
       });
 
-      tr.querySelector('[data-action="delete"]').addEventListener("click", () => {
-        deleteCreator(creator.creator_id);
+      tr.querySelector('[data-action="toggle"]')?.addEventListener("click", () => {
+        toggleCreatorActive(creator.creator_id);
       });
 
-      tableBody.appendChild(tr);
+      el.tableBody.appendChild(tr);
     });
   }
 
   function renderPlatforms(creator) {
-    const platforms = [];
-
-    if (creator.platforms?.rumble?.enabled) platforms.push("Rumble");
-    if (creator.platforms?.youtube?.enabled) platforms.push("YouTube");
-    if (creator.platforms?.twitch?.enabled) platforms.push("Twitch");
-
-    return platforms.length ? platforms.join(", ") : "—";
+    const flags = creator.platforms_enabled || {};
+    const enabled = PLATFORM_KEYS.filter((key) => flags[key]);
+    return enabled.length ? enabled.join(", ") : "—";
   }
 
-  function renderStatus(_creator) {
-    return `<span class="muted">Idle</span>`;
+  function renderStatus(creator) {
+    return creator.disabled
+      ? '<span class="muted">Disabled</span>'
+      : '<span class="status-pill success">Active</span>';
+  }
+
+  function renderNotes(creator) {
+    if (!creator.notes) return "—";
+    return `<span class="muted">${escapeHtml(creator.notes)}</span>`;
   }
 
   /* ------------------------------------------------------------
@@ -176,98 +183,72 @@
      ------------------------------------------------------------ */
 
   function openEditor(creator = null) {
-    editorPanel.classList.remove("hidden");
+    el.editorPanel?.classList.remove("hidden");
 
     if (creator) {
       editingCreatorId = creator.creator_id;
-      editorTitle.textContent = "Edit Creator";
+      el.editorTitle.textContent = "Edit Creator";
 
-      inputCreatorId.value = creator.creator_id;
-      inputCreatorId.disabled = true;
+      el.inputCreatorId.value = creator.creator_id;
+      el.inputCreatorId.disabled = true;
 
-      inputDisplayName.value = creator.display_name || "";
+      el.inputDisplayName.value = creator.display_name || "";
+      el.inputNotes.value = creator.notes || "";
+      el.checkboxActive.checked = creator.disabled !== true;
+
+      setPlatformCheckboxes(creator.platforms_enabled);
 
       const rumble = creator.platforms?.rumble;
-      checkboxRumble.checked = !!rumble?.enabled;
-      rumbleConfig.classList.toggle("hidden", !checkboxRumble.checked);
-      inputRumbleWatchUrl.value = rumble?.watch_url || "";
+      el.checkboxRumble.checked = !!rumble?.enabled;
+      el.rumbleConfig?.classList.toggle("hidden", !el.checkboxRumble.checked);
+      el.inputRumbleWatchUrl.value = rumble?.watch_url || "";
 
-      /* ADDITIVE: runtime fields */
-      inputRumbleChannelUrl.value =
-        creator.rumble_channel_url || "";
-
-      inputRumbleManualWatchUrl.value =
+      el.inputRumbleChannelUrl.value = creator.rumble_channel_url || "";
+      el.inputRumbleManualWatchUrl.value =
         creator.rumble_manual_watch_url || "";
-
-      inputRumbleApiEnvKey.value =
+      el.inputRumbleApiEnvKey.value =
         creator.rumble_livestream_api_env_key || "";
-
     } else {
       editingCreatorId = null;
-      editorTitle.textContent = "Add Creator";
-      creatorForm.reset();
-
-      inputCreatorId.disabled = false;
-      rumbleConfig.classList.add("hidden");
+      el.editorTitle.textContent = "Add Creator";
+      el.creatorForm?.reset();
+      el.inputCreatorId.disabled = false;
+      el.checkboxActive.checked = true;
+      setPlatformCheckboxes(null);
+      el.rumbleConfig?.classList.add("hidden");
     }
   }
 
   function closeEditor() {
-    editorPanel.classList.add("hidden");
-    creatorForm.reset();
+    el.editorPanel?.classList.add("hidden");
+    el.creatorForm?.reset();
     editingCreatorId = null;
   }
 
+  function setPlatformCheckboxes(platformsEnabled) {
+    const flags = platformsEnabled || {};
+    el.checkboxYouTube.checked = !!flags.youtube;
+    el.checkboxTwitch.checked = !!flags.twitch;
+    el.checkboxRumble.checked = !!flags.rumble;
+    el.checkboxDiscord.checked = !!flags.discord;
+  }
+
   /* ------------------------------------------------------------
-     SAVE / DELETE
+     SAVE / SOFT DISABLE
      ------------------------------------------------------------ */
 
   function onSubmitCreator(event) {
     event.preventDefault();
 
-    const creatorId = inputCreatorId.value.trim();
-    if (!creatorId) return;
+    const formData = readForm();
+    if (!formData) return;
 
-    const payload = {
-      creator_id: creatorId,
-      display_name: inputDisplayName.value.trim(),
-      tier: ADMIN_DEFAULT_TIER,
-      platforms: {}
-    };
+    const idx = creators.findIndex((c) => c.creator_id === formData.creator_id);
 
-    if (checkboxRumble.checked) {
-      payload.platforms.rumble = {
-        enabled: true,
-        watch_url: inputRumbleWatchUrl.value.trim()
-      };
-    }
-
-    /* ADDITIVE: runtime fields */
-    if (inputRumbleChannelUrl.value.trim()) {
-      payload.rumble_channel_url =
-        inputRumbleChannelUrl.value.trim();
-    }
-
-    if (inputRumbleManualWatchUrl.value.trim()) {
-      payload.rumble_manual_watch_url =
-        inputRumbleManualWatchUrl.value.trim();
-    }
-
-    if (inputRumbleApiEnvKey.value.trim()) {
-      payload.rumble_livestream_api_env_key =
-        inputRumbleApiEnvKey.value.trim();
-    }
-
-    if (editingCreatorId) {
-      const idx = creators.findIndex(
-        c => c.creator_id === editingCreatorId
-      );
-      if (idx !== -1) {
-        payload.tier = creators[idx].tier || ADMIN_DEFAULT_TIER;
-        creators[idx] = payload;
-      }
+    if (idx >= 0) {
+      creators[idx] = formData;
     } else {
-      creators.push(payload);
+      creators.push(formData);
     }
 
     persistCreators();
@@ -275,34 +256,87 @@
     renderCreators();
   }
 
-  function deleteCreator(creatorId) {
-    if (!confirm(`Delete creator "${creatorId}"?`)) return;
-    creators = creators.filter(c => c.creator_id !== creatorId);
+  function readForm() {
+    const creatorId = el.inputCreatorId?.value.trim();
+    if (!creatorId) return null;
+
+    const platformsEnabled = {
+      youtube: el.checkboxYouTube.checked,
+      twitch: el.checkboxTwitch.checked,
+      rumble: el.checkboxRumble.checked,
+      discord: el.checkboxDiscord.checked
+    };
+
+    const payload = {
+      creator_id: creatorId,
+      display_name: el.inputDisplayName?.value.trim() || creatorId,
+      notes: el.inputNotes?.value.trim() || "",
+      disabled: !el.checkboxActive.checked,
+      tier: ADMIN_DEFAULT_TIER,
+      platforms_enabled: platformsEnabled,
+      platforms: {
+        youtube: { enabled: platformsEnabled.youtube },
+        twitch: { enabled: platformsEnabled.twitch },
+        rumble: {
+          enabled: platformsEnabled.rumble,
+          watch_url: el.inputRumbleWatchUrl?.value.trim() || ""
+        },
+        discord: { enabled: platformsEnabled.discord }
+      }
+    };
+
+    if (el.inputRumbleChannelUrl?.value.trim()) {
+      payload.rumble_channel_url = el.inputRumbleChannelUrl.value.trim();
+    }
+
+    if (el.inputRumbleManualWatchUrl?.value.trim()) {
+      payload.rumble_manual_watch_url =
+        el.inputRumbleManualWatchUrl.value.trim();
+    }
+
+    if (el.inputRumbleApiEnvKey?.value.trim()) {
+      payload.rumble_livestream_api_env_key =
+        el.inputRumbleApiEnvKey.value.trim();
+    }
+
+    const existing = creators.find((c) => c.creator_id === creatorId);
+    if (existing?.limits) payload.limits = existing.limits;
+    if (existing?.tier) payload.tier = existing.tier;
+
+    return payload;
+  }
+
+  function toggleCreatorActive(creatorId) {
+    const idx = creators.findIndex((c) => c.creator_id === creatorId);
+    if (idx === -1) return;
+
+    creators[idx].disabled = !creators[idx].disabled;
     persistCreators();
     renderCreators();
   }
 
   /* ------------------------------------------------------------
-     IMPORT / EXPORT (LOGIC ONLY)
+     IMPORT / EXPORT
      ------------------------------------------------------------ */
 
   function exportCreators() {
-    App.storage.exportJsonToDownload(
-      "streamsuites-creators.json",
-      creators
-    );
+    window.ConfigState?.exportCreatorsFile?.(creators);
   }
 
   function importCreatorsFromFile(file, onError) {
     App.storage.importJsonFromFile(file)
       .then((data) => {
-        if (!validateCreatorsPayload(data)) {
+        try {
+          const payload = data?.payload ?? data;
+          const imported =
+            window.ConfigState?.applyCreatorsImport?.(payload);
+          if (!imported) throw new Error("Invalid creators payload");
+          creators = imported;
+          renderCreators();
+        } catch (err) {
+          console.error("[Creators] Import failed", err);
           onError?.("Invalid creators file structure");
-          return;
         }
-        creators = data;
-        persistCreators();
-        renderCreators();
       })
       .catch((err) => {
         console.error("[Creators] Import failed", err);
@@ -311,28 +345,11 @@
   }
 
   /* ------------------------------------------------------------
-     LIGHTWEIGHT SCHEMA VALIDATION
-     ------------------------------------------------------------ */
-
-  function validateCreatorsPayload(data) {
-    if (!Array.isArray(data)) return false;
-
-    return data.every((c) => {
-      if (typeof c !== "object") return false;
-      if (typeof c.creator_id !== "string") return false;
-      if ("display_name" in c && typeof c.display_name !== "string") return false;
-      if ("platforms" in c && typeof c.platforms !== "object") return false;
-      if ("tier" in c && typeof c.tier !== "string") return false;
-      return true;
-    });
-  }
-
-  /* ------------------------------------------------------------
      UTILS
      ------------------------------------------------------------ */
 
   function escapeHtml(str) {
-    return String(str)
+    return String(str || "")
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
@@ -346,6 +363,7 @@
 
   window.CreatorsView = {
     init,
+    destroy,
     exportCreators,
     importCreatorsFromFile
   };

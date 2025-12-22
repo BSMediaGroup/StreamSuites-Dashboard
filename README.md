@@ -6,7 +6,7 @@
 
 It is designed to provide a **human-friendly interface** over StreamSuites’ JSON-driven configuration model, without introducing server dependencies, platform lock-in, or runtime coupling.
 
-**This dashboard currently operates in read-only / static mode.** It performs **no API calls**, never issues live commands, and intentionally ships **without runtime control hooks**. All runtime facts shown in the UI come from **exported artifacts**, and those exports remain the **single source of truth**.
+**This dashboard remains static (GitHub Pages safe) and performs no live API calls**, but it now includes a **config state layer** that hydrates from localStorage drafts or bundled JSON defaults, and can export deterministic `creators.json` / `platforms.json` bundles for runtime consumption. All runtime facts shown in the UI come from **exported artifacts**, and those exports remain the **single source of truth**.
 
 **Dashboard purpose**
 - **Configuration** — edit and validate runtime contracts without needing a live backend
@@ -18,7 +18,7 @@ The dashboard is intentionally lightweight, schema-driven, and portable.
 
 ### Operational Boundary
 
-- **Read-only control surface** — zero ability to mutate runtimes or send actions
+- **Static control surface** — zero ability to mutate runtimes or send actions; edits are limited to local JSON drafts and exports
 - **Offline-first** — no live connections; everything is rendered from shipped or downloaded JSON
 - **No API calls** — the browser bundle deliberately omits live fetches
 - **Runtime exports are authoritative** — whatever the runtime exports, the dashboard simply renders
@@ -114,6 +114,8 @@ Crucially, **none of these require rewriting the dashboard**.
 - **Platform-neutral** — not tied to Wix, Electron, or a specific backend
 - **Future-proof** — supports growth without architectural resets
 - **Human-readable** — prioritizes clarity over abstraction
+- **Local-first drafts** — configuration edits live in `localStorage` until exported
+- **Deterministic exports** — bundled downloads (`creators.json`, `platforms.json`) are schema-shaped for runtime ingestion
 
 The dashboard is intentionally **runtime-agnostic**. Multiple runtimes (e.g., streaming orchestration and Discord control-plane) can consume the same schemas without changing the UI. The dashboard remains a static artifact that can be opened locally or hosted on GitHub Pages and still reflect the latest schema set.
 
@@ -163,8 +165,12 @@ These are **control-plane only** capabilities that complement, but do not replac
 - Runtime integration is underway; the dashboard will hydrate via runtime-exported JSON snapshots once the SSE pipeline exports data.
 - The dashboard remains neutral to ingestion method (polling vs SSE) and will not introduce live requests—runtime exports stay authoritative.
 
-### New Dashboard Views
+### New Dashboard Views & State Layer
 
+- **Config State Layer** — `docs/js/state.js` + `docs/js/telemetry.js` provide normalized loading of `docs/data/*.json`, localStorage drafts, and optional runtime snapshots for telemetry panels.
+- **Creators + Platforms** — creators list now hydrates bundled defaults, exposes platform toggles (YouTube, Twitch, Rumble, Discord), soft-disable, notes, and deterministic export/import.
+- **Platform Toggles** — settings view now binds global platform service/telemetry toggles to `platforms.json`, preserving notes for runtime operators.
+- **Runtime Telemetry (read-only)** — Overview shows platform status/last-seen/error from `docs/data/runtime_snapshot.json` when present.
 - **Scoreboards** (`docs/views/scoreboards.html`) — static scoreboard visibility surface registered in the router; ready for schema-driven hydration.
 - **Manage Scores** (`docs/views/scoreboard-management.html`) — administrative scaffold for planned scoreboard curation and edits.
 - **Support** (`docs/views/support.html`) — documentation-forward view for operational and support workflows.
@@ -222,6 +228,12 @@ StreamSuites-Dashboard/
 │   │   ├── overrides.css    # Custom overrides for components/themes
 │   │   └── theme-dark.css   # Dark theme (authoritative)
 │   │
+│   ├── data/                # Bundled JSON defaults + runtime snapshot examples
+│   │   ├── creators.json
+│   │   ├── dashboard_state.json
+│   │   ├── platforms.json
+│   │   └── runtime_snapshot.json
+│   │
 │   ├── js/
 │   │   ├── about.js         # About view wiring
 │   │   ├── api.js           # Data loading / persistence layer
@@ -229,14 +241,16 @@ StreamSuites-Dashboard/
 │   │   ├── auth.js          # Placeholder for future auth hooks
 │   │   ├── charts.js        # Metrics / visualization
 │   │   ├── chatReplay.js    # Placeholder for planned historical chat replay
-│   │   ├── creators.js      # Creator configuration UI
+│   │   ├── creators.js      # Creator configuration UI (local drafts + exports)
 │   │   ├── jobs.js          # Job visibility (clips, etc.)
-│   │   ├── overview.js      # Overview dashboard wiring
+│   │   ├── overview.js      # Overview dashboard wiring + telemetry
 │   │   ├── permissions.js   # Future permissions UI
+│   │   ├── platforms.js     # Global platform toggle wiring
 │   │   ├── ratelimits.js    # Ratelimit editor/visualization
 │   │   ├── render.js        # Shared render helpers
-│   │   ├── settings.js      # Settings view wiring
-│   │   ├── state.js         # Client-side state helpers
+│   │   ├── settings.js      # Settings view wiring + config import/export
+│   │   ├── state.js         # Client-side state + ConfigState loader
+│   │   ├── telemetry.js     # Runtime snapshot hydration helpers
 │   │   ├── triggers.js      # Chat trigger configuration UI
 │   │   └── platforms/       # Platform-specific view logic
 │   │       ├── discord.js
@@ -368,8 +382,8 @@ Visual styling is influenced by existing dark-UI work (e.g. Mapbox dashboards, S
 
 ### Phase 1 — Foundation (Current)
 - Static GitHub Pages deployment
-- Creators editor
-- Chat trigger editor
+- Creators editor (local drafts + deterministic export/import)
+- Platform service toggles (YouTube, Twitch, Rumble, Discord) with telemetry flags
 - Schema validation
 - Dark theme baseline
 
@@ -378,6 +392,7 @@ Visual styling is influenced by existing dark-UI work (e.g. Mapbox dashboards, S
 - Read-only runtime state inspection
 - Log / activity views
 - Quota health visualization (powered by exported snapshots; still visual-only)
+- Runtime telemetry panels hydrated from `runtime_snapshot.json` when provided
 
 ### Historical Visibility (Planned)
 - Chat replay views

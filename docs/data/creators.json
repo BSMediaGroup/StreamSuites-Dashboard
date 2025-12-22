@@ -1,0 +1,32 @@
+{
+  "schema": "streamsuites.creators.v1",
+  "creators": [
+    {
+      "creator_id": "daniel",
+      "display_name": "Daniel",
+      "notes": "Seed creator imported from runtime state.",
+      "disabled": false,
+      "platforms_enabled": {
+        "youtube": false,
+        "twitch": false,
+        "rumble": true,
+        "discord": true
+      },
+      "platforms": {
+        "youtube": {
+          "enabled": false
+        },
+        "twitch": {
+          "enabled": false
+        },
+        "rumble": {
+          "enabled": true,
+          "watch_url": "https://rumble.com/vXXXX-demo-live.html"
+        },
+        "discord": {
+          "enabled": true
+        }
+      }
+    }
+  ]
+}

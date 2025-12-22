@@ -19,10 +19,11 @@
       <p>
         StreamSuites is advancing through a stabilization phase with a confirmed
         architectural win for Rumble chat via the platform’s canonical SSE
-        stream. The dashboard remains a static, read-only surface that mirrors
-        authoritative runtime exports without driving live automation, and it is
-        poised to hydrate once the runtime begins exporting the updated chat
-        pipeline data.
+        stream. The dashboard remains a static surface that mirrors
+        authoritative runtime exports without driving live automation, and now
+        ships with a config state layer that hydrates from bundled JSON
+        defaults or localStorage drafts and can export runtime-ready
+        configuration for creators and platforms.
       </p>
       <p class="muted">
         Scope for this repo: documentation-grade UI, local storage inspection,
@@ -85,14 +86,15 @@
       <h4>Overview</h4>
       <ul class="ss-list">
         <li>High-level storage status and configuration counts</li>
-        <li>Snapshot visibility for creators, triggers, jobs, and limits</li>
+        <li>Snapshot visibility for creators, triggers, jobs, limits, and platform telemetry when a runtime snapshot is present</li>
       </ul>
 
       <h4>Creators</h4>
       <ul class="ss-list">
         <li>Create and edit creator profiles</li>
-        <li>Platform enablement fields aligned with runtime schemas</li>
-        <li>Import and export creators as JSON</li>
+        <li>Platform enablement fields aligned with runtime schemas (YouTube, Twitch, Rumble, Discord)</li>
+        <li>Soft-disable/notes fields plus deterministic import/export as JSON</li>
+        <li>Hydrates from bundled defaults (`docs/data/creators.json`) or localStorage drafts</li>
       </ul>
 
       <h4>Chat Triggers</h4>
@@ -110,6 +112,7 @@
       <ul class="ss-list">
         <li>Clips, Polls, Rate Limits, Settings, Chat Replay</li>
         <li>Platform views for Rumble, YouTube, Twitch, Twitter, Discord (static visibility only)</li>
+        <li>Settings view now binds platform toggles and telemetry flags to <code>platforms.json</code></li>
       </ul>
     </section>
 
@@ -212,11 +215,11 @@
         <li><strong>Twitch Chat:</strong> In progress/planned; runtime IRC foundation continues.</li>
         <li><strong>YouTube Chat:</strong> Planned; scaffold exists, hydration depends on runtime exports.</li>
         <li><strong>Cross-platform Chat Abstraction:</strong> Planned; will follow once platform feeds are normalized.</li>
-        <li><strong>Telemetry Export:</strong> Planned; dashboard will render exported health and quotas only.</li>
-        <li><strong>Dashboard ↔ Runtime Schema Contract:</strong> Planned; contract locks once export shapes are published.</li>
+        <li><strong>Telemetry Export:</strong> Partial — dashboard renders <code>runtime_snapshot.json</code> when provided.</li>
+        <li><strong>Dashboard ↔ Runtime Schema Contract:</strong> In progress — ConfigState now normalizes creators/platforms and exports deterministic bundles.</li>
       </ul>
       <p class="muted">
-        Progress is intentionally conservative; no live bindings are assumed until runtime JSON exports land.
+        Progress is intentionally conservative; no live bindings are assumed. Hydration occurs only from shipped or provided JSON.
       </p>
     </section>
 
@@ -503,7 +506,7 @@
       </div>
     </div>
 
-    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="6.0" title="60% · 55–60% Integrated — Integrated with runtime orchestration, quotas, or control planes. Stable but evolving." role="button" tabindex="0">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="6.3" title="63% · 55–60% Integrated — Integrated with runtime orchestration, quotas, or control planes. Stable but evolving." role="button" tabindex="0">
       <div class="ss-progress-label">
         <div class="ss-progress-main">
           <span class="ss-progress-title">
@@ -512,7 +515,7 @@
           </span>
         </div>
         <div class="ss-progress-right">
-          <span class="ss-progress-meta">60% · Runtime Parity Achieved</span>
+          <span class="ss-progress-meta">63% · ConfigState + Telemetry Snapshots</span>
           <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
             <span>▸</span>
           </button>

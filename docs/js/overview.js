@@ -2,9 +2,11 @@
   "use strict";
 
   const REFRESH_INTERVAL_MS = 15000;
+  const TELEMETRY_REFRESH_MS = 15000;
 
   let refreshHandle = null;
   let quotaRefreshHandle = null;
+  let telemetryHandle = null;
 
   const el = {};
 
@@ -46,6 +48,31 @@
     const fills = document.querySelectorAll(".ss-quota-row .ss-quota-fill");
     el.quotaDailyFill = fills[0] || null;
     el.quotaMinuteFill = fills[1] || null;
+
+    /* Telemetry */
+    el.telemetryEmpty = document.getElementById("telemetry-empty");
+    el.telemetry = {
+      youtube: {
+        status: document.getElementById("telemetry-youtube-status"),
+        last: document.getElementById("telemetry-youtube-last"),
+        error: document.getElementById("telemetry-youtube-error")
+      },
+      twitch: {
+        status: document.getElementById("telemetry-twitch-status"),
+        last: document.getElementById("telemetry-twitch-last"),
+        error: document.getElementById("telemetry-twitch-error")
+      },
+      rumble: {
+        status: document.getElementById("telemetry-rumble-status"),
+        last: document.getElementById("telemetry-rumble-last"),
+        error: document.getElementById("telemetry-rumble-error")
+      },
+      discord: {
+        status: document.getElementById("telemetry-discord-status"),
+        last: document.getElementById("telemetry-discord-last"),
+        error: document.getElementById("telemetry-discord-error")
+      }
+    };
   }
 
   /* ============================================================
@@ -72,22 +99,28 @@
      LOCAL CONFIG METRICS
      ============================================================ */
 
-  function updateLocalMetrics() {
-    const storage = getAppStorage();
-    if (!storage) {
-      setText(el.creatorsCount, "Not available");
-      setText(el.triggersCount, "Not available");
-      setText(el.rumbleEnabledCount, "Not available");
-      setText(el.twitchEnabledCount, "Not available");
-      setText(el.youtubeEnabledCount, "Not available");
-      setText(el.rumbleConfig, "Not available");
-      setText(el.twitchConfig, "Not available");
-      setText(el.youtubeConfig, "Not available");
-      return;
+  async function updateLocalMetrics() {
+    let creatorsArr = [];
+    let platformState = null;
+
+    try {
+      creatorsArr =
+        (await window.ConfigState?.loadCreators?.()) ||
+        [];
+    } catch (err) {
+      console.warn("[Overview] Failed to hydrate creators", err);
+      const storage = getAppStorage();
+      const stored = storage?.loadFromLocalStorage?.("creators", []);
+      creatorsArr = Array.isArray(stored) ? stored : [];
     }
 
-    const creators = storage.loadFromLocalStorage("creators", []);
-    const creatorsArr = Array.isArray(creators) ? creators : [];
+    try {
+      platformState =
+        (await window.ConfigState?.loadPlatforms?.()) || null;
+    } catch (err) {
+      console.warn("[Overview] Failed to hydrate platforms", err);
+    }
+
     setText(el.creatorsCount, String(creatorsArr.length));
 
     let rumbleEnabled = 0;
@@ -107,7 +140,8 @@
     setText(el.twitchEnabledCount, String(twitchEnabled));
     setText(el.youtubeEnabledCount, String(youtubeEnabled));
 
-    const chatBehaviour = storage.loadFromLocalStorage("chat_behaviour", {});
+    const storage = getAppStorage();
+    const chatBehaviour = storage?.loadFromLocalStorage?.("chat_behaviour", {});
     const triggers = Array.isArray(chatBehaviour?.triggers)
       ? chatBehaviour.triggers
       : [];
@@ -115,24 +149,35 @@
 
     setText(
       el.rumbleConfig,
-      rumbleEnabled
-        ? `enabled for ${rumbleEnabled} creator${rumbleEnabled === 1 ? "" : "s"}`
-        : "disabled / not configured"
+      describePlatformState(platformState, "rumble", rumbleEnabled)
     );
 
     setText(
       el.twitchConfig,
-      twitchEnabled
-        ? `enabled for ${twitchEnabled} creator${twitchEnabled === 1 ? "" : "s"}`
-        : "disabled / not configured"
+      describePlatformState(platformState, "twitch", twitchEnabled)
     );
 
     setText(
       el.youtubeConfig,
-      youtubeEnabled
-        ? `enabled for ${youtubeEnabled} creator${youtubeEnabled === 1 ? "" : "s"}`
-        : "disabled / not configured"
+      describePlatformState(platformState, "youtube", youtubeEnabled)
     );
+  }
+
+  function describePlatformState(platformState, key, creatorCount) {
+    const platform = platformState?.platforms?.[key];
+    if (!platform) {
+      return creatorCount
+        ? `enabled for ${creatorCount} creator${creatorCount === 1 ? "" : "s"}`
+        : "not configured";
+    }
+
+    if (platform.enabled === false) return "disabled globally";
+
+    if (creatorCount > 0) {
+      return `enabled for ${creatorCount} creator${creatorCount === 1 ? "" : "s"}`;
+    }
+
+    return "enabled (no creators flagged)";
   }
 
   /* ============================================================
@@ -272,14 +317,70 @@
   }
 
   /* ============================================================
+     RUNTIME TELEMETRY
+     ============================================================ */
+
+  function setTelemetryRows(status, last, error) {
+    if (!el.telemetry) return;
+    const keys = window.Telemetry?.PLATFORM_KEYS || [
+      "youtube",
+      "twitch",
+      "rumble",
+      "discord"
+    ];
+
+    keys.forEach((key) => {
+      const row = el.telemetry[key];
+      if (!row) return;
+      setText(row.status, status);
+      setText(row.last, last);
+      setText(row.error, error);
+    });
+  }
+
+  function renderTelemetry(snapshot) {
+    const hasData = snapshot && snapshot.platforms;
+
+    if (!hasData) {
+      el.telemetryEmpty?.classList.remove("hidden");
+      setTelemetryRows("unknown", "—", "No runtime snapshot available");
+      return;
+    }
+
+    el.telemetryEmpty?.classList.add("hidden");
+
+    const keys = window.Telemetry?.PLATFORM_KEYS || Object.keys(snapshot.platforms);
+    keys.forEach((key) => {
+      const desc =
+        window.Telemetry?.describePlatform?.(key, snapshot) || {};
+      const row = el.telemetry[key];
+      if (!row) return;
+      setText(row.status, desc.status || "unknown");
+      setText(row.last, desc.last_seen || "—");
+      setText(row.error, desc.error_state || "—");
+    });
+  }
+
+  async function refreshTelemetry() {
+    try {
+      const snapshot = await window.Telemetry?.loadSnapshot?.(true);
+      renderTelemetry(snapshot);
+    } catch (err) {
+      console.warn("[Overview] Telemetry refresh failed", err);
+      renderTelemetry(null);
+    }
+  }
+
+  /* ============================================================
      VIEW LIFECYCLE
      ============================================================ */
 
-  function init() {
+  async function init() {
     cacheElements();
     updateSystemStatus();
-    updateLocalMetrics();
+    await updateLocalMetrics();
     refreshDiscord();
+    refreshTelemetry();
 
     setText(el.rumbleRuntime, "offline / unknown");
     setText(el.twitchRuntime, "offline / unknown");
@@ -292,6 +393,9 @@
 
     if (refreshHandle) clearInterval(refreshHandle);
     refreshHandle = setInterval(refreshDiscord, REFRESH_INTERVAL_MS);
+
+    if (telemetryHandle) clearInterval(telemetryHandle);
+    telemetryHandle = setInterval(refreshTelemetry, TELEMETRY_REFRESH_MS);
   }
 
   function destroy() {
@@ -302,6 +406,10 @@
     if (quotaRefreshHandle) {
       clearInterval(quotaRefreshHandle);
       quotaRefreshHandle = null;
+    }
+    if (telemetryHandle) {
+      clearInterval(telemetryHandle);
+      telemetryHandle = null;
     }
   }
 

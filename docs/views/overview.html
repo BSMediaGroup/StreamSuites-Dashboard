@@ -79,6 +79,58 @@
   </section>
 
   <!-- --------------------------------------------------------- -->
+  <!-- RUNTIME TELEMETRY -->
+  <!-- --------------------------------------------------------- -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Runtime Telemetry</h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <div id="telemetry-empty" class="ss-alert ss-alert-info hidden">
+        No runtime snapshot available.
+      </div>
+
+      <table class="ss-table ss-table-compact" id="telemetry-table">
+        <thead>
+          <tr>
+            <th>Platform</th>
+            <th class="align-right">Status</th>
+            <th class="align-right">Last Seen</th>
+            <th class="align-right">Error State</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-platform="youtube">
+            <td>YouTube</td>
+            <td id="telemetry-youtube-status" class="align-right muted">—</td>
+            <td id="telemetry-youtube-last" class="align-right muted">—</td>
+            <td id="telemetry-youtube-error" class="align-right muted">—</td>
+          </tr>
+          <tr data-platform="twitch">
+            <td>Twitch</td>
+            <td id="telemetry-twitch-status" class="align-right muted">—</td>
+            <td id="telemetry-twitch-last" class="align-right muted">—</td>
+            <td id="telemetry-twitch-error" class="align-right muted">—</td>
+          </tr>
+          <tr data-platform="rumble">
+            <td>Rumble</td>
+            <td id="telemetry-rumble-status" class="align-right muted">—</td>
+            <td id="telemetry-rumble-last" class="align-right muted">—</td>
+            <td id="telemetry-rumble-error" class="align-right muted">—</td>
+          </tr>
+          <tr data-platform="discord">
+            <td>Discord</td>
+            <td id="telemetry-discord-status" class="align-right muted">—</td>
+            <td id="telemetry-discord-last" class="align-right muted">—</td>
+            <td id="telemetry-discord-error" class="align-right muted">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------------- -->
   <!-- API QUOTA USAGE (PLACEHOLDER) -->
   <!-- --------------------------------------------------------- -->
   <section class="ss-panel">
