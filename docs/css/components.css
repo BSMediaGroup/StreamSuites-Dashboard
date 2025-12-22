@@ -514,11 +514,13 @@ button,
   justify-content: flex-end;
   margin: 0;
   height: 20px;                 /* approved visual footprint (DO NOT CHANGE) */
+  vertical-align: middle;
 }
 
 /* Uniform scaling wrapper (DO NOT CHANGE SCALE OR ORIGIN) */
 .switch-button .switch-scale {
-  display: block;
+  display: inline-flex;
+  align-items: center;
   transform: scale(0.5);        /* 50% of original size (approved) */
   transform-origin: center right;
 }
@@ -623,4 +625,3 @@ button,
 }
 
 /* ====================================================================== */
-
