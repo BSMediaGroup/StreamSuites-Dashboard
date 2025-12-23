@@ -199,6 +199,46 @@
       ],
       summary: "Pick the recap stream format for sharing poll results back to creators.",
     },
+    {
+      id: "poll-2305",
+      question: "Which overlays should get the next pie-chart rollout?",
+      creator: {
+        name: "NovaByte",
+        avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=120&q=60",
+      },
+      status: "Open",
+      timestamp: "Updated 3h ago",
+      createdAt: "03/30/2024",
+      updatedAt: "03/30/2024",
+      closesAt: "04/04/2024",
+      chartType: "pie",
+      options: [
+        { label: "Channel recap", percent: 48, votes: 960 },
+        { label: "Hype countdown", percent: 32, votes: 640 },
+        { label: "Sponsor slots", percent: 20, votes: 400 },
+      ],
+      summary: "Previewing pie-chart overlays; choose which template gets the first deployment.",
+    },
+    {
+      id: "poll-2306",
+      question: "Select the pie-style telemetry bundle for match day.",
+      creator: {
+        name: "RelayOps",
+        avatar: "https://images.unsplash.com/photo-1502685104226-ee32379fefbe?auto=format&fit=crop&w=120&q=60",
+      },
+      status: "Pending",
+      timestamp: "Queued",
+      createdAt: "03/31/2024",
+      updatedAt: "03/31/2024",
+      closesAt: "04/06/2024",
+      chartType: "pie",
+      options: [
+        { label: "Player stats", percent: 0, votes: 0 },
+        { label: "Region split", percent: 0, votes: 0 },
+        { label: "Engagement mix", percent: 0, votes: 0 },
+      ],
+      summary: "Queued pie-style telemetry bundle to pair with scoreboards on match day.",
+    },
   ];
 
   window.publicClips = publicClips;

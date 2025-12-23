@@ -11,6 +11,8 @@
   const timestampsEl = document.getElementById("poll-timestamps");
   const titleEl = document.getElementById("poll-title");
   const subtitleEl = document.getElementById("poll-subtitle");
+  const barPlaceholder = document.querySelector('[data-chart="bar"]');
+  const piePlaceholder = document.querySelector('[data-chart="pie"]');
 
   if (!poll) {
     if (questionEl) questionEl.textContent = "Poll not found";
@@ -81,6 +83,37 @@
     });
   }
 
+  function renderCharts() {
+    if (barPlaceholder) {
+      barPlaceholder.textContent = (poll.chartType || "").toLowerCase() === "pie" ? "Bar view (alternate)" : "Bar chart";
+    }
+    if (piePlaceholder) {
+      piePlaceholder.classList.add("pie");
+      piePlaceholder.textContent = (poll.chartType || "").toLowerCase() === "pie" ? "Pie chart (primary)" : "Pie chart";
+
+      if ((poll.chartType || "").toLowerCase() === "pie") {
+        const legend = document.createElement("div");
+        legend.className = "pie-legend";
+        const swatches = ["primary", "secondary", "tertiary"];
+        (poll.options || []).slice(0, 3).forEach((option, index) => {
+          const item = document.createElement("div");
+          item.className = "pie-legend-item";
+          const swatch = document.createElement("span");
+          swatch.className = `pie-swatch ${swatches[index] || "primary"}`;
+          const label = document.createElement("span");
+          label.textContent = `${option.label} • ${option.percent}%`;
+          item.append(swatch, label);
+          legend.appendChild(item);
+        });
+
+        const statBlock = piePlaceholder.closest(".stat-block");
+        if (statBlock) {
+          statBlock.appendChild(legend);
+        }
+      }
+    }
+  }
+
   if (questionEl) questionEl.textContent = poll.question || "Poll question";
   if (titleEl) titleEl.textContent = poll.question || "Creator poll";
   if (subtitleEl) subtitleEl.textContent = poll.summary || "Community voting details and breakdown.";
@@ -94,5 +127,6 @@
 
   renderMeta();
   renderVotes();
+  renderCharts();
   setStatus(statusEl, poll.status);
 })();

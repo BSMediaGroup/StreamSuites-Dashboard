@@ -373,6 +373,59 @@ body {
   gap: 8px;
 }
 
+.pie-preview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.pie-chart {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: conic-gradient(
+    rgba(140, 199, 54, 0.8) 0deg 120deg,
+    rgba(225, 172, 30, 0.8) 120deg 210deg,
+    rgba(91, 192, 222, 0.8) 210deg 360deg
+  );
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 0 6px rgba(14, 16, 21, 0.8);
+  margin: 0 auto;
+}
+
+.pie-legend {
+  display: grid;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.pie-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pie-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.pie-swatch.primary {
+  background: rgba(140, 199, 54, 0.9);
+}
+
+.pie-swatch.secondary {
+  background: rgba(225, 172, 30, 0.9);
+}
+
+.pie-swatch.tertiary {
+  background: rgba(91, 192, 222, 0.9);
+}
+
 .result-row {
   display: flex;
   flex-direction: column;
@@ -559,6 +612,28 @@ body {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+
+.chart-placeholder.pie {
+  background: radial-gradient(circle at 40% 40%, rgba(140, 199, 54, 0.08), rgba(255, 255, 255, 0.02));
+  position: relative;
+}
+
+.chart-placeholder.pie::after {
+  content: "";
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: conic-gradient(
+    rgba(140, 199, 54, 0.85) 0deg 160deg,
+    rgba(225, 172, 30, 0.85) 160deg 250deg,
+    rgba(91, 192, 222, 0.85) 250deg 360deg
+  );
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  box-shadow: inset 0 0 0 10px rgba(14, 16, 21, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .stat-grid {

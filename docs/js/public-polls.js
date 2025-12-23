@@ -45,6 +45,32 @@
     return row;
   }
 
+  function buildPiePreview(poll) {
+    const preview = document.createElement("div");
+    preview.className = "pie-preview";
+
+    const pie = document.createElement("div");
+    pie.className = "pie-chart";
+
+    const legend = document.createElement("div");
+    legend.className = "pie-legend";
+
+    const swatches = ["primary", "secondary", "tertiary"];
+    (poll.options || []).slice(0, 3).forEach((option, index) => {
+      const item = document.createElement("div");
+      item.className = "pie-legend-item";
+      const swatch = document.createElement("span");
+      swatch.className = `pie-swatch ${swatches[index] || "primary"}`;
+      const label = document.createElement("span");
+      label.textContent = `${option.label} • ${option.percent}%`;
+      item.append(swatch, label);
+      legend.appendChild(item);
+    });
+
+    preview.append(pie, legend);
+    return preview;
+  }
+
   function buildPollCard(poll) {
     const link = document.createElement("a");
     link.className = "card-link";
@@ -83,9 +109,13 @@
 
     const results = document.createElement("div");
     results.className = "results";
-    (poll.options || []).forEach((option) => {
-      results.appendChild(buildResultRow(option));
-    });
+    if ((poll.chartType || "").toLowerCase() === "pie") {
+      results.appendChild(buildPiePreview(poll));
+    } else {
+      (poll.options || []).forEach((option) => {
+        results.appendChild(buildResultRow(option));
+      });
+    }
 
     const footer = document.createElement("div");
     footer.className = "meta-row";
