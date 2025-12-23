@@ -23,9 +23,9 @@ body {
 }
 
 .public-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
   padding: 14px 18px;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.04));
@@ -38,6 +38,7 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+  justify-self: center;
 }
 
 .brand-mark img {
@@ -57,11 +58,6 @@ body {
   font-family: "RechargeBd", sans-serif;
   font-size: 22px;
   letter-spacing: 0.04em;
-}
-
-.brand-subtitle {
-  color: var(--text-secondary);
-  font-size: 12px;
 }
 
 .header-actions {
