@@ -2,11 +2,9 @@
   const params = new URLSearchParams(window.location.search);
   const pollId = params.get("id");
   const poll = window.publicPollMap?.[pollId] || (window.publicPolls || [])[0];
+  const defaultPalette = ["#8cc736", "#ffae00", "#5bc0de", "#7e03aa"];
 
-  const questionEl = document.getElementById("poll-question");
-  const statusEl = document.getElementById("poll-status");
   const metaEl = document.getElementById("poll-meta");
-  const summaryEl = document.getElementById("poll-summary");
   const voteListEl = document.getElementById("vote-list");
   const timestampsEl = document.getElementById("poll-timestamps");
   const titleEl = document.getElementById("poll-title");
@@ -19,16 +17,9 @@
   const interactivePies = document.querySelectorAll(".interactive-pie");
 
   if (!poll) {
-    if (questionEl) questionEl.textContent = "Poll not found";
-    if (summaryEl) summaryEl.textContent = "The requested poll ID is unavailable. Please return to the polls grid.";
+    if (titleEl) titleEl.textContent = "Poll not found";
+    if (subtitleEl) subtitleEl.textContent = "The requested poll ID is unavailable. Please return to the polls grid.";
     return;
-  }
-
-  function setStatus(el, status = "Pending") {
-    if (!el) return;
-    el.className = "poll-status";
-    el.classList.add((status || "").toLowerCase());
-    el.textContent = status;
   }
 
   function buildAvatar(creator = {}) {
@@ -89,8 +80,17 @@
 
   function renderCharts() {
     const swatches = ["primary", "secondary", "tertiary"];
-    const palette = ["rgba(140, 199, 54, 0.9)", "rgba(225, 172, 30, 0.9)", "rgba(91, 192, 222, 0.9)"];
     const pieSurfaces = document.querySelectorAll(".pie-surface");
+    const getColor = (option, index) => option.color || defaultPalette[index % defaultPalette.length];
+    const toRgba = (hex, alpha = 0.25) => {
+      if (!hex || typeof hex !== "string") return `rgba(0, 255, 251, ${alpha})`;
+      const normalized = hex.replace("#", "");
+      const isShort = normalized.length === 3;
+      const r = parseInt(isShort ? normalized[0] + normalized[0] : normalized.substring(0, 2), 16);
+      const g = parseInt(isShort ? normalized[1] + normalized[1] : normalized.substring(2, 4), 16);
+      const b = parseInt(isShort ? normalized[2] + normalized[2] : normalized.substring(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    };
 
     const buildLegend = (targetEl) => {
       if (!targetEl) return;
@@ -100,6 +100,7 @@
         item.className = "pie-legend-item";
         const swatch = document.createElement("span");
         swatch.className = `pie-swatch ${swatches[index] || "primary"}`;
+        swatch.style.background = getColor(option, index);
         const label = document.createElement("span");
         label.textContent = `${option.label} • ${option.percent}%`;
         item.append(swatch, label);
@@ -110,7 +111,7 @@
     const buildBars = () => {
       if (!barRows) return;
       barRows.innerHTML = "";
-      (poll.options || []).forEach((option) => {
+      (poll.options || []).forEach((option, index) => {
         const row = document.createElement("div");
         row.className = "bar-row";
         const label = document.createElement("div");
@@ -119,7 +120,10 @@
         const meter = document.createElement("div");
         meter.className = "bar-meter";
         const fill = document.createElement("span");
+        const baseColor = getColor(option, index);
         fill.style.width = `${option.percent}%`;
+        fill.style.background = `linear-gradient(90deg, ${baseColor}, ${baseColor})`;
+        fill.style.boxShadow = `0 8px 20px ${toRgba(baseColor, 0.25)}`;
         meter.appendChild(fill);
         const meta = document.createElement("div");
         meta.className = "bar-meta";
@@ -138,14 +142,14 @@
       const stops = options.map((opt, idx) => {
         const percent = totalPercent > 0 ? opt.percent : 100 / slices;
         const end = start + (percent / useTotal) * 360;
-        const color = palette[idx % palette.length];
+        const color = getColor(opt, idx);
         const segment = `${color} ${start}deg ${end}deg`;
         start = end;
         return segment;
       });
 
       if (!stops.length) {
-        stops.push(`${palette[0]} 0deg 360deg`);
+        stops.push(`${defaultPalette[0]} 0deg 360deg`);
       }
 
       pieSurfaces.forEach((surface) => {
@@ -225,10 +229,8 @@
     });
   }
 
-  if (questionEl) questionEl.textContent = poll.question || "Poll question";
   if (titleEl) titleEl.textContent = poll.question || "Creator poll";
   if (subtitleEl) subtitleEl.textContent = poll.summary || "Community voting details and breakdown.";
-  if (summaryEl) summaryEl.textContent = poll.summary || "Poll overview.";
   if (timestampsEl) {
     const created = poll.createdAt ? `Created ${poll.createdAt}` : null;
     const updated = poll.updatedAt ? `Updated ${poll.updatedAt}` : null;
@@ -242,5 +244,4 @@
   setActiveView((poll.chartType || "pie").toLowerCase());
   bindToggles();
   bindPieRotation();
-  setStatus(statusEl, poll.status);
 })();
