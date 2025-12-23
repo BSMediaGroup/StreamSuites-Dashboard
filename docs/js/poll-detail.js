@@ -3,6 +3,7 @@
   const pollId = params.get("id");
   const poll = window.publicPollMap?.[pollId] || (window.publicPolls || [])[0];
   const defaultPalette = ["#8cc736", "#ffae00", "#5bc0de", "#7e03aa"];
+  const defaultLogoPath = "../assets/logos/logocircle.png";
 
   const metaEl = document.getElementById("poll-meta");
   const voteListEl = document.getElementById("vote-list");
@@ -15,11 +16,62 @@
   const customLegend = document.getElementById("custom-legend");
   const barRows = document.getElementById("bar-rows");
   const interactivePies = document.querySelectorAll(".interactive-pie");
+  const colorToggle = document.getElementById("color-toggle");
+  const colorPanel = document.getElementById("color-panel");
+  const colorPanelBody = document.getElementById("color-panel-body");
+  const colorClose = document.getElementById("color-close");
+  const maximizeToggle = document.getElementById("maximize-toggle");
+  const visualizationPanel = document.querySelector(".visualization-panel");
+  const vizOverlay = document.getElementById("viz-overlay");
+  const customLogoImg = document.getElementById("custom-pie-logo");
 
   if (!poll) {
     if (titleEl) titleEl.textContent = "Poll not found";
     if (subtitleEl) subtitleEl.textContent = "The requested poll ID is unavailable. Please return to the polls grid.";
     return;
+  }
+
+  const normalizeHex = (value) => {
+    if (!value || typeof value !== "string") return null;
+    const trimmed = value.trim();
+    const match = trimmed.match(/^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+    if (!match) return null;
+    const hex = match[1];
+    if (hex.length === 3) {
+      return `#${hex[0]}${hex[0]}${hex[1]}${hex[1]}${hex[2]}${hex[2]}`.toLowerCase();
+    }
+    return `#${hex.toLowerCase()}`;
+  };
+
+  const getColor = (option, index) => {
+    const normalized = normalizeHex(option.color);
+    const resolved = normalized || defaultPalette[index % defaultPalette.length];
+    option.color = resolved;
+    return resolved;
+  };
+
+  const toRgba = (hex, alpha = 0.25) => {
+    if (!hex || typeof hex !== "string") return `rgba(0, 255, 251, ${alpha})`;
+    const normalized = hex.replace("#", "");
+    const isShort = normalized.length === 3;
+    const r = parseInt(isShort ? normalized[0] + normalized[0] : normalized.substring(0, 2), 16);
+    const g = parseInt(isShort ? normalized[1] + normalized[1] : normalized.substring(2, 4), 16);
+    const b = parseInt(isShort ? normalized[2] + normalized[2] : normalized.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
+  function setCustomLogo() {
+    if (!customLogoImg) return;
+    const fallbackUrl = new URL(defaultLogoPath, window.location.href).toString();
+    const customLogo =
+      poll.centerLogo || poll.customLogo || window.customPieLogo || window.streamSuitesCustomLogo || defaultLogoPath;
+    customLogoImg.src = customLogo;
+    customLogoImg.alt = poll.creator?.name ? `${poll.creator.name} logo` : "StreamSuites logo";
+    customLogoImg.onerror = () => {
+      if (customLogoImg.src !== fallbackUrl) {
+        customLogoImg.src = fallbackUrl;
+      }
+    };
   }
 
   function buildAvatar(creator = {}) {
@@ -81,16 +133,6 @@
   function renderCharts() {
     const swatches = ["primary", "secondary", "tertiary"];
     const pieSurfaces = document.querySelectorAll(".pie-surface");
-    const getColor = (option, index) => option.color || defaultPalette[index % defaultPalette.length];
-    const toRgba = (hex, alpha = 0.25) => {
-      if (!hex || typeof hex !== "string") return `rgba(0, 255, 251, ${alpha})`;
-      const normalized = hex.replace("#", "");
-      const isShort = normalized.length === 3;
-      const r = parseInt(isShort ? normalized[0] + normalized[0] : normalized.substring(0, 2), 16);
-      const g = parseInt(isShort ? normalized[1] + normalized[1] : normalized.substring(2, 4), 16);
-      const b = parseInt(isShort ? normalized[2] + normalized[2] : normalized.substring(4, 6), 16);
-      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    };
 
     const buildLegend = (targetEl) => {
       if (!targetEl) return;
@@ -163,6 +205,84 @@
     buildPieGradients();
   }
 
+  function buildColorControls() {
+    if (!colorPanelBody) return;
+    colorPanelBody.innerHTML = "";
+    const options = poll.options || [];
+    if (!options.length) {
+      const empty = document.createElement("span");
+      empty.className = "timestamp";
+      empty.textContent = "No slice colors available yet.";
+      colorPanelBody.appendChild(empty);
+      return;
+    }
+
+    options.forEach((option, index) => {
+      let resolvedColor = getColor(option, index);
+      const row = document.createElement("div");
+      row.className = "color-row";
+
+      const labelWrap = document.createElement("div");
+      labelWrap.className = "color-label";
+      const label = document.createElement("span");
+      label.textContent = option.label;
+      const swatch = document.createElement("span");
+      swatch.className = "color-swatch";
+      swatch.style.background = resolvedColor;
+      labelWrap.append(label, swatch);
+
+      const inputs = document.createElement("div");
+      inputs.className = "color-inputs";
+      const picker = document.createElement("input");
+      picker.type = "color";
+      picker.value = resolvedColor;
+      const hexInput = document.createElement("input");
+      hexInput.type = "text";
+      hexInput.value = resolvedColor;
+      hexInput.maxLength = 7;
+      hexInput.placeholder = "#RRGGBB";
+
+      const applyColor = (value) => {
+        const normalized = normalizeHex(value) || resolvedColor;
+        resolvedColor = normalized;
+        option.color = normalized;
+        picker.value = normalized;
+        hexInput.value = normalized;
+        swatch.style.background = normalized;
+        renderCharts();
+      };
+
+      picker.addEventListener("input", () => applyColor(picker.value));
+      hexInput.addEventListener("change", () => applyColor(hexInput.value));
+      hexInput.addEventListener("blur", () => applyColor(hexInput.value));
+
+      inputs.append(picker, hexInput);
+      row.append(labelWrap, inputs);
+      colorPanelBody.appendChild(row);
+    });
+  }
+
+  function toggleColorPanel(forceOpen) {
+    if (!colorPanel || !colorToggle) return;
+    const isOpen = typeof forceOpen === "boolean" ? forceOpen : colorPanel.hidden;
+    colorPanel.hidden = !isOpen;
+    colorToggle.setAttribute("aria-expanded", String(isOpen));
+  }
+
+  function bindColorPanel() {
+    if (!colorPanel || !colorToggle) return;
+    colorToggle.addEventListener("click", () => toggleColorPanel());
+    if (colorClose) {
+      colorClose.addEventListener("click", () => toggleColorPanel(false));
+    }
+    document.addEventListener("click", (event) => {
+      if (colorPanel.hidden) return;
+      const target = event.target;
+      if (colorPanel.contains(target) || colorToggle.contains(target)) return;
+      toggleColorPanel(false);
+    });
+  }
+
   function setActiveView(view) {
     vizToggleButtons.forEach((btn) => {
       const isActive = btn.dataset.view === view;
@@ -184,14 +304,43 @@
     });
   }
 
+  function bindMaximize() {
+    if (!maximizeToggle || !visualizationPanel) return;
+    const setMaximized = (force) => {
+      const shouldExpand =
+        typeof force === "boolean" ? force : !visualizationPanel.classList.contains("is-expanded");
+      visualizationPanel.classList.toggle("is-expanded", shouldExpand);
+      document.body.classList.toggle("viz-expanded", shouldExpand);
+      if (vizOverlay) vizOverlay.hidden = !shouldExpand;
+      maximizeToggle.textContent = shouldExpand ? "Restore view" : "Maximize";
+      maximizeToggle.setAttribute("aria-pressed", String(shouldExpand));
+    };
+
+    maximizeToggle.addEventListener("click", () => setMaximized());
+    if (vizOverlay) {
+      vizOverlay.addEventListener("click", () => setMaximized(false));
+    }
+    window.addEventListener("keyup", (event) => {
+      if (event.key === "Escape") setMaximized(false);
+    });
+  }
+
   function bindPieRotation() {
+    const isTabVisible = () => document.visibilityState !== "hidden";
     interactivePies.forEach((pie) => {
       let isDragging = false;
       let startAngle = 0;
       let currentRotation = 0;
+      let velocity = 0;
+      let lastMoveTime = performance.now();
+      let lastFrameTime = 0;
 
       const surface = pie.querySelector(".pie-surface");
       if (!surface) return;
+      const applyRotation = () => {
+        pie.style.setProperty("--pie-rotation", `${currentRotation}deg`);
+      };
+
       const onDown = (event) => {
         event.preventDefault();
         isDragging = true;
@@ -203,6 +352,8 @@
         };
         const angle = Math.atan2(event.clientY - center.y, event.clientX - center.x);
         startAngle = angle - (currentRotation * Math.PI) / 180;
+        velocity = 0;
+        lastMoveTime = performance.now();
       };
 
       const onMove = (event) => {
@@ -213,19 +364,61 @@
           y: rect.top + rect.height / 2,
         };
         const angle = Math.atan2(event.clientY - center.y, event.clientX - center.x);
-        currentRotation = ((angle - startAngle) * 180) / Math.PI;
-        pie.style.setProperty("--pie-rotation", `${currentRotation}deg`);
+        const newRotation = ((angle - startAngle) * 180) / Math.PI;
+        const now = performance.now();
+        const deltaTime = Math.max(now - lastMoveTime, 1);
+        velocity = Math.max(Math.min((newRotation - currentRotation) / deltaTime, 0.8), -0.8);
+        currentRotation = newRotation;
+        lastMoveTime = now;
+        applyRotation();
       };
 
       const onUp = () => {
         if (!isDragging) return;
         isDragging = false;
         pie.classList.remove("is-dragging");
+        lastFrameTime = performance.now();
       };
 
       surface.addEventListener("mousedown", onDown);
       window.addEventListener("mousemove", onMove);
       window.addEventListener("mouseup", onUp);
+
+      const tick = (timestamp) => {
+        if (!lastFrameTime) {
+          lastFrameTime = timestamp;
+          requestAnimationFrame(tick);
+          return;
+        }
+        const delta = timestamp - lastFrameTime;
+        lastFrameTime = timestamp;
+
+        if (!isTabVisible()) {
+          requestAnimationFrame(tick);
+          return;
+        }
+
+        if (!isDragging) {
+          const spinRate = 0.0045; // degrees per ms
+          if (Math.abs(velocity) > 0.0005) {
+            currentRotation += velocity * delta;
+            const friction = 0.92 ** (delta / 16);
+            velocity *= friction;
+            if (Math.abs(velocity) < 0.0005) velocity = 0;
+          }
+          currentRotation += spinRate * delta;
+          applyRotation();
+        }
+
+        requestAnimationFrame(tick);
+      };
+
+      document.addEventListener("visibilitychange", () => {
+        lastFrameTime = performance.now();
+      });
+
+      applyRotation();
+      requestAnimationFrame(tick);
     });
   }
 
@@ -238,10 +431,14 @@
     timestampsEl.textContent = [created, updated, closes].filter(Boolean).join(" • ");
   }
 
+  setCustomLogo();
   renderMeta();
   renderVotes();
   renderCharts();
+  buildColorControls();
   setActiveView((poll.chartType || "pie").toLowerCase());
   bindToggles();
+  bindColorPanel();
+  bindMaximize();
   bindPieRotation();
 })();
