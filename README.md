@@ -112,9 +112,10 @@ Crucially, **none of these require rewriting the dashboard**.
 ## Public-Facing Media Surfaces (Static)
 
 - **Clips Gallery (`docs/clips.html`)** — standalone, unauthenticated gallery of placeholder clips that will later link to platform destinations; uses static placeholder data and mirrors the dark theme.
-- **Polls Gallery (`docs/polls.html`)** — standalone, unauthenticated gallery of placeholder polls/results; static only, ready for future data hydration.
+- **Polls Gallery (`docs/polls.html`)** — standalone, unauthenticated gallery of placeholder polls/results; static only, ready for future data hydration. Poll detail defaults to the bar view with pie available as a toggle.
+- **Tallies Gallery (`docs/tallies.html`)** — new standalone gallery mirroring the polls layout for programmatic tallies; includes a tallies detail page (`docs/tallies/detail.html`) with bar/pie/custom views and placeholder aggregation data.
 
-Both pages are **independent entry points** (no dashboard routing), GitHub Pages–safe, and reuse the shared dark styling in `docs/css/public-pages.css`.
+All public pages are **independent entry points** (no dashboard routing), GitHub Pages–safe, and reuse the shared dark styling in `docs/css/public-pages.css`.
 
 ---
 
@@ -178,7 +179,7 @@ These are **control-plane only** capabilities that complement, but do not replac
 
 ## Clips View (Runtime Export Visibility)
 
-- **Read-only lifecycle surface:** `docs/views/clips.html` + `docs/js/clips.js` render every clip emitted by the runtime export pipeline, including queued, encoding, uploaded, published, and failed items.
+- **Read-only lifecycle surface:** `docs/views/clips.html` + `docs/js/clips.js` render every clip emitted by the runtime export pipeline, including queued, encoding, uploaded, published, and failed items. Clip IDs link to the public clip detail page, and destinations render as outbound links when provided.
 - **Authoritative data only:** the view hydrates from `docs/shared/state/clips.json` (or the equivalent runtime export path) without inferring or mutating states. Pending and failed clips remain visible until the runtime evicts them.
 - **Safe polling:** lightweight polling (10s cadence) tolerates missing or partial data and will not retry aggressively on errors.
 - **State vocabulary (display-only):**
@@ -223,6 +224,7 @@ StreamSuites-Dashboard/
 │   ├── index.html          # App entry point
 │   ├── clips.html          # Public clips gallery (standalone)
 │   ├── polls.html          # Public polls gallery (standalone)
+│   ├── tallies.html        # Public tallies gallery (standalone)
 │   │
 │   ├── assets/
 │   │   ├── backgrounds/    # Hero/gradient backdrops and texture fills
@@ -284,6 +286,9 @@ StreamSuites-Dashboard/
 │   │   ├── telemetry.js     # Runtime snapshot hydration helpers
 │   │   ├── triggers.js      # Chat trigger configuration UI
 │   │   ├── public-polls.js  # Placeholder data renderer for public polls gallery
+│   │   ├── public-tallies.js# Placeholder data renderer for public tallies gallery
+│   │   ├── poll-detail.js   # Poll detail visualization controls
+│   │   ├── tally-detail.js  # Tally detail visualization controls
 │   │   └── platforms/       # Platform-specific view logic
 │   │       ├── discord.js
 │   │       ├── rumble.js
@@ -292,7 +297,11 @@ StreamSuites-Dashboard/
 │   │       └── youtube.js
 │   │
 │   ├── polls/
+│   │   ├── detail.html
 │   │   └── results.html
+│   │
+│   ├── tallies/
+│   │   └── detail.html
 │   │
 │   ├── shared/
 │   │   └── state/
@@ -314,6 +323,7 @@ StreamSuites-Dashboard/
 │       ├── jobs.html
 │       ├── overview.html
 │       ├── polls.html
+│       ├── tallies.html
 │       ├── ratelimits.html
 │       ├── scoreboard-management.html
 │       ├── settings.html

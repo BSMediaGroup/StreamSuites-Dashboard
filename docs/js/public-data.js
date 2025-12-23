@@ -241,6 +241,63 @@
     },
   ];
 
+  const publicTallies = [
+    {
+      id: "tally-4101",
+      title: "Weekly chat triggers (top performers)",
+      creator: {
+        name: "RelayOps",
+        avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=120&q=60",
+      },
+      status: "Active",
+      window: "Week of 04/01",
+      scope: "Programmatic aggregation",
+      updatedAt: "04/06/2024",
+      entries: [
+        { label: "Hype triggers", percent: 48, count: 1420, color: "#8cc736" },
+        { label: "Supporter CTAs", percent: 34, count: 1000, color: "#ffae00" },
+        { label: "Clip requests", percent: 18, count: 540, color: "#5bc0de" },
+      ],
+      summary: "Chat-driven trigger activity tallied across the network for the current week.",
+    },
+    {
+      id: "tally-4102",
+      title: "Monthly platform engagement split",
+      creator: {
+        name: "NovaByte",
+        avatar: "https://images.unsplash.com/photo-1502685104226-ee32379fefbe?auto=format&fit=crop&w=120&q=60",
+      },
+      status: "Closed",
+      window: "March 2024",
+      scope: "Monthly aggregation",
+      updatedAt: "03/31/2024",
+      entries: [
+        { label: "Rumble engagement", percent: 44, count: 880, color: "#7e03aa" },
+        { label: "YouTube engagement", percent: 37, count: 740, color: "#5bc0de" },
+        { label: "Twitch engagement", percent: 19, count: 380, color: "#ffae00" },
+      ],
+      summary: "Month-end engagement tallies across primary platforms.",
+    },
+    {
+      id: "tally-4103",
+      title: "Custom event tally (campaign sprint)",
+      creator: {
+        name: "Internal QA",
+        avatar: null,
+      },
+      status: "Pending",
+      window: "Custom window",
+      scope: "Campaign aggregation",
+      updatedAt: "Queued",
+      entries: [
+        { label: "Overlay activations", percent: 0, count: 0, color: "#6ce1ff" },
+        { label: "Chat milestones", percent: 0, count: 0, color: "#9fed4a" },
+        { label: "Scoreboard boosts", percent: 0, count: 0, color: "#f7c14b" },
+      ],
+      summary: "Upcoming sprint tally for campaign-specific triggers and overlays.",
+    },
+  ];
+
   window.publicClips = publicClips;
   window.publicClipMap = publicClips.reduce((acc, clip) => {
     acc[clip.id] = clip;
@@ -250,6 +307,12 @@
   window.publicPolls = publicPolls;
   window.publicPollMap = publicPolls.reduce((acc, poll) => {
     acc[poll.id] = poll;
+    return acc;
+  }, {});
+
+  window.publicTallies = publicTallies;
+  window.publicTallyMap = publicTallies.reduce((acc, tally) => {
+    acc[tally.id] = tally;
     return acc;
   }, {});
 })();

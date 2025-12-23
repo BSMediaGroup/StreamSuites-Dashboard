@@ -3,37 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>StreamSuites Poll Detail</title>
-  <meta name="description" content="Expanded detail view for a StreamSuites poll." />
+  <title>StreamSuites Tally Detail</title>
+  <meta name="description" content="Expanded detail view for a StreamSuites tally." />
   <link rel="icon" href="../favicon.ico" type="image/x-icon" />
 
   <link rel="stylesheet" href="../css/theme-dark.css" />
   <link rel="stylesheet" href="../css/public-pages.css" />
 </head>
-<body class="poll-detail-page">
+<body class="tally-detail-page">
   <div class="page-shell">
     <header class="public-header">
       <div class="brand-mark">
         <img src="../assets/logos/logo.png" alt="StreamSuites" />
         <div class="brand-title">
           <h1>StreamSuites™</h1>
-          <p class="brand-subtitle">Poll detail</p>
+          <p class="brand-subtitle">Tally detail</p>
         </div>
       </div>
       <div class="header-actions">
         <span class="pill">public beta</span>
-        <a class="cta-link" href="../polls.html">Back to polls</a>
+        <a class="cta-link" href="../tallies.html">Back to tallies</a>
       </div>
     </header>
 
     <section class="page-heading">
-      <h2 id="poll-title">Creator poll</h2>
-      <span class="lede" id="poll-subtitle">Community voting details and breakdown.</span>
+      <h2 id="tally-title">Programmatic tally</h2>
+      <span class="lede" id="tally-subtitle">Aggregated results driven by chat triggers.</span>
     </section>
 
     <div class="detail-shell poll-detail-shell">
       <div class="detail-card">
-        <div class="detail-meta" id="poll-meta">
+        <div class="detail-meta" id="tally-meta">
           <!-- Filled by script -->
         </div>
         <div class="detail-body">
@@ -43,6 +43,7 @@
                 <div class="viz-toggle" role="tablist" aria-label="Select visualization format">
                   <button class="viz-toggle-btn is-active" type="button" data-view="bar" aria-pressed="true">Bar view</button>
                   <button class="viz-toggle-btn" type="button" data-view="pie" aria-pressed="false">Pie view</button>
+                  <button class="viz-toggle-btn" type="button" data-view="custom" aria-pressed="false">Custom pie</button>
                 </div>
                 <span class="viz-hint">Switch formats • Drag the pie to rotate.</span>
               </div>
@@ -70,6 +71,16 @@
                 </div>
                 <div class="viz-legend" id="pie-legend"></div>
               </div>
+
+              <div class="viz-view" data-view="custom" hidden>
+                <div class="pie-shell custom-pie interactive-pie" data-rotation="0">
+                  <div class="pie-surface" aria-hidden="true"></div>
+                  <div class="pie-center logo-center" aria-hidden="true">
+                    <img id="custom-pie-logo" src="../assets/logos/logocircle.png" alt="StreamSuites logo" />
+                  </div>
+                </div>
+                <div class="viz-legend" id="custom-legend"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -77,17 +88,17 @@
 
       <div class="detail-card vote-card">
         <div class="detail-heading">
-          <h3 class="detail-title">Vote breakdown</h3>
-          <span class="timestamp" id="poll-timestamps">—</span>
+          <h3 class="detail-title">Tally breakdown</h3>
+          <span class="timestamp" id="tally-timestamps">—</span>
         </div>
-        <ul class="vote-list" id="vote-list">
+        <ul class="vote-list" id="tally-list">
           <!-- Filled by script -->
         </ul>
       </div>
     </div>
 
     <footer class="public-footer">
-      <span>StreamSuites™ Media Surface • Polls</span>
+      <span>StreamSuites™ Media Surface • Tallies</span>
       <a href="../index.html">Creator dashboard</a>
     </footer>
   </div>
@@ -95,6 +106,6 @@
   <div class="viz-overlay" id="viz-overlay" hidden aria-hidden="true"></div>
 
   <script src="../js/public-data.js"></script>
-  <script src="../js/poll-detail.js"></script>
+  <script src="../js/tally-detail.js"></script>
 </body>
 </html>
