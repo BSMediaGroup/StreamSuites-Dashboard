@@ -111,9 +111,11 @@ Crucially, **none of these require rewriting the dashboard**.
 
 ## Public-Facing Media Surfaces (Static)
 
+- **Home (`docs/home.html`)** — central public landing surface linking to all public galleries and the creator dashboard. Summarizes system context, public/read-only posture, and module rollout (clips, polls, tallies, scoreboards).
 - **Clips Gallery (`docs/clips.html`)** — standalone, unauthenticated gallery of placeholder clips that will later link to platform destinations; uses static placeholder data and mirrors the dark theme.
 - **Polls Gallery (`docs/polls.html`)** — standalone, unauthenticated gallery of placeholder polls/results; static only, ready for future data hydration. Poll detail defaults to the bar view with pie available as a toggle.
-- **Tallies Gallery (`docs/tallies.html`)** — new standalone gallery mirroring the polls layout for programmatic tallies; includes a tallies detail page (`docs/tallies/detail.html`) with bar/pie/custom views and placeholder aggregation data.
+- **Tallies Gallery (`docs/tallies.html`)** — standalone gallery mirroring the polls layout for programmatic tallies; includes a tallies detail page (`docs/tallies/detail.html`) with bar/pie/custom views and placeholder aggregation data.
+- **Scoreboards Gallery (`docs/scoreboards.html`)** — new standalone gallery mirroring the polls layout for score-centric use cases: gambling totals, chat-driven games, engagement counters, and time-based tallies. Detail view (`docs/scoreboards/detail.html`) includes placeholder bar/pie visuals and metadata.
 
 All public pages are **independent entry points** (no dashboard routing), GitHub Pages–safe, and reuse the shared dark styling in `docs/css/public-pages.css`.
 
@@ -222,9 +224,11 @@ StreamSuites-Dashboard/
 │   ├── Thumbs.db           # Placeholder artifact (do not delete)
 │   ├── favicon.ico         # Static site icon
 │   ├── index.html          # App entry point
+│   ├── home.html           # Central public landing page
 │   ├── clips.html          # Public clips gallery (standalone)
 │   ├── polls.html          # Public polls gallery (standalone)
 │   ├── tallies.html        # Public tallies gallery (standalone)
+│   ├── scoreboards.html    # Public scoreboards gallery (standalone)
 │   │
 │   ├── assets/
 │   │   ├── backgrounds/    # Hero/gradient backdrops and texture fills
@@ -287,6 +291,7 @@ StreamSuites-Dashboard/
 │   │   ├── triggers.js      # Chat trigger configuration UI
 │   │   ├── public-polls.js  # Placeholder data renderer for public polls gallery
 │   │   ├── public-tallies.js# Placeholder data renderer for public tallies gallery
+│   │   ├── public-scoreboards.js # Placeholder data renderer for public scoreboards gallery
 │   │   ├── poll-detail.js   # Poll detail visualization controls
 │   │   ├── tally-detail.js  # Tally detail visualization controls
 │   │   └── platforms/       # Platform-specific view logic
@@ -301,6 +306,9 @@ StreamSuites-Dashboard/
 │   │   └── results.html
 │   │
 │   ├── tallies/
+│   │   └── detail.html
+│   │
+│   ├── scoreboards/
 │   │   └── detail.html
 │   │
 │   ├── shared/
