@@ -282,10 +282,7 @@ const navOverflow = {
   container: null,
   shell: null,
   resizeHandler: null,
-  outsideHandler: null,
-  keydownHandler: null,
   resizeTimer: null,
-  rafId: null,
   bound: false
 };
 
@@ -303,65 +300,17 @@ function initNavOverflowElements() {
   );
 }
 
-function resetNavOverflowItems() {
-  if (!navOverflow.list) return;
-  const allItems = [...navOverflow.list.children];
-
-  allItems.forEach((item, index) => {
-    if (!item.dataset.originalIndex) {
-      item.dataset.originalIndex = index.toString();
-    }
-  });
-
-  allItems
-    .sort((a, b) => {
-      const aIndex = Number(a.dataset.originalIndex) || 0;
-      const bIndex = Number(b.dataset.originalIndex) || 0;
-      return aIndex - bIndex;
-    })
-    .forEach((item) => {
-      navOverflow.list.appendChild(item);
-    });
-}
-
 function syncNavOverflowActiveIndicator() {
   if (!navOverflow.toggle) return;
-  const isOverflowing = navOverflow.toggle.getAttribute("data-overflowing") === "true";
-  navOverflow.toggle.classList.toggle("active", isOverflowing);
+  navOverflow.toggle.classList.remove("active");
 }
 
-function closeNavOverflowMenu() {
-  // Dropdown removed; keep function as no-op for compatibility
-}
-
-function openNavOverflowMenu() {
-  // Dropdown removed; keep function as no-op for compatibility
-}
-
-function scheduleNavRedistribute() {
-  if (navOverflow.rafId) {
-    cancelAnimationFrame(navOverflow.rafId);
-  }
-  navOverflow.rafId = window.requestAnimationFrame(() => {
-    navOverflow.rafId = null;
-    redistributeNavItems();
-  });
-}
-
-function scheduleNavRedistribute() {
-  if (navOverflow.rafId) {
-    cancelAnimationFrame(navOverflow.rafId);
-  }
-  navOverflow.rafId = window.requestAnimationFrame(() => {
-    navOverflow.rafId = null;
-    redistributeNavItems();
-  });
-}
-
-  resetNavOverflowItems();
+function redistributeNavItems() {
+  if (!initNavOverflowElements()) return;
   navOverflow.toggle.classList.add("is-hidden");
-  navOverflow.container?.setAttribute("aria-hidden", "true");
-  navOverflow.toggle.setAttribute("data-overflowing", "false");
+  if (navOverflow.container) {
+    navOverflow.container.setAttribute("aria-hidden", "true");
+  }
   syncNavOverflowActiveIndicator();
 }
 
@@ -372,29 +321,15 @@ function bindNavOverflow() {
     return;
   }
 
-  navOverflow.toggle.addEventListener("click", (event) => {
-    event.stopPropagation();
-    if (!navOverflow.list) return;
-    navOverflow.list.scrollTo({ left: navOverflow.list.scrollWidth, behavior: "smooth" });
-  });
-
   navOverflow.resizeHandler = () => {
     if (navOverflow.resizeTimer) {
       clearTimeout(navOverflow.resizeTimer);
     }
     navOverflow.resizeTimer = setTimeout(() => {
-      scheduleNavRedistribute();
+      redistributeNavItems();
     }, 120);
   };
   window.addEventListener("resize", navOverflow.resizeHandler);
-
-  navOverflow.outsideHandler = (event) => {
-    if (!navOverflow.container) return;
-    if (!navOverflow.container.contains(event.target)) {
-      closeNavOverflowMenu();
-    }
-  };
-  document.addEventListener("click", navOverflow.outsideHandler);
 
   navOverflow.keydownHandler = (event) => {
     if (event.key === "Escape") {
@@ -432,7 +367,6 @@ function updateNavActiveState(viewName) {
   });
   syncNavOverflowActiveIndicator();
   ensureActiveNavVisibility();
-  scheduleNavRedistribute();
 }
 
 function bindNavigation() {
@@ -448,11 +382,7 @@ function ensureActiveNavVisibility() {
   if (!navOverflow.list) return;
   const active = navOverflow.list.querySelector("li.active");
   if (!active) return;
-  active.scrollIntoView({
-    behavior: "smooth",
-    block: "nearest",
-    inline: "center"
-  });
+  active.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
 }
 
 /* ----------------------------------------------------------------------
