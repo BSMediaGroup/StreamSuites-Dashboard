@@ -322,7 +322,7 @@ function scheduleNavRedistribute() {
 function bindNavOverflow() {
   if (!initNavOverflowElements()) return;
   if (navOverflow.bound) {
-    redistributeNavItems();
+    scheduleNavRedistribute();
     return;
   }
 
@@ -337,7 +337,22 @@ function bindNavOverflow() {
   window.addEventListener("resize", navOverflow.resizeHandler);
 
   navOverflow.bound = true;
-  redistributeNavItems();
+  scheduleNavRedistribute();
+  window.requestAnimationFrame(() => {
+    scheduleNavRedistribute();
+  });
+
+  if (document.fonts?.ready) {
+    document.fonts.ready.then(() => {
+      scheduleNavRedistribute();
+    });
+  }
+
+  if (navOverflow.list) {
+    navOverflow.list.addEventListener("scroll", () => {
+      scheduleNavRedistribute();
+    }, { passive: true });
+  }
 }
 
 function updateNavActiveState(viewName) {
