@@ -90,25 +90,91 @@ body {
 }
 
 .cta-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 14px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-subtle);
-  background: linear-gradient(180deg, rgba(140, 199, 54, 0.3), rgba(140, 199, 54, 0.15));
-  color: #fff;
-  font-weight: 600;
+  --border-color: linear-gradient(-45deg, #ffae00, #7e03aa, #00fffb);
+  --border-width: 0.125em;
+  --curve-size: 0.5em;
+  --blur: 30px;
+  --bg: #080312;
+  --color: #ffffff;
+  color: var(--color);
+  cursor: pointer;
+  position: relative;
+  isolation: isolate;
+  display: inline-grid;
+  place-content: center;
+  padding: 9px 16px;
   font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: 0;
   text-decoration: none;
-  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.6);
+  clip-path: polygon(
+    0% var(--curve-size),
+    var(--curve-size) 0,
+    100% 0,
+    100% calc(100% - var(--curve-size)),
+    calc(100% - var(--curve-size)) 100%,
+    0 100%
+  );
+  transition: color 250ms;
 }
 
-.cta-link:hover {
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 14px rgba(140, 199, 54, 0.25);
-  transform: translateY(-1px);
+.cta-link::after,
+.cta-link::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.cta-link::before {
+  background: var(--border-color);
+  background-size: 300% 300%;
+  animation: move-bg7234 5s ease infinite;
+  z-index: -2;
+}
+
+.cta-link::after {
+  background: var(--bg);
+  z-index: -1;
+  clip-path: polygon(
+    var(--border-width) calc(var(--curve-size) + var(--border-width) * 0.5),
+    calc(var(--curve-size) + var(--border-width) * 0.5) var(--border-width),
+    calc(100% - var(--border-width)) var(--border-width),
+    calc(100% - var(--border-width)) calc(100% - calc(var(--curve-size) + var(--border-width) * 0.5)),
+    calc(100% - calc(var(--curve-size) + var(--border-width) * 0.5)) calc(100% - var(--border-width)),
+    var(--border-width) calc(100% - var(--border-width))
+  );
+  transition: clip-path 500ms;
+}
+
+.cta-link:where(:hover, :focus)::after {
+  clip-path: polygon(
+    calc(100% - var(--border-width)) calc(100% - calc(var(--curve-size) + var(--border-width) * 0.5)),
+    calc(100% - var(--border-width)) var(--border-width),
+    calc(100% - var(--border-width)) var(--border-width),
+    calc(100% - var(--border-width)) calc(100% - calc(var(--curve-size) + var(--border-width) * 0.5)),
+    calc(100% - calc(var(--curve-size) + var(--border-width) * 0.5)) calc(100% - var(--border-width)),
+    calc(100% - calc(var(--curve-size) + var(--border-width) * 0.5)) calc(100% - var(--border-width))
+  );
+  transition: 200ms;
+}
+
+.cta-link:where(:hover, :focus) {
+  color: #fff;
   text-decoration: none;
+}
+
+@keyframes move-bg7234 {
+  0% {
+    background-position: 31% 0%;
+  }
+  50% {
+    background-position: 70% 100%;
+  }
+  100% {
+    background-position: 31% 0%;
+  }
 }
 
 .page-heading {
@@ -120,7 +186,7 @@ body {
 
 .page-heading h2 {
   margin: 0;
-  font-size: 26px;
+  font-size: 24px;
   letter-spacing: 0.04em;
 }
 
@@ -634,6 +700,236 @@ body {
   margin: auto;
   box-shadow: inset 0 0 0 10px rgba(14, 16, 21, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.visualization-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+}
+
+.viz-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.viz-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 6px;
+}
+
+.viz-toggle-btn {
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: "SuiGenerisRg", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.viz-toggle-btn.is-active {
+  background: linear-gradient(135deg, rgba(140, 199, 54, 0.16), rgba(255, 255, 255, 0.04));
+  color: #fff;
+  box-shadow: 0 0 0 1px rgba(140, 199, 54, 0.35), 0 0 12px rgba(140, 199, 54, 0.18);
+}
+
+.viz-toggle-btn:hover {
+  color: #fff;
+}
+
+.viz-hint {
+  color: var(--text-muted);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.viz-stage {
+  background: radial-gradient(circle at 30% 25%, rgba(140, 199, 54, 0.08), rgba(10, 12, 19, 0.9));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  display: grid;
+  place-items: center;
+  min-height: 420px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.viz-view {
+  width: 100%;
+  max-width: 520px;
+  display: none;
+}
+
+.viz-view.active {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+
+.pie-shell {
+  position: relative;
+  width: clamp(360px, 70vw, 540px);
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  display: grid;
+  place-items: center;
+}
+
+.interactive-pie {
+  --pie-rotation: 0deg;
+  cursor: grab;
+  transition: transform 0.18s ease;
+}
+
+.interactive-pie.is-dragging {
+  cursor: grabbing;
+}
+
+.pie-surface {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(
+    rgba(140, 199, 54, 0.85) 0deg 160deg,
+    rgba(225, 172, 30, 0.85) 160deg 250deg,
+    rgba(91, 192, 222, 0.85) 250deg 360deg
+  );
+  box-shadow: inset 0 0 0 18px rgba(14, 16, 21, 0.88), 0 18px 40px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  transform: rotate(var(--pie-rotation, 0deg));
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.interactive-pie.is-dragging .pie-surface {
+  box-shadow: inset 0 0 0 18px rgba(14, 16, 21, 0.92), 0 18px 50px rgba(0, 0, 0, 0.5);
+  transition: none;
+}
+
+.pie-center {
+  position: absolute;
+  width: 40%;
+  height: 40%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.05), rgba(8, 3, 18, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 10px;
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.38);
+  pointer-events: none;
+}
+
+.pie-center .center-title {
+  font-family: "RechargeBd", sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pie-center .center-sub {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.custom-pie .pie-center.logo-center {
+  width: 34%;
+  height: 34%;
+  padding: 0;
+  border: 1px solid rgba(0, 255, 251, 0.35);
+  background: rgba(8, 3, 18, 0.9);
+  display: grid;
+  place-items: center;
+}
+
+.custom-pie .pie-center.logo-center img {
+  width: 58%;
+  height: 58%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 12px rgba(0, 255, 251, 0.35));
+}
+
+.viz-legend {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+}
+
+.viz-legend .pie-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.viz-legend .pie-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.bar-rows {
+  width: 100%;
+  display: grid;
+  gap: 12px;
+}
+
+.bar-row {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.01);
+}
+
+.bar-label {
+  font-family: "RechargeBd", sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.bar-meter {
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.bar-meter span {
+  position: absolute;
+  inset: 0;
+  width: 0%;
+  background: linear-gradient(90deg, rgba(140, 199, 54, 0.9), rgba(0, 255, 251, 0.65));
+  border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(0, 255, 251, 0.25);
+  transition: width 0.4s ease;
+}
+
+.bar-meta {
+  color: var(--text-secondary);
+  font-size: 11px;
 }
 
 .stat-grid {
