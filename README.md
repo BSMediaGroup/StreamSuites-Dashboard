@@ -109,6 +109,15 @@ Crucially, **none of these require rewriting the dashboard**.
 
 ---
 
+## Public-Facing Media Surfaces (Static)
+
+- **Clips Gallery (`docs/clips.html`)** — standalone, unauthenticated gallery of placeholder clips that will later link to platform destinations; uses static placeholder data and mirrors the dark theme.
+- **Polls Gallery (`docs/polls.html`)** — standalone, unauthenticated gallery of placeholder polls/results; static only, ready for future data hydration.
+
+Both pages are **independent entry points** (no dashboard routing), GitHub Pages–safe, and reuse the shared dark styling in `docs/css/public-pages.css`.
+
+---
+
 ## Design Principles
 
 - **Static-first** — no server required
@@ -212,6 +221,8 @@ StreamSuites-Dashboard/
 │   ├── Thumbs.db           # Placeholder artifact (do not delete)
 │   ├── favicon.ico         # Static site icon
 │   ├── index.html          # App entry point
+│   ├── clips.html          # Public clips gallery (standalone)
+│   ├── polls.html          # Public polls gallery (standalone)
 │   │
 │   ├── assets/
 │   │   ├── backgrounds/    # Hero/gradient backdrops and texture fills
@@ -243,6 +254,7 @@ StreamSuites-Dashboard/
 │   │   ├── components.css   # Buttons, tables, panels
 │   │   ├── layout.css       # Structural layout rules
 │   │   ├── overrides.css    # Custom overrides for components/themes
+│   │   ├── public-pages.css # Shared styling for standalone public pages
 │   │   └── theme-dark.css   # Dark theme (authoritative)
 │   │
 │   ├── data/                # Bundled JSON defaults + runtime snapshot examples
@@ -261,6 +273,7 @@ StreamSuites-Dashboard/
 │   │   ├── creators.js      # Creator configuration UI (local drafts + exports)
 │   │   ├── jobs.js          # Job visibility (clips, etc.)
 │   │   ├── clips.js         # Runtime clip lifecycle surface (read-only, polling)
+│   │   ├── public-clips.js  # Placeholder data renderer for public clips gallery
 │   │   ├── overview.js      # Overview dashboard wiring + telemetry
 │   │   ├── permissions.js   # Future permissions UI
 │   │   ├── platforms.js     # Global platform toggle wiring
@@ -270,6 +283,7 @@ StreamSuites-Dashboard/
 │   │   ├── state.js         # Client-side state + ConfigState loader
 │   │   ├── telemetry.js     # Runtime snapshot hydration helpers
 │   │   ├── triggers.js      # Chat trigger configuration UI
+│   │   ├── public-polls.js  # Placeholder data renderer for public polls gallery
 │   │   └── platforms/       # Platform-specific view logic
 │   │       ├── discord.js
 │   │       ├── rumble.js
