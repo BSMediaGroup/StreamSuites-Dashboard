@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="../css/theme-dark.css" />
   <link rel="stylesheet" href="../css/public-pages.css" />
 </head>
-<body>
+<body class="poll-detail-page">
   <div class="page-shell">
     <header class="public-header">
       <div class="brand-mark">
@@ -31,7 +31,7 @@
       <span class="lede" id="poll-subtitle">Community voting details and breakdown.</span>
     </section>
 
-    <div class="detail-shell">
+    <div class="detail-shell poll-detail-shell">
       <div class="detail-card">
         <div class="detail-meta" id="poll-meta">
           <!-- Filled by script -->
@@ -39,21 +39,31 @@
         <div class="detail-body">
           <div class="visualization-panel">
             <div class="viz-top">
-              <div class="viz-toggle" role="tablist" aria-label="Select visualization format">
-                <button class="viz-toggle-btn is-active" type="button" data-view="pie" aria-pressed="true">Pie view</button>
-                <button class="viz-toggle-btn" type="button" data-view="bar" aria-pressed="false">Bar view</button>
-                <button class="viz-toggle-btn" type="button" data-view="custom" aria-pressed="false">Custom pie</button>
+              <div class="viz-top-left">
+                <div class="viz-toggle" role="tablist" aria-label="Select visualization format">
+                  <button class="viz-toggle-btn is-active" type="button" data-view="pie" aria-pressed="true">Pie view</button>
+                  <button class="viz-toggle-btn" type="button" data-view="bar" aria-pressed="false">Bar view</button>
+                  <button class="viz-toggle-btn" type="button" data-view="custom" aria-pressed="false">Custom pie</button>
+                </div>
+                <span class="viz-hint">Switch formats • Drag the pie to rotate.</span>
               </div>
-              <span class="viz-hint">Switch formats • Drag the pie to rotate.</span>
+              <div class="viz-actions">
+                <button class="viz-utility-btn" type="button" id="color-toggle" aria-expanded="false">Edit colors</button>
+                <button class="viz-utility-btn" type="button" id="maximize-toggle" aria-pressed="false">Maximize</button>
+              </div>
+            </div>
+
+            <div class="color-panel" id="color-panel" hidden>
+              <div class="color-panel-header">
+                <span>Slice colors</span>
+                <button class="viz-utility-btn ghost" type="button" id="color-close">Close</button>
+              </div>
+              <div class="color-panel-body" id="color-panel-body"></div>
             </div>
             <div class="viz-stage" aria-live="polite">
               <div class="viz-view active" data-view="pie">
                 <div class="pie-shell interactive-pie" data-rotation="0">
                   <div class="pie-surface" aria-hidden="true"></div>
-                  <div class="pie-center">
-                    <span class="center-title">Pie format</span>
-                    <span class="center-sub">Interactive</span>
-                  </div>
                 </div>
                 <div class="viz-legend" id="pie-legend"></div>
               </div>
@@ -66,7 +76,7 @@
                 <div class="pie-shell custom-pie interactive-pie" data-rotation="0">
                   <div class="pie-surface" aria-hidden="true"></div>
                   <div class="pie-center logo-center" aria-hidden="true">
-                    <img src="../assets/logos/streamsuites.svg" alt="StreamSuites logo" />
+                    <img id="custom-pie-logo" src="../assets/logos/logocircle.png" alt="StreamSuites logo" />
                   </div>
                 </div>
                 <div class="viz-legend" id="custom-legend"></div>
@@ -76,7 +86,7 @@
         </div>
       </div>
 
-      <div class="detail-card">
+      <div class="detail-card vote-card">
         <div class="detail-heading">
           <h3 class="detail-title">Vote breakdown</h3>
           <span class="timestamp" id="poll-timestamps">—</span>
@@ -92,6 +102,8 @@
       <a href="../index.html">Creator dashboard</a>
     </footer>
   </div>
+
+  <div class="viz-overlay" id="viz-overlay" hidden aria-hidden="true"></div>
 
   <script src="../js/public-data.js"></script>
   <script src="../js/poll-detail.js"></script>
