@@ -314,6 +314,11 @@ function redistributeNavItems() {
   syncNavOverflowActiveIndicator();
 }
 
+// Defensive: keep alias to prevent ReferenceError from stale calls
+function scheduleNavRedistribute() {
+  redistributeNavItems();
+}
+
 function bindNavOverflow() {
   if (!initNavOverflowElements()) return;
   if (navOverflow.bound) {
@@ -330,13 +335,6 @@ function bindNavOverflow() {
     }, 120);
   };
   window.addEventListener("resize", navOverflow.resizeHandler);
-
-  navOverflow.keydownHandler = (event) => {
-    if (event.key === "Escape") {
-      closeNavOverflowMenu();
-    }
-  };
-  document.addEventListener("keydown", navOverflow.keydownHandler);
 
   navOverflow.bound = true;
   scheduleNavRedistribute();
