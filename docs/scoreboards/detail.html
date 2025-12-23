@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StreamSuites Scoreboard Detail</title>
+  <meta name="description" content="Expanded detail view for a StreamSuites scoreboard." />
+  <link rel="icon" href="../favicon.ico" type="image/x-icon" />
+
+  <link rel="stylesheet" href="../css/theme-dark.css" />
+  <link rel="stylesheet" href="../css/public-pages.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="public-header">
+      <div class="brand-mark">
+        <img src="../assets/logos/logo.png" alt="StreamSuites" />
+        <div class="brand-title">
+          <h1>StreamSuites™</h1>
+          <p class="brand-subtitle">Scoreboard detail</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a class="quiet-link" href="../home.html">Home</a>
+        <a class="cta-link" href="../scoreboards.html">Back to scoreboards</a>
+      </div>
+    </header>
+
+    <section class="page-heading">
+      <h2 id="scoreboard-title">Scoreboard</h2>
+      <span class="lede" id="scoreboard-subtitle">Expanded scoreboard view with placeholder visuals.</span>
+    </section>
+
+    <div class="detail-shell">
+      <div class="detail-card">
+        <div class="detail-heading">
+          <h3 class="detail-title">Scoreboard overview</h3>
+          <div class="status-row">
+            <span class="status-chip published">Live-ready</span>
+            <span class="pill">static preview</span>
+          </div>
+        </div>
+        <div class="detail-body">
+          <div class="visualization-panel">
+            <div class="viz-top">
+              <div class="viz-top-left">
+                <div class="viz-toggle" role="tablist" aria-label="Select visualization format">
+                  <button class="viz-toggle-btn is-active" type="button" aria-pressed="true">Bar view</button>
+                  <button class="viz-toggle-btn" type="button" aria-pressed="false">Pie view</button>
+                </div>
+                <span class="viz-hint">Static placeholder visuals for now.</span>
+              </div>
+              <div class="viz-actions">
+                <button class="viz-utility-btn" type="button">Edit colors</button>
+                <button class="viz-utility-btn" type="button">Maximize</button>
+              </div>
+            </div>
+
+            <div class="viz-stage" aria-live="polite">
+              <div class="viz-view active">
+                <div class="bar-rows">
+                  <div class="scorebar">
+                    <div class="label">
+                      <strong>Team Alpha</strong>
+                      <span>Chat-driven games</span>
+                    </div>
+                    <div class="fill" aria-hidden="true"></div>
+                  </div>
+                  <div class="scorebar">
+                    <div class="label">
+                      <strong>Team Bravo</strong>
+                      <span>Gambling totals</span>
+                    </div>
+                    <div class="fill" aria-hidden="true"></div>
+                  </div>
+                  <div class="scorebar">
+                    <div class="label">
+                      <strong>Team Charlie</strong>
+                      <span>Engagement counters</span>
+                    </div>
+                    <div class="fill" aria-hidden="true"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-card">
+        <div class="detail-heading">
+          <h3 class="detail-title">Metadata</h3>
+          <span class="timestamp" id="scoreboard-timestamps">—</span>
+        </div>
+        <ul class="meta-list">
+          <li><strong>Mode:</strong> Placeholder scoreboard preview</li>
+          <li><strong>Use cases:</strong> Gambling totals, chat-driven games, engagement counters, time-based tallies</li>
+          <li><strong>Data:</strong> Static copy only, no live inputs yet</li>
+          <li><strong>Routing:</strong> Creator-controlled overlays</li>
+        </ul>
+      </div>
+    </div>
+
+    <footer class="public-footer">
+      <span>StreamSuites™ Media Surface • Scoreboards</span>
+      <a href="../index.html">Creator dashboard</a>
+    </footer>
+  </div>
+</body>
+</html>
