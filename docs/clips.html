@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StreamSuites Clips Gallery</title>
+  <meta name="description" content="Public-facing StreamSuites clips gallery with creator uploads across platforms." />
+  <link rel="icon" href="./favicon.ico" type="image/x-icon" />
+
+  <!-- Shared styles -->
+  <link rel="stylesheet" href="./css/theme-dark.css" />
+  <link rel="stylesheet" href="./css/public-pages.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="public-header">
+      <div class="brand-mark">
+        <img src="./assets/logos/streamsuites.svg" alt="StreamSuites" />
+        <div class="brand-title">
+          <h1>StreamSuites</h1>
+          <div class="brand-subtitle">Public Clips Gallery</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="pill">public beta</span>
+        <a class="cta-link" href="./polls.html">View polls</a>
+      </div>
+    </header>
+
+    <section class="page-heading">
+      <h2>Latest Clips</h2>
+      <span class="lede">Cross-platform highlights, queued, encoding, and published in one feed.</span>
+    </section>
+
+    <p class="helper-text">
+      Placeholder data shown. Links and thumbnails will map to live creator destinations in a future release.
+    </p>
+
+    <noscript>
+      <div class="empty-state">JavaScript is required to render the clip gallery.</div>
+    </noscript>
+
+    <div id="clips-grid" class="card-grid" aria-live="polite"></div>
+    <div id="clips-empty" class="empty-state" hidden>
+      No clips to show yet. Check back soon for channel highlights and creator uploads.
+    </div>
+
+    <footer class="public-footer">
+      <span>StreamSuites™ Media Surface • Clips</span>
+      <a href="./index.html">Creator dashboard</a>
+    </footer>
+  </div>
+
+  <script src="./js/public-clips.js"></script>
+</body>
+</html>
