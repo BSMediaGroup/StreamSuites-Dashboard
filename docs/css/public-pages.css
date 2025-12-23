@@ -1006,6 +1006,17 @@ body {
   filter: drop-shadow(0 0 12px rgba(0, 255, 251, 0.35));
 }
 
+/* Tally detail — enforce larger logo center */
+.tally-detail-page .custom-pie .pie-center.logo-center {
+  width: 80px;
+  height: 80px;
+}
+
+.tally-detail-page .custom-pie .pie-center.logo-center img {
+  width: 100%;
+  height: 100%;
+}
+
 .viz-legend {
   width: 100%;
   display: grid;

@@ -68,6 +68,33 @@
   padding: 12px 14px;
   border-bottom: 1px solid var(--border-subtle);
   background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ss-panel-header-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.ss-panel-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+}
+
+.ss-panel-header-actions .ss-btn {
+  white-space: nowrap;
 }
 
 .ss-panel-header h2,
