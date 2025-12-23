@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StreamSuites Poll Detail</title>
+  <meta name="description" content="Expanded detail view for a StreamSuites poll." />
+  <link rel="icon" href="../favicon.ico" type="image/x-icon" />
+
+  <link rel="stylesheet" href="../css/theme-dark.css" />
+  <link rel="stylesheet" href="../css/public-pages.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="public-header">
+      <div class="brand-mark">
+        <img src="../assets/logos/logo.png" alt="StreamSuites" />
+        <div class="brand-title">
+          <h1>StreamSuites™</h1>
+          <p class="brand-subtitle">Poll detail</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="pill">public beta</span>
+        <a class="cta-link" href="../polls.html">Back to polls</a>
+      </div>
+    </header>
+
+    <section class="page-heading">
+      <h2 id="poll-title">Creator poll</h2>
+      <span class="lede" id="poll-subtitle">Community voting details and breakdown.</span>
+    </section>
+
+    <div class="detail-shell">
+      <div class="detail-card">
+        <div class="detail-heading">
+          <h3 class="detail-title" id="poll-question">Poll question</h3>
+          <span id="poll-status" class="poll-status pending">Pending</span>
+        </div>
+        <div class="detail-meta" id="poll-meta">
+          <!-- Filled by script -->
+        </div>
+        <div class="detail-body">
+          <p id="poll-summary" class="description">Poll overview.</p>
+          <div class="stat-grid">
+            <div class="stat-block">
+              <h4>Bar results</h4>
+              <div class="chart-placeholder" aria-hidden="true">Bar chart</div>
+            </div>
+            <div class="stat-block">
+              <h4>Pie results</h4>
+              <div class="chart-placeholder" aria-hidden="true">Pie chart</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-card">
+        <div class="detail-heading">
+          <h3 class="detail-title">Vote breakdown</h3>
+          <span class="timestamp" id="poll-timestamps">—</span>
+        </div>
+        <ul class="vote-list" id="vote-list">
+          <!-- Filled by script -->
+        </ul>
+      </div>
+    </div>
+
+    <footer class="public-footer">
+      <span>StreamSuites™ Media Surface • Polls</span>
+      <a href="../index.html">Creator dashboard</a>
+    </footer>
+  </div>
+
+  <script src="../js/public-data.js"></script>
+  <script src="../js/poll-detail.js"></script>
+</body>
+</html>

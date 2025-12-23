@@ -16,93 +16,37 @@
     </svg>
   `)}`;
 
-  const clips = [
-    {
-      id: "rumble-2481",
-      title: "Aftershow highlight: Community AMA",
-      creator: "NovaByte",
-      platform: "Rumble",
-      status: "Published",
-      duration: "08:42",
-      url: "https://rumble.com/streamsuites",
-      thumbnail: null,
-    },
-    {
-      id: "yt-9921",
-      title: "Feature walkthrough: Scoreboards primer",
-      creator: "Aster",
-      platform: "YouTube",
-      status: "Encoding",
-      duration: "05:12",
-      url: "https://youtube.com/@StreamSuites",
-      thumbnail: "./assets/backgrounds/seodash.jpg",
-    },
-    {
-      id: "tw-5577",
-      title: "Live capture: Chat replay stress test",
-      creator: "RelayOps",
-      platform: "Twitch",
-      status: "Pending",
-      duration: "12:01",
-      url: "https://twitch.tv",
-      thumbnail: null,
-    },
-    {
-      id: "rumble-3180",
-      title: "Creator onboarding: Clips pipeline",
-      creator: "StreamLabs",
-      platform: "Rumble",
-      status: "Published",
-      duration: "03:48",
-      url: "https://rumble.com/streamsuites",
-      thumbnail: "./assets/logos/LOG2-3D-SML.png",
-    },
-    {
-      id: "ss-4412",
-      title: "Platform badge routing demo",
-      creator: "Internal QA",
-      platform: "Twitter",
-      status: "Published",
-      duration: "02:16",
-      url: "https://twitter.com",
-      thumbnail: null,
-    },
-    {
-      id: "yt-0044",
-      title: "Studio feed: Lighting adjustments",
-      creator: "NovaByte",
-      platform: "YouTube",
-      status: "Encoding",
-      duration: "09:34",
-      url: "https://youtube.com/@StreamSuites",
-      thumbnail: null,
-    },
-    {
-      id: "rumble-9011",
-      title: "Creator spotlight: Weekend recap",
-      creator: "Harbor",
-      platform: "Rumble",
-      status: "Published",
-      duration: "04:55",
-      url: "https://rumble.com/streamsuites",
-      thumbnail: null,
-    },
-    {
-      id: "ss-7718",
-      title: "Pipeline health: placeholder ingest",
-      creator: "RelayOps",
-      platform: "Generic",
-      status: "Pending",
-      duration: "06:03",
-      url: "https://example.com",
-      thumbnail: null,
-    },
-  ];
-
   function platformClass(platform = "") {
     const normalized = platform.toLowerCase();
     if (["rumble", "youtube", "twitch", "twitter"].includes(normalized)) return normalized;
     return "generic";
+  }
+
+  function platformIcon(platform = "") {
+    const normalized = platform.toLowerCase();
+    const iconMap = {
+      rumble: "./assets/icons/rumble.svg",
+      youtube: "./assets/icons/youtube.svg",
+      twitch: "./assets/icons/twitch.svg",
+      twitter: "./assets/icons/twitter.svg",
+    };
+    return iconMap[normalized] || "./assets/icons/pilled.svg";
+  }
+
+  function buildAvatar(creator = {}) {
+    const avatar = document.createElement("div");
+    avatar.className = "avatar";
+
+    if (creator.avatar) {
+      avatar.style.backgroundImage = `url(${creator.avatar})`;
+      avatar.style.backgroundSize = "cover";
+      avatar.style.backgroundPosition = "center";
+      avatar.style.border = "1px solid rgba(255, 255, 255, 0.12)";
+    } else {
+      avatar.classList.add("fallback");
+    }
+
+    return avatar;
   }
 
   function renderSkeleton(count = 6) {
@@ -139,9 +83,7 @@
   function buildClipCard(clip) {
     const link = document.createElement("a");
     link.className = "card-link";
-    link.href = clip.url || "#";
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
+    link.href = `./clips/detail.html?id=${encodeURIComponent(clip.id)}`;
 
     const card = document.createElement("article");
     card.className = "card";
@@ -176,7 +118,10 @@
 
     const creator = document.createElement("span");
     creator.className = "creator";
-    creator.innerHTML = `<span class="dot"></span>${clip.creator}`;
+    const avatar = buildAvatar(clip.creator || {});
+    const creatorName = document.createElement("span");
+    creatorName.textContent = clip.creator?.name || clip.creator || "Creator";
+    creator.append(avatar, creatorName);
 
     const divider = document.createElement("span");
     divider.className = "divider";
@@ -184,7 +129,13 @@
 
     const platform = document.createElement("span");
     platform.className = `platform-badge ${platformClass(clip.platform)}`;
-    platform.textContent = clip.platform || "Platform";
+    const platformIconEl = document.createElement("img");
+    platformIconEl.src = platformIcon(clip.platform);
+    platformIconEl.alt = `${clip.platform || "Platform"} icon`;
+    platformIconEl.className = "badge-icon";
+    const platformLabel = document.createElement("span");
+    platformLabel.textContent = (clip.platform || "Platform").toUpperCase();
+    platform.append(platformIconEl, platformLabel);
 
     const status = document.createElement("span");
     const statusClass = (clip.status || "").toLowerCase();
@@ -195,7 +146,7 @@
 
     const footer = document.createElement("div");
     footer.className = "clip-footer";
-    footer.innerHTML = `<span>${clip.id}</span><span>${clip.duration || "—"}</span>`;
+    footer.innerHTML = `<span>${clip.id}</span><span>${clip.date || "—"}</span>`;
 
     body.append(title, metaRow, footer);
     card.append(thumb, body);
@@ -223,6 +174,6 @@
   document.addEventListener("DOMContentLoaded", () => {
     if (!grid) return;
     renderSkeleton(6);
-    requestAnimationFrame(() => renderClips(clips));
+    requestAnimationFrame(() => renderClips(window.publicClips || []));
   });
 })();

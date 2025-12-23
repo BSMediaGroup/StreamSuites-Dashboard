@@ -2,61 +2,6 @@
   const grid = document.getElementById("polls-grid");
   const emptyState = document.getElementById("polls-empty");
 
-  const polls = [
-    {
-      id: "poll-2301",
-      question: "Which creator should premiere next on the main channel?",
-      creator: "NovaByte",
-      status: "Open",
-      timestamp: "Updated 2h ago",
-      options: [
-        { label: "Rumble exclusive", percent: 46 },
-        { label: "Simulcast to YouTube", percent: 38 },
-        { label: "Clip-only release", percent: 16 },
-      ],
-      link: "https://example.com/polls/2301",
-    },
-    {
-      id: "poll-2302",
-      question: "Pick the next chat trigger pack to ship.",
-      creator: "RelayOps",
-      status: "Closed",
-      timestamp: "Closed 1d ago",
-      options: [
-        { label: "Hype + Alerts", percent: 52 },
-        { label: "Supporter CTAs", percent: 31 },
-        { label: "Emote Storm", percent: 17 },
-      ],
-      link: "https://example.com/polls/2302",
-    },
-    {
-      id: "poll-2303",
-      question: "What kind of scoreboard do you want next week?",
-      creator: "Harbor",
-      status: "Open",
-      timestamp: "Updated 4h ago",
-      options: [
-        { label: "Creator vs Creator", percent: 44 },
-        { label: "Chat milestones", percent: 41 },
-        { label: "Platform ladder", percent: 15 },
-      ],
-      link: "https://example.com/polls/2303",
-    },
-    {
-      id: "poll-2304",
-      question: "Select the format for polls recap streams.",
-      creator: "Internal QA",
-      status: "Pending",
-      timestamp: "Queued",
-      options: [
-        { label: "Weekly rollup", percent: 0 },
-        { label: "Creator highlights", percent: 0 },
-        { label: "Rapid-fire Q&A", percent: 0 },
-      ],
-      link: "https://example.com/polls/2304",
-    },
-  ];
-
   function renderSkeleton(count = 4) {
     if (!grid) return;
     grid.innerHTML = "";
@@ -103,9 +48,7 @@
   function buildPollCard(poll) {
     const link = document.createElement("a");
     link.className = "card-link";
-    link.href = poll.link || "#";
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
+    link.href = `./polls/detail.html?id=${encodeURIComponent(poll.id)}`;
 
     const card = document.createElement("article");
     card.className = "card";
@@ -121,7 +64,7 @@
     meta.className = "meta-row";
 
     const creator = document.createElement("span");
-    creator.textContent = poll.creator;
+    creator.textContent = poll.creator?.name || poll.creator || "Creator";
 
     const divider = document.createElement("span");
     divider.className = "divider";
@@ -180,6 +123,6 @@
   document.addEventListener("DOMContentLoaded", () => {
     if (!grid) return;
     renderSkeleton();
-    requestAnimationFrame(() => renderPolls(polls));
+    requestAnimationFrame(() => renderPolls(window.publicPolls || []));
   });
 })();
