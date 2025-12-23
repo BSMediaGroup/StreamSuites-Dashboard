@@ -17,23 +17,21 @@
     <section>
       <h3>Current Phase</h3>
       <p>
-        StreamSuites is a modular automation runtime for multi-platform
-        livestream operations. It favors deterministic, schema-driven
-        automation over platform-native bot UIs and keeps orchestration
-        centralized in the runtime so connectors for Rumble, Twitch, YouTube,
-        and Discord stay coordinated without per-platform divergence.
+        StreamSuites is a modular livestream automation platform anchored by an
+        enforcement-first runtime. The runtime owns all orchestration,
+        scheduling, and quotas so behavior remains deterministic across Rumble,
+        Twitch, YouTube, and Discord without platform-specific drift.
       </p>
       <p>
-        The dashboard you are viewing is deliberately static and read-only. It
-        hydrates from exported JSON bundles, mirrors runtime contracts, and
-        never issues live commands or API calls. Runtime state remains
-        authoritative; the dashboard is a separate artifact for visibility and
-        configuration drafting only.
+        The dashboard and public surfaces are configuration- and visibility-
+        driven. They render exported state from the runtime, provide creators a
+        controlled way to author configs, and expose read-only public pages for
+        clips, polls, and tallies without issuing live commands.
       </p>
       <p class="muted">
-        Early-stage / alpha: contracts and exports are still being aligned, the
-        dashboard stays documentation-grade, and runtime drops remain the source
-        of truth for any visible data.
+        The platform is rolling out module by module. Runtime remains
+        authoritative, the dashboard stays static by design, and public pages
+        reflect shipped exports rather than live data pulls.
       </p>
     </section>
 
@@ -46,13 +44,14 @@
         <li>
           <strong>StreamSuites Unified Runtime:</strong>
           Executes automation, enforces limits and quotas, connects to platforms,
-          and remains the sole source of truth for chat triggers, jobs, and live state.
+          and remains the sole source of truth for triggers, jobs, and livestream state.
         </li>
         <li>
           <strong>StreamSuites Dashboard (this repo):</strong>
           Static HTML/CSS/JS that runs in-browser, stores configuration locally,
           and visualizes runtime-exported state. No backend calls or live control
-          paths are present.
+          paths are present; public galleries for clips, polls, and tallies are
+          read-only renders of runtime drops.
         </li>
         <li>
           <strong>Platform Clients:</strong>
@@ -64,6 +63,8 @@
       <p class="muted">
         Configuration, enforcement, observability, and execution are intentionally
         decoupled to preserve safety, auditability, and deterministic behavior.
+        Public surfaces remain read-only while runtime-side enforcement continues
+        to expand.
       </p>
     </section>
 
@@ -75,7 +76,7 @@
       <ul class="ss-list">
         <li>Rumble chat now uses the canonical SSE endpoint: <code>https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream</code>.</li>
         <li>SSE stream emits <code>init</code> and <code>messages</code> events for reliable, scalable ingestion.</li>
-        <li>Runtime export alignment is in progress; dashboard hydration will follow once JSON snapshots are published.</li>
+        <li>Runtime exports are published and feed the dashboard plus public chat-facing views.</li>
         <li>Dashboard language stays neutral to polling vs SSE and renders runtime-exported state only.</li>
       </ul>
       <p class="muted">
@@ -93,6 +94,7 @@
       <ul class="ss-list">
         <li>High-level storage status and configuration counts</li>
         <li>Snapshot visibility for creators, triggers, jobs, limits, and platform telemetry when a runtime snapshot is present</li>
+        <li>Read-only public galleries for clips, polls, and tallies with detail pages driven by runtime exports</li>
       </ul>
 
       <h4>Creators</h4>
@@ -107,6 +109,7 @@
       <ul class="ss-list">
         <li>Define trigger phrases, match modes, responses, and cooldowns</li>
         <li>Import and export trigger definitions</li>
+        <li>Runtime-aligned exports back public surfaces without allowing live chat control from the dashboard</li>
       </ul>
 
       <h4>Jobs</h4>
@@ -116,7 +119,7 @@
 
       <h4>Placeholder & Scaffolded Modules</h4>
       <ul class="ss-list">
-        <li>Clips, Polls, Rate Limits, Settings, Chat Replay</li>
+        <li>Clips, Polls, Tallies, Rate Limits, Settings, Chat Replay</li>
         <li>Platform views for Rumble, YouTube, Twitch, Twitter, Discord (static visibility only)</li>
         <li>Settings view now binds platform toggles and telemetry flags to <code>platforms.json</code></li>
       </ul>
@@ -130,7 +133,7 @@
       <ul class="ss-list">
         <li>No live platform connectivity from the dashboard; runtime exports remain authoritative.</li>
         <li>No authentication, permissions, or role gating in this phase.</li>
-        <li>Chat Replay, Rate Limits, Clips, and Polls are UI placeholders pending runtime support.</li>
+        <li>Public pages for clips, polls, and tallies remain read-only; runtime mechanics continue to expand behind them.</li>
         <li>Platform pages are read-only scaffolds; they do not initiate API calls or bot actions.</li>
         <li>No backend APIs or live data bindings are assumed or invoked.</li>
       </ul>
@@ -206,8 +209,9 @@
       <h3>Project Status</h3>
       <p>
         The dashboard tracks the StreamSuites runtime but does not replace it.
-        Runtime contracts for jobs, triggers, and quotas are now stabilized,
-        enabling future hydration without UI restructuring.
+        Runtime contracts for jobs, triggers, quotas, clips, polls, and tallies
+        are being exported incrementally so public pages can render without UI
+        restructuring or live control paths.
       </p>
     </section>
 
@@ -217,12 +221,12 @@
     <section>
       <h3>Roadmap Updates</h3>
       <ul class="ss-list">
-        <li><strong>Rumble Chat:</strong> ARCHITECTURE SOLVED via SSE; awaiting runtime snapshot export.</li>
-        <li><strong>Twitch Chat:</strong> In progress/planned; runtime IRC foundation continues.</li>
-        <li><strong>YouTube Chat:</strong> Planned; scaffold exists, hydration depends on runtime exports.</li>
-        <li><strong>Cross-platform Chat Abstraction:</strong> Planned; will follow once platform feeds are normalized.</li>
+        <li><strong>Rumble Chat:</strong> ARCHITECTURE SOLVED via SSE; exports aligned with the runtime and ready for dashboard hydration.</li>
+        <li><strong>Twitch Chat:</strong> IRC-based runtime plumbing in progress; exports will follow once quotas and enforcement land.</li>
+        <li><strong>YouTube Chat:</strong> Scaffolded with defined message mapping; awaiting stabilized exports.</li>
+        <li><strong>Cross-platform Chat Abstraction:</strong> Draft normalization live; broader enforcement and exports planned.</li>
         <li><strong>Telemetry Export:</strong> Partial — dashboard renders <code>runtime_snapshot.json</code> when provided.</li>
-        <li><strong>Dashboard ↔ Runtime Schema Contract:</strong> In progress — ConfigState now normalizes creators/platforms and exports deterministic bundles.</li>
+        <li><strong>Dashboard ↔ Runtime Schema Contract:</strong> ConfigState aligns creators/platforms and public galleries with deterministic export shapes.</li>
       </ul>
       <p class="muted">
         Progress is intentionally conservative; no live bindings are assumed. Hydration occurs only from shipped or provided JSON.
@@ -485,7 +489,7 @@
       }
     </style>
 
-    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="6.8" title="68% · 65–75% Locked — Contracts stabilized. Runtime behavior considered production-safe barring bug fixes." role="button" tabindex="0">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="7.2" title="72% · 65–75% Locked — Contracts stabilized. Runtime behavior considered production-safe barring bug fixes." role="button" tabindex="0">
       <div class="ss-progress-label">
         <div class="ss-progress-main">
           <span class="ss-progress-title">
@@ -494,7 +498,7 @@
           </span>
         </div>
         <div class="ss-progress-right">
-          <span class="ss-progress-meta">68% · Contracts Locked + Quota Enforcement</span>
+          <span class="ss-progress-meta">72% · Contracts Locked + Quota Enforcement + Exports</span>
           <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
             <span>▸</span>
           </button>
@@ -502,7 +506,7 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">The unified runtime is the automation engine that enforces quotas, schedules jobs, and coordinates platform adapters. Its goal is deterministic execution of the full StreamSuites feature set. Contracts and enforcement are already locked in the runtime; remaining effort is incremental tuning rather than structural rewrites.</p>
+          <p class="muted">The unified runtime is the automation engine that enforces quotas, schedules jobs, and coordinates platform adapters. Its goal is deterministic execution of the full StreamSuites feature set. Contracts and enforcement are locked and now emit the exports that drive public galleries; remaining effort focuses on deeper orchestration and rollout per module.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
@@ -512,7 +516,7 @@
       </div>
     </div>
 
-    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="6.3" title="63% · 55–60% Integrated — Integrated with runtime orchestration, quotas, or control planes. Stable but evolving." role="button" tabindex="0">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="6.6" title="66% · 65–75% Locked — Contracts stabilized. Runtime behavior considered production-safe barring bug fixes." role="button" tabindex="0">
       <div class="ss-progress-label">
         <div class="ss-progress-main">
           <span class="ss-progress-title">
@@ -521,7 +525,7 @@
           </span>
         </div>
         <div class="ss-progress-right">
-          <span class="ss-progress-meta">63% · ConfigState + Telemetry Snapshots</span>
+          <span class="ss-progress-meta">66% · ConfigState + Telemetry Snapshots + Public Galleries</span>
           <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
             <span>▸</span>
           </button>
@@ -529,7 +533,7 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">Admin panels present read-only snapshots for jobs, triggers, quotas, and telemetry in the same shapes the runtime exports. The intent is a reliable visibility layer that stays aligned with ConfigState and telemetry snapshots. It is integrated with the runtime contracts but remains static and non-interactive by design.</p>
+          <p class="muted">Admin panels present read-only snapshots for jobs, triggers, quotas, telemetry, and public galleries in the same shapes the runtime exports. The intent is a reliable visibility layer that stays aligned with ConfigState and telemetry snapshots. It is integrated with the runtime contracts but remains static and non-interactive by design.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
@@ -539,7 +543,7 @@
       </div>
     </div>
 
-    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="4.5" title="45% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete." role="button" tabindex="0">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="5.2" title="52% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete." role="button" tabindex="0">
       <div class="ss-progress-label">
         <div class="ss-progress-main">
           <span class="ss-progress-title">
@@ -548,7 +552,7 @@
           </span>
         </div>
         <div class="ss-progress-right">
-          <span class="ss-progress-meta">45% · Runtime Contracts Available</span>
+          <span class="ss-progress-meta">52% · Runtime Contracts + Export Drafting</span>
           <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
             <span>▸</span>
           </button>
@@ -556,7 +560,7 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">Creator-facing flows surface profiles, platform toggles, and trigger scaffolding in a schema-aligned layout. The vision is to let creators assemble export-ready bundles without touching the runtime directly. The current UI is functional scaffolding tied to the schemas; it renders cleanly but still waits on routine runtime exports for hydration.</p>
+          <p class="muted">Creator-facing flows surface profiles, platform toggles, triggers, and module scaffolding in a schema-aligned layout. The vision is to let creators assemble export-ready bundles without touching the runtime directly. The UI renders cleanly against the latest schemas and now drafts exports for clips, polls, and tallies while waiting on routine runtime drops for hydration.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
@@ -593,7 +597,7 @@
       </div>
     </div>
 
-    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="5.0" title="50% · 40–50% Functional — Architecture solved; runtime export alignment pending." role="button" tabindex="0">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="6.0" title="60% · 55–60% Integrated — Integrated with runtime orchestration, quotas, or control planes. Stable but evolving." role="button" tabindex="0">
       <div class="ss-progress-label">
         <div class="ss-progress-main">
           <span class="ss-progress-title">
@@ -602,7 +606,7 @@
           </span>
         </div>
         <div class="ss-progress-right">
-          <span class="ss-progress-meta">50% · Architecture Solved (SSE) · Export alignment pending</span>
+          <span class="ss-progress-meta">60% · SSE Architecture + Exports Published</span>
           <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
             <span>▸</span>
           </button>
@@ -610,7 +614,7 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">Rumble chat now ingests via the canonical SSE stream with a defined message model. The target is reliable livestream chat handling that exports stable payloads for the dashboard. Runtime ingestion is implemented with the solved architecture, but dashboard hydration still depends on published exports.</p>
+          <p class="muted">Rumble chat now ingests via the canonical SSE stream with a defined message model. The runtime exports stable payloads for dashboards and public pages, and the pipeline is wired into quotas and enforcement. Remaining work focuses on deeper moderation features and extended telemetry.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
@@ -620,7 +624,7 @@
       </div>
     </div>
 
-    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="3.0" title="30% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution." role="button" tabindex="0">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="4.0" title="40% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete." role="button" tabindex="0">
       <div class="ss-progress-label">
         <div class="ss-progress-main">
           <span class="ss-progress-title">
@@ -629,7 +633,7 @@
           </span>
         </div>
         <div class="ss-progress-right">
-          <span class="ss-progress-meta">30% · Foundation + Planned runtime hydration</span>
+          <span class="ss-progress-meta">40% · IRC Foundation + Export Mapping</span>
           <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
             <span>▸</span>
           </button>
@@ -637,7 +641,7 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">The Twitch runtime path is designed around IRC ingestion, trigger matching, and export-ready normalization. It should surface chat state and automation outcomes once finalized. Today it carries foundational schemas and message mapping plans, pending stable exports to drive the dashboard.</p>
+          <p class="muted">The Twitch runtime path is designed around IRC ingestion, trigger matching, and export-ready normalization. It now carries executable ingestion and normalization plans, with exports being shaped to match dashboard and public page expectations. Next steps are quota enforcement parity and richer telemetry.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
@@ -647,7 +651,7 @@
       </div>
     </div>
 
-    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="3.0" title="30% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution." role="button" tabindex="0">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="3.5" title="35% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution." role="button" tabindex="0">
       <div class="ss-progress-label">
         <div class="ss-progress-main">
           <span class="ss-progress-title">
@@ -656,7 +660,7 @@
           </span>
         </div>
         <div class="ss-progress-right">
-          <span class="ss-progress-meta">30% · Scaffold; runtime exports planned</span>
+          <span class="ss-progress-meta">35% · Scaffold + Message Mapping Drafts</span>
           <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
             <span>▸</span>
           </button>
@@ -664,7 +668,7 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">YouTube support is scoped to ingest live chat, align payloads with runtime schemas, and export snapshots the dashboard can render. The end-state is parity with other platforms for triggers and moderation surfaces. Current progress is scaffold-only with defined JSON shapes and UI shells awaiting runtime drops.</p>
+          <p class="muted">YouTube support is scoped to ingest live chat, align payloads with runtime schemas, and export snapshots the dashboard can render. Message mapping drafts are defined for parity with other platforms. Current progress is scaffold plus partial ingestion paths, awaiting stabilized exports for dashboards.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
@@ -701,7 +705,61 @@
       </div>
     </div>
 
-    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="2.5" title="25% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution." role="button" tabindex="0">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="6.0" title="60% · 55–60% Integrated — Integrated with runtime orchestration, quotas, or control planes. Stable but evolving." role="button" tabindex="0">
+      <div class="ss-progress-label">
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/automation.svg');"></span>
+            Chat Triggers
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">60% · Enforcement + Exported Responses</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">Trigger definitions run inside the runtime with deterministic matching, quotas, and cooldown enforcement. Exports now include trigger catalogs and response shapes that the dashboard and public pages render read-only. Next steps focus on broader platform parity and expanded moderation actions.</p>
+        </div>
+      </div>
+      <div class="ss-skill-wrapper">
+        <div class="ss-skill-track">
+          <div class="ss-skill-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="3.5" title="35% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution." role="button" tabindex="0">
+      <div class="ss-progress-label">
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/widget.svg');"></span>
+            Scoreboards
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">35% · Export Shapes + Gallery Shells</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">Scoreboards aggregate trigger and interaction outputs into public-facing leaderboards. Export shapes and UI shells exist, and galleries render read-only snapshots when runtime drops are present. Runtime-side aggregation and refresh cadence are the remaining steps.</p>
+        </div>
+      </div>
+      <div class="ss-skill-wrapper">
+        <div class="ss-skill-track">
+          <div class="ss-skill-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="3.0" title="30% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution." role="button" tabindex="0">
       <div class="ss-progress-label">
         <div class="ss-progress-main">
           <span class="ss-progress-title">
@@ -710,7 +768,7 @@
           </span>
         </div>
         <div class="ss-progress-right">
-          <span class="ss-progress-meta">25% · Planned normalization layer</span>
+          <span class="ss-progress-meta">30% · Normalization Drafts + Export Targets</span>
           <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
             <span>▸</span>
           </button>
@@ -728,7 +786,7 @@
       </div>
     </div>
 
-    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="2.0" title="20% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution." role="button" tabindex="0">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="3.0" title="30% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution." role="button" tabindex="0">
       <div class="ss-progress-label">
         <div class="ss-progress-main">
           <span class="ss-progress-title">
@@ -737,7 +795,7 @@
           </span>
         </div>
         <div class="ss-progress-right">
-          <span class="ss-progress-meta">20% · Planned runtime health export</span>
+          <span class="ss-progress-meta">30% · Draft Health + Quota Exports</span>
           <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
             <span>▸</span>
           </button>
@@ -755,7 +813,7 @@
       </div>
     </div>
 
-    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="2.5" title="25% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution." role="button" tabindex="0">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="5.5" title="55% · 55–60% Integrated — Integrated with runtime orchestration, quotas, or control planes. Stable but evolving." role="button" tabindex="0">
       <div class="ss-progress-label">
         <div class="ss-progress-main">
           <span class="ss-progress-title">
@@ -764,7 +822,7 @@
           </span>
         </div>
         <div class="ss-progress-right">
-          <span class="ss-progress-meta">25% · Planned contract lock once exports publish</span>
+          <span class="ss-progress-meta">55% · Deterministic Exports + Public Gallery Alignment</span>
           <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
             <span>▸</span>
           </button>
@@ -772,7 +830,7 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">The schema contract defines exactly how the dashboard consumes exported JSON for creators, platforms, and telemetry. It should guarantee deterministic imports/exports once finalized. Current work aligns ConfigState with runtime expectations, with final locking pending published export shapes.</p>
+          <p class="muted">The schema contract defines exactly how the dashboard consumes exported JSON for creators, platforms, public galleries, and telemetry. It now guarantees deterministic imports/exports for current modules and keeps expanding alongside new runtime drops.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
@@ -782,7 +840,7 @@
       </div>
     </div>
 
-    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="3.0" title="30% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution." role="button" tabindex="0">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="3.5" title="35% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution." role="button" tabindex="0">
       <div class="ss-progress-label">
         <div class="ss-progress-main">
           <span class="ss-progress-title">
@@ -791,7 +849,7 @@
           </span>
         </div>
         <div class="ss-progress-right">
-          <span class="ss-progress-meta">30% · Runtime signals available</span>
+          <span class="ss-progress-meta">35% · Runtime Signals + Export Shapes</span>
           <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
             <span>▸</span>
           </button>
@@ -836,7 +894,7 @@
       </div>
     </div>
 
-    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="4.8" title="48% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete." role="button" tabindex="0">
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="6.2" title="62% · 55–60% Integrated — Integrated with runtime orchestration, quotas, or control planes. Stable but evolving." role="button" tabindex="0">
       <div class="ss-progress-label">
         <div class="ss-progress-main">
           <span class="ss-progress-title">
@@ -845,7 +903,7 @@
           </span>
         </div>
         <div class="ss-progress-right">
-          <span class="ss-progress-meta">48% · Runtime clipping (alpha)</span>
+          <span class="ss-progress-meta">62% · Runtime Clipping + Public Gallery</span>
           <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
             <span>▸</span>
           </button>
@@ -853,7 +911,61 @@
       </div>
       <div class="ss-skill-description" aria-hidden="true">
         <div class="ss-skill-description-inner">
-          <p class="muted">The clips module automates livestream clipping, encodes segments with FFmpeg inside the runtime, and marches each clip through deterministic lifecycle states. Finished clips upload to the default StreamSuites Rumble channel today; future paid tiers will let operators set custom destinations. The dashboard surfaces every clip, including queued, pending, and failed jobs, reflecting runtime truth. Current state: implemented in the runtime, visible in the dashboard, early-stage alpha quality, and expected to iterate.</p>
+          <p class="muted">The clips module automates livestream clipping, encodes segments with FFmpeg inside the runtime, and marches each clip through deterministic lifecycle states. Finished clips upload to the default StreamSuites Rumble channel today with exports that power dashboard and public gallery/detail pages. Current state: implemented in the runtime, visible across dashboard and public surfaces, with destination flexibility and moderation tooling still expanding.</p>
+        </div>
+      </div>
+      <div class="ss-skill-wrapper">
+        <div class="ss-skill-track">
+          <div class="ss-skill-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="5.8" title="58% · 55–60% Integrated — Integrated with runtime orchestration, quotas, or control planes. Stable but evolving." role="button" tabindex="0">
+      <div class="ss-progress-label">
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/widget.svg');"></span>
+            Polls Module
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">58% · Runtime Polling + Public Gallery</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">Polls execute in the runtime with strict quotas and deterministic close conditions. Dashboard and public pages show read-only ballots, results, and detail pages sourced from runtime exports. Remaining work focuses on broader platform coverage, richer scheduling, and export cadence tuning.</p>
+        </div>
+      </div>
+      <div class="ss-skill-wrapper">
+        <div class="ss-skill-track">
+          <div class="ss-skill-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="4.2" title="42% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete." role="button" tabindex="0">
+      <div class="ss-progress-label">
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/widget.svg');"></span>
+            Tallies Module
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">42% · Aggregation + Public Gallery</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">Tallies are programmatic, chat-driven aggregations (not direct votes) that bucket counts over weekly, monthly, or custom windows. Public gallery and detail pages are live and read-only, driven by runtime exports. Runtime-side mechanics for scheduled aggregation, triggers, and enforcement are underway.</p>
         </div>
       </div>
       <div class="ss-skill-wrapper">
