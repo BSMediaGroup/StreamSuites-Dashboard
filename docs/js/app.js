@@ -499,6 +499,7 @@ registerView("clips", {
   }
 });
 registerView("polls", {});
+registerView("tallies", {});
 registerView("scoreboards", {});
 registerView("scoreboard-management", {
   templatePath: "scoreboard-management"

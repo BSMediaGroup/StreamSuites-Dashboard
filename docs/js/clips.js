@@ -89,6 +89,18 @@
     );
   }
 
+  function resolveDestinationUrl(clip) {
+    const dest = clip?.destination || {};
+    return (
+      dest.channel_url ||
+      dest.url ||
+      dest.link ||
+      clip?.destination_url ||
+      clip?.destination_link ||
+      null
+    );
+  }
+
   function formatDestination(clip) {
     const dest = clip?.destination || {};
     const platform =
@@ -131,7 +143,17 @@
         const tr = document.createElement("tr");
 
         const tdId = document.createElement("td");
-        tdId.textContent = clip?.clip_id || clip?.id || "—";
+        const clipId = clip?.clip_id || clip?.id || null;
+        if (clipId) {
+          const link = document.createElement("a");
+          link.href = `./clips/detail.html?id=${encodeURIComponent(clipId)}`;
+          link.target = "_blank";
+          link.rel = "noopener";
+          link.textContent = clipId;
+          tdId.appendChild(link);
+        } else {
+          tdId.textContent = "—";
+        }
         tr.appendChild(tdId);
 
         const tdTitle = document.createElement("td");
@@ -166,7 +188,18 @@
         tr.appendChild(tdUpdated);
 
         const tdDestination = document.createElement("td");
-        tdDestination.textContent = formatDestination(clip);
+        const destinationLabel = formatDestination(clip);
+        const destinationUrl = resolveDestinationUrl(clip);
+        if (destinationUrl) {
+          const link = document.createElement("a");
+          link.href = destinationUrl;
+          link.target = "_blank";
+          link.rel = "noopener";
+          link.textContent = destinationLabel;
+          tdDestination.appendChild(link);
+        } else {
+          tdDestination.textContent = destinationLabel;
+        }
         tr.appendChild(tdDestination);
 
         els.tableBody.appendChild(tr);

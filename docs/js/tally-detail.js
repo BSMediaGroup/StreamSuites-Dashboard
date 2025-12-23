@@ -1,17 +1,19 @@
 (() => {
   const params = new URLSearchParams(window.location.search);
-  const pollId = params.get("id");
-  const poll = window.publicPollMap?.[pollId] || (window.publicPolls || [])[0];
+  const tallyId = params.get("id");
+  const tally = window.publicTallyMap?.[tallyId] || (window.publicTallies || [])[0];
   const defaultPalette = ["#8cc736", "#ffae00", "#5bc0de", "#7e03aa"];
+  const defaultLogoPath = "../assets/logos/logocircle.png";
 
-  const metaEl = document.getElementById("poll-meta");
-  const voteListEl = document.getElementById("vote-list");
-  const timestampsEl = document.getElementById("poll-timestamps");
-  const titleEl = document.getElementById("poll-title");
-  const subtitleEl = document.getElementById("poll-subtitle");
+  const metaEl = document.getElementById("tally-meta");
+  const tallyListEl = document.getElementById("tally-list");
+  const timestampsEl = document.getElementById("tally-timestamps");
+  const titleEl = document.getElementById("tally-title");
+  const subtitleEl = document.getElementById("tally-subtitle");
   const vizToggleButtons = document.querySelectorAll(".viz-toggle-btn");
   const vizViews = document.querySelectorAll(".viz-view");
   const pieLegend = document.getElementById("pie-legend");
+  const customLegend = document.getElementById("custom-legend");
   const barRows = document.getElementById("bar-rows");
   const interactivePies = document.querySelectorAll(".interactive-pie");
   const colorToggle = document.getElementById("color-toggle");
@@ -21,10 +23,11 @@
   const maximizeToggle = document.getElementById("maximize-toggle");
   const visualizationPanel = document.querySelector(".visualization-panel");
   const vizOverlay = document.getElementById("viz-overlay");
+  const customLogoImg = document.getElementById("custom-pie-logo");
 
-  if (!poll) {
-    if (titleEl) titleEl.textContent = "Poll not found";
-    if (subtitleEl) subtitleEl.textContent = "The requested poll ID is unavailable. Please return to the polls grid.";
+  if (!tally) {
+    if (titleEl) titleEl.textContent = "Tally not found";
+    if (subtitleEl) subtitleEl.textContent = "The requested tally ID is unavailable. Please return to the tallies grid.";
     return;
   }
 
@@ -40,10 +43,10 @@
     return `#${hex.toLowerCase()}`;
   };
 
-  const getColor = (option, index) => {
-    const normalized = normalizeHex(option.color);
+  const getColor = (entry, index) => {
+    const normalized = normalizeHex(entry.color);
     const resolved = normalized || defaultPalette[index % defaultPalette.length];
-    option.color = resolved;
+    entry.color = resolved;
     return resolved;
   };
 
@@ -56,6 +59,19 @@
     const b = parseInt(isShort ? normalized[2] + normalized[2] : normalized.substring(4, 6), 16);
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   };
+
+  function setCustomLogo() {
+    if (!customLogoImg) return;
+    const fallbackUrl = new URL(defaultLogoPath, window.location.href).toString();
+    const customLogo = tally.centerLogo || tally.customLogo || window.customPieLogo || window.streamSuitesCustomLogo || defaultLogoPath;
+    customLogoImg.src = customLogo;
+    customLogoImg.alt = tally.creator?.name ? `${tally.creator.name} logo` : "StreamSuites logo";
+    customLogoImg.onerror = () => {
+      if (customLogoImg.src !== fallbackUrl) {
+        customLogoImg.src = fallbackUrl;
+      }
+    };
+  }
 
   function buildAvatar(creator = {}) {
     const avatar = document.createElement("div");
@@ -77,7 +93,7 @@
 
     const creatorRow = document.createElement("div");
     creatorRow.className = "creator";
-    creatorRow.append(buildAvatar(poll.creator || {}), document.createTextNode(poll.creator?.name || "Creator"));
+    creatorRow.append(buildAvatar(tally.creator || {}), document.createTextNode(tally.creator?.name || "Creator"));
 
     const statusRow = document.createElement("div");
     statusRow.className = "meta-row";
@@ -85,31 +101,32 @@
     statusLabel.className = "label";
     statusLabel.textContent = "Status";
     const statusChip = document.createElement("span");
-    statusChip.className = `poll-status ${(poll.status || "").toLowerCase()}`;
-    statusChip.textContent = poll.status || "Pending";
+    statusChip.className = `poll-status ${(tally.status || "").toLowerCase()}`;
+    statusChip.textContent = tally.status || "Pending";
     statusRow.append(statusLabel, statusChip);
 
     const idRow = document.createElement("div");
     idRow.className = "meta-row";
-    idRow.innerHTML = `<span class="label">Poll ID</span> <span>${poll.id}</span>`;
+    idRow.innerHTML = `<span class="label">Tally ID</span> <span>${tally.id}</span>`;
 
     metaEl.append(creatorRow, statusRow, idRow);
   }
 
-  function renderVotes() {
-    if (!voteListEl) return;
-    voteListEl.innerHTML = "";
+  function renderEntries() {
+    if (!tallyListEl) return;
+    tallyListEl.innerHTML = "";
 
-    (poll.options || []).forEach((option) => {
+    (tally.entries || []).forEach((entry) => {
       const li = document.createElement("li");
       li.className = "vote-item";
       const label = document.createElement("strong");
-      label.textContent = option.label;
+      label.textContent = entry.label;
       const meta = document.createElement("span");
       meta.className = "timestamp";
-      meta.textContent = `${option.percent}% • ${option.votes || 0} votes`;
+      const votesLabel = entry.count != null ? `${entry.count} counts` : `${entry.votes || 0} votes`;
+      meta.textContent = `${entry.percent}% • ${votesLabel}`;
       li.append(label, meta);
-      voteListEl.appendChild(li);
+      tallyListEl.appendChild(li);
     });
   }
 
@@ -120,14 +137,14 @@
     const buildLegend = (targetEl) => {
       if (!targetEl) return;
       targetEl.innerHTML = "";
-      (poll.options || []).slice(0, 3).forEach((option, index) => {
+      (tally.entries || []).slice(0, 3).forEach((entry, index) => {
         const item = document.createElement("div");
         item.className = "pie-legend-item";
         const swatch = document.createElement("span");
         swatch.className = `pie-swatch ${swatches[index] || "primary"}`;
-        swatch.style.background = getColor(option, index);
+        swatch.style.background = getColor(entry, index);
         const label = document.createElement("span");
-        label.textContent = `${option.label} • ${option.percent}%`;
+        label.textContent = `${entry.label} • ${entry.percent}%`;
         item.append(swatch, label);
         targetEl.appendChild(item);
       });
@@ -136,35 +153,36 @@
     const buildBars = () => {
       if (!barRows) return;
       barRows.innerHTML = "";
-      (poll.options || []).forEach((option, index) => {
+      (tally.entries || []).forEach((entry, index) => {
         const row = document.createElement("div");
         row.className = "bar-row";
         const label = document.createElement("div");
         label.className = "bar-label";
-        label.textContent = `${option.label}`;
+        label.textContent = `${entry.label}`;
         const meter = document.createElement("div");
         meter.className = "bar-meter";
         const fill = document.createElement("span");
-        const baseColor = getColor(option, index);
-        fill.style.width = `${option.percent}%`;
+        const baseColor = getColor(entry, index);
+        fill.style.width = `${entry.percent}%`;
         fill.style.background = `linear-gradient(90deg, ${baseColor}, ${baseColor})`;
         fill.style.boxShadow = `0 8px 20px ${toRgba(baseColor, 0.25)}`;
         meter.appendChild(fill);
         const meta = document.createElement("div");
         meta.className = "bar-meta";
-        meta.textContent = `${option.percent}% • ${option.votes || 0} votes`;
+        const votesLabel = entry.count != null ? `${entry.count} counts` : `${entry.votes || 0} votes`;
+        meta.textContent = `${entry.percent}% • ${votesLabel}`;
         row.append(label, meter, meta);
         barRows.appendChild(row);
       });
     };
 
     const buildPieGradients = () => {
-      const options = poll.options || [];
-      const totalPercent = options.reduce((acc, opt) => acc + (opt.percent || 0), 0);
+      const entries = tally.entries || [];
+      const totalPercent = entries.reduce((acc, opt) => acc + (opt.percent || 0), 0);
       const useTotal = totalPercent > 0 ? totalPercent : 100;
-      const slices = options.length || 1;
+      const slices = entries.length || 1;
       let start = 0;
-      const stops = options.map((opt, idx) => {
+      const stops = entries.map((opt, idx) => {
         const percent = totalPercent > 0 ? opt.percent : 100 / slices;
         const end = start + (percent / useTotal) * 360;
         const color = getColor(opt, idx);
@@ -183,6 +201,7 @@
     };
 
     buildLegend(pieLegend);
+    buildLegend(customLegend);
     buildBars();
     buildPieGradients();
   }
@@ -190,8 +209,8 @@
   function buildColorControls() {
     if (!colorPanelBody) return;
     colorPanelBody.innerHTML = "";
-    const options = poll.options || [];
-    if (!options.length) {
+    const entries = tally.entries || [];
+    if (!entries.length) {
       const empty = document.createElement("span");
       empty.className = "timestamp";
       empty.textContent = "No slice colors available yet.";
@@ -199,15 +218,15 @@
       return;
     }
 
-    options.forEach((option, index) => {
-      let resolvedColor = getColor(option, index);
+    entries.forEach((entry, index) => {
+      let resolvedColor = getColor(entry, index);
       const row = document.createElement("div");
       row.className = "color-row";
 
       const labelWrap = document.createElement("div");
       labelWrap.className = "color-label";
       const label = document.createElement("span");
-      label.textContent = option.label;
+      label.textContent = entry.label;
       const swatch = document.createElement("span");
       swatch.className = "color-swatch";
       swatch.style.background = resolvedColor;
@@ -227,7 +246,7 @@
       const applyColor = (value) => {
         const normalized = normalizeHex(value) || resolvedColor;
         resolvedColor = normalized;
-        option.color = normalized;
+        entry.color = normalized;
         picker.value = normalized;
         hexInput.value = normalized;
         swatch.style.background = normalized;
@@ -404,17 +423,21 @@
     });
   }
 
-  if (titleEl) titleEl.textContent = poll.question || "Creator poll";
-  if (subtitleEl) subtitleEl.textContent = poll.summary || "Community voting details and breakdown.";
+  if (titleEl) titleEl.textContent = tally.title || "Programmatic tally";
+  if (subtitleEl) {
+    const description = tally.summary || "Aggregated results refreshed on a cadence.";
+    subtitleEl.textContent = description;
+  }
   if (timestampsEl) {
-    const created = poll.createdAt ? `Created ${poll.createdAt}` : null;
-    const updated = poll.updatedAt ? `Updated ${poll.updatedAt}` : null;
-    const closes = poll.closesAt ? `Closes ${poll.closesAt}` : null;
-    timestampsEl.textContent = [created, updated, closes].filter(Boolean).join(" • ");
+    const windowLabel = tally.window ? `${tally.window}` : null;
+    const refreshed = tally.updatedAt ? `Updated ${tally.updatedAt}` : null;
+    const scope = tally.scope ? `${tally.scope}` : null;
+    timestampsEl.textContent = [windowLabel, refreshed, scope].filter(Boolean).join(" • ");
   }
 
+  setCustomLogo();
   renderMeta();
-  renderVotes();
+  renderEntries();
   renderCharts();
   buildColorControls();
   setActiveView("bar");
