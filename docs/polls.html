@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StreamSuites Polls</title>
+  <meta name="description" content="Public-facing gallery of StreamSuites creator polls and results." />
+  <link rel="icon" href="./favicon.ico" type="image/x-icon" />
+
+  <!-- Shared styles -->
+  <link rel="stylesheet" href="./css/theme-dark.css" />
+  <link rel="stylesheet" href="./css/public-pages.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="public-header">
+      <div class="brand-mark">
+        <img src="./assets/logos/streamsuites.svg" alt="StreamSuites" />
+        <div class="brand-title">
+          <h1>StreamSuites</h1>
+          <div class="brand-subtitle">Public Polls</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="pill">public beta</span>
+        <a class="cta-link" href="./clips.html">View clips</a>
+      </div>
+    </header>
+
+    <section class="page-heading">
+      <h2>Creator Polls</h2>
+      <span class="lede">See what the community is voting on across the StreamSuites network.</span>
+    </section>
+
+    <p class="helper-text">
+      Static poll data for now—live voting and detailed drill-downs will arrive in a later drop.
+    </p>
+
+    <noscript>
+      <div class="empty-state">JavaScript is required to render the polls gallery.</div>
+    </noscript>
+
+    <div id="polls-grid" class="card-grid" aria-live="polite"></div>
+    <div id="polls-empty" class="empty-state" hidden>
+      No polls are available yet. Creators will start posting new questions here soon.
+    </div>
+
+    <footer class="public-footer">
+      <span>StreamSuites™ Media Surface • Polls</span>
+      <a href="./index.html">Creator dashboard</a>
+    </footer>
+  </div>
+
+  <script src="./js/public-polls.js"></script>
+</body>
+</html>
