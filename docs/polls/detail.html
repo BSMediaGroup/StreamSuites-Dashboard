@@ -42,14 +42,40 @@
         </div>
         <div class="detail-body">
           <p id="poll-summary" class="description">Poll overview.</p>
-          <div class="stat-grid">
-            <div class="stat-block">
-              <h4>Bar results</h4>
-              <div class="chart-placeholder" data-chart="bar" aria-hidden="true">Bar chart</div>
+          <div class="visualization-panel">
+            <div class="viz-top">
+              <div class="viz-toggle" role="tablist" aria-label="Select visualization format">
+                <button class="viz-toggle-btn is-active" type="button" data-view="pie" aria-pressed="true">Pie view</button>
+                <button class="viz-toggle-btn" type="button" data-view="bar" aria-pressed="false">Bar view</button>
+                <button class="viz-toggle-btn" type="button" data-view="custom" aria-pressed="false">Custom pie</button>
+              </div>
+              <span class="viz-hint">Switch formats • Drag the pie to rotate.</span>
             </div>
-            <div class="stat-block">
-              <h4>Pie results</h4>
-              <div class="chart-placeholder pie" data-chart="pie" aria-hidden="true">Pie chart</div>
+            <div class="viz-stage" aria-live="polite">
+              <div class="viz-view active" data-view="pie">
+                <div class="pie-shell interactive-pie" data-rotation="0">
+                  <div class="pie-surface" aria-hidden="true"></div>
+                  <div class="pie-center">
+                    <span class="center-title">Pie format</span>
+                    <span class="center-sub">Interactive</span>
+                  </div>
+                </div>
+                <div class="viz-legend" id="pie-legend"></div>
+              </div>
+
+              <div class="viz-view" data-view="bar" hidden>
+                <div class="bar-rows" id="bar-rows"></div>
+              </div>
+
+              <div class="viz-view" data-view="custom" hidden>
+                <div class="pie-shell custom-pie interactive-pie" data-rotation="0">
+                  <div class="pie-surface" aria-hidden="true"></div>
+                  <div class="pie-center logo-center" aria-hidden="true">
+                    <img src="../assets/logos/streamsuites.svg" alt="StreamSuites logo" />
+                  </div>
+                </div>
+                <div class="viz-legend" id="custom-legend"></div>
+              </div>
             </div>
           </div>
         </div>
