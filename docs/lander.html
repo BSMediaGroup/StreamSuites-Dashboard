@@ -79,6 +79,7 @@
       pointer-events: none;
     }
 
+    /* DENSER PARTICLES */
     .particles::before,
     .particles::after {
       content: "";
@@ -86,25 +87,67 @@
       width: 3px;
       height: 3px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.9);
-      filter: blur(0.8px);
+      background: rgba(255,255,255,0.92);
+      filter: blur(0.9px);
       box-shadow:
+        4vw 10vh rgba(255,255,255,0.75),
         8vw 12vh rgba(255,255,255,0.7),
+        10vw 64vh rgba(140,199,54,0.85),
+        12vw 32vh rgba(100,196,255,0.8),
+        14vw 78vh rgba(255,153,0,0.72),
+
         18vw 48vh rgba(140,199,54,0.85),
+        20vw 22vh rgba(255,255,255,0.65),
+        22vw 70vh rgba(100,196,255,0.78),
+        24vw 14vh rgba(255,153,0,0.68),
+
+        28vw 58vh rgba(255,255,255,0.66),
+        30vw 38vh rgba(140,199,54,0.82),
         32vw 28vh rgba(100,196,255,0.85),
+        34vw 80vh rgba(255,153,0,0.74),
+
+        38vw 18vh rgba(255,255,255,0.62),
+        40vw 52vh rgba(140,199,54,0.88),
+        42vw 26vh rgba(100,196,255,0.82),
+        44vw 66vh rgba(255,153,0,0.78),
+
         46vw 62vh rgba(255,153,0,0.8),
+        48vw 34vh rgba(255,255,255,0.62),
+        50vw 74vh rgba(140,199,54,0.84),
+        52vw 16vh rgba(100,196,255,0.8),
+
+        56vw 44vh rgba(255,255,255,0.64),
         58vw 22vh rgba(255,255,255,0.7),
+        60vw 60vh rgba(140,199,54,0.9),
+        62vw 30vh rgba(100,196,255,0.84),
+
+        66vw 18vh rgba(255,153,0,0.7),
         68vw 74vh rgba(140,199,54,0.9),
+        70vw 40vh rgba(255,255,255,0.66),
+        72vw 24vh rgba(100,196,255,0.82),
+
+        74vw 66vh rgba(255,153,0,0.76),
+        76vw 12vh rgba(255,255,255,0.6),
         78vw 36vh rgba(100,196,255,0.85),
-        88vw 58vh rgba(255,153,0,0.85);
+        80vw 80vh rgba(140,199,54,0.86),
+
+        82vw 26vh rgba(255,153,0,0.72),
+        84vw 54vh rgba(255,255,255,0.62),
+        86vw 18vh rgba(100,196,255,0.8),
+        88vw 58vh rgba(255,153,0,0.85),
+
+        90vw 22vh rgba(255,255,255,0.62),
+        92vw 66vh rgba(140,199,54,0.82),
+        94vw 14vh rgba(100,196,255,0.78),
+        96vw 48vh rgba(255,153,0,0.7);
       animation: particleDrift 14s linear infinite;
     }
 
     .particles::after {
       width: 2px;
       height: 2px;
-      opacity: 0.75;
-      filter: blur(1.2px);
+      opacity: 0.78;
+      filter: blur(1.3px);
       animation-duration: 22s;
       animation-direction: reverse;
     }
@@ -189,7 +232,7 @@
     }
 
     /* ===============================
-       CTA BUTTON — FULL WIDTH RESTORED
+       CTA BUTTON — FULL WIDTH
        =============================== */
 
     .cta-primary {
@@ -242,15 +285,30 @@
       text-decoration: none;
     }
 
+    /* ===============================
+       FOOTER — SINGLE LINE, RIGHT-ALIGNED BRAND
+       =============================== */
+
     .footer-links {
       margin-top: 24px;
       padding-top: 16px;
       border-top: 1px solid var(--glass-border);
+
       display: flex;
-      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+
       color: var(--muted);
       font-size: 13px;
+    }
+
+    .footer-links-left {
+      display: inline-flex;
       align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      min-width: 0;
     }
 
     .footer-links a {
@@ -262,18 +320,13 @@
       text-decoration: underline;
     }
 
-    /* ===============================
-       FOOTER BRAND — ALIGNED FIX
-       =============================== */
-
     .footer-brand {
-      position: absolute;
-      right: 20px;
-      top: 50%;
-      transform: translateY(-50%);
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
       font-size: 11px;
-      color: var(--muted);
       opacity: 0.75;
+      flex-shrink: 0;
     }
 
     .footer-brand a {
@@ -284,6 +337,17 @@
     .footer-brand a:hover {
       text-decoration: underline;
       opacity: 1;
+    }
+
+    @media (max-width: 640px) {
+      .footer-links {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .footer-brand {
+        opacity: 0.7;
+      }
     }
   </style>
 </head>
@@ -308,7 +372,7 @@
         Welcome to the StreamSuites dashboard entry point. Runtime owns all execution; this lander keeps the focus on the brand while directing you into the dashboard surfaces. Minimal, cinematic, and purpose-driven.
       </p>
 
-      <a class="cta-primary" href="./home.html">ENTER</a>
+      <a class="cta-primary" href="./home.html">CREATOR DASHBOARD</a>
 
       <div class="cta-secondary-row">
         <a class="cta-secondary" href="./clips.html">/clips</a>
@@ -318,16 +382,18 @@
       </div>
 
       <div class="footer-links">
-        <a href="./support">/support</a>
-        <a href="./developers">/developers</a>
-        <a href="./privacy">/privacy</a>
-        <a href="./about">/about</a>
-      </div>
+        <div class="footer-links-left">
+          <a href="./support">/support</a>
+          <a href="./developers">/developers</a>
+          <a href="./privacy">/privacy</a>
+          <a href="./about">/about</a>
+        </div>
 
-      <div class="footer-brand">
-        <a href="https://brainstream.media" target="_blank" rel="noopener noreferrer">
-          © 2025 Brainstream Media Group
-        </a>
+        <div class="footer-brand">
+          <a href="https://brainstream.media" target="_blank" rel="noopener noreferrer">
+            © 2025 Brainstream Media Group
+          </a>
+        </div>
       </div>
 
     </div>
