@@ -1,0 +1,29 @@
+{
+  "meta": {
+    "schema": "streamsuites.chat_triggers.v1",
+    "note": "Placeholder chat triggers"
+  },
+  "items": [
+    {
+      "phrase": "!promo",
+      "module": "promotions",
+      "creator": "daniel",
+      "enabled": true,
+      "last_fired_at": "2025-01-13T13:10:00Z"
+    },
+    {
+      "phrase": "!hype",
+      "module": "tallies",
+      "creator": "lyra",
+      "enabled": true,
+      "last_fired_at": "2025-01-13T12:55:00Z"
+    },
+    {
+      "phrase": "!commands",
+      "module": "help",
+      "creator": "skyler",
+      "enabled": false,
+      "last_fired_at": "2025-01-10T07:00:00Z"
+    }
+  ]
+}

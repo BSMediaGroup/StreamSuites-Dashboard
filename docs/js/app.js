@@ -502,7 +502,13 @@ registerView("polls", {});
 registerView("tallies", {});
 registerView("scoreboards", {});
 registerView("data-signals", {
-  templatePath: "data-signals"
+  templatePath: "data-signals",
+  onLoad: () => {
+    window.DataSignalsView?.init?.();
+  },
+  onUnload: () => {
+    window.DataSignalsView?.destroy?.();
+  }
 });
 registerView("rumble", {
   templatePath: "platforms/rumble"

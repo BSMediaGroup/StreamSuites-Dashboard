@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "schema": "streamsuites.tally_events.v1",
+    "note": "Placeholder tally increments"
+  },
+  "items": [
+    {
+      "timestamp": "2025-01-13T13:08:00Z",
+      "type": "tally_increment",
+      "source": "discord",
+      "tally_id": "tally-01",
+      "increment": 4,
+      "summary": "Discord reaction bundle +4"
+    },
+    {
+      "timestamp": "2025-01-13T12:55:00Z",
+      "type": "tally_increment",
+      "source": "twitch",
+      "tally_id": "tally-03",
+      "increment": 2,
+      "summary": "Hype train tier 2 reached"
+    },
+    {
+      "timestamp": "2025-01-13T12:25:00Z",
+      "type": "tally_increment",
+      "source": "rumble",
+      "tally_id": "tally-02",
+      "increment": 1,
+      "summary": "Bug report acknowledged"
+    }
+  ]
+}

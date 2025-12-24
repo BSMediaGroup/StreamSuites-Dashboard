@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "schema": "streamsuites.tallies.v1",
+    "note": "Placeholder tally exports"
+  },
+  "items": [
+    {
+      "id": "tally-01",
+      "name": "Chat cheers",
+      "state": "live",
+      "creator": "daniel",
+      "created_at": "2025-01-10T12:00:00Z",
+      "updated_at": "2025-01-12T15:00:00Z",
+      "public": true
+    },
+    {
+      "id": "tally-02",
+      "name": "Bug reports triage",
+      "state": "archived",
+      "creator": "skyler",
+      "created_at": "2025-01-07T08:00:00Z",
+      "updated_at": "2025-01-09T09:00:00Z",
+      "public": false
+    },
+    {
+      "id": "tally-03",
+      "name": "Hype train",
+      "state": "live",
+      "creator": "lyra",
+      "created_at": "2025-01-13T03:00:00Z",
+      "updated_at": "2025-01-13T03:30:00Z",
+      "public": true
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "schema": "streamsuites.scoreboards.v1",
+    "note": "Placeholder scoreboard exports"
+  },
+  "items": [
+    {
+      "id": "score-01",
+      "name": "Daily engagement",
+      "state": "active",
+      "creator": "daniel",
+      "created_at": "2025-01-05T10:00:00Z",
+      "updated_at": "2025-01-12T09:00:00Z",
+      "public": true
+    },
+    {
+      "id": "score-02",
+      "name": "Twitch vs YouTube",
+      "state": "active",
+      "creator": "skyler",
+      "created_at": "2025-01-08T12:00:00Z",
+      "updated_at": "2025-01-11T15:00:00Z",
+      "public": true
+    },
+    {
+      "id": "score-03",
+      "name": "Onboarding tasks",
+      "state": "paused",
+      "creator": "lyra",
+      "created_at": "2025-01-09T07:00:00Z",
+      "updated_at": "2025-01-10T07:45:00Z",
+      "public": false
+    }
+  ]
+}

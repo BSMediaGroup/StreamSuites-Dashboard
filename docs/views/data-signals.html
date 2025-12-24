@@ -1,5 +1,5 @@
 <!-- ========================================================= -->
-<!-- StreamSuites — Data & Signals (VIEW PARTIAL) -->
+<!-- StreamSuites — Data & Signals (VIEW) -->
 <!-- Read-only runtime visibility + export posture -->
 <!-- ========================================================= -->
 
@@ -8,44 +8,42 @@
     <h1 class="ss-title">StreamSuites</h1>
     <span class="ss-subtitle">Data &amp; Signals</span>
   </div>
+  <div class="ss-header-right">
+    <span class="ss-chip">Read-only</span>
+    <span class="ss-chip">Runtime authoritative</span>
+  </div>
 </header>
 
 <main class="ss-main">
-
   <section class="ss-panel">
     <header class="ss-panel-header">
       <div class="ss-panel-header-main">
         <h2>Runtime-owned, dashboard-visible</h2>
+        <p class="muted">Visibility-first CMS surface powered by exported JSON snapshots.</p>
       </div>
     </header>
     <div class="ss-panel-body">
-      <p class="muted">
-        This surface exposes the runtime's authoritative data snapshots and signal
-        feeds. Execution, mutation, and publishing are runtime-owned; the
-        dashboard exists purely for visibility, context, and configuration
-        readiness. Use this page in place of a traditional CMS UI — the runtime
-        remains the system of record.
-      </p>
-      <div class="ss-grid two-cols" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;align-items:start;">
+      <div class="ss-grid two-cols" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;align-items:start;">
         <div class="ss-tile">
-          <h3>Read-only posture</h3>
+          <h3>Runtime remains the source of truth</h3>
           <p class="muted">
-            No write paths are exposed here. Entities and signals are rendered as
-            placeholders until wired to live exports.
+            All entities, signals, and admin records hydrate from exported runtime
+            artifacts located in <code>docs/data/</code>. No edits are allowed and
+            no write-back paths exist.
           </p>
         </div>
         <div class="ss-tile">
-          <h3>Runtime authority</h3>
+          <h3>Dashboard is inspection-only</h3>
           <p class="muted">
-            Scheduling, ingestion, and export pipelines run in the runtime.
-            Dashboard surfaces remain informational and non-interactive.
+            Use this page as a read-only CMS and observability layer. Client-side
+            pagination and search are provided for faster audit workflows.
           </p>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="ss-panel">
+  <section class="ss-panel" id="entities-panel">
     <header class="ss-panel-header">
       <div class="ss-panel-header-main">
         <h2>Entities</h2>
@@ -53,100 +51,360 @@
       </div>
     </header>
     <div class="ss-panel-body">
-      <div class="ss-grid two-cols" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;align-items:stretch;">
-        <div class="ss-tile">
-          <h3>Clips</h3>
-          <ul class="ss-list muted">
-            <li>Total count: <strong>—</strong> (placeholder)</li>
-            <li>Current states: <strong>draft / queued / published</strong> (placeholder)</li>
-            <li>Last updated: <strong>—</strong> (placeholder)</li>
-            <li>Export status: <strong>Internal visibility</strong></li>
-          </ul>
+      <div class="table-toolbar">
+        <div class="muted">Search and pagination are client-side; runtime exports stay canonical.</div>
+        <div id="entities-count" class="muted"></div>
+      </div>
+      <div class="ss-tablist" data-tab-group="entities">
+        <button class="ss-tab" data-tab-target="entities-clips" aria-selected="true">Clips</button>
+        <button class="ss-tab" data-tab-target="entities-polls">Polls</button>
+        <button class="ss-tab" data-tab-target="entities-tallies">Tallies</button>
+        <button class="ss-tab" data-tab-target="entities-scoreboards">Scoreboards</button>
+      </div>
+
+      <div class="ss-tabpanel active" data-tab="entities-clips">
+        <div class="table-toolbar">
+          <input type="search" id="clips-search" class="ss-input" placeholder="Search clips by id, title, creator, or state" />
+          <span class="muted" id="clips-count">Loading…</span>
         </div>
-        <div class="ss-tile">
-          <h3>Polls</h3>
-          <ul class="ss-list muted">
-            <li>Total count: <strong>—</strong> (placeholder)</li>
-            <li>Current states: <strong>open / closed</strong> (placeholder)</li>
-            <li>Last updated: <strong>—</strong> (placeholder)</li>
-            <li>Export status: <strong>Public results</strong></li>
-          </ul>
+        <table class="ss-table ss-table-compact" id="clips-table">
+          <thead>
+            <tr>
+              <th data-sort="id">ID</th>
+              <th data-sort="title">Title</th>
+              <th data-sort="state">State</th>
+              <th data-sort="creator">Creator</th>
+              <th data-sort="created_at">Created</th>
+              <th data-sort="updated_at">Updated</th>
+              <th data-sort="public">Public</th>
+            </tr>
+          </thead>
+          <tbody id="clips-table-body"></tbody>
+        </table>
+        <div class="muted hidden" id="clips-empty">No clips exported yet.</div>
+        <div class="pager" id="clips-pagination"></div>
+      </div>
+
+      <div class="ss-tabpanel" data-tab="entities-polls">
+        <div class="table-toolbar">
+          <input type="search" id="polls-search" class="ss-input" placeholder="Search polls by id, question, creator, or state" />
+          <span class="muted" id="polls-count">Loading…</span>
         </div>
-        <div class="ss-tile">
-          <h3>Tallies</h3>
-          <ul class="ss-list muted">
-            <li>Total count: <strong>—</strong> (placeholder)</li>
-            <li>Current states: <strong>live / archived</strong> (placeholder)</li>
-            <li>Last updated: <strong>—</strong> (placeholder)</li>
-            <li>Export status: <strong>Internal + public rollups</strong></li>
-          </ul>
+        <table class="ss-table ss-table-compact" id="polls-table">
+          <thead>
+            <tr>
+              <th data-sort="id">ID</th>
+              <th data-sort="title">Question</th>
+              <th data-sort="state">State</th>
+              <th data-sort="creator">Creator</th>
+              <th data-sort="created_at">Created</th>
+              <th data-sort="updated_at">Updated</th>
+              <th data-sort="public">Public</th>
+            </tr>
+          </thead>
+          <tbody id="polls-table-body"></tbody>
+        </table>
+        <div class="muted hidden" id="polls-empty">No polls exported yet.</div>
+        <div class="pager" id="polls-pagination"></div>
+      </div>
+
+      <div class="ss-tabpanel" data-tab="entities-tallies">
+        <div class="table-toolbar">
+          <input type="search" id="tallies-search" class="ss-input" placeholder="Search tallies by id, name, creator, or state" />
+          <span class="muted" id="tallies-count">Loading…</span>
         </div>
-        <div class="ss-tile">
-          <h3>Scoreboards</h3>
-          <ul class="ss-list muted">
-            <li>Total count: <strong>—</strong> (placeholder)</li>
-            <li>Current states: <strong>active / paused</strong> (placeholder)</li>
-            <li>Last updated: <strong>—</strong> (placeholder)</li>
-            <li>Export status: <strong>Public overlays</strong></li>
-          </ul>
+        <table class="ss-table ss-table-compact" id="tallies-table">
+          <thead>
+            <tr>
+              <th data-sort="id">ID</th>
+              <th data-sort="name">Name</th>
+              <th data-sort="state">State</th>
+              <th data-sort="creator">Creator</th>
+              <th data-sort="created_at">Created</th>
+              <th data-sort="updated_at">Updated</th>
+              <th data-sort="public">Public</th>
+            </tr>
+          </thead>
+          <tbody id="tallies-table-body"></tbody>
+        </table>
+        <div class="muted hidden" id="tallies-empty">No tallies exported yet.</div>
+        <div class="pager" id="tallies-pagination"></div>
+      </div>
+
+      <div class="ss-tabpanel" data-tab="entities-scoreboards">
+        <div class="table-toolbar">
+          <input type="search" id="scoreboards-search" class="ss-input" placeholder="Search scoreboards by id, name, creator, or state" />
+          <span class="muted" id="scoreboards-count">Loading…</span>
         </div>
+        <table class="ss-table ss-table-compact" id="scoreboards-table">
+          <thead>
+            <tr>
+              <th data-sort="id">ID</th>
+              <th data-sort="name">Name</th>
+              <th data-sort="state">State</th>
+              <th data-sort="creator">Creator</th>
+              <th data-sort="created_at">Created</th>
+              <th data-sort="updated_at">Updated</th>
+              <th data-sort="public">Public</th>
+            </tr>
+          </thead>
+          <tbody id="scoreboards-table-body"></tbody>
+        </table>
+        <div class="muted hidden" id="scoreboards-empty">No scoreboards exported yet.</div>
+        <div class="pager" id="scoreboards-pagination"></div>
       </div>
     </div>
   </section>
 
-  <section class="ss-panel">
+  <section class="ss-panel" id="signals-panel">
     <header class="ss-panel-header">
       <div class="ss-panel-header-main">
         <h2>Signals</h2>
-        <p class="muted">Visibility surface for runtime-emitted events — log-style only.</p>
+        <p class="muted">Visibility surface for runtime-emitted events — append-only log style.</p>
       </div>
     </header>
     <div class="ss-panel-body">
-      <div class="ss-panel" style="margin-bottom: 12px;">
-        <div class="ss-panel-body">
-          <ul class="ss-list muted">
-            <li>Chat trigger events (placeholder)</li>
-            <li>Tally increments (placeholder)</li>
-            <li>Poll vote events (placeholder)</li>
-            <li>Scoreboard updates (placeholder)</li>
-          </ul>
-        </div>
+      <div class="table-toolbar">
+        <div class="muted">Events are timestamp-sorted (desc) and paginated locally.</div>
+        <div id="signals-count" class="muted"></div>
       </div>
-      <p class="muted">
-        Event feeds will hydrate from runtime exports; this section does not
-        accept inputs or override execution order. Use it to confirm visibility
-        and audit signal reception once connected.
-      </p>
+      <div class="ss-tablist" data-tab-group="signals">
+        <button class="ss-tab" data-tab-target="signals-chat" aria-selected="true">Chat trigger events</button>
+        <button class="ss-tab" data-tab-target="signals-poll">Poll votes</button>
+        <button class="ss-tab" data-tab-target="signals-tally">Tally increments</button>
+        <button class="ss-tab" data-tab-target="signals-score">Score updates</button>
+      </div>
+
+      <div class="ss-tabpanel active" data-tab="signals-chat">
+        <div class="table-toolbar">
+          <input type="search" id="chat-events-search" class="ss-input" placeholder="Search chat events by source, trigger, or entity" />
+          <span class="muted" id="chat-events-count">Loading…</span>
+        </div>
+        <table class="ss-table ss-table-compact" id="chat-events-table">
+          <thead>
+            <tr>
+              <th data-sort="timestamp">Timestamp</th>
+              <th data-sort="type">Signal type</th>
+              <th data-sort="source">Source</th>
+              <th data-sort="entity_id">Related entity</th>
+              <th>Summary</th>
+            </tr>
+          </thead>
+          <tbody id="chat-events-body"></tbody>
+        </table>
+        <div class="muted hidden" id="chat-events-empty">No chat trigger events exported yet.</div>
+        <div class="pager" id="chat-events-pagination"></div>
+      </div>
+
+      <div class="ss-tabpanel" data-tab="signals-poll">
+        <div class="table-toolbar">
+          <input type="search" id="poll-votes-search" class="ss-input" placeholder="Search poll votes by voter, poll, or option" />
+          <span class="muted" id="poll-votes-count">Loading…</span>
+        </div>
+        <table class="ss-table ss-table-compact" id="poll-votes-table">
+          <thead>
+            <tr>
+              <th data-sort="timestamp">Timestamp</th>
+              <th data-sort="type">Signal type</th>
+              <th data-sort="source">Source</th>
+              <th data-sort="poll_id">Related entity</th>
+              <th>Summary</th>
+            </tr>
+          </thead>
+          <tbody id="poll-votes-body"></tbody>
+        </table>
+        <div class="muted hidden" id="poll-votes-empty">No poll vote events exported yet.</div>
+        <div class="pager" id="poll-votes-pagination"></div>
+      </div>
+
+      <div class="ss-tabpanel" data-tab="signals-tally">
+        <div class="table-toolbar">
+          <input type="search" id="tally-events-search" class="ss-input" placeholder="Search tally events by source, tally, or scope" />
+          <span class="muted" id="tally-events-count">Loading…</span>
+        </div>
+        <table class="ss-table ss-table-compact" id="tally-events-table">
+          <thead>
+            <tr>
+              <th data-sort="timestamp">Timestamp</th>
+              <th data-sort="type">Signal type</th>
+              <th data-sort="source">Source</th>
+              <th data-sort="tally_id">Related entity</th>
+              <th>Summary</th>
+            </tr>
+          </thead>
+          <tbody id="tally-events-body"></tbody>
+        </table>
+        <div class="muted hidden" id="tally-events-empty">No tally increment events exported yet.</div>
+        <div class="pager" id="tally-events-pagination"></div>
+      </div>
+
+      <div class="ss-tabpanel" data-tab="signals-score">
+        <div class="table-toolbar">
+          <input type="search" id="score-events-search" class="ss-input" placeholder="Search score events by scoreboard, team, or source" />
+          <span class="muted" id="score-events-count">Loading…</span>
+        </div>
+        <table class="ss-table ss-table-compact" id="score-events-table">
+          <thead>
+            <tr>
+              <th data-sort="timestamp">Timestamp</th>
+              <th data-sort="type">Signal type</th>
+              <th data-sort="source">Source</th>
+              <th data-sort="scoreboard_id">Related entity</th>
+              <th>Summary</th>
+            </tr>
+          </thead>
+          <tbody id="score-events-body"></tbody>
+        </table>
+        <div class="muted hidden" id="score-events-empty">No score update events exported yet.</div>
+        <div class="pager" id="score-events-pagination"></div>
+      </div>
     </div>
   </section>
 
-  <section class="ss-panel">
+  <section class="ss-panel" id="admin-panel">
     <header class="ss-panel-header">
       <div class="ss-panel-header-main">
-        <h2>Export snapshots</h2>
-        <p class="muted">Public JSON exports (placeholder) — runtime is authoritative.</p>
+        <h2>Administrative data</h2>
+        <p class="muted">Registered creators, chat triggers, jobs, rate limits, integrations, and permissions.</p>
       </div>
     </header>
     <div class="ss-panel-body">
-      <div class="ss-tile">
-        <h3>Public JSON exports</h3>
-        <p class="muted">
-          Placeholder for published exports (clips, polls, tallies, scoreboards).
-          This dashboard surfaces visibility only; exports are produced and
-          validated by the runtime.
-        </p>
+      <p class="muted">Administrative JSON exports are visual-only and stay aligned to runtime schemas.</p>
+      <div class="table-toolbar">
+        <div class="muted" id="admin-count"></div>
       </div>
-      <div class="ss-tile">
-        <h3>Operational reminder</h3>
-        <p class="muted">
-          Runtime owns all execution, mutation, and data custody. The dashboard
-          remains a read-only visibility and configuration surface to keep
-          creators aligned without exposing write paths.
-        </p>
-      </div>
+
+      <details class="collapsible" open>
+        <summary>Creators</summary>
+        <div class="table-toolbar">
+          <input type="search" id="admin-creators-search" class="ss-input" placeholder="Search creators by id, name, status, or platform" />
+          <span class="muted" id="admin-creators-count">Loading…</span>
+        </div>
+        <table class="ss-table ss-table-compact" id="admin-creators-table">
+          <thead>
+            <tr>
+              <th data-sort="creator_id">Creator ID</th>
+              <th data-sort="display_name">Display name</th>
+              <th data-sort="platforms_enabled">Platforms enabled</th>
+              <th data-sort="status">Status</th>
+              <th data-sort="created_at">Created</th>
+            </tr>
+          </thead>
+          <tbody id="admin-creators-body"></tbody>
+        </table>
+        <div class="muted hidden" id="admin-creators-empty">No creators exported yet.</div>
+        <div class="pager" id="admin-creators-pagination"></div>
+      </details>
+
+      <details class="collapsible" open>
+        <summary>Chat triggers</summary>
+        <div class="table-toolbar">
+          <input type="search" id="chat-triggers-search" class="ss-input" placeholder="Search triggers by phrase, module, or creator" />
+          <span class="muted" id="chat-triggers-count">Loading…</span>
+        </div>
+        <table class="ss-table ss-table-compact" id="chat-triggers-table">
+          <thead>
+            <tr>
+              <th data-sort="phrase">Trigger phrase</th>
+              <th data-sort="module">Bound module</th>
+              <th data-sort="creator">Creator</th>
+              <th data-sort="enabled">Enabled</th>
+              <th data-sort="last_fired_at">Last fired</th>
+            </tr>
+          </thead>
+          <tbody id="chat-triggers-body"></tbody>
+        </table>
+        <div class="muted hidden" id="chat-triggers-empty">No chat triggers exported yet.</div>
+        <div class="pager" id="chat-triggers-pagination"></div>
+      </details>
+
+      <details class="collapsible" open>
+        <summary>Jobs</summary>
+        <div class="table-toolbar">
+          <input type="search" id="jobs-search" class="ss-input" placeholder="Search jobs by id, type, or state" />
+          <span class="muted" id="jobs-count">Loading…</span>
+        </div>
+        <table class="ss-table ss-table-compact" id="jobs-table">
+          <thead>
+            <tr>
+              <th data-sort="id">Job ID</th>
+              <th data-sort="type">Type</th>
+              <th data-sort="state">State</th>
+              <th data-sort="last_run">Last run</th>
+              <th data-sort="next_run">Next run</th>
+            </tr>
+          </thead>
+          <tbody id="jobs-body"></tbody>
+        </table>
+        <div class="muted hidden" id="jobs-empty">No jobs exported yet.</div>
+        <div class="pager" id="jobs-pagination"></div>
+      </details>
+
+      <details class="collapsible" open>
+        <summary>Rate limits</summary>
+        <div class="table-toolbar">
+          <input type="search" id="rate-limits-search" class="ss-input" placeholder="Search rate limits by scope or status" />
+          <span class="muted" id="rate-limits-count">Loading…</span>
+        </div>
+        <table class="ss-table ss-table-compact" id="rate-limits-table">
+          <thead>
+            <tr>
+              <th data-sort="scope">Scope</th>
+              <th data-sort="limit">Limit</th>
+              <th data-sort="window">Window</th>
+              <th data-sort="status">Status</th>
+            </tr>
+          </thead>
+          <tbody id="rate-limits-body"></tbody>
+        </table>
+        <div class="muted hidden" id="rate-limits-empty">No rate limits exported yet.</div>
+        <div class="pager" id="rate-limits-pagination"></div>
+      </details>
+
+      <details class="collapsible" open>
+        <summary>Integrations</summary>
+        <div class="table-toolbar">
+          <input type="search" id="integrations-search" class="ss-input" placeholder="Search integrations by provider, scope, or status" />
+          <span class="muted" id="integrations-count">Loading…</span>
+        </div>
+        <table class="ss-table ss-table-compact" id="integrations-table">
+          <thead>
+            <tr>
+              <th data-sort="id">Integration</th>
+              <th data-sort="provider">Provider</th>
+              <th data-sort="scope">Scope</th>
+              <th data-sort="status">Status</th>
+              <th data-sort="created_at">Created</th>
+            </tr>
+          </thead>
+          <tbody id="integrations-body"></tbody>
+        </table>
+        <div class="muted hidden" id="integrations-empty">No integrations exported yet.</div>
+        <div class="pager" id="integrations-pagination"></div>
+      </details>
+
+      <details class="collapsible" open>
+        <summary>Permissions</summary>
+        <div class="table-toolbar">
+          <input type="search" id="permissions-search" class="ss-input" placeholder="Search permissions by principal or role" />
+          <span class="muted" id="permissions-count">Loading…</span>
+        </div>
+        <table class="ss-table ss-table-compact" id="permissions-table">
+          <thead>
+            <tr>
+              <th data-sort="principal">Principal</th>
+              <th data-sort="role">Role</th>
+              <th data-sort="status">Status</th>
+              <th data-sort="created_at">Created</th>
+            </tr>
+          </thead>
+          <tbody id="permissions-body"></tbody>
+        </table>
+        <div class="muted hidden" id="permissions-empty">No permissions exported yet.</div>
+        <div class="pager" id="permissions-pagination"></div>
+      </details>
     </div>
   </section>
-
 </main>
 
 <footer class="ss-footer">
