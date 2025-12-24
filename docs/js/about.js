@@ -70,6 +70,7 @@
     rows.forEach((row) => {
       const desc = row.querySelector(".ss-skill-description");
       const toggle = row.querySelector(".ss-skill-toggle");
+
       if (desc) {
         desc.style.maxHeight = "0px";
         desc.setAttribute("aria-hidden", "true");
@@ -77,15 +78,14 @@
 
       const handler = () => {
         const isOpen = row.classList.contains("is-open");
+
         if (openRow && openRow !== row) {
           setRowExpanded(openRow, false);
           openRow = null;
         }
 
         setRowExpanded(row, !isOpen);
-        if (isOpen) {
-          openRow = null;
-        }
+        if (isOpen) openRow = null;
       };
 
       const clickTargets = [row];
@@ -93,9 +93,7 @@
 
       clickTargets.forEach((target) => {
         const boundHandler = (event) => {
-          if (target !== row) {
-            event.stopPropagation();
-          }
+          if (target !== row) event.stopPropagation();
           event.preventDefault();
           handler();
         };
@@ -129,11 +127,24 @@
     );
   }
 
-  function scrollToAnchorIfNeeded() {
-    if (location.hash !== "#roadmap") return;
+  /**
+   * SPA-safe scroll handling.
+   * Supports URLs like:
+   *   #about&scroll=roadmap
+   */
+  function scrollToAnchorIfRequested() {
+    const hash = location.hash || "";
+    if (!hash.includes("scroll=")) return;
+
+    const params = hash.split("&").slice(1);
+    const scrollParam = params.find(p => p.startsWith("scroll="));
+    if (!scrollParam) return;
+
+    const targetId = scrollParam.split("=")[1];
+    if (!targetId) return;
 
     requestAnimationFrame(() => {
-      const el = document.getElementById("roadmap");
+      const el = document.getElementById(targetId);
       if (el) {
         el.scrollIntoView({
           behavior: "smooth",
@@ -149,14 +160,15 @@
       const rows = Array.from(
         document.querySelectorAll(".ss-skill-row")
       );
+
       initSkillBars(rows);
       initSkillToggles(rows);
-      scrollToAnchorIfNeeded();
+      scrollToAnchorIfRequested();
     });
 
-    window.addEventListener("hashchange", scrollToAnchorIfNeeded);
+    window.addEventListener("hashchange", scrollToAnchorIfRequested);
     cleanupFns.push(() =>
-      window.removeEventListener("hashchange", scrollToAnchorIfNeeded)
+      window.removeEventListener("hashchange", scrollToAnchorIfRequested)
     );
   }
 
