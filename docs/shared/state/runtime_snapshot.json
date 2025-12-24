@@ -1,0 +1,63 @@
+{
+  "schema_version": "v1",
+  "generated_at": "2025-12-24T22:25:55.601097Z",
+  "platforms": [
+    {
+      "platform": "discord",
+      "enabled": false,
+      "telemetry_enabled": false,
+      "status": "disabled",
+      "last_heartbeat": null,
+      "error": null
+    },
+    {
+      "platform": "rumble",
+      "enabled": true,
+      "telemetry_enabled": true,
+      "status": "running",
+      "last_heartbeat": "2025-12-24T22:25:54.424836Z",
+      "error": null
+    },
+    {
+      "platform": "twitch",
+      "enabled": false,
+      "telemetry_enabled": false,
+      "status": "disabled",
+      "last_heartbeat": null,
+      "error": null
+    },
+    {
+      "platform": "twitter",
+      "enabled": true,
+      "telemetry_enabled": true,
+      "status": "inactive",
+      "last_heartbeat": null,
+      "error": null
+    },
+    {
+      "platform": "youtube",
+      "enabled": true,
+      "telemetry_enabled": true,
+      "status": "inactive",
+      "last_heartbeat": null,
+      "error": null
+    }
+  ],
+  "creators": [
+    {
+      "creator_id": "As5TyU",
+      "display_name": "Daniel Clancy",
+      "enabled": true,
+      "platforms": {
+        "rumble": true,
+        "youtube": true,
+        "twitch": true,
+        "pilled": false,
+        "twitter": true,
+        "discord": true
+      },
+      "last_heartbeat": "2025-12-24T22:25:54.424836Z",
+      "error": null
+    }
+  ]
+}
