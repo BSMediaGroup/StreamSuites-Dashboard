@@ -290,32 +290,52 @@
       --glow-x: 50%;
       --glow-y: 50%;
       --glow-alpha: 0;
+      --glow-on: 0;
+      --cool: 0;
     }
 
-    /* localized hover glow overlay */
+    /* localized BORDER-ONLY glow overlay (masked to border ring) */
     .lander-card::after {
       content: "";
       position: absolute;
-      inset: -1px;
+      inset: 0;
       border-radius: inherit;
       pointer-events: none;
 
+      /* Border thickness for the glow ring */
+      padding: 1px;
+
       background:
         radial-gradient(
-          240px 240px at var(--glow-x) var(--glow-y),
-          rgba(120,180,255,var(--glow-alpha)),
-          rgba(120,180,255,0.12) 35%,
-          rgba(255,255,255,0.06) 55%,
-          transparent 70%
+          520px 520px at var(--glow-x) var(--glow-y),
+          rgba(164,223,79, calc(var(--glow-alpha) * 0.95)),
+          rgba(164,223,79, calc(var(--glow-alpha) * 0.32)) 35%,
+          rgba(255,255,255, calc(var(--glow-alpha) * 0.10)) 55%,
+          transparent 72%
+        ),
+        radial-gradient(
+          680px 680px at var(--glow-x) var(--glow-y),
+          rgba(100,196,255, calc(var(--glow-alpha) * var(--cool) * 0.55)),
+          transparent 76%
         );
 
+      /* Mask out the inside so ONLY the border ring shows */
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+
       mix-blend-mode: screen;
-      opacity: 0.9;
-      transition: opacity 0.25s ease;
+      opacity: var(--glow-on);
+      transition: opacity 0.18s ease;
     }
 
     .lander-card:hover::after {
-      opacity: 1;
+      opacity: var(--glow-on);
     }
 
     .brand {
@@ -536,31 +556,55 @@
       const card = document.querySelector('.lander-card');
       if (!card) return;
 
+      // Expanded activation margin (px) so glow stays active near/outside edges
+      const ACTIVATE_MARGIN = 140;
+
+      // Target + current (0..1)
       let tx = 0.5, ty = 0.5;
       let cx = 0.5, cy = 0.5;
 
-      card.addEventListener('mousemove', (e) => {
-        const r = card.getBoundingClientRect();
-        tx = (e.clientX - r.left) / r.width;
-        ty = (e.clientY - r.top) / r.height;
-      });
+      // Target + current "on" state
+      let ton = 0, con = 0;
 
-      card.addEventListener('mouseleave', () => {
-        tx = cy = 0.5;
-        ty = cy = 0.5;
+      function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+
+      window.addEventListener('pointermove', (e) => {
+        const r = card.getBoundingClientRect();
+
+        // Determine if pointer is within an expanded rect around the card
+        const inX = e.clientX >= (r.left - ACTIVATE_MARGIN) && e.clientX <= (r.right + ACTIVATE_MARGIN);
+        const inY = e.clientY >= (r.top - ACTIVATE_MARGIN) && e.clientY <= (r.bottom + ACTIVATE_MARGIN);
+        ton = (inX && inY) ? 1 : 0;
+
+        // Track position relative to the card even when slightly outside
+        const nx = (e.clientX - r.left) / r.width;
+        const ny = (e.clientY - r.top) / r.height;
+        tx = clamp01(nx);
+        ty = clamp01(ny);
+      }, { passive: true });
+
+      window.addEventListener('pointerleave', () => {
+        ton = 0;
       });
 
       function tick() {
-        cx += (tx - cx) * 0.08;
-        cy += (ty - cy) * 0.08;
+        // Inertia / lag
+        cx += (tx - cx) * 0.09;
+        cy += (ty - cy) * 0.09;
 
-        const dx = Math.abs(cx - 0.5);
-        const dy = Math.abs(cy - 0.5);
-        const edge = Math.min(1, Math.sqrt(dx*dx + dy*dy) * 1.6);
+        // Fade on/off with inertia too (prevents snapping)
+        con += (ton - con) * 0.12;
+
+        // Edge/corner bias for cool tint
+        const dx = Math.abs(cx - 0.5) * 2;
+        const dy = Math.abs(cy - 0.5) * 2;
+        const edge = Math.min(1, Math.sqrt(dx * dx + dy * dy));
 
         card.style.setProperty('--glow-x', (cx * 100) + '%');
         card.style.setProperty('--glow-y', (cy * 100) + '%');
-        card.style.setProperty('--glow-alpha', (0.35 + edge * 0.35).toFixed(3));
+        card.style.setProperty('--glow-on', con.toFixed(3));
+        card.style.setProperty('--glow-alpha', (0.55 * con).toFixed(3));
+        card.style.setProperty('--cool', (edge * 0.95).toFixed(3));
 
         requestAnimationFrame(tick);
       }
