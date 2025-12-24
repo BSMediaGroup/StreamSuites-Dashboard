@@ -338,11 +338,10 @@
        =============================== */
 
     .platforms {
-      margin: 4px 0 26px;
-      padding: 12px 14px;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.03);
+      margin: 0 0 22px;
+      padding: 0;
+      border: 0;
+      background: transparent;
     }
 
     .platforms-label {
@@ -351,38 +350,48 @@
       letter-spacing: 0.18em;
       text-transform: uppercase;
       color: var(--muted);
+      opacity: 0.85;
     }
 
     .platforms-row {
-      display: flex;
+      display: inline-flex;
+      align-items: center;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 14px;
     }
 
+    /* no per-platform containers */
     .platform-item {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.02);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: var(--text);
-      font-size: 13px;
-      letter-spacing: 0.01em;
+      padding: 0;
+      margin: 0;
+      border: 0;
+      background: transparent;
+      border-radius: 0;
+      color: inherit;
+      font-size: 0; /* hide any stray whitespace */
+      letter-spacing: 0;
       white-space: nowrap;
     }
 
+    .platform-item span { display: none; }
+
+    /* subtle unified look */
     .platform-item img {
-      height: 24px;
+      height: 20px;
       width: auto;
       display: block;
+      opacity: 0.62;
+      filter: grayscale(1) saturate(0) brightness(1.15);
     }
 
+    /* keep Rumble first via ordering only — no louder styling */
     .platform-item.rumble img {
-      height: 28px;
-      filter: drop-shadow(0 0 8px rgba(164,223,79,0.45));
+      opacity: 0.62;
+      filter: grayscale(1) saturate(0) brightness(1.15);
     }
+
 
     /* ===============================
        CTA BUTTON — FULL WIDTH
@@ -567,27 +576,24 @@
           Welcome to the StreamSuites dashboard entry point. Runtime owns all execution; this lander keeps the focus on the brand while directing you into the dashboard surfaces. Minimal, cinematic, and purpose-driven.
         </p>
 
-        <div class="platforms">
+        <div class="platforms" aria-label="Supported Platforms">
           <div class="platforms-label">Supported Platforms</div>
           <div class="platforms-row">
-            <div class="platform-item rumble">
-              <img src="./assets/icons/rumble-white.svg" alt="Rumble logo" />
-              <span>Rumble</span>
-            </div>
-            <div class="platform-item">
-              <img src="./assets/icons/youtube-silver.svg" alt="YouTube logo" />
-              <span>YouTube</span>
-            </div>
-            <div class="platform-item">
-              <img src="./assets/icons/twitch-muted.svg" alt="Twitch logo" />
-              <span>Twitch</span>
-            </div>
-            <div class="platform-item">
-              <img src="./assets/icons/discord.svg" alt="Discord logo" />
-              <span>Discord</span>
-            </div>
+            <span class="platform-item rumble" aria-label="Rumble">
+              <img src="./assets/icons/rumble-silver.svg" alt="Rumble" />
+            </span>
+            <span class="platform-item" aria-label="YouTube">
+              <img src="./assets/icons/youtube-silver.svg" alt="YouTube" />
+            </span>
+            <span class="platform-item" aria-label="Twitch">
+              <img src="./assets/icons/twitch-silver.svg" alt="Twitch" />
+            </span>
+            <span class="platform-item" aria-label="Discord">
+              <img src="./assets/icons/discord-silver.svg" alt="Discord" />
+            </span>
           </div>
         </div>
+
 
         <a class="cta-primary" href="./home.html">CREATOR DASHBOARD</a>
 
