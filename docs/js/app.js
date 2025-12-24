@@ -501,8 +501,8 @@ registerView("clips", {
 registerView("polls", {});
 registerView("tallies", {});
 registerView("scoreboards", {});
-registerView("scoreboard-management", {
-  templatePath: "scoreboard-management"
+registerView("data-signals", {
+  templatePath: "data-signals"
 });
 registerView("rumble", {
   templatePath: "platforms/rumble"
