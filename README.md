@@ -334,6 +334,8 @@ StreamSuites-Dashboard/
 │   │   ├── poll-detail.js   # Poll detail visualization controls
 │   │   ├── tally-detail.js  # Tally detail visualization controls
 │   │   ├── utils/
+│   │   |   ├── version-stamp.js
+│   │   |   ├── versioning.js
 │   │   │   └── search-pagination.js # Shared search + pagination utility
 │   │   └── platforms/       # Platform-specific view logic
 │   │       ├── discord.js
