@@ -79,89 +79,141 @@
       pointer-events: none;
     }
 
-    /* DENSER PARTICLES */
+    /* ==========================================================
+       PARTICLES -> TWINKLING STARFIELD (REPLACED, SAME STRUCTURE)
+       - gentle twinkle via opacity
+       - slow upward drift + slight scale (depth illusion)
+       - two layers (near + far) for parallax-like effect
+       ========================================================== */
+
     .particles::before,
     .particles::after {
       content: "";
       position: absolute;
+      inset: -10%;
+      background: transparent;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+
+    /* FAR STARS (smaller, dimmer, slower) */
+    .particles::before {
+      width: 2px;
+      height: 2px;
+      border-radius: 50%;
+      filter: blur(0.7px);
+      opacity: 0.55;
+
+      box-shadow:
+        4vw 10vh rgba(255,255,255,0.55),
+        8vw 12vh rgba(255,255,255,0.45),
+        10vw 64vh rgba(255,255,255,0.40),
+        12vw 32vh rgba(255,255,255,0.50),
+        14vw 78vh rgba(255,255,255,0.38),
+
+        18vw 48vh rgba(255,255,255,0.42),
+        20vw 22vh rgba(255,255,255,0.36),
+        22vw 70vh rgba(255,255,255,0.44),
+        24vw 14vh rgba(255,255,255,0.34),
+
+        28vw 58vh rgba(255,255,255,0.36),
+        30vw 38vh rgba(255,255,255,0.42),
+        32vw 28vh rgba(255,255,255,0.50),
+        34vw 80vh rgba(255,255,255,0.34),
+
+        38vw 18vh rgba(255,255,255,0.34),
+        40vw 52vh rgba(255,255,255,0.44),
+        42vw 26vh rgba(255,255,255,0.40),
+        44vw 66vh rgba(255,255,255,0.42),
+
+        46vw 62vh rgba(255,255,255,0.38),
+        48vw 34vh rgba(255,255,255,0.34),
+        50vw 74vh rgba(255,255,255,0.40),
+        52vw 16vh rgba(255,255,255,0.44),
+
+        56vw 44vh rgba(255,255,255,0.36),
+        58vw 22vh rgba(255,255,255,0.46),
+        60vw 60vh rgba(255,255,255,0.44),
+        62vw 30vh rgba(255,255,255,0.42),
+
+        66vw 18vh rgba(255,255,255,0.36),
+        68vw 74vh rgba(255,255,255,0.44),
+        70vw 40vh rgba(255,255,255,0.36),
+        72vw 24vh rgba(255,255,255,0.40),
+
+        74vw 66vh rgba(255,255,255,0.38),
+        76vw 12vh rgba(255,255,255,0.34),
+        78vw 36vh rgba(255,255,255,0.44),
+        80vw 80vh rgba(255,255,255,0.40),
+
+        82vw 26vh rgba(255,255,255,0.36),
+        84vw 54vh rgba(255,255,255,0.34),
+        86vw 18vh rgba(255,255,255,0.44),
+        88vw 58vh rgba(255,255,255,0.38),
+
+        90vw 22vh rgba(255,255,255,0.34),
+        92vw 66vh rgba(255,255,255,0.42),
+        94vw 14vh rgba(255,255,255,0.36),
+        96vw 48vh rgba(255,255,255,0.40);
+
+      animation:
+        starDriftFar 120s linear infinite,
+        starTwinkleFar 7s ease-in-out infinite;
+    }
+
+    /* NEAR STARS (slightly bigger/brighter, faster) */
+    .particles::after {
       width: 3px;
       height: 3px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.92);
       filter: blur(0.9px);
+      opacity: 0.75;
+
       box-shadow:
-        4vw 10vh rgba(255,255,255,0.75),
-        8vw 12vh rgba(255,255,255,0.7),
-        10vw 64vh rgba(140,199,54,0.85),
-        12vw 32vh rgba(100,196,255,0.8),
-        14vw 78vh rgba(255,153,0,0.72),
+        6vw 18vh rgba(255,255,255,0.78),
+        16vw 28vh rgba(255,255,255,0.68),
+        26vw 12vh rgba(255,255,255,0.72),
+        36vw 44vh rgba(255,255,255,0.82),
+        46vw 20vh rgba(255,255,255,0.70),
+        56vw 66vh rgba(255,255,255,0.80),
+        66vw 30vh rgba(255,255,255,0.74),
+        76vw 54vh rgba(255,255,255,0.78),
+        86vw 14vh rgba(255,255,255,0.72),
+        92vw 72vh rgba(255,255,255,0.78),
 
-        18vw 48vh rgba(140,199,54,0.85),
-        20vw 22vh rgba(255,255,255,0.65),
-        22vw 70vh rgba(100,196,255,0.78),
-        24vw 14vh rgba(255,153,0,0.68),
+        22vw 74vh rgba(140,199,54,0.55),
+        62vw 18vh rgba(100,196,255,0.55),
+        84vw 62vh rgba(255,153,0,0.50);
 
-        28vw 58vh rgba(255,255,255,0.66),
-        30vw 38vh rgba(140,199,54,0.82),
-        32vw 28vh rgba(100,196,255,0.85),
-        34vw 80vh rgba(255,153,0,0.74),
-
-        38vw 18vh rgba(255,255,255,0.62),
-        40vw 52vh rgba(140,199,54,0.88),
-        42vw 26vh rgba(100,196,255,0.82),
-        44vw 66vh rgba(255,153,0,0.78),
-
-        46vw 62vh rgba(255,153,0,0.8),
-        48vw 34vh rgba(255,255,255,0.62),
-        50vw 74vh rgba(140,199,54,0.84),
-        52vw 16vh rgba(100,196,255,0.8),
-
-        56vw 44vh rgba(255,255,255,0.64),
-        58vw 22vh rgba(255,255,255,0.7),
-        60vw 60vh rgba(140,199,54,0.9),
-        62vw 30vh rgba(100,196,255,0.84),
-
-        66vw 18vh rgba(255,153,0,0.7),
-        68vw 74vh rgba(140,199,54,0.9),
-        70vw 40vh rgba(255,255,255,0.66),
-        72vw 24vh rgba(100,196,255,0.82),
-
-        74vw 66vh rgba(255,153,0,0.76),
-        76vw 12vh rgba(255,255,255,0.6),
-        78vw 36vh rgba(100,196,255,0.85),
-        80vw 80vh rgba(140,199,54,0.86),
-
-        82vw 26vh rgba(255,153,0,0.72),
-        84vw 54vh rgba(255,255,255,0.62),
-        86vw 18vh rgba(100,196,255,0.8),
-        88vw 58vh rgba(255,153,0,0.85),
-
-        90vw 22vh rgba(255,255,255,0.62),
-        92vw 66vh rgba(140,199,54,0.82),
-        94vw 14vh rgba(100,196,255,0.78),
-        96vw 48vh rgba(255,153,0,0.7);
-      animation: particleDrift 14s linear infinite;
+      animation:
+        starDriftNear 75s linear infinite,
+        starTwinkleNear 5s ease-in-out infinite;
     }
 
-    .particles::after {
-      width: 2px;
-      height: 2px;
-      opacity: 0.78;
-      filter: blur(1.3px);
-      animation-duration: 22s;
-      animation-direction: reverse;
+    @keyframes starDriftFar {
+      0%   { transform: translate3d(0, 0, 0) scale(1); }
+      100% { transform: translate3d(0, -140px, 0) scale(1.06); }
+    }
+
+    @keyframes starDriftNear {
+      0%   { transform: translate3d(0, 0, 0) scale(1); }
+      100% { transform: translate3d(0, -220px, 0) scale(1.10); }
+    }
+
+    @keyframes starTwinkleFar {
+      0%, 100% { opacity: 0.35; }
+      50%      { opacity: 0.75; }
+    }
+
+    @keyframes starTwinkleNear {
+      0%, 100% { opacity: 0.45; }
+      50%      { opacity: 1; }
     }
 
     @keyframes gradientMove {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
-    }
-
-    @keyframes particleDrift {
-      0%   { transform: translate(0,0); }
-      50%  { transform: translate(-24px, -18px); }
-      100% { transform: translate(0,0); }
     }
 
     @keyframes noiseDrift {
