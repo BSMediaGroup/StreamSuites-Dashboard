@@ -1,3 +1,11 @@
+/* ======================================================================
+   StreamSuites™ Dashboard — About View Logic
+   Project: StreamSuites™
+   Version: v0.2.0-alpha
+   Owner: Daniel Clancy
+   Copyright: © 2025 Brainstream Media Group
+   ====================================================================== */
+
 (() => {
   "use strict";
 
@@ -161,6 +169,7 @@
         document.querySelectorAll(".ss-skill-row")
       );
 
+      renderVersionMeta();
       initSkillBars(rows);
       initSkillToggles(rows);
       scrollToAnchorIfRequested();
@@ -170,6 +179,29 @@
     cleanupFns.push(() =>
       window.removeEventListener("hashchange", scrollToAnchorIfRequested)
     );
+  }
+
+  function renderVersionMeta() {
+    if (!window.Versioning) return;
+
+    Versioning.loadVersion().then((info) => {
+      if (!info) return;
+
+      const versionEl = document.getElementById("about-version-meta");
+      if (versionEl) {
+        versionEl.textContent = Versioning.formatDisplayVersion(info);
+      }
+
+      const ownerEl = document.getElementById("about-owner-meta");
+      if (ownerEl && info.owner) {
+        ownerEl.textContent = info.owner;
+      }
+
+      const copyrightEl = document.getElementById("about-copyright-meta");
+      if (copyrightEl && info.copyright) {
+        copyrightEl.textContent = info.copyright;
+      }
+    });
   }
 
   function destroy() {

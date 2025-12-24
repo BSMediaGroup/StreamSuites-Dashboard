@@ -18,6 +18,14 @@ StreamSuites itself is a **modular, multi-platform livestream runtime**. It cent
 
 The dashboard is intentionally lightweight, schema-driven, and portable.
 
+## Version & Ownership
+
+- **Current version:** StreamSuites™ v0.2.0-alpha (sourced from `docs/version.json` as the canonical dashboard version reference).
+- **Dashboard role:** Static, read-only, and non-authoritative. It reflects runtime exports and drafts configuration locally without issuing live commands.
+- **Versioning policy:** Dashboard surfaces mirror the runtime version and build metadata; UI badges hydrate directly from the bundled `docs/version.json` and are expected to match `runtime/version.py` in the main StreamSuites repo.
+- **Licensing notice:** Proprietary • All Rights Reserved • © 2025 Brainstream Media Group • Owner: Daniel Clancy.
+- **Alpha-stage disclaimer:** Active alpha surface; schemas, exports, and visualizations may change as runtime contracts stabilize.
+
 ### Operational Boundary
 
 - **Static control surface** — zero ability to mutate runtimes or send actions; edits are limited to local JSON drafts and exports
