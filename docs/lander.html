@@ -261,6 +261,35 @@
       100% { opacity: 0; transform: rotate(-20deg) translate3d(160vw, 50vh, 0); }
     }
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StreamSuites™ — Enter</title>
+  <meta name="description" content="StreamSuites first-arrival lander into the creator dashboard." />
+  <link rel="icon" href="./favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="./css/theme-dark.css" />
+
+  <style>
+    :root {
+      --glass-border: rgba(255, 255, 255, 0.14);
+      --text: #e6e8eb;
+      --muted: #9ca0a8;
+      --accent-strong: #a4df4f;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "SuiGenerisRg", system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      background: #0b0c10;
+      overflow: hidden;
+    }
+
     /* ===============================
        LAYOUT
        =============================== */
@@ -286,34 +315,32 @@
       box-shadow: 0 20px 60px rgba(0,0,0,0.6);
       backdrop-filter: blur(10px);
 
-      /* hover glow variables (default center, invisible) */
+      /* animated glow anchor (CSS driven) */
       --glow-x: 50%;
-      --glow-y: 50%;
-      --glow-alpha: 0;
-      --glow-on: 0;
+      --glow-y: 0%;
     }
 
-    /* localized BORDER-ONLY glow overlay (masked to border ring) */
+    /* ===============================
+       BORDER GLOW — CSS LOOP (NO JS)
+       =============================== */
+
     .lander-card::after {
       content: "";
       position: absolute;
       inset: 0;
       border-radius: inherit;
       pointer-events: none;
-
-      /* Border thickness for the glow ring */
       padding: 1px;
 
       background:
         radial-gradient(
           520px 520px at var(--glow-x) var(--glow-y),
-          rgba(164,223,79, calc(var(--glow-alpha) * 0.95)),
-          rgba(164,223,79, calc(var(--glow-alpha) * 0.32)) 35%,
-          rgba(255,255,255, calc(var(--glow-alpha) * 0.10)) 55%,
+          rgba(164,223,79,0.85),
+          rgba(164,223,79,0.32) 35%,
+          rgba(255,255,255,0.10) 55%,
           transparent 72%
         );
 
-      /* Mask out the inside so ONLY the border ring shows */
       -webkit-mask:
         linear-gradient(#fff 0 0) content-box,
         linear-gradient(#fff 0 0);
@@ -324,12 +351,17 @@
       mask-composite: exclude;
 
       mix-blend-mode: screen;
-      opacity: var(--glow-on);
-      transition: opacity 0.18s ease;
+      opacity: 0.9;
+
+      animation: glowOrbit 20s linear infinite;
     }
 
-    .lander-card:hover::after {
-      opacity: var(--glow-on);
+    @keyframes glowOrbit {
+      0%   { --glow-x: 50%;  --glow-y: 0%;   }
+      25%  { --glow-x: 100%; --glow-y: 50%;  }
+      50%  { --glow-x: 50%;  --glow-y: 100%; }
+      75%  { --glow-x: 0%;   --glow-y: 50%;  }
+      100% { --glow-x: 50%;  --glow-y: 0%;   }
     }
 
     .brand {
@@ -418,7 +450,7 @@
     }
 
     /* ===============================
-       FOOTER — SINGLE LINE, RIGHT-ALIGNED BRAND
+       FOOTER
        =============================== */
 
     .footer-links {
@@ -482,12 +514,9 @@
       }
     }
 
-    /* ===============================
-       REDUCED MOTION SAFEGUARDS
-       =============================== */
-
     @media (prefers-reduced-motion: reduce) {
       .lander-card::after {
+        animation: none;
         display: none;
       }
     }
@@ -541,84 +570,5 @@
 
     </div>
   </div>
-
-  <!-- Hover glow inertia logic -->
-  <script>
-    (function () {
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-      const card = document.querySelector('.lander-card');
-      if (!card) return;
-
-      // Expanded activation margin (px) so glow stays active near/outside edges
-      const ACTIVATE_MARGIN = 140;
-
-      // Target + current (0..1)
-      let tx = 0.5, ty = 0.5;
-      let cx = 0.5, cy = 0.5;
-
-      // Target + current "on" state
-      let ton = 0, con = 0;
-
-      // rAF control (pause when inactive)
-      let running = false;
-
-      function clamp01(v) { return Math.max(0, Math.min(1, v)); }
-
-      function startLoop() {
-        if (running) return;
-        running = true;
-        requestAnimationFrame(tick);
-      }
-
-      window.addEventListener('pointermove', (e) => {
-        const r = card.getBoundingClientRect();
-
-        // Determine if pointer is within an expanded rect around the card
-        const inX = e.clientX >= (r.left - ACTIVATE_MARGIN) && e.clientX <= (r.right + ACTIVATE_MARGIN);
-        const inY = e.clientY >= (r.top - ACTIVATE_MARGIN) && e.clientY <= (r.bottom + ACTIVATE_MARGIN);
-        ton = (inX && inY) ? 1 : 0;
-
-        // Track position relative to the card even when slightly outside
-        const nx = (e.clientX - r.left) / r.width;
-        const ny = (e.clientY - r.top) / r.height;
-        tx = clamp01(nx);
-        ty = clamp01(ny);
-
-        // Ensure animation runs while interacting / fading
-        startLoop();
-      }, { passive: true });
-
-      window.addEventListener('pointerleave', () => {
-        ton = 0;
-        startLoop(); // run just long enough to fade out, then stop
-      });
-
-      function tick() {
-        // Inertia / lag
-        cx += (tx - cx) * 0.09;
-        cy += (ty - cy) * 0.09;
-
-        // Fade on/off with inertia too (prevents snapping)
-        con += (ton - con) * 0.12;
-
-        card.style.setProperty('--glow-x', (cx * 100) + '%');
-        card.style.setProperty('--glow-y', (cy * 100) + '%');
-        card.style.setProperty('--glow-on', con.toFixed(3));
-        card.style.setProperty('--glow-alpha', (0.55 * con).toFixed(3));
-
-        // Stop the loop completely when fully inactive (no idle GPU cost)
-        if (ton === 0 && con < 0.002) {
-          con = 0;
-          card.style.setProperty('--glow-on', '0');
-          card.style.setProperty('--glow-alpha', '0');
-          running = false;
-          return;
-        }
-
-        requestAnimationFrame(tick);
-      }
-    })();
-  </script>
 </body>
 </html>
