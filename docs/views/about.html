@@ -11,231 +11,136 @@
 
   <div class="ss-panel-body">
 
-    <!-- ============================================================ -->
-    <!-- CURRENT PHASE -->
-    <!-- ============================================================ -->
-    <section>
-      <h3>Current Phase</h3>
-      <p>
-        StreamSuites is a modular livestream automation platform anchored by an
-        enforcement-first runtime. The runtime owns all orchestration,
-        scheduling, and quotas so behavior remains deterministic across Rumble,
-        Twitch, YouTube, and Discord without platform-specific drift.
-      </p>
-      <p>
-        The dashboard and public surfaces are configuration- and visibility-
-        driven. They render exported state from the runtime, provide creators a
-        controlled way to author configs, and expose read-only public pages for
-        clips, polls, and tallies without issuing live commands.
-      </p>
-      <p class="muted">
-        The platform is rolling out module by module. Runtime remains
-        authoritative, the dashboard stays static by design, and public pages
-        reflect shipped exports rather than live data pulls.
-      </p>
-    </section>
+	<!-- ============================================================ -->
+	<!-- CURRENT PHASE -->
+	<!-- ============================================================ -->
+	<section>
+	  <h3>Current Phase</h3>
+	  <p>
+		StreamSuites is a modular livestream automation platform built around an
+		enforcement-first, deterministic runtime. All orchestration, scheduling,
+		quotas, and state transitions are owned by the runtime so behavior remains
+		consistent across Rumble, Twitch, YouTube, and Discord without
+		platform-specific drift.
+	  </p>
+	  <p>
+		The dashboard and public-facing pages are intentionally passive surfaces.
+		They render runtime-exported snapshots, allow controlled configuration
+		authoring, and expose read-only public galleries for clips, polls, tallies,
+		and scoreboards without issuing live commands or API calls.
+	  </p>
+	  <p class="muted">
+		The platform is rolling out module by module. Runtime remains authoritative.
+		The dashboard stays static by design. Public pages reflect shipped exports
+		rather than live data pulls.
+	  </p>
+	</section>
 
-    <!-- ============================================================ -->
-    <!-- ARCHITECTURE & SEPARATION OF CONCERNS -->
-    <!-- ============================================================ -->
-    <section>
-      <h3>Architecture & Separation of Concerns</h3>
-      <ul class="ss-list">
-        <li>
-          <strong>StreamSuites Unified Runtime:</strong>
-          Executes automation, enforces limits and quotas, connects to platforms,
-          and remains the sole source of truth for triggers, jobs, and livestream state.
-        </li>
-        <li>
-          <strong>StreamSuites Dashboard (this repo):</strong>
-          Static HTML/CSS/JS that runs in-browser, stores configuration locally,
-          and visualizes runtime-exported state. No backend calls or live control
-          paths are present; public galleries for clips, polls, and tallies are
-          read-only renders of runtime drops.
-        </li>
-        <li>
-          <strong>Platform Clients:</strong>
-          Per-platform adapters (Discord, Twitch, YouTube, Rumble, Twitter)
-          live alongside the runtime and consume exported configuration. The
-          dashboard reflects their expected contracts only.
-        </li>
-      </ul>
-      <p class="muted">
-        Configuration, enforcement, observability, and execution are intentionally
-        decoupled to preserve safety, auditability, and deterministic behavior.
-        Public surfaces remain read-only while runtime-side enforcement continues
-        to expand.
-      </p>
-    </section>
+	<!-- ============================================================ -->
+	<!-- ARCHITECTURE & SEPARATION OF CONCERNS -->
+	<!-- ============================================================ -->
+	<section>
+	  <h3>Architecture & Separation of Concerns</h3>
+	  <ul class="ss-list">
+		<li>
+		  <strong>StreamSuites Unified Runtime:</strong>
+		  Executes automation, enforces quotas, schedules jobs, aggregates signals,
+		  and exports deterministic snapshots. It is the sole source of truth.
+		</li>
+		<li>
+		  <strong>StreamSuites Dashboard (this repo):</strong>
+		  A static HTML/CSS/JS application that runs fully client-side. It visualizes
+		  runtime exports, drafts configuration, and exposes public gallery views
+		  without any backend or control-plane authority.
+		</li>
+		<li>
+		  <strong>Public Pages:</strong>
+		  Standalone gallery and detail pages for clips, polls, tallies, and
+		  scoreboards. These pages are read-only and hydrate exclusively from
+		  runtime-produced JSON.
+		</li>
+	  </ul>
+	  <p class="muted">
+		Configuration, enforcement, observability, and execution are deliberately
+		decoupled to preserve safety, auditability, and deterministic behavior.
+	  </p>
+	</section>
 
-    <!-- ============================================================ -->
-    <!-- MILESTONE: RUMBLE SSE INGESTION -->
-    <!-- ============================================================ -->
-    <section>
-      <h3>Milestone: Rumble SSE Chat Ingestion</h3>
-      <ul class="ss-list">
-        <li>Rumble chat now uses the canonical SSE endpoint: <code>https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream</code>.</li>
-        <li>SSE stream emits <code>init</code> and <code>messages</code> events for reliable, scalable ingestion.</li>
-        <li>Runtime exports are published and feed the dashboard plus public chat-facing views.</li>
-        <li>Dashboard language stays neutral to polling vs SSE and renders runtime-exported state only.</li>
-      </ul>
-      <p class="muted">
-        No deprecated Rumble endpoints are assumed. The dashboard will remain read-only and rely on runtime-produced data drops.
-      </p>
-    </section>
+	<!-- ============================================================ -->
+	<!-- MILESTONE: RUMBLE SSE INGESTION -->
+	<!-- ============================================================ -->
+	<section>
+	  <h3>Milestone: Rumble SSE Chat Ingestion</h3>
+	  <ul class="ss-list">
+		<li>
+		  Rumble chat now ingests via the canonical SSE endpoint:
+		  <code>https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream</code>
+		</li>
+		<li>
+		  The stream emits <code>init</code> and <code>messages</code> events for
+		  reliable, scalable ingestion.
+		</li>
+		<li>
+		  Runtime-normalized exports now feed dashboards, public galleries, and
+		  downstream aggregation modules.
+		</li>
+		<li>
+		  The dashboard remains transport-agnostic and renders exported state only.
+		</li>
+	  </ul>
+	  <p class="muted">
+		Deprecated polling-based endpoints are not assumed. All ingestion details
+		live exclusively in the runtime.
+	  </p>
+	</section>
 
-    <!-- ============================================================ -->
-    <!-- DASHBOARD CAPABILITIES (READ-ONLY) -->
-    <!-- ============================================================ -->
-    <section>
-      <h3>Dashboard Capabilities (Static)</h3>
+	<!-- ============================================================ -->
+	<!-- DASHBOARD CAPABILITIES (READ-ONLY) -->
+	<!-- ============================================================ -->
+	<section>
+	  <h3>Dashboard Capabilities (Static)</h3>
 
-      <h4>Overview</h4>
-      <ul class="ss-list">
-        <li>High-level storage status and configuration counts</li>
-        <li>Snapshot visibility for creators, triggers, jobs, limits, and platform telemetry when a runtime snapshot is present</li>
-        <li>Read-only public galleries for clips, polls, and tallies with detail pages driven by runtime exports</li>
-      </ul>
+	  <h4>Overview</h4>
+	  <ul class="ss-list">
+		<li>High-level system, storage, and export visibility</li>
+		<li>Snapshot-based telemetry when runtime drops are present</li>
+		<li>Public galleries for clips, polls, tallies, and scoreboards</li>
+	  </ul>
 
-      <h4>Creators</h4>
-      <ul class="ss-list">
-        <li>Create and edit creator profiles</li>
-        <li>Platform enablement fields aligned with runtime schemas (YouTube, Twitch, Rumble, Discord)</li>
-        <li>Soft-disable/notes fields plus deterministic import/export as JSON</li>
-        <li>Hydrates from bundled defaults (`docs/data/creators.json`) or localStorage drafts</li>
-      </ul>
+	  <h4>Creators</h4>
+	  <ul class="ss-list">
+		<li>Creator profile authoring aligned to runtime schemas</li>
+		<li>Platform enablement and notes fields</li>
+		<li>Deterministic import/export as JSON</li>
+	  </ul>
 
-      <h4>Chat Triggers</h4>
-      <ul class="ss-list">
-        <li>Define trigger phrases, match modes, responses, and cooldowns</li>
-        <li>Import and export trigger definitions</li>
-        <li>Runtime-aligned exports back public surfaces without allowing live chat control from the dashboard</li>
-      </ul>
+	  <h4>Chat Triggers</h4>
+	  <ul class="ss-list">
+		<li>Trigger phrase definition, match modes, and cooldowns</li>
+		<li>Exported trigger catalogs rendered read-only</li>
+	  </ul>
 
-      <h4>Jobs</h4>
-      <ul class="ss-list">
-        <li>Read-only statistics and breakdowns</li>
-      </ul>
+	  <h4>Data & Signals</h4>
+	  <ul class="ss-list">
+		<li>Read-only visibility into runtime databases and signal feeds</li>
+		<li>Paginated, searchable tables for clips, polls, tallies, scoreboards, triggers, and creators</li>
+		<li>Designed as an observability and debugging surface</li>
+	  </ul>
+	</section>
 
-      <h4>Placeholder & Scaffolded Modules</h4>
-      <ul class="ss-list">
-        <li>Clips, Polls, Tallies, Rate Limits, Settings, Chat Replay</li>
-        <li>Platform views for Rumble, YouTube, Twitch, Twitter, Discord (static visibility only)</li>
-        <li>Settings view now binds platform toggles and telemetry flags to <code>platforms.json</code></li>
-      </ul>
-    </section>
+	<!-- ============================================================ -->
+	<!-- CURRENT LIMITATIONS -->
+	<!-- ============================================================ -->
+	<section>
+	  <h3>Current Limitations</h3>
+	  <ul class="ss-list">
+		<li>No live runtime control from the dashboard</li>
+		<li>No authentication or role enforcement yet</li>
+		<li>Public pages are strictly read-only</li>
+		<li>No backend APIs are assumed or invoked</li>
+	  </ul>
+	</section>
 
-    <!-- ============================================================ -->
-    <!-- CURRENT LIMITATIONS & DEFERRED FEATURES -->
-    <!-- ============================================================ -->
-    <section>
-      <h3>Current Limitations & Deferred Features</h3>
-      <ul class="ss-list">
-        <li>No live platform connectivity from the dashboard; runtime exports remain authoritative.</li>
-        <li>No authentication, permissions, or role gating in this phase.</li>
-        <li>Public pages for clips, polls, and tallies remain read-only; runtime mechanics continue to expand behind them.</li>
-        <li>Platform pages are read-only scaffolds; they do not initiate API calls or bot actions.</li>
-        <li>No backend APIs or live data bindings are assumed or invoked.</li>
-      </ul>
-    </section>
-
-    <!-- ============================================================ -->
-    <!-- DASHBOARD MODES (FUTURE-FACING) -->
-    <!-- ============================================================ -->
-    <section>
-      <h3>Dashboard Modes (Creator vs Admin)</h3>
-      <p>
-        The layout reserves space for future mode differentiation without enforcing it today:
-      </p>
-      <ul class="ss-list">
-        <li><strong>Creator Mode:</strong> personal automation setup and visibility.</li>
-        <li><strong>Admin Mode:</strong> cross-creator observability and system controls.</li>
-      </ul>
-      <p class="muted">
-        Mode-aware behavior is deferred until authentication and authorization are introduced.
-      </p>
-    </section>
-
-    <!-- ============================================================ -->
-    <!-- PLANNED MODULES -->
-    <!-- ============================================================ -->
-    <section>
-      <h3>Planned Modules</h3>
-
-      <section style="margin-top: 8px;">
-        <h4>Levelling System</h4>
-        <ul class="ss-list">
-          <li>Tracks live chat participation per user</li>
-          <li>Each message contributes configurable score values</li>
-          <li>Scores accrue per registered creator</li>
-          <li>Long-term goal: unify viewer identities across Rumble, Twitch, and YouTube using regex/exact name matching</li>
-          <li>Where successful, a user’s scoreboard reflects their true global score for that creator</li>
-        </ul>
-        <p class="muted">Status: Planned / Experimental — Implementation: Runtime-owned (placeholder only)</p>
-      </section>
-
-      <section style="margin-top: 12px;">
-        <h4>Fake Gambling / Game Mechanics</h4>
-        <ul class="ss-list">
-          <li>Purely fictional, no real money</li>
-          <li>Text-triggered chat games (e.g. !steal, !loot @user)</li>
-          <li>Randomized success/failure outcomes</li>
-          <li>Failed attempts may incur in-game penalties</li>
-          <li>Randomness may be true RNG or pattern-based as long as it convincingly appears random</li>
-          <li>All balances and tallies are in-game only</li>
-        </ul>
-        <p class="muted">Status: Planned — Implementation: Runtime-owned (placeholder only)</p>
-      </section>
-
-      <section style="margin-top: 12px;">
-        <h4>Paid Interaction Detection</h4>
-        <ul class="ss-list">
-          <li>Detects gifted subscriptions and paid messages (Rumble Rants, YouTube Super Chats, etc.)</li>
-          <li>Detection may be regex-based or platform-native</li>
-          <li>Monthly gifter scoreboard visualized as a pie chart</li>
-          <li>Pie slice size correlates to gifts per user</li>
-          <li>Scoreboard resets each calendar month</li>
-          <li>Monthly winner is publicly visible</li>
-          <li>Registered creators can view and award winners</li>
-        </ul>
-        <p class="muted">Status: Planned / Design In Progress — Implementation: Runtime-owned (placeholder only)</p>
-      </section>
-    </section>
-
-    <!-- ============================================================ -->
-    <!-- PROJECT STATUS -->
-    <!-- ============================================================ -->
-    <section>
-      <h3>Project Status</h3>
-      <p>
-        The dashboard tracks the StreamSuites runtime but does not replace it.
-        Runtime contracts for jobs, triggers, quotas, clips, polls, and tallies
-        are being exported incrementally so public pages can render without UI
-        restructuring or live control paths.
-      </p>
-    </section>
-
-    <!-- ============================================================ -->
-    <!-- ROADMAP UPDATES -->
-    <!-- ============================================================ -->
-    <section>
-      <h3>Roadmap Updates</h3>
-      <ul class="ss-list">
-        <li><strong>Rumble Chat:</strong> ARCHITECTURE SOLVED via SSE; exports aligned with the runtime and ready for dashboard hydration.</li>
-        <li><strong>Twitch Chat:</strong> IRC-based runtime plumbing in progress; exports will follow once quotas and enforcement land.</li>
-        <li><strong>YouTube Chat:</strong> Scaffolded with defined message mapping; awaiting stabilized exports.</li>
-        <li><strong>Cross-platform Chat Abstraction:</strong> Draft normalization live; broader enforcement and exports planned.</li>
-        <li><strong>Telemetry Export:</strong> Partial — dashboard renders <code>runtime_snapshot.json</code> when provided.</li>
-        <li><strong>Dashboard ↔ Runtime Schema Contract:</strong> ConfigState aligns creators/platforms and public galleries with deterministic export shapes.</li>
-      </ul>
-      <p class="muted">
-        Progress is intentionally conservative; no live bindings are assumed. Hydration occurs only from shipped or provided JSON.
-      </p>
-    </section>
-
-  </div>
-
-</section>
 
 <!-- ================================================================ -->
 <!-- VISUAL ROADMAP (STATIC) -->
@@ -489,86 +394,89 @@
       }
     </style>
 
-    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="7.2" title="72% · 65–75% Locked — Contracts stabilized. Runtime behavior considered production-safe barring bug fixes." role="button" tabindex="0">
-      <div class="ss-progress-label">
-        <div class="ss-progress-main">
-          <span class="ss-progress-title">
-            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
-            StreamSuites Unified Runtime
-          </span>
-        </div>
-        <div class="ss-progress-right">
-          <span class="ss-progress-meta">72% · Contracts Locked + Quota Enforcement + Exports</span>
-          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
-            <span>▸</span>
-          </button>
-        </div>
-      </div>
-      <div class="ss-skill-description" aria-hidden="true">
-        <div class="ss-skill-description-inner">
-          <p class="muted">The unified runtime is the automation engine that enforces quotas, schedules jobs, and coordinates platform adapters. Its goal is deterministic execution of the full StreamSuites feature set. Contracts and enforcement are locked and now emit the exports that drive public galleries; remaining effort focuses on deeper orchestration and rollout per module.</p>
-        </div>
-      </div>
-      <div class="ss-skill-wrapper">
-        <div class="ss-skill-track">
-          <div class="ss-skill-fill pulsing"></div>
-        </div>
-      </div>
-    </div>
+	<div class="ss-progress-card ss-progress-row ss-skill-row" data-score="7.5" title="75% · 65–75% Locked — Contracts stabilized. Runtime behavior considered production-safe barring bug fixes." role="button" tabindex="0">
+	  <div class="ss-progress-label">
+		<div class="ss-progress-main">
+		  <span class="ss-progress-title">
+			<span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/package.svg');"></span>
+			StreamSuites Unified Runtime
+		  </span>
+		</div>
+		<div class="ss-progress-right">
+		  <span class="ss-progress-meta">75% · Contracts Locked + Exports + Aggregation</span>
+		  <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+			<span>▸</span>
+		  </button>
+		</div>
+	  </div>
+	  <div class="ss-skill-description" aria-hidden="true">
+		<div class="ss-skill-description-inner">
+		  <p class="muted">The unified runtime is the authoritative automation engine. It enforces quotas, schedules jobs, ingests platform chat, aggregates signals, and emits deterministic exports that drive all dashboard views and public galleries. Core contracts are locked; remaining work focuses on deeper orchestration, additional platform parity, and expanded module mechanics.</p>
+		</div>
+	  </div>
+	  <div class="ss-skill-wrapper">
+		<div class="ss-skill-track">
+		  <div class="ss-skill-fill pulsing"></div>
+		</div>
+	  </div>
+	</div>
 
-    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="6.6" title="66% · 65–75% Locked — Contracts stabilized. Runtime behavior considered production-safe barring bug fixes." role="button" tabindex="0">
-      <div class="ss-progress-label">
-        <div class="ss-progress-main">
-          <span class="ss-progress-title">
-            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/uiscreen.svg');"></span>
-            Administrator Dashboard UI
-          </span>
-        </div>
-        <div class="ss-progress-right">
-          <span class="ss-progress-meta">66% · ConfigState + Telemetry Snapshots + Public Galleries</span>
-          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
-            <span>▸</span>
-          </button>
-        </div>
-      </div>
-      <div class="ss-skill-description" aria-hidden="true">
-        <div class="ss-skill-description-inner">
-          <p class="muted">Admin panels present read-only snapshots for jobs, triggers, quotas, telemetry, and public galleries in the same shapes the runtime exports. The intent is a reliable visibility layer that stays aligned with ConfigState and telemetry snapshots. It is integrated with the runtime contracts but remains static and non-interactive by design.</p>
-        </div>
-      </div>
-      <div class="ss-skill-wrapper">
-        <div class="ss-skill-track">
-          <div class="ss-skill-fill"></div>
-        </div>
-      </div>
-    </div>
 
-    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="5.2" title="52% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete." role="button" tabindex="0">
-      <div class="ss-progress-label">
-        <div class="ss-progress-main">
-          <span class="ss-progress-title">
-            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/uiscreen.svg');"></span>
-            Creator Dashboard UI
-          </span>
-        </div>
-        <div class="ss-progress-right">
-          <span class="ss-progress-meta">52% · Runtime Contracts + Export Drafting</span>
-          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
-            <span>▸</span>
-          </button>
-        </div>
-      </div>
-      <div class="ss-skill-description" aria-hidden="true">
-        <div class="ss-skill-description-inner">
-          <p class="muted">Creator-facing flows surface profiles, platform toggles, triggers, and module scaffolding in a schema-aligned layout. The vision is to let creators assemble export-ready bundles without touching the runtime directly. The UI renders cleanly against the latest schemas and now drafts exports for clips, polls, and tallies while waiting on routine runtime drops for hydration.</p>
-        </div>
-      </div>
-      <div class="ss-skill-wrapper">
-        <div class="ss-skill-track">
-          <div class="ss-skill-fill"></div>
-        </div>
-      </div>
-    </div>
+	<div class="ss-progress-card ss-progress-row ss-skill-row" data-score="7.0" title="70% · 65–75% Locked — Static UI aligned with runtime exports and observability." role="button" tabindex="0">
+	  <div class="ss-progress-label">
+		<div class="ss-progress-main">
+		  <span class="ss-progress-title">
+			<span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/uiscreen.svg');"></span>
+			Administrator Dashboard UI
+		  </span>
+		</div>
+		<div class="ss-progress-right">
+		  <span class="ss-progress-meta">70% · ConfigState + Data & Signals + Public Pages</span>
+		  <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+			<span>▸</span>
+		  </button>
+		</div>
+	  </div>
+	  <div class="ss-skill-description" aria-hidden="true">
+		<div class="ss-skill-description-inner">
+		  <p class="muted">The administrator dashboard provides a static, read-only observability surface for runtime exports, configuration state, and public gallery parity. It is intentionally non-interactive and designed for debugging, inspection, and system-wide visibility without issuing live commands.</p>
+		</div>
+	  </div>
+	  <div class="ss-skill-wrapper">
+		<div class="ss-skill-track">
+		  <div class="ss-skill-fill"></div>
+		</div>
+	  </div>
+	</div>
+
+
+	<div class="ss-progress-card ss-progress-row ss-skill-row" data-score="5.6" title="56% · 55–60% Integrated — Creator configuration aligned with runtime schemas." role="button" tabindex="0">
+	  <div class="ss-progress-label">
+		<div class="ss-progress-main">
+		  <span class="ss-progress-title">
+			<span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/uiscreen.svg');"></span>
+			Creator Dashboard UI
+		  </span>
+		</div>
+		<div class="ss-progress-right">
+		  <span class="ss-progress-meta">56% · Schema-Aligned Authoring + Export Drafting</span>
+		  <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+			<span>▸</span>
+		  </button>
+		</div>
+	  </div>
+	  <div class="ss-skill-description" aria-hidden="true">
+		<div class="ss-skill-description-inner">
+		  <p class="muted">Creator-facing flows expose profiles, platform toggles, triggers, and module scaffolding in a schema-aligned layout. The dashboard allows creators to assemble deterministic, export-ready configurations without interacting with the runtime directly.</p>
+		</div>
+	  </div>
+	  <div class="ss-skill-wrapper">
+		<div class="ss-skill-track">
+		  <div class="ss-skill-fill"></div>
+		</div>
+	  </div>
+	</div>
+
 
     <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="4.5" title="45% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete." role="button" tabindex="0">
       <div class="ss-progress-label">
@@ -867,32 +775,33 @@
       </div>
     </div>
 
-    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="3.5" title="35% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution." role="button" tabindex="0">
-      <div class="ss-progress-label">
-        <div class="ss-progress-main">
-          <span class="ss-progress-title">
-            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/widget.svg');"></span>
-            Scoreboards
-          </span>
-        </div>
-        <div class="ss-progress-right">
-          <span class="ss-progress-meta">35% · Export Shapes + Gallery Shells</span>
-          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
-            <span>▸</span>
-          </button>
-        </div>
-      </div>
-      <div class="ss-skill-description" aria-hidden="true">
-        <div class="ss-skill-description-inner">
-          <p class="muted">Scoreboards aggregate trigger and interaction outputs into public-facing leaderboards. Export shapes and UI shells exist, and galleries render read-only snapshots when runtime drops are present. Runtime-side aggregation and refresh cadence are the remaining steps.</p>
-        </div>
-      </div>
-      <div class="ss-skill-wrapper">
-        <div class="ss-skill-track">
-          <div class="ss-skill-fill"></div>
-        </div>
-      </div>
-    </div>
+	<div class="ss-progress-card ss-progress-row ss-skill-row" data-score="4.2" title="42% · 40–50% Functional — Aggregation shapes exist; runtime cadence pending." role="button" tabindex="0">
+	  <div class="ss-progress-label">
+		<div class="ss-progress-main">
+		  <span class="ss-progress-title">
+			<span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/widget.svg');"></span>
+			Scoreboards
+		  </span>
+		</div>
+		<div class="ss-progress-right">
+		  <span class="ss-progress-meta">42% · Aggregation Shapes + Public Gallery</span>
+		  <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+			<span>▸</span>
+		  </button>
+		</div>
+	  </div>
+	  <div class="ss-skill-description" aria-hidden="true">
+		<div class="ss-skill-description-inner">
+		  <p class="muted">Scoreboards aggregate trigger outputs and interaction tallies into public-facing leaderboards. Export shapes and public gallery shells exist, with runtime-side aggregation cadence and reset logic still being finalized.</p>
+		</div>
+	  </div>
+	  <div class="ss-skill-wrapper">
+		<div class="ss-skill-track">
+		  <div class="ss-skill-fill"></div>
+		</div>
+	  </div>
+	</div>
+
 	
     <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="6.2" title="62% · 55–60% Integrated — Integrated with runtime orchestration, quotas, or control planes. Stable but evolving." role="button" tabindex="0">
       <div class="ss-progress-label">
@@ -948,32 +857,33 @@
       </div>
     </div>
 
-    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="4.2" title="42% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete." role="button" tabindex="0">
-      <div class="ss-progress-label">
-        <div class="ss-progress-main">
-          <span class="ss-progress-title">
-            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/widget.svg');"></span>
-            Tallies Module
-          </span>
-        </div>
-        <div class="ss-progress-right">
-          <span class="ss-progress-meta">42% · Aggregation + Public Gallery</span>
-          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
-            <span>▸</span>
-          </button>
-        </div>
-      </div>
-      <div class="ss-skill-description" aria-hidden="true">
-        <div class="ss-skill-description-inner">
-          <p class="muted">Tallies are programmatic, chat-driven aggregations (not direct votes) that bucket counts over weekly, monthly, or custom windows. Public gallery and detail pages are live and read-only, driven by runtime exports. Runtime-side mechanics for scheduled aggregation, triggers, and enforcement are underway.</p>
-        </div>
-      </div>
-      <div class="ss-skill-wrapper">
-        <div class="ss-skill-track">
-          <div class="ss-skill-fill"></div>
-        </div>
-      </div>
-    </div>
+	<div class="ss-progress-card ss-progress-row ss-skill-row" data-score="4.8" title="48% · 40–50% Functional — Runtime aggregation active; automation expanding." role="button" tabindex="0">
+	  <div class="ss-progress-label">
+		<div class="ss-progress-main">
+		  <span class="ss-progress-title">
+			<span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('./assets/icons/ui/widget.svg');"></span>
+			Tallies Module
+		  </span>
+		</div>
+		<div class="ss-progress-right">
+		  <span class="ss-progress-meta">48% · Aggregation + Public Gallery + Detail Pages</span>
+		  <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+			<span>▸</span>
+		  </button>
+		</div>
+	  </div>
+	  <div class="ss-skill-description" aria-hidden="true">
+		<div class="ss-skill-description-inner">
+		  <p class="muted">Tallies are programmatic, chat-driven aggregations that count events over weekly, monthly, or custom windows. Public gallery and detail pages are live and read-only, driven by runtime exports. Runtime-side scheduling, trigger coupling, and enforcement logic continue to mature.</p>
+		</div>
+	  </div>
+	  <div class="ss-skill-wrapper">
+		<div class="ss-skill-track">
+		  <div class="ss-skill-fill"></div>
+		</div>
+	  </div>
+	</div>
+
 	
     <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="1.0" title="10% · 10–15% Planned — Planned and documented. Architecture discussed, but no executable runtime scaffolding." role="button" tabindex="0">
       <div class="ss-progress-label">
