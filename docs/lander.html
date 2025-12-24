@@ -559,25 +559,6 @@
         Welcome to the StreamSuites dashboard entry point. Runtime owns all execution; this lander keeps the focus on the brand while directing you into the dashboard surfaces. Minimal, cinematic, and purpose-driven.
       </p>
 
-      <!-- Inline platform metadata (quiet, non-disruptive) -->
-      <div class="platforms" aria-label="Supported Platforms">
-        <span class="platforms-label">Supported</span>
-        <span class="platforms-row">
-          <span class="platform-item" aria-label="Rumble">
-            <img src="./assets/icons/rumble-silver.svg" alt="Rumble" />
-          </span>
-          <span class="platform-item" aria-label="YouTube">
-            <img src="./assets/icons/youtube-silver.svg" alt="YouTube" />
-          </span>
-          <span class="platform-item" aria-label="Twitch">
-            <img src="./assets/icons/twitch-silver.svg" alt="Twitch" />
-          </span>
-          <span class="platform-item" aria-label="Discord">
-            <img src="./assets/icons/discord-silver.svg" alt="Discord" />
-          </span>
-        </span>
-      </div>
-
       <a class="cta-primary" href="./home.html">CREATOR DASHBOARD</a>
 
       <div class="cta-secondary-row">
@@ -593,6 +574,25 @@
           <a href="./developers">/developers</a>
           <a href="./privacy">/privacy</a>
           <a href="./about">/about</a>
+
+          <!-- Supported platforms (moved to footer row to avoid interrupting layout / CTA) -->
+          <span class="platforms" aria-label="Supported Platforms">
+            <span class="platforms-label">Supported</span>
+            <span class="platforms-row">
+              <span class="platform-item" aria-label="Rumble">
+                <img src="./assets/icons/rumble-silver.svg" alt="Rumble" />
+              </span>
+              <span class="platform-item" aria-label="YouTube">
+                <img src="./assets/icons/youtube-silver.svg" alt="YouTube" />
+              </span>
+              <span class="platform-item" aria-label="Twitch">
+                <img src="./assets/icons/twitch-silver.svg" alt="Twitch" />
+              </span>
+              <span class="platform-item" aria-label="Discord">
+                <img src="./assets/icons/discord-silver.svg" alt="Discord" />
+              </span>
+            </span>
+          </span>
         </div>
 
         <div class="footer-brand">
@@ -669,7 +669,6 @@
       function start() {
         if (!timer) timer = setInterval(update, 1000 / FPS);
       }
-
       function stop() {
         clearInterval(timer);
         timer = null;
@@ -691,5 +690,4 @@
     });
   </script>
 </body>
-
-
+</html>
