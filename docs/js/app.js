@@ -1,5 +1,9 @@
 /* ======================================================================
-   StreamSuites Dashboard — app.js
+   StreamSuites™ Dashboard — app.js
+   Project: StreamSuites™
+   Version: v0.2.0-alpha
+   Owner: Daniel Clancy
+   Copyright: © 2025 Brainstream Media Group
    Central bootstrap + lightweight view router + storage layer
    ====================================================================== */
 
@@ -268,6 +272,10 @@ async function loadView(name) {
     }
 
     updateNavActiveState(name);
+
+    if (window.Versioning?.stampFooters) {
+      window.Versioning.stampFooters();
+    }
   } catch (err) {
     console.error(`[Dashboard] Failed to load view ${name}`, err);
     container.innerHTML = `
