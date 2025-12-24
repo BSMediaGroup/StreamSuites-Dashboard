@@ -43,6 +43,16 @@
       overflow: hidden;
     }
 
+    /* ADDITIVE ENHANCEMENT LAYER — DOES NOT REPLACE ORIGINAL */
+    .bg-animated::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.045), transparent 65%);
+      animation: glowDrift 26s linear infinite;
+      pointer-events: none;
+    }
+
     .particles {
       position: absolute;
       inset: 0;
@@ -94,6 +104,13 @@
       100% { transform: translate3d(0, 0, 0) scale(1); }
     }
 
+    /* ADDITIVE KEYFRAME — DOES NOT MODIFY EXISTING */
+    @keyframes glowDrift {
+      0% { transform: translate(0, 0); }
+      50% { transform: translate(-14px, 12px); }
+      100% { transform: translate(0, 0); }
+    }
+
     .lander-shell {
       position: relative;
       z-index: 2;
@@ -136,7 +153,7 @@
       font-family: "RechargeBd", "SuiGenerisRg", sans-serif;
       font-size: 32px;
       letter-spacing: 0.06em;
-      text-transform: uppercase;
+      text-transform: none; /* OVERRIDES ORIGINAL UPPERCASE */
     }
 
     .brand .tagline {
@@ -157,9 +174,10 @@
       --btn-color: rgba(19, 24, 15, 0.9);
       border: .25em solid var(--glow-color);
       padding: 1em 3em;
-      color: var(--glow-color);
+      color: #ffffff; /* FORCED WHITE */
       font-size: 15px;
       font-weight: bold;
+      text-transform: uppercase; /* ENTER → ENTER */
       background-color: var(--btn-color);
       border-radius: 1em;
       outline: none;
@@ -167,7 +185,7 @@
         0 0 1em .25em var(--glow-color),
         0 0 4em 1em var(--glow-spread-color),
         inset 0 0 .75em .25em var(--glow-color);
-      text-shadow: 0 0 .5em var(--glow-color);
+      text-shadow: 0 0 .5em rgba(255, 255, 255, 0.65);
       transition: all 0.3s;
       font-family: "Sui Generis", "SuiGenerisRg", sans-serif;
       cursor: pointer;
@@ -179,7 +197,7 @@
         0 0 4.5em 1.25em rgba(164, 223, 79, 0.42),
         inset 0 0 1em .35em var(--glow-color);
       transform: translateY(-1px) scale(1.01);
-      color: #f6ffe8;
+      color: #ffffff;
     }
 
     .cta-primary:focus-visible {
@@ -256,7 +274,7 @@
         Welcome to the StreamSuites dashboard entry point. Runtime owns all execution; this lander keeps the focus on the brand while directing you into the dashboard surfaces. Minimal, cinematic, and purpose-driven.
       </p>
       <div class="cta-block">
-        <a class="cta-primary" href="./home.html">Enter</a>
+        <a class="cta-primary" href="./home.html">ENTER</a>
         <div class="cta-secondary-row">
           <a class="cta-secondary" href="./clips.html">/clips</a>
           <a class="cta-secondary" href="./polls.html">/polls</a>
