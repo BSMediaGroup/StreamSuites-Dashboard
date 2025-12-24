@@ -236,34 +236,31 @@
     }
 
     /* ===============================
-       SHOOTING STAR (FAST, ALIGNED, ORGANIC)
+       SHOOTING STAR (FAST, STABLE, CINEMATIC)
        =============================== */
 
     .shooting-star {
       position: absolute;
-      top: var(--star-y);
-      left: var(--star-x);
+      top: 12%;
+      right: 15%;
 
       width: 4px;
       height: 4px;
       border-radius: 50%;
       pointer-events: none;
 
-      background: #fff;
+      background: #ffffff;
       box-shadow:
         0 0 6px rgba(255,255,255,0.9),
         0 0 14px rgba(180,220,255,0.6);
 
       opacity: 0;
 
-      /* rotation defines direction */
-      transform: rotate(var(--star-angle)) translateX(0);
+      /* rotation defines direction ONCE */
+      transform: rotate(315deg) translateX(0);
 
-      animation:
-        shootingStarMove 12s linear infinite,
-        shootingStarVars 12s steps(1) infinite;
-
-      animation-delay: -6.3s;
+      animation: shootingStar 16s linear infinite;
+      animation-delay: -9.4s; /* desync per load */
       will-change: transform, opacity;
     }
 
@@ -272,76 +269,47 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 260px;
+      width: 280px;
       height: 1px;
       transform: translateY(-50%);
       background: linear-gradient(
         90deg,
         rgba(255,255,255,0.9),
-        rgba(255,255,255,0.35),
+        rgba(255,255,255,0.4),
         transparent
       );
     }
 
-    /* actual motion — ALIGNED with tail */
-    @keyframes shootingStarMove {
+    @keyframes shootingStar {
+      /* idle */
       0% {
         opacity: 0;
-        transform: rotate(var(--star-angle)) translateX(0);
+        transform: rotate(315deg) translateX(0);
       }
 
-      6% {
+      /* appear */
+      7% {
         opacity: 1;
       }
 
+      /* FAST traversal */
       10% {
         opacity: 1;
-        transform: rotate(var(--star-angle)) translateX(-900px);
+        transform: rotate(315deg) translateX(-1100px);
       }
 
-      14% {
+      /* vanish */
+      13% {
         opacity: 0;
-        transform: rotate(var(--star-angle)) translateX(-900px);
+        transform: rotate(315deg) translateX(-1100px);
       }
 
+      /* rest of timeline idle */
       100% {
         opacity: 0;
+        transform: rotate(315deg) translateX(-1100px);
       }
     }
-
-    /* CSS-only "randomization" — snaps per cycle */
-    @keyframes shootingStarVars {
-      0% {
-        --star-x: 90vw;
-        --star-y: 10vh;
-        --star-angle: 315deg;
-      }
-
-      25% {
-        --star-x: 80vw;
-        --star-y: 25vh;
-        --star-angle: 300deg;
-      }
-
-      50% {
-        --star-x: 95vw;
-        --star-y: 45vh;
-        --star-angle: 325deg;
-      }
-
-      75% {
-        --star-x: 85vw;
-        --star-y: 65vh;
-        --star-angle: 310deg;
-      }
-
-      100% {
-        --star-x: 90vw;
-        --star-y: 15vh;
-        --star-angle: 320deg;
-      }
-    }
-
 
     /* ===============================
        LAYOUT
