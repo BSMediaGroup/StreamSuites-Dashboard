@@ -31,7 +31,9 @@
         <tbody>
           <tr>
             <td>Dashboard State</td>
-            <td id="ov-dashboard-state" class="align-right muted">idle</td>
+            <td id="ov-dashboard-state" class="align-right muted">
+              operational (static)
+            </td>
           </tr>
           <tr>
             <td>Local Storage Available</td>
@@ -139,12 +141,10 @@
     </header>
 
     <div class="ss-panel-body">
-
       <p class="muted">
-        Static placeholder indicators. Values will populate once runtime reporting is enabled.
+        Static indicators. Values will populate from runtime-exported quota snapshots.
       </p>
 
-      <!-- DAILY QUOTA -->
       <div class="ss-quota-row">
         <div class="ss-quota-label">
           <span>Daily Units Used</span>
@@ -155,7 +155,6 @@
         </div>
       </div>
 
-      <!-- PER-MINUTE QUOTA -->
       <div class="ss-quota-row">
         <div class="ss-quota-label">
           <span>Per-Minute Usage</span>
@@ -165,18 +164,19 @@
           <div class="ss-quota-fill"></div>
         </div>
       </div>
-
     </div>
   </section>
 
   <!-- --------------------------------------------------------- -->
-  <!-- DISCORD CONTROL-PLANE (READ-ONLY) -->
+  <!-- DISCORD CONTROL-PLANE -->
   <!-- --------------------------------------------------------- -->
   <section class="ss-panel" data-view="discord" tabindex="0" role="button" style="cursor:pointer;">
     <header class="ss-panel-header">
       <h2>
         Discord Control-Plane
-        <span class="ss-platform-badge foundation" id="badge-discord">Foundation</span>
+        <span class="ss-platform-badge foundation" id="badge-discord">
+          Foundation (Runtime Pending)
+        </span>
       </h2>
     </header>
 
@@ -213,13 +213,15 @@
   </section>
 
   <!-- --------------------------------------------------------- -->
-  <!-- RUMBLE FOUNDATIONS -->
+  <!-- RUMBLE -->
   <!-- --------------------------------------------------------- -->
   <section class="ss-panel" data-view="rumble" tabindex="0" role="button" style="cursor:pointer;">
     <header class="ss-panel-header">
       <h2>
         Rumble Integration
-        <span class="ss-platform-badge scaffold" id="badge-rumble">Architecture Solved (SSE)</span>
+        <span class="ss-platform-badge scaffold" id="badge-rumble">
+          Architecture Solved (SSE)
+        </span>
       </h2>
     </header>
 
@@ -238,20 +240,23 @@
       </table>
 
       <p class="muted" style="margin-top: 0.5rem;">
-        Rumble chat now ingests via the canonical SSE stream (<code>https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream</code>).
-        Dashboard hydration will rely on runtime-exported snapshots; no live calls are issued here.
+        Rumble chat ingests via the canonical SSE stream
+        (<code>https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream</code>).
+        Dashboard hydration relies on runtime-exported snapshots.
       </p>
     </div>
   </section>
 
   <!-- --------------------------------------------------------- -->
-  <!-- TWITCH FOUNDATIONS -->
+  <!-- TWITCH -->
   <!-- --------------------------------------------------------- -->
   <section class="ss-panel" data-view="twitch" tabindex="0" role="button" style="cursor:pointer;">
     <header class="ss-panel-header">
       <h2>
         Twitch Integration
-        <span class="ss-platform-badge foundation" id="badge-twitch">Foundation</span>
+        <span class="ss-platform-badge foundation" id="badge-twitch">
+          Foundation (Disabled)
+        </span>
       </h2>
     </header>
 
@@ -272,13 +277,15 @@
   </section>
 
   <!-- --------------------------------------------------------- -->
-  <!-- YOUTUBE FOUNDATIONS -->
+  <!-- YOUTUBE -->
   <!-- --------------------------------------------------------- -->
   <section class="ss-panel" data-view="youtube" tabindex="0" role="button" style="cursor:pointer;">
     <header class="ss-panel-header">
       <h2>
         YouTube Integration
-        <span class="ss-platform-badge foundation" id="badge-youtube">Foundation</span>
+        <span class="ss-platform-badge foundation" id="badge-youtube">
+          Foundation (Quota Pending)
+        </span>
       </h2>
     </header>
 
@@ -291,7 +298,9 @@
           </tr>
           <tr>
             <td>Runtime</td>
-            <td id="ov-youtube-runtime" class="align-right muted">offline / not connected</td>
+            <td id="ov-youtube-runtime" class="align-right muted">
+              offline / not connected
+            </td>
           </tr>
         </tbody>
       </table>
@@ -299,7 +308,7 @@
   </section>
 
   <!-- --------------------------------------------------------- -->
-  <!-- NEXT MODULES -->
+  <!-- UPCOMING MODULES -->
   <!-- --------------------------------------------------------- -->
   <section class="ss-panel">
     <header class="ss-panel-header">

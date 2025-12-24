@@ -498,14 +498,18 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 9px;
+  padding: 2px 8px;
   border-radius: 999px;
-  font-size: 11px;
-  font-family: "RechargeBd", sans-serif;
-  letter-spacing: 0.08em;
+  font-size: 10.5px;
+  font-family: "SuiGenerisRg", sans-serif;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
   text-transform: uppercase;
   border: 1px solid transparent;
   white-space: nowrap;
+  vertical-align: baseline;
+  position: relative;
+  top: -1px;
 }
 
 .ss-platform-badge.foundation {
@@ -526,7 +530,6 @@
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.15);
 }
-
 /* ----------------------------------------------------------------------
    Clip state badges
    ---------------------------------------------------------------------- */
