@@ -561,38 +561,45 @@
 
       <a class="cta-primary" href="./home.html">CREATOR DASHBOARD</a>
 
-      <div class="cta-secondary-row">
-        <a class="cta-secondary" href="./clips.html">/clips</a>
-        <a class="cta-secondary" href="./polls.html">/polls</a>
-        <a class="cta-secondary" href="./scoreboards.html">/scoreboards</a>
-        <a class="cta-secondary" href="./tallies.html">/tallies</a>
+      <!-- CTA row + right-aligned platform metadata -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; flex-wrap:wrap; gap:12px;">
+
+        <div class="cta-secondary-row">
+          <a class="cta-secondary" href="./clips.html">/clips</a>
+          <a class="cta-secondary" href="./polls.html">/polls</a>
+          <a class="cta-secondary" href="./scoreboards.html">/scoreboards</a>
+          <a class="cta-secondary" href="./tallies.html">/tallies</a>
+        </div>
+
+        <!-- Supported platforms (RIGHT SIDE, OUTSIDE FOOTER) -->
+        <div class="platforms" aria-label="Supported Platforms" style="display:flex; align-items:center;">
+          <span class="platforms-label" style="margin-right:10px;">Supported</span>
+          <span class="platforms-row">
+            <a class="platform-item" href="https://rumble.com/StreamSuites" target="_blank" rel="noopener noreferrer" aria-label="Rumble">
+              <img src="./assets/icons/rumble-silver.svg" alt="Rumble" />
+            </a>
+            <a class="platform-item" href="https://youtube.com/@StreamSuites" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+              <img src="./assets/icons/youtube-silver.svg" alt="YouTube" />
+            </a>
+            <a class="platform-item" href="https://twitch.tv/streamsuites" target="_blank" rel="noopener noreferrer" aria-label="Twitch">
+              <img src="./assets/icons/twitch-silver.svg" alt="Twitch" />
+            </a>
+            <a class="platform-item" href="https://support.streamsuites.app" target="_blank" rel="noopener noreferrer" aria-label="Discord">
+              <img src="./assets/icons/discord-silver.svg" alt="Discord" />
+            </a>
+          </span>
+        </div>
+
+
       </div>
 
+      <!-- Footer -->
       <div class="footer-links">
         <div class="footer-links-left">
           <a href="./support">/support</a>
           <a href="./developers">/developers</a>
           <a href="./privacy">/privacy</a>
           <a href="./about">/about</a>
-
-          <!-- Supported platforms (moved to footer row to avoid interrupting layout / CTA) -->
-          <span class="platforms" aria-label="Supported Platforms">
-            <span class="platforms-label">Supported</span>
-            <span class="platforms-row">
-              <span class="platform-item" aria-label="Rumble">
-                <img src="./assets/icons/rumble-silver.svg" alt="Rumble" />
-              </span>
-              <span class="platform-item" aria-label="YouTube">
-                <img src="./assets/icons/youtube-silver.svg" alt="YouTube" />
-              </span>
-              <span class="platform-item" aria-label="Twitch">
-                <img src="./assets/icons/twitch-silver.svg" alt="Twitch" />
-              </span>
-              <span class="platform-item" aria-label="Discord">
-                <img src="./assets/icons/discord-silver.svg" alt="Discord" />
-              </span>
-            </span>
-          </span>
         </div>
 
         <div class="footer-brand">
@@ -690,4 +697,3 @@
     });
   </script>
 </body>
-</html>
