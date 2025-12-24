@@ -236,13 +236,13 @@
     }
 
     /* ===============================
-       SHOOTING STAR (CINEMATIC, RARE, CSS-ONLY)
+       SHOOTING STAR (FAST, VARIED, CINEMATIC)
        =============================== */
 
     .shooting-star {
       position: absolute;
-      top: 15%;
-      right: 10%;
+      top: 0;
+      left: 0;
       width: 4px;
       height: 4px;
       border-radius: 50%;
@@ -252,12 +252,13 @@
 
       box-shadow:
         0 0 6px rgba(255,255,255,0.9),
-        0 0 12px rgba(180,220,255,0.6);
+        0 0 14px rgba(180,220,255,0.7);
 
       opacity: 0;
 
-      transform: rotate(315deg) translateX(0);
-      animation: shootingStarMove 18s linear infinite;
+      transform: translate3d(0,0,0);
+      animation: shootingStarVar 22s linear infinite;
+      animation-delay: -11.7s; /* desync on load */
       will-change: transform, opacity;
     }
 
@@ -266,48 +267,69 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 280px;
+      width: 260px;
       height: 1px;
       transform: translateY(-50%);
       background: linear-gradient(
         90deg,
         rgba(255,255,255,0.9),
-        rgba(255,255,255,0.4),
+        rgba(255,255,255,0.35),
         transparent
       );
     }
 
-    /* core motion */
-    @keyframes shootingStarMove {
-      /* idle (randomized gap) */
+    @keyframes shootingStarVar {
+      /* idle */
       0% {
         opacity: 0;
-        transform: rotate(315deg) translateX(0);
+        transform: translate3d(-20vw, -10vh, 0) rotate(315deg);
       }
 
-      /* appear */
-      8% {
+      /* PASS 1 — fast, steep */
+      6% {
         opacity: 1;
       }
-
-      /* visible travel */
-      12% {
+      9% {
         opacity: 1;
-        transform: rotate(315deg) translateX(-900px);
+        transform: translate3d(120vw, 60vh, 0) rotate(315deg);
       }
-
-      /* fade out */
-      16% {
+      11% {
         opacity: 0;
       }
 
-      /* remain idle */
+      /* PASS 2 — shallower, higher */
+      28% {
+        opacity: 1;
+        transform: translate3d(110vw, 30vh, 0) rotate(300deg);
+      }
+      30% {
+        opacity: 0;
+      }
+
+      /* PASS 3 — lower sky, longer run */
+      52% {
+        opacity: 1;
+        transform: translate3d(140vw, 75vh, 0) rotate(325deg);
+      }
+      55% {
+        opacity: 0;
+      }
+
+      /* PASS 4 — short sharp cut */
+      78% {
+        opacity: 1;
+        transform: translate3d(100vw, 40vh, 0) rotate(310deg);
+      }
+      80% {
+        opacity: 0;
+      }
+
+      /* idle reset */
       100% {
         opacity: 0;
-        transform: rotate(315deg) translateX(-900px);
+        transform: translate3d(140vw, 80vh, 0) rotate(315deg);
       }
     }
-
 
 
     /* ===============================
