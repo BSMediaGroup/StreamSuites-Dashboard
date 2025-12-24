@@ -334,6 +334,57 @@
     }
 
     /* ===============================
+       SUPPORTED PLATFORMS
+       =============================== */
+
+    .platforms {
+      margin: 4px 0 26px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .platforms-label {
+      margin: 0 0 10px;
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .platforms-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .platform-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text);
+      font-size: 13px;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+    }
+
+    .platform-item img {
+      height: 24px;
+      width: auto;
+      display: block;
+    }
+
+    .platform-item.rumble img {
+      height: 28px;
+      filter: drop-shadow(0 0 8px rgba(164,223,79,0.45));
+    }
+
+    /* ===============================
        CTA BUTTON — FULL WIDTH
        =============================== */
 
@@ -512,11 +563,33 @@
         </div>
       </div>
 
-      <p class="hero-copy">
-        Welcome to the StreamSuites dashboard entry point. Runtime owns all execution; this lander keeps the focus on the brand while directing you into the dashboard surfaces. Minimal, cinematic, and purpose-driven.
-      </p>
+        <p class="hero-copy">
+          Welcome to the StreamSuites dashboard entry point. Runtime owns all execution; this lander keeps the focus on the brand while directing you into the dashboard surfaces. Minimal, cinematic, and purpose-driven.
+        </p>
 
-      <a class="cta-primary" href="./home.html">CREATOR DASHBOARD</a>
+        <div class="platforms">
+          <div class="platforms-label">Supported Platforms</div>
+          <div class="platforms-row">
+            <div class="platform-item rumble">
+              <img src="./assets/icons/rumble-white.svg" alt="Rumble logo" />
+              <span>Rumble</span>
+            </div>
+            <div class="platform-item">
+              <img src="./assets/icons/youtube-silver.svg" alt="YouTube logo" />
+              <span>YouTube</span>
+            </div>
+            <div class="platform-item">
+              <img src="./assets/icons/twitch-muted.svg" alt="Twitch logo" />
+              <span>Twitch</span>
+            </div>
+            <div class="platform-item">
+              <img src="./assets/icons/discord.svg" alt="Discord logo" />
+              <span>Discord</span>
+            </div>
+          </div>
+        </div>
+
+        <a class="cta-primary" href="./home.html">CREATOR DASHBOARD</a>
 
       <div class="cta-secondary-row">
         <a class="cta-secondary" href="./clips.html">/clips</a>
