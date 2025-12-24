@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "schema": "streamsuites.poll_votes.v1",
+    "note": "Placeholder poll vote stream"
+  },
+  "items": [
+    {
+      "timestamp": "2025-01-13T13:05:00Z",
+      "type": "poll_vote",
+      "source": "twitch",
+      "poll_id": "poll-100",
+      "voter": "user123",
+      "option": "IRL stream",
+      "summary": "user123 voted for IRL stream"
+    },
+    {
+      "timestamp": "2025-01-13T12:40:00Z",
+      "type": "poll_vote",
+      "source": "youtube",
+      "poll_id": "poll-102",
+      "voter": "creator_mod",
+      "option": "Keep midnight slot",
+      "summary": "creator_mod voted keep midnight slot"
+    },
+    {
+      "timestamp": "2025-01-13T12:20:00Z",
+      "type": "poll_vote",
+      "source": "rumble",
+      "poll_id": "poll-101",
+      "voter": "viewer007",
+      "option": "30 seconds",
+      "summary": "viewer007 voted for 30 second highlights"
+    }
+  ]
+}

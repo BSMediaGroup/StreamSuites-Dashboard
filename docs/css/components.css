@@ -49,6 +49,19 @@
   opacity: 0.85;
 }
 
+.ss-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-panel-alt);
+  color: var(--text-secondary);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
 /* ----------------------------------------------------------------------
    Panels
    ---------------------------------------------------------------------- */
@@ -292,6 +305,37 @@
   padding-bottom: 12px;
 }
 
+.ss-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+.ss-table th.sortable::after {
+  content: "";
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 6px solid transparent;
+  transform: translateY(-50%);
+  opacity: 0.4;
+}
+
+.ss-table th.sorted-asc::after {
+  border-top-color: var(--text-secondary);
+  transform: translateY(-70%) rotate(180deg);
+  opacity: 0.9;
+}
+
+.ss-table th.sorted-desc::after {
+  border-top-color: var(--text-secondary);
+  opacity: 0.9;
+}
+
 /* ----------------------------------------------------------------------
    Forms
    ---------------------------------------------------------------------- */
@@ -316,6 +360,91 @@
   flex-direction: column;
   gap: 6px;
   margin-bottom: 12px;
+}
+
+/* ----------------------------------------------------------------------
+   Tabs + collapsibles (for Data & Signals)
+   ---------------------------------------------------------------------- */
+
+.ss-tablist {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ss-tab {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-panel-alt);
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.ss-tab[aria-selected="true"],
+.ss-tab.active {
+  border-color: var(--border-strong);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 0 10px var(--glow-soft);
+}
+
+.ss-tabpanel {
+  display: none;
+  margin-top: 12px;
+}
+
+.ss-tabpanel.active {
+  display: block;
+}
+
+.collapsible {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-panel-alt);
+  padding: 12px;
+}
+
+.collapsible summary {
+  cursor: pointer;
+  font-family: "RechargeBd", sans-serif;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+}
+
+.collapsible summary::-webkit-details-marker {
+  color: var(--text-muted);
+}
+
+/* ----------------------------------------------------------------------
+   Pagination controls
+   ---------------------------------------------------------------------- */
+
+.pager {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.pager-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.table-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.table-toolbar .muted {
+  font-size: 12px;
 }
 
 .ss-form-row label {

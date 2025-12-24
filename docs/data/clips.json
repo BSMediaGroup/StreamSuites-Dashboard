@@ -1,0 +1,62 @@
+{
+  "meta": {
+    "schema": "streamsuites.clips.v1",
+    "note": "Placeholder snapshot for dashboard visibility only"
+  },
+  "items": [
+    {
+      "id": "clip-001",
+      "title": "Launch trailer cut",
+      "state": "published",
+      "creator": "daniel",
+      "created_at": "2025-01-10T13:00:00Z",
+      "updated_at": "2025-01-12T15:30:00Z",
+      "public": true
+    },
+    {
+      "id": "clip-002",
+      "title": "Behind-the-scenes short",
+      "state": "encoding",
+      "creator": "lyra",
+      "created_at": "2025-01-11T17:10:00Z",
+      "updated_at": "2025-01-11T17:30:00Z",
+      "public": false
+    },
+    {
+      "id": "clip-003",
+      "title": "Creator Q&A highlight",
+      "state": "queued",
+      "creator": "daniel",
+      "created_at": "2025-01-12T09:00:00Z",
+      "updated_at": "2025-01-12T09:05:00Z",
+      "public": false
+    },
+    {
+      "id": "clip-004",
+      "title": "Weekend recap",
+      "state": "published",
+      "creator": "skyler",
+      "created_at": "2025-01-08T14:00:00Z",
+      "updated_at": "2025-01-09T06:00:00Z",
+      "public": true
+    },
+    {
+      "id": "clip-005",
+      "title": "Sponsor bumper",
+      "state": "encoded",
+      "creator": "lyra",
+      "created_at": "2025-01-13T12:00:00Z",
+      "updated_at": "2025-01-13T12:45:00Z",
+      "public": false
+    },
+    {
+      "id": "clip-006",
+      "title": "Live fail compilation",
+      "state": "failed",
+      "creator": "daniel",
+      "created_at": "2025-01-07T10:00:00Z",
+      "updated_at": "2025-01-07T11:30:00Z",
+      "public": false
+    }
+  ]
+}

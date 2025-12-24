@@ -1,0 +1,44 @@
+{
+  "meta": {
+    "schema": "streamsuites.polls.v1",
+    "note": "Placeholder poll exports"
+  },
+  "items": [
+    {
+      "id": "poll-100",
+      "title": "What should we stream next?",
+      "state": "open",
+      "creator": "daniel",
+      "created_at": "2025-01-12T10:00:00Z",
+      "updated_at": "2025-01-12T10:15:00Z",
+      "public": true
+    },
+    {
+      "id": "poll-101",
+      "title": "Favorite highlight length?",
+      "state": "closed",
+      "creator": "skyler",
+      "created_at": "2025-01-09T15:00:00Z",
+      "updated_at": "2025-01-09T18:00:00Z",
+      "public": true
+    },
+    {
+      "id": "poll-102",
+      "title": "Should we keep the midnight slot?",
+      "state": "open",
+      "creator": "lyra",
+      "created_at": "2025-01-13T01:00:00Z",
+      "updated_at": "2025-01-13T02:00:00Z",
+      "public": false
+    },
+    {
+      "id": "poll-103",
+      "title": "Which platform performed best?",
+      "state": "closed",
+      "creator": "daniel",
+      "created_at": "2025-01-08T09:00:00Z",
+      "updated_at": "2025-01-08T10:00:00Z",
+      "public": true
+    }
+  ]
+}

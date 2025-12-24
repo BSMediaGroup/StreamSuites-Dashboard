@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "schema": "streamsuites.rate_limits.v1",
+    "note": "Placeholder rate limits"
+  },
+  "items": [
+    {
+      "scope": "clips.publish",
+      "limit": 10,
+      "window": 3600,
+      "status": "healthy"
+    },
+    {
+      "scope": "polls.create",
+      "limit": 5,
+      "window": 900,
+      "status": "warning"
+    },
+    {
+      "scope": "tallies.increment",
+      "limit": 60,
+      "window": 60,
+      "status": "healthy"
+    },
+    {
+      "scope": "scoreboards.update",
+      "limit": 30,
+      "window": 300,
+      "status": "healthy"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "schema": "streamsuites.score_events.v1",
+    "note": "Placeholder score updates"
+  },
+  "items": [
+    {
+      "timestamp": "2025-01-13T13:12:00Z",
+      "type": "score_update",
+      "source": "rumble",
+      "scoreboard_id": "score-02",
+      "team": "YouTube",
+      "delta": 15,
+      "summary": "+15 from YouTube engagement surge"
+    },
+    {
+      "timestamp": "2025-01-13T13:00:00Z",
+      "type": "score_update",
+      "source": "twitch",
+      "scoreboard_id": "score-02",
+      "team": "Twitch",
+      "delta": 10,
+      "summary": "+10 from Twitch chat storm"
+    },
+    {
+      "timestamp": "2025-01-13T12:35:00Z",
+      "type": "score_update",
+      "source": "internal",
+      "scoreboard_id": "score-01",
+      "team": "engagement",
+      "delta": 5,
+      "summary": "Daily engagement threshold crossed"
+    }
+  ]
+}

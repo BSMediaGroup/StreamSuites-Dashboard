@@ -1,0 +1,29 @@
+{
+  "meta": {
+    "schema": "streamsuites.chat_events.v1",
+    "note": "Placeholder chat trigger events"
+  },
+  "items": [
+    {
+      "timestamp": "2025-01-13T13:10:00Z",
+      "type": "chat_trigger",
+      "source": "rumble",
+      "entity_id": "trigger:promo",
+      "summary": "Matched phrase 'promo code' in Rumble chat"
+    },
+    {
+      "timestamp": "2025-01-13T12:50:00Z",
+      "type": "chat_trigger",
+      "source": "twitch",
+      "entity_id": "trigger:hype",
+      "summary": "Matched phrase 'hype train'"
+    },
+    {
+      "timestamp": "2025-01-13T12:30:00Z",
+      "type": "chat_trigger",
+      "source": "youtube",
+      "entity_id": "trigger:help",
+      "summary": "Matched phrase 'help command'"
+    }
+  ]
+}

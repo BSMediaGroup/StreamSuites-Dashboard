@@ -133,6 +133,23 @@ All public pages are **independent entry points** (no dashboard routing), GitHub
 
 The dashboard is intentionally **runtime-agnostic**. Multiple runtimes (e.g., streaming orchestration and Discord control-plane) can consume the same schemas without changing the UI. The dashboard remains a static artifact that can be opened locally or hosted on GitHub Pages and still reflect the latest schema set.
 
+## Data & Signals dashboard view
+
+- **New view:** a first-class **Data & Signals** surface now lives in `docs/views/data-signals.html` with JS wiring in `docs/js/data-signals.js`. It renders runtime-owned entities, append-style signals, and administrative exports with client-side search, pagination, and optional sorting driven by a shared utility (`docs/js/utils/search-pagination.js`).
+- **Read-only posture:** every table hydrates from static JSON exports under `docs/data/`. No edits, mutations, or write-back paths are present; the runtime remains authoritative.
+- **Operational notices:** the view explicitly calls out that runtime exports are the source of truth and the dashboard is CMS-style visibility only.
+
+### CMS model (runtime vs. dashboard)
+
+- **Runtime = source of truth.** The StreamSuites runtimes own execution, ingestion, publishing, and export cadence. JSON snapshots (entities, signals, administrative systems) originate from runtime exports.
+- **Dashboard = visibility + configuration surface.** The dashboard consumes those exports, providing local drafts for configuration and read-only overlays for runtime facts. Client-side search/pagination keeps the UI responsive without introducing write paths or backend calls.
+
+### Current module coverage (runtime exports surfaced)
+
+- Entities: **Clips, Polls, Tallies, Scoreboards**
+- Signals: **Chat trigger events, Poll votes, Tally increments, Score updates**
+- Administrative exports: **Creators, Chat triggers, Jobs, Rate limits, Integrations, Permissions (placeholder)**
+
 ## Discord Control-Plane Integration
 
 The StreamSuites ecosystem includes an optional **Discord control-plane runtime**. It is deployment-gated and may or may not be running alongside the streaming runtime. The dashboard treats Discord as a **read-only status surface** for now: it consumes exported metadata but does not issue commands or assume the runtime is enabled.
@@ -264,10 +281,23 @@ StreamSuites-Dashboard/
 │   │   └── theme-dark.css   # Dark theme (authoritative)
 │   │
 │   ├── data/                # Bundled JSON defaults + runtime snapshot examples
+│   │   ├── chat_events.json
+│   │   ├── chat_triggers.json
+│   │   ├── clips.json
 │   │   ├── creators.json
 │   │   ├── dashboard_state.json
+│   │   ├── integrations.json
+│   │   ├── jobs.json
+│   │   ├── permissions.json
 │   │   ├── platforms.json
-│   │   └── runtime_snapshot.json
+│   │   ├── poll_votes.json
+│   │   ├── polls.json
+│   │   ├── rate_limits.json
+│   │   ├── runtime_snapshot.json
+│   │   ├── score_events.json
+│   │   ├── scoreboards.json
+│   │   ├── tallies.json
+│   │   └── tally_events.json
 │   │
 │   ├── js/
 │   │   ├── about.js         # About view wiring
@@ -280,6 +310,7 @@ StreamSuites-Dashboard/
 │   │   ├── jobs.js          # Job visibility (clips, etc.)
 │   │   ├── clips.js         # Runtime clip lifecycle surface (read-only, polling)
 │   │   ├── public-clips.js  # Placeholder data renderer for public clips gallery
+│   │   ├── data-signals.js  # Data & signals view wiring (read-only)
 │   │   ├── overview.js      # Overview dashboard wiring + telemetry
 │   │   ├── permissions.js   # Future permissions UI
 │   │   ├── platforms.js     # Global platform toggle wiring
@@ -294,6 +325,8 @@ StreamSuites-Dashboard/
 │   │   ├── public-scoreboards.js # Placeholder data renderer for public scoreboards gallery
 │   │   ├── poll-detail.js   # Poll detail visualization controls
 │   │   ├── tally-detail.js  # Tally detail visualization controls
+│   │   ├── utils/
+│   │   │   └── search-pagination.js # Shared search + pagination utility
 │   │   └── platforms/       # Platform-specific view logic
 │   │       ├── discord.js
 │   │       ├── rumble.js
@@ -325,6 +358,7 @@ StreamSuites-Dashboard/
 │       ├── chat-replay.html
 │       ├── clips.html
 │       ├── creators.html
+│       ├── data-signals.html
 │       ├── discord.html
 │       ├── support.html
 │       ├── scoreboards.html
