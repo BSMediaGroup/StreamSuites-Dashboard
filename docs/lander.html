@@ -285,14 +285,15 @@
       border: 1px solid var(--glass-border);
       box-shadow: 0 20px 60px rgba(0,0,0,0.6);
       backdrop-filter: blur(10px);
+
+      /* perimeter glow variables */
+      --glow-x: 50%;
+      --glow-y: 0%;
+      --glow-alpha: 0.55;
+      --glow-on: 1;
     }
 
-    /* ===============================
-       BORDER GLOW — SMOOTH ORBIT (NO JS)
-       - uses offset-path to move a point smoothly around the card
-       - glow is centered on that moving point
-       =============================== */
-
+    /* localized BORDER-ONLY glow overlay (masked to border ring) */
     .lander-card::after {
       content: "";
       position: absolute;
@@ -303,14 +304,12 @@
       /* Border thickness for the glow ring */
       padding: 1px;
 
-      /* Base ring (very subtle) + traveling hotspot */
       background:
-        /* subtle baseline ring so it never fully "dies" between passes */
-        linear-gradient(rgba(255,255,255,0.06), rgba(255,255,255,0.06)),
         radial-gradient(
-          520px 520px at 50% 50%,
-          rgba(164,223,79,0) 0%,
-          rgba(164,223,79,0) 60%,
+          520px 520px at var(--glow-x) var(--glow-y),
+          rgba(164,223,79, calc(var(--glow-alpha) * 0.95)),
+          rgba(164,223,79, calc(var(--glow-alpha) * 0.32)) 35%,
+          rgba(255,255,255, calc(var(--glow-alpha) * 0.10)) 55%,
           transparent 72%
         );
 
@@ -325,54 +324,7 @@
       mask-composite: exclude;
 
       mix-blend-mode: screen;
-      opacity: 0.95;
-    }
-
-    /* the moving "hotspot" that drives the glow */
-    .lander-card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      pointer-events: none;
-
-      /* this element moves; we use it only as a gradient anchor layer */
-      /* Border thickness for the glow ring */
-      padding: 1px;
-
-      background:
-        radial-gradient(
-          520px 520px at 50% 50%,
-          rgba(164,223,79,0.85),
-          rgba(164,223,79,0.32) 35%,
-          rgba(255,255,255,0.10) 55%,
-          transparent 72%
-        );
-
-      -webkit-mask:
-        linear-gradient(#fff 0 0) content-box,
-        linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask:
-        linear-gradient(#fff 0 0) content-box,
-        linear-gradient(#fff 0 0);
-      mask-composite: exclude;
-
-      mix-blend-mode: screen;
-      opacity: 0.95;
-
-      /* Smooth travel around the border perimeter */
-      offset-path: inset(0 round 18px);
-      offset-distance: 0%;
-      offset-rotate: 0deg;
-
-      animation: glowTravel 14s linear infinite;
-      will-change: offset-distance;
-    }
-
-    @keyframes glowTravel {
-      from { offset-distance: 0%; }
-      to   { offset-distance: 100%; }
+      opacity: var(--glow-on);
     }
 
     .brand {
@@ -461,7 +413,7 @@
     }
 
     /* ===============================
-       FOOTER
+       FOOTER — SINGLE LINE, RIGHT-ALIGNED BRAND
        =============================== */
 
     .footer-links {
@@ -525,10 +477,12 @@
       }
     }
 
+    /* ===============================
+       REDUCED MOTION SAFEGUARDS
+       =============================== */
+
     @media (prefers-reduced-motion: reduce) {
-      .lander-card::before,
       .lander-card::after {
-        animation: none;
         display: none;
       }
     }
@@ -582,5 +536,82 @@
 
     </div>
   </div>
+
+  <!-- Continuous perimeter border glow (no hover, low cost) -->
+  <script>
+    (function () {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      const card = document.querySelector('.lander-card');
+      if (!card) return;
+
+      let phase = 0;
+      const FPS = 30;
+      const STEP = 1 / (FPS * 8); // ~8s per loop
+      let timer = null;
+
+      function update() {
+        const r = card.getBoundingClientRect();
+        const rx = 18;
+        const w = r.width;
+        const h = r.height;
+
+        const straightW = w - 2 * rx;
+        const straightH = h - 2 * rx;
+        const corner = Math.PI * rx;
+        const perimeter = 2 * (straightW + straightH) + corner;
+
+        let d = phase * perimeter;
+        let x = rx, y = 0;
+
+        if (d < straightW) {
+          x = rx + d; y = 0;
+        } else if ((d -= straightW) < corner / 4) {
+          const t = d / (corner / 4);
+          x = w - rx + Math.sin(t * Math.PI / 2) * rx;
+          y = (1 - Math.cos(t * Math.PI / 2)) * rx;
+        } else if ((d -= corner / 4) < straightH) {
+          x = w; y = rx + d;
+        } else if ((d -= straightH) < corner / 4) {
+          const t = d / (corner / 4);
+          x = w - (1 - Math.cos(t * Math.PI / 2)) * rx;
+          y = h - rx + Math.sin(t * Math.PI / 2) * rx;
+        } else if ((d -= corner / 4) < straightW) {
+          x = w - rx - d; y = h;
+        } else if ((d -= straightW) < corner / 4) {
+          const t = d / (corner / 4);
+          x = rx - Math.sin(t * Math.PI / 2) * rx;
+          y = h - (1 - Math.cos(t * Math.PI / 2)) * rx;
+        } else if ((d -= corner / 4) < straightH) {
+          x = 0; y = h - rx - d;
+        } else {
+          d -= straightH;
+          const t = d / (corner / 4);
+          x = (1 - Math.cos(t * Math.PI / 2)) * rx;
+          y = rx - Math.sin(t * Math.PI / 2) * rx;
+        }
+
+        card.style.setProperty('--glow-x', (x / w * 100) + '%');
+        card.style.setProperty('--glow-y', (y / h * 100) + '%');
+
+        phase += STEP;
+        if (phase >= 1) phase -= 1;
+      }
+
+      function start() {
+        if (!timer) timer = setInterval(update, 1000 / FPS);
+      }
+      function stop() {
+        clearInterval(timer);
+        timer = null;
+      }
+
+      document.addEventListener('visibilitychange', () => {
+        document.hidden ? stop() : start();
+      });
+
+      start();
+    })();
+  </script>
 </body>
 </html>
