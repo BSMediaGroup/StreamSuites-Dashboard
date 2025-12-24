@@ -333,47 +333,132 @@
       color: var(--muted);
     }
 
-    /* ===============================
-       SUPPORTED PLATFORMS (INLINE META)
-       =============================== */
+	/* ===============================
+	   SUPPORTED TOOLTIP (GLASS — FINAL)
+	   =============================== */
 
-    .platforms {
-      margin: 10px 0 0;
-      padding: 0;
-      background: none;
-      border: 0;
-    }
+	.supported-tooltip-container {
+	  position: relative;
+	  display: inline-flex;
+	  align-items: center;
+	}
 
-    .platforms-label {
-      display: inline-block;
-      margin-right: 10px;
-      font-size: 11px;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--muted);
-      opacity: 0.7;
-      vertical-align: middle;
-    }
+	.supported-tooltip {
+	  position: absolute;
+	  top: 130%;
+	  left: 50%;
+	  transform: translateX(-50%);
+	  min-width: 320px;
 
-    .platforms-row {
-      display: inline-flex;
-      align-items: center;
-      gap: 14px;
-      vertical-align: middle;
-    }
+	  background: rgba(18, 22, 28, 0.88);
+	  color: #e6e8eb;
 
-    .platform-item {
-      display: inline-flex;
-      align-items: center;
-    }
+	  padding: 12px 16px;
+	  border-radius: 16px;
+	  border: 1px solid rgba(255, 255, 255, 0.18);
+	  backdrop-filter: blur(14px);
 
-    .platform-item img {
-      height: 18px;
-      width: auto;
-      opacity: 0.55;
-      filter: grayscale(1) saturate(0) brightness(1.15);
-    }
+	  font-size: 11px;
+	  line-height: 1.45;
+	  text-align: left;
 
+	  box-shadow:
+		0 10px 28px rgba(0, 0, 0, 0.55),
+		inset 0 0 10px rgba(255, 255, 255, 0.15);
+
+	  visibility: hidden;
+	  opacity: 0;
+
+	  transition:
+		opacity 0.3s ease,
+		transform 0.3s ease;
+
+	  z-index: 20;
+	}
+
+	.supported-tooltip::after {
+	  content: "";
+	  position: absolute;
+	  bottom: 100%;
+	  left: 50%;
+	  transform: translateX(-50%);
+	  border-width: 8px;
+	  border-style: solid;
+	  border-color: transparent transparent rgba(255, 255, 255, 0.18) transparent;
+	}
+
+	.supported-tooltip-container:hover .supported-tooltip {
+	  visibility: visible;
+	  opacity: 1;
+	  transform: translateX(-50%) translateY(12px);
+	}
+
+	.supported-tooltip h4 {
+	  margin: 0 0 6px;
+	  font-size: 10px;
+	  letter-spacing: 0.14em;
+	  text-transform: uppercase;
+	  color: #ffffff;
+	}
+
+	.supported-tooltip ul {
+	  margin: 0;
+	  padding-left: 0;
+	  list-style: none;
+	}
+
+	.supported-tooltip li {
+	  display: flex;
+	  align-items: center;
+	  gap: 6px;
+	  margin-bottom: 4px;
+	  color: #d6d9de;
+	}
+
+	.supported-tooltip li img {
+	  height: 1em;
+	  width: auto;
+	  opacity: 0.8;
+	}
+
+
+	/* ===============================
+	   SUPPORTED PLATFORMS (INLINE META)
+	   =============================== */
+
+	.platforms {
+	  margin: 10px 0 0;
+	  padding: 0;
+	  background: none;
+	  border: 0;
+	}
+
+	.platforms-label {
+	  display: inline-block;
+	  font-size: 11px;
+	  letter-spacing: 0.22em;
+	  text-transform: uppercase;
+	  color: var(--muted);
+	  opacity: 0.7;
+	}
+
+	.platforms-row {
+	  display: inline-flex;
+	  align-items: center;
+	  gap: 14px;
+	}
+
+	.platform-item {
+	  display: inline-flex;
+	  align-items: center;
+	}
+
+	.platform-item img {
+	  height: 18px;
+	  width: auto;
+	  opacity: 0.55;
+	  filter: grayscale(1) saturate(0) brightness(1.15);
+	}
 
 
     /* ===============================
@@ -429,6 +514,8 @@
       font-size: 13px;
       text-decoration: none;
     }
+
+
 
     /* ===============================
        FOOTER — SINGLE LINE, RIGHT-ALIGNED BRAND
@@ -569,39 +656,110 @@
         </a>
       </p>
 
-
       <a class="cta-primary" href="./home.html">CREATOR DASHBOARD</a>
 
       <!-- CTA row + right-aligned platform metadata -->
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; flex-wrap:wrap; gap:12px;">
 
-		<div class="cta-secondary-row">
-		  <a class="cta-secondary" href="./clips.html" style="color:#ffffff; text-transform:uppercase;">CLIPS</a>
-		  <a class="cta-secondary" href="./polls.html" style="color:#ffffff; text-transform:uppercase;">POLLS</a>
-		  <a class="cta-secondary" href="./scoreboards.html" style="color:#ffffff; text-transform:uppercase;">SCORES</a>
-		  <a class="cta-secondary" href="./tallies.html" style="color:#ffffff; text-transform:uppercase;">TALLIES</a>
-		</div>
-
-
-        <!-- Supported platforms (RIGHT SIDE, OUTSIDE FOOTER) -->
-        <div class="platforms" aria-label="Supported Platforms" style="display:flex; align-items:center;">
-          <span class="platforms-label" style="margin-right:10px;">Supported</span>
-          <span class="platforms-row">
-            <a class="platform-item" href="https://rumble.com/StreamSuites" target="_blank" rel="noopener noreferrer" aria-label="Rumble">
-              <img src="./assets/icons/rumble-silver.svg" alt="Rumble" />
-            </a>
-            <a class="platform-item" href="https://youtube.com/@StreamSuites" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
-              <img src="./assets/icons/youtube-silver.svg" alt="YouTube" />
-            </a>
-            <a class="platform-item" href="https://twitch.tv/streamsuites" target="_blank" rel="noopener noreferrer" aria-label="Twitch">
-              <img src="./assets/icons/twitch-silver.svg" alt="Twitch" />
-            </a>
-            <a class="platform-item" href="https://support.streamsuites.app" target="_blank" rel="noopener noreferrer" aria-label="Discord">
-              <img src="./assets/icons/discord-silver.svg" alt="Discord" />
-            </a>
-          </span>
+        <div class="cta-secondary-row">
+          <a class="cta-secondary" href="./clips.html" style="color:#ffffff; text-transform:uppercase;">CLIPS</a>
+          <a class="cta-secondary" href="./polls.html" style="color:#ffffff; text-transform:uppercase;">POLLS</a>
+          <a class="cta-secondary" href="./scoreboards.html" style="color:#ffffff; text-transform:uppercase;">SCORES</a>
+          <a class="cta-secondary" href="./tallies.html" style="color:#ffffff; text-transform:uppercase;">TALLIES</a>
         </div>
 
+        <!-- Supported platforms (RIGHT SIDE) -->
+        <div class="platforms" aria-label="Supported Platforms" style="display:flex; align-items:center;">
+
+          <span class="supported-tooltip-container">
+            <a
+              href="https://streamsuites.app/tools"
+              class="platforms-label"
+              style="margin-right:10px; color:inherit; text-decoration:none;"
+            >
+              Supported
+            </a>
+
+            <div class="supported-tooltip">
+              <h4>Platforms</h4>
+              <ul>
+                <li>
+                  <img src="./assets/icons/rumble-silver.svg" alt="" />
+                  <strong>Rumble</strong> — Primary livestream automation target
+                </li>
+                <li>
+                  <img src="./assets/icons/youtube-silver.svg" alt="" />
+                  <strong>YouTube</strong> — Live interaction &amp; audience tooling
+                </li>
+                <li>
+                  <img src="./assets/icons/twitch-silver.svg" alt="" />
+                  <strong>Twitch</strong> — Chat-driven automation surfaces
+                </li>
+                <li>
+                  <img src="./assets/icons/discord-silver.svg" alt="" />
+                  <strong>Discord</strong> — Control channels &amp; event triggers
+                </li>
+              </ul>
+
+              <h4 style="margin-top:10px;">Tools</h4>
+              <ul>
+                <li>
+                  <img src="./assets/icons/obs-silver.svg" alt="" />
+                  <strong>OBS</strong> — Browser-based overlays &amp; scene inputs
+                </li>
+                <li>
+                  <img src="./assets/icons/browser-extension.svg" alt="" />
+                  <strong>Browser Extensions</strong> — Overlay &amp; control injection
+                </li>
+              </ul>
+
+              <h4 style="margin-top:10px;">Planned</h4>
+              <ul>
+                <li>
+                  <img src="./assets/icons/twitter-silver.svg" alt="" />
+                  <strong>Twitter / X</strong> — Scheduled support (API-limited)
+                </li>
+              </ul>
+            </div>
+          </span>
+
+          <span class="platforms-row">
+            <a class="platform-item" href="https://rumble.com/StreamSuites" target="_blank" rel="noopener noreferrer">
+              <img src="./assets/icons/rumble-silver.svg" alt="Rumble" />
+            </a>
+
+            <a class="platform-item" href="https://youtube.com/@StreamSuites" target="_blank" rel="noopener noreferrer">
+              <img src="./assets/icons/youtube-silver.svg" alt="YouTube" />
+            </a>
+
+            <a class="platform-item" href="https://twitch.tv/streamsuites" target="_blank" rel="noopener noreferrer">
+              <img src="./assets/icons/twitch-silver.svg" alt="Twitch" />
+            </a>
+
+            <a class="platform-item" href="https://support.streamsuites.app" target="_blank" rel="noopener noreferrer">
+              <img src="./assets/icons/discord-silver.svg" alt="Discord" />
+            </a>
+
+            <span class="platform-item">
+              <img src="./assets/icons/obs-silver.svg" alt="OBS" />
+            </span>
+
+            <!-- Plus indicator (linked + tooltip) -->
+            <span class="supported-tooltip-container">
+              <a
+                href="https://streamsuites.app/tools"
+                class="platform-item"
+                style="text-decoration:none;"
+              >
+                <img
+                  src="./assets/icons/ui/plus.svg"
+                  alt="+"
+                  style="filter:invert(92%) sepia(6%) saturate(60%) hue-rotate(180deg) brightness(95%) contrast(90%);"
+                />
+              </a>
+            </span>
+          </span>
+        </div>
 
       </div>
 
