@@ -11,9 +11,9 @@
   <style>
     :root {
       --lander-bg:
-        radial-gradient(circle at 20% 20%, rgba(140, 199, 54, 0.22), transparent 35%),
-        radial-gradient(circle at 80% 0%, rgba(100, 196, 255, 0.22), transparent 40%),
-        radial-gradient(circle at 60% 80%, rgba(255, 153, 0, 0.2), transparent 35%),
+        radial-gradient(circle at 20% 20%, rgba(140, 199, 54, 0.32), transparent 38%),
+        radial-gradient(circle at 80% 0%, rgba(100, 196, 255, 0.32), transparent 42%),
+        radial-gradient(circle at 60% 80%, rgba(255, 153, 0, 0.28), transparent 38%),
         #0b0c10;
 
       --glass-border: rgba(255, 255, 255, 0.14);
@@ -35,18 +35,30 @@
     }
 
     /* ===============================
-       BACKGROUND ANIMATION (BOOSTED)
+       BACKGROUND ANIMATION (AMPLIFIED)
        =============================== */
 
     .bg-animated {
       position: fixed;
       inset: 0;
       background:
-        linear-gradient(120deg, rgba(12,14,19,0.85), rgba(18,24,32,0.9)),
+        linear-gradient(120deg, rgba(12,14,19,0.82), rgba(18,24,32,0.88)),
         var(--lander-bg);
-      background-size: 220% 220%;
-      animation: gradientMove 14s ease-in-out infinite;
+      background-size: 260% 260%;
+      animation: gradientMove 9s ease-in-out infinite;
       overflow: hidden;
+    }
+
+    /* Lens flare glow layer */
+    .bg-animated::before {
+      content: "";
+      position: absolute;
+      inset: -30%;
+      background:
+        radial-gradient(circle at 30% 40%, rgba(164,223,79,0.18), transparent 40%),
+        radial-gradient(circle at 70% 20%, rgba(100,196,255,0.22), transparent 42%);
+      animation: flarePulse 6s ease-in-out infinite alternate;
+      pointer-events: none;
     }
 
     .bg-animated::after {
@@ -54,10 +66,10 @@
       position: absolute;
       inset: -20%;
       background:
-        radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 2px);
-      background-size: 140px 140px;
-      opacity: 0.35;
-      animation: noiseDrift 40s linear infinite;
+        radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 2px);
+      background-size: 120px 120px;
+      opacity: 0.45;
+      animation: noiseDrift 28s linear infinite;
       pointer-events: none;
     }
 
@@ -74,24 +86,26 @@
       width: 3px;
       height: 3px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.85);
-      filter: blur(0.6px);
+      background: rgba(255,255,255,0.9);
+      filter: blur(0.8px);
       box-shadow:
-        12vw 14vh rgba(255,255,255,0.6),
-        28vw 62vh rgba(140,199,54,0.7),
-        44vw 32vh rgba(100,196,255,0.7),
-        66vw 18vh rgba(255,153,0,0.7),
-        78vw 74vh rgba(255,255,255,0.6),
-        90vw 40vh rgba(140,199,54,0.8);
-      animation: particleDrift 22s linear infinite;
+        8vw 12vh rgba(255,255,255,0.7),
+        18vw 48vh rgba(140,199,54,0.85),
+        32vw 28vh rgba(100,196,255,0.85),
+        46vw 62vh rgba(255,153,0,0.8),
+        58vw 22vh rgba(255,255,255,0.7),
+        68vw 74vh rgba(140,199,54,0.9),
+        78vw 36vh rgba(100,196,255,0.85),
+        88vw 58vh rgba(255,153,0,0.85);
+      animation: particleDrift 14s linear infinite;
     }
 
     .particles::after {
       width: 2px;
       height: 2px;
-      opacity: 0.7;
-      filter: blur(1px);
-      animation-duration: 34s;
+      opacity: 0.75;
+      filter: blur(1.2px);
+      animation-duration: 22s;
       animation-direction: reverse;
     }
 
@@ -102,14 +116,19 @@
     }
 
     @keyframes particleDrift {
-      0%   { transform: translateY(0) translateX(0); }
-      50%  { transform: translateY(-18px) translateX(14px); }
-      100% { transform: translateY(0) translateX(0); }
+      0%   { transform: translate(0,0); }
+      50%  { transform: translate(-24px, -18px); }
+      100% { transform: translate(0,0); }
     }
 
     @keyframes noiseDrift {
       0% { transform: translate(0,0); }
-      100% { transform: translate(120px, 80px); }
+      100% { transform: translate(160px, 120px); }
+    }
+
+    @keyframes flarePulse {
+      0% { opacity: 0.6; }
+      100% { opacity: 1; }
     }
 
     /* ===============================
@@ -170,10 +189,14 @@
     }
 
     /* ===============================
-       CTA BUTTON
+       CTA BUTTON — FULL WIDTH RESTORED
        =============================== */
 
     .cta-primary {
+      display: block;
+      width: 100%;
+      margin-bottom: 22px;
+
       border: 0.25em solid var(--accent-strong);
       padding: 1em 3em;
       color: #ffffff !important;
@@ -184,10 +207,12 @@
       letter-spacing: 0.08em;
       background: rgba(16,20,14,0.95);
       border-radius: 1em;
+
       box-shadow:
         0 0 18px rgba(140,199,54,0.9),
         0 0 48px rgba(140,199,54,0.45),
         inset 0 0 12px rgba(140,199,54,0.6);
+
       text-shadow: 0 0 2px rgba(0,0,0,0.9);
       cursor: pointer;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -196,15 +221,14 @@
     .cta-primary:hover {
       transform: translateY(-1px) scale(1.02);
       box-shadow:
-        0 0 26px rgba(164,223,79,1),
-        0 0 64px rgba(164,223,79,0.55),
-        inset 0 0 16px rgba(164,223,79,0.8);
+        0 0 30px rgba(164,223,79,1),
+        0 0 72px rgba(164,223,79,0.6),
+        inset 0 0 18px rgba(164,223,79,0.85);
     }
 
     .cta-secondary-row {
       display: flex;
       gap: 10px;
-      margin-top: 18px;
       flex-wrap: wrap;
     }
 
@@ -226,6 +250,7 @@
       gap: 12px;
       color: var(--muted);
       font-size: 13px;
+      align-items: center;
     }
 
     .footer-links a {
@@ -238,13 +263,14 @@
     }
 
     /* ===============================
-       FOOTER BRAND (NEW — ADDITIVE)
+       FOOTER BRAND — ALIGNED FIX
        =============================== */
 
     .footer-brand {
       position: absolute;
       right: 20px;
-      bottom: 14px;
+      top: 50%;
+      transform: translateY(-50%);
       font-size: 11px;
       color: var(--muted);
       opacity: 0.75;
