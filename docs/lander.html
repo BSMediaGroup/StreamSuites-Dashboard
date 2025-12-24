@@ -236,29 +236,34 @@
     }
 
     /* ===============================
-       SHOOTING STAR (FAST, VARIED, CINEMATIC)
+       SHOOTING STAR (FAST, ALIGNED, ORGANIC)
        =============================== */
 
     .shooting-star {
       position: absolute;
-      top: 0;
-      left: 0;
+      top: var(--star-y);
+      left: var(--star-x);
+
       width: 4px;
       height: 4px;
       border-radius: 50%;
       pointer-events: none;
 
-      background: #ffffff;
-
+      background: #fff;
       box-shadow:
         0 0 6px rgba(255,255,255,0.9),
-        0 0 14px rgba(180,220,255,0.7);
+        0 0 14px rgba(180,220,255,0.6);
 
       opacity: 0;
 
-      transform: translate3d(0,0,0);
-      animation: shootingStarVar 22s linear infinite;
-      animation-delay: -11.7s; /* desync on load */
+      /* rotation defines direction */
+      transform: rotate(var(--star-angle)) translateX(0);
+
+      animation:
+        shootingStarMove 12s linear infinite,
+        shootingStarVars 12s steps(1) infinite;
+
+      animation-delay: -6.3s;
       will-change: transform, opacity;
     }
 
@@ -278,56 +283,62 @@
       );
     }
 
-    @keyframes shootingStarVar {
-      /* idle */
+    /* actual motion — ALIGNED with tail */
+    @keyframes shootingStarMove {
       0% {
         opacity: 0;
-        transform: translate3d(-20vw, -10vh, 0) rotate(315deg);
+        transform: rotate(var(--star-angle)) translateX(0);
       }
 
-      /* PASS 1 — fast, steep */
       6% {
         opacity: 1;
       }
-      9% {
+
+      10% {
         opacity: 1;
-        transform: translate3d(120vw, 60vh, 0) rotate(315deg);
-      }
-      11% {
-        opacity: 0;
+        transform: rotate(var(--star-angle)) translateX(-900px);
       }
 
-      /* PASS 2 — shallower, higher */
-      28% {
-        opacity: 1;
-        transform: translate3d(110vw, 30vh, 0) rotate(300deg);
-      }
-      30% {
+      14% {
         opacity: 0;
+        transform: rotate(var(--star-angle)) translateX(-900px);
       }
 
-      /* PASS 3 — lower sky, longer run */
-      52% {
-        opacity: 1;
-        transform: translate3d(140vw, 75vh, 0) rotate(325deg);
-      }
-      55% {
-        opacity: 0;
-      }
-
-      /* PASS 4 — short sharp cut */
-      78% {
-        opacity: 1;
-        transform: translate3d(100vw, 40vh, 0) rotate(310deg);
-      }
-      80% {
-        opacity: 0;
-      }
-
-      /* idle reset */
       100% {
         opacity: 0;
-        transform: translate3d(140vw, 80vh, 0) rotate(315deg);
+      }
+    }
+
+    /* CSS-only "randomization" — snaps per cycle */
+    @keyframes shootingStarVars {
+      0% {
+        --star-x: 90vw;
+        --star-y: 10vh;
+        --star-angle: 315deg;
+      }
+
+      25% {
+        --star-x: 80vw;
+        --star-y: 25vh;
+        --star-angle: 300deg;
+      }
+
+      50% {
+        --star-x: 95vw;
+        --star-y: 45vh;
+        --star-angle: 325deg;
+      }
+
+      75% {
+        --star-x: 85vw;
+        --star-y: 65vh;
+        --star-angle: 310deg;
+      }
+
+      100% {
+        --star-x: 90vw;
+        --star-y: 15vh;
+        --star-angle: 320deg;
       }
     }
 
