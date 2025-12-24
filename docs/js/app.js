@@ -21,7 +21,10 @@ const App = {
   views: {},
   initialized: false,
   storage: {},
-  state: {} // ✅ ADDITIVE — read-only runtime snapshots live here
+  state: {}, // ✅ ADDITIVE — read-only runtime snapshots live here
+
+  // ✅ ADDITIVE — deferred anchor scroll support
+  pendingAnchor: null
 };
 
 // Expose the App object on window for cross-file access (e.g., Overview view)
@@ -153,9 +156,6 @@ App.storage = {
 
 /* ======================================================================
    ADDITIVE: RUNTIME SNAPSHOT FEED (READ-ONLY) — QUOTAS
-   - Pulls shared/state/quotas.json (runtime-published)
-   - Safe for GitHub Pages (silent if missing)
-   - No UI binding here; views can read App.state.quotas.latest
    ====================================================================== */
 
 App.state.quotas = {
@@ -178,16 +178,12 @@ App.state.quotas = {
       this.lastError = null;
     } catch (e) {
       this.lastError = String(e);
-      // Silent failure: runtime may not be present
     }
   },
 
   start() {
     if (this._timer) return;
-
-    // Initial attempt (non-blocking)
     this.fetchOnce();
-
     this._timer = setInterval(() => {
       this.fetchOnce();
     }, this.intervalMs);
@@ -258,6 +254,17 @@ async function loadView(name) {
       view.onLoad();
     } catch (e) {
       console.error(`[Dashboard] View load error (${name})`, e);
+    }
+
+    // ✅ ADDITIVE — perform deferred anchor scroll AFTER DOM exists
+    if (App.pendingAnchor) {
+      requestAnimationFrame(() => {
+        const el = document.getElementById(App.pendingAnchor);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+        App.pendingAnchor = null;
+      });
     }
 
     updateNavActiveState(name);
@@ -401,11 +408,18 @@ function bindDelegatedNavigation() {
 }
 
 /* ----------------------------------------------------------------------
-   URL Hash Routing (Optional, Non-Breaking)
+   URL Hash Routing (MINIMALLY EXTENDED)
    ---------------------------------------------------------------------- */
 
 function resolveInitialView() {
   const hash = window.location.hash.replace("#", "");
+
+  // ✅ ADDITIVE: anchor alias
+  if (hash === "roadmap") {
+    App.pendingAnchor = "roadmap";
+    return "about";
+  }
+
   if (hash && App.views[hash]) {
     return hash;
   }
@@ -414,9 +428,17 @@ function resolveInitialView() {
 
 function bindHashChange() {
   window.addEventListener("hashchange", () => {
-    const view = window.location.hash.replace("#", "");
-    if (App.views[view]) {
-      loadView(view);
+    const hash = window.location.hash.replace("#", "");
+
+    // ✅ ADDITIVE: anchor alias
+    if (hash === "roadmap") {
+      App.pendingAnchor = "roadmap";
+      loadView("about");
+      return;
+    }
+
+    if (App.views[hash]) {
+      loadView(hash);
     }
   });
 }
@@ -435,7 +457,6 @@ function initApp() {
   bindDelegatedNavigation();
   bindHashChange();
 
-  // ✅ ADDITIVE: start quota feed (silent if file missing)
   App.state.quotas.start();
 
   const initialView = resolveInitialView();
@@ -476,10 +497,6 @@ registerView("triggers", {
   }
 });
 
-/* ------------------------------------------------------------
-   C1: Jobs (READ-ONLY visibility)
-   ------------------------------------------------------------ */
-
 registerView("jobs", {
   onLoad: () => {
     if (window.JobsView?.init) {
@@ -487,8 +504,6 @@ registerView("jobs", {
     }
   }
 });
-
-/* Placeholder modules (wired, no logic yet) */
 
 registerView("clips", {
   onLoad: () => {
@@ -510,9 +525,7 @@ registerView("data-signals", {
     window.DataSignalsView?.destroy?.();
   }
 });
-registerView("rumble", {
-  templatePath: "platforms/rumble"
-});
+registerView("rumble", { templatePath: "platforms/rumble" });
 registerView("youtube", {
   templatePath: "platforms/youtube",
   onLoad: () => {
@@ -531,9 +544,7 @@ registerView("twitch", {
     window.TwitchView?.destroy?.();
   }
 });
-registerView("twitter", {
-  templatePath: "platforms/twitter"
-});
+registerView("twitter", { templatePath: "platforms/twitter" });
 registerView("discord", {
   templatePath: "platforms/discord",
   onLoad: () => {
@@ -543,15 +554,8 @@ registerView("discord", {
     window.DiscordView?.destroy?.();
   }
 });
-registerView("support", {
-  templatePath: "support"
-});
+registerView("support", { templatePath: "support" });
 
-/* ------------------------------------------------------------
-   ADDITIVE PLACEHOLDER VIEWS (PHASE 0 COMPLETE)
-   ------------------------------------------------------------ */
-
-/* ✅ FIX — NOTHING ELSE CHANGED */
 registerView("ratelimits", {
   onLoad: () => {
     window.RatelimitsView?.init?.();
@@ -567,7 +571,6 @@ registerView("settings", {
   }
 });
 registerView("chat-replay", {});
-
 registerView("updates", {
   onLoad: () => {
     window.UpdatesView?.init?.();
@@ -576,7 +579,6 @@ registerView("updates", {
     window.UpdatesView?.destroy?.();
   }
 });
-
 registerView("about", {
   onLoad: () => {
     window.AboutView?.init?.();
