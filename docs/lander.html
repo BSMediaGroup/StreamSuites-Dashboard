@@ -291,7 +291,6 @@
       --glow-y: 50%;
       --glow-alpha: 0;
       --glow-on: 0;
-      --cool: 0;
     }
 
     /* localized BORDER-ONLY glow overlay (masked to border ring) */
@@ -312,11 +311,6 @@
           rgba(164,223,79, calc(var(--glow-alpha) * 0.32)) 35%,
           rgba(255,255,255, calc(var(--glow-alpha) * 0.10)) 55%,
           transparent 72%
-        ),
-        radial-gradient(
-          680px 680px at var(--glow-x) var(--glow-y),
-          rgba(100,196,255, calc(var(--glow-alpha) * var(--cool) * 0.55)),
-          transparent 76%
         );
 
       /* Mask out the inside so ONLY the border ring shows */
@@ -566,7 +560,16 @@
       // Target + current "on" state
       let ton = 0, con = 0;
 
+      // rAF control (pause when inactive)
+      let running = false;
+
       function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+
+      function startLoop() {
+        if (running) return;
+        running = true;
+        requestAnimationFrame(tick);
+      }
 
       window.addEventListener('pointermove', (e) => {
         const r = card.getBoundingClientRect();
@@ -581,10 +584,14 @@
         const ny = (e.clientY - r.top) / r.height;
         tx = clamp01(nx);
         ty = clamp01(ny);
+
+        // Ensure animation runs while interacting / fading
+        startLoop();
       }, { passive: true });
 
       window.addEventListener('pointerleave', () => {
         ton = 0;
+        startLoop(); // run just long enough to fade out, then stop
       });
 
       function tick() {
@@ -595,21 +602,22 @@
         // Fade on/off with inertia too (prevents snapping)
         con += (ton - con) * 0.12;
 
-        // Edge/corner bias for cool tint
-        const dx = Math.abs(cx - 0.5) * 2;
-        const dy = Math.abs(cy - 0.5) * 2;
-        const edge = Math.min(1, Math.sqrt(dx * dx + dy * dy));
-
         card.style.setProperty('--glow-x', (cx * 100) + '%');
         card.style.setProperty('--glow-y', (cy * 100) + '%');
         card.style.setProperty('--glow-on', con.toFixed(3));
         card.style.setProperty('--glow-alpha', (0.55 * con).toFixed(3));
-        card.style.setProperty('--cool', (edge * 0.95).toFixed(3));
+
+        // Stop the loop completely when fully inactive (no idle GPU cost)
+        if (ton === 0 && con < 0.002) {
+          con = 0;
+          card.style.setProperty('--glow-on', '0');
+          card.style.setProperty('--glow-alpha', '0');
+          running = false;
+          return;
+        }
 
         requestAnimationFrame(tick);
       }
-
-      tick();
     })();
   </script>
 </body>
