@@ -1,0 +1,157 @@
+<!-- ========================================================= -->
+<!-- StreamSuites — Data & Signals (VIEW PARTIAL) -->
+<!-- Read-only runtime visibility + export posture -->
+<!-- ========================================================= -->
+
+<header class="ss-header">
+  <div class="ss-header-left">
+    <h1 class="ss-title">StreamSuites</h1>
+    <span class="ss-subtitle">Data &amp; Signals</span>
+  </div>
+</header>
+
+<main class="ss-main">
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Runtime-owned, dashboard-visible</h2>
+      </div>
+    </header>
+    <div class="ss-panel-body">
+      <p class="muted">
+        This surface exposes the runtime's authoritative data snapshots and signal
+        feeds. Execution, mutation, and publishing are runtime-owned; the
+        dashboard exists purely for visibility, context, and configuration
+        readiness. Use this page in place of a traditional CMS UI — the runtime
+        remains the system of record.
+      </p>
+      <div class="ss-grid two-cols" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;align-items:start;">
+        <div class="ss-tile">
+          <h3>Read-only posture</h3>
+          <p class="muted">
+            No write paths are exposed here. Entities and signals are rendered as
+            placeholders until wired to live exports.
+          </p>
+        </div>
+        <div class="ss-tile">
+          <h3>Runtime authority</h3>
+          <p class="muted">
+            Scheduling, ingestion, and export pipelines run in the runtime.
+            Dashboard surfaces remain informational and non-interactive.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Entities</h2>
+        <p class="muted">Clips, Polls, Tallies, and Scoreboards — runtime snapshots only.</p>
+      </div>
+    </header>
+    <div class="ss-panel-body">
+      <div class="ss-grid two-cols" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;align-items:stretch;">
+        <div class="ss-tile">
+          <h3>Clips</h3>
+          <ul class="ss-list muted">
+            <li>Total count: <strong>—</strong> (placeholder)</li>
+            <li>Current states: <strong>draft / queued / published</strong> (placeholder)</li>
+            <li>Last updated: <strong>—</strong> (placeholder)</li>
+            <li>Export status: <strong>Internal visibility</strong></li>
+          </ul>
+        </div>
+        <div class="ss-tile">
+          <h3>Polls</h3>
+          <ul class="ss-list muted">
+            <li>Total count: <strong>—</strong> (placeholder)</li>
+            <li>Current states: <strong>open / closed</strong> (placeholder)</li>
+            <li>Last updated: <strong>—</strong> (placeholder)</li>
+            <li>Export status: <strong>Public results</strong></li>
+          </ul>
+        </div>
+        <div class="ss-tile">
+          <h3>Tallies</h3>
+          <ul class="ss-list muted">
+            <li>Total count: <strong>—</strong> (placeholder)</li>
+            <li>Current states: <strong>live / archived</strong> (placeholder)</li>
+            <li>Last updated: <strong>—</strong> (placeholder)</li>
+            <li>Export status: <strong>Internal + public rollups</strong></li>
+          </ul>
+        </div>
+        <div class="ss-tile">
+          <h3>Scoreboards</h3>
+          <ul class="ss-list muted">
+            <li>Total count: <strong>—</strong> (placeholder)</li>
+            <li>Current states: <strong>active / paused</strong> (placeholder)</li>
+            <li>Last updated: <strong>—</strong> (placeholder)</li>
+            <li>Export status: <strong>Public overlays</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Signals</h2>
+        <p class="muted">Visibility surface for runtime-emitted events — log-style only.</p>
+      </div>
+    </header>
+    <div class="ss-panel-body">
+      <div class="ss-panel" style="margin-bottom: 12px;">
+        <div class="ss-panel-body">
+          <ul class="ss-list muted">
+            <li>Chat trigger events (placeholder)</li>
+            <li>Tally increments (placeholder)</li>
+            <li>Poll vote events (placeholder)</li>
+            <li>Scoreboard updates (placeholder)</li>
+          </ul>
+        </div>
+      </div>
+      <p class="muted">
+        Event feeds will hydrate from runtime exports; this section does not
+        accept inputs or override execution order. Use it to confirm visibility
+        and audit signal reception once connected.
+      </p>
+    </div>
+  </section>
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Export snapshots</h2>
+        <p class="muted">Public JSON exports (placeholder) — runtime is authoritative.</p>
+      </div>
+    </header>
+    <div class="ss-panel-body">
+      <div class="ss-tile">
+        <h3>Public JSON exports</h3>
+        <p class="muted">
+          Placeholder for published exports (clips, polls, tallies, scoreboards).
+          This dashboard surfaces visibility only; exports are produced and
+          validated by the runtime.
+        </p>
+      </div>
+      <div class="ss-tile">
+        <h3>Operational reminder</h3>
+        <p class="muted">
+          Runtime owns all execution, mutation, and data custody. The dashboard
+          remains a read-only visibility and configuration surface to keep
+          creators aligned without exposing write paths.
+        </p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="ss-footer">
+  <span class="muted">
+    Data &amp; Signals is read-only. Runtime exports and signals are authoritative
+    and replace the need for a traditional CMS UI.
+  </span>
+</footer>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StreamSuites™ — Enter</title>
+  <meta name="description" content="StreamSuites first-arrival lander into the creator dashboard." />
+  <link rel="icon" href="./favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="./css/theme-dark.css" />
+  <style>
+    :root {
+      --lander-bg: radial-gradient(circle at 20% 20%, rgba(140, 199, 54, 0.12), transparent 25%),
+        radial-gradient(circle at 80% 0%, rgba(100, 196, 255, 0.15), transparent 30%),
+        radial-gradient(circle at 60% 80%, rgba(255, 153, 0, 0.12), transparent 25%),
+        #0b0c10;
+      --glass: rgba(255, 255, 255, 0.06);
+      --glass-border: rgba(255, 255, 255, 0.14);
+      --text: #e6e8eb;
+      --muted: #9ca0a8;
+      --accent: #8cc736;
+      --accent-strong: #a4df4f;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "SuiGenerisRg", system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      background: #0b0c10;
+      overflow: hidden;
+    }
+
+    .bg-animated {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(120deg, rgba(12, 14, 19, 0.9), rgba(18, 24, 32, 0.95)), var(--lander-bg);
+      background-size: 160% 160%;
+      animation: gradientMove 18s ease-in-out infinite;
+      overflow: hidden;
+    }
+
+    .particles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .particles::before,
+    .particles::after {
+      content: "";
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: transparent;
+      box-shadow:
+        40vw 10vh rgba(255, 255, 255, 0.2),
+        60vw 20vh rgba(255, 255, 255, 0.14),
+        30vw 50vh rgba(255, 255, 255, 0.16),
+        70vw 70vh rgba(255, 255, 255, 0.18),
+        20vw 80vh rgba(255, 255, 255, 0.12),
+        80vw 40vh rgba(140, 199, 54, 0.18),
+        10vw 30vh rgba(140, 199, 54, 0.16),
+        50vw 90vh rgba(100, 196, 255, 0.16);
+      animation: drift 22s linear infinite;
+    }
+
+    .particles::after {
+      box-shadow:
+        15vw 15vh rgba(255, 255, 255, 0.12),
+        45vw 25vh rgba(255, 255, 255, 0.16),
+        75vw 55vh rgba(255, 255, 255, 0.18),
+        25vw 65vh rgba(255, 255, 255, 0.14),
+        55vw 85vh rgba(140, 199, 54, 0.2),
+        85vw 35vh rgba(100, 196, 255, 0.16),
+        5vw 75vh rgba(255, 153, 0, 0.16),
+        95vw 45vh rgba(255, 255, 255, 0.1);
+      animation-duration: 28s;
+      animation-direction: reverse;
+    }
+
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes drift {
+      0% { transform: translate3d(0, 0, 0) scale(1); }
+      50% { transform: translate3d(-10px, -12px, 0) scale(1.04); }
+      100% { transform: translate3d(0, 0, 0) scale(1); }
+    }
+
+    .lander-shell {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px 32px;
+    }
+
+    .lander-card {
+      max-width: 960px;
+      width: 100%;
+      padding: 32px;
+      border-radius: 18px;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+      border: 1px solid var(--glass-border);
+      box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .brand img {
+      width: 76px;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-family: "RechargeBd", "SuiGenerisRg", sans-serif;
+      font-size: 32px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .brand .tagline {
+      margin: 4px 0 0;
+      color: var(--muted);
+    }
+
+    .hero-copy {
+      margin-bottom: 28px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .cta-primary {
+      --glow-color: var(--accent-strong);
+      --glow-spread-color: rgba(164, 223, 79, 0.32);
+      --enhanced-glow-color: rgba(214, 255, 138, 0.9);
+      --btn-color: rgba(19, 24, 15, 0.9);
+      border: .25em solid var(--glow-color);
+      padding: 1em 3em;
+      color: var(--glow-color);
+      font-size: 15px;
+      font-weight: bold;
+      background-color: var(--btn-color);
+      border-radius: 1em;
+      outline: none;
+      box-shadow:
+        0 0 1em .25em var(--glow-color),
+        0 0 4em 1em var(--glow-spread-color),
+        inset 0 0 .75em .25em var(--glow-color);
+      text-shadow: 0 0 .5em var(--glow-color);
+      transition: all 0.3s;
+      font-family: "Sui Generis", "SuiGenerisRg", sans-serif;
+      cursor: pointer;
+    }
+
+    .cta-primary:hover {
+      box-shadow:
+        0 0 1.5em .35em var(--enhanced-glow-color),
+        0 0 4.5em 1.25em rgba(164, 223, 79, 0.42),
+        inset 0 0 1em .35em var(--glow-color);
+      transform: translateY(-1px) scale(1.01);
+      color: #f6ffe8;
+    }
+
+    .cta-primary:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+    }
+
+    .cta-secondary-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    .cta-secondary {
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      font-size: 13px;
+      text-decoration: none;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .cta-secondary:hover {
+      border-color: rgba(140, 199, 54, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .footer-links {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--glass-border);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .footer-links a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+
+    .cta-block {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-animated">
+    <div class="particles"></div>
+  </div>
+  <div class="lander-shell">
+    <div class="lander-card">
+      <div class="brand">
+        <img src="./assets/logos/LOG2-3D-SML.png" alt="StreamSuites" />
+        <div>
+          <h1>StreamSuites™</h1>
+          <p class="tagline">Modular livestream automation &amp; overlays</p>
+        </div>
+      </div>
+      <p class="hero-copy">
+        Welcome to the StreamSuites dashboard entry point. Runtime owns all execution; this lander keeps the focus on the brand while directing you into the dashboard surfaces. Minimal, cinematic, and purpose-driven.
+      </p>
+      <div class="cta-block">
+        <a class="cta-primary" href="./home.html">Enter</a>
+        <div class="cta-secondary-row">
+          <a class="cta-secondary" href="./clips.html">/clips</a>
+          <a class="cta-secondary" href="./polls.html">/polls</a>
+          <a class="cta-secondary" href="./scoreboards.html">/scoreboards</a>
+          <a class="cta-secondary" href="./tallies.html">/tallies</a>
+        </div>
+      </div>
+      <div class="footer-links">
+        <a href="./support">/support</a>
+        <a href="./developers">/developers</a>
+        <a href="./privacy">/privacy</a>
+        <a href="./about">/about</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
