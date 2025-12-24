@@ -38,7 +38,9 @@
       animateFill();
       const mouseHandler = animateFill;
       wrapper.addEventListener("mouseenter", mouseHandler);
-      cleanupFns.push(() => wrapper.removeEventListener("mouseenter", mouseHandler));
+      cleanupFns.push(() =>
+        wrapper.removeEventListener("mouseenter", mouseHandler)
+      );
     });
   }
 
@@ -99,7 +101,9 @@
         };
 
         target.addEventListener("click", boundHandler);
-        cleanupFns.push(() => target.removeEventListener("click", boundHandler));
+        cleanupFns.push(() =>
+          target.removeEventListener("click", boundHandler)
+        );
       });
 
       const keyHandler = (event) => {
@@ -109,7 +113,9 @@
       };
 
       row.addEventListener("keydown", keyHandler);
-      cleanupFns.push(() => row.removeEventListener("keydown", keyHandler));
+      cleanupFns.push(() =>
+        row.removeEventListener("keydown", keyHandler)
+      );
     });
 
     const resizeHandler = () => {
@@ -118,16 +124,40 @@
     };
 
     window.addEventListener("resize", resizeHandler);
-    cleanupFns.push(() => window.removeEventListener("resize", resizeHandler));
+    cleanupFns.push(() =>
+      window.removeEventListener("resize", resizeHandler)
+    );
+  }
+
+  function scrollToAnchorIfNeeded() {
+    if (location.hash !== "#roadmap") return;
+
+    requestAnimationFrame(() => {
+      const el = document.getElementById("roadmap");
+      if (el) {
+        el.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }
+    });
   }
 
   function init() {
     // Delay ensures DOM is fully injected by SPA
     requestAnimationFrame(() => {
-      const rows = Array.from(document.querySelectorAll(".ss-skill-row"));
+      const rows = Array.from(
+        document.querySelectorAll(".ss-skill-row")
+      );
       initSkillBars(rows);
       initSkillToggles(rows);
+      scrollToAnchorIfNeeded();
     });
+
+    window.addEventListener("hashchange", scrollToAnchorIfNeeded);
+    cleanupFns.push(() =>
+      window.removeEventListener("hashchange", scrollToAnchorIfNeeded)
+    );
   }
 
   function destroy() {
