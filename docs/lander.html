@@ -236,61 +236,78 @@
     }
 
     /* ===============================
-       SHOOTING STAR (OCCASIONAL, VISIBLE, GPU-CHEAP)
+       SHOOTING STAR (CINEMATIC, RARE, CSS-ONLY)
        =============================== */
 
     .shooting-star {
       position: absolute;
-      top: 12%;
-      left: -30%;
-      width: 320px;
-      height: 2.5px;
+      top: 15%;
+      right: 10%;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
       pointer-events: none;
 
-      background: linear-gradient(
-        90deg,
-        rgba(255,255,255,0),
-        rgba(180,220,255,0.95),
-        rgba(255,255,255,0)
-      );
+      background: #ffffff;
+
+      box-shadow:
+        0 0 6px rgba(255,255,255,0.9),
+        0 0 12px rgba(180,220,255,0.6);
 
       opacity: 0;
-      filter: blur(0.4px);
-      transform: translate3d(0,0,0) rotate(-18deg);
 
-      animation: shootingStar 14s linear infinite;
+      transform: rotate(315deg) translateX(0);
+      animation: shootingStarMove 18s linear infinite;
       will-change: transform, opacity;
     }
 
-    @keyframes shootingStar {
-      /* idle */
+    .shooting-star::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 280px;
+      height: 1px;
+      transform: translateY(-50%);
+      background: linear-gradient(
+        90deg,
+        rgba(255,255,255,0.9),
+        rgba(255,255,255,0.4),
+        transparent
+      );
+    }
+
+    /* core motion */
+    @keyframes shootingStarMove {
+      /* idle (randomized gap) */
       0% {
         opacity: 0;
-        transform: rotate(-18deg) translate3d(-40vw, -20vh, 0);
+        transform: rotate(315deg) translateX(0);
       }
 
       /* appear */
-      12% {
+      8% {
         opacity: 1;
       }
 
-      /* main visible pass */
-      18% {
+      /* visible travel */
+      12% {
         opacity: 1;
-        transform: rotate(-18deg) translate3d(120vw, 50vh, 0);
+        transform: rotate(315deg) translateX(-900px);
       }
 
       /* fade out */
-      22% {
+      16% {
         opacity: 0;
       }
 
-      /* remain idle for rest of cycle */
+      /* remain idle */
       100% {
         opacity: 0;
-        transform: rotate(-18deg) translate3d(140vw, 60vh, 0);
+        transform: rotate(315deg) translateX(-900px);
       }
     }
+
 
 
     /* ===============================
