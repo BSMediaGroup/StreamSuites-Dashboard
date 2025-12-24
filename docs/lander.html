@@ -285,6 +285,37 @@
       border: 1px solid var(--glass-border);
       box-shadow: 0 20px 60px rgba(0,0,0,0.6);
       backdrop-filter: blur(10px);
+
+      /* hover glow variables (default center, invisible) */
+      --glow-x: 50%;
+      --glow-y: 50%;
+      --glow-alpha: 0;
+    }
+
+    /* localized hover glow overlay */
+    .lander-card::after {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      pointer-events: none;
+
+      background:
+        radial-gradient(
+          240px 240px at var(--glow-x) var(--glow-y),
+          rgba(120,180,255,var(--glow-alpha)),
+          rgba(120,180,255,0.12) 35%,
+          rgba(255,255,255,0.06) 55%,
+          transparent 70%
+        );
+
+      mix-blend-mode: screen;
+      opacity: 0.9;
+      transition: opacity 0.25s ease;
+    }
+
+    .lander-card:hover::after {
+      opacity: 1;
     }
 
     .brand {
@@ -442,17 +473,8 @@
        =============================== */
 
     @media (prefers-reduced-motion: reduce) {
-      .particles::before {
-        animation: starDriftFar 140s linear infinite, starTwinkleFar 9s ease-in-out infinite;
-      }
-      .particles::after {
-        animation: starDriftNear 90s linear infinite, starTwinkleNear 7s ease-in-out infinite;
-      }
-      .shooting-star {
+      .lander-card::after {
         display: none;
-      }
-      .bg-animated {
-        animation-duration: 14s;
       }
     }
   </style>
@@ -505,5 +527,46 @@
 
     </div>
   </div>
+
+  <!-- Hover glow inertia logic -->
+  <script>
+    (function () {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      const card = document.querySelector('.lander-card');
+      if (!card) return;
+
+      let tx = 0.5, ty = 0.5;
+      let cx = 0.5, cy = 0.5;
+
+      card.addEventListener('mousemove', (e) => {
+        const r = card.getBoundingClientRect();
+        tx = (e.clientX - r.left) / r.width;
+        ty = (e.clientY - r.top) / r.height;
+      });
+
+      card.addEventListener('mouseleave', () => {
+        tx = cy = 0.5;
+        ty = cy = 0.5;
+      });
+
+      function tick() {
+        cx += (tx - cx) * 0.08;
+        cy += (ty - cy) * 0.08;
+
+        const dx = Math.abs(cx - 0.5);
+        const dy = Math.abs(cy - 0.5);
+        const edge = Math.min(1, Math.sqrt(dx*dx + dy*dy) * 1.6);
+
+        card.style.setProperty('--glow-x', (cx * 100) + '%');
+        card.style.setProperty('--glow-y', (cy * 100) + '%');
+        card.style.setProperty('--glow-alpha', (0.35 + edge * 0.35).toFixed(3));
+
+        requestAnimationFrame(tick);
+      }
+
+      tick();
+    })();
+  </script>
 </body>
 </html>
