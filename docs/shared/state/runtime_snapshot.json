@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2025-12-24T22:25:55.601097Z",
+  "generated_at": "2025-12-26T13:01:38.486870Z",
   "platforms": [
     {
       "platform": "discord",
@@ -15,7 +15,7 @@
       "enabled": true,
       "telemetry_enabled": true,
       "status": "running",
-      "last_heartbeat": "2025-12-24T22:25:54.424836Z",
+      "last_heartbeat": "2025-12-26T13:01:37.519312Z",
       "error": null
     },
     {
@@ -56,7 +56,7 @@
         "twitter": true,
         "discord": true
       },
-      "last_heartbeat": "2025-12-24T22:25:54.424836Z",
+      "last_heartbeat": "2025-12-26T13:01:37.519312Z",
       "error": null
     }
   ]
