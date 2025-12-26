@@ -302,31 +302,6 @@
     hasAnimated = true;
   }
 
-  function initProgressObserver(cards) {
-    const triggerEl = document.getElementById("public-roadmap-list");
-    if (!triggerEl || !cards.length) return;
-
-    const runAnimation = () => animateProgress(cards);
-
-    if (prefersReducedMotion.matches) {
-      runAnimation();
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries, obs) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          runAnimation();
-          obs.disconnect();
-        }
-      },
-      { threshold: 0.35, rootMargin: "0px 0px -10% 0px" }
-    );
-
-    observer.observe(triggerEl);
-    cleanupFns.push(() => observer.disconnect());
-  }
-
   function destroy() {
     cleanupFns.forEach((fn) => fn());
     cleanupFns = [];
@@ -338,7 +313,7 @@
     const data = await loadData();
     const cards = render(data);
     initToggles(cards);
-    initProgressObserver(cards);
+    animateProgress(cards);
     attachHoverGlow(cards);
   }
 
