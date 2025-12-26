@@ -311,6 +311,7 @@ StreamSuites-Dashboard/
 │   │   ├── platforms.json
 │   │   ├── poll_votes.json
 │   │   ├── polls.json
+│   │   ├── roadmap.json
 │   │   ├── rate_limits.json
 │   │   ├── runtime_snapshot.json
 │   │   ├── score_events.json
@@ -342,6 +343,7 @@ StreamSuites-Dashboard/
 │   │   ├── public-polls.js  # Placeholder data renderer for public polls gallery
 │   │   ├── public-tallies.js# Placeholder data renderer for public tallies gallery
 │   │   ├── public-scoreboards.js # Placeholder data renderer for public scoreboards gallery
+│   │   ├── public-roadmap.js # Public changelog roadmap renderer (animated <progress> bars)
 │   │   ├── poll-detail.js   # Poll detail visualization controls
 │   │   ├── tally-detail.js  # Tally detail visualization controls
 │   │   ├── utils/

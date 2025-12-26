@@ -885,7 +885,7 @@ button,
 }
 
 :root {
-  --public-btn-size: clamp(1.25rem, 2vw, 1.8rem);
+  --public-btn-size: clamp(1rem, 1.5vw, 1.25rem);
   --public-btn-hover-time: 400ms;
   --public-btn-hover-ease: cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -968,11 +968,13 @@ button.public-btn span {
   letter-spacing: -0.01em;
   font-weight: 600;
   font-size: var(--public-btn-size);
+  line-height: 1.1;
   color: #dfe9ff;
   text-shadow: 0em 0.18em 0.08em rgba(0, 0, 0, 0.35);
   transition: all var(--public-btn-hover-time) var(--public-btn-hover-ease);
   padding-inline: 1.4em;
-  padding-block: 0.8em;
+  padding-block: 0.45em;
+  max-height: 40px;
 }
 
 button.public-btn span::after {
