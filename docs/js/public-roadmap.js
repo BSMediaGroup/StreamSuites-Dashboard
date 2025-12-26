@@ -167,6 +167,10 @@
     return Array.from(container.querySelectorAll(".public-roadmap-card"));
   }
 
+  const renderRoadmapRows = render;
+  // Exposed for reuse by Dashboard About view (read-only).
+  window.renderRoadmapRows = renderRoadmapRows;
+
   function setExpanded(card, shouldExpand) {
     const desc = card.querySelector(".ss-skill-description");
     const toggle = card.querySelector(".ss-progress-toggle");
