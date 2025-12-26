@@ -6,6 +6,10 @@
    Copyright: © 2025 Brainstream Media Group
    ====================================================================== */
 
+// Fix: restored missing renderRoadmapRows() required by AboutView.init
+// Reason: function was referenced but not present in executed file state
+// Impact: restores roadmap rendering and progress bars on About page
+
 // Maintenance note: duplicate definitions of sectionAnchor, entryAnchor, renderErrors, and renderSections were removed; initSkillBars was repaired to close braces and restore animation logic; file is now syntactically complete.
 
 (() => {
@@ -78,6 +82,16 @@
       console.warn("Unable to load roadmap data", err);
       return [];
     }
+  }
+
+  function renderRoadmapRows(data) {
+    const container = document.getElementById("ss-roadmap-rows");
+    if (!container || !Array.isArray(data)) return [];
+
+    const sorted = [...data].sort((a, b) => (a.order || 0) - (b.order || 0));
+    container.innerHTML = sorted.map(buildSkillRow).join("");
+
+    return Array.from(container.querySelectorAll(".ss-skill-row"));
   }
 
   function initSkillBars(rows) {
