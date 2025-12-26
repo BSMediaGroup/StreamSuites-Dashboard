@@ -13,18 +13,88 @@
 
   const dataPath = `${basePath || ""}/data/roadmap.json`.replace(/\/+/g, "/");
   const fillGradient = "linear-gradient(90deg, #57b9ff, #63ffa2)";
-  const animationDuration = 1400;
-  const hoverDuration = 950;
+  const animationDuration = 1200;
 
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   let cleanupFns = [];
   let openCard = null;
+  let hasAnimated = false;
 
-  function easeInOutCubic(t) {
-    return t < 0.5
-      ? 4 * t * t * t
-      : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  function createBezierEasing(p1x, p1y, p2x, p2y) {
+    const NEWTON_ITERATIONS = 4;
+    const NEWTON_MIN_SLOPE = 0.001;
+    const SUBDIVISION_PRECISION = 0.0000001;
+    const SUBDIVISION_MAX_ITERATIONS = 10;
+    const kSplineTableSize = 11;
+    const kSampleStepSize = 1.0 / (kSplineTableSize - 1.0);
+    const sampleValues = new Float32Array(kSplineTableSize);
+
+    function calcBezier(t, a1, a2) {
+      return ((1 - 3 * a2 + 3 * a1) * t + (3 * a2 - 6 * a1)) * t * t + 3 * a1 * t;
+    }
+
+    function getSlope(t, a1, a2) {
+      return 3 * (1 - 3 * a2 + 3 * a1) * t * t + 2 * (3 * a2 - 6 * a1) * t + 3 * a1;
+    }
+
+    for (let i = 0; i < kSplineTableSize; i++) {
+      sampleValues[i] = calcBezier(i * kSampleStepSize, p1x, p2x);
+    }
+
+    function getTForX(x) {
+      let intervalStart = 0;
+      let currentSample = 1;
+      const lastSample = kSplineTableSize - 1;
+
+      for (; currentSample !== lastSample && sampleValues[currentSample] <= x; ++currentSample) {
+        intervalStart += kSampleStepSize;
+      }
+
+      --currentSample;
+
+      const dist =
+        (x - sampleValues[currentSample]) /
+        (sampleValues[currentSample + 1] - sampleValues[currentSample]);
+      let guessForT = intervalStart + dist * kSampleStepSize;
+      const initialSlope = getSlope(guessForT, p1x, p2x);
+
+      if (initialSlope >= NEWTON_MIN_SLOPE) {
+        for (let i = 0; i < NEWTON_ITERATIONS; ++i) {
+          const currentSlope = getSlope(guessForT, p1x, p2x);
+          if (currentSlope === 0) return guessForT;
+          const currentX = calcBezier(guessForT, p1x, p2x) - x;
+          guessForT -= currentX / currentSlope;
+        }
+        return guessForT;
+      }
+
+      if (initialSlope === 0) return guessForT;
+
+      let t0 = intervalStart;
+      let t1 = intervalStart + kSampleStepSize;
+      guessForT = (t1 - t0) * 0.5 + t0;
+
+      for (let i = 0; i < SUBDIVISION_MAX_ITERATIONS; ++i) {
+        const currentX = calcBezier(guessForT, p1x, p2x) - x;
+        if (Math.abs(currentX) < SUBDIVISION_PRECISION) break;
+        if (currentX > 0) {
+          t1 = guessForT;
+        } else {
+          t0 = guessForT;
+        }
+        guessForT = (t1 - t0) * 0.5 + t0;
+      }
+
+      return guessForT;
+    }
+
+    return function easing(x) {
+      if (p1x === p1y && p2x === p2y) return x;
+      return calcBezier(getTForX(x), p1y, p2y);
+    };
   }
+
+  const bezierEase = createBezierEasing(0.19, 1, 0.22, 1);
 
   function resolveAssetPath(asset) {
     if (!asset) return "";
@@ -173,6 +243,7 @@
 
     if (prefersReducedMotion.matches) {
       progress.value = target;
+      progress.classList.add("is-animated");
       return;
     }
 
@@ -183,46 +254,92 @@
     const step = (timestamp) => {
       const elapsed = timestamp - start;
       const pct = Math.min(elapsed / duration, 1);
-      const eased = easeInOutCubic(pct);
+      const eased = bezierEase(pct);
       progress.value = target * eased;
       if (pct < 1) {
         progress._frame = requestAnimationFrame(step);
+      } else {
+        progress.classList.add("is-animated");
       }
     };
 
     progress._frame = requestAnimationFrame(step);
   }
 
+  function attachHoverGlow(cards) {
+    cards.forEach((card) => {
+      const progress = card.querySelector(".public-roadmap-progress");
+      if (!progress) return;
+
+      const addGlow = () => progress.classList.add("is-glow");
+      const removeGlow = () => progress.classList.remove("is-glow");
+
+      card.addEventListener("mouseenter", addGlow);
+      card.addEventListener("mouseleave", removeGlow);
+      card.addEventListener("focusin", addGlow);
+      card.addEventListener("focusout", removeGlow);
+
+      cleanupFns.push(() => {
+        card.removeEventListener("mouseenter", addGlow);
+        card.removeEventListener("mouseleave", removeGlow);
+        card.removeEventListener("focusin", addGlow);
+        card.removeEventListener("focusout", removeGlow);
+      });
+    });
+  }
+
   function animateProgress(cards) {
+    if (!cards.length || hasAnimated) return;
+
     cards.forEach((card) => {
       const progress = card.querySelector(".public-roadmap-progress");
       if (!progress) return;
       const target = Math.max(0, Math.min(100, Number(card.getAttribute("data-score")) || 0));
 
       animateBar(progress, target);
-
-      const hoverHandler = () => {
-        progress.classList.add("is-hover");
-        animateBar(progress, target, hoverDuration);
-        setTimeout(() => progress.classList.remove("is-hover"), 320);
-      };
-
-      card.addEventListener("mouseenter", hoverHandler);
-      cleanupFns.push(() => card.removeEventListener("mouseenter", hoverHandler));
     });
+
+    hasAnimated = true;
+  }
+
+  function initProgressObserver(cards) {
+    const triggerEl = document.getElementById("public-roadmap-list");
+    if (!triggerEl || !cards.length) return;
+
+    const runAnimation = () => animateProgress(cards);
+
+    if (prefersReducedMotion.matches) {
+      runAnimation();
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries, obs) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          runAnimation();
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.35, rootMargin: "0px 0px -10% 0px" }
+    );
+
+    observer.observe(triggerEl);
+    cleanupFns.push(() => observer.disconnect());
   }
 
   function destroy() {
     cleanupFns.forEach((fn) => fn());
     cleanupFns = [];
     openCard = null;
+    hasAnimated = false;
   }
 
   async function init() {
     const data = await loadData();
     const cards = render(data);
     initToggles(cards);
-    animateProgress(cards);
+    initProgressObserver(cards);
+    attachHoverGlow(cards);
   }
 
   if (document.readyState === "loading") {

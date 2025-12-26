@@ -1195,13 +1195,15 @@ button.public-btn:active::after {
 .public-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
+  gap: 5px;
+  padding: 5px 9px;
   border-radius: 999px;
   background: linear-gradient(135deg, rgba(86, 136, 255, 0.25), rgba(115, 215, 174, 0.2));
   border: 1px solid rgba(255, 255, 255, 0.18);
   color: #dfe9ff;
-  font-size: 12px;
+  font-size: 9px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  line-height: 1.2;
+  vertical-align: middle;
 }

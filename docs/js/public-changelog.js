@@ -46,18 +46,23 @@
     `;
   }
 
-  function renderRelease(release) {
+  function renderRelease(release, isCurrent) {
     const dateLabel = formatDate(release.date);
     const categories = CATEGORY_ORDER
       .map((cat) => renderCategory(cat, release?.changes?.[cat]))
       .filter(Boolean)
       .join("");
 
+    const currentTag = isCurrent
+      ? `<span class="pill pill-success changelog-current" aria-label="Latest release">Current</span>`
+      : "";
+
     return `
       <article class="public-glass-card changelog-entry">
         <div class="section-heading">
           <div class="changelog-title">
             <h3>${release.version || "Unversioned"}</h3>
+            ${currentTag}
             ${dateLabel ? `<span class="lede">${dateLabel}</span>` : ""}
           </div>
           ${release.summary ? `<span class="lede">${release.summary}</span>` : ""}
@@ -109,7 +114,9 @@
       return new Date(b.date) - new Date(a.date);
     });
 
-    container.innerHTML = sorted.map(renderRelease).join("");
+    container.innerHTML = sorted
+      .map((release, index) => renderRelease(release, index === 0))
+      .join("");
   }
 
   if (document.readyState === "loading") {
