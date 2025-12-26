@@ -2043,3 +2043,129 @@ body.viz-expanded {
   .public-nav { justify-content: flex-start; }
   .public-topbar { align-items: flex-start; }
 }
+
+/* ======================================================================
+   Public About (manifest-driven)
+   ====================================================================== */
+.public-about-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.public-about-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.public-about-section {
+  background: rgba(15, 21, 32, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+}
+
+.public-about-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.public-about-anchor {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.public-about-anchor:hover,
+.public-about-anchor:focus {
+  text-decoration: underline;
+}
+
+.public-about-section-body {
+  display: grid;
+  gap: 12px;
+}
+
+.public-about-entry {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.public-about-entry-header {
+  margin-bottom: 6px;
+}
+
+.public-about-entry h4,
+.public-about-entry h5 {
+  margin: 0 0 6px 0;
+  font-weight: 700;
+}
+
+.public-about-entry p {
+  margin: 0;
+  color: #d8e4ef;
+  line-height: 1.6;
+}
+
+.public-about-consumer {
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.public-about-developer {
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.public-about-toggle {
+  align-self: flex-start;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #0aa0ff, #0ed0ff);
+  border: none;
+  color: #0d1117;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.public-about-toggle:hover,
+.public-about-toggle:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 160, 255, 0.35);
+}
+
+.public-about-developer-body {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 12px;
+}
+
+.public-alert {
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #0d1117;
+}
+
+.public-alert-warning {
+  background: rgba(255, 205, 86, 0.16);
+  border-color: rgba(255, 205, 86, 0.6);
+  color: #ffe9a6;
+}
+
+.public-alert ul {
+  margin: 6px 0 0 16px;
+}
