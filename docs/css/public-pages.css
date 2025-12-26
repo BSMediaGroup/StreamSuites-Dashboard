@@ -1965,7 +1965,25 @@ body.viz-expanded {
 
 .changelog-container { display: flex; flex-direction: column; gap: 12px; }
 
-.changelog-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.changelog-header-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.changelog-title {
+  margin: 0;
+  line-height: 1.1;
+}
+
+.changelog-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  /* optical correction — REQUIRED */
+  transform: translateY(-1px);
+}
 
 .changelog-header {
   display: flex;

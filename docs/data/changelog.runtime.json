@@ -1,0 +1,22 @@
+{
+  "meta": {
+    "project": "StreamSuites Runtime",
+    "last_updated": "2025-12-25"
+  },
+  "entries": [
+    {
+      "id": "2025-12-runtime-export-refresh",
+      "date": "2025-12-18",
+      "version": "0.1.x",
+      "scope": "runtime",
+      "title": "Runtime export refresh",
+      "summary": "Runtime changelog now ships as a committed JSON bundle for static delivery.",
+      "details": [
+        "Pinned runtime changelog exports to a versioned JSON artifact served from GitHub Pages.",
+        "Kept dashboard merge logic tolerant of missing runtime payloads while preserving dashboard entries.",
+        "Matched scope tagging with dashboard releases so combined views stay consistent."
+      ],
+      "tags": ["runtime", "exports", "visibility"]
+    }
+  ]
+}
