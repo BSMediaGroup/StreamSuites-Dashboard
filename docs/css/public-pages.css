@@ -143,12 +143,14 @@ body {
 }
 
 .pill-ghost {
-  padding: 9px 12px;
+  padding: 7px 10px;
   border-radius: 999px;
   border: 1px dashed rgba(255, 255, 255, 0.18);
   color: var(--text-muted);
   letter-spacing: 0.05em;
-  font-size: 11px;
+  font-size: 9px;
+  line-height: 1.2;
+  vertical-align: middle;
 }
 
 .section-grid {
@@ -290,15 +292,23 @@ body {
 .pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
+  gap: 5px;
+  padding: 6px 10px;
   border-radius: 999px;
   border: 1px solid var(--border-subtle);
   background: rgba(255, 255, 255, 0.03);
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 9px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  line-height: 1.2;
+  vertical-align: middle;
+}
+
+.pill-success {
+  background: rgba(87, 186, 120, 0.18);
+  border-color: rgba(87, 186, 120, 0.55);
+  color: #c8f4d8;
 }
 
 .cta-link {
@@ -516,6 +526,8 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  line-height: 1.2;
+  vertical-align: middle;
 }
 
 .platform-badge.rumble {
@@ -1525,14 +1537,19 @@ body.viz-expanded {
 }
 
 .version-pill {
-  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
   border-radius: 999px;
   background: rgba(140, 199, 54, 0.2);
   border: 1px solid rgba(140, 199, 54, 0.5);
   color: #e7f7c8;
-  font-size: 12px;
+  font-size: 9px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  line-height: 1.2;
+  vertical-align: middle;
 }
 
 .public-hero {
@@ -1769,18 +1786,34 @@ body.viz-expanded {
   border-color: rgba(120, 195, 255, 0.4);
 }
 
-.public-roadmap-progress.is-hover {
-  box-shadow: inset 0 0 0.25em rgba(0, 0, 0, 0.55), 0 0 0.65em rgba(120, 195, 255, 0.35);
+@keyframes roadmapGlowPulse {
+  0% {
+    box-shadow:
+      inset 0 0 0.25em rgba(0, 0, 0, 0.55),
+      0 0 0.4em rgba(120, 195, 255, 0.25),
+      0 0 0.95em rgba(96, 237, 190, 0.18);
+  }
+  100% {
+    box-shadow:
+      inset 0 0 0.2em rgba(0, 0, 0, 0.45),
+      0 0 0.7em rgba(120, 195, 255, 0.34),
+      0 0 1.2em rgba(96, 237, 190, 0.25);
+  }
 }
 
-.public-roadmap-card:hover .public-roadmap-progress::-webkit-progress-value,
-.public-roadmap-progress.is-hover::-webkit-progress-value {
-  filter: brightness(1.08);
+.public-roadmap-progress.is-glow {
+  box-shadow: inset 0 0 0.25em rgba(0, 0, 0, 0.55), 0 0 0.65em rgba(120, 195, 255, 0.32);
+  border-color: rgba(120, 195, 255, 0.4);
 }
 
-.public-roadmap-card:hover .public-roadmap-progress::-moz-progress-bar,
-.public-roadmap-progress.is-hover::-moz-progress-bar {
-  filter: brightness(1.08);
+.public-roadmap-progress.is-glow::-webkit-progress-value {
+  filter: brightness(1.06);
+  animation: roadmapGlowPulse 2.4s ease-in-out infinite alternate;
+}
+
+.public-roadmap-progress.is-glow::-moz-progress-bar {
+  filter: brightness(1.06);
+  animation: roadmapGlowPulse 2.4s ease-in-out infinite alternate;
 }
 
 .public-roadmap-legend,
@@ -1826,7 +1859,7 @@ body.viz-expanded {
 
 .changelog-container { display: flex; flex-direction: column; gap: 12px; }
 
-.changelog-title { display: flex; align-items: baseline; gap: 10px; }
+.changelog-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
 .changelog-entry .section-heading {
   flex-direction: column;
