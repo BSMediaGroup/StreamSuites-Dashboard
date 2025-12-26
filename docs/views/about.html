@@ -16,11 +16,276 @@
       <span><strong>Version:</strong> <span id="about-version-meta">Loading…</span></span>
       <span aria-hidden="true">•</span>
       <span><strong>Last updated:</strong> <span id="about-updated-meta">Loading…</span></span>
+      <span aria-hidden="true">•</span>
+      <span><strong>Owner:</strong> <span id="about-owner-meta">Loading…</span></span>
+      <span aria-hidden="true">•</span>
+      <span><strong>Copyright:</strong> <span id="about-copyright-meta">Loading…</span></span>
     </div>
   </header>
 
   <div class="ss-panel-body">
     <div id="about-error-container" class="ss-about-errors"></div>
     <div id="about-sections" class="ss-about-sections"></div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- VISUAL ROADMAP (STATIC) -->
+<!-- ================================================================ -->
+<section class="ss-panel" id="roadmap" style="margin-top: 16px;">
+  <header class="ss-panel-header">
+    <h2>Roadmap (Visual Only)
+      <details class="ss-roadmap-legend">
+        <summary class="ss-legend-summary">Legend</summary>
+        <div class="ss-legend-body">
+          <div class="ss-legend-row"><strong>0–5% · Concept:</strong> Conceptual only. No runtime scaffolding or contracts exist yet.</div>
+          <div class="ss-legend-row"><strong>10–15% · Planned:</strong> Planned and documented. Architecture discussed, but no executable runtime scaffolding.</div>
+          <div class="ss-legend-row"><strong>20–30% · Scaffolded:</strong> Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution.</div>
+          <div class="ss-legend-row"><strong>40–50% · Functional:</strong> Core runtime behavior exists and executes deterministically. Not feature-complete.</div>
+          <div class="ss-legend-row"><strong>55–60% · Integrated:</strong> Integrated with runtime orchestration, quotas, or control planes. Stable but evolving.</div>
+          <div class="ss-legend-row"><strong>65–75% · Locked:</strong> Contracts stabilized. Runtime behavior considered production-safe barring bug fixes.</div>
+          <div class="ss-legend-row"><strong>80%+ · Mature:</strong> Feature-complete, stable, and unlikely to change without versioned migration.</div>
+        </div>
+      </details>
+    </h2>
+  </header>
+
+  <div class="ss-panel-body">
+
+    <style>
+      .ss-skill-track {
+        position: relative;
+        width: 100%;
+        height: 3px;
+        border-radius: 999px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .ss-skill-fill {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 0%;
+        border-radius: inherit;
+        background: linear-gradient(
+          90deg,
+          #00c6ff,
+          #00aaff,
+          #00f6ff
+        );
+        box-shadow:
+          0 0 6px rgba(0, 170, 255, 0.7),
+          0 0 14px rgba(0, 170, 255, 0.55);
+      }
+
+      .ss-skill-fill.pulsing {
+        animation: ssGlowPulse 2.4s ease-in-out infinite alternate;
+      }
+
+      @keyframes ssGlowPulse {
+        0% {
+          box-shadow:
+            0 0 6px rgba(0, 170, 255, 0.75),
+            0 0 14px rgba(0, 170, 255, 0.55),
+            0 0 24px rgba(0, 170, 255, 0.35);
+        }
+        100% {
+          box-shadow:
+            0 0 10px rgba(0, 210, 255, 0.95),
+            0 0 24px rgba(0, 210, 255, 0.75),
+            0 0 38px rgba(0, 210, 255, 0.55);
+        }
+      }
+
+      .ss-progress-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .ss-progress-icon {
+        display: inline-flex;
+        width: 16px;
+        height: 16px;
+        background-color: currentColor;
+        mask: var(--progress-icon) center / contain no-repeat;
+        -webkit-mask: var(--progress-icon) center / contain no-repeat;
+      }
+
+      .ss-roadmap-legend {
+        display: inline-block;
+        margin-left: 10px;
+        font-size: 0.9em;
+      }
+
+      .ss-legend-summary {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 8px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        cursor: pointer;
+        user-select: none;
+        font-size: 0.88em;
+        letter-spacing: 0.01em;
+      }
+
+      .ss-legend-summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .ss-legend-body {
+        margin-top: 6px;
+        padding: 8px 10px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.035);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        max-width: none;
+        font-size: 0.84em;
+        color: var(--text-muted);
+        line-height: 1.5;
+        width: 100%;
+        font-family: "SuiGenerisRg", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+
+      .ss-legend-row {
+        font-size: 0.84em;
+        line-height: 1.45;
+      }
+
+      .ss-legend-row + .ss-legend-row {
+        margin-top: 6px;
+      }
+
+      .ss-legend-outer {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        width: 100%;
+      }
+
+      .ss-legend-outer summary {
+        margin-right: 10px;
+      }
+
+      .ss-progress-card {
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        padding: 10px 12px;
+        transition: border-color 0.2s ease, background 0.2s ease;
+        background: rgba(255, 255, 255, 0.02);
+        cursor: pointer;
+      }
+
+      .ss-progress-card + .ss-progress-card {
+        margin-top: 10px;
+      }
+
+      .ss-progress-row {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .ss-progress-row.is-open {
+        border-color: rgba(0, 198, 255, 0.5);
+        background: radial-gradient(circle at 15% 20%, rgba(0, 198, 255, 0.08), rgba(255, 255, 255, 0.02));
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+      }
+
+      .ss-progress-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+      }
+
+      .ss-progress-main {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+      }
+
+      .ss-progress-right {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+      }
+
+      .ss-progress-meta {
+        white-space: nowrap;
+      }
+
+      .ss-progress-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+      }
+
+      .ss-progress-toggle:hover {
+        border-color: rgba(0, 198, 255, 0.4);
+        color: var(--text-primary);
+        background: rgba(0, 198, 255, 0.08);
+      }
+
+      .ss-progress-toggle span {
+        display: inline-block;
+        transition: transform 0.18s ease;
+      }
+
+      .ss-progress-row.is-open .ss-progress-toggle span {
+        transform: rotate(90deg) translateX(-2px);
+      }
+
+      .ss-skill-description {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.35s ease;
+        color: var(--text-muted);
+      }
+
+      .ss-skill-description p {
+        margin: 0;
+        line-height: 1.55;
+        font-size: 0.95em;
+      }
+
+      .ss-skill-description-inner {
+        padding: 6px 10px 0 0;
+      }
+
+      .ss-skill-wrapper {
+        width: 100%;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+      }
+
+      .ss-skill-track {
+        cursor: default;
+      }
+    </style>
+    <div id="ss-roadmap-rows"></div>
+
+
+    <p class="muted" style="margin-top: 12px;">
+      Mechanics are not finalized; implementation details remain pending and will follow runtime design updates.
+    </p>
+
   </div>
 </section>
