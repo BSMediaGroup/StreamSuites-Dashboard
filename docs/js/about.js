@@ -6,6 +6,8 @@
    Copyright: © 2025 Brainstream Media Group
    ====================================================================== */
 
+// Maintenance note: duplicate definitions of sectionAnchor, entryAnchor, renderErrors, and renderSections were removed; initSkillBars was repaired to close braces and restore animation logic; file is now syntactically complete.
+
 (() => {
   "use strict";
 
@@ -27,14 +29,14 @@
       return window.AboutData.buildUrl("data/roadmap.json");
     }
 
-    return `${basePath || ""}/data/roadmap.json`.replace(/\/+/g, "/");
+    return `${basePath || ""}/data/roadmap.json`.replace(/\\+/g, "/");
   }
 
   function resolveAssetPath(asset) {
     if (!asset) return "";
     if (/^(https?:)?\/\//.test(asset) || asset.startsWith("/")) return asset;
     const trimmed = asset.replace(/^\.\//, "");
-    return `${basePath || ""}/${trimmed}`.replace(/\/+/g, "/");
+    return `${basePath || ""}/${trimmed}`.replace(/\\+/g, "/");
   }
 
   function sectionAnchor(sectionId) {
@@ -100,58 +102,24 @@
 
         void fill.offsetWidth;
 
-    const updatedEl = document.getElementById("about-updated-meta");
-    if (updatedEl) {
-      updatedEl.textContent = lastUpdated || "Unknown";
-    }
-  }
+        fill.style.transition = transitionTiming;
+        fill.style.width = `${targetWidth}%`;
+      }
 
-  function renderSections(sections = []) {
-    const container = document.getElementById("about-sections");
-    if (!container) return;
+      const observer = new IntersectionObserver(
+        (entries, obs) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            animateFill();
+            obs.unobserve(entry.target);
+          });
+        },
+        { threshold: 0.4 }
+      );
 
-    if (!sections.length) {
-      container.innerHTML = `<p class="muted">No about sections available.</p>`;
-      return;
-    }
-
-    const content = sections
-      .map((section) => {
-        const entries = Array.isArray(section.entries) ? section.entries : [];
-        const entryMarkup = entries
-          .filter((entry) => entry?.developer)
-          .map((entry) => {
-            const entryId = entryAnchor(section.id, entry.id);
-            const title = entry.developer?.title || entry.consumer?.title || "Untitled";
-            const body = entry.developer?.body || "";
-
-            return `
-              <article class="ss-about-entry" id="${entryId}">
-                <header class="ss-about-entry-header">
-                  <a class="ss-anchor" href="#${entryId}">${title}</a>
-                </header>
-                <div class="ss-about-entry-body">
-                  <p>${body}</p>
-                </div>
-              </article>
-            `;
-          })
-          .join("");
-
-        return `
-          <section class="ss-about-section" id="${sectionAnchor(section.id)}">
-            <header class="ss-about-section-header">
-              <a class="ss-anchor" href="#${sectionAnchor(section.id)}">${section.title}</a>
-            </header>
-            <div class="ss-about-section-body">
-              ${entryMarkup || '<p class="muted">No developer entries in this section.</p>'}
-            </div>
-          </section>
-        `;
-      })
-      .join("");
-
-    container.innerHTML = content;
+      observer.observe(wrapper);
+      cleanupFns.push(() => observer.disconnect());
+    });
   }
 
   function initSkillToggles(rows) {
@@ -215,35 +183,6 @@
     cleanupFns.push(() =>
       window.removeEventListener("resize", resizeHandler)
     );
-  }
-
-  function sectionAnchor(sectionId) {
-    return `about-${sectionId}`;
-  }
-
-  function entryAnchor(sectionId, entryId) {
-    return `about-${sectionId}-${entryId}`;
-  }
-
-  function renderErrors(errors = []) {
-    const container = document.getElementById("about-error-container");
-    if (!container) return;
-
-    if (!errors.length) {
-      container.innerHTML = "";
-      container.style.display = "none";
-      return;
-    }
-
-    const list = errors
-      .map(
-        (err) =>
-          `<li><strong>${err.source}:</strong> ${err.message || "Unknown error"}</li>`
-      )
-      .join("");
-
-    container.innerHTML = `<div class="ss-alert ss-alert-warning"><p><strong>About data issues</strong></p><ul>${list}</ul></div>`;
-    container.style.display = "block";
   }
 
   function renderMeta(version, lastUpdated) {
