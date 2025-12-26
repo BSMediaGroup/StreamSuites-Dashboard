@@ -12,7 +12,7 @@
   let cleanupFns = [];
   let openRow = null;
 
-  const roadmapDataPath = "../data/roadmap.json";
+  const roadmapDataPath = "./docs/data/roadmap.json";
 
   function formatScore(percent) {
     const score = percent / 10;
