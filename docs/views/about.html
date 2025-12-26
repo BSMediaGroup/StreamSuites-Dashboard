@@ -1,156 +1,33 @@
 <!-- ===================================================================== -->
-<!-- StreamSuites™ Dashboard — About View (Static, Read-Only)             -->
+<!-- StreamSuites™ Dashboard — About View (JSON-driven, Read-Only)         -->
 <!-- Version: v0.2.0-alpha                                                 -->
 <!-- Owner: Daniel Clancy                                                  -->
 <!-- Copyright: © 2025 Brainstream Media Group                             -->
 <!-- ===================================================================== -->
 
-<section class="ss-panel">
+<section class="ss-panel ss-about-panel">
 
-  <header class="ss-panel-header">
-    <h2>About StreamSuites</h2>
+  <header class="ss-panel-header ss-about-header">
+    <div>
+      <p class="muted">Developer-focused details rendered from canonical JSON.</p>
+      <h2>About StreamSuites</h2>
+    </div>
+    <div class="ss-meta-row about-meta-row">
+      <span><strong>Version:</strong> <span id="about-version-meta">Loading…</span></span>
+      <span aria-hidden="true">•</span>
+      <span><strong>Last updated:</strong> <span id="about-updated-meta">Loading…</span></span>
+      <span aria-hidden="true">•</span>
+      <span><strong>Owner:</strong> <span id="about-owner-meta">Loading…</span></span>
+      <span aria-hidden="true">•</span>
+      <span><strong>Copyright:</strong> <span id="about-copyright-meta">Loading…</span></span>
+    </div>
   </header>
 
   <div class="ss-panel-body">
-
-        <div class="ss-meta-row" style="margin-bottom: 12px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-          <span><strong>Version:</strong> <span id="about-version-meta">StreamSuites™ v0.2.0-alpha</span></span>
-          <span aria-hidden="true">•</span>
-          <span><strong>Owner:</strong> <span id="about-owner-meta">Daniel Clancy</span></span>
-          <span aria-hidden="true">•</span>
-          <span><strong>Copyright:</strong> <span id="about-copyright-meta">© 2025 Brainstream Media Group</span></span>
-        </div>
-
-	<!-- ============================================================ -->
-	<!-- CURRENT PHASE -->
-	<!-- ============================================================ -->
-	<section>
-	  <h3>Current Phase</h3>
-	  <p>
-		StreamSuites is a modular livestream automation platform built around an
-		enforcement-first, deterministic runtime. All orchestration, scheduling,
-		quotas, and state transitions are owned by the runtime so behavior remains
-		consistent across Rumble, Twitch, YouTube, and Discord without
-		platform-specific drift.
-	  </p>
-	  <p>
-		The dashboard and public-facing pages are intentionally passive surfaces.
-		They render runtime-exported snapshots, allow controlled configuration
-		authoring, and expose read-only public galleries for clips, polls, tallies,
-		and scoreboards without issuing live commands or API calls.
-	  </p>
-	  <p class="muted">
-		The platform is rolling out module by module. Runtime remains authoritative.
-		The dashboard stays static by design. Public pages reflect shipped exports
-		rather than live data pulls.
-	  </p>
-	</section>
-
-	<!-- ============================================================ -->
-	<!-- ARCHITECTURE & SEPARATION OF CONCERNS -->
-	<!-- ============================================================ -->
-	<section>
-	  <h3>Architecture & Separation of Concerns</h3>
-	  <ul class="ss-list">
-		<li>
-		  <strong>StreamSuites Unified Runtime:</strong>
-		  Executes automation, enforces quotas, schedules jobs, aggregates signals,
-		  and exports deterministic snapshots. It is the sole source of truth.
-		</li>
-		<li>
-		  <strong>StreamSuites Dashboard (this repo):</strong>
-		  A static HTML/CSS/JS application that runs fully client-side. It visualizes
-		  runtime exports, drafts configuration, and exposes public gallery views
-		  without any backend or control-plane authority.
-		</li>
-		<li>
-		  <strong>Public Pages:</strong>
-		  Standalone gallery and detail pages for clips, polls, tallies, and
-		  scoreboards. These pages are read-only and hydrate exclusively from
-		  runtime-produced JSON.
-		</li>
-	  </ul>
-	  <p class="muted">
-		Configuration, enforcement, observability, and execution are deliberately
-		decoupled to preserve safety, auditability, and deterministic behavior.
-	  </p>
-	</section>
-
-	<!-- ============================================================ -->
-	<!-- MILESTONE: RUMBLE SSE INGESTION -->
-	<!-- ============================================================ -->
-	<section>
-	  <h3>Milestone: Rumble SSE Chat Ingestion</h3>
-	  <ul class="ss-list">
-		<li>
-		  Rumble chat now ingests via the canonical SSE endpoint:
-		  <code>https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream</code>
-		</li>
-		<li>
-		  The stream emits <code>init</code> and <code>messages</code> events for
-		  reliable, scalable ingestion.
-		</li>
-		<li>
-		  Runtime-normalized exports now feed dashboards, public galleries, and
-		  downstream aggregation modules.
-		</li>
-		<li>
-		  The dashboard remains transport-agnostic and renders exported state only.
-		</li>
-	  </ul>
-	  <p class="muted">
-		Deprecated polling-based endpoints are not assumed. All ingestion details
-		live exclusively in the runtime.
-	  </p>
-	</section>
-
-	<!-- ============================================================ -->
-	<!-- DASHBOARD CAPABILITIES (READ-ONLY) -->
-	<!-- ============================================================ -->
-	<section>
-	  <h3>Dashboard Capabilities (Static)</h3>
-
-	  <h4>Overview</h4>
-	  <ul class="ss-list">
-		<li>High-level system, storage, and export visibility</li>
-		<li>Snapshot-based telemetry when runtime drops are present</li>
-		<li>Public galleries for clips, polls, tallies, and scoreboards</li>
-	  </ul>
-
-	  <h4>Creators</h4>
-	  <ul class="ss-list">
-		<li>Creator profile authoring aligned to runtime schemas</li>
-		<li>Platform enablement and notes fields</li>
-		<li>Deterministic import/export as JSON</li>
-	  </ul>
-
-	  <h4>Chat Triggers</h4>
-	  <ul class="ss-list">
-		<li>Trigger phrase definition, match modes, and cooldowns</li>
-		<li>Exported trigger catalogs rendered read-only</li>
-	  </ul>
-
-	  <h4>Data & Signals</h4>
-	  <ul class="ss-list">
-		<li>Read-only visibility into runtime databases and signal feeds</li>
-		<li>Paginated, searchable tables for clips, polls, tallies, scoreboards, triggers, and creators</li>
-		<li>Designed as an observability and debugging surface</li>
-	  </ul>
-	</section>
-
-	<!-- ============================================================ -->
-	<!-- CURRENT LIMITATIONS -->
-	<!-- ============================================================ -->
-	<section>
-	  <h3>Current Limitations</h3>
-	  <ul class="ss-list">
-		<li>No live runtime control from the dashboard</li>
-		<li>No authentication or role enforcement yet</li>
-		<li>Public pages are strictly read-only</li>
-		<li>No backend APIs are assumed or invoked</li>
-	  </ul>
-	</section>
-
+    <div id="about-error-container" class="ss-about-errors"></div>
+    <div id="about-sections" class="ss-about-sections"></div>
+  </div>
+</section>
 
 <!-- ================================================================ -->
 <!-- VISUAL ROADMAP (STATIC) -->
