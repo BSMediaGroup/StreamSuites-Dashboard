@@ -37,55 +37,33 @@
     return `${basePath || ""}/${trimmed}`.replace(/\/+/g, "/");
   }
 
-  function formatScore(percent) {
-    const score = percent / 10;
-    return Number.isInteger(score) ? score.toFixed(1) : score.toFixed(1);
+  function sectionAnchor(sectionId) {
+    return `about-${sectionId}`;
   }
 
-  function buildSkillRow(entry) {
-    const score = Math.max(0, Math.min(100, Number(entry.percent) || 0));
-    const normalizedScore = formatScore(score);
-    const pulseClass = entry.pulse ? " pulsing" : "";
-
-    const icon = resolveAssetPath(entry.icon || "assets/icons/ui/widget.svg");
-
-    return `
-    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="${normalizedScore}" title="${entry.tooltip || ""}" role="button" tabindex="0">
-      <div class="ss-progress-label">
-        <div class="ss-progress-main">
-          <span class="ss-progress-title">
-            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('${icon}')"></span>
-            ${entry.title}
-          </span>
-        </div>
-        <div class="ss-progress-right">
-          <span class="ss-progress-meta">${entry.meta}</span>
-          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
-            <span>▸</span>
-          </button>
-        </div>
-      </div>
-      <div class="ss-skill-description" aria-hidden="true">
-        <div class="ss-skill-description-inner">
-          <p class="muted">${entry.description}</p>
-        </div>
-      </div>
-      <div class="ss-skill-wrapper">
-        <div class="ss-skill-track">
-          <div class="ss-skill-fill${pulseClass}"></div>
-        </div>
-      </div>
-    </div>`;
+  function entryAnchor(sectionId, entryId) {
+    return `about-${sectionId}-${entryId}`;
   }
 
-  function renderRoadmapRows(data) {
-    const container = document.getElementById("ss-roadmap-rows");
-    if (!container || !Array.isArray(data)) return [];
+  function renderErrors(errors = []) {
+    const container = document.getElementById("about-error-container");
+    if (!container) return;
 
-    const sorted = [...data].sort((a, b) => (a.order || 0) - (b.order || 0));
-    container.innerHTML = sorted.map(buildSkillRow).join("");
+    if (!errors.length) {
+      container.innerHTML = "";
+      container.style.display = "none";
+      return;
+    }
 
-    return Array.from(container.querySelectorAll(".ss-skill-row"));
+    const list = errors
+      .map(
+        (err) =>
+          `<li><strong>${err.source}:</strong> ${err.message || "Unknown error"}</li>`
+      )
+      .join("");
+
+    container.innerHTML = `<div class="ss-alert ss-alert-warning"><p><strong>About data issues</strong></p><ul>${list}</ul></div>`;
+    container.style.display = "block";
   }
 
   async function loadRoadmapData() {
@@ -122,41 +100,58 @@
 
         void fill.offsetWidth;
 
-        fill.style.transition = transitionTiming;
-        fill.style.width = targetWidth + "%";
-
-        setTimeout(() => {
-          fill.classList.add("pulsing");
-        }, 1300);
-      }
-
-      animateFill();
-      const mouseHandler = animateFill;
-      wrapper.addEventListener("mouseenter", mouseHandler);
-      cleanupFns.push(() =>
-        wrapper.removeEventListener("mouseenter", mouseHandler)
-      );
-    });
+    const updatedEl = document.getElementById("about-updated-meta");
+    if (updatedEl) {
+      updatedEl.textContent = lastUpdated || "Unknown";
+    }
   }
 
-  function setRowExpanded(row, shouldExpand) {
-    const desc = row.querySelector(".ss-skill-description");
-    const toggle = row.querySelector(".ss-skill-toggle");
-    if (!desc || !toggle) return;
+  function renderSections(sections = []) {
+    const container = document.getElementById("about-sections");
+    if (!container) return;
 
-    if (shouldExpand) {
-      row.classList.add("is-open");
-      desc.style.maxHeight = `${desc.scrollHeight}px`;
-      desc.setAttribute("aria-hidden", "false");
-      toggle.setAttribute("aria-expanded", "true");
-      openRow = row;
+    if (!sections.length) {
+      container.innerHTML = `<p class="muted">No about sections available.</p>`;
       return;
     }
 
-    row.classList.remove("is-open");
-    desc.style.maxHeight = "0px";
-    desc.setAttribute("aria-hidden", "true");
-    toggle.setAttribute("aria-expanded", "false");
+    const content = sections
+      .map((section) => {
+        const entries = Array.isArray(section.entries) ? section.entries : [];
+        const entryMarkup = entries
+          .filter((entry) => entry?.developer)
+          .map((entry) => {
+            const entryId = entryAnchor(section.id, entry.id);
+            const title = entry.developer?.title || entry.consumer?.title || "Untitled";
+            const body = entry.developer?.body || "";
+
+            return `
+              <article class="ss-about-entry" id="${entryId}">
+                <header class="ss-about-entry-header">
+                  <a class="ss-anchor" href="#${entryId}">${title}</a>
+                </header>
+                <div class="ss-about-entry-body">
+                  <p>${body}</p>
+                </div>
+              </article>
+            `;
+          })
+          .join("");
+
+        return `
+          <section class="ss-about-section" id="${sectionAnchor(section.id)}">
+            <header class="ss-about-section-header">
+              <a class="ss-anchor" href="#${sectionAnchor(section.id)}">${section.title}</a>
+            </header>
+            <div class="ss-about-section-body">
+              ${entryMarkup || '<p class="muted">No developer entries in this section.</p>'}
+            </div>
+          </section>
+        `;
+      })
+      .join("");
+
+    container.innerHTML = content;
   }
 
   function initSkillToggles(rows) {
