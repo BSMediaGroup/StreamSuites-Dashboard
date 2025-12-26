@@ -12,7 +12,7 @@
   let cleanupFns = [];
   let openRow = null;
 
-  const roadmapDataPath = "./docs/data/roadmap.json";
+  const roadmapDataPath = "https://bsmediagroup.github.io/StreamSuites-Dashboard/docs/data/roadmap.json";
 
   function formatScore(percent) {
     const score = percent / 10;
