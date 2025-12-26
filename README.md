@@ -300,7 +300,7 @@ StreamSuites-Dashboard/
 │   │   └── theme-dark.css   # Dark theme (authoritative)
 │   │
 │   ├── data/                # Bundled JSON defaults + runtime snapshot examples
-│   │   ├── changelog.json
+│   │   ├── changelog.dashboard.json
 │   │   ├── chat_events.json
 │   │   ├── chat_triggers.json
 │   │   ├── clips.json
@@ -332,6 +332,7 @@ StreamSuites-Dashboard/
 │   │   ├── clips.js         # Runtime clip lifecycle surface (read-only, polling)
 │   │   ├── public-clips.js  # Placeholder data renderer for public clips gallery
 │   │   ├── public-changelog.js # Public changelog renderer (JSON-fed)
+│   │   ├── changelog-merge.js  # Merges dashboard + runtime changelog sources
 │   │   ├── data-signals.js  # Data & signals view wiring (read-only)
 │   │   ├── overview.js      # Overview dashboard wiring + telemetry
 │   │   ├── permissions.js   # Future permissions UI
