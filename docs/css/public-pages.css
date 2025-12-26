@@ -207,7 +207,7 @@ body {
 .section-heading {
   margin: 26px 0 10px;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
 }
 
@@ -407,7 +407,7 @@ body {
 .page-heading {
   margin: 26px 0 12px;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 12px;
 }
 
@@ -1548,7 +1548,7 @@ body.viz-expanded {
   font-size: 9px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  line-height: 1.2;
+  line-height: 1;
   vertical-align: middle;
 }
 
@@ -1757,16 +1757,34 @@ body.viz-expanded {
 }
 
 .public-roadmap-progress::-webkit-progress-value {
+  position: relative;
   border-radius: var(--roadmap-inner-r);
-  box-shadow: inset 0 0.05em 0.05em rgba(255, 255, 255, 0.35);
-  background: var(--fill, var(--roadmap-fill));
-  transition: width 0.3s ease;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.25),
+    0 6px 18px rgba(0, 210, 255, 0.25),
+    0 0 14px rgba(0, 210, 255, 0.45);
+  background-image:
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.35), transparent 60%),
+    var(--fill, var(--roadmap-fill));
+  background-size: 200% 100%;
+  background-position: 0% 50%;
+  transition: box-shadow 0.3s ease, filter 0.3s ease;
 }
 
 .public-roadmap-progress::-moz-progress-bar {
   border-radius: var(--roadmap-inner-r);
-  box-shadow: inset 0 0.05em 0.05em rgba(255, 255, 255, 0.35);
-  background: var(--fill, var(--roadmap-fill));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.25),
+    0 6px 18px rgba(0, 210, 255, 0.25),
+    0 0 14px rgba(0, 210, 255, 0.45);
+  background-image:
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.35), transparent 60%),
+    var(--fill, var(--roadmap-fill));
+  background-size: 200% 100%;
+  background-position: 0% 50%;
+  transition: box-shadow 0.3s ease, filter 0.3s ease;
 }
 
 .public-roadmap-progress::after {
@@ -1784,6 +1802,15 @@ body.viz-expanded {
 .public-roadmap-card:hover .public-roadmap-progress {
   box-shadow: inset 0 0 0.25em rgba(0, 0, 0, 0.65), 0 0 0.55em rgba(120, 195, 255, 0.25);
   border-color: rgba(120, 195, 255, 0.4);
+}
+
+@keyframes ssFillFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
 }
 
 @keyframes roadmapGlowPulse {
@@ -1807,13 +1834,33 @@ body.viz-expanded {
 }
 
 .public-roadmap-progress.is-glow::-webkit-progress-value {
-  filter: brightness(1.06);
+  filter: brightness(1.08);
   animation: roadmapGlowPulse 2.4s ease-in-out infinite alternate;
 }
 
 .public-roadmap-progress.is-glow::-moz-progress-bar {
-  filter: brightness(1.06);
+  filter: brightness(1.08);
   animation: roadmapGlowPulse 2.4s ease-in-out infinite alternate;
+}
+
+.public-roadmap-card:hover .public-roadmap-progress::-webkit-progress-value,
+.public-roadmap-card:focus-within .public-roadmap-progress::-webkit-progress-value {
+  animation: ssFillFlow 1.6s linear infinite;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.28),
+    0 8px 20px rgba(0, 210, 255, 0.3),
+    0 0 16px rgba(0, 210, 255, 0.55);
+}
+
+.public-roadmap-card:hover .public-roadmap-progress::-moz-progress-bar,
+.public-roadmap-card:focus-within .public-roadmap-progress::-moz-progress-bar {
+  animation: ssFillFlow 1.6s linear infinite;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.28),
+    0 8px 20px rgba(0, 210, 255, 0.3),
+    0 0 16px rgba(0, 210, 255, 0.55);
 }
 
 .public-roadmap-legend,
@@ -1883,7 +1930,7 @@ body.viz-expanded {
 
 .section-heading {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
   margin: 10px 0;
 }
