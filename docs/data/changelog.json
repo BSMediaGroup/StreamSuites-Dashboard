@@ -10,7 +10,7 @@
         { "text": "Legend overlays to clarify roadmap progression states." }
       ],
       "Changed": [
-        { "text": "Translated roadmap progress bars to native <progress> elements with gradient fills." },
+        { "text": "Translated roadmap progress bars to native &lt;progress&gt; elements with gradient fills." },
         { "text": "Refined glass container treatments across public sections for better depth." }
       ],
       "Fixed": [
