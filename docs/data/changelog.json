@@ -1,7 +1,7 @@
 [
   {
     "version": "0.2.0-alpha",
-    "date": "2024-12-12",
+    "date": "2025-12-25",
     "summary": "Public roadmap, button system, and support/tools shells.",
     "changes": {
       "Added": [
@@ -22,7 +22,7 @@
   },
   {
     "version": "0.1.x",
-    "date": "2024-09-20",
+    "date": "2025-12-16",
     "summary": "Foundations",
     "changes": {
       "Added": [
