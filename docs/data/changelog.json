@@ -1,38 +1,53 @@
-[
-  {
-    "version": "0.2.0-alpha",
-    "date": "2025-12-25",
-    "summary": "Public roadmap, button system, and support/tools shells.",
-    "changes": {
-      "Added": [
-        { "text": "Static public pages for support, tools, about, privacy, changelog, and accessibility." },
-        { "text": "Roadmap snapshots with expandable rows mirroring the dashboard experience." },
-        { "text": "Legend overlays to clarify roadmap progression states." }
-      ],
-      "Changed": [
-        { "text": "Translated roadmap progress bars to native &lt;progress&gt; elements with gradient fills." },
-        { "text": "Refined glass container treatments across public sections for better depth." }
-      ],
-      "Fixed": [
-        { "text": "Version badges render consistently across public shells and auxiliary pages." },
-        { "text": "CTA button sweeps and dotted grid backgrounds align with dashboard styling." }
-      ],
-      "Removed": []
-    }
+{
+  "meta": {
+    "project": "StreamSuites",
+    "version": "v0.2.0-alpha",
+    "last_updated": "2025-12-25"
   },
-  {
-    "version": "0.1.x",
-    "date": "2025-12-16",
-    "summary": "Foundations",
-    "changes": {
-      "Added": [
-        { "text": "Initial public previews for clips, polls, tallies, and scoreboards." }
+  "entries": [
+    {
+      "id": "2025-12-global-public-surface",
+      "date": "2025-12-25",
+      "version": "v0.2.0-alpha",
+      "scope": "global",
+      "title": "Public surface refresh",
+      "summary": "Public static shells gain roadmap parity, glass treatments, and consistent badges.",
+      "details": [
+        "Delivered static public pages for support, tools, about, privacy, changelog, and accessibility.",
+        "Mirrored dashboard roadmap snapshots with expandable rows and legend overlays on public pages.",
+        "Aligned CTA sweeps, dotted grids, and badge rendering across public shells for consistency."
       ],
-      "Changed": [
-        { "text": "Documented roadmap intent for automation hooks, chat triggers, and upload planning." }
+      "tags": ["public-pages", "roadmap", "glass-ui"],
+      "is_latest": true
+    },
+    {
+      "id": "2025-12-runtime-readonly",
+      "date": "2025-12-20",
+      "version": "0.1.x",
+      "scope": "runtime",
+      "title": "Read-only runtime scaffolding",
+      "summary": "Ensured static rendering paths stay deterministic and versioned for public previews.",
+      "details": [
+        "Swapped roadmap progress bars to native <progress> elements for deterministic, accessible rendering.",
+        "Stabilized version badge rendering across public shells to match dashboard runtime conventions.",
+        "Kept gradient sweeps and glass treatments runtime-safe for GitHub Pages delivery."
       ],
-      "Fixed": [],
-      "Removed": []
+      "tags": ["runtime", "rendering", "versioning"],
+      "is_latest": false
+    },
+    {
+      "id": "2025-12-dashboard-roadmap",
+      "date": "2025-12-16",
+      "version": "0.1.x",
+      "scope": "dashboard",
+      "title": "Dashboard roadmap foundations",
+      "summary": "Documented roadmap intent and aligned progress displays with dashboard styling.",
+      "details": [
+        "Published initial public previews for clips, polls, tallies, and scoreboards.",
+        "Documented automation hooks, chat triggers, and upload planning for roadmap visibility."
+      ],
+      "tags": ["roadmap", "previews", "dashboard"],
+      "is_latest": false
     }
-  }
-]
+  ]
+}
