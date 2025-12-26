@@ -12,21 +12,21 @@
   const Versioning = {
     _cache: null,
 
-    resolveVersionUrl() {
+    resolveBasePath() {
       try {
-        const pathParts = window.location.pathname.split("/");
-        const docsIndex = pathParts.lastIndexOf("docs");
-
-        if (docsIndex !== -1) {
-          const baseParts = pathParts.slice(0, docsIndex + 1);
-          const basePath = baseParts.join("/") || "/";
-          return `${basePath}/version.json`;
-        }
+        const parts = window.location.pathname.split("/").filter(Boolean);
+        if (!parts.length) return "";
+        const root = parts[0] === "docs" ? "docs" : parts[0];
+        return `/${root}`;
       } catch (err) {
-        console.warn("[Versioning] Failed to resolve version path", err);
+        console.warn("[Versioning] Failed to resolve base path", err);
+        return "";
       }
+    },
 
-      return "version.json";
+    resolveVersionUrl() {
+      const basePath = this.resolveBasePath();
+      return `${basePath || ""}/version.json`.replace(/\/+/g, "/");
     },
 
     async loadVersion() {

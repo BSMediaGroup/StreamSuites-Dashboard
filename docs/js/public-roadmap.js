@@ -1,22 +1,36 @@
 (() => {
   "use strict";
 
-  const dataPath = "./data/roadmap.json";
-  const gradients = [
-    "linear-gradient(90deg, #5e7de7, #c05bff)",
-    "linear-gradient(90deg, #f4d35e, #f76c6c)",
-    "linear-gradient(90deg, #5bd0ff, #63ffa2)",
-    "linear-gradient(90deg, #9bb7ff, #ff7ad1)",
-    "linear-gradient(90deg, #5ff0ff, #7d7bff)",
-    "linear-gradient(90deg, #9cf39b, #4dc5ff)"
-  ];
+  const basePath =
+    (window.Versioning && window.Versioning.resolveBasePath &&
+      window.Versioning.resolveBasePath()) ||
+    (() => {
+      const parts = window.location.pathname.split("/").filter(Boolean);
+      if (!parts.length) return "";
+      const root = parts[0] === "docs" ? "docs" : parts[0];
+      return `/${root}`;
+    })();
+
+  const dataPath = `${basePath || ""}/data/roadmap.json`.replace(/\/+/g, "/");
+  const fillGradient = "linear-gradient(90deg, #57b9ff, #63ffa2)";
+  const animationDuration = 1400;
+  const hoverDuration = 950;
 
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   let cleanupFns = [];
   let openCard = null;
 
-  function easeOutCubic(t) {
-    return 1 - Math.pow(1 - t, 3);
+  function easeInOutCubic(t) {
+    return t < 0.5
+      ? 4 * t * t * t
+      : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  function resolveAssetPath(asset) {
+    if (!asset) return "";
+    if (/^(https?:)?\/\//.test(asset) || asset.startsWith("/")) return asset;
+    const trimmed = asset.replace(/^\.\//, "");
+    return `${basePath || ""}/${trimmed}`.replace(/\/+/g, "/");
   }
 
   async function loadData() {
@@ -31,16 +45,16 @@
     }
   }
 
-  function buildCard(entry, index) {
-    const gradient = entry.gradient || gradients[index % gradients.length];
+  function buildCard(entry) {
     const percent = Math.max(0, Math.min(100, Number(entry.percent) || 0));
+    const icon = resolveAssetPath(entry.icon || "assets/icons/ui/widget.svg");
 
     return `
     <article class="public-glass-card public-roadmap-card ss-progress-row" data-score="${percent}" data-id="${entry.id}" title="${entry.tooltip || ""}" role="button" tabindex="0">
       <div class="ss-progress-label">
         <div class="ss-progress-main">
           <span class="ss-progress-title">
-            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('${entry.icon}')"></span>
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('${icon}')"></span>
             ${entry.title}
           </span>
         </div>
@@ -57,7 +71,7 @@
         </div>
       </div>
       <div class="public-progress-wrapper">
-        <progress class="public-roadmap-progress" value="0" max="100" style="--fill:${gradient};" aria-label="${entry.title} progress"></progress>
+        <progress class="public-roadmap-progress" value="0" max="100" style="--fill:${fillGradient};" aria-label="${entry.title} progress"></progress>
       </div>
     </article>`;
   }
@@ -65,6 +79,18 @@
   function render(data) {
     const container = document.getElementById("public-roadmap-list");
     if (!container) return [];
+
+    if (!Array.isArray(data) || data.length === 0) {
+      container.innerHTML = `
+        <article class="public-glass-card changelog-error">
+          <div class="section-heading">
+            <h3>Roadmap unavailable</h3>
+            <span class="lede">No roadmap entries could be loaded.</span>
+          </div>
+          <p class="muted">Please refresh to retry.</p>
+        </article>`;
+      return [];
+    }
 
     const sorted = [...data].sort((a, b) => (a.order || 0) - (b.order || 0));
     container.innerHTML = sorted.map(buildCard).join("");
@@ -142,34 +168,45 @@
     cleanupFns.push(() => window.removeEventListener("resize", resizeHandler));
   }
 
+  function animateBar(progress, target, duration = animationDuration) {
+    if (!progress) return;
+
+    if (prefersReducedMotion.matches) {
+      progress.value = target;
+      return;
+    }
+
+    if (progress._frame) cancelAnimationFrame(progress._frame);
+    const start = performance.now();
+    progress.value = 0;
+
+    const step = (timestamp) => {
+      const elapsed = timestamp - start;
+      const pct = Math.min(elapsed / duration, 1);
+      const eased = easeInOutCubic(pct);
+      progress.value = target * eased;
+      if (pct < 1) {
+        progress._frame = requestAnimationFrame(step);
+      }
+    };
+
+    progress._frame = requestAnimationFrame(step);
+  }
+
   function animateProgress(cards) {
     cards.forEach((card) => {
       const progress = card.querySelector(".public-roadmap-progress");
       if (!progress) return;
       const target = Math.max(0, Math.min(100, Number(card.getAttribute("data-score")) || 0));
 
-      if (prefersReducedMotion.matches) {
-        progress.value = target;
-        return;
-      }
-
-      const duration = 1200;
-      const start = performance.now();
-
-      const step = (timestamp) => {
-        const elapsed = timestamp - start;
-        const pct = Math.min(elapsed / duration, 1);
-        const eased = easeOutCubic(pct);
-        progress.value = target * eased;
-        if (pct < 1) requestAnimationFrame(step);
-      };
-
-      requestAnimationFrame(step);
+      animateBar(progress, target);
 
       const hoverHandler = () => {
         progress.classList.add("is-hover");
-        setTimeout(() => progress.classList.remove("is-hover"), 260);
+        animateBar(progress, target, hoverDuration);
+        setTimeout(() => progress.classList.remove("is-hover"), 320);
       };
+
       card.addEventListener("mouseenter", hoverHandler);
       cleanupFns.push(() => card.removeEventListener("mouseenter", hoverHandler));
     });

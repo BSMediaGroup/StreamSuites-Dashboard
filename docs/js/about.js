@@ -12,7 +12,24 @@
   let cleanupFns = [];
   let openRow = null;
 
-  const roadmapDataPath = "https://bsmediagroup.github.io/StreamSuites-Dashboard/docs/data/roadmap.json";
+  const basePath =
+    (window.Versioning && window.Versioning.resolveBasePath &&
+      window.Versioning.resolveBasePath()) ||
+    (() => {
+      const parts = window.location.pathname.split("/").filter(Boolean);
+      if (!parts.length) return "";
+      const root = parts[0] === "docs" ? "docs" : parts[0];
+      return `/${root}`;
+    })();
+
+  const roadmapDataPath = `${basePath || ""}/data/roadmap.json`.replace(/\/+/g, "/");
+
+  function resolveAssetPath(asset) {
+    if (!asset) return "";
+    if (/^(https?:)?\/\//.test(asset) || asset.startsWith("/")) return asset;
+    const trimmed = asset.replace(/^\.\//, "");
+    return `${basePath || ""}/${trimmed}`.replace(/\/+/g, "/");
+  }
 
   function formatScore(percent) {
     const score = percent / 10;
@@ -24,12 +41,14 @@
     const normalizedScore = formatScore(score);
     const pulseClass = entry.pulse ? " pulsing" : "";
 
+    const icon = resolveAssetPath(entry.icon || "assets/icons/ui/widget.svg");
+
     return `
     <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="${normalizedScore}" title="${entry.tooltip || ""}" role="button" tabindex="0">
       <div class="ss-progress-label">
         <div class="ss-progress-main">
           <span class="ss-progress-title">
-            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('${entry.icon}')"></span>
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('${icon}')"></span>
             ${entry.title}
           </span>
         </div>
