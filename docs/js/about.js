@@ -325,7 +325,20 @@
       return;
     }
 
-    const data = await AboutData.load();
+    let data;
+    try {
+      data = await AboutData.load();
+    } catch (err) {
+      console.warn("[AboutView] Failed to load about data", err);
+      renderErrors([
+        {
+          source: "about",
+          message: err?.message || "Unexpected error loading about data"
+        }
+      ]);
+      return;
+    }
+
     renderMeta(data.version, data.lastUpdated);
     renderVersionMetaFromRuntime();
     renderErrors(data.errors);

@@ -26,13 +26,18 @@
     return `${base || ""}/${path}`.replace(/\/+/g, "/");
   }
 
-  async function fetchJson(url) {
-    const response = await fetch(url, { cache: "no-store" });
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+    async function fetchJson(url) {
+      const response = await fetch(url, { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      try {
+        return await response.json();
+      } catch (err) {
+        throw new Error(`Invalid JSON (${err.message || err})`);
+      }
     }
-    return response.json();
-  }
 
   function normalizeEntry(entry) {
     return {
