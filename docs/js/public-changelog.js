@@ -1,18 +1,6 @@
 (() => {
   "use strict";
 
-  const basePath =
-    (window.Versioning && window.Versioning.resolveBasePath &&
-      window.Versioning.resolveBasePath()) ||
-    (() => {
-      const parts = window.location.pathname.split("/").filter(Boolean);
-      if (!parts.length) return "";
-      const root = parts[0] === "docs" ? "docs" : parts[0];
-      return `/${root}`;
-    })();
-
-  const dataPath = `${basePath || ""}/data/changelog.json`.replace(/\+/g, "/");
-
   const SCOPE_COLORS = {
     dashboard: {
       background: "linear-gradient(135deg, rgba(104, 158, 238, 0.22), rgba(60, 100, 170, 0.32))",
@@ -88,14 +76,14 @@
     const scopeTag = renderScopeTag(release.scope);
     const latestTag = renderLatestTag(isCurrent || release.is_latest);
     const versionTag = release.version
-      ? `<span class="pill pill-ghost">Version ${release.version}</span>`
+      ? `<span class="pill ss-tag-version">Version ${release.version}</span>`
       : "";
     const changeTags = renderTags(release.tags);
 
     return `
       <article class="public-glass-card changelog-entry"${release.scope ? ` data-scope="${release.scope}"` : ""}>
         <div class="section-heading">
-          <div class="changelog-title">
+          <div class="changelog-title changelog-header">
             <h3>${release.title || release.version || "Unversioned"}</h3>
             ${scopeTag}
             ${latestTag}
@@ -128,12 +116,9 @@
 
   async function loadChangelog() {
     try {
-      const res = await fetch(dataPath, { cache: "no-store" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const payload = await res.json();
-      if (Array.isArray(payload?.entries)) return payload.entries;
-      if (Array.isArray(payload)) return payload;
-      return [];
+      const { loadMergedChangelog } = await import("./changelog-merge.js");
+      const entries = await loadMergedChangelog();
+      return Array.isArray(entries) ? entries : [];
     } catch (err) {
       console.warn("[Changelog] Failed to load data", err);
       renderError("Changelog data is temporarily unavailable.");

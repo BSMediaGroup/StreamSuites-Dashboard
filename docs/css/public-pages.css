@@ -1967,6 +1967,14 @@ body.viz-expanded {
 
 .changelog-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
+.changelog-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  transform: translateY(-0.05em);
+}
+
 .changelog-entry .section-heading {
   flex-direction: column;
   align-items: flex-start;
@@ -1983,6 +1991,12 @@ body.viz-expanded {
 }
 
 .changelog-error .lede { color: #f7caca; }
+
+.ss-tag-version {
+  background: linear-gradient(90deg, #a855f7, #7c3aed);
+  color: #ffffff;
+  border-color: rgba(168, 85, 247, 0.6);
+}
 /* ======================================================================
    Public typography helpers
    ====================================================================== */
