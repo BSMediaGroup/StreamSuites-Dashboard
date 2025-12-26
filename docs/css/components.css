@@ -886,6 +886,7 @@ button,
 
 :root {
   --public-btn-size: clamp(0.675rem, 0.825vw, 0.765rem);
+  --public-btn-height: calc(var(--public-btn-size) * 2.9);
   --public-btn-hover-time: 400ms;
   --public-btn-hover-ease: cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -903,7 +904,7 @@ button,
 }
 
 .button-shadow {
-  --shadow-cuttoff-fix: 0.8em;
+  --shadow-cuttoff-fix: calc(var(--public-btn-height) * 0.26);
   position: absolute;
   width: calc(100% + var(--shadow-cuttoff-fix));
   height: calc(100% + var(--shadow-cuttoff-fix));
@@ -922,11 +923,11 @@ button,
   inset: 0;
   border-radius: 999vw;
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.15));
-  width: calc(100% - var(--shadow-cuttoff-fix));
-  height: calc(100% - var(--shadow-cuttoff-fix));
-  top: calc(var(--shadow-cuttoff-fix) * 0.6);
-  left: calc(var(--shadow-cuttoff-fix) * 0.6);
-  padding: 0.1em;
+  width: calc(100% - var(--shadow-cuttoff-fix) - (var(--shadow-cuttoff-fix) * 0.125));
+  height: calc(100% - var(--shadow-cuttoff-fix) - (var(--shadow-cuttoff-fix) * 0.125));
+  top: calc(var(--shadow-cuttoff-fix) - (var(--shadow-cuttoff-fix) * 0.25));
+  left: calc(var(--shadow-cuttoff-fix) - (var(--shadow-cuttoff-fix) * 0.4375));
+  padding: 0.125em;
   box-sizing: border-box;
   mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   mask-composite: exclude;
@@ -948,8 +949,9 @@ button.public-btn {
   z-index: 3;
   background: linear-gradient(-75deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
   border-radius: 999vw;
-  height: 34px;
-  max-height: 38px;
+  height: var(--public-btn-height);
+  min-height: var(--public-btn-height);
+  max-height: calc(var(--public-btn-height) * 1.05);
   box-shadow: inset 0 0.125em 0.125em rgba(0, 0, 0, 0.25),
     inset 0 -0.125em 0.125em rgba(255, 255, 255, 0.35),
     0 0.25em 0.125em -0.125em rgba(0, 0, 0, 0.35),
@@ -984,9 +986,11 @@ button.public-btn span {
   text-shadow: 0em 0.18em 0.08em rgba(0, 0, 0, 0.35);
   transition: all var(--public-btn-hover-time) var(--public-btn-hover-ease);
   padding-inline: 0.95em;
-  padding-block: 0.2em;
-  max-height: 38px;
-  min-height: 0;
+  padding-block: calc(var(--public-btn-height) * 0.24);
+  max-height: 100%;
+  min-height: 100%;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 button.public-btn span::after {
