@@ -266,6 +266,11 @@ StreamSuites-Dashboard/
 │   ├── accessibility.html  # Public accessibility statement
 │   ├── changelog.html      # Public roadmap + changelog
 │   │
+│   ├── about/              # Structured about page data (split for manageability)
+│   │   ├── about_part1_core.json
+│   │   ├── about_part2_platforms_interfaces.json
+│   │   └── about_part3_about_system_spec.json
+│   │
 │   ├── assets/
 │   │   ├── backgrounds/    # Hero/gradient backdrops and texture fills
 │   │   │   ├── .gitkeep
