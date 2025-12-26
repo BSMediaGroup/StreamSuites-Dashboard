@@ -28,7 +28,7 @@
       "title": "Read-only runtime scaffolding",
       "summary": "Ensured static rendering paths stay deterministic and versioned for public previews.",
       "details": [
-        "Swapped roadmap progress bars to native <progress> elements for deterministic, accessible rendering.",
+        "Swapped roadmap progress bars to native &lt;progress&gt; elements for deterministic, accessible rendering.",
         "Stabilized version badge rendering across public shells to match dashboard runtime conventions.",
         "Kept gradient sweeps and glass treatments runtime-safe for GitHub Pages delivery."
       ],
