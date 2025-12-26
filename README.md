@@ -124,6 +124,12 @@ Crucially, **none of these require rewriting the dashboard**.
 - **Polls Gallery (`docs/polls.html`)** — standalone, unauthenticated gallery of placeholder polls/results; static only, ready for future data hydration. Poll detail defaults to the bar view with pie available as a toggle.
 - **Tallies Gallery (`docs/tallies.html`)** — standalone gallery mirroring the polls layout for programmatic tallies; includes a tallies detail page (`docs/tallies/detail.html`) with bar/pie/custom views and placeholder aggregation data.
 - **Scoreboards Gallery (`docs/scoreboards.html`)** — new standalone gallery mirroring the polls layout for score-centric use cases: gambling totals, chat-driven games, engagement counters, and time-based tallies. Detail view (`docs/scoreboards/detail.html`) includes placeholder bar/pie visuals and metadata.
+- **About (`docs/about.html`)** — public-facing overview of StreamSuites, clarifying runtime vs. dashboard separation, shared version badge, and product-grade messaging.
+- **Privacy (`docs/privacy.html`)** — provisional public privacy policy surface using the shared glass layout and SEO metadata.
+- **Accessibility (`docs/accessibility.html`)** — accessibility statement with contact and compliance intent, sharing the public shell.
+- **Changelog (`docs/changelog.html`)** — public roadmap/changelog surface with native `<progress>` roadmap bars styled per the button/glass system and grouped release notes.
+- **Support (`docs/support/index.html` + `docs/support/views/*`)** — public parent page with sub-views for overview and documentation placeholders plus outbound platform support links.
+- **Tools (`docs/tools/index.html` + `docs/tools/views/*`)** — public parent page with sub-views for overview and per-tool CTAs using the conic-gradient button system.
 
 All public pages are **independent entry points** (no dashboard routing), GitHub Pages–safe, and reuse the shared dark styling in `docs/css/public-pages.css`.
 
@@ -254,11 +260,16 @@ StreamSuites-Dashboard/
 │   ├── polls.html          # Public polls gallery (standalone)
 │   ├── tallies.html        # Public tallies gallery (standalone)
 │   ├── scoreboards.html    # Public scoreboards gallery (standalone)
+│   ├── about.html          # Public about page (runtime vs. dashboard clarity)
+│   ├── privacy.html        # Public privacy policy surface
+│   ├── accessibility.html  # Public accessibility statement
+│   ├── changelog.html      # Public roadmap + changelog
 │   │
 │   ├── assets/
 │   │   ├── backgrounds/    # Hero/gradient backdrops and texture fills
 │   │   │   ├── .gitkeep
-│   │   │   └── seodash.jpg
+│   │   │   ├── seodash.jpg
+│   │   │   └── seoshare.jpg
 │   │   ├── fonts/          # Self-hosted font files when needed
 │   │   │   └── .gitkeep
 │   │   ├── icons/          # UI icons and small glyphs
@@ -353,6 +364,19 @@ StreamSuites-Dashboard/
 │   │
 │   ├── scoreboards/
 │   │   └── detail.html
+│   │
+│   ├── support/             # Public support parent + sub-views
+│   │   ├── index.html
+│   │   └── views/
+│   │       ├── documentation.html
+│   │       └── overview.html
+│   │
+│   ├── tools/               # Public tools parent + sub-views
+│   │   ├── index.html
+│   │   └── views/
+│   │       ├── automation.html
+│   │       ├── overview.html
+│   │       └── studio.html
 │   │
 │   ├── shared/
 │   │   └── state/

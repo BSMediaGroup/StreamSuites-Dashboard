@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<!-- StreamSuites™ — Public Changelog -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Changelog • StreamSuites™</title>
+  <meta name="description" content="Roadmap progress bars and release notes for StreamSuites public surfaces." />
+  <link rel="canonical" href="https://bsmediagroup.github.io/StreamSuites-Dashboard/changelog.html" />
+  <meta property="og:title" content="Changelog • StreamSuites™" />
+  <meta property="og:description" content="Roadmap progress bars and release notes for StreamSuites public surfaces." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bsmediagroup.github.io/StreamSuites-Dashboard/changelog.html" />
+  <meta property="og:image" content="https://bsmediagroup.github.io/StreamSuites-Dashboard/assets/backgrounds/seoshare.jpg" />
+  <link rel="icon" href="./favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="./css/theme-dark.css" />
+  <link rel="stylesheet" href="./css/components.css" />
+  <link rel="stylesheet" href="./css/public-pages.css" />
+</head>
+<body>
+  <div class="public-bg" aria-hidden="true"></div>
+  <div class="public-surface">
+    <div class="public-shell">
+      <header class="public-topbar">
+        <a class="public-brand" href="./lander.html">
+          <img src="./assets/logos/logo.png" alt="StreamSuites" />
+          <div>
+            <h1>StreamSuites™</h1>
+            <p class="brand-subtitle">Public surface</p>
+          </div>
+        </a>
+        <div class="public-nav">
+          <span class="version-pill version-badge">Loading version…</span>
+          <a href="./about.html">About</a>
+          <a href="./tools/">Tools</a>
+          <a href="./support/">Support</a>
+          <a href="./privacy.html">Privacy</a>
+          <a href="./changelog.html">Changelog</a>
+          <a href="./accessibility.html">Accessibility</a>
+        </div>
+      </header>
+
+      <section class="public-hero public-glass-panel">
+        <div class="section-heading">
+          <h2>Roadmap</h2>
+          <span class="public-badge">Progress snapshot</span>
+        </div>
+        <p class="muted">Native <code>&lt;progress&gt;</code> bars match the dashboard roadmap but remain fully static for GitHub Pages hosting.</p>
+        <div class="roadmap-grid" aria-label="Roadmap progress bars">
+          <div class="public-glass-card">
+            <div class="section-meta">Creator onboarding</div>
+            <progress class="roadmap-progress" value="72" max="100"></progress>
+          </div>
+          <div class="public-glass-card">
+            <div class="section-meta">Automation runners</div>
+            <progress class="roadmap-progress" value="64" max="100"></progress>
+          </div>
+          <div class="public-glass-card">
+            <div class="section-meta">Clips + polls surface</div>
+            <progress class="roadmap-progress" value="86" max="100"></progress>
+          </div>
+          <div class="public-glass-card">
+            <div class="section-meta">Scoreboards + tallies</div>
+            <progress class="roadmap-progress" value="58" max="100"></progress>
+          </div>
+          <div class="public-glass-card">
+            <div class="section-meta">Support center</div>
+            <progress class="roadmap-progress" value="42" max="100"></progress>
+          </div>
+          <div class="public-glass-card">
+            <div class="section-meta">Distribution hooks</div>
+            <progress class="roadmap-progress" value="70" max="100"></progress>
+          </div>
+        </div>
+        <div class="roadmap-legend">
+          <span>Values mirror dashboard roadmap.</span>
+          <span>Fills use StreamSuites gradients + sparkle.</span>
+          <span>Capsule radius + inset highlight preserved.</span>
+          <span>Static, no JS animations.</span>
+        </div>
+      </section>
+
+      <section class="public-stack" aria-label="Changelog entries">
+        <article class="public-glass-card">
+          <div class="section-heading">
+            <h3>v0.2.0-alpha</h3>
+            <span class="lede">Public roadmap, button system, and support/tools shells.</span>
+          </div>
+          <ul class="public-list">
+            <li>Added static public pages for support, tools, about, privacy, changelog, and accessibility.</li>
+            <li>Introduced conic-outline CTA buttons with hover sweep and dotted grid backgrounds.</li>
+            <li>Translated roadmap progress bars to native <code>&lt;progress&gt;</code> with gradient fills.</li>
+            <li>Applied glass containers to all public sections and enabled version badges.</li>
+          </ul>
+        </article>
+
+        <article class="public-glass-card">
+          <div class="section-heading">
+            <h3>v0.1.x</h3>
+            <span class="lede">Foundations</span>
+          </div>
+          <ul class="public-list">
+            <li>Initial public clips, polls, tallies, and scoreboards previews.</li>
+            <li>Dashboard remains noindex with static data loaders.</li>
+            <li>Planned automation hooks for chat triggers and uploads.</li>
+          </ul>
+        </article>
+
+        <!-- TODO: Future automation will hydrate this list from release metadata. -->
+      </section>
+
+      <footer class="public-footer">
+        <div>
+          <span class="footer-version">Version</span>
+          <span class="footer-copyright">©</span>
+        </div>
+        <nav aria-label="Public footer navigation">
+          <a href="./about.html">About</a>
+          <a href="./tools/">Tools</a>
+          <a href="./support/">Support</a>
+          <a href="./privacy.html">Privacy</a>
+          <a href="./changelog.html">Changelog</a>
+          <a href="./accessibility.html">Accessibility</a>
+        </nav>
+      </footer>
+    </div>
+  </div>
+
+  <script src="./js/utils/versioning.js"></script>
+  <script src="./js/utils/version-stamp.js"></script>
+  <script>
+    if (window.Versioning) {
+      Versioning.applyVersionToElements({ version: ".version-badge" });
+    }
+  </script>
+</body>
+</html>

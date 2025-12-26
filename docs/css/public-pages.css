@@ -1439,3 +1439,230 @@ body.viz-expanded {
     grid-template-columns: 1fr;
   }
 }
+
+/* ======================================================================
+   Shared public shell (background + nav baseline)
+   ====================================================================== */
+.public-bg {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 20% 20%, rgba(86, 136, 255, 0.08), rgba(6, 12, 20, 0.95)),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.03)),
+    url("../assets/backgrounds/seoshare.jpg") center/cover no-repeat;
+  filter: saturate(1.1);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.public-surface {
+  position: relative;
+  z-index: 1;
+}
+
+.public-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 22px 80px;
+  position: relative;
+}
+
+.public-topbar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45);
+}
+
+.public-brand {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  color: #e7f1ff;
+  text-decoration: none;
+}
+
+.public-brand img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.public-brand h1 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 0.05em;
+}
+
+.public-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.public-nav a {
+  color: #dfe5f3;
+  text-decoration: none;
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 160ms ease, color 160ms ease, background 160ms ease;
+}
+
+.public-nav a:hover,
+.public-nav a:focus-visible {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.version-pill {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(140, 199, 54, 0.2);
+  border: 1px solid rgba(140, 199, 54, 0.5);
+  color: #e7f7c8;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.public-hero {
+  margin-top: 22px;
+  padding: 26px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, rgba(30, 41, 57, 0.8), rgba(17, 23, 31, 0.8)),
+    radial-gradient(circle at 18% 20%, rgba(140, 199, 54, 0.15), rgba(0, 0, 0, 0));
+  box-shadow: 0 22px 40px rgba(0, 0, 0, 0.5);
+}
+
+.public-hero h2 {
+  margin: 0 0 10px;
+  font-size: 28px;
+  letter-spacing: 0.05em;
+}
+
+.public-hero p {
+  margin: 0 0 12px;
+  color: #c6d7f5;
+  max-width: 760px;
+}
+
+.public-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.public-footer {
+  margin-top: 34px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(12, 17, 26, 0.85);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.public-footer nav {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.public-footer a {
+  color: #e7f1ff;
+  text-decoration: none;
+  font-size: 13px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.public-footer a:hover { text-decoration: underline; }
+
+/* ======================================================================
+   Roadmap progress bars (native <progress>)
+   ====================================================================== */
+:root {
+  --roadmap-h: 1em;
+  --roadmap-r: calc(0.5 * var(--roadmap-h));
+  --roadmap-b: 0.15em;
+}
+
+.roadmap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+  margin-top: 12px;
+}
+
+.roadmap-progress {
+  box-sizing: border-box;
+  border: solid var(--roadmap-b) #242b35;
+  width: 100%;
+  height: var(--roadmap-h);
+  border-radius: var(--roadmap-r);
+  background: linear-gradient(#191c23, #2d3341);
+  font: clamp(0.625em, 7.5vw, 5em) monospace;
+  overflow: hidden;
+}
+
+.roadmap-progress::-webkit-progress-bar { background: transparent; }
+.roadmap-progress::-webkit-progress-value { --twinkle: radial-gradient(circle at 25% 40%, rgba(255, 255, 255, 0.22), transparent 45%); border-radius: calc(var(--roadmap-r) - var(--roadmap-b)); box-shadow: inset 0 0.05em 0.05em rgba(255, 255, 255, 0.35); background: var(--fill), var(--twinkle); background-blend-mode: screen, normal; }
+.roadmap-progress::-moz-progress-bar { --twinkle: radial-gradient(circle at 25% 40%, rgba(255, 255, 255, 0.22), transparent 45%); border-radius: calc(var(--roadmap-r) - var(--roadmap-b)); box-shadow: inset 0 0.05em 0.05em rgba(255, 255, 255, 0.35); background: var(--fill), var(--twinkle); background-blend-mode: screen, normal; }
+
+.roadmap-progress:nth-of-type(1) { --fill: repeating-linear-gradient(90deg, transparent 0 var(--roadmap-b), #9be7c1 0 var(--roadmap-r)) calc(0.5 * var(--roadmap-r)), linear-gradient(135deg, #81d5ab, #5fb98d); }
+.roadmap-progress:nth-of-type(2) { --fill: linear-gradient(#f1f6ff, transparent 85%), linear-gradient(90deg, #a8f5ff, #78c9ff); }
+.roadmap-progress:nth-of-type(3) { --fill: linear-gradient(rgba(120, 180, 255, 0.65), transparent), repeating-linear-gradient(135deg, #1c3c6b 0 calc(0.5 * var(--roadmap-r)), #26518b 0 var(--roadmap-r)); }
+.roadmap-progress:nth-of-type(4) { --fill: linear-gradient(rgba(160, 218, 255, 0.5), transparent), conic-gradient(from -30deg at 25%, transparent 240deg, #52e0f7 0%) 0/ calc(var(--roadmap-h) - 2 * var(--roadmap-b)), conic-gradient(from -30deg at 75%, #52e0f7 240deg, #64b1ff 0%) 0/ calc(var(--roadmap-h) - 2 * var(--roadmap-b)); }
+.roadmap-progress:nth-of-type(5) { --fill: linear-gradient(#d0f0ff, transparent 85%), linear-gradient(90deg, #5b7aff, #a0e1ff); }
+.roadmap-progress:nth-of-type(6) { --fill: linear-gradient(rgba(104, 255, 212, 0.85), transparent), repeating-linear-gradient(90deg, #0f2f58 0 calc(0.125 * var(--roadmap-r)), #175182 0 var(--roadmap-h)); }
+
+.roadmap-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+  margin-top: 10px;
+  color: #cdd7e6;
+  font-size: 13px;
+}
+
+/* ======================================================================
+   Public typography helpers
+   ====================================================================== */
+
+.section-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.section-heading .lede {
+  color: #c3d1eb;
+  font-size: 14px;
+}
+
+.public-list {
+  list-style: disc;
+  padding-left: 18px;
+  color: #dce5f7;
+}
+
+.public-stack { display: flex; flex-direction: column; gap: 12px; }
+
+@media (max-width: 720px) {
+  .public-nav { justify-content: flex-start; }
+  .public-topbar { align-items: flex-start; }
+}
