@@ -1,0 +1,213 @@
+[
+  {
+    "id": "unified-runtime",
+    "order": 1,
+    "title": "StreamSuites Unified Runtime",
+    "percent": 75,
+    "meta": "75% · Contracts Locked + Exports + Aggregation",
+    "description": "The unified runtime is the authoritative automation engine. It enforces quotas, schedules jobs, ingests platform chat, aggregates signals, and emits deterministic exports that drive all dashboard views and public galleries. Core contracts are locked; remaining work focuses on deeper orchestration, additional platform parity, and expanded module mechanics.",
+    "icon": "./assets/icons/ui/package.svg",
+    "tooltip": "75% · 65–75% Locked — Contracts stabilized. Runtime behavior considered production-safe barring bug fixes.",
+    "pulse": true
+  },
+  {
+    "id": "admin-dashboard",
+    "order": 2,
+    "title": "Administrator Dashboard UI",
+    "percent": 70,
+    "meta": "70% · ConfigState + Data & Signals + Public Pages",
+    "description": "The administrator dashboard provides a static, read-only observability surface for runtime exports, configuration state, and public gallery parity. It is intentionally non-interactive and designed for debugging, inspection, and system-wide visibility without issuing live commands.",
+    "icon": "./assets/icons/ui/uiscreen.svg",
+    "tooltip": "70% · 65–75% Locked — Static UI aligned with runtime exports and observability."
+  },
+  {
+    "id": "creator-dashboard",
+    "order": 3,
+    "title": "Creator Dashboard UI",
+    "percent": 56,
+    "meta": "56% · Schema-Aligned Authoring + Export Drafting",
+    "description": "Creator-facing flows expose profiles, platform toggles, triggers, and module scaffolding in a schema-aligned layout. The dashboard allows creators to assemble deterministic, export-ready configurations without interacting with the runtime directly.",
+    "icon": "./assets/icons/ui/uiscreen.svg",
+    "tooltip": "56% · 55–60% Integrated — Creator configuration aligned with runtime schemas."
+  },
+  {
+    "id": "discord-client",
+    "order": 4,
+    "title": "Discord Client",
+    "percent": 45,
+    "meta": "45% · Foundation + Heartbeat Plan",
+    "description": "The Discord adapter targets bot presence, notifications, and command parity with other platforms. It is meant to expose heartbeat and connection signals while staying in lockstep with runtime quotas. Foundations and heartbeat planning exist, but export alignment is still underway and carefully staged.",
+    "icon": "./assets/icons/discord-silver.svg",
+    "tooltip": "45% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete."
+  },
+  {
+    "id": "rumble-sse",
+    "order": 5,
+    "title": "Rumble Chat SSE Pipeline",
+    "percent": 60,
+    "meta": "60% · SSE Architecture + Exports Published",
+    "description": "Rumble chat now ingests via the canonical SSE stream with a defined message model. The runtime exports stable payloads for dashboards and public pages, and the pipeline is wired into quotas and enforcement. Remaining work focuses on deeper moderation features and extended telemetry.",
+    "icon": "./assets/icons/rumble-silver.svg",
+    "tooltip": "60% · 55–60% Integrated — Integrated with runtime orchestration, quotas, or control planes. Stable but evolving."
+  },
+  {
+    "id": "twitch-runtime",
+    "order": 6,
+    "title": "Twitch Chat Runtime",
+    "percent": 40,
+    "meta": "40% · IRC Foundation + Export Mapping",
+    "description": "The Twitch runtime path is designed around IRC ingestion, trigger matching, and export-ready normalization. It now carries executable ingestion and normalization plans, with exports being shaped to match dashboard and public page expectations. Next steps are quota enforcement parity and richer telemetry.",
+    "icon": "./assets/icons/twitch-0.svg",
+    "tooltip": "40% · 40–50% Functional — Core runtime behavior exists and executes deterministically. Not feature-complete."
+  },
+  {
+    "id": "youtube-runtime",
+    "order": 7,
+    "title": "YouTube Chat Runtime",
+    "percent": 35,
+    "meta": "35% · Scaffold + Message Mapping Drafts",
+    "description": "YouTube support is scoped to ingest live chat, align payloads with runtime schemas, and export snapshots the dashboard can render. Message mapping drafts are defined for parity with other platforms. Current progress is scaffold plus partial ingestion paths, awaiting stabilized exports for dashboards.",
+    "icon": "./assets/icons/youtube-silver.svg",
+    "tooltip": "35% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution."
+  },
+  {
+    "id": "twitter-integration",
+    "order": 8,
+    "title": "Twitter Client / Integration",
+    "percent": 5,
+    "meta": "5% · Concept / Deferred",
+    "description": "Twitter integration is purely conceptual, aimed at future ingestion of mentions, DMs, or chat-like events. The intent is a moderation and announcement surface once platform rules allow it. No scaffolding or exports exist yet; the dashboard only reserves a placeholder.",
+    "icon": "./assets/icons/twitter-silver.svg",
+    "tooltip": "5% · 0–5% Concept — Conceptual only. No runtime scaffolding or contracts exist yet."
+  },
+  {
+    "id": "chat-triggers",
+    "order": 9,
+    "title": "Chat Triggers",
+    "percent": 60,
+    "meta": "60% · Enforcement + Exported Responses",
+    "description": "Trigger definitions run inside the runtime with deterministic matching, quotas, and cooldown enforcement. Exports now include trigger catalogs and response shapes that the dashboard and public pages render read-only. Next steps focus on broader platform parity and expanded moderation actions.",
+    "icon": "./assets/icons/ui/automation.svg",
+    "tooltip": "60% · 55–60% Integrated — Integrated with runtime orchestration, quotas, or control planes. Stable but evolving."
+  },
+  {
+    "id": "chat-abstraction",
+    "order": 10,
+    "title": "Cross-Platform Chat Abstraction",
+    "percent": 30,
+    "meta": "30% · Normalization Drafts + Export Targets",
+    "description": "A cross-platform layer will normalize chat events across Rumble, Twitch, and YouTube so triggers, scoreboards, and moderation tools work uniformly. The desired outcome is consistent payloads regardless of source. Draft normalization rules exist, but runtime enforcement and exports are still early.",
+    "icon": "./assets/icons/ui/automation.svg",
+    "tooltip": "30% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution."
+  },
+  {
+    "id": "telemetry-exports",
+    "order": 11,
+    "title": "Telemetry Export Surface",
+    "percent": 30,
+    "meta": "30% · Draft Health + Quota Exports",
+    "description": "Telemetry exports are intended to expose health, quota, and heartbeat signals the dashboard can graph without live calls. The goal is passive observability sourced from runtime drops. Scaffolding exists for the feeds, but no active exports are wired in yet.",
+    "icon": "./assets/icons/ui/automation.svg",
+    "tooltip": "30% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution."
+  },
+  {
+    "id": "schema-contract",
+    "order": 12,
+    "title": "Dashboard ↔ Runtime Schema Contract",
+    "percent": 55,
+    "meta": "55% · Deterministic Exports + Public Gallery Alignment",
+    "description": "The schema contract defines exactly how the dashboard consumes exported JSON for creators, platforms, public galleries, and telemetry. It now guarantees deterministic imports/exports for current modules and keeps expanding alongside new runtime drops.",
+    "icon": "./assets/icons/ui/options.svg",
+    "tooltip": "55% · 55–60% Integrated — Integrated with runtime orchestration, quotas, or control planes. Stable but evolving."
+  },
+  {
+    "id": "chat-replay",
+    "order": 13,
+    "title": "Unified Live Chat Replay Module",
+    "percent": 35,
+    "meta": "35% · Runtime Signals + Export Shapes",
+    "description": "Chat replay is meant to store and rehydrate message archives for post-stream review across platforms. The UI is staged to visualize those transcripts alongside metadata. Runtime signals exist, but stabilized export streams are still needed before artifacts can render.",
+    "icon": "./assets/icons/ui/extension.svg",
+    "tooltip": "35% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution."
+  },
+  {
+    "id": "winforms-gui",
+    "order": 14,
+    "title": "WinForms GUI (Admin & System Controls)",
+    "percent": 20,
+    "meta": "20% · Planning",
+    "description": "A WinForms control surface is planned for operators who prefer a desktop UI. It is intended to mirror admin views and telemetry without bypassing runtime safety. Planning and layout considerations are in place, but no runtime coupling or exports are implemented yet.",
+    "icon": "./assets/icons/ui/windows.svg",
+    "tooltip": "20% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution."
+  },
+  {
+    "id": "scoreboards",
+    "order": 15,
+    "title": "Scoreboards",
+    "percent": 42,
+    "meta": "42% · Aggregation Shapes + Public Gallery",
+    "description": "Scoreboards aggregate trigger outputs and interaction tallies into public-facing leaderboards. Export shapes and public gallery shells exist, with runtime-side aggregation cadence and reset logic still being finalized.",
+    "icon": "./assets/icons/ui/widget.svg",
+    "tooltip": "42% · 40–50% Functional — Aggregation shapes exist; runtime cadence pending."
+  },
+  {
+    "id": "clips",
+    "order": 16,
+    "title": "Clips Module",
+    "percent": 62,
+    "meta": "62% · Runtime Clipping + Public Gallery",
+    "description": "The clips module automates livestream clipping, encodes segments with FFmpeg inside the runtime, and marches each clip through deterministic lifecycle states. Finished clips upload to the default StreamSuites Rumble channel today with exports that power dashboard and public gallery/detail pages. Current state: implemented in the runtime, visible across dashboard and public surfaces, with destination flexibility and moderation tooling still expanding.",
+    "icon": "./assets/icons/ui/widget.svg",
+    "tooltip": "62% · 55–60% Integrated — Integrated with runtime orchestration, quotas, or control planes. Stable but evolving."
+  },
+  {
+    "id": "polls",
+    "order": 17,
+    "title": "Polls Module",
+    "percent": 58,
+    "meta": "58% · Runtime Polling + Public Gallery",
+    "description": "Polls execute in the runtime with strict quotas and deterministic close conditions. Dashboard and public pages show read-only ballots, results, and detail pages sourced from runtime exports. Remaining work focuses on broader platform coverage, richer scheduling, and export cadence tuning.",
+    "icon": "./assets/icons/ui/widget.svg",
+    "tooltip": "58% · 55–60% Integrated — Integrated with runtime orchestration, quotas, or control planes. Stable but evolving."
+  },
+  {
+    "id": "tallies",
+    "order": 18,
+    "title": "Tallies Module",
+    "percent": 48,
+    "meta": "48% · Aggregation + Public Gallery + Detail Pages",
+    "description": "Tallies are programmatic, chat-driven aggregations that count events over weekly, monthly, or custom windows. Public gallery and detail pages are live and read-only, driven by runtime exports. Runtime-side scheduling, trigger coupling, and enforcement logic continue to mature.",
+    "icon": "./assets/icons/ui/widget.svg",
+    "tooltip": "48% · 40–50% Functional — Runtime aggregation active; automation expanding."
+  },
+  {
+    "id": "levelling",
+    "order": 19,
+    "title": "Levelling System",
+    "percent": 10,
+    "meta": "10% · Planned / Experimental",
+    "description": "Levelling is envisioned as a fictional progression track where chat participation earns experience toward ranks or perks. It should eventually respect cross-platform identity mapping once available. This remains early ideation with no runtime scaffolding beyond concept notes.",
+    "icon": "./assets/icons/ui/widget.svg",
+    "tooltip": "10% · 10–15% Planned — Planned and documented. Architecture discussed, but no executable runtime scaffolding."
+  },
+  {
+    "id": "fake-gambling",
+    "order": 20,
+    "title": "Fake Gambling / Game Mechanics",
+    "percent": 10,
+    "meta": "10% · Planned",
+    "description": "The game mechanics are lightweight chat commands (e.g., !steal, !loot @user) that award or deduct fictional balances. The intent is playful, zero-stakes engagement surfaced in dashboards only. It stays in the planned phase with placeholder UI and no runtime enforcement.",
+    "icon": "./assets/icons/ui/widget.svg",
+    "tooltip": "10% · 10–15% Planned — Planned and documented. Architecture discussed, but no executable runtime scaffolding."
+  },
+  {
+    "id": "paid-interactions",
+    "order": 21,
+    "title": "Paid Interaction Detection",
+    "percent": 15,
+    "meta": "15% · Planned / Design In Progress",
+    "description": "Paid interaction detection will surface gifted subscriptions and paid shout-outs (Rumble Rants, Super Chats, etc.) with monthly rollups. The dashboard aims to visualize those exports alongside leaderboards. Design work is underway, but runtime feeds are not yet finalized.",
+    "icon": "./assets/icons/ui/widget.svg",
+    "tooltip": "15% · 10–15% Planned — Planned and documented. Architecture discussed, but no executable runtime scaffolding."
+  }
+]

@@ -12,6 +12,69 @@
   let cleanupFns = [];
   let openRow = null;
 
+  const roadmapDataPath = "../data/roadmap.json";
+
+  function formatScore(percent) {
+    const score = percent / 10;
+    return Number.isInteger(score) ? score.toFixed(1) : score.toFixed(1);
+  }
+
+  function buildSkillRow(entry) {
+    const score = Math.max(0, Math.min(100, Number(entry.percent) || 0));
+    const normalizedScore = formatScore(score);
+    const pulseClass = entry.pulse ? " pulsing" : "";
+
+    return `
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="${normalizedScore}" title="${entry.tooltip || ""}" role="button" tabindex="0">
+      <div class="ss-progress-label">
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('${entry.icon}')"></span>
+            ${entry.title}
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">${entry.meta}</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">${entry.description}</p>
+        </div>
+      </div>
+      <div class="ss-skill-wrapper">
+        <div class="ss-skill-track">
+          <div class="ss-skill-fill${pulseClass}"></div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function renderRoadmapRows(data) {
+    const container = document.getElementById("ss-roadmap-rows");
+    if (!container || !Array.isArray(data)) return [];
+
+    const sorted = [...data].sort((a, b) => (a.order || 0) - (b.order || 0));
+    container.innerHTML = sorted.map(buildSkillRow).join("");
+
+    return Array.from(container.querySelectorAll(".ss-skill-row"));
+  }
+
+  async function loadRoadmapData() {
+    try {
+      const response = await fetch(roadmapDataPath, { cache: "no-store" });
+      if (!response.ok) throw new Error("Failed to load roadmap data");
+      const payload = await response.json();
+      return Array.isArray(payload) ? payload : [];
+    } catch (err) {
+      console.warn("Unable to load roadmap data", err);
+      return [];
+    }
+  }
+
   function initSkillBars(rows) {
     if (!rows || rows.length === 0) return;
 
@@ -164,10 +227,9 @@
 
   function init() {
     // Delay ensures DOM is fully injected by SPA
-    requestAnimationFrame(() => {
-      const rows = Array.from(
-        document.querySelectorAll(".ss-skill-row")
-      );
+    requestAnimationFrame(async () => {
+      const data = await loadRoadmapData();
+      const rows = renderRoadmapRows(data);
 
       renderVersionMeta();
       initSkillBars(rows);

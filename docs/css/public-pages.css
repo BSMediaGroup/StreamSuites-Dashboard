@@ -1447,8 +1447,8 @@ body.viz-expanded {
   position: fixed;
   inset: 0;
   background: radial-gradient(circle at 20% 20%, rgba(86, 136, 255, 0.08), rgba(6, 12, 20, 0.95)),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.03)),
-    url("../assets/backgrounds/seoshare.jpg") center/cover no-repeat;
+    radial-gradient(circle at 80% 10%, rgba(255, 118, 190, 0.08), transparent 40%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.05), rgba(12, 18, 28, 0.65));
   filter: saturate(1.1);
   z-index: 0;
   pointer-events: none;
@@ -1595,49 +1595,220 @@ body.viz-expanded {
    Roadmap progress bars (native <progress>)
    ====================================================================== */
 :root {
-  --roadmap-h: 1em;
-  --roadmap-r: calc(0.5 * var(--roadmap-h));
+  --roadmap-h: 1.05em;
+  --roadmap-r: 0.68em;
   --roadmap-b: 0.15em;
+  --roadmap-inner-r: calc(var(--roadmap-r) - var(--roadmap-b));
 }
 
-.roadmap-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 18px;
+.public-roadmap-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   margin-top: 12px;
 }
 
-.roadmap-progress {
-  box-sizing: border-box;
-  border: solid var(--roadmap-b) #242b35;
+.public-roadmap-card {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.035);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.public-roadmap-card:hover {
+  border-color: rgba(120, 195, 255, 0.4);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32);
+}
+
+.public-roadmap-card.is-open {
+  border-color: rgba(0, 198, 255, 0.45);
+  background: radial-gradient(circle at 18% 24%, rgba(0, 198, 255, 0.12), rgba(255, 255, 255, 0.02));
+}
+
+.ss-progress-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ss-progress-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.ss-progress-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.ss-progress-icon {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  background-color: currentColor;
+  mask: var(--progress-icon) center / contain no-repeat;
+  -webkit-mask: var(--progress-icon) center / contain no-repeat;
+}
+
+.ss-progress-right {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.ss-progress-meta { white-space: nowrap; }
+
+.ss-progress-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+}
+
+.ss-progress-toggle:hover {
+  border-color: rgba(0, 198, 255, 0.4);
+  color: var(--text-primary);
+  background: rgba(0, 198, 255, 0.08);
+}
+
+.ss-progress-toggle span {
+  display: inline-block;
+  transition: transform 0.18s ease;
+}
+
+.ss-progress-row.is-open .ss-progress-toggle span {
+  transform: rotate(90deg) translateX(-2px);
+}
+
+.ss-skill-description {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease;
+  color: var(--text-muted);
+}
+
+.ss-skill-description p {
+  margin: 0;
+  line-height: 1.55;
+  font-size: 0.95em;
+}
+
+.ss-skill-description-inner { padding: 6px 10px 0 0; }
+
+.public-progress-wrapper { width: 100%; }
+
+.public-roadmap-progress {
+  position: relative;
+  display: block;
   width: 100%;
   height: var(--roadmap-h);
+  border: solid var(--roadmap-b) #1f2633;
   border-radius: var(--roadmap-r);
-  background: linear-gradient(#191c23, #2d3341);
-  font: clamp(0.625em, 7.5vw, 5em) monospace;
+  background: linear-gradient(#0e1118, #1d2430);
+  box-sizing: border-box;
   overflow: hidden;
+  appearance: none;
+  box-shadow: inset 0 0 0.2em rgba(0, 0, 0, 0.65);
 }
 
-.roadmap-progress::-webkit-progress-bar { background: transparent; }
-.roadmap-progress::-webkit-progress-value { --twinkle: radial-gradient(circle at 25% 40%, rgba(255, 255, 255, 0.22), transparent 45%); border-radius: calc(var(--roadmap-r) - var(--roadmap-b)); box-shadow: inset 0 0.05em 0.05em rgba(255, 255, 255, 0.35); background: var(--fill), var(--twinkle); background-blend-mode: screen, normal; }
-.roadmap-progress::-moz-progress-bar { --twinkle: radial-gradient(circle at 25% 40%, rgba(255, 255, 255, 0.22), transparent 45%); border-radius: calc(var(--roadmap-r) - var(--roadmap-b)); box-shadow: inset 0 0.05em 0.05em rgba(255, 255, 255, 0.35); background: var(--fill), var(--twinkle); background-blend-mode: screen, normal; }
+.public-roadmap-progress::-webkit-progress-bar {
+  background: transparent;
+  border-radius: var(--roadmap-r);
+}
 
-.roadmap-progress:nth-of-type(1) { --fill: repeating-linear-gradient(90deg, transparent 0 var(--roadmap-b), #9be7c1 0 var(--roadmap-r)) calc(0.5 * var(--roadmap-r)), linear-gradient(135deg, #81d5ab, #5fb98d); }
-.roadmap-progress:nth-of-type(2) { --fill: linear-gradient(#f1f6ff, transparent 85%), linear-gradient(90deg, #a8f5ff, #78c9ff); }
-.roadmap-progress:nth-of-type(3) { --fill: linear-gradient(rgba(120, 180, 255, 0.65), transparent), repeating-linear-gradient(135deg, #1c3c6b 0 calc(0.5 * var(--roadmap-r)), #26518b 0 var(--roadmap-r)); }
-.roadmap-progress:nth-of-type(4) { --fill: linear-gradient(rgba(160, 218, 255, 0.5), transparent), conic-gradient(from -30deg at 25%, transparent 240deg, #52e0f7 0%) 0/ calc(var(--roadmap-h) - 2 * var(--roadmap-b)), conic-gradient(from -30deg at 75%, #52e0f7 240deg, #64b1ff 0%) 0/ calc(var(--roadmap-h) - 2 * var(--roadmap-b)); }
-.roadmap-progress:nth-of-type(5) { --fill: linear-gradient(#d0f0ff, transparent 85%), linear-gradient(90deg, #5b7aff, #a0e1ff); }
-.roadmap-progress:nth-of-type(6) { --fill: linear-gradient(rgba(104, 255, 212, 0.85), transparent), repeating-linear-gradient(90deg, #0f2f58 0 calc(0.125 * var(--roadmap-r)), #175182 0 var(--roadmap-h)); }
+.public-roadmap-progress::-webkit-progress-value {
+  border-radius: var(--roadmap-inner-r);
+  box-shadow: inset 0 0.05em 0.05em rgba(255, 255, 255, 0.35);
+  background: var(--fill, linear-gradient(90deg, #4a73c4, #9c4ccf));
+  transition: width 0.3s ease;
+}
 
-.roadmap-legend {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px 12px;
+.public-roadmap-progress::-moz-progress-bar {
+  border-radius: var(--roadmap-inner-r);
+  box-shadow: inset 0 0.05em 0.05em rgba(255, 255, 255, 0.35);
+  background: var(--fill, linear-gradient(90deg, #4a73c4, #9c4ccf));
+}
+
+.public-roadmap-progress::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 10% 40%, rgba(255, 255, 255, 0.12), transparent 35%),
+    radial-gradient(circle at 30% 70%, rgba(255, 255, 255, 0.12), transparent 38%),
+    radial-gradient(circle at 80% 30%, rgba(255, 255, 255, 0.08), transparent 35%);
+  mix-blend-mode: screen;
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.public-roadmap-card:hover .public-roadmap-progress {
+  box-shadow: inset 0 0 0.25em rgba(0, 0, 0, 0.65), 0 0 0.55em rgba(120, 195, 255, 0.25);
+  border-color: rgba(120, 195, 255, 0.4);
+}
+
+.public-roadmap-card:hover .public-roadmap-progress::-webkit-progress-value,
+.public-roadmap-progress.is-hover::-webkit-progress-value {
+  filter: brightness(1.08);
+}
+
+.public-roadmap-card:hover .public-roadmap-progress::-moz-progress-bar,
+.public-roadmap-progress.is-hover::-moz-progress-bar {
+  filter: brightness(1.08);
+}
+
+.public-roadmap-legend,
+.ss-roadmap-legend {
+  display: inline-block;
   margin-top: 10px;
-  color: #cdd7e6;
-  font-size: 13px;
+  font-size: 0.9em;
 }
 
+.ss-legend-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.88em;
+  letter-spacing: 0.01em;
+}
+
+.ss-legend-summary::-webkit-details-marker { display: none; }
+
+.ss-legend-body {
+  margin-top: 6px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  max-width: none;
+  font-size: 0.84em;
+  color: var(--text-muted);
+  line-height: 1.5;
+  width: 100%;
+  font-family: "SuiGenerisRg", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.ss-legend-row { font-size: 0.84em; line-height: 1.45; }
+
+.ss-legend-row + .ss-legend-row { margin-top: 6px; }
 /* ======================================================================
    Public typography helpers
    ====================================================================== */
