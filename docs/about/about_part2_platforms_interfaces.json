@@ -1,0 +1,215 @@
+{
+  "version": "0.2.0-alpha",
+  "lastUpdated": "2025-01-XX",
+  "sections": [
+    {
+      "id": "platform-integrations-unifying-idea",
+      "order": 15,
+      "title": "Platform Integrations — The Unifying Idea",
+      "entries": [
+        {
+          "id": "platform-parity-concept",
+          "order": 1,
+          "consumer": {
+            "title": "A Unified Experience Across Platforms",
+            "body": "StreamSuites works across different livestream platforms without forcing them to behave the same. Each platform is respected for what it is, but the system still presents a unified experience to creators and viewers."
+          },
+          "developer": {
+            "title": "Three-Stage Platform Integration Pipeline",
+            "body": "Each platform integration follows the same conceptual pipeline even if implementation differs: ingest raw events (chat messages, joins, paid events where available), normalize them into StreamSuites’ internal event model, and emit deterministic exports for triggers, modules, telemetry, and public visibility. This enables platform parity without pretending parity exists at the API level."
+          }
+        }
+      ]
+    },
+    {
+      "id": "rumble-sse",
+      "order": 16,
+      "title": "Rumble — Primary Live Chat Ingestion (SSE)",
+      "entries": [
+        {
+          "id": "rumble-primary-platform",
+          "order": 1,
+          "consumer": {
+            "title": "The Most Mature Live Platform",
+            "body": "Rumble is the most mature live platform inside StreamSuites right now. It’s where clips, polls, tallies, and public galleries are actively sourced."
+          },
+          "developer": {
+            "title": "Canonical SSE Ingestion and Export Pipeline",
+            "body": "Rumble chat ingestion uses the canonical SSE (Server-Sent Events) stream. Messages are consumed in real time, normalized into a standard internal chat event shape, and made immediately available to triggers, polls, tallies, and clip commands. The pipeline is quota-aware and integrated into runtime enforcement. Stable exports already exist for public galleries, dashboard data and signals, and module-specific snapshots. Remaining work focuses on deeper telemetry such as moderation signals and richer metadata, not basic ingestion."
+          }
+        }
+      ]
+    },
+    {
+      "id": "twitch-irc",
+      "order": 17,
+      "title": "Twitch — IRC-Based Runtime Path",
+      "entries": [
+        {
+          "id": "twitch-careful-integration",
+          "order": 1,
+          "consumer": {
+            "title": "Careful and Deliberate Twitch Support",
+            "body": "Twitch support is being built carefully so it doesn’t become fragile or unpredictable."
+          },
+          "developer": {
+            "title": "IRC Ingestion with Parity-Oriented Exports",
+            "body": "Twitch ingestion is designed around IRC rather than EventSub at this stage. The runtime already includes connection logic, message parsing, and normalization drafts. Export shapes are being aligned to match Rumble-derived artifacts so dashboards and public pages do not require platform-specific render logic. Missing pieces include quota parity, moderation signal depth, and richer metadata for triggers and future paid interactions. Twitch intentionally trails Rumble to avoid unstable surface promises."
+          }
+        }
+      ]
+    },
+    {
+      "id": "youtube-scaffolded",
+      "order": 18,
+      "title": "YouTube — Scaffolded, Export-First Design",
+      "entries": [
+        {
+          "id": "youtube-foundation-only",
+          "order": 1,
+          "consumer": {
+            "title": "Foundation Without Reliance",
+            "body": "YouTube support exists as a foundation, but it’s not yet something creators should rely on."
+          },
+          "developer": {
+            "title": "Scaffold-Level Integration Awaiting Stable Exports",
+            "body": "YouTube integration is currently scaffold-level. Chat polling or ingestion paths are drafted and message normalization schemas exist, but no production-grade export cadence is locked yet. The system is designed so YouTube can slot in once stable exports are ready, without requiring rewrites of dashboard or public page logic. This is why YouTube is labeled scaffolded rather than partially functional."
+          }
+        }
+      ]
+    },
+    {
+      "id": "discord-control-plane",
+      "order": 19,
+      "title": "Discord — Control Plane, Not a Stream Platform",
+      "entries": [
+        {
+          "id": "discord-not-chat-ingestion",
+          "order": 1,
+          "consumer": {
+            "title": "Operational Visibility and Control",
+            "body": "Discord is not treated as just another chat source. It’s a place for operators to observe, receive notifications, and eventually issue safe commands."
+          },
+          "developer": {
+            "title": "Separate Runtime Process and Responsibility",
+            "body": "Discord runs as a separate runtime process and is not intended to ingest livestream chat, run triggers, or execute modules. Intended responsibilities include heartbeat and health notifications, quota warnings, clip published alerts, and operational summaries. This separation ensures Discord outages do not affect livestream automation and minimizes privilege escalation risks. Discord is a control surface, not a data plane."
+          }
+        }
+      ]
+    },
+    {
+      "id": "twitter-deferred",
+      "order": 20,
+      "title": "Twitter / X — Deferred by Design",
+      "entries": [
+        {
+          "id": "twitter-concept-only",
+          "order": 1,
+          "consumer": {
+            "title": "A Future Idea, Not a Current Feature",
+            "body": "Twitter/X integration is a future idea, not a current feature."
+          },
+          "developer": {
+            "title": "No Scaffolding or Exports Yet",
+            "body": "No runtime scaffolding or exports exist for Twitter/X. The dashboard only reserves conceptual placeholders. Intended future use cases include mention ingestion, DM-based commands, and announcement broadcasting. Integration remains deferred until platform rules stabilize and enforcement logic is clear."
+          }
+        }
+      ]
+    },
+    {
+      "id": "public-facing-pages",
+      "order": 21,
+      "title": "Public-Facing Pages — Runtime Artifacts",
+      "entries": [
+        {
+          "id": "public-pages-artifacts",
+          "order": 1,
+          "consumer": {
+            "title": "Real Outputs, Not Just Information",
+            "body": "The public pages aren’t just informational. They show real outputs from the system such as clips, polls, tallies, scoreboards, and eventually chat replays."
+          },
+          "developer": {
+            "title": "Static, Read-Only, Export-Driven Pages",
+            "body": "Public pages are static, read-only, runtime-driven, and export-backed. They make no live API calls, maintain no session state, and never mutate runtime data. They are safe to host anywhere. Public pages include galleries, per-entity detail pages, changelog, roadmap, about, and legal surfaces, all consuming the same exports as the dashboard filtered by visibility."
+          }
+        }
+      ]
+    },
+    {
+      "id": "about-pages",
+      "order": 22,
+      "title": "The About Pages",
+      "entries": [
+        {
+          "id": "about-conceptual-heart",
+          "order": 1,
+          "consumer": {
+            "title": "Explaining the System as a Whole",
+            "body": "The About section explains what StreamSuites is, what problems it solves, and how all the moving parts fit together."
+          },
+          "developer": {
+            "title": "Centralized, Structured About System",
+            "body": "A centralized About page already exists with placeholders for expanded partials and an intent to break content into structured sections rather than a monolithic block. The About system is intended to cover the entire project scope, explain philosophy rather than just features, and remain accurate as modules evolve. Centralizing About content into JSON is the correct architectural move."
+          }
+        }
+      ]
+    },
+    {
+      "id": "dashboard-about",
+      "order": 23,
+      "title": "Dashboard About Page",
+      "entries": [
+        {
+          "id": "developer-first-about",
+          "order": 1,
+          "consumer": {
+            "title": "Not for Casual Visitors",
+            "body": "The dashboard’s About page is not meant for casual visitors."
+          },
+          "developer": {
+            "title": "Canonical Technical Narrative",
+            "body": "The dashboard About page shows developer and technical entries only. It assumes familiarity with schemas, runtimes, exports, and constraints and acts as living technical documentation during alpha and beta. It serves as the canonical technical narrative, while public pages act as explanatory overlays."
+          }
+        }
+      ]
+    },
+    {
+      "id": "documentation-section",
+      "order": 24,
+      "title": "Documentation Section",
+      "entries": [
+        {
+          "id": "docs-future-manual",
+          "order": 1,
+          "consumer": {
+            "title": "A Future User Manual",
+            "body": "The docs section will eventually explain how to use StreamSuites properly."
+          },
+          "developer": {
+            "title": "Phased Documentation Strategy",
+            "body": "Documentation is explicitly not final in alpha. Planned phases include: Alpha for philosophy, scope, constraints, and architecture; Beta for user workflows and creator onboarding; RC for operator manuals, recovery procedures, and deployment guides; and Stable for full reference documentation. Docs will be structured, versioned, slower-changing than code, and aligned to release milestones."
+          }
+        }
+      ]
+    },
+    {
+      "id": "dual-layer-philosophy",
+      "order": 25,
+      "title": "Why Consumer and Developer Text Live Together",
+      "entries": [
+        {
+          "id": "dual-layer-model",
+          "order": 1,
+          "consumer": {
+            "title": "Clarity and Trust Through Transparency",
+            "body": "Seeing both consumer-friendly explanations and developer details builds trust and clarity."
+          },
+          "developer": {
+            "title": "Preventing Drift and Preserving Accuracy",
+            "body": "Keeping consumer and developer explanations together prevents drift, ensures accuracy, allows public transparency without overwhelming casual readers, and lets dashboards selectively render technical depth. This dual-layer model mirrors how the runtime separates intent from execution, how triggers emit action descriptors without executing them, and how public pages show artifacts while dashboards show mechanics."
+          }
+        }
+      ]
+    }
+  ]
+}

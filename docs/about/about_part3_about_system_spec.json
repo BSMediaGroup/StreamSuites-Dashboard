@@ -1,0 +1,234 @@
+{
+  "version": "0.2.0-alpha",
+  "lastUpdated": "2025-01-XX",
+  "sections": [
+    {
+      "id": "about-design-goals",
+      "order": 26,
+      "title": "Design Goals of the About System",
+      "entries": [
+        {
+          "id": "about-goals",
+          "order": 1,
+          "consumer": {
+            "title": "Clear Explanations Without Technical Burden",
+            "body": "The About section should explain what StreamSuites is, how it works, and why it exists without forcing readers to understand code, infrastructure, or platform quirks."
+          },
+          "developer": {
+            "title": "Centralized, Accurate, Dual-Audience Documentation",
+            "body": "The About system must cover the entire project scope including runtime, dashboard, and public interfaces; remain accurate as features evolve; support dual-audience reading; avoid duplication across public pages, dashboard pages, and docs; and be centrally managed so updates are not scattered across HTML files. This disqualifies hardcoded content and justifies a single JSON source of truth."
+          }
+        }
+      ]
+    },
+    {
+      "id": "about-json-driven",
+      "order": 27,
+      "title": "Why the About Content Is JSON-Driven",
+      "entries": [
+        {
+          "id": "json-justification",
+          "order": 1,
+          "consumer": {
+            "title": "Easier to Keep Up to Date",
+            "body": "Managing About content as data makes it easier to keep pages accurate as the project grows, without rewriting pages every time something changes."
+          },
+          "developer": {
+            "title": "Content as Data, Not Markup",
+            "body": "From an architectural standpoint, changelog, roadmap, and About content become data rather than markup. The UI becomes a renderer instead of an author, versioning and diffing become trivial, and future localization or audience filtering becomes possible. This mirrors how the runtime exports data and how dashboard and public pages render it."
+          }
+        }
+      ]
+    },
+    {
+      "id": "about-top-level-structure",
+      "order": 28,
+      "title": "Canonical Top-Level JSON Structure",
+      "entries": [
+        {
+          "id": "top-level-shape",
+          "order": 1,
+          "consumer": {
+            "title": "A Structured Foundation",
+            "body": "The About system is built on a clear and predictable structure so content can be managed and rendered consistently."
+          },
+          "developer": {
+            "title": "Versioned Root Object with Ordered Sections",
+            "body": "The About JSON uses a top-level object containing version, lastUpdated, and an ordered sections array. The version matches runtime and dashboard versions, lastUpdated is informational, and sections is an ordered array rather than an object to preserve intentional narrative flow."
+          }
+        }
+      ]
+    },
+    {
+      "id": "about-section-structure",
+      "order": 29,
+      "title": "Section-Level Structure",
+      "entries": [
+        {
+          "id": "sections-as-pillars",
+          "order": 1,
+          "consumer": {
+            "title": "Organized by Ideas, Not Pages",
+            "body": "Each section represents a major idea or pillar of StreamSuites rather than a specific page on the site."
+          },
+          "developer": {
+            "title": "Stable Section Identifiers and Ordered Narrative",
+            "body": "Each section has a stable id, explicit order, human-readable title, optional summary, and an entries array. Sections represent conceptual pillars such as architecture, runtime engine, dashboard UI, public interfaces, platform integrations, modules, and release philosophy."
+          }
+        }
+      ]
+    },
+    {
+      "id": "about-entry-structure",
+      "order": 30,
+      "title": "Entry-Level Structure",
+      "entries": [
+        {
+          "id": "dual-layer-entry",
+          "order": 1,
+          "consumer": {
+            "title": "One Idea, Two Explanations",
+            "body": "Each About entry explains a single idea in a way that works for both general readers and more technical audiences."
+          },
+          "developer": {
+            "title": "Consumer and Developer Fields per Entry",
+            "body": "Each entry contains a consumer block and a developer block, each with its own title and body. The consumer block explains what and why, while the developer block explains how, where, and constraints. This structure is the core unit of the About system."
+          }
+        }
+      ]
+    },
+    {
+      "id": "consumer-entry-rules",
+      "order": 31,
+      "title": "Consumer Entry Rules",
+      "entries": [
+        {
+          "id": "consumer-tone",
+          "order": 1,
+          "consumer": {
+            "title": "Calm and Confidence-Building Language",
+            "body": "Consumer text should feel explanatory and confidence-building rather than technical or promotional."
+          },
+          "developer": {
+            "title": "Restrictions on Consumer Content",
+            "body": "Consumer entries must avoid filenames, class names, method names, repository paths, and implementation details. They should explain what something is, why it exists, and what it enables, without describing how it is implemented."
+          }
+        }
+      ]
+    },
+    {
+      "id": "developer-entry-rules",
+      "order": 32,
+      "title": "Developer Entry Rules",
+      "entries": [
+        {
+          "id": "developer-depth",
+          "order": 1,
+          "consumer": {
+            "title": "Deeper Details for Curious Readers",
+            "body": "Developer explanations exist for readers who want to understand how things really work."
+          },
+          "developer": {
+            "title": "Technical Accuracy Without Speculation",
+            "body": "Developer entries may reference repositories, folders, schemas, lifecycle rules, and architectural decisions. They may describe constraints and intentional omissions, but must remain factual, current, and avoid speculative promises."
+          }
+        }
+      ]
+    },
+    {
+      "id": "visibility-rules",
+      "order": 33,
+      "title": "Visibility Rules for About Content",
+      "entries": [
+        {
+          "id": "public-vs-dashboard",
+          "order": 1,
+          "consumer": {
+            "title": "Different Views for Different Audiences",
+            "body": "Public and dashboard About pages present the same information differently depending on who is reading."
+          },
+          "developer": {
+            "title": "Enforced Rendering Rules",
+            "body": "On the public About page, section titles and consumer entries are always visible, while developer entries are collapsed by default and expandable. On the dashboard About page, only developer entries are rendered and no collapse logic is required. This prevents duplication, drift, and divergent narratives while using a single JSON source."
+          }
+        }
+      ]
+    },
+    {
+      "id": "expand-collapse",
+      "order": 34,
+      "title": "Expand and Collapse Behavior",
+      "entries": [
+        {
+          "id": "collapse-logic",
+          "order": 1,
+          "consumer": {
+            "title": "Optional Technical Depth",
+            "body": "Casual readers shouldn’t be overwhelmed, but curious readers should be able to explore deeper explanations."
+          },
+          "developer": {
+            "title": "Client-Side Expand/Collapse Rules",
+            "body": "On public pages, consumer entries are always visible while developer entries are hidden by default and revealed via client-side expand/collapse controls with accessible labels. No state persistence is required. The dashboard does not implement collapse behavior."
+          }
+        }
+      ]
+    },
+    {
+      "id": "anchoring",
+      "order": 35,
+      "title": "Anchoring and Deep Linking",
+      "entries": [
+        {
+          "id": "stable-anchors",
+          "order": 1,
+          "consumer": {
+            "title": "Linking to Specific Explanations",
+            "body": "Readers should be able to link directly to specific explanations within the About content."
+          },
+          "developer": {
+            "title": "Deterministic Anchor Generation",
+            "body": "Each section and entry supports deterministic anchors derived from section.id and entry.id. Anchors must remain stable across versions to support roadmap links, documentation references, and future changelog cross-links."
+          }
+        }
+      ]
+    },
+    {
+      "id": "about-docs-relationship",
+      "order": 36,
+      "title": "Relationship to the Documentation Section",
+      "entries": [
+        {
+          "id": "about-vs-docs",
+          "order": 1,
+          "consumer": {
+            "title": "Explanation Versus Instruction",
+            "body": "The About page explains the system, while documentation teaches people how to use it."
+          },
+          "developer": {
+            "title": "Conceptual Spine for Future Docs",
+            "body": "The About JSON is not the documentation itself, but it becomes the conceptual spine, glossary source, and philosophical baseline. Future docs can reference About entries, reuse developer text, and extend sections with task-oriented guides, avoiding duplicated explanations."
+          }
+        }
+      ]
+    },
+    {
+      "id": "future-proofing",
+      "order": 37,
+      "title": "Why This Model Survives Future Releases",
+      "entries": [
+        {
+          "id": "alpha-to-rc",
+          "order": 1,
+          "consumer": {
+            "title": "Staying Relevant Over Time",
+            "body": "The About page should never feel obsolete or misleading as StreamSuites evolves."
+          },
+          "developer": {
+            "title": "Scalable, Evolvable Content Model",
+            "body": "This model survives alpha through beta and release because content is data rather than markup. Entries can be reordered, expanded, deprecated, or annotated. Developer entries can evolve without breaking consumer understanding, and the dashboard always shows the most precise truth available as contracts become stricter."
+          }
+        }
+      ]
+    }
+  ]
+}
