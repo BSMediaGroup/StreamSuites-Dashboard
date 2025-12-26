@@ -1,0 +1,38 @@
+[
+  {
+    "version": "0.2.0-alpha",
+    "date": "2024-12-12",
+    "summary": "Public roadmap, button system, and support/tools shells.",
+    "changes": {
+      "Added": [
+        { "text": "Static public pages for support, tools, about, privacy, changelog, and accessibility." },
+        { "text": "Roadmap snapshots with expandable rows mirroring the dashboard experience." },
+        { "text": "Legend overlays to clarify roadmap progression states." }
+      ],
+      "Changed": [
+        { "text": "Translated roadmap progress bars to native <progress> elements with gradient fills." },
+        { "text": "Refined glass container treatments across public sections for better depth." }
+      ],
+      "Fixed": [
+        { "text": "Version badges render consistently across public shells and auxiliary pages." },
+        { "text": "CTA button sweeps and dotted grid backgrounds align with dashboard styling." }
+      ],
+      "Removed": []
+    }
+  },
+  {
+    "version": "0.1.x",
+    "date": "2024-09-20",
+    "summary": "Foundations",
+    "changes": {
+      "Added": [
+        { "text": "Initial public previews for clips, polls, tallies, and scoreboards." }
+      ],
+      "Changed": [
+        { "text": "Documented roadmap intent for automation hooks, chat triggers, and upload planning." }
+      ],
+      "Fixed": [],
+      "Removed": []
+    }
+  }
+]

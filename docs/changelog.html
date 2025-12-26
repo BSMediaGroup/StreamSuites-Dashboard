@@ -62,32 +62,15 @@
       </section>
 
       <section class="public-stack" aria-label="Changelog entries">
-        <article class="public-glass-card">
-          <div class="section-heading">
-            <h3>v0.2.0-alpha</h3>
-            <span class="lede">Public roadmap, button system, and support/tools shells.</span>
-          </div>
-          <ul class="public-list">
-            <li>Added static public pages for support, tools, about, privacy, changelog, and accessibility.</li>
-            <li>Introduced conic-outline CTA buttons with hover sweep and dotted grid backgrounds.</li>
-            <li>Translated roadmap progress bars to native <code>&lt;progress&gt;</code> with gradient fills.</li>
-            <li>Applied glass containers to all public sections and enabled version badges.</li>
-          </ul>
-        </article>
-
-        <article class="public-glass-card">
-          <div class="section-heading">
-            <h3>v0.1.x</h3>
-            <span class="lede">Foundations</span>
-          </div>
-          <ul class="public-list">
-            <li>Initial public clips, polls, tallies, and scoreboards previews.</li>
-            <li>Dashboard remains noindex with static data loaders.</li>
-            <li>Planned automation hooks for chat triggers and uploads.</li>
-          </ul>
-        </article>
-
-        <!-- TODO: Future automation will hydrate this list from release metadata. -->
+        <div id="changelog-container" class="changelog-container">
+          <article class="public-glass-card changelog-loading">
+            <div class="section-heading">
+              <h3>Loading changelog…</h3>
+              <span class="lede">Fetching release notes.</span>
+            </div>
+            <p class="muted">If this takes too long, please refresh.</p>
+          </article>
+        </div>
       </section>
 
       <footer class="public-footer">
@@ -109,6 +92,7 @@
 
   <script src="./js/utils/versioning.js"></script>
   <script src="./js/utils/version-stamp.js"></script>
+  <script src="./js/public-changelog.js"></script>
   <script src="./js/public-roadmap.js"></script>
   <script>
     if (window.Versioning) {

@@ -885,7 +885,7 @@ button,
 }
 
 :root {
-  --public-btn-size: clamp(1rem, 1.5vw, 1.25rem);
+  --public-btn-size: clamp(0.9rem, 1.1vw, 1.02rem);
   --public-btn-hover-time: 400ms;
   --public-btn-hover-ease: cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -937,11 +937,16 @@ button.public-btn {
   all: unset;
   cursor: pointer;
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   pointer-events: auto;
   z-index: 3;
   background: linear-gradient(-75deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
   border-radius: 999vw;
+  height: 38px;
+  max-height: 40px;
   box-shadow: inset 0 0.125em 0.125em rgba(0, 0, 0, 0.25),
     inset 0 -0.125em 0.125em rgba(255, 255, 255, 0.35),
     0 0.25em 0.125em -0.125em rgba(0, 0, 0, 0.35),
@@ -963,18 +968,22 @@ button.public-btn:hover {
 
 button.public-btn span {
   position: relative;
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   user-select: none;
-  letter-spacing: -0.01em;
-  font-weight: 600;
+  letter-spacing: 0.02em;
+  font-weight: 500;
   font-size: var(--public-btn-size);
-  line-height: 1.1;
+  line-height: 1;
+  text-transform: uppercase;
   color: #dfe9ff;
   text-shadow: 0em 0.18em 0.08em rgba(0, 0, 0, 0.35);
   transition: all var(--public-btn-hover-time) var(--public-btn-hover-ease);
-  padding-inline: 1.4em;
-  padding-block: 0.45em;
+  padding-inline: 1.1em;
+  padding-block: 0.28em;
   max-height: 40px;
+  min-height: 0;
 }
 
 button.public-btn span::after {
