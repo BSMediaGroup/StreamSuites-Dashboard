@@ -31,8 +31,18 @@
     "tooltip": "56% · 55–60% Integrated — Creator configuration aligned with runtime schemas."
   },
   {
-    "id": "discord-client",
+    "id": "public-interface",
     "order": 4,
+    "title": "Public Interface & Gallery Surface",
+    "percent": 52,
+    "meta": "52% · Read-Only Pages + Runtime-Driven Views",
+    "description": "The public interface exposes runtime-derived artifacts such as clips, polls, tallies, scoreboards, and replay views through static, read-only pages. All content is sourced exclusively from deterministic runtime exports, ensuring parity, safety, and zero live execution. Core gallery pages and detail routes exist, with continued refinement focused on navigation cohesion, cross-module linking, and presentation polish.",
+    "icon": "./assets/icons/ui/globe.svg",
+    "tooltip": "52% · 50–55% Integrated — Public pages render authoritative runtime exports with no live logic."
+  },
+  {
+    "id": "discord-client",
+    "order": 5,
     "title": "Discord Client",
     "percent": 45,
     "meta": "45% · Foundation + Heartbeat Plan",
@@ -42,7 +52,7 @@
   },
   {
     "id": "rumble-sse",
-    "order": 5,
+    "order": 6,
     "title": "Rumble Chat SSE Pipeline",
     "percent": 60,
     "meta": "60% · SSE Architecture + Exports Published",
@@ -52,7 +62,7 @@
   },
   {
     "id": "twitch-runtime",
-    "order": 6,
+    "order": 7,
     "title": "Twitch Chat Runtime",
     "percent": 40,
     "meta": "40% · IRC Foundation + Export Mapping",
@@ -62,7 +72,7 @@
   },
   {
     "id": "youtube-runtime",
-    "order": 7,
+    "order": 8,
     "title": "YouTube Chat Runtime",
     "percent": 35,
     "meta": "35% · Scaffold + Message Mapping Drafts",
@@ -72,7 +82,7 @@
   },
   {
     "id": "twitter-integration",
-    "order": 8,
+    "order": 9,
     "title": "Twitter Client / Integration",
     "percent": 5,
     "meta": "5% · Concept / Deferred",
@@ -82,7 +92,7 @@
   },
   {
     "id": "chat-triggers",
-    "order": 9,
+    "order": 10,
     "title": "Chat Triggers",
     "percent": 60,
     "meta": "60% · Enforcement + Exported Responses",
@@ -92,7 +102,7 @@
   },
   {
     "id": "chat-abstraction",
-    "order": 10,
+    "order": 11,
     "title": "Cross-Platform Chat Abstraction",
     "percent": 30,
     "meta": "30% · Normalization Drafts + Export Targets",
@@ -102,7 +112,7 @@
   },
   {
     "id": "telemetry-exports",
-    "order": 11,
+    "order": 12,
     "title": "Telemetry Export Surface",
     "percent": 30,
     "meta": "30% · Draft Health + Quota Exports",
@@ -112,7 +122,7 @@
   },
   {
     "id": "schema-contract",
-    "order": 12,
+    "order": 13,
     "title": "Dashboard ↔ Runtime Schema Contract",
     "percent": 55,
     "meta": "55% · Deterministic Exports + Public Gallery Alignment",
@@ -122,7 +132,7 @@
   },
   {
     "id": "chat-replay",
-    "order": 13,
+    "order": 14,
     "title": "Unified Live Chat Replay Module",
     "percent": 35,
     "meta": "35% · Runtime Signals + Export Shapes",
@@ -132,7 +142,7 @@
   },
   {
     "id": "winforms-gui",
-    "order": 14,
+    "order": 15,
     "title": "WinForms GUI (Admin & System Controls)",
     "percent": 20,
     "meta": "20% · Planning",
@@ -142,7 +152,7 @@
   },
   {
     "id": "scoreboards",
-    "order": 15,
+    "order": 16,
     "title": "Scoreboards",
     "percent": 42,
     "meta": "42% · Aggregation Shapes + Public Gallery",
@@ -152,7 +162,7 @@
   },
   {
     "id": "clips",
-    "order": 16,
+    "order": 17,
     "title": "Clips Module",
     "percent": 62,
     "meta": "62% · Runtime Clipping + Public Gallery",
@@ -162,7 +172,7 @@
   },
   {
     "id": "polls",
-    "order": 17,
+    "order": 18,
     "title": "Polls Module",
     "percent": 58,
     "meta": "58% · Runtime Polling + Public Gallery",
@@ -172,7 +182,7 @@
   },
   {
     "id": "tallies",
-    "order": 18,
+    "order": 19,
     "title": "Tallies Module",
     "percent": 48,
     "meta": "48% · Aggregation + Public Gallery + Detail Pages",
@@ -182,7 +192,7 @@
   },
   {
     "id": "levelling",
-    "order": 19,
+    "order": 20,
     "title": "Levelling System",
     "percent": 10,
     "meta": "10% · Planned / Experimental",
@@ -192,7 +202,7 @@
   },
   {
     "id": "fake-gambling",
-    "order": 20,
+    "order": 21,
     "title": "Fake Gambling / Game Mechanics",
     "percent": 10,
     "meta": "10% · Planned",
@@ -202,7 +212,7 @@
   },
   {
     "id": "paid-interactions",
-    "order": 21,
+    "order": 22,
     "title": "Paid Interaction Detection",
     "percent": 15,
     "meta": "15% · Planned / Design In Progress",
