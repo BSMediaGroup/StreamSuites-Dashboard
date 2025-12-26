@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<!-- StreamSuites™ — Public About Page -->
+<!-- StreamSuites™ — Public About Page (JSON-driven) -->
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>About StreamSuites™</title>
-  <meta name="description" content="Learn how StreamSuites keeps public runtimes and the creator dashboard aligned, secure, and transparent." />
+  <meta name="description" content="Canonical About content for StreamSuites, rendered directly from JSON with manifest-defined ordering." />
   <link rel="canonical" href="https://bsmediagroup.github.io/StreamSuites-Dashboard/about.html" />
   <meta property="og:title" content="About StreamSuites™" />
-  <meta property="og:description" content="Learn how StreamSuites keeps public runtimes and the creator dashboard aligned, secure, and transparent." />
+  <meta property="og:description" content="Canonical About content for StreamSuites, rendered directly from JSON with manifest-defined ordering." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bsmediagroup.github.io/StreamSuites-Dashboard/about.html" />
   <meta property="og:image" content="https://bsmediagroup.github.io/StreamSuites-Dashboard/assets/backgrounds/seoshare.jpg" />
@@ -43,55 +43,20 @@
       <section class="public-hero public-glass-panel">
         <div class="section-heading">
           <h2>About StreamSuites™</h2>
-          <span class="public-badge">Creator-first</span>
+          <span class="public-badge">JSON-driven</span>
         </div>
         <p>
-          StreamSuites pairs a GitHub Pages-friendly dashboard with public runtimes so creators can manage jobs, clips, and
-          monetization while viewers see only the polished, static surfaces. We keep routing simple, pages lightweight, and updates
-          predictable.
+          This page renders the canonical About record for StreamSuites directly from
+          <code>/docs/about/about.manifest.json</code> and its referenced sources so public visitors and dashboard users see the same ordered content.
         </p>
         <p class="muted">
-          This public area mirrors the dashboard tone but never reuses dashboard routing or logic. Everything here is static, cache-safe,
-          and ready for embeds.
+          Consumer-friendly entries are always visible. Technical entries start collapsed with accessible toggles to reveal the developer view when needed.
         </p>
       </section>
 
-      <section class="public-columns" aria-label="About details">
-        <article class="public-glass-card">
-          <h3>Runtime vs. Dashboard</h3>
-          <p class="muted">
-            The runtime powers automations, platform hooks, and delivery. The dashboard remains a static admin shell that controls those
-            runtimes without exposing secrets. Public pages sit alongside, offering safe previews and documentation.
-          </p>
-          <ul class="public-list">
-            <li>Dashboard stays noindex/nohistory and ships static assets only.</li>
-            <li>Runtime endpoints are isolated, hardened, and versioned.</li>
-            <li>Public pages reuse the theme without importing dashboard routers.</li>
-          </ul>
-        </article>
-
-        <article class="public-glass-card">
-          <h3>Platform Coverage</h3>
-          <p class="muted">StreamSuites tracks the surfaces creators care about most.</p>
-          <ul class="public-list">
-            <li>Streaming: Twitch, YouTube, Kick (monitoring + scheduling)</li>
-            <li>Video: Rumble, YouTube Live archives, VOD safelists</li>
-            <li>Community: Discord delivery, chat triggers, loyalty tallies</li>
-          </ul>
-        </article>
-
-        <article class="public-glass-card">
-          <h3>Reliability</h3>
-          <p class="muted">
-            We favor static fallbacks, explicit routes, and small payloads. Version badges on every public page mirror
-            <code>docs/version.json</code> so visitors know what build they are seeing.
-          </p>
-          <ul class="public-list">
-            <li>Manual changelog plus visual roadmap</li>
-            <li>Static navigation baseline across pages</li>
-            <li>Dark glass containers that keep readability intact</li>
-          </ul>
-        </article>
+      <section class="public-about-shell" aria-label="About details">
+        <div id="public-about-errors"></div>
+        <div id="public-about-sections" class="public-about-sections"></div>
       </section>
 
       <footer class="public-footer">
@@ -113,6 +78,8 @@
 
   <script src="./js/utils/versioning.js"></script>
   <script src="./js/utils/version-stamp.js"></script>
+  <script src="./js/utils/about-data.js"></script>
+  <script src="./js/public-about.js"></script>
   <script>
     if (window.Versioning) {
       Versioning.applyVersionToElements({ version: ".version-badge" });
