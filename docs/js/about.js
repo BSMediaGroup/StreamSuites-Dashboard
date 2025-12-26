@@ -10,6 +10,32 @@
   "use strict";
 
   let cleanupFns = [];
+  let openRow = null;
+
+  const basePath =
+    (window.Versioning && window.Versioning.resolveBasePath &&
+      window.Versioning.resolveBasePath()) ||
+    (() => {
+      const parts = window.location.pathname.split("/").filter(Boolean);
+      if (!parts.length) return "";
+      const root = parts[0] === "docs" ? "docs" : parts[0];
+      return `/${root}`;
+    })();
+
+  function resolveRoadmapPath() {
+    if (window.AboutData && typeof window.AboutData.buildUrl === "function") {
+      return window.AboutData.buildUrl("data/roadmap.json");
+    }
+
+    return `${basePath || ""}/data/roadmap.json`.replace(/\/+/g, "/");
+  }
+
+  function resolveAssetPath(asset) {
+    if (!asset) return "";
+    if (/^(https?:)?\/\//.test(asset) || asset.startsWith("/")) return asset;
+    const trimmed = asset.replace(/^\.\//, "");
+    return `${basePath || ""}/${trimmed}`.replace(/\/+/g, "/");
+  }
 
   function sectionAnchor(sectionId) {
     return `about-${sectionId}`;
@@ -40,10 +66,15 @@
     container.style.display = "block";
   }
 
-  function renderMeta(version, lastUpdated) {
-    const versionEl = document.getElementById("about-version-meta");
-    if (versionEl) {
-      versionEl.textContent = version || "Unavailable";
+  async function loadRoadmapData() {
+    try {
+      const response = await fetch(resolveRoadmapPath(), { cache: "no-store" });
+      if (!response.ok) throw new Error("Failed to load roadmap data");
+      const payload = await response.json();
+      return Array.isArray(payload) ? payload : [];
+    } catch (err) {
+      console.warn("Unable to load roadmap data", err);
+      return [];
     }
   }
 
