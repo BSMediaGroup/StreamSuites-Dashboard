@@ -16,10 +16,39 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+:root {
+  --public-shell-max: 1640px;
+  --public-shell-gutter: 22px;
+  --public-header-height: clamp(72px, 9vh, 92px);
+  --public-footer-height: clamp(64px, 8vh, 88px);
+}
+
 .page-shell {
   max-width: 1640px;
   margin: 0 auto;
   padding: 28px 20px 60px;
+}
+
+.public-shell :is(
+    p,
+    li,
+    .muted,
+    .description,
+    .helper-text,
+    .page-heading .lede,
+    .hero-block p,
+    .link-list a,
+    .meta-row,
+    .meta-list,
+    .meta-list li,
+    .scorebar .label span,
+    .result-label,
+    .timestamp,
+    .more-link,
+    .info-card p
+  ) {
+  font-size: 75%;
+  line-height: 1.45;
 }
 
 .public-header {
@@ -827,7 +856,8 @@ body {
    ------------------------------ */
 .public-footer {
   margin-top: 32px;
-  padding: 14px 10px;
+  padding: 14px
+    max(var(--public-shell-gutter), calc((100vw - var(--public-shell-max)) / 2 + var(--public-shell-gutter)));
   color: var(--text-muted);
   font-size: 12px;
   display: flex;
@@ -835,6 +865,14 @@ body {
   align-items: center;
   border-top: 1px solid var(--border-subtle);
   gap: 10px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  border-radius: 0;
+  background: rgba(12, 17, 26, 0.85);
+  box-sizing: border-box;
+  z-index: 20;
 }
 
 .public-footer a {
@@ -1472,10 +1510,13 @@ body.viz-expanded {
 }
 
 .public-shell {
-  max-width: 1640px;
+  max-width: var(--public-shell-max);
   margin: 0 auto;
-  padding: 32px 22px 80px;
+  padding: calc(var(--public-header-height) + 32px)
+    max(var(--public-shell-gutter), calc((100vw - var(--public-shell-max)) / 2 + var(--public-shell-gutter)))
+    calc(var(--public-footer-height) + 48px);
   position: relative;
+  box-sizing: border-box;
 }
 
 .public-topbar {
@@ -1483,11 +1524,19 @@ body.viz-expanded {
   align-items: center;
   gap: 18px;
   justify-content: space-between;
-  padding: 14px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 16px;
+  padding: 14px
+    max(var(--public-shell-gutter), calc((100vw - var(--public-shell-max)) / 2 + var(--public-shell-gutter)));
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  box-sizing: border-box;
+  z-index: 20;
 }
 
 .public-brand {
@@ -1590,15 +1639,23 @@ body.viz-expanded {
 
 .public-footer {
   margin-top: 34px;
-  padding: 14px 18px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 14px
+    max(var(--public-shell-gutter), calc((100vw - var(--public-shell-max)) / 2 + var(--public-shell-gutter)));
+  border-radius: 0;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
   background: rgba(12, 17, 26, 0.85);
   display: flex;
   align-items: center;
   gap: 10px;
   justify-content: space-between;
   flex-wrap: wrap;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  box-sizing: border-box;
+  z-index: 20;
 }
 
 .public-footer nav {

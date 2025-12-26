@@ -885,7 +885,7 @@ button,
 }
 
 :root {
-  --public-btn-size: clamp(0.9rem, 1.1vw, 1.02rem);
+  --public-btn-size: clamp(0.675rem, 0.825vw, 0.765rem);
   --public-btn-hover-time: 400ms;
   --public-btn-hover-ease: cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -896,16 +896,19 @@ button,
   border-radius: 999vw;
   background: transparent;
   pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: all var(--public-btn-hover-time) var(--public-btn-hover-ease);
 }
 
 .button-shadow {
-  --shadow-cuttoff-fix: 2em;
+  --shadow-cuttoff-fix: 0.8em;
   position: absolute;
   width: calc(100% + var(--shadow-cuttoff-fix));
   height: calc(100% + var(--shadow-cuttoff-fix));
-  top: calc(0% - var(--shadow-cuttoff-fix) / 2);
-  left: calc(0% - var(--shadow-cuttoff-fix) / 2);
+  top: calc(var(--shadow-cuttoff-fix) / -2);
+  left: calc(var(--shadow-cuttoff-fix) / -2);
   filter: blur(clamp(2px, 0.125em, 12px));
   -webkit-filter: blur(clamp(2px, 0.125em, 12px));
   overflow: visible;
@@ -919,11 +922,11 @@ button,
   inset: 0;
   border-radius: 999vw;
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.15));
-  width: calc(100% - var(--shadow-cuttoff-fix) - 0.25em);
-  height: calc(100% - var(--shadow-cuttoff-fix) - 0.25em);
-  top: calc(var(--shadow-cuttoff-fix) - 0.5em);
-  left: calc(var(--shadow-cuttoff-fix) - 0.875em);
-  padding: 0.125em;
+  width: calc(100% - var(--shadow-cuttoff-fix));
+  height: calc(100% - var(--shadow-cuttoff-fix));
+  top: calc(var(--shadow-cuttoff-fix) * 0.6);
+  left: calc(var(--shadow-cuttoff-fix) * 0.6);
+  padding: 0.1em;
   box-sizing: border-box;
   mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   mask-composite: exclude;
@@ -945,8 +948,8 @@ button.public-btn {
   z-index: 3;
   background: linear-gradient(-75deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
   border-radius: 999vw;
-  height: 38px;
-  max-height: 40px;
+  height: 34px;
+  max-height: 38px;
   box-shadow: inset 0 0.125em 0.125em rgba(0, 0, 0, 0.25),
     inset 0 -0.125em 0.125em rgba(255, 255, 255, 0.35),
     0 0.25em 0.125em -0.125em rgba(0, 0, 0, 0.35),
@@ -980,9 +983,9 @@ button.public-btn span {
   color: #dfe9ff;
   text-shadow: 0em 0.18em 0.08em rgba(0, 0, 0, 0.35);
   transition: all var(--public-btn-hover-time) var(--public-btn-hover-ease);
-  padding-inline: 1.1em;
-  padding-block: 0.28em;
-  max-height: 40px;
+  padding-inline: 0.95em;
+  padding-block: 0.2em;
+  max-height: 38px;
   min-height: 0;
 }
 
@@ -1068,7 +1071,7 @@ button.public-btn:active::after {
 }
 
 .button-wrap:has(button:hover) .button-shadow::after {
-  top: calc(var(--shadow-cuttoff-fix) - 0.875em);
+  top: calc(var(--shadow-cuttoff-fix) * 0.35);
   opacity: 1;
 }
 
@@ -1092,7 +1095,7 @@ button.public-btn:active::after {
 }
 
 .button-wrap:has(button:active) .button-shadow::after {
-  top: calc(var(--shadow-cuttoff-fix) - 0.5em);
+  top: calc(var(--shadow-cuttoff-fix) * 0.5);
   opacity: 0.75;
 }
 
