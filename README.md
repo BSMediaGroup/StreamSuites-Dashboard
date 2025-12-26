@@ -124,7 +124,7 @@ Crucially, **none of these require rewriting the dashboard**.
 - **Polls Gallery (`docs/polls.html`)** — standalone, unauthenticated gallery of placeholder polls/results; static only, ready for future data hydration. Poll detail defaults to the bar view with pie available as a toggle.
 - **Tallies Gallery (`docs/tallies.html`)** — standalone gallery mirroring the polls layout for programmatic tallies; includes a tallies detail page (`docs/tallies/detail.html`) with bar/pie/custom views and placeholder aggregation data.
 - **Scoreboards Gallery (`docs/scoreboards.html`)** — new standalone gallery mirroring the polls layout for score-centric use cases: gambling totals, chat-driven games, engagement counters, and time-based tallies. Detail view (`docs/scoreboards/detail.html`) includes placeholder bar/pie visuals and metadata.
-- **About (`docs/about.html`)** — public-facing overview of StreamSuites, clarifying runtime vs. dashboard separation, shared version badge, and product-grade messaging.
+- **About (`docs/about.html`)** — JSON-driven public About surface that reads `/docs/about/about.manifest.json`, renders consumer entries by default, and lets visitors optionally expand developer notes without hardcoded text.
 - **Privacy (`docs/privacy.html`)** — provisional public privacy policy surface using the shared glass layout and SEO metadata.
 - **Accessibility (`docs/accessibility.html`)** — accessibility statement with contact and compliance intent, sharing the public shell.
 - **Changelog (`docs/changelog.html`)** — public roadmap/changelog surface with native &lt;progress&gt; roadmap bars styled per the button/glass system and grouped release notes.
@@ -133,6 +133,15 @@ Crucially, **none of these require rewriting the dashboard**.
 - **Tools (`docs/tools/index.html` + `docs/tools/views/*`)** — public parent page with sub-views for overview and per-tool CTAs using the conic-gradient button system.
 
 All public pages are **independent entry points** (no dashboard routing), GitHub Pages–safe, and reuse the shared dark styling in `docs/css/public-pages.css`.
+
+## JSON-driven About system
+
+- **Manifest-first loading:** `/docs/about/about.manifest.json` defines the exact About source order. The loader never scans the directory or guesses filenames.
+- **Source validation:** each referenced JSON must expose `version` and `sections[]`; missing or invalid sources render a visible warning rather than silently disappearing.
+- **Ordered merge:** sections from each source are normalized and concatenated according to manifest order, preserving declared `order` fields for deterministic anchors.
+- **Audience layers:** the public page renders consumer entries by default and hides developer entries behind a “Show technical details” toggle; the dashboard shows only developer entries with no collapse UI.
+- **Anchors and deep links:** deterministic anchors follow `#about-{section.id}` and `#about-{section.id}-{entry.id}` and are honored on both surfaces.
+- **Version metadata:** the dashboard About view displays `version` and `lastUpdated` directly from the canonical JSON payloads and keeps them read-only.
 
 ---
 
@@ -261,12 +270,13 @@ StreamSuites-Dashboard/
 │   ├── polls.html          # Public polls gallery (standalone)
 │   ├── tallies.html        # Public tallies gallery (standalone)
 │   ├── scoreboards.html    # Public scoreboards gallery (standalone)
-│   ├── about.html          # Public about page (runtime vs. dashboard clarity)
+│   ├── about.html          # Public about page (manifest-driven, JSON-only)
 │   ├── privacy.html        # Public privacy policy surface
 │   ├── accessibility.html  # Public accessibility statement
 │   ├── changelog.html      # Public roadmap + changelog
 │   │
 │   ├── about/              # Structured about page data (split for manageability)
+│   │   ├── about.manifest.json  # Canonical source ordering for About content
 │   │   ├── about_part1_core.json
 │   │   ├── about_part2_platforms_interfaces.json
 │   │   └── about_part3_about_system_spec.json
@@ -354,11 +364,13 @@ StreamSuites-Dashboard/
 │   │   ├── public-tallies.js# Placeholder data renderer for public tallies gallery
 │   │   ├── public-scoreboards.js # Placeholder data renderer for public scoreboards gallery
 │   │   ├── public-roadmap.js # Public changelog roadmap renderer (animated <progress> bars)
+│   │   ├── public-about.js  # Public about renderer (manifest-driven)
 │   │   ├── poll-detail.js   # Poll detail visualization controls
 │   │   ├── tally-detail.js  # Tally detail visualization controls
 │   │   ├── utils/
 │   │   |   ├── version-stamp.js
 │   │   |   ├── versioning.js
+│   │   |   ├── about-data.js    # Canonical About manifest loader
 │   │   │   └── search-pagination.js # Shared search + pagination utility
 │   │   └── platforms/       # Platform-specific view logic
 │   │       ├── discord.js

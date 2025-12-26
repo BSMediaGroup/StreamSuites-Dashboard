@@ -1214,3 +1214,80 @@ button.public-btn:active::after {
   line-height: 1;
   vertical-align: middle;
 }
+
+/* ======================================================================
+   About view (dashboard)
+   ====================================================================== */
+.ss-about-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.about-meta-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 0.95rem;
+  color: #cfd8dc;
+}
+
+.ss-about-errors .ss-alert {
+  margin-bottom: 12px;
+}
+
+.ss-about-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ss-about-section {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.ss-about-section-header a {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.ss-about-section-header a:hover {
+  text-decoration: underline;
+}
+
+.ss-about-section-body {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ss-about-entry {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.ss-about-entry-header a {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.ss-about-entry-header a:hover {
+  text-decoration: underline;
+}
+
+.ss-about-entry-body p {
+  margin: 0;
+  color: #e8f0f2;
+  line-height: 1.55;
+}

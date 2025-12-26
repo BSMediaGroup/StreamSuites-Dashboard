@@ -1,5 +1,5 @@
 /* ======================================================================
-   StreamSuites™ Dashboard — About View Logic
+   StreamSuites™ Dashboard — About View Logic (JSON-driven)
    Project: StreamSuites™
    Version: v0.2.0-alpha
    Owner: Daniel Clancy
@@ -10,285 +10,137 @@
   "use strict";
 
   let cleanupFns = [];
-  let openRow = null;
 
-  const basePath =
-    (window.Versioning && window.Versioning.resolveBasePath &&
-      window.Versioning.resolveBasePath()) ||
-    (() => {
-      const parts = window.location.pathname.split("/").filter(Boolean);
-      if (!parts.length) return "";
-      const root = parts[0] === "docs" ? "docs" : parts[0];
-      return `/${root}`;
-    })();
-
-  const roadmapDataPath = `${basePath || ""}/data/roadmap.json`.replace(/\/+/g, "/");
-
-  function resolveAssetPath(asset) {
-    if (!asset) return "";
-    if (/^(https?:)?\/\//.test(asset) || asset.startsWith("/")) return asset;
-    const trimmed = asset.replace(/^\.\//, "");
-    return `${basePath || ""}/${trimmed}`.replace(/\/+/g, "/");
+  function sectionAnchor(sectionId) {
+    return `about-${sectionId}`;
   }
 
-  function formatScore(percent) {
-    const score = percent / 10;
-    return Number.isInteger(score) ? score.toFixed(1) : score.toFixed(1);
+  function entryAnchor(sectionId, entryId) {
+    return `about-${sectionId}-${entryId}`;
   }
 
-  function buildSkillRow(entry) {
-    const score = Math.max(0, Math.min(100, Number(entry.percent) || 0));
-    const normalizedScore = formatScore(score);
-    const pulseClass = entry.pulse ? " pulsing" : "";
+  function renderErrors(errors = []) {
+    const container = document.getElementById("about-error-container");
+    if (!container) return;
 
-    const icon = resolveAssetPath(entry.icon || "assets/icons/ui/widget.svg");
-
-    return `
-    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="${normalizedScore}" title="${entry.tooltip || ""}" role="button" tabindex="0">
-      <div class="ss-progress-label">
-        <div class="ss-progress-main">
-          <span class="ss-progress-title">
-            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('${icon}')"></span>
-            ${entry.title}
-          </span>
-        </div>
-        <div class="ss-progress-right">
-          <span class="ss-progress-meta">${entry.meta}</span>
-          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
-            <span>▸</span>
-          </button>
-        </div>
-      </div>
-      <div class="ss-skill-description" aria-hidden="true">
-        <div class="ss-skill-description-inner">
-          <p class="muted">${entry.description}</p>
-        </div>
-      </div>
-      <div class="ss-skill-wrapper">
-        <div class="ss-skill-track">
-          <div class="ss-skill-fill${pulseClass}"></div>
-        </div>
-      </div>
-    </div>`;
-  }
-
-  function renderRoadmapRows(data) {
-    const container = document.getElementById("ss-roadmap-rows");
-    if (!container || !Array.isArray(data)) return [];
-
-    const sorted = [...data].sort((a, b) => (a.order || 0) - (b.order || 0));
-    container.innerHTML = sorted.map(buildSkillRow).join("");
-
-    return Array.from(container.querySelectorAll(".ss-skill-row"));
-  }
-
-  async function loadRoadmapData() {
-    try {
-      const response = await fetch(roadmapDataPath, { cache: "no-store" });
-      if (!response.ok) throw new Error("Failed to load roadmap data");
-      const payload = await response.json();
-      return Array.isArray(payload) ? payload : [];
-    } catch (err) {
-      console.warn("Unable to load roadmap data", err);
-      return [];
-    }
-  }
-
-  function initSkillBars(rows) {
-    if (!rows || rows.length === 0) return;
-
-    rows.forEach((wrapper) => {
-      const fill = wrapper.querySelector(".ss-skill-fill");
-      if (!fill) return;
-
-      let score = parseFloat(wrapper.getAttribute("data-score"));
-      if (isNaN(score) || score < 0) score = 0;
-      if (score > 10) score = 10;
-
-      const targetWidth = (score / 10) * 100;
-      const transitionTiming =
-        "width 1200ms cubic-bezier(0.19, 1, 0.22, 1)";
-
-      function animateFill() {
-        fill.classList.remove("pulsing");
-        fill.style.transition = "none";
-        fill.style.width = "0%";
-
-        // Force reflow
-        void fill.offsetWidth;
-
-        fill.style.transition = transitionTiming;
-        fill.style.width = targetWidth + "%";
-
-        setTimeout(() => {
-          fill.classList.add("pulsing");
-        }, 1300);
-      }
-
-      animateFill();
-      const mouseHandler = animateFill;
-      wrapper.addEventListener("mouseenter", mouseHandler);
-      cleanupFns.push(() =>
-        wrapper.removeEventListener("mouseenter", mouseHandler)
-      );
-    });
-  }
-
-  function setRowExpanded(row, shouldExpand) {
-    const desc = row.querySelector(".ss-skill-description");
-    const toggle = row.querySelector(".ss-skill-toggle");
-    if (!desc || !toggle) return;
-
-    if (shouldExpand) {
-      row.classList.add("is-open");
-      desc.style.maxHeight = `${desc.scrollHeight}px`;
-      desc.setAttribute("aria-hidden", "false");
-      toggle.setAttribute("aria-expanded", "true");
-      openRow = row;
+    if (!errors.length) {
+      container.innerHTML = "";
+      container.style.display = "none";
       return;
     }
 
-    row.classList.remove("is-open");
-    desc.style.maxHeight = "0px";
-    desc.setAttribute("aria-hidden", "true");
-    toggle.setAttribute("aria-expanded", "false");
+    const list = errors
+      .map(
+        (err) =>
+          `<li><strong>${err.source}:</strong> ${err.message || "Unknown error"}</li>`
+      )
+      .join("");
+
+    container.innerHTML = `<div class="ss-alert ss-alert-warning"><p><strong>About data issues</strong></p><ul>${list}</ul></div>`;
+    container.style.display = "block";
   }
 
-  function initSkillToggles(rows) {
-    if (!rows || rows.length === 0) return;
+  function renderMeta(version, lastUpdated) {
+    const versionEl = document.getElementById("about-version-meta");
+    if (versionEl) {
+      versionEl.textContent = version || "Unavailable";
+    }
 
-    rows.forEach((row) => {
-      const desc = row.querySelector(".ss-skill-description");
-      const toggle = row.querySelector(".ss-skill-toggle");
-
-      if (desc) {
-        desc.style.maxHeight = "0px";
-        desc.setAttribute("aria-hidden", "true");
-      }
-
-      const handler = () => {
-        const isOpen = row.classList.contains("is-open");
-
-        if (openRow && openRow !== row) {
-          setRowExpanded(openRow, false);
-          openRow = null;
-        }
-
-        setRowExpanded(row, !isOpen);
-        if (isOpen) openRow = null;
-      };
-
-      const clickTargets = [row];
-      if (toggle) clickTargets.push(toggle);
-
-      clickTargets.forEach((target) => {
-        const boundHandler = (event) => {
-          if (target !== row) event.stopPropagation();
-          event.preventDefault();
-          handler();
-        };
-
-        target.addEventListener("click", boundHandler);
-        cleanupFns.push(() =>
-          target.removeEventListener("click", boundHandler)
-        );
-      });
-
-      const keyHandler = (event) => {
-        if (event.key !== "Enter" && event.key !== " ") return;
-        event.preventDefault();
-        handler();
-      };
-
-      row.addEventListener("keydown", keyHandler);
-      cleanupFns.push(() =>
-        row.removeEventListener("keydown", keyHandler)
-      );
-    });
-
-    const resizeHandler = () => {
-      if (!openRow) return;
-      setRowExpanded(openRow, true);
-    };
-
-    window.addEventListener("resize", resizeHandler);
-    cleanupFns.push(() =>
-      window.removeEventListener("resize", resizeHandler)
-    );
+    const updatedEl = document.getElementById("about-updated-meta");
+    if (updatedEl) {
+      updatedEl.textContent = lastUpdated || "Unknown";
+    }
   }
 
-  /**
-   * SPA-safe scroll handling.
-   * Supports URLs like:
-   *   #about&scroll=roadmap
-   */
-  function scrollToAnchorIfRequested() {
-    const hash = location.hash || "";
-    if (!hash.includes("scroll=")) return;
+  function renderSections(sections = []) {
+    const container = document.getElementById("about-sections");
+    if (!container) return;
 
-    const params = hash.split("&").slice(1);
-    const scrollParam = params.find(p => p.startsWith("scroll="));
-    if (!scrollParam) return;
+    if (!sections.length) {
+      container.innerHTML = `<p class="muted">No about sections available.</p>`;
+      return;
+    }
 
-    const targetId = scrollParam.split("=")[1];
+    const content = sections
+      .map((section) => {
+        const entries = Array.isArray(section.entries) ? section.entries : [];
+        const entryMarkup = entries
+          .filter((entry) => entry?.developer)
+          .map((entry) => {
+            const entryId = entryAnchor(section.id, entry.id);
+            const title = entry.developer?.title || entry.consumer?.title || "Untitled";
+            const body = entry.developer?.body || "";
+
+            return `
+              <article class="ss-about-entry" id="${entryId}">
+                <header class="ss-about-entry-header">
+                  <a class="ss-anchor" href="#${entryId}">${title}</a>
+                </header>
+                <div class="ss-about-entry-body">
+                  <p>${body}</p>
+                </div>
+              </article>
+            `;
+          })
+          .join("");
+
+        return `
+          <section class="ss-about-section" id="${sectionAnchor(section.id)}">
+            <header class="ss-about-section-header">
+              <a class="ss-anchor" href="#${sectionAnchor(section.id)}">${section.title}</a>
+            </header>
+            <div class="ss-about-section-body">
+              ${entryMarkup || '<p class="muted">No developer entries in this section.</p>'}
+            </div>
+          </section>
+        `;
+      })
+      .join("");
+
+    container.innerHTML = content;
+  }
+
+  function scrollToHashTarget() {
+    const targetId = (location.hash || "").replace(/^#/, "");
     if (!targetId) return;
 
     requestAnimationFrame(() => {
       const el = document.getElementById(targetId);
       if (el) {
-        el.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
-        });
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     });
   }
 
-  function init() {
-    // Delay ensures DOM is fully injected by SPA
-    requestAnimationFrame(async () => {
-      const data = await loadRoadmapData();
-      const rows = renderRoadmapRows(data);
+  async function init() {
+    if (!window.AboutData) {
+      console.warn("[AboutView] AboutData loader is missing.");
+      return;
+    }
 
-      renderVersionMeta();
-      initSkillBars(rows);
-      initSkillToggles(rows);
-      scrollToAnchorIfRequested();
-    });
+    const data = await AboutData.load();
+    renderMeta(data.version, data.lastUpdated);
+    renderErrors(data.errors);
+    renderSections(data.sections);
+    scrollToHashTarget();
 
-    window.addEventListener("hashchange", scrollToAnchorIfRequested);
-    cleanupFns.push(() =>
-      window.removeEventListener("hashchange", scrollToAnchorIfRequested)
-    );
-  }
-
-  function renderVersionMeta() {
-    if (!window.Versioning) return;
-
-    Versioning.loadVersion().then((info) => {
-      if (!info) return;
-
-      const versionEl = document.getElementById("about-version-meta");
-      if (versionEl) {
-        versionEl.textContent = Versioning.formatDisplayVersion(info);
-      }
-
-      const ownerEl = document.getElementById("about-owner-meta");
-      if (ownerEl && info.owner) {
-        ownerEl.textContent = info.owner;
-      }
-
-      const copyrightEl = document.getElementById("about-copyright-meta");
-      if (copyrightEl && info.copyright) {
-        copyrightEl.textContent = info.copyright;
-      }
-    });
+    const hashHandler = () => scrollToHashTarget();
+    window.addEventListener("hashchange", hashHandler);
+    cleanupFns.push(() => window.removeEventListener("hashchange", hashHandler));
   }
 
   function destroy() {
     cleanupFns.forEach((fn) => fn());
     cleanupFns = [];
-    openRow = null;
+
+    const container = document.getElementById("about-sections");
+    if (container) container.innerHTML = "";
+
+    const errorContainer = document.getElementById("about-error-container");
+    if (errorContainer) {
+      errorContainer.innerHTML = "";
+      errorContainer.style.display = "none";
+    }
   }
 
   window.AboutView = {
