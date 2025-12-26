@@ -128,6 +128,7 @@ Crucially, **none of these require rewriting the dashboard**.
 - **Privacy (`docs/privacy.html`)** — provisional public privacy policy surface using the shared glass layout and SEO metadata.
 - **Accessibility (`docs/accessibility.html`)** — accessibility statement with contact and compliance intent, sharing the public shell.
 - **Changelog (`docs/changelog.html`)** — public roadmap/changelog surface with native &lt;progress&gt; roadmap bars styled per the button/glass system and grouped release notes.
+    - Merges dashboard + runtime changelog feeds, with the runtime changelog served from the committed `docs/data/changelog.runtime.json` artifact for GitHub Pages delivery.
 - **Support (`docs/support/index.html` + `docs/support/views/*`)** — public parent page with sub-views for overview and documentation placeholders plus outbound platform support links.
 - **Tools (`docs/tools/index.html` + `docs/tools/views/*`)** — public parent page with sub-views for overview and per-tool CTAs using the conic-gradient button system.
 
@@ -301,6 +302,7 @@ StreamSuites-Dashboard/
 │   │
 │   ├── data/                # Bundled JSON defaults + runtime snapshot examples
 │   │   ├── changelog.dashboard.json
+│   │   ├── changelog.runtime.json
 │   │   ├── chat_events.json
 │   │   ├── chat_triggers.json
 │   │   ├── clips.json

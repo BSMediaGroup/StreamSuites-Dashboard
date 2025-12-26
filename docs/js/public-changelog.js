@@ -83,17 +83,17 @@
     return `
       <article class="public-glass-card changelog-entry"${release.scope ? ` data-scope="${release.scope}"` : ""}>
         <div class="section-heading">
-          <div class="changelog-title changelog-header">
-            <h3>${release.title || release.version || "Unversioned"}</h3>
-            ${scopeTag}
-            ${latestTag}
-            ${dateLabel ? `<span class="lede">${dateLabel}</span>` : ""}
+          <div class="changelog-header-row">
+            <h3 class="changelog-title">${release.title || release.version || "Unversioned"}</h3>
+            <div class="changelog-meta">
+              ${scopeTag}
+              ${latestTag}
+              ${versionTag}
+              ${changeTags}
+              ${dateLabel ? `<span class="lede">${dateLabel}</span>` : ""}
+            </div>
           </div>
           ${release.summary ? `<span class="lede">${release.summary}</span>` : ""}
-          <div class="changelog-title">
-            ${versionTag}
-            ${changeTags}
-          </div>
         </div>
         <div class="changelog-body">${renderDetails(release.details)}</div>
       </article>

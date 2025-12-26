@@ -89,7 +89,7 @@ function mergeEntries(...entrySets) {
 export async function loadMergedChangelog() {
   const basePath = resolveBasePath();
   const dashboardPath = normalizePath(basePath, "data/changelog.dashboard.json");
-  const runtimePath = normalizePath(basePath, "../runtime/exports/changelog.runtime.json");
+  const runtimePath = normalizePath(basePath, "data/changelog.runtime.json");
 
   const dashboardEntries = (await fetchChangelog(dashboardPath)).map((entry) =>
     normalizeEntry(entry, "dashboard")
