@@ -1,3 +1,5 @@
+// UI refinement: About page container simplification, title deduplication,
+// scope grouping, and hover glow alignment with Changelog roadmap
 /* ======================================================================
    StreamSuites™ Dashboard — About View Logic (JSON-driven)
    Project: StreamSuites™
@@ -24,6 +26,21 @@
   let cleanupFns = [];
   let openRow = null;
 
+  const SCOPE_CONFIG = {
+    "about_part1_core.json": {
+      title: "Core System Overview",
+      tone: "core"
+    },
+    "about_part2_platforms_interfaces.json": {
+      title: "Platform Integrations",
+      tone: "platforms"
+    },
+    "about_part3_about_system_spec.json": {
+      title: "Architecture & Documentation",
+      tone: "architecture"
+    }
+  };
+
   const basePath =
     (window.Versioning && window.Versioning.resolveBasePath &&
       window.Versioning.resolveBasePath()) ||
@@ -47,6 +64,76 @@
     if (/^(https?:)?\/\//.test(asset) || asset.startsWith("/")) return asset;
     const trimmed = asset.replace(/^\.\//, "");
     return `${basePath || ""}/${trimmed}`.replace(/\\+/g, "/");
+  }
+
+  function buildAboutPath(path) {
+    if (window.AboutData?.buildUrl) return AboutData.buildUrl(path);
+    return `${basePath || ""}/${path}`.replace(/\\+/g, "/");
+  }
+
+  function normalizeEntry(entry) {
+    return {
+      id: entry?.id || "",
+      order: Number(entry?.order) || 0,
+      consumer: entry?.consumer ? { ...entry.consumer } : null,
+      developer: entry?.developer ? { ...entry.developer } : null
+    };
+  }
+
+  function normalizeSection(section) {
+    const entries = Array.isArray(section?.entries)
+      ? [...section.entries]
+          .map(normalizeEntry)
+          .sort((a, b) => a.order - b.order)
+      : [];
+
+    return {
+      id: section?.id || "",
+      order: Number(section?.order) || 0,
+      title: section?.title || "",
+      entries
+    };
+  }
+
+  async function fetchJson(url) {
+    const response = await fetch(url, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return response.json();
+  }
+
+  async function loadScopedSections() {
+    try {
+      const manifest = await fetchJson(buildAboutPath("about/about.manifest.json"));
+      const sources = Array.isArray(manifest?.sources) ? manifest.sources : [];
+      const scopedSections = [];
+
+      for (const source of sources) {
+        let payload;
+        try {
+          payload = await fetchJson(buildAboutPath(`about/${source}`));
+        } catch (err) {
+          console.warn(`[AboutView] Failed to load scoped source ${source}`, err);
+          continue;
+        }
+
+        const sections = Array.isArray(payload?.sections)
+          ? [...payload.sections].map(normalizeSection).sort((a, b) => a.order - b.order)
+          : [];
+
+        const config = SCOPE_CONFIG[source] || {};
+        scopedSections.push({
+          key: source.replace(/\.json$/, ""),
+          title: config.title || source,
+          tone: config.tone || "general",
+          sections
+        });
+      }
+
+      return scopedSections;
+    } catch (err) {
+      console.warn("[AboutView] Failed to derive scoped sections", err);
+      return [];
+    }
   }
 
   function formatScore(percent) {
@@ -305,45 +392,64 @@
     });
   }
 
-  function renderSections(sections = []) {
+  function renderSections(scopes = []) {
     const container = document.getElementById("about-sections");
     if (!container) return;
 
-    if (!sections.length) {
+    if (!scopes.length) {
       container.innerHTML = `<p class="muted">No about sections available.</p>`;
       return;
     }
 
-    const content = sections
-      .map((section) => {
-        const entries = Array.isArray(section.entries) ? section.entries : [];
-        const entryMarkup = entries
-          .filter((entry) => entry?.developer)
-          .map((entry) => {
-            const entryId = entryAnchor(section.id, entry.id);
-            const title = entry.developer?.title || entry.consumer?.title || "Untitled";
-            const body = entry.developer?.body || "";
+    const content = scopes
+      .map((scope) => {
+        const sectionMarkup = (Array.isArray(scope.sections) ? scope.sections : [])
+          .map((section) => {
+            const entries = Array.isArray(section.entries) ? section.entries : [];
+            const entryMarkup = entries
+              .filter((entry) => entry?.developer)
+              .map((entry) => {
+                const entryId = entryAnchor(section.id, entry.id);
+                const title = entry.developer?.title || entry.consumer?.title || "Untitled";
+                const body = entry.developer?.body || "";
+
+                return `
+                  <article class="ss-about-entry" id="${entryId}" data-scope-tone="${scope.tone}">
+                    <header class="ss-about-entry-header">
+                      <a class="ss-anchor" href="#${entryId}">${title}</a>
+                    </header>
+                    <div class="ss-about-entry-body">
+                      <p>${body}</p>
+                    </div>
+                  </article>
+                `;
+              })
+              .join("");
 
             return `
-              <article class="ss-about-entry" id="${entryId}">
-                <header class="ss-about-entry-header">
-                  <a class="ss-anchor" href="#${entryId}">${title}</a>
+              <div class="ss-about-section" id="${sectionAnchor(section.id)}" data-scope-tone="${scope.tone}">
+                <header class="ss-about-section-header">
+                  <a class="ss-anchor" href="#${sectionAnchor(section.id)}">${section.title}</a>
                 </header>
-                <div class="ss-about-entry-body">
-                  <p>${body}</p>
+                <div class="ss-about-section-body">
+                  ${entryMarkup || '<p class="muted">No developer entries in this section.</p>'}
                 </div>
-              </article>
+              </div>
             `;
           })
           .join("");
 
         return `
-          <section class="ss-about-section" id="${sectionAnchor(section.id)}">
-            <header class="ss-about-section-header">
-              <a class="ss-anchor" href="#${sectionAnchor(section.id)}">${section.title}</a>
-            </header>
-            <div class="ss-about-section-body">
-              ${entryMarkup || '<p class="muted">No developer entries in this section.</p>'}
+          <section class="ss-about-scope" data-scope-tone="${scope.tone}" aria-label="${scope.title}">
+            <div class="ss-about-scope-header">
+              <div class="ss-about-scope-bar"></div>
+              <div class="ss-about-scope-title-row">
+                <h3 class="ss-about-scope-title">${scope.title}</h3>
+                <span class="ss-about-scope-pill">${scope.title}</span>
+              </div>
+            </div>
+            <div class="ss-about-scope-body">
+              ${sectionMarkup || '<p class="muted">No sections available.</p>'}
             </div>
           </section>
         `;
@@ -390,10 +496,23 @@
       return;
     }
 
+    const scopedSections = await loadScopedSections();
+
     renderMeta(data.version, data.lastUpdated);
     renderVersionMetaFromRuntime();
     renderErrors(data.errors);
-    renderSections(data.sections);
+    renderSections(
+      scopedSections.length
+        ? scopedSections
+        : [
+            {
+              key: "about",
+              title: "About StreamSuites",
+              tone: "general",
+              sections: Array.isArray(data.sections) ? data.sections : []
+            }
+          ]
+    );
     const roadmap = await loadRoadmapData();
     const rows = renderRoadmapRows(roadmap);
     initSkillBars(rows);
