@@ -15,7 +15,7 @@
 
   <div class="ss-header-right">
     <span id="rumble-foundation-status" class="status-indicator idle">
-      ● Rumble chat: Architecture solved (SSE)
+      ● Rumble chat: Architecture solved (SSE-first with fallbacks)
     </span>
   </div>
 </header>
@@ -38,8 +38,10 @@
       <p class="muted">
         This toggle controls whether the Rumble platform runtime is enabled
         globally. Changes require a full StreamSuites runtime restart.
-        Rumble chat now ingests via the canonical SSE endpoint:
-        <code>https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream</code>.
+        Rumble chat prefers the SSE endpoint
+        (<code>https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream</code>)
+        and automatically falls back to DOM-based or API polling modes when
+        SSE is unavailable.
       </p>
 
       <!-- Compact horizontal layout (matches Settings / YouTube / Twitch) -->
@@ -118,7 +120,7 @@
 
       <p class="muted" style="margin-top: 0.5rem;">
         Runtime visibility is optional and provided by the StreamSuites runtime repo when exported.
-        Dashboard binding will occur via runtime-exported JSON snapshots once the SSE pipeline lands.
+        Dashboard binding will occur via runtime-exported JSON snapshots once the multi-mode ingest pipeline lands.
       </p>
     </div>
   </section>
@@ -198,6 +200,6 @@
 <!-- ========================================================= -->
 <footer class="ss-footer">
   <span class="muted">
-    Rumble chat architecture is solved via SSE; dashboard remains scaffolded and read-only.
+    Rumble chat architecture is SSE-first with DOM/API fallbacks; dashboard remains scaffolded and read-only.
   </span>
 </footer>

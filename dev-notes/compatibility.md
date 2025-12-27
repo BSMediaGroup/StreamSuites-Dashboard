@@ -13,9 +13,9 @@
 
 ## Rumble Platform Status
 
-- **API state:** Canonical chat ingestion now uses SSE at `https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream`, emitting `init` and `messages` events.
-- **Support posture:** Runtime integration is resuming against the SSE endpoint; schemas remain intact and should not be pruned.
-- **Alignment plan:** Dashboard hydration will ride on runtime-exported JSON snapshots once the SSE pipeline lands; no dashboard-side live calls are introduced.
+- **API state:** Chat ingestion is now multi-mode: SSE at `https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream` when available, DOM-based fallback when SSE fails, and a final API polling fallback.
+- **Support posture:** Runtime integration prefers SSE but actively supports fallbacks; schemas remain intact and should not be pruned.
+- **Alignment plan:** Dashboard hydration will ride on runtime-exported JSON snapshots once the multi-path pipeline lands; no dashboard-side live calls are introduced.
 
 ## YouTube Platform Status
 

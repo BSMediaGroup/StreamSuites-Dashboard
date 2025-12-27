@@ -220,7 +220,7 @@
       <h2>
         Rumble Integration
         <span class="ss-platform-badge scaffold" id="badge-rumble">
-          Architecture Solved (SSE)
+          Architecture Solved (SSE-first)
         </span>
       </h2>
     </header>
@@ -240,8 +240,8 @@
       </table>
 
       <p class="muted" style="margin-top: 0.5rem;">
-        Rumble chat ingests via the canonical SSE stream
-        (<code>https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream</code>).
+        Rumble chat ingests via SSE when available and falls back to DOM or API polling
+        (<code>https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream</code> is preferred).
         Dashboard hydration relies on runtime-exported snapshots.
       </p>
     </div>
