@@ -32,9 +32,9 @@ The dashboard is intentionally lightweight, schema-driven, and portable.
 
 - **Static control surface** — zero ability to mutate runtimes or send actions; edits are limited to local JSON drafts and exports
 - **Offline-first** — no live connections; everything is rendered from shipped or downloaded JSON
-- **No API calls** — the browser bundle deliberately omits live fetches, including Rumble chat polling or livestream API reads
+- **No API calls** — the browser bundle deliberately omits live fetches, including Rumble chat polling or livestream API reads. Dashboard does **NOT** connect to Rumble APIs directly.
 - **Runtime exports are authoritative** — whatever the runtime exports, the dashboard simply renders
-- **Chat ingestion is runtime-only** — Rumble chat SSE ingestion, Twitch IRC, and other live paths terminate in the runtime; the dashboard only reads exported snapshots like `docs/data/chat_events.json`
+- **Chat ingestion is runtime-only** — Rumble chat SSE ingestion (`https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream`), Twitch IRC, and any DOM-based chat send flows live exclusively inside the runtime; the dashboard only reads exported snapshots like `docs/data/chat_events.json`.
 - **Visual-only philosophy** — dashboards illuminate runtime exports; control and execution stay in the runtimes
 
 ---
@@ -54,6 +54,8 @@ This repository is a **separate but companion project** to the main `StreamSuite
          |
          +— Rumble chat SSE ingestion (runtime-owned; dashboard hydrates exported snapshots only)
 ```
+
+**Architecture reality:** chat ingest is handled by the runtime via SSE, and any DOM chat send automation also lives exclusively inside the runtime execution environment. The dashboard remains **read-only** and only surfaces exported snapshots.
 
 ### Component Relationships
 
@@ -254,6 +256,7 @@ Clips remain **read-only** inside the dashboard: no edit, retry, or delete contr
 
 ```
 StreamSuites-Dashboard/
+├── LICENSE
 ├── README.md
 ├── favicon.ico
 │
@@ -411,6 +414,7 @@ StreamSuites-Dashboard/
 │   │       ├── clips.json
 │   │       ├── jobs.json
 │   │       ├── quotas.json
+│   │       ├── runtime_snapshot.json
 │   │       └── discord/
 │   │           └── runtime.json
 │   │
