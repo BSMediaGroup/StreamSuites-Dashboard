@@ -41,12 +41,15 @@
       </header>
 
       <section class="public-hero public-glass-panel">
-        <div class="section-heading">
-          <h2>Roadmap</h2>
-          <span class="public-badge">Progress snapshot</span>
-        </div>
-        <p class="muted">Roadmap items mirror the dashboard exactly and retain the same expand/collapse behavior with animated progress fills.</p>
-        <details class="ss-roadmap-legend">
+        <div class="public-hero-grid">
+          <div class="public-hero-copy">
+            <div class="section-heading">
+              <h2>Roadmap</h2>
+              <span class="public-badge">Progress snapshot</span>
+            </div>
+            <p class="muted">Roadmap items mirror the dashboard exactly and retain the same expand/collapse behavior with animated progress fills.</p>
+          </div>
+          <details class="ss-roadmap-legend" open>
           <summary class="ss-legend-summary">Legend</summary>
           <div class="ss-legend-body">
             <div class="ss-legend-row"><strong>0–5% · Concept:</strong> Conceptual only. No runtime scaffolding or contracts exist yet.</div>
@@ -57,7 +60,8 @@
             <div class="ss-legend-row"><strong>65–75% · Locked:</strong> Contracts stabilized. Runtime behavior considered production-safe barring bug fixes.</div>
             <div class="ss-legend-row"><strong>80%+ · Mature:</strong> Feature-complete, stable, and unlikely to change without versioned migration.</div>
           </div>
-        </details>
+          </details>
+        </div>
         <div id="public-roadmap-list" class="public-roadmap-stack" aria-label="Roadmap progress bars"></div>
       </section>
 

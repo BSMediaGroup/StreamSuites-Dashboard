@@ -445,7 +445,6 @@
               <div class="ss-about-scope-bar"></div>
               <div class="ss-about-scope-title-row">
                 <h3 class="ss-about-scope-title">${scope.title}</h3>
-                <span class="ss-about-scope-pill">${scope.title}</span>
               </div>
             </div>
             <div class="ss-about-scope-body">

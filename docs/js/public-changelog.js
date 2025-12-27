@@ -74,28 +74,30 @@
   function renderRelease(release, isCurrent) {
     const dateLabel = formatDate(release.date);
     const scopeTag = renderScopeTag(release.scope);
-    const latestTag = renderLatestTag(isCurrent || release.is_latest);
+    const isLatest = isCurrent || release.is_latest;
     const versionTag = release.version
       ? `<span class="pill ss-tag-version">Version ${release.version}</span>`
       : "";
     const changeTags = renderTags(release.tags);
+    const titleText = release.title || release.version || "Unversioned";
+    const displayTitle = isLatest ? `⭐ ${titleText}` : titleText;
+    const tagsRow = scopeTag || changeTags
+      ? `<div class="changelog-tags-row">${scopeTag}${changeTags}</div>`
+      : "";
 
     return `
       <article class="public-glass-card changelog-entry"${release.scope ? ` data-scope="${release.scope}"` : ""}>
         <div class="section-heading">
           <div class="changelog-header-row">
-            <h3 class="changelog-title">${release.title || release.version || "Unversioned"}</h3>
+            <h3 class="changelog-title">${displayTitle}</h3>
             <div class="changelog-meta">
-              ${scopeTag}
-              ${latestTag}
               ${versionTag}
-              ${changeTags}
               ${dateLabel ? `<span class="lede">${dateLabel}</span>` : ""}
             </div>
           </div>
           ${release.summary ? `<span class="lede">${release.summary}</span>` : ""}
         </div>
-        <div class="changelog-body">${renderDetails(release.details)}</div>
+        <div class="changelog-body">${tagsRow}${renderDetails(release.details)}</div>
       </article>
     `;
   }

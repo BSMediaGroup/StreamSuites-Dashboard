@@ -229,7 +229,6 @@
               <div class="public-about-scope-bar"></div>
               <div class="public-about-scope-title-row">
                 <h3 class="public-about-scope-title">${scope.title}</h3>
-                <span class="public-about-scope-pill">${scope.title}</span>
               </div>
             </div>
             <div class="public-about-scope-body">
@@ -242,6 +241,45 @@
 
     container.innerHTML = markup;
     attachDeveloperToggles();
+  }
+
+  function renderMeta(version, lastUpdated) {
+    const versionEl = document.getElementById("public-about-version-meta");
+    if (versionEl) {
+      versionEl.textContent = version || "Unavailable";
+    }
+
+    const updatedEl = document.getElementById("public-about-updated-meta");
+    if (updatedEl) {
+      updatedEl.textContent = lastUpdated || "Unknown";
+    }
+  }
+
+  function renderRuntimeMetaFromVersioning() {
+    if (!window.Versioning) return;
+
+    Versioning.loadVersion().then((info) => {
+      if (!info) return;
+
+      const ownerEl = document.getElementById("public-about-owner-meta");
+      if (ownerEl && info.owner) {
+        ownerEl.textContent = info.owner;
+      }
+
+      const copyrightEl = document.getElementById("public-about-copyright-meta");
+      if (copyrightEl && info.copyright) {
+        copyrightEl.textContent = info.copyright;
+      }
+
+      const versionEl = document.getElementById("public-about-version-meta");
+      const currentVersionText = versionEl ? versionEl.textContent.trim() : "";
+      if (
+        versionEl &&
+        (!currentVersionText || currentVersionText === "Unavailable" || currentVersionText.includes("Loading"))
+      ) {
+        versionEl.textContent = Versioning.formatDisplayVersion(info);
+      }
+    });
   }
 
   function handleHashNavigation() {
@@ -281,6 +319,8 @@
           }
         ];
 
+    renderMeta(data.version, data.lastUpdated);
+    renderRuntimeMetaFromVersioning();
     renderErrors(data.errors);
     renderSections(scopesToRender);
     handleHashNavigation();

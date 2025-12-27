@@ -1260,9 +1260,9 @@ button.public-btn:active::after {
 }
 
 .ss-about-scope-bar {
-  width: 7px;
-  height: 34px;
-  border-radius: 10px;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
   background: linear-gradient(180deg, #7ac5ff, #5fd4ff);
   box-shadow: 0 0 10px rgba(95, 212, 255, 0.4);
 }
