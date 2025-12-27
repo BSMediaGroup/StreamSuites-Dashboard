@@ -1,0 +1,75 @@
+#ss-suspension-banner {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 9999;
+  background: linear-gradient(135deg, #b30000, #d90000);
+  border-bottom: 3px solid #ff4d4d;
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35), 0 0 18px rgba(255, 77, 77, 0.45);
+  backdrop-filter: blur(2px);
+}
+
+.ss-suspension-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+.ss-suspension-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.ss-suspension-body {
+  font-size: 0.98rem;
+  line-height: 1.5;
+  max-width: 1100px;
+}
+
+.ss-suspension-meta {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.ss-suspension-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  margin-left: 8px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #b30000, #e00000);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  border: 1px solid #ff6666;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35), 0 0 6px rgba(255, 77, 77, 0.55);
+}
+
+body.ss-has-suspension-banner {
+  padding-top: var(--ss-suspension-banner-h, 0px);
+}
+
+@media (max-width: 720px) {
+  .ss-suspension-inner {
+    padding: 12px 14px 14px;
+  }
+
+  .ss-suspension-title {
+    font-size: 1rem;
+  }
+
+  .ss-suspension-body {
+    font-size: 0.94rem;
+  }
+}
