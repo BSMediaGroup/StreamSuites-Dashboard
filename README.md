@@ -51,7 +51,7 @@ This repository is a **separate but companion project** to the main `StreamSuite
          |
 [Discord Bot Runtime] <— shared schemas ——————> [Dashboard surfaces bot status (planned visibility)]
          |
-         +— Rumble chat SSE ingestion (architecture solved; runtime export alignment underway)
+         +— Rumble chat SSE ingestion (runtime-owned; dashboard hydrates exported snapshots only)
 ```
 
 ### Component Relationships
@@ -219,7 +219,7 @@ These are **control-plane only** capabilities that complement, but do not replac
 
 - The canonical Rumble chat ingestion path now uses SSE at `https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream`, emitting `init` and `messages` events.
 - This endpoint replaces prior DOM-scrape or restricted mechanisms and is considered the canonical path forward.
-- Runtime integration is underway; the dashboard will hydrate via runtime-exported JSON snapshots once the SSE pipeline exports data.
+- Runtime ingestion and exports are live in the runtime repo; the dashboard hydrates exclusively from runtime-exported JSON snapshots (no live SSE binding).
 - The dashboard remains neutral to ingestion method (polling vs SSE) and will not introduce live requests—runtime exports stay authoritative.
 
 ## Clips View (Runtime Export Visibility)
