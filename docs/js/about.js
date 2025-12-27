@@ -6,6 +6,10 @@
    Copyright: © 2025 Brainstream Media Group
    ====================================================================== */
 
+// Fix: restored complete roadmap rendering helper chain
+// Includes: formatScore, buildSkillRow, renderRoadmapRows
+// Reason: functions were referenced but missing, causing runtime crashes
+
 // Fix: restored missing renderRoadmapRows() required by AboutView.init
 // Reason: function was referenced but not present in executed file state
 // Impact: restores roadmap rendering and progress bars on About page
@@ -41,6 +45,47 @@
     if (/^(https?:)?\/\//.test(asset) || asset.startsWith("/")) return asset;
     const trimmed = asset.replace(/^\.\//, "");
     return `${basePath || ""}/${trimmed}`.replace(/\\+/g, "/");
+  }
+
+  function formatScore(percent) {
+    const score = percent / 10;
+    return Number.isInteger(score) ? score.toFixed(1) : score.toFixed(1);
+  }
+
+  function buildSkillRow(entry) {
+    const score = Math.max(0, Math.min(100, Number(entry.percent) || 0));
+    const normalizedScore = formatScore(score);
+    const pulseClass = entry.pulse ? " pulsing" : "";
+
+    const icon = resolveAssetPath(entry.icon || "assets/icons/ui/widget.svg");
+
+    return `
+    <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="${normalizedScore}" title="${entry.tooltip || ""}" role="button" tabindex="0">
+      <div class="ss-progress-label">
+        <div class="ss-progress-main">
+          <span class="ss-progress-title">
+            <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('${icon}')"></span>
+            ${entry.title}
+          </span>
+        </div>
+        <div class="ss-progress-right">
+          <span class="ss-progress-meta">${entry.meta}</span>
+          <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+            <span>▸</span>
+          </button>
+        </div>
+      </div>
+      <div class="ss-skill-description" aria-hidden="true">
+        <div class="ss-skill-description-inner">
+          <p class="muted">${entry.description}</p>
+        </div>
+      </div>
+      <div class="ss-skill-wrapper">
+        <div class="ss-skill-track">
+          <div class="ss-skill-fill${pulseClass}"></div>
+        </div>
+      </div>
+    </div>`;
   }
 
   function sectionAnchor(sectionId) {
