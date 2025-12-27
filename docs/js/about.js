@@ -6,6 +6,8 @@
    Copyright: © 2025 Brainstream Media Group
    ====================================================================== */
 
+// Fix: restored missing roadmap interaction helper (setRowExpanded)
+// Reason: initSkillToggles depends on this function; omission caused runtime crash
 // Fix: restored complete roadmap rendering helper chain
 // Includes: formatScore, buildSkillRow, renderRoadmapRows
 // Reason: functions were referenced but missing, causing runtime crashes
@@ -137,6 +139,26 @@
     container.innerHTML = sorted.map(buildSkillRow).join("");
 
     return Array.from(container.querySelectorAll(".ss-skill-row"));
+  }
+
+  function setRowExpanded(row, shouldExpand) {
+    const desc = row.querySelector(".ss-skill-description");
+    const toggle = row.querySelector(".ss-skill-toggle");
+    if (!desc || !toggle) return;
+
+    if (shouldExpand) {
+      row.classList.add("is-open");
+      desc.style.maxHeight = `${desc.scrollHeight}px`;
+      desc.setAttribute("aria-hidden", "false");
+      toggle.setAttribute("aria-expanded", "true");
+      openRow = row;
+      return;
+    }
+
+    row.classList.remove("is-open");
+    desc.style.maxHeight = "0px";
+    desc.setAttribute("aria-hidden", "true");
+    toggle.setAttribute("aria-expanded", "false");
   }
 
   function initSkillBars(rows) {
