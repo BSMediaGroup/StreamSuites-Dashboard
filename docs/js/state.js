@@ -237,7 +237,7 @@
       rumble: {
         enabled: true,
         telemetry_enabled: true,
-        notes: "SSE chat ingest ready; live testing complete."
+        notes: "SSE-preferred chat ingest with DOM/API fallbacks; live testing complete."
       },
       discord: {
         enabled: true,

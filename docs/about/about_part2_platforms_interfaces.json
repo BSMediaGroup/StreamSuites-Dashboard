@@ -24,7 +24,7 @@
     {
       "id": "rumble-sse",
       "order": 16,
-      "title": "Rumble — Primary Live Chat Ingestion (SSE)",
+      "title": "Rumble — Primary Live Chat Ingestion (SSE-first)",
       "entries": [
         {
           "id": "rumble-primary-platform",
@@ -34,8 +34,8 @@
             "body": "Rumble is the most mature live platform inside StreamSuites right now. It’s where clips, polls, tallies, and public galleries are actively sourced."
           },
           "developer": {
-            "title": "Canonical SSE Ingestion and Export Pipeline",
-            "body": "Rumble chat ingestion uses the canonical SSE (Server-Sent Events) stream. Messages are consumed in real time, normalized into a standard internal chat event shape, and made immediately available to triggers, polls, tallies, and clip commands. The pipeline is quota-aware and integrated into runtime enforcement. Stable exports already exist for public galleries, dashboard data and signals, and module-specific snapshots. Remaining work focuses on deeper telemetry such as moderation signals and richer metadata, not basic ingestion."
+            "title": "SSE-Preferred Ingestion with DOM/API Fallbacks",
+            "body": "Rumble chat ingestion is now multi-mode. SSE (Server-Sent Events) remains the preferred path, but the runtime automatically falls back to DOM-based collection or API polling when SSE is unavailable. Messages flow into the same normalized chat event model used by triggers, polls, tallies, and clip commands. The pipeline is quota-aware and integrated into runtime enforcement. Stable exports already exist for public galleries, dashboard data and signals, and module-specific snapshots. Remaining work focuses on deeper telemetry such as moderation signals and richer metadata, not basic ingestion."
           }
         }
       ]

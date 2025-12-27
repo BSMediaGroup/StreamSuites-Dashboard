@@ -13,7 +13,7 @@
 - **Phase: Dashboard ↔ Discord Parity**
   - Align dashboard-visible controls with Discord command sets to avoid drift
   - Surface bot state in the dashboard UI without altering current static behavior
-  - Keep Rumble surfaces documented while SSE alignment progresses and schemas remain stable
+  - Keep Rumble surfaces documented while ingest modes (SSE + DOM/API fallbacks) settle and schemas remain stable
 
 - **Phase: YouTube + Twitch Runtime Hydration (next)**
   - Allow dashboard surfaces to consume exported runtime snapshots for Twitch and YouTube
@@ -26,7 +26,7 @@
   - Introduce OAuth/token handling in Wix while keeping dashboard artifacts static-friendly
   - Maintain embed-friendly constraints for downstream sites
 
-- **Phase: Rumble SSE Alignment (in progress)**
-  - Integrate the canonical SSE endpoint (`https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream`) into runtime ingestion
-  - Keep schemas unchanged; validate dashboards remain compatible
-  - Export runtime state for dashboard hydration once SSE pipeline is stable
+- **Phase: Rumble Ingest Resilience (in progress)**
+  - Prefer SSE at `https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream` while supporting DOM-based and API polling fallbacks
+  - Keep schemas unchanged; validate dashboards remain compatible as ingest modes shift
+  - Export runtime state for dashboard hydration once the multi-path pipeline is stable
