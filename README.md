@@ -369,7 +369,7 @@ StreamSuites-Dashboard/
 │   │   ├── public-polls.js  # Placeholder data renderer for public polls gallery
 │   │   ├── public-tallies.js# Placeholder data renderer for public tallies gallery
 │   │   ├── public-scoreboards.js # Placeholder data renderer for public scoreboards gallery
-│   │   ├── public-roadmap.js # Public changelog roadmap renderer (animated <progress> bars)
+│   │   ├── public-roadmap.js # Public changelog roadmap renderer (animated &lt;progress&gt; bars)
 │   │   ├── public-about.js  # Public about renderer (manifest-driven)
 │   │   ├── poll-detail.js   # Poll detail visualization controls
 │   │   ├── tally-detail.js  # Tally detail visualization controls
