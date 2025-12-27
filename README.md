@@ -34,7 +34,7 @@ The dashboard is intentionally lightweight, schema-driven, and portable.
 - **Offline-first** — no live connections; everything is rendered from shipped or downloaded JSON
 - **No API calls** — the browser bundle deliberately omits live fetches, including Rumble chat polling or livestream API reads. Dashboard does **NOT** connect to Rumble APIs directly.
 - **Runtime exports are authoritative** — whatever the runtime exports, the dashboard simply renders
-- **Chat ingestion is runtime-only** — Rumble chat ingest modes (SSE where available, DOM-based fallback, and API polling fallback), Twitch IRC, and any DOM-based chat send flows live exclusively inside the runtime; the dashboard only reads exported snapshots like `docs/data/chat_events.json`.
+- **Chat ingestion is runtime-only** — Rumble chat ingest now uses runtime-selected modes (SSE when offered, DOM-based fallback, and API polling fallback), Twitch IRC, and any DOM-based chat send flows live exclusively inside the runtime; the dashboard only reads exported snapshots like `docs/data/chat_events.json`.
 - **Visual-only philosophy** — dashboards illuminate runtime exports; control and execution stay in the runtimes
 
 ---
@@ -52,10 +52,10 @@ This repository is a **separate but companion project** to the main `StreamSuite
          |
 [Discord Bot Runtime] <— shared schemas ——————> [Dashboard surfaces bot status (planned visibility)]
          |
-         +— Rumble chat ingest (runtime-owned; SSE preferred with DOM/API fallbacks; dashboard hydrates exported snapshots only)
+         +— Rumble chat ingest (runtime-owned; SSE best-effort with DOM/API fallbacks; dashboard hydrates exported snapshots only)
 ```
 
-**Architecture reality:** chat ingest is handled by the runtime (SSE when possible, otherwise DOM-based or API polling fallbacks), and any DOM chat send automation also lives exclusively inside the runtime execution environment. The dashboard remains **read-only** and only surfaces exported snapshots.
+**Architecture reality:** chat ingest is handled by the runtime (SSE is best-effort only; DOM-based or API polling fallbacks are built-in), and any DOM chat send automation also lives exclusively inside the runtime execution environment. The runtime selects the active ingest path and remains the authoritative source of events. The dashboard remains **read-only** and only surfaces exported snapshots.
 
 ### Component Relationships
 
@@ -220,10 +220,10 @@ These are **control-plane only** capabilities that complement, but do not replac
 
 ## Rumble Chat Ingest Modes
 
-- The runtime now supports multiple ingest paths: SSE at `https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream` when available, DOM-based fallback when SSE is unavailable, and a final API polling fallback. The runtime dynamically selects the best available mode per stream.
-- These paths replace the prior SSE-only assumption and keep ingestion resilient while the platform stabilizes.
-- Runtime ingestion and exports are live in the runtime repo; the dashboard hydrates exclusively from runtime-exported JSON snapshots (no live ingest binding).
-- The dashboard remains neutral to ingestion method and will not introduce live requests—runtime exports stay authoritative.
+- The runtime now supports multiple ingest paths: SSE at `https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream` as a best-effort path, a DOM-based scraper fallback when SSE is unavailable, and a final API polling fallback. The runtime dynamically selects the best available mode per stream.
+- These paths replace the prior SSE-only assumption and keep ingestion resilient while the platform stabilizes. The runtime is authoritative for which ingest path is active at any moment.
+- Runtime ingestion and exports are live in the runtime repo; the dashboard hydrates exclusively from runtime-exported JSON snapshots (no live ingest binding or control).
+- The dashboard remains neutral to ingestion method and will not introduce live requests—runtime exports stay authoritative and describe whichever ingest path the runtime chose.
 
 ## Clips View (Runtime Export Visibility)
 
