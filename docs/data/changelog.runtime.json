@@ -1,9 +1,22 @@
 {
   "meta": {
     "project": "StreamSuites Runtime",
-    "last_updated": "2025-12-25"
+    "last_updated": "2025-12-28"
   },
   "entries": [
+    {
+      "id": "2025-12-project-suspended",
+      "date": "2025-12-28",
+      "version": "v0.2.0-alpha",
+      "scope": "runtime",
+      "title": "Runtime suspended",
+      "summary": "Runtime development and ingestion work has been indefinitely suspended.",
+      "details": [
+        "Platform-level instability prevented reliable runtime operation.",
+        "Dashboard now reflects a frozen, read-only snapshot of final runtime state."
+      ],
+      "tags": ["suspended", "runtime", "notice"]
+    },
     {
       "id": "2025-12-runtime-export-refresh",
       "date": "2025-12-18",

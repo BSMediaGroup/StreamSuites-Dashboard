@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2025-12-27T04:43:32.094651Z",
+  "generated_at": "2025-12-27T20:19:23.511680Z",
   "platforms": [
     {
       "platform": "discord",
@@ -15,7 +15,7 @@
       "enabled": true,
       "telemetry_enabled": true,
       "status": "running",
-      "last_heartbeat": "2025-12-27T04:43:31.118457Z",
+      "last_heartbeat": "2025-12-27T20:19:22.625417Z",
       "error": null
     },
     {
@@ -56,8 +56,14 @@
         "twitter": true,
         "discord": true
       },
-      "last_heartbeat": "2025-12-27T04:43:31.118457Z",
+      "last_heartbeat": "2025-12-27T20:19:22.625417Z",
       "error": null
     }
-  ]
+  ],
+  "rumble_chat": {
+    "chat_id": "424574510",
+    "ingest_status": "FAILED",
+    "error": "[As5TyU] Failed to install EventSource tap on watch page",
+    "updated_at": "2025-12-27T20:19:17.068066Z"
+  }
 }

@@ -2,9 +2,24 @@
   "meta": {
     "project": "StreamSuites",
     "version": "v0.2.0-alpha",
-    "last_updated": "2025-12-25"
+    "last_updated": "2025-12-28"
   },
   "entries": [
+    {
+      "id": "2025-12-project-suspended",
+      "date": "2025-12-28",
+      "version": "v0.2.0-alpha",
+      "scope": "global",
+      "title": "Project suspended",
+      "summary": "StreamSuites development has been indefinitely suspended.",
+      "details": [
+        "Core runtime dependencies and third-party platform behaviors proved unstable and non-deterministic under real-world conditions.",
+        "Repeated remediation attempts failed to yield a reliable or automatable baseline suitable for beta testing.",
+        "All further development, testing, and roadmap progression is suspended until conditions materially change."
+      ],
+      "tags": ["suspended", "project-status", "notice"],
+      "is_latest": true
+    },
     {
       "id": "2025-12-global-public-surface",
       "date": "2025-12-25",
@@ -18,7 +33,7 @@
         "Aligned CTA sweeps, dotted grids, and badge rendering across public shells for consistency."
       ],
       "tags": ["public-pages", "roadmap", "glass-ui"],
-      "is_latest": true
+      "is_latest": false
     },
     {
       "id": "2025-12-runtime-readonly",
@@ -28,7 +43,7 @@
       "title": "Read-only runtime scaffolding",
       "summary": "Ensured static rendering paths stay deterministic and versioned for public previews.",
       "details": [
-        "Swapped roadmap progress bars to native &lt;progress&gt; elements for deterministic, accessible rendering.",
+        "Swapped roadmap progress bars to native <progress> elements for deterministic, accessible rendering.",
         "Stabilized version badge rendering across public shells to match dashboard runtime conventions.",
         "Kept gradient sweeps and glass treatments runtime-safe for GitHub Pages delivery."
       ],
