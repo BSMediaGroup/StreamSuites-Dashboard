@@ -10,6 +10,8 @@ StreamSuites itself is a **modular, multi-platform livestream runtime**. It cent
 
 **Current phase:** early-stage / alpha. Runtime exports and schema contracts continue to stabilize, and the dashboard will mirror those exports without assuming live connectivity.
 
+**Recent UI refinements:** About (dashboard + public) and Changelog pages now match the reference visuals, including squared scope markers, aligned hero metadata, widened body copy, and the right-aligned roadmap legend.
+
 **Dashboard purpose**
 - **Configuration** — edit and validate runtime contracts without needing a live backend
 - **Visualization** — render schemas, tiers, triggers, and limits in human-readable form

@@ -1625,7 +1625,20 @@ body.viz-expanded {
 .public-hero p {
   margin: 0 0 12px;
   color: #c6d7f5;
-  max-width: 760px;
+  max-width: none;
+}
+
+.public-hero-grid {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.public-hero-copy {
+  flex: 1 1 480px;
+  min-width: 0;
 }
 
 .public-hero + .public-stack,
@@ -1794,6 +1807,11 @@ body.viz-expanded {
 
 .ss-skill-description-inner { padding: 6px 10px 0 0; }
 
+.public-roadmap-card .ss-skill-description-inner {
+  padding: 8px 0 0;
+  max-width: none;
+}
+
 .public-progress-wrapper { width: 100%; }
 
 .public-roadmap-progress {
@@ -1931,6 +1949,13 @@ body.viz-expanded {
   font-size: 0.9em;
 }
 
+.public-hero .ss-roadmap-legend {
+  margin-top: 0;
+  display: block;
+  flex: 0 0 320px;
+  width: 100%;
+}
+
 .ss-legend-summary {
   display: inline-flex;
   align-items: center;
@@ -1953,7 +1978,8 @@ body.viz-expanded {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.035);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  max-width: none;
+  max-width: 360px;
+  min-width: 280px;
   font-size: 0.84em;
   color: var(--text-muted);
   line-height: 1.5;
@@ -1982,6 +2008,7 @@ body.viz-expanded {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 
   /* optical correction — REQUIRED */
   transform: translateY(-1px);
@@ -2002,6 +2029,14 @@ body.viz-expanded {
 }
 
 .changelog-body { display: grid; gap: 10px; }
+
+.changelog-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin: 2px 0 4px;
+}
 
 .changelog-category h4 {
   margin: 0 0 6px;
@@ -2075,9 +2110,9 @@ body.viz-expanded {
 }
 
 .public-about-scope-bar {
-  width: 8px;
-  height: 36px;
-  border-radius: 12px;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
   background: linear-gradient(180deg, #8cb7ff, #5ac8ff);
   box-shadow: 0 0 12px rgba(0, 160, 255, 0.45);
 }
