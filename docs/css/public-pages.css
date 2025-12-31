@@ -1638,7 +1638,7 @@ body.viz-expanded {
 }
 
 .public-roadmap-header {
-  grid-template-columns: minmax(0, 1.05fr) minmax(340px, 440px);
+  grid-template-columns: minmax(0, 1fr) clamp(360px, 40vw, 520px);
   gap: 18px;
   align-items: flex-start;
 }
@@ -1647,7 +1647,9 @@ body.viz-expanded {
   display: flex;
   justify-content: flex-end;
   width: 100%;
+  max-width: clamp(360px, 40vw, 520px);
   min-width: 0;
+  justify-self: end;
 }
 
 .public-hero-legend .ss-roadmap-legend {
@@ -1676,6 +1678,7 @@ body.viz-expanded {
 
 .public-roadmap-copy {
   max-width: 960px;
+  min-width: 0;
 }
 
 .public-hero + .public-stack,
@@ -2019,8 +2022,8 @@ body.viz-expanded {
   margin-top: 0;
   display: block;
   width: 100%;
-  max-width: 440px;
-  min-width: 320px;
+  max-width: clamp(360px, 40vw, 520px);
+  min-width: 0;
   justify-self: end;
 }
 
@@ -2046,13 +2049,14 @@ body.viz-expanded {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.035);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  max-width: 440px;
-  min-width: 320px;
+  max-width: clamp(360px, 40vw, 520px);
+  min-width: 0;
   font-size: 0.84em;
   color: var(--text-muted);
   line-height: 1.5;
   width: 100%;
   font-family: "SuiGenerisRg", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow-x: auto;
 }
 
 .ss-legend-row {
