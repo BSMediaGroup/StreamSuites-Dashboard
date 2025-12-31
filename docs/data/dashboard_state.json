@@ -4,6 +4,7 @@
   "last_export_at": null,
   "draft_sources": {
     "creators": "data/creators.json",
-    "platforms": "data/platforms.json"
+    "platforms": "data/platforms.json",
+    "system": "data/system.json"
   }
 }
