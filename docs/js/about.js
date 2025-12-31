@@ -3,9 +3,9 @@
 /* ======================================================================
    StreamSuites™ Dashboard — About View Logic (JSON-driven)
    Project: StreamSuites™
-   Version: v0.2.0-alpha
+   Version: v0.2.1-alpha
    Owner: Daniel Clancy
-   Copyright: © 2025 Brainstream Media Group
+   Copyright: © 2026 Brainstream Media Group
    ====================================================================== */
 
 // Fix: restored missing roadmap interaction helper (setRowExpanded)
@@ -358,10 +358,15 @@
     );
   }
 
-  function renderMeta(version, lastUpdated) {
+  function renderMeta(version, lastUpdated, build) {
     const versionEl = document.getElementById("about-version-meta");
     if (versionEl) {
       versionEl.textContent = version || "Unavailable";
+    }
+
+    const buildEl = document.getElementById("about-build-meta");
+    if (buildEl) {
+      buildEl.textContent = build || "Unknown";
     }
 
     const updatedEl = document.getElementById("about-updated-meta");
@@ -384,6 +389,11 @@
       const copyrightEl = document.getElementById("about-copyright-meta");
       if (copyrightEl && info.copyright) {
         copyrightEl.textContent = info.copyright;
+      }
+
+      const buildEl = document.getElementById("about-build-meta");
+      if (buildEl && info.build) {
+        buildEl.textContent = info.build;
       }
 
       const versionEl = document.getElementById("about-version-meta");
@@ -502,7 +512,7 @@
 
     const scopedSections = await loadScopedSections();
 
-    renderMeta(data.version, data.lastUpdated);
+    renderMeta(data.version, data.lastUpdated, data.build);
     renderVersionMetaFromRuntime();
     renderErrors(data.errors);
     renderSections(

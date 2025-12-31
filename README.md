@@ -8,9 +8,10 @@ StreamSuites Dashboard is a **static, client-side control panel** for observing 
 - **Audit:** Use the attached audit report for context; do **not** regenerate it.
 
 ## Version & Ownership
-- **Current version:** StreamSuites™ v0.2.0-alpha (from `docs/version.json`).
+- **Current version:** StreamSuites™ v0.2.1-alpha (from `docs/version.json`).
+- **Build:** 2025.02 (alpha channel, stamped via `docs/version.json`).
 - **Dashboard role:** Static, read-only, and non-authoritative. Reflects runtime exports and local drafts only.
-- **Licensing notice:** Proprietary • All Rights Reserved • © 2025 Brainstream Media Group • Owner: Daniel Clancy.
+- **Licensing notice:** Proprietary • All Rights Reserved • © 2026 Brainstream Media Group • Owner: Daniel Clancy.
 - **Alpha-stage disclaimer:** Active alpha surface; schemas, exports, and visualizations may change as runtime contracts stabilize.
 
 ## Operational Boundary

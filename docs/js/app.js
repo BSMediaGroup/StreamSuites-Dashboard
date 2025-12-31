@@ -1,9 +1,9 @@
 /* ======================================================================
    StreamSuites™ Dashboard — app.js
    Project: StreamSuites™
-   Version: v0.2.0-alpha
+   Version: v0.2.1-alpha
    Owner: Daniel Clancy
-   Copyright: © 2025 Brainstream Media Group
+   Copyright: © 2026 Brainstream Media Group
    Central bootstrap + lightweight view router + storage layer
    ====================================================================== */
 

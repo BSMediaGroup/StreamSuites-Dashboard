@@ -1,9 +1,9 @@
 /* ======================================================================
    StreamSuites™ Dashboard — Versioning Utilities
    Project: StreamSuites™
-   Version: v0.2.0-alpha
+   Version: v0.2.1-alpha
    Owner: Daniel Clancy
-   Copyright: © 2025 Brainstream Media Group
+   Copyright: © 2026 Brainstream Media Group
    ====================================================================== */
 
 (() => {
@@ -64,7 +64,8 @@
       if (!info) return "";
       const name = info.name || "StreamSuites™";
       const version = info.version ? ` v${info.version}` : "";
-      return `${name}${version}`;
+      const build = info.build ? ` (build ${info.build})` : "";
+      return `${name}${version}${build}`;
     },
 
     async applyVersionToElements(selectors = {}) {
