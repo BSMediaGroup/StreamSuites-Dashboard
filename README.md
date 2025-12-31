@@ -314,13 +314,21 @@ StreamSuites-Dashboard/
 │   ├── scoreboards.html
 │   ├── shared
 │   │   ├── state
+│   │   │   ├── admin
+│   │   │   │   └── triggers.json
 │   │   │   ├── README.md
+│   │   │   ├── changelog.json
+│   │   │   ├── changelog.runtime.json
 │   │   │   ├── clips.json
 │   │   │   ├── discord
 │   │   │   │   └── runtime.json
 │   │   │   ├── jobs.json
+│   │   │   ├── meta.json
+│   │   │   ├── polls.json
 │   │   │   ├── quotas.json
-│   │   │   └── runtime_snapshot.json
+│   │   │   ├── runtime_snapshot.json
+│   │   │   ├── scoreboards.json
+│   │   │   ├── tallies.json
 │   │   └── suspension
 │   │       ├── suspension-banner.css
 │   │       └── suspension-banner.js

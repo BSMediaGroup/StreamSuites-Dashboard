@@ -9,90 +9,102 @@
 <header class="ss-header">
   <div class="ss-header-left">
     <h1 class="ss-title">StreamSuites</h1>
-    <span class="ss-subtitle">Chat Triggers</span>
+    <span class="ss-subtitle">Creator Triggers</span>
   </div>
 </header>
 
 <!-- =========================================================
-     TOOLBAR
+     HONESTY BANNER
      ========================================================= -->
-<section class="ss-toolbar">
-  <div class="ss-toolbar-left">
-    <button id="btn-add-trigger" class="ss-btn ss-btn-primary">
-      + Add Trigger
-    </button>
-
-    <button id="btn-refresh-triggers" class="ss-btn ss-btn-secondary">
-      Refresh
-    </button>
-  </div>
-
-  <div class="ss-toolbar-right">
-    <button id="btn-export-triggers" class="ss-btn ss-btn-secondary">
-      Export JSON
-    </button>
-
-    <label class="ss-btn ss-btn-secondary ss-file-btn">
-      Import JSON
-      <input
-        type="file"
-        id="input-import-triggers"
-        accept="application/json"
-        hidden
-      />
-    </label>
-  </div>
-</section>
+<div id="triggers-banner" class="ss-alert"></div>
 
 <!-- =========================================================
-     ERROR MESSAGE
-     ========================================================= -->
-<div
-  id="triggers-import-error"
-  class="ss-alert ss-alert-danger hidden"
-  style="margin: 0 1rem;"
->
-  <span id="triggers-import-error-text"></span>
-</div>
-
-<!-- =========================================================
-     TRIGGERS TABLE
+     TRIGGERS PANEL
      ========================================================= -->
 <section class="ss-panel">
-  <table class="ss-table">
-    <thead>
-      <tr>
-        <th>Match</th>
-        <th>Mode</th>
-        <th>Response</th>
-        <th>Cooldown</th>
-        <th class="align-right">Actions</th>
-      </tr>
-    </thead>
+  <div class="ss-toolbar">
+    <div class="ss-toolbar-left">
+      <button id="btn-add-trigger" class="ss-btn ss-btn-primary">
+        + Add Trigger
+      </button>
 
-    <tbody id="triggers-table-body">
-      <!-- populated dynamically -->
-    </tbody>
-  </table>
+      <button id="btn-refresh-triggers" class="ss-btn ss-btn-secondary">
+        Refresh from runtime
+      </button>
+    </div>
 
-  <div id="triggers-empty" class="ss-empty hidden">
-    No triggers configured yet.
+    <div class="ss-toolbar-right">
+      <button id="btn-save-triggers" class="ss-btn ss-btn-primary">
+        Save triggers.json
+      </button>
+    </div>
+  </div>
+
+  <div class="ss-panel-body">
+    <div id="triggers-runtime-state" class="muted">Loaded from runtime snapshot.</div>
+    <div id="triggers-runtime-missing" class="ss-empty hidden">
+      Runtime not reporting triggers.
+    </div>
+    <div id="triggers-actions-missing" class="ss-alert ss-alert-danger hidden">
+      Runtime not reporting trigger actions; editing is disabled until actions are available.
+    </div>
+
+    <div class="ss-meta-row">
+      <div class="ss-chip">Creator: <span id="triggers-creator-label">—</span></div>
+      <div class="ss-chip">Snapshot: <span id="triggers-snapshot-label">—</span></div>
+    </div>
+
+    <div id="triggers-message" class="ss-alert hidden"></div>
+
+    <table class="ss-table">
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Match</th>
+          <th>Mode</th>
+          <th>Action</th>
+          <th>Creator</th>
+          <th class="align-right">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody id="triggers-table-body">
+        <!-- populated dynamically -->
+      </tbody>
+    </table>
+
+    <div id="triggers-empty" class="ss-empty hidden">
+      No triggers configured yet for this creator.
+    </div>
   </div>
 </section>
+
+<div id="triggers-save-notice" class="ss-alert hidden" style="margin: 12px 0;">
+  Trigger changes apply on next runtime restart.
+</div>
 
 <!-- =========================================================
      TRIGGER EDITOR
      ========================================================= -->
 <section id="trigger-editor" class="ss-panel hidden">
   <header class="ss-panel-header">
-    <h2 id="trigger-editor-title">Add Trigger</h2>
+    <div class="ss-panel-header-main">
+      <h2 id="trigger-editor-title">Add Trigger</h2>
+      <span class="muted">Creator: <span id="trigger-editor-creator">—</span></span>
+    </div>
   </header>
 
   <div class="ss-panel-body">
     <form id="trigger-form" autocomplete="off">
+      <div class="ss-form-row">
+        <label class="inline-label" for="trigger-enabled">
+          <input type="checkbox" id="trigger-enabled" checked />
+          Enabled (applies on restart)
+        </label>
+      </div>
 
       <div class="ss-form-row">
-        <label for="trigger-match">Match Text</label>
+        <label for="trigger-match">Match pattern</label>
         <input
           type="text"
           id="trigger-match"
@@ -102,36 +114,20 @@
       </div>
 
       <div class="ss-form-row">
-        <label for="trigger-match-mode">Match Mode</label>
+        <label for="trigger-match-mode">Match mode</label>
         <select id="trigger-match-mode">
-          <option value="equals_icase">
-            Equals (case-insensitive)
-          </option>
-          <option value="contains_icase">
-            Contains (case-insensitive)
-          </option>
+          <option value="equals_icase">Equals (case-insensitive)</option>
+          <option value="contains_icase">Contains (case-insensitive)</option>
         </select>
       </div>
 
       <div class="ss-form-row">
-        <label for="trigger-response">Response</label>
-        <input
-          type="text"
-          id="trigger-response"
-          placeholder="e.g. pong"
-          required
-        />
-      </div>
-
-      <div class="ss-form-row">
-        <label for="trigger-cooldown">Cooldown (seconds)</label>
-        <input
-          type="number"
-          id="trigger-cooldown"
-          min="0"
-          step="0.1"
-          placeholder="0.75"
-        />
+        <label for="trigger-action">Action</label>
+        <select id="trigger-action"></select>
+        <p class="muted">
+          Actions are provided by the runtime. Execution internals remain hidden
+          here; selections only change the next exported triggers.json.
+        </p>
       </div>
 
       <div class="ss-form-actions">
@@ -148,29 +144,11 @@
         </button>
       </div>
 
+      <p class="muted" style="margin-top: 8px;">
+        Trigger changes are staged only. Export to docs/shared/state/admin/triggers.json
+        and restart StreamSuites to apply.
+      </p>
     </form>
-  </div>
-</section>
-
-<!-- =========================================================
-     TRIGGER PIPELINES PLACEHOLDER
-     ========================================================= -->
-<section class="ss-panel" style="margin-top: 12px;">
-  <header class="ss-panel-header">
-    <h2>Trigger Pipelines</h2>
-  </header>
-  <div class="ss-panel-body">
-    <p class="muted">
-      Placeholder subsection for future trigger pipelines that can chain
-      responses, scoring updates, or other runtime-owned actions. Mechanics are
-      pending runtime design; this dashboard slot reserves navigation and copy
-      only.
-    </p>
-    <ul class="ss-list muted">
-      <li>Pipeline steps remain declarative and read-only within the dashboard.</li>
-      <li>Execution, sequencing, and permissions are enforced by the runtime.</li>
-      <li>Future alignment with scoreboard modules and trigger-driven tasks.</li>
-    </ul>
   </div>
 </section>
 
@@ -179,44 +157,6 @@
      ========================================================= -->
 <footer class="ss-footer">
   <span class="muted">
-    Triggers affect live chat behaviour across supported platforms.
+    Triggers are scoped to a single creator and apply on the next runtime restart.
   </span>
 </footer>
-
-<!-- =========================================================
-     VIEW-SCOPED IMPORT / EXPORT WIRING
-     (triggers.js already loaded globally)
-     ========================================================= -->
-<script>
-(function () {
-  const btnExport = document.getElementById("btn-export-triggers");
-  const fileInput = document.getElementById("input-import-triggers");
-
-  const errorBox = document.getElementById("triggers-import-error");
-  const errorText = document.getElementById("triggers-import-error-text");
-
-  function showError(msg) {
-    errorText.textContent = msg;
-    errorBox.classList.remove("hidden");
-  }
-
-  function clearError() {
-    errorBox.classList.add("hidden");
-    errorText.textContent = "";
-  }
-
-  btnExport.addEventListener("click", () => {
-    clearError();
-    window.TriggersView?.exportTriggers();
-  });
-
-  fileInput.addEventListener("change", () => {
-    clearError();
-    const file = fileInput.files[0];
-    if (!file) return;
-
-    window.TriggersView?.importTriggersFromFile(file, showError);
-    fileInput.value = "";
-  });
-})();
-</script>
