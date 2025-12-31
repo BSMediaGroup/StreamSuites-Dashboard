@@ -3,6 +3,9 @@
 
   const REFRESH_INTERVAL_MS = 15000;
   const TELEMETRY_REFRESH_MS = 15000;
+  const TELEMETRY_MAX_EVENTS = 10;
+  const TELEMETRY_MAX_ERRORS = 8;
+  const TELEMETRY_MAX_METRICS = 6;
 
   let refreshHandle = null;
   let quotaRefreshHandle = null;
@@ -73,6 +76,26 @@
         error: document.getElementById("telemetry-discord-error")
       }
     };
+
+    /* Telemetry detail panels */
+    el.telemetryEventsBody = document.getElementById("telemetry-events-body");
+    el.telemetryEventsEmpty = document.getElementById("telemetry-events-empty");
+    el.telemetryEventsWarning = document.getElementById(
+      "telemetry-events-warning"
+    );
+
+    el.telemetryRatesGrid = document.getElementById("telemetry-rates-grid");
+    el.telemetryRatesEmpty = document.getElementById("telemetry-rates-empty");
+    el.telemetryRatesWindow = document.getElementById("telemetry-rates-window");
+    el.telemetryRatesWarning = document.getElementById(
+      "telemetry-rates-warning"
+    );
+
+    el.telemetryErrorsBody = document.getElementById("telemetry-errors-body");
+    el.telemetryErrorsEmpty = document.getElementById("telemetry-errors-empty");
+    el.telemetryErrorsWarning = document.getElementById(
+      "telemetry-errors-warning"
+    );
   }
 
   /* ============================================================
@@ -82,6 +105,15 @@
   function setText(target, value) {
     if (!target) return;
     target.textContent = value;
+  }
+
+  function toggleEmptyState(node, visible) {
+    if (!node) return;
+    node.classList[visible ? "remove" : "add"]("hidden");
+  }
+
+  function formatTime(value) {
+    return window.Telemetry?.formatTimestamp?.(value) || "—";
   }
 
   function getAppStorage() {
@@ -365,13 +397,214 @@
     });
   }
 
+  function renderTelemetryWarning(target, health, missingMessage) {
+    if (!target) return;
+    if (!health || health.status === "fresh") {
+      target.classList.add("hidden");
+      target.textContent = "";
+      return;
+    }
+
+    const messages = {
+      missing: missingMessage || "Telemetry snapshot missing — updates pending.",
+      stale: "Telemetry snapshot is stale — values may be outdated.",
+      invalid: "Telemetry snapshot invalid — unable to trust telemetry data."
+    };
+
+    target.textContent = messages[health.status] || missingMessage || "Telemetry unavailable.";
+    target.classList.remove("hidden");
+  }
+
+  function buildSeverityBadge(severity, labelOverride) {
+    const badge = document.createElement("span");
+    const level = (severity || "info").toLowerCase();
+    badge.className = `telemetry-severity telemetry-${level}`;
+
+    const dot = document.createElement("span");
+    dot.className = "telemetry-severity-dot";
+    badge.appendChild(dot);
+
+    const label = document.createElement("span");
+    label.textContent = labelOverride || level;
+    badge.appendChild(label);
+
+    return badge;
+  }
+
+  function renderTelemetryEvents(snapshot, health) {
+    const body = el.telemetryEventsBody;
+    if (!body) return;
+
+    renderTelemetryWarning(
+      el.telemetryEventsWarning,
+      health,
+      "No telemetry events exported yet."
+    );
+
+    const events = Array.isArray(snapshot?.events) ? snapshot.events : [];
+    body.innerHTML = "";
+
+    if (!events.length) {
+      toggleEmptyState(el.telemetryEventsEmpty, true);
+      return;
+    }
+
+    toggleEmptyState(el.telemetryEventsEmpty, false);
+
+    events.slice(0, TELEMETRY_MAX_EVENTS).forEach((evt) => {
+      const row = document.createElement("tr");
+
+      const severityCell = document.createElement("td");
+      severityCell.appendChild(buildSeverityBadge(evt.severity));
+      row.appendChild(severityCell);
+
+      const tsCell = document.createElement("td");
+      tsCell.className = "align-right";
+      tsCell.textContent = formatTime(evt.timestamp);
+      row.appendChild(tsCell);
+
+      const sourceCell = document.createElement("td");
+      sourceCell.textContent = evt.source || "—";
+      row.appendChild(sourceCell);
+
+      const messageCell = document.createElement("td");
+      messageCell.textContent = evt.message || "—";
+      row.appendChild(messageCell);
+
+      body.appendChild(row);
+    });
+  }
+
+  function humanizeMetricLabel(label) {
+    if (!label) return "Metric";
+    return label
+      .replace(/[._]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function renderTelemetryRates(snapshot, health) {
+    renderTelemetryWarning(
+      el.telemetryRatesWarning,
+      health,
+      "No rate telemetry exported yet."
+    );
+
+    const metrics = Array.isArray(snapshot?.metrics) ? snapshot.metrics : [];
+    const windowLabel = snapshot?.window || "Recent window";
+    setText(el.telemetryRatesWindow, `Window: ${windowLabel}`);
+
+    const grid = el.telemetryRatesGrid;
+    if (!grid) return;
+
+    grid.innerHTML = "";
+
+    if (!metrics.length) {
+      toggleEmptyState(el.telemetryRatesEmpty, true);
+      return;
+    }
+
+    toggleEmptyState(el.telemetryRatesEmpty, false);
+
+    metrics.slice(0, TELEMETRY_MAX_METRICS).forEach((metric) => {
+      const card = document.createElement("div");
+      card.className = "telemetry-rate-card";
+
+      const value = document.createElement("div");
+      value.className = "telemetry-rate-value";
+      value.textContent = metric.value ?? "—";
+      card.appendChild(value);
+
+      const label = document.createElement("div");
+      label.className = "telemetry-rate-label";
+
+      const labelSpan = document.createElement("span");
+      labelSpan.textContent = humanizeMetricLabel(metric.label || metric.key);
+      label.appendChild(labelSpan);
+
+      const unitSpan = document.createElement("span");
+      unitSpan.textContent = metric.unit || "";
+      label.appendChild(unitSpan);
+
+      card.appendChild(label);
+      grid.appendChild(card);
+    });
+  }
+
+  function renderTelemetryErrors(snapshot, health) {
+    const body = el.telemetryErrorsBody;
+    if (!body) return;
+
+    renderTelemetryWarning(
+      el.telemetryErrorsWarning,
+      health,
+      "No errors reported in telemetry exports."
+    );
+
+    const errors = Array.isArray(snapshot?.errors) ? snapshot.errors : [];
+    body.innerHTML = "";
+
+    if (!errors.length) {
+      toggleEmptyState(el.telemetryErrorsEmpty, true);
+      return;
+    }
+
+    toggleEmptyState(el.telemetryErrorsEmpty, false);
+
+    errors.slice(0, TELEMETRY_MAX_ERRORS).forEach((err) => {
+      const row = document.createElement("tr");
+      if (err.active) row.classList.add("telemetry-error-active");
+
+      const statusCell = document.createElement("td");
+      const statusBadge = buildSeverityBadge(
+        err.active ? "error" : "info",
+        err.active ? "active" : "cleared"
+      );
+      statusCell.appendChild(statusBadge);
+      row.appendChild(statusCell);
+
+      const subsystemCell = document.createElement("td");
+      subsystemCell.textContent = err.subsystem || "Unknown subsystem";
+      row.appendChild(subsystemCell);
+
+      const lastSeenCell = document.createElement("td");
+      lastSeenCell.className = "align-right";
+      lastSeenCell.textContent = formatTime(err.last_seen || err.timestamp);
+      row.appendChild(lastSeenCell);
+
+      const messageCell = document.createElement("td");
+      messageCell.textContent = err.message || "—";
+      row.appendChild(messageCell);
+
+      body.appendChild(row);
+    });
+  }
+
   async function refreshTelemetry() {
     try {
-      const snapshot = await window.Telemetry?.loadSnapshot?.(true);
+      const [snapshot, events, rates, errors] = await Promise.all([
+        window.Telemetry?.loadSnapshot?.(true),
+        window.Telemetry?.loadEvents?.({ forceReload: true }),
+        window.Telemetry?.loadRates?.({ forceReload: true }),
+        window.Telemetry?.loadErrors?.({ forceReload: true })
+      ]);
+
+      const [eventsHealth, ratesHealth, errorsHealth] = await Promise.all([
+        window.Telemetry?.evaluateSnapshotHealth?.(events),
+        window.Telemetry?.evaluateSnapshotHealth?.(rates),
+        window.Telemetry?.evaluateSnapshotHealth?.(errors)
+      ]);
+
       renderTelemetry(snapshot);
+      renderTelemetryEvents(events, eventsHealth);
+      renderTelemetryRates(rates, ratesHealth);
+      renderTelemetryErrors(errors, errorsHealth);
     } catch (err) {
       console.warn("[Overview] Telemetry refresh failed", err);
       renderTelemetry(null);
+      renderTelemetryEvents(null, null);
+      renderTelemetryRates(null, null);
+      renderTelemetryErrors(null, null);
     }
   }
 

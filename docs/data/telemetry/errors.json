@@ -1,0 +1,17 @@
+{
+  "generated_at": "2025-02-01T11:59:00Z",
+  "errors": [
+    {
+      "subsystem": "discord.presence",
+      "message": "Presence heartbeat delayed; awaiting next poll.",
+      "active": true,
+      "last_seen": "2025-02-01T11:58:30Z"
+    },
+    {
+      "subsystem": "rumble.ingest",
+      "message": "Ingest paused by operator; resume pending stability review.",
+      "active": false,
+      "last_seen": "2025-02-01T11:40:00Z"
+    }
+  ]
+}

@@ -1645,3 +1645,80 @@ button.public-btn:active::after {
 .ss-about-entry[data-scope-tone="architecture"]::after {
   background: radial-gradient(circle at 18% 20%, rgba(152, 134, 255, 0.22), rgba(152, 134, 255, 0));
 }
+
+/* ----------------------------------------------------------------------
+   Telemetry widgets
+   ---------------------------------------------------------------------- */
+
+.telemetry-severity {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-panel-alt);
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+.telemetry-severity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border-subtle);
+}
+
+.telemetry-severity.telemetry-info .telemetry-severity-dot {
+  background: #6ec6ff;
+}
+
+.telemetry-severity.telemetry-warn .telemetry-severity-dot,
+.telemetry-severity.telemetry-warning .telemetry-severity-dot {
+  background: #f0c674;
+}
+
+.telemetry-severity.telemetry-error .telemetry-severity-dot,
+.telemetry-severity.telemetry-critical .telemetry-severity-dot {
+  background: #ff7b7b;
+}
+
+.telemetry-rate-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.telemetry-rate-card {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-panel-alt);
+  padding: 12px;
+}
+
+.telemetry-rate-value {
+  font-family: "RechargeBd", sans-serif;
+  font-size: 20px;
+  color: var(--text-primary);
+}
+
+.telemetry-rate-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.telemetry-rates-window {
+  margin-top: 4px;
+  margin-bottom: 6px;
+}
+
+.telemetry-error-active {
+  background: rgba(217, 83, 79, 0.06);
+}
