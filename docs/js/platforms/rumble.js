@@ -50,8 +50,8 @@
     setText(el.runtimeTriggers, "—");
 
     if (el.runtimeBanner) {
-      el.runtimeBanner.classList.remove("ss-alert-success");
-      el.runtimeBanner.classList.add("ss-alert-warning");
+      el.runtimeBanner.classList.remove("ss-alert-success", "ss-alert-warning");
+      el.runtimeBanner.classList.add("ss-alert-danger");
       setText(
         el.runtimeBanner,
         "Rumble ingest is paused by the runtime. The dashboard mirrors the latest exported snapshot only."
@@ -94,8 +94,8 @@
     );
 
     if (el.runtimeBanner) {
-      el.runtimeBanner.classList.remove("ss-alert-danger");
-      el.runtimeBanner.classList.add("ss-alert-warning");
+      el.runtimeBanner.classList.remove("ss-alert-success", "ss-alert-warning");
+      el.runtimeBanner.classList.add("ss-alert-danger");
       const detail = pausedReason
         ? `Paused — ${pausedReason}`
         : "Paused — runtime-owned controls only";

@@ -272,17 +272,8 @@
       await loadStateJson("runtime_snapshot.json")
     );
 
-    if (shared && Object.keys(shared.platforms).length > 0) {
-      cache.runtimeSnapshot = shared;
-      return deepClone(cache.runtimeSnapshot);
-    }
-
-    const fallback = normalizeRuntimeSnapshot(
-      await fetchFallbackJson("./data/runtime_snapshot.json")
-    );
-
-    cache.runtimeSnapshot = fallback || null;
-    return fallback ? deepClone(fallback) : null;
+    cache.runtimeSnapshot = shared || null;
+    return shared ? deepClone(cache.runtimeSnapshot) : null;
   }
 
   async function loadQuotasSnapshot(options = {}) {

@@ -355,7 +355,11 @@
         window.Telemetry?.describePlatform?.(key, snapshot) || {};
       const row = el.telemetry[key];
       if (!row) return;
-      setText(row.status, desc.status || "unknown");
+
+      const enabledPrefix = desc.enabled === false ? "DISABLED — " : "";
+      const statusText = desc.paused ? "paused" : desc.status || "unknown";
+
+      setText(row.status, `${enabledPrefix}${statusText}`.trim());
       setText(row.last, desc.last_seen || "—");
       setText(row.error, desc.error_state || "—");
     });

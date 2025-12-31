@@ -48,13 +48,21 @@
     if (!snapshot || !snapshot.platforms) {
       return {
         status: "unknown",
+        enabled: null,
+        paused: false,
         last_seen: "—",
         error_state: "No runtime snapshot available"
       };
     }
 
     const entry = snapshot.platforms[key] || {};
-    const lastSeen = entry.heartbeat || entry.lastUpdate || entry.last_seen;
+    const lastSeen =
+      entry.heartbeat ||
+      entry.heartbeat_at ||
+      entry.last_heartbeat ||
+      entry.lastUpdate ||
+      entry.last_seen ||
+      snapshot.generatedAt;
     const pausedReason = entry.pausedReason || entry.paused_reason;
     const error =
       entry.error_state ??
@@ -63,8 +71,13 @@
       entry.last_error ??
       pausedReason;
 
+    const status = entry.status || "unknown";
+    const paused = status === "paused" || Boolean(pausedReason);
+
     return {
-      status: entry.status || "unknown",
+      status,
+      enabled: typeof entry.enabled === "boolean" ? entry.enabled : null,
+      paused,
       last_seen: formatTimestamp(lastSeen),
       error_state:
         error === null || error === undefined || error === ""

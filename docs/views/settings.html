@@ -65,7 +65,8 @@
     <div class="ss-panel-body">
 
       <p class="muted">
-        Enable or disable platform runtimes globally. Changes require a full StreamSuites runtime restart to take effect.
+        Enable or disable platform runtimes globally. Changes require a full StreamSuites runtime restart to take effect and are
+        captured in a small intent file when toggled.
       </p>
 
       <table class="ss-table ss-table-compact" id="platforms-config">
@@ -74,6 +75,7 @@
             <th>Platform</th>
             <th class="align-right">Enabled</th>
             <th class="align-right">Telemetry</th>
+            <th class="align-right">Restart status</th>
             <th>Notes</th>
           </tr>
         </thead>
@@ -107,6 +109,9 @@
                   </div>
                 </div>
               </label>
+            </td>
+            <td class="align-right">
+              <span class="muted" data-platform-status="youtube">Awaiting telemetry</span>
             </td>
             <td>
               <textarea
@@ -147,6 +152,9 @@
                 </div>
               </label>
             </td>
+            <td class="align-right">
+              <span class="muted" data-platform-status="twitch">Awaiting telemetry</span>
+            </td>
             <td>
               <textarea
                 class="ss-input"
@@ -186,6 +194,9 @@
                 </div>
               </label>
             </td>
+            <td class="align-right">
+              <span class="muted" data-platform-status="rumble">Awaiting telemetry</span>
+            </td>
             <td>
               <textarea
                 class="ss-input"
@@ -224,6 +235,9 @@
                   </div>
                 </div>
               </label>
+            </td>
+            <td class="align-right">
+              <span class="muted" data-platform-status="twitter">Runtime-owned</span>
             </td>
             <td>
               <textarea
@@ -266,6 +280,9 @@
                   </div>
                 </div>
               </label>
+            </td>
+            <td class="align-right">
+              <span class="muted" data-platform-status="discord">Awaiting telemetry</span>
             </td>
             <td>
               <textarea
