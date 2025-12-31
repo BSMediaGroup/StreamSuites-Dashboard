@@ -1,9 +1,11 @@
 (() => {
   "use strict";
 
-  const el = {};
-
   const PLATFORM = "youtube";
+  const REFRESH_INTERVAL = 6000;
+
+  const el = {};
+  let runtimeTimer = null;
 
   /* ============================================================
      ELEMENT CACHE
@@ -13,9 +15,10 @@
     el.foundationStatus = document.getElementById("yt-foundation-status");
     el.runtimeBanner = document.getElementById("yt-runtime-banner");
     el.runtimeStatus = document.getElementById("yt-runtime-status");
-    el.runtimeStream = document.getElementById("yt-runtime-stream");
-    el.runtimeHeartbeat = document.getElementById("yt-runtime-heartbeat");
-    el.runtimeLastMessage = document.getElementById("yt-runtime-last-message");
+    el.runtimeUpdated = document.getElementById("yt-runtime-updated");
+    el.runtimeError = document.getElementById("yt-runtime-error");
+    el.runtimeMessages = document.getElementById("yt-runtime-messages");
+    el.runtimeTriggers = document.getElementById("yt-runtime-triggers");
 
     el.configEnabled = document.getElementById("yt-config-enabled");
     el.configChannel = document.getElementById("yt-config-channel");
@@ -45,6 +48,14 @@
     target.textContent = value;
   }
 
+  function formatTimestamp(value) {
+    return (
+      window.StreamSuitesState?.formatTimestamp?.(value) ||
+      value ||
+      "not reported"
+    );
+  }
+
   function getStorage() {
     if (
       typeof window.App === "object" &&
@@ -52,13 +63,6 @@
       typeof window.App.storage.loadFromLocalStorage === "function"
     ) {
       return window.App.storage;
-    }
-    return null;
-  }
-
-  function getRuntimeQuotas() {
-    if (window.StreamSuitesState?.loadQuotasSnapshot) {
-      return window.StreamSuitesState.loadQuotasSnapshot();
     }
     return null;
   }
@@ -179,14 +183,21 @@
   }
 
   /* ============================================================
-     RUNTIME PLACEHOLDER
+     RUNTIME SNAPSHOT RENDERING
      ============================================================ */
+
+  function describeRuntimeStatus(entry) {
+    if (!entry) return "no runtime snapshot";
+    if (entry.enabled === false) return "disabled";
+    return entry.status || "unknown";
+  }
 
   function hydrateRuntimePlaceholder() {
     setText(el.runtimeStatus, "offline / unknown");
-    setText(el.runtimeStream, "no runtime snapshot");
-    setText(el.runtimeHeartbeat, "no runtime snapshot");
-    setText(el.runtimeLastMessage, "no runtime snapshot");
+    setText(el.runtimeUpdated, "no runtime snapshot");
+    setText(el.runtimeError, "not reported");
+    setText(el.runtimeMessages, "—");
+    setText(el.runtimeTriggers, "—");
 
     if (el.runtimeBanner) {
       el.runtimeBanner.classList.add("ss-alert-danger");
@@ -198,11 +209,60 @@
     }
   }
 
-  function setFoundationStatus() {
-    if (!el.foundationStatus) return;
-    el.foundationStatus.classList.remove("idle");
-    el.foundationStatus.classList.add("active");
-    el.foundationStatus.textContent = "● YouTube integration: Scaffold";
+  function renderRuntime(snapshot) {
+    const platform = snapshot?.platforms?.[PLATFORM] || null;
+
+    const status = describeRuntimeStatus(platform);
+    setText(el.runtimeStatus, status.toUpperCase());
+
+    const updated = formatTimestamp(
+      platform?.lastUpdate || snapshot?.generatedAt
+    );
+    setText(el.runtimeUpdated, updated);
+
+    setText(
+      el.runtimeError,
+      platform?.error || "none reported"
+    );
+
+    const counters = platform?.counters || {};
+    const messages = counters.messagesProcessed ?? counters.messages ?? null;
+    const triggers = counters.triggersFired ?? counters.triggers ?? null;
+
+    setText(
+      el.runtimeMessages,
+      Number.isFinite(messages) ? messages.toLocaleString() : "—"
+    );
+    setText(
+      el.runtimeTriggers,
+      Number.isFinite(triggers) ? triggers.toLocaleString() : "—"
+    );
+
+    if (el.runtimeBanner) {
+      el.runtimeBanner.classList.remove("ss-alert-danger", "ss-alert-success");
+      el.runtimeBanner.classList.add(
+        status && status.toLowerCase() === "running" ? "ss-alert-success" : "ss-alert-warning"
+      );
+      setText(
+        el.runtimeBanner,
+        "Read-only preview sourced from runtime exports (shared/state → data fallback)."
+      );
+    }
+  }
+
+  async function hydrateRuntime() {
+    const snapshot = await window.StreamSuitesState?.loadRuntimeSnapshot?.();
+    if (!snapshot || !snapshot.platforms) {
+      hydrateRuntimePlaceholder();
+      return;
+    }
+
+    renderRuntime(snapshot);
+  }
+
+  function startRuntimePolling() {
+    hydrateRuntime();
+    runtimeTimer = setInterval(hydrateRuntime, REFRESH_INTERVAL);
   }
 
   /* ============================================================
@@ -232,7 +292,7 @@
   }
 
   async function hydrateQuotaFromRuntime() {
-    const snapshots = await getRuntimeQuotas();
+    const snapshots = await window.StreamSuitesState?.loadQuotasSnapshot?.();
     if (!Array.isArray(snapshots)) return false;
 
     const yt = snapshots.find(
@@ -274,18 +334,29 @@
      VIEW LIFECYCLE
      ============================================================ */
 
+  function setFoundationStatus() {
+    if (!el.foundationStatus) return;
+    el.foundationStatus.classList.remove("idle");
+    el.foundationStatus.classList.add("active");
+    el.foundationStatus.textContent = "● YouTube integration: Scaffold";
+  }
+
   async function init() {
     cacheElements();
     setFoundationStatus();
     await hydrateConfig();
     hydrateRuntimePlaceholder();
+    startRuntimePolling();
 
     const hydrated = await hydrateQuotaFromRuntime();
     if (!hydrated) updateQuotaFallback();
   }
 
   function destroy() {
-    /* no-op */
+    if (runtimeTimer) {
+      clearInterval(runtimeTimer);
+      runtimeTimer = null;
+    }
   }
 
   window.YouTubeView = {
