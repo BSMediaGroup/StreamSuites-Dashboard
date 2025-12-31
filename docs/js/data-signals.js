@@ -252,7 +252,7 @@
     jobs: {
       path: `${DATA_ROOT}/jobs.json`,
       property: "items",
-      searchFields: ["id", "type", "state"],
+      searchFields: ["id", "type", "state", "reason"],
       defaultSortField: "last_run",
       defaultSortDirection: "desc",
       countLabel: "jobs-count",
@@ -262,10 +262,14 @@
       empty: "jobs-empty",
       searchInput: "jobs-search",
       renderRow: (job) => {
+        const enablement = normalizeJobEnablement(job);
         return `
           <td>${escapeHtml(job.id)}</td>
           <td>${escapeHtml(job.type)}</td>
           <td>${renderState(job.state)}</td>
+          <td>${renderEnablementBadge(enablement)}</td>
+          <td>${renderRestartBadge(enablement)}</td>
+          <td>${escapeHtml(enablement.reason || job.reason)}</td>
           <td>${formatTimestamp(job.last_run)}</td>
           <td>${formatTimestamp(job.next_run)}</td>
         `;
@@ -383,6 +387,74 @@
       .map(([key]) => key)
       .join(", ");
     return enabled || "—";
+  }
+
+  function normalizeJobEnablement(job) {
+    const enablementBlock =
+      job && typeof job.enablement === "object" ? job.enablement : null;
+
+    const enabled = pickBoolean(
+      job?.enabled,
+      job?.enable,
+      enablementBlock?.enabled,
+      enablementBlock?.enable
+    );
+
+    const restartRequired = pickBoolean(
+      job?.restart_required,
+      job?.restartRequired,
+      enablementBlock?.restart_required,
+      enablementBlock?.requires_restart
+    );
+
+    const reason = pickReason([
+      job?.disable_reason,
+      job?.disabled_reason,
+      job?.reason,
+      enablementBlock?.reason,
+      enablementBlock?.note,
+      enablementBlock?.message
+    ]);
+
+    return {
+      enabled,
+      restartRequired: restartRequired === true,
+      reason
+    };
+  }
+
+  function renderEnablementBadge(enablement) {
+    if (enablement.enabled === true) {
+      return '<span class="ss-badge ss-badge-success">Enabled</span>';
+    }
+    if (enablement.enabled === false) {
+      return '<span class="ss-badge ss-badge-warning">Disabled</span>';
+    }
+    return '<span class="muted">Unknown</span>';
+  }
+
+  function renderRestartBadge(enablement) {
+    if (enablement.restartRequired) {
+      return '<span class="ss-badge ss-badge-warning">Restart required</span>';
+    }
+    return '<span class="muted" title="Job toggles apply after restart">Restart-applied</span>';
+  }
+
+  function pickBoolean(...values) {
+    for (const value of values) {
+      if (value === true) return true;
+      if (value === false) return false;
+    }
+    return null;
+  }
+
+  function pickReason(values) {
+    for (const value of values) {
+      if (typeof value === "string" && value.trim()) {
+        return value.trim();
+      }
+    }
+    return null;
   }
 
   async function fetchJson(path) {
