@@ -1,0 +1,53 @@
+{
+  "schema": "streamsuites.triggers.admin.v1",
+  "generated_at": "2025-01-15T00:00:00Z",
+  "actions": [
+    {
+      "id": "send_chat_message",
+      "label": "Send chat message",
+      "description": "Post a templated response to chat without touching runtime internals."
+    },
+    {
+      "id": "record_clip",
+      "label": "Record clip marker",
+      "description": "Queue a clip marker for post-stream processing."
+    },
+    {
+      "id": "flag_message",
+      "label": "Flag message for review",
+      "description": "Escalate matched messages for moderator review."
+    }
+  ],
+  "creators": [
+    {
+      "creator_id": "daniel",
+      "display_name": "Daniel",
+      "triggers": [
+        {
+          "id": "hello-reply",
+          "enabled": true,
+          "match": "!hello",
+          "match_mode": "equals_icase",
+          "action": "send_chat_message",
+          "notes": "Baseline greeting helper"
+        },
+        {
+          "id": "clip-on-highlight",
+          "enabled": true,
+          "match": "!clip",
+          "match_mode": "equals_icase",
+          "action": "record_clip",
+          "notes": "Allow audience to request clip markers"
+        },
+        {
+          "id": "mod-escalation",
+          "enabled": false,
+          "match": "report",
+          "match_mode": "contains_icase",
+          "action": "flag_message",
+          "notes": "Escalation trigger for moderator review"
+        }
+      ]
+    }
+  ]
+}

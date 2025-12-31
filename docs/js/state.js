@@ -7,6 +7,8 @@
     "https://raw.githubusercontent.com/BSMediaGroup/StreamSuites/main/shared/state/"
   ];
 
+  const TRIGGER_MATCH_MODES = new Set(["equals_icase", "contains_icase"]);
+
   const STORAGE_KEY = "streamsuites.stateRootOverride";
 
   const cache = {
@@ -237,6 +239,88 @@
     };
   }
 
+  function normalizeTriggerAction(raw) {
+    if (!raw || typeof raw !== "object") return null;
+    const id = pickString(raw.id);
+    if (!id) return null;
+
+    return {
+      id,
+      label: pickString(raw.label, id),
+      description: pickString(raw.description)
+    };
+  }
+
+  function normalizeTriggerEntry(raw, creatorId, index = 0) {
+    if (!raw || typeof raw !== "object") return null;
+
+    const match = pickString(raw.match);
+    const action = pickString(raw.action);
+    if (!match || !action) return null;
+
+    const matchMode = TRIGGER_MATCH_MODES.has(raw.match_mode)
+      ? raw.match_mode
+      : "equals_icase";
+
+    const entry = {
+      id: pickString(raw.id, `${creatorId || "trigger"}-${index + 1}`),
+      creator_id: creatorId || pickString(raw.creator_id),
+      enabled: raw.enabled !== false,
+      match,
+      match_mode: matchMode,
+      action
+    };
+
+    const notes = pickString(raw.notes);
+    if (notes) {
+      entry.notes = notes;
+    }
+
+    return entry;
+  }
+
+  function normalizeRuntimeTriggers(raw) {
+    if (!raw || typeof raw !== "object") return null;
+
+    const actions = Array.isArray(raw.actions)
+      ? raw.actions.map(normalizeTriggerAction).filter(Boolean)
+      : [];
+
+    const creatorList = Array.isArray(raw.creators)
+      ? raw.creators
+      : raw.creators && typeof raw.creators === "object"
+        ? Object.values(raw.creators)
+        : [];
+
+    const creators = creatorList
+      .map((creator) => {
+        const creatorId = pickString(creator.creator_id, creator.id, creator.name);
+        if (!creatorId) return null;
+
+        const displayName = pickString(creator.display_name, creator.name, creatorId);
+        const triggerList = Array.isArray(creator.triggers) ? creator.triggers : [];
+        const normalizedTriggers = triggerList
+          .map((t, idx) => normalizeTriggerEntry(t, creatorId, idx))
+          .filter(Boolean);
+
+        return {
+          creator_id: creatorId,
+          display_name: displayName,
+          triggers: normalizedTriggers
+        };
+      })
+      .filter(Boolean);
+
+    if (!actions.length && !creators.length) return null;
+
+    return {
+      schema: pickString(raw.schema, raw.schema_version),
+      generatedAt: pickString(raw.generated_at, raw.generatedAt),
+      actions,
+      creators
+    };
+  }
+
   function normalizeRuntimeSnapshot(raw) {
     if (!raw || typeof raw !== "object") return null;
 
@@ -275,10 +359,13 @@
           : null
     };
 
+    const triggers = normalizeRuntimeTriggers(raw.admin?.triggers || raw.triggers);
+
     return {
       generatedAt,
       platforms: normalized,
-      system
+      system,
+      triggers
     };
   }
 
@@ -291,7 +378,9 @@
 
     if (runtimeState?.getSnapshot) {
       const polled = normalizeRuntimeSnapshot(runtimeState.getSnapshot());
-      if (polled && Object.keys(polled.platforms).length > 0) {
+      const hasPlatforms = polled && Object.keys(polled.platforms).length > 0;
+      const hasTriggers = polled?.triggers;
+      if (polled && (hasPlatforms || hasTriggers)) {
         cache.runtimeSnapshot = polled;
         return deepClone(cache.runtimeSnapshot);
       }
@@ -304,7 +393,9 @@
         console.warn("[Dashboard][State] runtime snapshot refresh failed", err);
       }
       const refreshed = normalizeRuntimeSnapshot(runtimeState?.getSnapshot?.());
-      if (refreshed && Object.keys(refreshed.platforms).length > 0) {
+      const hasPlatforms = refreshed && Object.keys(refreshed.platforms).length > 0;
+      const hasTriggers = refreshed?.triggers;
+      if (refreshed && (hasPlatforms || hasTriggers)) {
         cache.runtimeSnapshot = refreshed;
         return deepClone(cache.runtimeSnapshot);
       }
