@@ -54,13 +54,22 @@
     }
 
     const entry = snapshot.platforms[key] || {};
+    const lastSeen = entry.heartbeat || entry.lastUpdate || entry.last_seen;
+    const pausedReason = entry.pausedReason || entry.paused_reason;
+    const error =
+      entry.error_state ??
+      entry.error ??
+      entry.lastError ??
+      entry.last_error ??
+      pausedReason;
+
     return {
       status: entry.status || "unknown",
-      last_seen: formatTimestamp(entry.last_seen),
+      last_seen: formatTimestamp(lastSeen),
       error_state:
-        entry.error_state === null || entry.error_state === undefined
+        error === null || error === undefined || error === ""
           ? "—"
-          : entry.error_state
+          : error
     };
   }
 

@@ -134,8 +134,8 @@
   }
 
   function hydrateRuntimePlaceholder() {
-    setText(el.runtimeStatus, "offline / unknown");
-    setText(el.runtimeUpdated, "no runtime snapshot");
+    setText(el.runtimeStatus, "awaiting snapshot");
+    setText(el.runtimeUpdated, "no runtime snapshot yet");
     setText(el.runtimeError, "not reported");
     setText(el.runtimeMessages, "—");
     setText(el.runtimeTriggers, "—");
@@ -145,7 +145,7 @@
       el.runtimeBanner.classList.remove("hidden");
       setText(
         el.runtimeBanner,
-        "No runtime connected. StreamSuites runtime exports will hydrate this view when available."
+        "Monitoring resumes as runtime snapshots arrive. This view stays read-only and mirrors runtime exports."
       );
     }
   }
@@ -197,7 +197,9 @@
   }
 
   async function hydrateRuntime() {
-    const snapshot = await window.StreamSuitesState?.loadRuntimeSnapshot?.();
+    const snapshot = await window.StreamSuitesState?.loadRuntimeSnapshot?.({
+      forceReload: true
+    });
     if (!snapshot || !snapshot.platforms) {
       hydrateRuntimePlaceholder();
       return;

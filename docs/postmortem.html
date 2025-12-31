@@ -16,7 +16,6 @@
   <link rel="stylesheet" href="./css/theme-dark.css" />
   <link rel="stylesheet" href="./css/components.css" />
   <link rel="stylesheet" href="./css/public-pages.css" />
-  <link rel="stylesheet" href="shared/suspension/suspension-banner.css">
 </head>
 <body>
   <div class="public-bg" aria-hidden="true"></div>
@@ -46,15 +45,15 @@
         <div class="public-hero-grid">
           <div class="public-hero-copy">
             <div class="section-heading">
-              <h2>Project Post-Mortem <span class="ss-suspension-badge" title="Project suspended">PROJECT SUSPENDED</span></h2>
+              <h2>Project Post-Mortem </h2>
               <span class="public-badge">Runtime status update</span>
             </div>
-            <p class="lede">StreamSuites Runtime Engine development is indefinitely suspended. Persistent instability in Rumble chat ingestion, specifically the inability to deterministically discover or maintain <code>chat_id</code> inputs required for SSE and HTTP ingestion, produced non-deterministic behavior that blocked reliable operations. Repeated remediation attempts did not restore deterministic ingestion, preventing the runtime from safely advancing to beta.</p>
+            <p class="lede">StreamSuites Runtime Engine previously entered suspension because Rumble chat ingestion could not reliably resolve <code>chat_id</code> inputs for SSE and HTTP modes. The project has resumed with Rumble held in a paused state while stabilization continues, and all other platform monitoring remains active.</p>
           </div>
           <div class="public-hero-meta">
             <div class="public-glass-card">
-              <h3>Suspension</h3>
-              <p class="muted">No further development is planned. This page records the formal post-mortem for the StreamSuites Runtime Engine.</p>
+              <h3>Resumption</h3>
+              <p class="muted">Active monitoring has resumed. Rumble is paused for controlled revalidation; this page records the historical post-mortem.</p>
             </div>
           </div>
         </div>
@@ -65,7 +64,7 @@
           <div class="section-heading">
             <h2>Executive Summary</h2>
           </div>
-          <p>StreamSuites Runtime Engine development is indefinitely suspended. Persistent instability in Rumble chat ingestion, specifically the inability to deterministically discover or maintain <code>chat_id</code> inputs required for SSE and HTTP ingestion, produced non-deterministic behavior that blocked reliable operations. Repeated remediation attempts did not restore deterministic ingestion, preventing the runtime from safely advancing to beta.</p>
+          <p>StreamSuites Runtime Engine previously paused because Rumble chat ingestion could not deterministically discover or maintain <code>chat_id</code> inputs required for SSE and HTTP ingestion. After documenting the failure, the dashboard resumed with live runtime snapshot polling while keeping the Rumble ingest path paused until stabilization completes.</p>
         </article>
 
         <article class="public-glass-card">
@@ -110,9 +109,9 @@
 
         <article class="public-glass-card">
           <div class="section-heading">
-            <h2>Why Suspension Was Chosen</h2>
+            <h2>Why Rumble Remains Paused</h2>
           </div>
-          <p>Deterministic chat ingestion could not be re-established, leaving the runtime unable to meet reliability requirements for beta. Continuing development without stable ingestion would risk data integrity and operational predictability, so the runtime was suspended to prevent unsafe deployment.</p>
+          <p>Deterministic chat ingestion has not been re-established for Rumble, so the runtime keeps that platform paused to protect data integrity while the dashboard surfaces exported snapshots. Active polling and observability continue for YouTube, Twitch, and Discord.</p>
         </article>
 
         <article class="public-glass-card">
@@ -153,6 +152,5 @@
       Versioning.applyVersionToElements({ version: ".version-badge" });
     }
   </script>
-  <script src="shared/suspension/suspension-banner.js"></script>
 </body>
 </html>

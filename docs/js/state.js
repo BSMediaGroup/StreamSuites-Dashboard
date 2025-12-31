@@ -177,23 +177,32 @@
       raw.state
     ) || "unknown";
 
-    const lastUpdate = pickString(
+    const heartbeat = pickString(
+      raw.heartbeat_at,
       raw.last_heartbeat,
-      raw.last_seen,
+      raw.last_seen
+    );
+
+    const lastUpdate = pickString(
+      heartbeat,
       raw.updated_at,
       raw.last_update,
       raw.last_event,
       raw.last_message
     );
 
-    const error = raw.error ?? raw.error_state ?? raw.last_error;
+    const error =
+      raw.error ?? raw.error_state ?? raw.last_error ?? raw.lastError;
+    const pausedReason = pickString(raw.paused_reason, raw.pause_reason);
 
     return {
       platform: pickString(raw.platform, raw.id, raw.name),
       enabled: pickBoolean(raw.enabled),
       telemetryEnabled: pickBoolean(raw.telemetry_enabled),
       status,
+      heartbeat,
       lastUpdate,
+      pausedReason,
       error: typeof error === "string" ? error : null,
       counters: normalizeCounters(raw.counters || raw.metrics || raw.counts || {})
     };

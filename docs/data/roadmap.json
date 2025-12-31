@@ -55,8 +55,9 @@
     "order": 6,
     "title": "Rumble Chat Ingest Pipeline",
     "percent": 60,
-    "meta": "60% · SSE-First Architecture + Fallbacks Published",
-    "description": "Rumble chat now ingests via SSE when available and automatically falls back to DOM-based collection or API polling. The runtime exports stable payloads for dashboards and public pages, and the pipeline is wired into quotas and enforcement. Remaining work focuses on deeper moderation features and extended telemetry.",
+    "meta": "Paused · SSE-first architecture with runtime hold",
+    "status": "paused",
+    "description": "Rumble chat ingests via SSE when available and automatically falls back to DOM-based collection or API polling. The runtime exports stable payloads for dashboards and public pages, but the pipeline is temporarily paused while integration stabilizes for production rollout.",
     "icon": "./assets/icons/rumble-silver.svg",
     "tooltip": "60% · 55–60% Integrated — Integrated with runtime orchestration, quotas, or control planes. Stable but evolving."
   },
