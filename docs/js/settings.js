@@ -31,6 +31,8 @@
   const el = {};
 
   let settings = null;
+  let runtimeSnapshot = null;
+  let systemConfig = null;
   let wired = false;
 
   /* ------------------------------------------------------------
@@ -42,6 +44,8 @@
     wireEvents();
     loadSettings();
     await hydratePlatforms();
+    await hydrateRuntimeState();
+    await hydrateSystemSettings();
     await renderDashboardState();
   }
 
@@ -180,6 +184,12 @@
     el.importInput = document.getElementById("config-import-file");
     el.dashboardState = document.getElementById("dashboard-config-state");
     el.dashboardExport = document.getElementById("dashboard-export-state");
+    el.platformPollingToggle = document.getElementById("platform-polling-toggle");
+    el.platformPollingRuntime = document.getElementById(
+      "platform-polling-runtime-state"
+    );
+    el.platformPollingDraft = document.getElementById("platform-polling-draft-state");
+    el.platformPollingNotice = document.getElementById("platform-polling-restart");
   }
 
   function wireEvents() {
@@ -202,11 +212,17 @@
       try {
         await window.ConfigState?.importConfigBundle?.(file);
         await PlatformsManager?.refresh?.(true);
+        await hydrateRuntimeState(true);
+        await hydrateSystemSettings(true);
         await renderDashboardState(true);
       } catch (err) {
         console.error("[Settings] Import failed", err);
         alert("Import failed: invalid configuration payload");
       }
+    });
+
+    el.platformPollingToggle?.addEventListener("change", () => {
+      updatePlatformPolling(el.platformPollingToggle.checked);
     });
 
     wired = true;
@@ -216,6 +232,30 @@
     if (window.PlatformsManager?.initSettingsView) {
       await window.PlatformsManager.initSettingsView();
     }
+  }
+
+  async function hydrateRuntimeState(forceReload = false) {
+    try {
+      runtimeSnapshot =
+        (await window.ConfigState?.loadRuntimeSnapshot?.({ forceReload })) || null;
+    } catch (err) {
+      console.warn("[Settings] Unable to load runtime snapshot", err);
+      runtimeSnapshot = null;
+    }
+
+    renderPlatformPolling();
+  }
+
+  async function hydrateSystemSettings(forceReload = false) {
+    try {
+      systemConfig =
+        (await window.ConfigState?.loadSystem?.({ forceReload })) || null;
+    } catch (err) {
+      console.warn("[Settings] Unable to load system config", err);
+      systemConfig = null;
+    }
+
+    renderPlatformPolling();
   }
 
   async function renderDashboardState(forceReload = false) {
@@ -235,6 +275,78 @@
     if (el.dashboardExport) el.dashboardExport.textContent = exported;
   }
 
+  function getRuntimePollingValue() {
+    const value = runtimeSnapshot?.system?.platformPollingEnabled;
+    return value === true || value === false ? value : null;
+  }
+
+  function getDraftPollingState() {
+    const stored = systemConfig?.platform_polling_enabled;
+    const hasStoredDraft = stored === true || stored === false;
+
+    const runtimeFallback = getRuntimePollingValue();
+    const valueCandidate = hasStoredDraft ? stored : runtimeFallback;
+    const value = valueCandidate === true || valueCandidate === false ? valueCandidate : null;
+
+    return { value, hasStoredDraft };
+  }
+
+  function renderPlatformPolling() {
+    const runtimeValue = getRuntimePollingValue();
+    const draftState = getDraftPollingState();
+    const draftValue = draftState.value;
+
+    if (el.platformPollingToggle) {
+      if (draftValue === true || draftValue === false) {
+        el.platformPollingToggle.checked = draftValue;
+        el.platformPollingToggle.indeterminate = false;
+      } else {
+        el.platformPollingToggle.checked = false;
+        el.platformPollingToggle.indeterminate = true;
+      }
+    }
+
+    if (el.platformPollingRuntime) {
+      el.platformPollingRuntime.textContent =
+        runtimeValue === true
+          ? "ENABLED (runtime snapshot)"
+          : runtimeValue === false
+            ? "DISABLED (runtime snapshot)"
+            : "Unknown (runtime not reporting)";
+    }
+
+    if (el.platformPollingDraft) {
+      el.platformPollingDraft.textContent =
+        draftState.hasStoredDraft
+          ? draftValue === true
+            ? "Enabled for next start"
+            : draftValue === false
+              ? "Disabled for next start"
+              : "Not staged (uses runtime defaults)"
+          : draftValue === true
+            ? "Runtime default: enabled"
+            : draftValue === false
+              ? "Runtime default: disabled"
+              : "Not staged (uses runtime defaults)";
+    }
+
+    if (el.platformPollingNotice) {
+      const needsRestart =
+        draftState.hasStoredDraft && (runtimeValue === null || runtimeValue !== draftValue);
+      el.platformPollingNotice.style.display = needsRestart ? "block" : "none";
+    }
+  }
+
+  function updatePlatformPolling(enabled) {
+    systemConfig =
+      window.ConfigState?.saveSystem?.({ platform_polling_enabled: !!enabled }) || {
+        platform_polling_enabled: !!enabled
+      };
+
+    renderPlatformPolling();
+    renderDashboardState();
+  }
+
   function formatTimestamp(value) {
     return (
       window.StreamSuitesState?.formatTimestamp?.(value) ||
@@ -245,6 +357,8 @@
 
   function destroy() {
     wired = false;
+    runtimeSnapshot = null;
+    systemConfig = null;
     window.PlatformsManager?.destroy?.();
   }
 

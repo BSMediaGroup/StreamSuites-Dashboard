@@ -492,6 +492,44 @@
   height: 16px;
 }
 
+.ss-inline-status-row {
+  display: flex;
+  gap: 16px;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+
+.ss-inline-status-block {
+  flex: 1 1 220px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel-alt);
+}
+
+.ss-inline-status-block .label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
+}
+
+.ss-inline-status-block .value {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.ss-restart-note {
+  display: none;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px dashed var(--accent-warning, #f4b400);
+  border-radius: var(--radius-sm);
+  background: rgba(244, 180, 0, 0.08);
+  color: #f4d28c;
+  font-size: 13px;
+}
+
 /* ----------------------------------------------------------------------
    Platform Status Badges (OVERVIEW)
    ---------------------------------------------------------------------- */

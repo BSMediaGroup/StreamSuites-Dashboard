@@ -1,5 +1,8 @@
 {
   "generated_at": "2025-05-20T15:30:00Z",
+  "system": {
+    "platform_polling_enabled": true
+  },
   "platforms": {
     "youtube": {
       "status": "running",

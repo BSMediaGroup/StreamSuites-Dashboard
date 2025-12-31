@@ -55,6 +55,49 @@
   </section>
 
   <!-- --------------------------------------------------------- -->
+  <!-- PLATFORM POLLING CONTROL -->
+  <!-- --------------------------------------------------------- -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Platform Polling</h2>
+        <p class="muted">Monitor runtime state and stage restart-applied polling changes.</p>
+      </div>
+    </header>
+
+    <div class="ss-panel-body">
+
+      <p class="muted">
+        This setting is applied when the runtime starts. Restart StreamSuites for changes to take
+        effect.
+      </p>
+
+      <div class="ss-form-row checkbox-row">
+        <label for="platform-polling-toggle">
+          <input type="checkbox" id="platform-polling-toggle" />
+          Platform polling enabled (applies on restart)
+        </label>
+      </div>
+
+      <div class="ss-inline-status-row">
+        <div class="ss-inline-status-block">
+          <div class="label">Runtime reporting</div>
+          <div class="value" id="platform-polling-runtime-state">Loading…</div>
+        </div>
+        <div class="ss-inline-status-block">
+          <div class="label">Next launch intent</div>
+          <div class="value" id="platform-polling-draft-state">Loading…</div>
+        </div>
+      </div>
+
+      <div class="ss-restart-note" id="platform-polling-restart">
+        Restart required. Platform polling changes apply after StreamSuites restarts.
+      </div>
+
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------------- -->
   <!-- GLOBAL PLATFORM SERVICES -->
   <!-- --------------------------------------------------------- -->
   <section class="ss-panel">

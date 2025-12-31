@@ -263,9 +263,22 @@
       }
     });
 
+    const platformPollingEnabled = pickBoolean(
+      raw.system?.platform_polling_enabled,
+      raw.platform_polling_enabled
+    );
+
+    const system = {
+      platformPollingEnabled:
+        platformPollingEnabled === true || platformPollingEnabled === false
+          ? platformPollingEnabled
+          : null
+    };
+
     return {
       generatedAt,
-      platforms: normalized
+      platforms: normalized,
+      system
     };
   }
 
@@ -429,6 +442,7 @@
     creators: "data/creators.json",
     platforms: "data/platforms.json",
     dashboard: "data/dashboard_state.json",
+    system: "data/system.json",
     runtimeSnapshot: "data/runtime_snapshot.json"
   };
 
@@ -488,14 +502,21 @@
     last_export_at: null,
     draft_sources: {
       creators: DATA_PATHS.creators,
-      platforms: DATA_PATHS.platforms
+      platforms: DATA_PATHS.platforms,
+      system: DATA_PATHS.system
     }
+  };
+
+  const DEFAULT_SYSTEM = {
+    schema: "streamsuites.system.v1",
+    platform_polling_enabled: null
   };
 
   const cache = {
     creators: null,
     platforms: null,
     dashboard: null,
+    system: null,
     runtimeSnapshot: null
   };
 
@@ -509,6 +530,15 @@
     } catch {
       return null;
     }
+  }
+
+  function pickBoolean(...values) {
+    for (const value of values) {
+      if (value === true || value === false) {
+        return value;
+      }
+    }
+    return null;
   }
 
   async function fetchJson(path) {
@@ -546,6 +576,30 @@
     PLATFORM_KEYS.forEach((key) => {
       normalized[key] = normalizePlatformEntry(sourcePlatforms[key]);
     });
+
+    return normalized;
+  }
+
+  function normalizeSystem(raw) {
+    const normalized =
+      raw && typeof raw === "object"
+        ? { ...raw }
+        : { ...DEFAULT_SYSTEM };
+
+    const platformPollingEnabled = pickBoolean(
+      normalized.platform_polling_enabled,
+      normalized.system?.platform_polling_enabled
+    );
+
+    normalized.schema =
+      typeof normalized.schema === "string"
+        ? normalized.schema
+        : DEFAULT_SYSTEM.schema;
+
+    normalized.platform_polling_enabled =
+      platformPollingEnabled === true || platformPollingEnabled === false
+        ? platformPollingEnabled
+        : null;
 
     return normalized;
   }
@@ -726,6 +780,51 @@
     App.storage.downloadJson("platforms.json", normalized);
   }
 
+  async function loadSystem(options = {}) {
+    if (cache.system && !options.forceReload) {
+      return deepClone(cache.system);
+    }
+
+    const localDraft = App.storage.loadFromLocalStorage("system", null);
+    if (localDraft && typeof localDraft === "object") {
+      cache.system = normalizeSystem(localDraft);
+      return deepClone(cache.system);
+    }
+
+    const fileData = await fetchJson(DATA_PATHS.system);
+    if (fileData && typeof fileData === "object") {
+      cache.system = normalizeSystem(fileData);
+      return deepClone(cache.system);
+    }
+
+    cache.system = normalizeSystem(DEFAULT_SYSTEM);
+    return deepClone(cache.system);
+  }
+
+  function saveSystem(systemConfig = {}) {
+    const normalized = normalizeSystem({
+      ...(cache.system || DEFAULT_SYSTEM),
+      ...(systemConfig || {})
+    });
+
+    cache.system = normalized;
+    App.storage.saveToLocalStorage("system", normalized);
+    updateDashboardState({
+      last_loaded_at: safeNowIso()
+    });
+    return deepClone(cache.system);
+  }
+
+  function exportSystemFile(dataOverride = null) {
+    const payload =
+      dataOverride && typeof dataOverride === "object"
+        ? dataOverride
+        : cache.system;
+
+    const normalized = normalizeSystem(payload || DEFAULT_SYSTEM);
+    App.storage.downloadJson("system.json", normalized);
+  }
+
   async function loadDashboardState(options = {}) {
     if (cache.dashboard && !options.forceReload) {
       return deepClone(cache.dashboard);
@@ -763,13 +862,15 @@
   }
 
   async function exportAllConfigs() {
-    const [creators, platforms] = await Promise.all([
+    const [creators, platforms, system] = await Promise.all([
       loadCreators(),
-      loadPlatforms()
+      loadPlatforms(),
+      loadSystem()
     ]);
 
     exportCreatorsFile(creators);
     exportPlatformsFile(platforms);
+    exportSystemFile(system);
     updateDashboardState({
       last_export_at: safeNowIso()
     });
@@ -810,6 +911,10 @@
       applyPlatformsImport(parsed.platforms);
     }
 
+    if (parsed.system) {
+      saveSystem(parsed.system);
+    }
+
     updateDashboardState({
       last_loaded_at: safeNowIso()
     });
@@ -824,6 +929,9 @@
     savePlatforms,
     exportPlatformsFile,
     applyPlatformsImport,
+    loadSystem,
+    saveSystem,
+    exportSystemFile,
     loadDashboardState,
     updateDashboardState,
     loadRuntimeSnapshot,
