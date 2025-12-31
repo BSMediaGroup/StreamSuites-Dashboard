@@ -1638,36 +1638,14 @@ body.viz-expanded {
 }
 
 .public-roadmap-header {
-  grid-template-columns: minmax(0, 1fr) clamp(360px, 40vw, 520px);
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
   align-items: flex-start;
-}
-
-.public-hero-legend {
-  display: flex;
-  justify-content: flex-end;
-  width: 100%;
-  max-width: clamp(360px, 40vw, 520px);
-  min-width: 0;
-  justify-self: end;
-}
-
-.public-hero-legend .ss-roadmap-legend {
-  margin-left: auto;
 }
 
 @media (max-width: 860px) {
   .public-hero-grid {
     grid-template-columns: 1fr;
-  }
-
-  .public-hero .ss-roadmap-legend {
-    max-width: 100%;
-    min-width: 0;
-  }
-
-  .ss-legend-row {
-    white-space: normal;
   }
 }
 
@@ -2018,15 +1996,6 @@ body.viz-expanded {
   font-size: 0.9em;
 }
 
-.public-hero .ss-roadmap-legend {
-  margin-top: 0;
-  display: block;
-  width: 100%;
-  max-width: clamp(360px, 40vw, 520px);
-  min-width: 0;
-  justify-self: end;
-}
-
 .ss-legend-summary {
   display: inline-flex;
   align-items: center;
@@ -2057,10 +2026,6 @@ body.viz-expanded {
   width: 100%;
   font-family: "SuiGenerisRg", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   overflow-x: auto;
-}
-
-.ss-legend-row {
-  white-space: nowrap;
 }
 
 .ss-legend-row { font-size: 0.84em; line-height: 1.45; }

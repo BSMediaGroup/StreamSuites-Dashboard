@@ -2,6 +2,17 @@
 
 const CHANGELOG_SCOPES = ["dashboard", "runtime", "global"];
 
+function parseDateSafe(value, label = "") {
+  if (!value) return Number.NEGATIVE_INFINITY;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    const suffix = label ? ` for entry ${label}` : "";
+    console.warn(`[Changelog] Unrecognized date ${value}${suffix}`);
+    return Number.NEGATIVE_INFINITY;
+  }
+  return parsed.getTime();
+}
+
 function resolveBasePath() {
   if (
     window.Versioning &&
@@ -70,8 +81,8 @@ function mergeEntries(...entrySets) {
     }
 
     const existing = seen.get(key);
-    const existingDate = existing?.date ? new Date(existing.date).getTime() : -Infinity;
-    const incomingDate = entry?.date ? new Date(entry.date).getTime() : -Infinity;
+    const existingDate = parseDateSafe(existing?.date, existing?.id || existing?.title || "");
+    const incomingDate = parseDateSafe(entry?.date, entry?.id || entry?.title || "");
 
     if (incomingDate > existingDate) {
       seen.set(key, entry);
@@ -80,8 +91,15 @@ function mergeEntries(...entrySets) {
 
   const merged = [...seen.values(), ...withoutIds];
   return merged.sort((a, b) => {
-    const aDate = a?.date ? new Date(a.date).getTime() : 0;
-    const bDate = b?.date ? new Date(b.date).getTime() : 0;
+    const aDate = parseDateSafe(a?.date, a?.id || a?.title || "");
+    const bDate = parseDateSafe(b?.date, b?.id || b?.title || "");
+
+    if (aDate === bDate) {
+      const aKey = a?.id || a?.title || "";
+      const bKey = b?.id || b?.title || "";
+      return String(aKey).localeCompare(String(bKey));
+    }
+
     return bDate - aDate;
   });
 }
