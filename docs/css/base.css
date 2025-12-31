@@ -81,6 +81,21 @@ body {
   border-bottom: 1px solid transparent;
 }
 
+.header-left a {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.header-left a:hover,
+.header-left a:focus-visible {
+  color: inherit;
+  text-decoration: none;
+  outline: none;
+}
+
 .header-left {
   display: flex;
   align-items: baseline;
