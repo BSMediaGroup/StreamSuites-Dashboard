@@ -1,6 +1,6 @@
 {
   "version": "0.2.1-alpha",
-  "lastUpdated": "2025-12-27",
+  "lastUpdated": "2025-02-12",
   "sections": [
     {
       "id": "platform-integrations-unifying-idea",
@@ -12,11 +12,11 @@
           "order": 1,
           "consumer": {
             "title": "A Unified Experience Across Platforms",
-            "body": "StreamSuites works across different livestream platforms without forcing them to behave the same. Each platform is respected for what it is, but the system still presents a unified experience to creators and viewers."
+            "body": "StreamSuites works across different livestream platforms without forcing them to behave the same. Each platform is respected for what it is, but the system still presents a unified experience to creators and viewers with common overlays, chat replay previews, and gallery navigation."
           },
           "developer": {
             "title": "Three-Stage Platform Integration Pipeline",
-            "body": "Each platform integration follows the same conceptual pipeline even if implementation differs: ingest raw events (chat messages, joins, paid events where available), normalize them into StreamSuites’ internal event model, and emit deterministic exports for triggers, modules, telemetry, and public visibility. This enables platform parity without pretending parity exists at the API level."
+            "body": "Each platform integration follows the same conceptual pipeline even if implementation differs: ingest raw events (chat messages, joins, paid events where available), normalize them into StreamSuites’ internal event model, and emit deterministic exports for triggers, modules, telemetry, overlays, and public visibility. Replay and browser-source overlay shapes are defined even when a given platform’s ingestion is paused, which keeps dashboard and OBS views renderable without live sockets. This enables platform parity without pretending parity exists at the API level."
           }
         }
       ]
@@ -31,11 +31,11 @@
           "order": 1,
           "consumer": {
             "title": "The Most Mature Live Platform",
-            "body": "Rumble is the most mature live platform inside StreamSuites right now. It’s where clips, polls, tallies, and public galleries are actively sourced."
+            "body": "Rumble is the most mature live platform inside StreamSuites, with ingest paths and exports already shaping clips, polls, tallies, and public galleries. Runtime ingestion is currently paused for hardening, but the dashboard and public pages still render the latest exports."
           },
           "developer": {
             "title": "SSE-Preferred Ingestion with DOM/API Fallbacks",
-            "body": "Rumble chat ingestion is now multi-mode. SSE (Server-Sent Events) remains the preferred path, but the runtime automatically falls back to DOM-based collection or API polling when SSE is unavailable. Messages flow into the same normalized chat event model used by triggers, polls, tallies, and clip commands. The pipeline is quota-aware and integrated into runtime enforcement. Stable exports already exist for public galleries, dashboard data and signals, and module-specific snapshots. Remaining work focuses on deeper telemetry such as moderation signals and richer metadata, not basic ingestion."
+            "body": "Rumble chat ingestion is now multi-mode. SSE (Server-Sent Events) remains the preferred path, but the runtime automatically falls back to DOM-based collection or API polling when SSE is unavailable. Messages flow into the same normalized chat event model used by triggers, polls, tallies, and clip commands. The pipeline is quota-aware and integrated into runtime enforcement. Stable exports already exist for public galleries, dashboard data and signals, and module-specific snapshots; runtime ingest is temporarily paused while the multi-mode pipeline is hardened for routine use."
           }
         }
       ]
@@ -50,11 +50,11 @@
           "order": 1,
           "consumer": {
             "title": "Careful and Deliberate Twitch Support",
-            "body": "Twitch support is being built carefully so it doesn’t become fragile or unpredictable."
+            "body": "Twitch support is being built carefully so it doesn’t become fragile or unpredictable. Dashboard previews exist, but Twitch remains a guarded rollout while exports and quotas settle."
           },
           "developer": {
             "title": "IRC Ingestion with Parity-Oriented Exports",
-            "body": "Twitch ingestion is designed around IRC rather than EventSub at this stage. The runtime already includes connection logic, message parsing, and normalization drafts. Export shapes are being aligned to match Rumble-derived artifacts so dashboards and public pages do not require platform-specific render logic. Missing pieces include quota parity, moderation signal depth, and richer metadata for triggers and future paid interactions. Twitch intentionally trails Rumble to avoid unstable surface promises."
+            "body": "Twitch ingestion is designed around IRC rather than EventSub at this stage. The runtime already includes connection logic, message parsing, and normalization drafts. Export shapes are being aligned to match Rumble-derived artifacts so dashboards, overlays, and public pages do not require platform-specific render logic. Missing pieces include quota parity, moderation signal depth, and richer metadata for triggers and future paid interactions. Twitch intentionally trails Rumble to avoid unstable surface promises."
           }
         }
       ]
@@ -73,7 +73,7 @@
           },
           "developer": {
             "title": "Scaffold-Level Integration Awaiting Stable Exports",
-            "body": "YouTube integration is currently scaffold-level. Chat polling or ingestion paths are drafted and message normalization schemas exist, but no production-grade export cadence is locked yet. The system is designed so YouTube can slot in once stable exports are ready, without requiring rewrites of dashboard or public page logic. This is why YouTube is labeled scaffolded rather than partially functional."
+            "body": "YouTube integration is currently scaffold-level. Chat polling or ingestion paths are drafted and message normalization schemas exist, but no production-grade export cadence is locked yet. The system is designed so YouTube can slot in once stable exports are ready, without requiring rewrites of dashboard or public page logic, and replay overlays can hydrate once exports exist. This is why YouTube is labeled scaffolded rather than partially functional."
           }
         }
       ]
@@ -126,11 +126,11 @@
           "order": 1,
           "consumer": {
             "title": "Real Outputs, Not Just Information",
-            "body": "The public pages aren’t just informational. They show real outputs from the system such as clips, polls, tallies, scoreboards, and eventually chat replays."
+            "body": "The public pages aren’t just informational. They show real outputs from the system such as clips, polls, tallies, scoreboards, and the staged chat replay previews that mirror dashboard surfaces."
           },
           "developer": {
             "title": "Static, Read-Only, Export-Driven Pages",
-            "body": "Public pages are static, read-only, runtime-driven, and export-backed. They make no live API calls, maintain no session state, and never mutate runtime data. They are safe to host anywhere. Public pages include galleries, per-entity detail pages, changelog, roadmap, about, and legal surfaces, all consuming the same exports as the dashboard filtered by visibility."
+            "body": "Public pages are static, read-only, runtime-driven, and export-backed. They make no live API calls, maintain no session state, and never mutate runtime data. They are safe to host anywhere. Public pages include galleries, per-entity detail pages, changelog, roadmap, about, and legal surfaces, all consuming the same exports as the dashboard filtered by visibility. OBS/browser-source overlays and pop-out replay windows are documented alongside these pages so live scenes can reference the same JSON once hydration lands."
           }
         }
       ]
@@ -145,11 +145,11 @@
           "order": 1,
           "consumer": {
             "title": "Explaining the System as a Whole",
-            "body": "The About section explains what StreamSuites is, what problems it solves, and how all the moving parts fit together."
+            "body": "The About section explains what StreamSuites is, what problems it solves, and how all the moving parts fit together, alongside links back to the creator dashboard home for real examples."
           },
           "developer": {
             "title": "Centralized, Structured About System",
-            "body": "A centralized About page already exists with placeholders for expanded partials and an intent to break content into structured sections rather than a monolithic block. The About system is intended to cover the entire project scope, explain philosophy rather than just features, and remain accurate as modules evolve. Centralizing About content into JSON is the correct architectural move."
+            "body": "A centralized About page already exists with placeholders for expanded partials and an intent to break content into structured sections rather than a monolithic block. The About system is intended to cover the entire project scope, explain philosophy rather than just features, and remain accurate as modules evolve. Centralizing About content into JSON is the correct architectural move, and recent creator dashboard work (home.html) is reflected here without duplicating markup."
           }
         }
       ]

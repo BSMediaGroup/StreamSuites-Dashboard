@@ -3,12 +3,12 @@
     "id": "unified-runtime",
     "order": 1,
     "title": "StreamSuites Unified Runtime",
-    "percent": 70,
-    "meta": "70% · Alpha orchestration + locked contracts",
+    "percent": 72,
+    "meta": "72% · Alpha orchestration + export parity",
     "status": "active",
     "description": "The unified runtime is the authoritative automation engine. It enforces quotas, schedules jobs, ingests platform chat, aggregates signals, and emits deterministic exports that drive all dashboard views and public galleries. Contracts are locked for current modules and exports ship continuously; remaining alpha work tightens orchestration depth and platform parity without claiming live interactivity on the dashboards.",
     "icon": "./assets/icons/ui/package.svg",
-    "tooltip": "70% · 65–70% Locked — Deterministic exports drive dashboard/public surfaces; further orchestration and parity in progress.",
+    "tooltip": "72% · 70–75% Locked — Deterministic exports drive dashboard/public surfaces; further orchestration and parity in progress.",
     "pulse": true
   },
   {
@@ -26,23 +26,23 @@
     "id": "creator-dashboard",
     "order": 3,
     "title": "Creator Dashboard UI",
-    "percent": 48,
-    "meta": "48% · Draft authoring + export previews",
+    "percent": 60,
+    "meta": "60% · Overhauled home + draft exports",
     "status": "partial",
-    "description": "Creator-facing flows expose profiles, platform toggles, triggers, and module scaffolding in a schema-aligned layout. Current alpha behavior is draft-only: forms mirror runtime schemas and output exports for review, but apply/write paths remain disabled and require manual import by operators.",
+    "description": "Creator-facing flows expose profiles, platform toggles, triggers, overlays, and module scaffolding in a schema-aligned layout. The home surface is fully overhauled with gallery links, platform summaries, and overlay readiness callouts. Current alpha behavior is draft-only: forms mirror runtime schemas and output exports for review, but apply/write paths remain disabled and require manual import by operators.",
     "icon": "./assets/icons/ui/uiscreen.svg",
-    "tooltip": "48% · 45–50% Integrated — Draft exports align to runtime schemas; live apply remains off."
+    "tooltip": "60% · 60–65% Integrated — Overhauled creator surface with draft exports; live apply remains off."
   },
   {
     "id": "public-interface",
     "order": 4,
     "title": "Public Interface & Gallery Surface",
-    "percent": 55,
-    "meta": "55% · Read-only galleries wired to exports",
+    "percent": 58,
+    "meta": "58% · Read-only galleries + overlay docs",
     "status": "active",
     "description": "The public interface exposes runtime-derived artifacts such as clips, polls, tallies, scoreboards, and replay views through static, read-only pages. All content is sourced exclusively from deterministic runtime exports, ensuring parity, safety, and zero live execution. Gallery and detail routes are live; continued work targets navigation cohesion and cross-module linking.",
     "icon": "./assets/icons/ui/globe.svg",
-    "tooltip": "55% · 50–55% Integrated — Public pages render authoritative runtime exports with no live logic."
+    "tooltip": "58% · 55–60% Integrated — Public pages render authoritative runtime exports with no live logic and document overlay readiness."
   },
   {
     "id": "discord-client",
@@ -136,23 +136,23 @@
     "id": "schema-contract",
     "order": 13,
     "title": "Dashboard ↔ Runtime Schema Contract",
-    "percent": 58,
-    "meta": "58% · Deterministic exports + public gallery alignment",
+    "percent": 64,
+    "meta": "64% · Deterministic exports + replay/overlay shapes",
     "status": "active",
-    "description": "The schema contract defines exactly how the dashboard consumes exported JSON for creators, platforms, public galleries, and telemetry. It guarantees deterministic imports/exports for current alpha modules and is expanding alongside new runtime drops to keep dashboards and public pages in lockstep.",
+    "description": "The schema contract defines exactly how the dashboard consumes exported JSON for creators, platforms, public galleries, overlays, and telemetry. It guarantees deterministic imports/exports for current alpha modules (clips, polls, tallies, scoreboards) and incorporates replay/overlay shapes. Coverage is expanding alongside new runtime drops to keep dashboards, public pages, and OBS browser sources in lockstep.",
     "icon": "./assets/icons/ui/options.svg",
-    "tooltip": "58% · 55–60% Integrated — Contracts enforced for current modules; coverage expanding per drop."
+    "tooltip": "64% · 60–65% Integrated — Contracts enforced for current modules with replay/overlay coverage; expansion continues per drop."
   },
   {
     "id": "chat-replay",
     "order": 14,
     "title": "Unified Live Chat Replay Module",
-    "percent": 32,
-    "meta": "32% · Runtime signals + export drafts",
+    "percent": 52,
+    "meta": "52% · Replay UI + OBS/browser overlays",
     "status": "partial",
-    "description": "Chat replay is meant to store and rehydrate message archives for post-stream review across platforms. The UI is staged to visualize those transcripts alongside metadata, but export streams remain draft-only and are not yet rendering live data on dashboard or public pages.",
+    "description": "Chat replay is meant to store and rehydrate message archives for post-stream review across platforms. Replay and live-mode scaffolds exist in the dashboard, with pop-out replay windows, OBS/browser-source overlays, theme and badge support, and avatar fallbacks. Export streams remain draft-only and are not yet rendering live data on dashboard or public pages.",
     "icon": "./assets/icons/ui/extension.svg",
-    "tooltip": "32% · 30–35% Scaffolded — Replay signals exist; stabilized exports and rendering still pending."
+    "tooltip": "52% · 50–55% Functional — Replay/live scaffolds, OBS overlays, and theming exist; stabilized exports and rendering still pending."
   },
   {
     "id": "winforms-gui",
