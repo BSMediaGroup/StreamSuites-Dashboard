@@ -354,8 +354,8 @@
           bottom: calc(100% + 12px);
           left: 50%;
           transform: translateX(-50%);
-          min-width: 340px;
-          max-width: 460px;
+          min-width: 380px;
+          max-width: 520px;
           white-space: nowrap;
 
           background: rgba(18, 22, 28, 0.88);
@@ -585,17 +585,9 @@
       white-space: nowrap;
       font-size: 11px;
       opacity: 0.75;
+      gap: 10px;
       flex-shrink: 0;
-      position: fixed;
-      left: 50%;
-      bottom: 12px;
-      transform: translateX(-50%);
-      padding: 4px 10px;
-      border-radius: 12px;
-      background: rgba(11, 12, 16, 0.6);
-      border: 1px solid var(--glass-border);
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
-      z-index: 6;
+      z-index: 2;
     }
 
     .footer-brand a {
@@ -604,6 +596,28 @@
     }
 
     .footer-brand a:hover {
+      text-decoration: underline;
+      opacity: 1;
+    }
+
+    .footer-brand .footer-copyright {
+      position: fixed;
+      left: 50%;
+      bottom: 12px;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: inherit;
+      text-decoration: none;
+      background: none;
+      padding: 0;
+      border: 0;
+      box-shadow: none;
+      opacity: 0.85;
+      white-space: nowrap;
+      z-index: 6;
+    }
+
+    .footer-brand .footer-copyright:hover {
       text-decoration: underline;
       opacity: 1;
     }
@@ -804,13 +818,14 @@
       <div class="footer-links">
         <div class="footer-links-left">
           <a href="./support">/support</a>
-          <a href="./changelog">/updates</a>
+          <a href="./changelog.html">/updates</a>
           <a href="./privacy">/privacy</a>
           <a href="./about">/about</a>
         </div>
 
         <div class="footer-brand">
-          <a href="https://brainstream.media" target="_blank" rel="noopener noreferrer">
+          <span class="footer-version">StreamSuites™ v0.2.0-alpha</span>
+          <a class="footer-copyright" href="https://brainstream.media" target="_blank" rel="noopener noreferrer">
             © 2025 Brainstream Media Group
           </a>
         </div>

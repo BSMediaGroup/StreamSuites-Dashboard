@@ -1631,7 +1631,7 @@ body.viz-expanded {
 
 .public-hero-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 560px);
   align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
@@ -1645,6 +1645,10 @@ body.viz-expanded {
   .public-hero .ss-roadmap-legend {
     max-width: 100%;
     min-width: 0;
+  }
+
+  .ss-legend-row {
+    white-space: normal;
   }
 }
 
@@ -1994,8 +1998,9 @@ body.viz-expanded {
   margin-top: 0;
   display: block;
   width: 100%;
-  max-width: 420px;
-  min-width: 320px;
+  max-width: 560px;
+  min-width: 380px;
+  justify-self: end;
 }
 
 .ss-legend-summary {
@@ -2020,13 +2025,17 @@ body.viz-expanded {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.035);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  max-width: 420px;
-  min-width: 320px;
+  max-width: 560px;
+  min-width: 380px;
   font-size: 0.84em;
   color: var(--text-muted);
   line-height: 1.5;
   width: 100%;
   font-family: "SuiGenerisRg", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.ss-legend-row {
+  white-space: nowrap;
 }
 
 .ss-legend-row { font-size: 0.84em; line-height: 1.45; }
