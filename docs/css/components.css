@@ -530,6 +530,18 @@
   font-size: 13px;
 }
 
+.ss-toggle-note {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: right;
+  line-height: 1.3;
+}
+
+.ss-toggle-note.paused {
+  color: var(--text-muted);
+}
+
 /* ----------------------------------------------------------------------
    Platform Status Badges (OVERVIEW)
    ---------------------------------------------------------------------- */

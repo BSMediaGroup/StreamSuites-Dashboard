@@ -16,6 +16,7 @@
   "use strict";
 
   const PLATFORM_KEYS = ["youtube", "twitch", "rumble", "discord"];
+  const LOCKED_PLATFORMS = { rumble: true };
   const INTENT_STORAGE_KEY = "streamsuites.platformIntent";
 
   const el = {
@@ -181,6 +182,8 @@
       const row = el.rows[key];
       if (!row) return;
 
+      const locked = LOCKED_PLATFORMS[key] === true;
+
       const state = platforms.platforms[key] || {};
       const desired = intent?.platforms?.[key]?.enabled;
       const runtimeEnabled = getRuntimeEnabled(key);
@@ -193,11 +196,11 @@
 
       if (row.enabled) {
         row.enabled.checked = !!effectiveEnabled;
-        row.enabled.disabled = false;
+        row.enabled.disabled = !!row.enabled.dataset.locked || locked;
       }
       if (row.telemetry) {
         row.telemetry.checked = !!state.telemetry_enabled;
-        row.telemetry.disabled = false;
+        row.telemetry.disabled = !!row.telemetry.dataset.locked || locked;
       }
       if (row.notes) {
         row.notes.value = state.notes || "";

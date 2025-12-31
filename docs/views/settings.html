@@ -112,6 +112,10 @@
         captured in a small intent file when toggled.
       </p>
 
+      <div class="ss-alert ss-alert-warning">
+        Platform enable changes require restart. Runtime pickup occurs on the next launch only.
+      </div>
+
       <table class="ss-table ss-table-compact" id="platforms-config">
         <thead>
           <tr>
@@ -139,6 +143,7 @@
                   </div>
                 </div>
               </label>
+              <div class="ss-toggle-note">Applies on next restart</div>
             </td>
             <td class="align-right">
               <label class="switch-button" aria-label="YouTube telemetry toggle">
@@ -181,6 +186,7 @@
                   </div>
                 </div>
               </label>
+              <div class="ss-toggle-note">Applies on next restart</div>
             </td>
             <td class="align-right">
               <label class="switch-button" aria-label="Twitch telemetry toggle">
@@ -215,7 +221,13 @@
               <label class="switch-button" aria-label="Rumble service toggle">
                 <div class="switch-scale">
                   <div class="switch-outer">
-                    <input type="checkbox" data-service="rumble" data-field="enabled" />
+                    <input
+                      type="checkbox"
+                      data-service="rumble"
+                      data-field="enabled"
+                      data-locked="true"
+                      disabled
+                    />
                     <div class="ss-switch-inner">
                       <span class="ss-switch-toggle"></span>
                       <span class="ss-switch-indicator"></span>
@@ -223,12 +235,13 @@
                   </div>
                 </div>
               </label>
+              <div class="ss-toggle-note paused">Paused (runtime-controlled)</div>
             </td>
             <td class="align-right">
               <label class="switch-button" aria-label="Rumble telemetry toggle">
                 <div class="switch-scale">
                   <div class="switch-outer">
-                    <input type="checkbox" data-field="telemetry_enabled" />
+                    <input type="checkbox" data-field="telemetry_enabled" data-locked="true" disabled />
                     <div class="ss-switch-inner">
                       <span class="ss-switch-toggle"></span>
                       <span class="ss-switch-indicator"></span>
@@ -310,6 +323,7 @@
                   </div>
                 </div>
               </label>
+              <div class="ss-toggle-note">Applies on next restart</div>
             </td>
             <td class="align-right">
               <label class="switch-button" aria-label="Discord telemetry toggle">
