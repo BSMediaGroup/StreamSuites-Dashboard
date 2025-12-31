@@ -1,102 +1,137 @@
 {
   "schema_version": "v1",
-  "generated_at": "2024-06-01T12:00:00Z",
-  "platforms": {
-    "youtube": {
-      "enabled": true,
-      "telemetry_enabled": true,
-      "status": "running",
-      "heartbeat_at": "2024-06-01T11:59:45Z",
-      "last_error": null,
-      "counters": {
-        "messages_processed": 1842,
-        "triggers_fired": 76
-      }
-    },
-    "twitch": {
-      "enabled": true,
-      "telemetry_enabled": true,
-      "status": "running",
-      "heartbeat_at": "2024-06-01T11:59:30Z",
-      "last_error": null,
-      "counters": {
-        "messages_processed": 956,
-        "triggers_fired": 42
-      }
-    },
-    "rumble": {
-      "enabled": true,
-      "telemetry_enabled": true,
-      "status": "paused",
-      "paused_reason": "Runtime ingest paused for controlled redeploy",
-      "heartbeat_at": "2024-06-01T11:58:00Z",
-      "last_error": "ingest paused by operator",
-      "counters": {
-        "messages_processed": 0,
-        "triggers_fired": 0
-      }
-    },
-    "discord": {
-      "enabled": true,
-      "telemetry_enabled": true,
-      "status": "running",
-      "heartbeat_at": "2024-06-01T11:59:15Z",
-      "last_error": null
+  "generated_at": "2025-12-31T15:52:31.898559Z",
+  "heartbeat": "2025-12-31T15:52:31.898559Z",
+  "runtime": {
+    "project": "StreamSuites Runtime",
+    "version": "v0.2.0-alpha",
+    "build": "2025.01"
+  },
+  "system": {
+    "platform_polling_enabled": true,
+    "platforms": {
+      "youtube": true,
+      "twitch": true,
+      "discord": true
     }
   },
-  "admin": {
-    "triggers": {
-      "schema": "streamsuites.triggers.admin.v1",
-      "generated_at": "2025-01-15T00:00:00Z",
-      "actions": [
-        {
-          "id": "send_chat_message",
-          "label": "Send chat message",
-          "description": "Post a templated response to chat without touching runtime internals."
-        },
-        {
-          "id": "record_clip",
-          "label": "Record clip marker",
-          "description": "Queue a clip marker for post-stream processing."
-        },
-        {
-          "id": "flag_message",
-          "label": "Flag message for review",
-          "description": "Escalate matched messages for moderator review."
-        }
-      ],
-      "creators": [
-        {
-          "creator_id": "daniel",
-          "display_name": "Daniel",
-          "triggers": [
-            {
-              "id": "hello-reply",
-              "enabled": true,
-              "match": "!hello",
-              "match_mode": "equals_icase",
-              "action": "send_chat_message",
-              "notes": "Baseline greeting helper"
-            },
-            {
-              "id": "clip-on-highlight",
-              "enabled": true,
-              "match": "!clip",
-              "match_mode": "equals_icase",
-              "action": "record_clip",
-              "notes": "Allow audience to request clip markers"
-            },
-            {
-              "id": "mod-escalation",
-              "enabled": false,
-              "match": "report",
-              "match_mode": "contains_icase",
-              "action": "flag_message",
-              "notes": "Escalation trigger for moderator review"
-            }
-          ]
-        }
-      ]
+  "platforms": [
+    {
+      "name": "discord",
+      "platform": "discord",
+      "enabled": false,
+      "paused": false,
+      "telemetry_enabled": false,
+      "state": "disabled",
+      "status": "disabled",
+      "paused_reason": null,
+      "last_heartbeat": null,
+      "last_success_ts": null,
+      "last_event_ts": null,
+      "error": null,
+      "counters": {
+        "messages": 0,
+        "triggers": 0,
+        "actions": 0,
+        "actions_failed": 0
+      }
+    },
+    {
+      "name": "rumble",
+      "platform": "rumble",
+      "enabled": true,
+      "paused": true,
+      "telemetry_enabled": true,
+      "state": "paused",
+      "status": "paused",
+      "paused_reason": "Platform ingestion paused",
+      "last_heartbeat": "2025-12-31T15:52:30.626604Z",
+      "last_success_ts": null,
+      "last_event_ts": null,
+      "error": null,
+      "counters": {
+        "messages": 0,
+        "triggers": 0,
+        "actions": 0,
+        "actions_failed": 0
+      }
+    },
+    {
+      "name": "twitch",
+      "platform": "twitch",
+      "enabled": false,
+      "paused": false,
+      "telemetry_enabled": false,
+      "state": "disabled",
+      "status": "disabled",
+      "paused_reason": null,
+      "last_heartbeat": null,
+      "last_success_ts": null,
+      "last_event_ts": null,
+      "error": null,
+      "counters": {
+        "messages": 0,
+        "triggers": 0,
+        "actions": 0,
+        "actions_failed": 0
+      }
+    },
+    {
+      "name": "twitter",
+      "platform": "twitter",
+      "enabled": true,
+      "paused": false,
+      "telemetry_enabled": true,
+      "state": "active",
+      "status": "inactive",
+      "paused_reason": null,
+      "last_heartbeat": null,
+      "last_success_ts": null,
+      "last_event_ts": null,
+      "error": null,
+      "counters": {
+        "messages": 0,
+        "triggers": 0,
+        "actions": 0,
+        "actions_failed": 0
+      }
+    },
+    {
+      "name": "youtube",
+      "platform": "youtube",
+      "enabled": true,
+      "paused": false,
+      "telemetry_enabled": true,
+      "state": "active",
+      "status": "inactive",
+      "paused_reason": null,
+      "last_heartbeat": null,
+      "last_success_ts": null,
+      "last_event_ts": null,
+      "error": null,
+      "counters": {
+        "messages": 0,
+        "triggers": 0,
+        "actions": 0,
+        "actions_failed": 0
+      }
+    }
+  ],
+  "creators": [
+    {
+      "creator_id": "As5TyU",
+      "display_name": "Daniel Clancy",
+      "enabled": true,
+      "platforms": {
+        "rumble": true,
+        "youtube": true,
+        "twitch": true,
+        "pilled": false,
+        "twitter": true,
+        "discord": true
+      },
+      "last_heartbeat": "2025-12-31T15:52:30.626604Z",
+      "error": null
     }
   },
   "restart_intent": {
