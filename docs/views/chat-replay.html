@@ -572,7 +572,7 @@
           <div class="ss-iframe-frame">
             <iframe
               id="window-preview"
-              src="docs/views/chat_replay_window.html?mode=replay&theme=default"
+              src="../views/chat_replay_window.html?mode=replay&theme=default"
               title="Embedded Chat Window Preview"
               style="width:100%;height:360px;border:0;filter:saturate(1);background:#0d1220;"
               loading="lazy"
@@ -591,7 +591,7 @@
           <div class="ss-iframe-frame">
             <iframe
               id="overlay-preview"
-              src="docs/views/chat_overlay_obs.html?theme=default&mode=replay"
+              src="../views/chat_overlay_obs.html?theme=default&mode=replay"
               title="OBS / Browser Source Overlay Preview"
               style="width:100%;height:360px;border:0;filter:saturate(1);background:#0d1220;"
               loading="lazy"
@@ -641,10 +641,10 @@
 
     const windowSrc = () =>
       state.mode === 'live'
-        ? `docs/views/chat_window.html?mode=live&theme=${state.theme}`
-        : `docs/views/chat_replay_window.html?mode=replay&theme=${state.theme}`;
+        ? `../views/chat_window.html?mode=live&theme=${state.theme}`
+        : `../views/chat_replay_window.html?mode=replay&theme=${state.theme}`;
 
-    const overlaySrc = () => `docs/views/chat_overlay_obs.html?theme=${state.theme}&mode=${state.mode}`;
+    const overlaySrc = () => `../views/chat_overlay_obs.html?theme=${state.theme}&mode=${state.mode}`;
 
     const reloadFrames = () => {
       if (windowFrame) {
