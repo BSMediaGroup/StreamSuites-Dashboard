@@ -1,6 +1,6 @@
 {
   "version": "0.2.1-alpha",
-  "lastUpdated": "2025-01-27",
+  "lastUpdated": "2026-01-01",
   "sections": [
     {
       "id": "what-streamsuites-is",
@@ -50,11 +50,11 @@
           "order": 1,
           "consumer": {
             "title": "Late Alpha Stage",
-            "body": "You’re in late alpha: the system works in meaningful ways, but reliability, observability, and the rules of the world are still being locked down before promising stability to external testers and future users."
+            "body": "You’re in late alpha: the system works in meaningful ways, but reliability, observability, and the rules of the world are still being locked down before promising stability to external testers and future users. Read-only dashboards and galleries are usable today, while live controls remain intentionally off."
           },
           "developer": {
             "title": "Alpha Versioning and Licensing",
-            "body": "The runtime is explicitly marked v0.2.1-alpha (Build 2025.01) using semantic versioning with prerelease tags. Documentation emphasizes that breaking changes are still possible and contract permanence is not guaranteed. The dashboard mirrors runtime version metadata via docs/version.json and is expected to stay in lockstep with runtime versioning. Licensing posture is Proprietary / All Rights Reserved under Brainstream Media Group."
+            "body": "The runtime is explicitly marked v0.2.1-alpha (Build 2025.02) using semantic versioning with prerelease tags. Documentation emphasizes that breaking changes are still possible and contract permanence is not guaranteed. The dashboard mirrors runtime version metadata via docs/version.json and is expected to stay in lockstep with runtime versioning. Licensing posture is Proprietary / All Rights Reserved under Brainstream Media Group."
           }
         }
       ]
@@ -92,7 +92,7 @@
           },
           "developer": {
             "title": "Export Classes and Dashboard Rendering",
-            "body": "The runtime generates deterministic, timestamped JSON documents across three export classes: public exports (clips, polls, tallies, scoreboards, export manifest), dashboard-only signals (normalized chat events, poll vote events, tally increments, score adjustments), and admin/internal exports (creators registry, trigger definitions, jobs, rate limits, integrations, permissions placeholders). The dashboard includes a Data & Signals view to render these exports using client-side pagination and search while maintaining a no-writes posture."
+            "body": "The runtime generates deterministic, timestamped JSON documents across three export classes: public exports (clips, polls, tallies, scoreboards, export manifest), dashboard-only signals (normalized chat events, poll vote events, tally increments, score adjustments), and admin/internal exports (creators registry, trigger definitions, jobs, rate limits, integrations, permissions placeholders). Replay and overlay shapes have now been incorporated into the contract without enabling live hydration. The dashboard includes a Data & Signals view to render these exports using client-side pagination and search while maintaining a no-writes posture."
           }
         }
       ]

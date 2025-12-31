@@ -1,6 +1,6 @@
 {
   "version": "0.2.1-alpha",
-  "lastUpdated": "2025-12-27",
+  "lastUpdated": "2026-01-01",
   "sections": [
     {
       "id": "about-design-goals",
@@ -16,7 +16,7 @@
           },
           "developer": {
             "title": "Centralized, Accurate, Dual-Audience Documentation",
-            "body": "The About system must cover the entire project scope including runtime, dashboard, and public interfaces; remain accurate as features evolve; support dual-audience reading; avoid duplication across public pages, dashboard pages, and docs; and be centrally managed so updates are not scattered across HTML files. This disqualifies hardcoded content and justifies a single JSON source of truth."
+            "body": "The About system must cover the entire project scope including runtime, dashboard, and public interfaces; remain accurate as features evolve; support dual-audience reading; avoid duplication across public pages, dashboard pages, and docs; and be centrally managed so updates are not scattered across HTML files. It also needs to restate system guarantees such as deterministic exports, read-only dashboards, and the line between replay scaffolds and live ingestion. This disqualifies hardcoded content and justifies a single JSON source of truth."
           }
         }
       ]
@@ -111,7 +111,7 @@
           },
           "developer": {
             "title": "Restrictions on Consumer Content",
-            "body": "Consumer entries must avoid filenames, class names, method names, repository paths, and implementation details. They should explain what something is, why it exists, and what it enables, without describing how it is implemented."
+            "body": "Consumer entries must avoid filenames, class names, method names, repository paths, and implementation details. They should explain what something is, why it exists, and what it enables, without describing how it is implemented. Consumer-facing copy must avoid overpromising live functionality when only replay scaffolds or export previews exist."
           }
         }
       ]
@@ -130,7 +130,7 @@
           },
           "developer": {
             "title": "Technical Accuracy Without Speculation",
-            "body": "Developer entries may reference repositories, folders, schemas, lifecycle rules, and architectural decisions. They may describe constraints and intentional omissions, but must remain factual, current, and avoid speculative promises."
+            "body": "Developer entries may reference repositories, folders, schemas, lifecycle rules, and architectural decisions. They may describe constraints and intentional omissions, but must remain factual, current, and avoid speculative promises. Replay versus live capabilities must be called out explicitly so deterministic, read-only behavior stays clear."
           }
         }
       ]
