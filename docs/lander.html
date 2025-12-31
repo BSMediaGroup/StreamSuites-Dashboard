@@ -349,15 +349,17 @@
 	  align-items: center;
 	}
 
-	.supported-tooltip {
-	  position: absolute;
-	  top: 130%;
-	  left: 50%;
-	  transform: translateX(-50%);
-	  min-width: 320px;
+        .supported-tooltip {
+          position: absolute;
+          bottom: calc(100% + 12px);
+          left: 50%;
+          transform: translateX(-50%);
+          min-width: 340px;
+          max-width: 460px;
+          white-space: nowrap;
 
-	  background: rgba(18, 22, 28, 0.88);
-	  color: #e6e8eb;
+          background: rgba(18, 22, 28, 0.88);
+          color: #e6e8eb;
 
 	  padding: 12px 16px;
 	  border-radius: 16px;
@@ -382,22 +384,33 @@
 	  z-index: 20;
 	}
 
-	.supported-tooltip::after {
-	  content: "";
-	  position: absolute;
-	  bottom: 100%;
-	  left: 50%;
-	  transform: translateX(-50%);
-	  border-width: 8px;
-	  border-style: solid;
-	  border-color: transparent transparent rgba(255, 255, 255, 0.18) transparent;
-	}
+        .supported-tooltip::after {
+          content: "";
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          border-width: 8px;
+          border-style: solid;
+          border-color: rgba(255, 255, 255, 0.18) transparent transparent transparent;
+        }
 
-	.supported-tooltip-container:hover .supported-tooltip {
-	  visibility: visible;
-	  opacity: 1;
-	  transform: translateX(-50%) translateY(12px);
-	}
+        .supported-tooltip-container:hover .supported-tooltip {
+          visibility: visible;
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+
+        .supported-tooltip.is-below {
+          top: 130%;
+          bottom: auto;
+        }
+
+        .supported-tooltip.is-below::after {
+          top: auto;
+          bottom: 100%;
+          border-color: transparent transparent rgba(255, 255, 255, 0.18) transparent;
+        }
 
 	.supported-tooltip h4 {
 	  margin: 0 0 6px;
@@ -421,11 +434,19 @@
 	  color: #d6d9de;
 	}
 
-	.supported-tooltip li img {
-	  height: 1em;
-	  width: auto;
-	  opacity: 0.8;
-	}
+        .supported-tooltip li img {
+          height: 1em;
+          width: auto;
+          opacity: 0.8;
+        }
+
+        @media (max-width: 640px) {
+          .supported-tooltip {
+            min-width: 0;
+            max-width: min(360px, calc(100vw - 32px));
+            white-space: normal;
+          }
+        }
 
 
 	/* ===============================
@@ -565,6 +586,16 @@
       font-size: 11px;
       opacity: 0.75;
       flex-shrink: 0;
+      position: fixed;
+      left: 50%;
+      bottom: 12px;
+      transform: translateX(-50%);
+      padding: 4px 10px;
+      border-radius: 12px;
+      background: rgba(11, 12, 16, 0.6);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+      z-index: 6;
     }
 
     .footer-brand a {
@@ -773,20 +804,54 @@
       <div class="footer-links">
         <div class="footer-links-left">
           <a href="./support">/support</a>
-          <a href="./developers">/developers</a>
+          <a href="./changelog">/updates</a>
           <a href="./privacy">/privacy</a>
           <a href="./about">/about</a>
         </div>
 
         <div class="footer-brand">
           <a href="https://brainstream.media" target="_blank" rel="noopener noreferrer">
-            © 2026 Brainstream Media Group
+            © 2025 Brainstream Media Group
           </a>
         </div>
       </div>
 
     </div>
   </div>
+
+  <script>
+    (function () {
+      const containers = Array.from(document.querySelectorAll('.supported-tooltip-container'));
+
+      if (!containers.length) return;
+
+      const placeTooltip = (container, tooltip) => {
+        if (!tooltip) return;
+        tooltip.classList.remove('is-below');
+
+        const tooltipRect = tooltip.getBoundingClientRect();
+        const triggerRect = container.getBoundingClientRect();
+        const needed = tooltipRect.height + 18;
+
+        if (triggerRect.top - needed < 0) {
+          tooltip.classList.add('is-below');
+        }
+      };
+
+      const bindPlacement = (container) => {
+        const tooltip = container.querySelector('.supported-tooltip');
+        if (!tooltip) return;
+
+        const handler = () => placeTooltip(container, tooltip);
+        container.addEventListener('mouseenter', handler);
+        container.addEventListener('focusin', handler);
+        window.addEventListener('resize', handler);
+        handler();
+      };
+
+      containers.forEach(bindPlacement);
+    })();
+  </script>
 
   <script src="./js/utils/versioning.js"></script>
   <script src="./js/utils/version-stamp.js"></script>
