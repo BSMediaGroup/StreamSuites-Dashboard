@@ -612,14 +612,14 @@
       padding: 0;
       border: 0;
       box-shadow: none;
-      opacity: 0.85;
+      opacity: 1;
       white-space: nowrap;
       z-index: 8;
     }
 
     .page-copyright:hover {
+      color: var(--muted);
       text-decoration: underline;
-      opacity: 1;
     }
 
     @media (max-width: 640px) {
@@ -728,7 +728,7 @@
 
           <span class="supported-tooltip-container">
             <a
-              href="https://streamsuites.app/tools"
+              href="./tools"
               class="platforms-label"
               style="margin-right:10px; color:inherit; text-decoration:none;"
             >
@@ -802,7 +802,7 @@
             <!-- Plus indicator (linked + tooltip) -->
             <span class="supported-tooltip-container">
               <a
-                href="https://streamsuites.app/tools"
+                href="./tools"
                 class="platform-item"
                 style="text-decoration:none;"
               >
@@ -827,7 +827,7 @@
           <a href="./about">/about</a>
         </div>
 
-        <div class="footer-brand">
+        <div class="footer-brand" data-no-copyright>
           <span class="footer-version">StreamSuites™ v0.2.0-alpha</span>
         </div>
       </div>
