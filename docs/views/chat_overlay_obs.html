@@ -142,7 +142,7 @@
     }
     .meta {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 8px;
       font-size: 0.9rem;
       letter-spacing: 0.03em;
@@ -150,6 +150,12 @@
       grid-column: span 2;
       padding-right: 96px;
       flex-wrap: wrap;
+    }
+    .name-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
     }
     .platform {
       display: inline-flex;
@@ -255,13 +261,15 @@
           <img src="../assets/placeholders/streamsuites.jpg" alt="" />
         </div>
         <div class="meta">
-          <span class="username">
-            creator_live
-            <span class="role-badge" title="Pro User" data-label="PRO">
-              <img src="../assets/icons/prouser.svg" alt="Pro user" />
+          <div class="name-stack">
+            <span class="username">
+              creator_live
+              <span class="role-badge" title="Pro User" data-label="PRO">
+                <img src="../assets/icons/prouser.svg" alt="Pro user" />
+              </span>
             </span>
-          </span>
-          <span class="timestamp">00:14:22</span>
+            <span class="timestamp">00:14:22</span>
+          </div>
           <span class="platform" aria-label="YouTube">
             <img src="../assets/icons/youtube.svg" alt="YouTube" />
             YouTube
@@ -272,13 +280,15 @@
       <div class="bubble alt">
         <div class="avatar avatar-fallback" aria-hidden="true"></div>
         <div class="meta">
-          <span class="username">
-            guest_overlay
-            <span class="role-badge" title="Moderator" data-label="MOD">
-              <img src="../assets/icons/mod.svg" alt="Moderator" />
+          <div class="name-stack">
+            <span class="username">
+              guest_overlay
+              <span class="role-badge" title="Moderator" data-label="MOD">
+                <img src="../assets/icons/mod.svg" alt="Moderator" />
+              </span>
             </span>
-          </span>
-          <span class="timestamp">00:15:08</span>
+            <span class="timestamp">00:15:08</span>
+          </div>
           <span class="platform" aria-label="Rumble">
             <img src="../assets/icons/rumble.svg" alt="Rumble" />
             Rumble
@@ -291,13 +301,15 @@
           <img src="../assets/placeholders/hotdog.jpg" alt="" />
         </div>
         <div class="meta">
-          <span class="username">
-            mod_team
-            <span class="role-badge" title="Owner" data-label="ADMIN">
-              <img src="../assets/icons/dcbadge.svg" alt="Owner" />
+          <div class="name-stack">
+            <span class="username">
+              mod_team
+              <span class="role-badge" title="Owner" data-label="ADMIN">
+                <img src="../assets/icons/dcbadge.svg" alt="Owner" />
+              </span>
             </span>
-          </span>
-          <span class="timestamp">00:14:47</span>
+            <span class="timestamp">00:14:47</span>
+          </div>
           <span class="platform" aria-label="Twitch">
             <img src="../assets/icons/twitch.svg" alt="Twitch" />
             Twitch
@@ -310,17 +322,19 @@
           <img src="../assets/placeholders/daniel.png" alt="" />
         </div>
         <div class="meta">
-          <span class="username">
-            Daniel Clancy
-            <span class="role-pill" title="Admin">ADMIN</span>
-            <span class="role-badge" title="Moderator" data-label="MOD">
-              <img src="../assets/icons/mod.svg" alt="Moderator" />
+          <div class="name-stack">
+            <span class="username">
+              Daniel Clancy
+              <span class="role-pill" title="Admin">ADMIN</span>
+              <span class="role-badge" title="Moderator" data-label="MOD">
+                <img src="../assets/icons/mod.svg" alt="Moderator" />
+              </span>
+              <span class="role-badge" title="Pro User" data-label="PRO">
+                <img src="../assets/icons/prouser.svg" alt="Pro user" />
+              </span>
             </span>
-            <span class="role-badge" title="Pro User" data-label="PRO">
-              <img src="../assets/icons/prouser.svg" alt="Pro user" />
-            </span>
-          </span>
-          <span class="timestamp">00:15:35</span>
+            <span class="timestamp">00:15:35</span>
+          </div>
           <span class="platform" aria-label="Twitter">
             <img src="../assets/icons/twitter.svg" alt="Twitter" />
             Twitter/X

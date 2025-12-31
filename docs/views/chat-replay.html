@@ -428,10 +428,16 @@
           <button class="ss-mode-button" data-mode="live" type="button">Live</button>
         </div>
       </div>
-      <button class="ss-popout-btn" id="popout-button" type="button">
-        <img src="../assets/icons/ui/windows.svg" alt="Pop-out" width="18" height="18" />
-        Pop-out Chat Window
-      </button>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <button class="ss-popout-btn" id="popout-chat-button" type="button">
+          <img src="../assets/icons/ui/windows.svg" alt="Pop-out" width="18" height="18" />
+          Pop-out Chat Window
+        </button>
+        <button class="ss-popout-btn" id="popout-overlay-button" type="button">
+          <img src="../assets/icons/ui/windows.svg" alt="Pop-out" width="18" height="18" />
+          Pop-out OBS Overlay
+        </button>
+      </div>
     </header>
 
     <div class="ss-panel-body">
@@ -566,7 +572,7 @@
           <div class="ss-iframe-frame">
             <iframe
               id="window-preview"
-              src="./views/chat_replay_window.html?theme=default&mode=replay"
+              src="./views/chat_replay_window.html?mode=replay&theme=default"
               title="Embedded Chat Window Preview"
               style="width:100%;height:360px;border:0;filter:saturate(1);background:#0d1220;"
               loading="lazy"
@@ -630,5 +636,20 @@
     });
 
     document.addEventListener('click', () => closeMenu());
+  })();
+
+  (() => {
+    const chatButton = document.getElementById('popout-chat-button');
+    const overlayButton = document.getElementById('popout-overlay-button');
+    const windowFrame = document.getElementById('window-preview');
+    const overlayFrame = document.getElementById('overlay-preview');
+
+    const openFrame = (frame) => {
+      if (!frame) return;
+      window.open(frame.src, '_blank', 'noopener');
+    };
+
+    chatButton?.addEventListener('click', () => openFrame(windowFrame));
+    overlayButton?.addEventListener('click', () => openFrame(overlayFrame));
   })();
 </script>
