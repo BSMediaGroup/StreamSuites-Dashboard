@@ -123,10 +123,9 @@
       overflow: hidden;
     }
     .bubble {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      align-items: flex-start;
-      gap: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
       max-width: 520px;
       padding: 10px 12px;
       border-radius: 12px;
@@ -142,20 +141,19 @@
     }
     .meta {
       display: flex;
-      align-items: flex-start;
-      gap: 8px;
+      align-items: center;
+      gap: 10px;
       font-size: 0.9rem;
       letter-spacing: 0.03em;
       color: #9eb7ff;
-      grid-column: span 2;
       padding-right: 96px;
       flex-wrap: wrap;
     }
     .name-stack {
       display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 4px;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
     }
     .platform {
       display: inline-flex;
@@ -208,14 +206,15 @@
     .timestamp {
       color: #9fb1ff;
       letter-spacing: 0.04em;
-      display: block;
-      text-align: left;
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.9em;
     }
     .content {
       color: var(--text);
       line-height: 1.4;
-      grid-column: span 2;
       font-size: 0.94rem;
+      margin-left: 54px;
     }
     .role-badge {
       display: inline-flex;
@@ -254,97 +253,97 @@
   </style>
 </head>
 <body>
-  <div class="overlay-shell">
-    <div class="overlay-header">OBS / Browser Source Overlay</div>
-    <div class="overlay-status" id="overlay-status">Scaffolded — static placeholder</div>
-    <div class="chat-stack" aria-label="Static overlay chat preview">
-      <div class="bubble">
-        <div class="avatar" aria-hidden="true">
-          <img src="../assets/placeholders/daniel.png" alt="" />
-        </div>
-        <div class="meta">
-          <div class="name-stack">
-            <span class="username">
-              creator_live
-              <span class="role-badge" title="Pro User" data-label="PRO">
-                <img src="../assets/icons/prouser.svg" alt="Pro user" />
+    <div class="overlay-shell">
+      <div class="overlay-header">OBS / Browser Source Overlay</div>
+      <div class="overlay-status" id="overlay-status">Scaffolded — static placeholder</div>
+      <div class="chat-stack" aria-label="Static overlay chat preview">
+        <div class="bubble">
+          <div class="meta">
+            <div class="avatar" aria-hidden="true">
+              <img src="../assets/placeholders/daniel.png" alt="" />
+            </div>
+            <div class="name-stack">
+              <span class="username">
+                creator_live
+                <span class="role-badge" title="Pro User" data-label="PRO">
+                  <img src="../assets/icons/prouser.svg" alt="Pro user" />
+                </span>
               </span>
+              <span class="timestamp">00:14:22</span>
+            </div>
+            <span class="platform" aria-label="YouTube">
+              <img src="../assets/icons/youtube.svg" alt="YouTube" />
+              YouTube
             </span>
-            <span class="timestamp">00:14:22</span>
           </div>
-          <span class="platform" aria-label="YouTube">
-            <img src="../assets/icons/youtube.svg" alt="YouTube" />
-            YouTube
-          </span>
+          <div class="content">Unified Chat Replay will hydrate this overlay once runtime feeds are connected.</div>
         </div>
-        <div class="content">Unified Chat Replay will hydrate this overlay once runtime feeds are connected.</div>
-      </div>
-      <div class="bubble alt">
-        <div class="avatar avatar-fallback" aria-hidden="true"></div>
-        <div class="meta">
-          <div class="name-stack">
-            <span class="username">
-              guest_overlay
-              <span class="role-badge" title="Moderator" data-label="MOD">
-                <img src="../assets/icons/mod.svg" alt="Moderator" />
+        <div class="bubble alt">
+          <div class="meta">
+            <div class="avatar avatar-fallback" aria-hidden="true"></div>
+            <div class="name-stack">
+              <span class="username">
+                guest_overlay
+                <span class="role-badge" title="Moderator" data-label="MOD">
+                  <img src="../assets/icons/mod.svg" alt="Moderator" />
+                </span>
               </span>
+              <span class="timestamp">00:15:08</span>
+            </div>
+            <span class="platform" aria-label="Rumble">
+              <img src="../assets/icons/rumble.svg" alt="Rumble" />
+              Rumble
             </span>
-            <span class="timestamp">00:15:08</span>
           </div>
-          <span class="platform" aria-label="Rumble">
-            <img src="../assets/icons/rumble.svg" alt="Rumble" />
-            Rumble
-          </span>
+          <div class="content">Missing avatar URLs resolve to the light-gray fallback silhouette while keeping platform badges aligned.</div>
         </div>
-        <div class="content">Missing avatar URLs resolve to the light-gray fallback silhouette while keeping platform badges aligned.</div>
-      </div>
-      <div class="bubble">
-        <div class="avatar" aria-hidden="true">
-          <img src="../assets/placeholders/daniel.png" alt="" />
-        </div>
-        <div class="meta">
-          <div class="name-stack">
-            <span class="username">
-              mod_team
-              <span class="role-badge" title="Owner" data-label="ADMIN">
-                <img src="../assets/icons/dcbadge.svg" alt="Owner" />
+        <div class="bubble">
+          <div class="meta">
+            <div class="avatar" aria-hidden="true">
+              <img src="../assets/placeholders/daniel.png" alt="" />
+            </div>
+            <div class="name-stack">
+              <span class="username">
+                mod_team
+                <span class="role-badge" title="Owner" data-label="ADMIN">
+                  <img src="../assets/icons/dcbadge.svg" alt="Owner" />
+                </span>
               </span>
+              <span class="timestamp">00:14:47</span>
+            </div>
+            <span class="platform" aria-label="Twitch">
+              <img src="../assets/icons/twitch.svg" alt="Twitch" />
+              Twitch
             </span>
-            <span class="timestamp">00:14:47</span>
           </div>
-          <span class="platform" aria-label="Twitch">
-            <img src="../assets/icons/twitch.svg" alt="Twitch" />
-            Twitch
-          </span>
+          <div class="content">Platform badge, avatar, username, and message fit without overlap to confirm OBS/browser compatibility.</div>
         </div>
-        <div class="content">Platform badge, avatar, username, and message fit without overlap to confirm OBS/browser compatibility.</div>
-      </div>
-      <div class="bubble alt">
-        <div class="avatar" aria-hidden="true">
-          <img src="../assets/placeholders/daniel.png" alt="" />
-        </div>
-        <div class="meta">
-          <div class="name-stack">
-            <span class="username">
-              Daniel Clancy
-              <span class="role-pill" title="Admin">ADMIN</span>
-              <span class="role-badge" title="Moderator" data-label="MOD">
-                <img src="../assets/icons/mod.svg" alt="Moderator" />
+        <div class="bubble alt">
+          <div class="meta">
+            <div class="avatar" aria-hidden="true">
+              <img src="../assets/placeholders/daniel.png" alt="" />
+            </div>
+            <div class="name-stack">
+              <span class="username">
+                Daniel Clancy
+                <span class="role-pill" title="Admin">ADMIN</span>
+                <span class="role-badge" title="Moderator" data-label="MOD">
+                  <img src="../assets/icons/mod.svg" alt="Moderator" />
+                </span>
+                <span class="role-badge" title="Pro User" data-label="PRO">
+                  <img src="../assets/icons/prouser.svg" alt="Pro user" />
+                </span>
               </span>
-              <span class="role-badge" title="Pro User" data-label="PRO">
-                <img src="../assets/icons/prouser.svg" alt="Pro user" />
-              </span>
+              <span class="timestamp">00:15:35</span>
+            </div>
+            <span class="platform" aria-label="Discord">
+              <img src="../assets/icons/discord.svg" alt="Discord" />
+              Discord
             </span>
-            <span class="timestamp">00:15:35</span>
           </div>
-          <span class="platform" aria-label="Discord">
-            <img src="../assets/icons/discord.svg" alt="Discord" />
-            Discord
-          </span>
+          <div class="content">Daniel carries admin, mod, and pro badges to verify multi-badge rendering without overlap.</div>
         </div>
-        <div class="content">Daniel carries admin, mod, and pro badges to verify multi-badge rendering without overlap.</div>
       </div>
-    </div>
     <div class="note">No live sockets. No persistence. Preview only.</div>
   </div>
   <script>
