@@ -133,6 +133,114 @@
   </section>
 
   <!-- --------------------------------------------------------- -->
+  <!-- TELEMETRY EVENTS -->
+  <!-- --------------------------------------------------------- -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Runtime Events (Read-Only)</h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <p class="muted">
+        Chronological runtime exports; newest first. No controls, no mutations.
+      </p>
+
+      <div
+        id="telemetry-events-warning"
+        class="ss-alert ss-alert-danger hidden"
+        aria-live="polite"
+      ></div>
+
+      <table class="ss-table ss-table-compact" id="telemetry-events-table">
+        <thead>
+          <tr>
+            <th>Severity</th>
+            <th class="align-right">Timestamp</th>
+            <th>Source</th>
+            <th>Message</th>
+          </tr>
+        </thead>
+        <tbody id="telemetry-events-body">
+          <tr>
+            <td colspan="4" class="muted">Awaiting telemetry…</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div id="telemetry-events-empty" class="ss-empty hidden">No data yet.</div>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------------- -->
+  <!-- TELEMETRY RATES -->
+  <!-- --------------------------------------------------------- -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Runtime Rates (Read-Only)</h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <p class="muted">
+        Simple numeric indicators from snapshot exports. No charts; values update
+        when telemetry snapshots refresh.
+      </p>
+
+      <div
+        id="telemetry-rates-warning"
+        class="ss-alert ss-alert-danger hidden"
+        aria-live="polite"
+      ></div>
+
+      <div id="telemetry-rates-window" class="telemetry-rates-window muted">
+        Window: pending snapshot
+      </div>
+
+      <div id="telemetry-rates-grid" class="telemetry-rate-grid"></div>
+      <div id="telemetry-rates-empty" class="ss-empty hidden">No data yet.</div>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------------- -->
+  <!-- TELEMETRY ERRORS -->
+  <!-- --------------------------------------------------------- -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Recent Errors (Read-Only)</h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <p class="muted">
+        Highlights active or recent errors without enabling control-plane
+        actions.
+      </p>
+
+      <div
+        id="telemetry-errors-warning"
+        class="ss-alert ss-alert-danger hidden"
+        aria-live="polite"
+      ></div>
+
+      <table class="ss-table ss-table-compact" id="telemetry-errors-table">
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Subsystem</th>
+            <th class="align-right">Last Seen</th>
+            <th>Message</th>
+          </tr>
+        </thead>
+        <tbody id="telemetry-errors-body">
+          <tr>
+            <td colspan="4" class="muted">Awaiting telemetry…</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div id="telemetry-errors-empty" class="ss-empty hidden">No data yet.</div>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------------- -->
   <!-- API QUOTA USAGE (PLACEHOLDER) -->
   <!-- --------------------------------------------------------- -->
   <section class="ss-panel">
