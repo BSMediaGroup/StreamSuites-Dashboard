@@ -130,7 +130,7 @@
 
     .message {
       display: grid;
-      grid-template-columns: 56px 1fr auto;
+      grid-template-columns: auto 1fr;
       gap: 8px 12px;
       padding: 12px;
       border-radius: 12px;
@@ -138,6 +138,7 @@
       border: 1px solid var(--panel-border);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 24px var(--panel-shadow);
       align-items: start;
+      position: relative;
     }
 
     .avatar {
@@ -164,6 +165,7 @@
       gap: 8px;
       flex-wrap: wrap;
       color: var(--text);
+      padding-right: 112px;
     }
 
     .author {
@@ -187,8 +189,7 @@
       line-height: 1.45;
       font-size: 0.94rem;
     }
-
-    .platform-badge {
+    .platform {
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -200,20 +201,111 @@
       font-size: 0.78rem;
       letter-spacing: 0.06em;
       text-transform: none;
+      position: absolute;
+      top: 12px;
+      right: 12px;
     }
 
-    .platform-badge img { width: 16px; height: 16px; display: block; }
-
-    .platform-stack {
-      display: inline-flex;
-      gap: 6px;
-      align-items: center;
-      justify-content: flex-end;
-      grid-row: 1 / span 2;
-    }
+    .platform img { width: 16px; height: 16px; display: block; }
 
     .role-badge { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; }
     .role-badge img { width: 18px; height: 18px; display: block; }
+
+    .role-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--panel-border);
+      background: rgba(255, 255, 255, 0.1);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+      color: var(--text);
+      text-transform: uppercase;
+    }
+
+    .moderation-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--panel-border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 2px 8px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      letter-spacing: 0.04em;
+    }
+    .moderation-btn.muted { background: rgba(255, 96, 96, 0.12); border-color: rgba(255, 96, 96, 0.5); }
+
+    .input-bar {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-top: 1px solid var(--panel-border);
+      background: rgba(10, 12, 20, 0.9);
+      box-shadow: 0 -10px 24px rgba(0, 0, 0, 0.35);
+      position: sticky;
+      bottom: 0;
+    }
+    .emoji-btn,
+    .send-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      width: 42px;
+      height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.35);
+      transition: transform 0.15s ease, box-shadow 0.2s ease;
+    }
+    .emoji-btn:hover,
+    .send-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
+    }
+    .emoji-btn svg { width: 22px; height: 22px; fill: var(--text); }
+    .send-btn img { width: 22px; height: 22px; display: block; }
+    .chat-input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-family: "SuiGenerisRg", system-ui, sans-serif;
+      font-size: 1rem;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+    .emoji-menu {
+      position: absolute;
+      bottom: 60px;
+      left: 12px;
+      display: none;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+      padding: 8px;
+      background: rgba(12, 16, 28, 0.96);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.45);
+      width: 220px;
+    }
+    .emoji-menu.open { display: grid; }
+    .emoji-menu button {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      color: var(--text);
+    }
 
     .footer-note {
       padding: 12px 16px 18px;
@@ -246,22 +338,16 @@
         <div class="header-row">
           <span class="author">
             creator_live
-            <span class="role-badge" title="Pro User">
+            <span class="role-badge" title="Pro User" data-label="PRO">
               <img src="../assets/icons/prouser.svg" alt="Pro user" />
             </span>
           </span>
           <span class="timestamp">LIVE</span>
         </div>
-        <div class="platform-stack">
-          <span class="platform-badge" aria-label="YouTube">
-            <img src="../assets/icons/youtube.svg" alt="YouTube" />
-            YouTube
-          </span>
-          <span class="platform-badge" aria-label="Discord">
-            <img src="../assets/icons/discord.svg" alt="Discord" />
-            Discord
-          </span>
-        </div>
+        <span class="platform" aria-label="YouTube">
+          <img src="../assets/icons/youtube.svg" alt="YouTube" />
+          YouTube
+        </span>
         <div class="text">Incoming live messages render with the same badges and avatar alignment used in the overlay preview.</div>
       </div>
 
@@ -271,20 +357,23 @@
         </div>
         <div class="header-row">
           <span class="author">
-            timeline_host
-            <span class="role-badge" title="Owner">
-              <img src="../assets/icons/dcbadge.svg" alt="Owner" />
+            Daniel Clancy
+            <span class="role-pill" title="Admin">ADMIN</span>
+            <span class="role-badge" title="Moderator" data-label="MOD">
+              <img src="../assets/icons/mod.svg" alt="Moderator" />
+            </span>
+            <span class="role-badge" title="Pro User" data-label="PRO">
+              <img src="../assets/icons/prouser.svg" alt="Pro user" />
             </span>
           </span>
           <span class="timestamp">LIVE</span>
+          <button class="moderation-btn" data-moderation="shield">…</button>
         </div>
-        <div class="platform-stack">
-          <span class="platform-badge" aria-label="Twitter">
-            <img src="../assets/icons/twitter.svg" alt="Twitter" />
-            Twitter/X
-          </span>
-        </div>
-        <div class="text">Example of a Twitter/X badge coexisting with avatars and message text without crowding.</div>
+        <span class="platform" aria-label="Twitter">
+          <img src="../assets/icons/twitter.svg" alt="Twitter" />
+          Twitter/X
+        </span>
+        <div class="text">Daniel carries admin, mod, and pro badges to verify multi-badge rendering without overlap.</div>
       </div>
 
       <div class="message">
@@ -292,19 +381,38 @@
         <div class="header-row">
           <span class="author">
             mod_team
-            <span class="role-badge" title="Moderator">
+            <span class="role-badge" title="Moderator" data-label="MOD">
               <img src="../assets/icons/mod.svg" alt="Moderator" />
             </span>
           </span>
           <span class="timestamp">LIVE</span>
+          <button class="moderation-btn" data-moderation="shield">…</button>
         </div>
-        <div class="platform-stack">
-          <span class="platform-badge" aria-label="Twitch">
-            <img src="../assets/icons/twitch.svg" alt="Twitch" />
-            Twitch
-          </span>
-        </div>
+        <span class="platform" aria-label="Twitch">
+          <img src="../assets/icons/twitch.svg" alt="Twitch" />
+          Twitch
+        </span>
         <div class="text">Live mode retains the fallback silhouette when no avatar URL is present.</div>
+      </div>
+    </div>
+
+    <div class="input-bar" aria-label="Chat composer">
+      <button class="emoji-btn" id="emoji-btn" aria-label="Open emoji picker">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" stroke="none"></circle>
+          <circle cx="9" cy="10" r="1.4" fill="var(--text)"></circle>
+          <circle cx="15" cy="10" r="1.4" fill="var(--text)"></circle>
+          <path d="M8 15c1 .8 2.2 1.3 4 1.3s3-.5 4-1.3" stroke="var(--text)" stroke-width="1.6" stroke-linecap="round" fill="none"></path>
+        </svg>
+      </button>
+      <input class="chat-input" type="text" placeholder="Type a message…" aria-label="Chat input" />
+      <button class="send-btn" aria-label="Send message">
+        <img src="../assets/icons/ui/send.svg" alt="Send" />
+      </button>
+      <div class="emoji-menu" id="emoji-menu" aria-label="Emoji menu">
+        <button>😀</button><button>😁</button><button>😂</button><button>😉</button><button>😍</button><button>😎</button>
+        <button>🥳</button><button>🤔</button><button>😴</button><button>🤯</button><button>🙌</button><button>🔥</button>
+        <button>👍</button><button>👀</button><button>💯</button><button>🎉</button><button>🛡️</button><button>⚡</button>
       </div>
     </div>
 
@@ -317,6 +425,11 @@
       const selector = document.getElementById('live-theme-select');
       const modePill = document.getElementById('mode-pill');
       const body = document.body;
+      const moderationButtons = Array.from(document.querySelectorAll('.moderation-btn'));
+      const emojiBtn = document.getElementById('emoji-btn');
+      const emojiMenu = document.getElementById('emoji-menu');
+      const chatInput = document.querySelector('.chat-input');
+      const badgeImages = document.querySelectorAll('.role-badge img');
 
       const clearThemes = () => {
         body.className = body.className
@@ -350,6 +463,35 @@
 
       selector?.addEventListener('change', (event) => {
         applyTheme(event.target.value);
+      });
+
+      moderationButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const isMuted = btn.classList.toggle('muted');
+          btn.textContent = isMuted ? 'Muted' : '…';
+        });
+      });
+
+      emojiBtn?.addEventListener('click', () => {
+        const open = emojiMenu?.classList.toggle('open');
+        if (open) {
+          emojiMenu?.setAttribute('data-open', 'true');
+        } else {
+          emojiMenu?.removeAttribute('data-open');
+        }
+      });
+      emojiMenu?.addEventListener('click', (event) => {
+        if (event.target.tagName === 'BUTTON' && chatInput) {
+          chatInput.value = `${chatInput.value}${event.target.textContent}`;
+        }
+      });
+      badgeImages.forEach((img) => {
+        img.addEventListener('error', () => {
+          const pill = document.createElement('span');
+          pill.className = 'role-pill';
+          pill.textContent = (img.alt || img.parentElement?.dataset?.label || 'BADGE').toUpperCase();
+          img.parentElement.replaceWith(pill);
+        }, { once: true });
       });
     })();
   </script>
