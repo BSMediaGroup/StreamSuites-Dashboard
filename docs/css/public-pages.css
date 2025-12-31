@@ -1628,12 +1628,24 @@ body.viz-expanded {
   max-width: none;
 }
 
+
 .public-hero-grid {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
   align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
-  flex-wrap: wrap;
+}
+
+@media (max-width: 860px) {
+  .public-hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .public-hero .ss-roadmap-legend {
+    max-width: 100%;
+    min-width: 0;
+  }
 }
 
 .public-hero-copy {
@@ -1981,8 +1993,9 @@ body.viz-expanded {
 .public-hero .ss-roadmap-legend {
   margin-top: 0;
   display: block;
-  flex: 0 0 320px;
   width: 100%;
+  max-width: 420px;
+  min-width: 320px;
 }
 
 .ss-legend-summary {
@@ -2007,8 +2020,8 @@ body.viz-expanded {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.035);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  max-width: 360px;
-  min-width: 280px;
+  max-width: 420px;
+  min-width: 320px;
   font-size: 0.84em;
   color: var(--text-muted);
   line-height: 1.5;
