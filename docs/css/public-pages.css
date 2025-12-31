@@ -1637,6 +1637,23 @@ body.viz-expanded {
   gap: 20px;
 }
 
+.public-roadmap-header {
+  grid-template-columns: minmax(0, 1.05fr) minmax(340px, 440px);
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.public-hero-legend {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  min-width: 0;
+}
+
+.public-hero-legend .ss-roadmap-legend {
+  margin-left: auto;
+}
+
 @media (max-width: 860px) {
   .public-hero-grid {
     grid-template-columns: 1fr;
@@ -1655,6 +1672,10 @@ body.viz-expanded {
 .public-hero-copy {
   flex: 1 1 480px;
   min-width: 0;
+}
+
+.public-roadmap-copy {
+  max-width: 960px;
 }
 
 .public-hero + .public-stack,
@@ -1998,8 +2019,8 @@ body.viz-expanded {
   margin-top: 0;
   display: block;
   width: 100%;
-  max-width: 560px;
-  min-width: 380px;
+  max-width: 440px;
+  min-width: 320px;
   justify-self: end;
 }
 
@@ -2025,8 +2046,8 @@ body.viz-expanded {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.035);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  max-width: 560px;
-  min-width: 380px;
+  max-width: 440px;
+  min-width: 320px;
   font-size: 0.84em;
   color: var(--text-muted);
   line-height: 1.5;

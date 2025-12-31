@@ -41,26 +41,28 @@
       </header>
 
       <section class="public-hero public-glass-panel">
-        <div class="public-hero-grid">
-          <div class="public-hero-copy">
+        <div class="public-hero-grid public-roadmap-header">
+          <div class="public-hero-copy public-roadmap-copy">
             <div class="section-heading">
               <h2>Roadmap </h2>
               <span class="public-badge">Progress snapshot</span>
             </div>
             <p class="muted">Roadmap items mirror the dashboard exactly and retain the same expand/collapse behavior with animated progress fills.</p>
           </div>
-          <details class="ss-roadmap-legend" open>
-          <summary class="ss-legend-summary">Legend</summary>
-          <div class="ss-legend-body">
-            <div class="ss-legend-row"><strong>0–5% · Concept:</strong> Conceptual only. No runtime scaffolding or contracts exist yet.</div>
-            <div class="ss-legend-row"><strong>10–15% · Planned:</strong> Planned and documented. Architecture discussed, but no executable runtime scaffolding.</div>
-            <div class="ss-legend-row"><strong>20–30% · Scaffolded:</strong> Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution.</div>
-            <div class="ss-legend-row"><strong>40–50% · Functional:</strong> Core runtime behavior exists and executes deterministically. Not feature-complete.</div>
-            <div class="ss-legend-row"><strong>55–60% · Integrated:</strong> Integrated with runtime orchestration, quotas, or control planes. Stable but evolving.</div>
-            <div class="ss-legend-row"><strong>65–75% · Locked:</strong> Contracts stabilized. Runtime behavior considered production-safe barring bug fixes.</div>
-            <div class="ss-legend-row"><strong>80%+ · Mature:</strong> Feature-complete, stable, and unlikely to change without versioned migration.</div>
+          <div class="public-hero-legend">
+            <details class="ss-roadmap-legend" open>
+              <summary class="ss-legend-summary">Legend</summary>
+              <div class="ss-legend-body">
+                <div class="ss-legend-row"><strong>0–5% · Concept:</strong> Conceptual only. No runtime scaffolding or contracts exist yet.</div>
+                <div class="ss-legend-row"><strong>10–15% · Planned:</strong> Planned and documented. Architecture discussed, but no executable runtime scaffolding.</div>
+                <div class="ss-legend-row"><strong>20–30% · Scaffolded:</strong> Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution.</div>
+                <div class="ss-legend-row"><strong>40–50% · Functional:</strong> Core runtime behavior exists and executes deterministically. Not feature-complete.</div>
+                <div class="ss-legend-row"><strong>55–60% · Integrated:</strong> Integrated with runtime orchestration, quotas, or control planes. Stable but evolving.</div>
+                <div class="ss-legend-row"><strong>65–75% · Locked:</strong> Contracts stabilized. Runtime behavior considered production-safe barring bug fixes.</div>
+                <div class="ss-legend-row"><strong>80%+ · Mature:</strong> Feature-complete, stable, and unlikely to change without versioned migration.</div>
+              </div>
+            </details>
           </div>
-          </details>
         </div>
         <div id="public-roadmap-list" class="public-roadmap-stack" aria-label="Roadmap progress bars"></div>
       </section>
