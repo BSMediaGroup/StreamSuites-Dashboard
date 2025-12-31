@@ -161,11 +161,18 @@
 
     .header-row {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 8px;
       flex-wrap: wrap;
       color: var(--text);
       padding-right: 112px;
+    }
+
+    .author-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
     }
 
     .author {
@@ -336,13 +343,15 @@
           <img src="../assets/placeholders/streamsuites.jpg" alt="" />
         </div>
         <div class="header-row">
-          <span class="author">
-            creator_live
-            <span class="role-badge" title="Pro User" data-label="PRO">
-              <img src="../assets/icons/prouser.svg" alt="Pro user" />
+          <div class="author-stack">
+            <span class="author">
+              creator_live
+              <span class="role-badge" title="Pro User" data-label="PRO">
+                <img src="../assets/icons/prouser.svg" alt="Pro user" />
+              </span>
             </span>
-          </span>
-          <span class="timestamp">LIVE</span>
+            <span class="timestamp">LIVE</span>
+          </div>
         </div>
         <span class="platform" aria-label="YouTube">
           <img src="../assets/icons/youtube.svg" alt="YouTube" />
@@ -356,17 +365,19 @@
           <img src="../assets/placeholders/daniel.png" alt="" />
         </div>
         <div class="header-row">
-          <span class="author">
-            Daniel Clancy
-            <span class="role-pill" title="Admin">ADMIN</span>
-            <span class="role-badge" title="Moderator" data-label="MOD">
-              <img src="../assets/icons/mod.svg" alt="Moderator" />
+          <div class="author-stack">
+            <span class="author">
+              Daniel Clancy
+              <span class="role-pill" title="Admin">ADMIN</span>
+              <span class="role-badge" title="Moderator" data-label="MOD">
+                <img src="../assets/icons/mod.svg" alt="Moderator" />
+              </span>
+              <span class="role-badge" title="Pro User" data-label="PRO">
+                <img src="../assets/icons/prouser.svg" alt="Pro user" />
+              </span>
             </span>
-            <span class="role-badge" title="Pro User" data-label="PRO">
-              <img src="../assets/icons/prouser.svg" alt="Pro user" />
-            </span>
-          </span>
-          <span class="timestamp">LIVE</span>
+            <span class="timestamp">LIVE</span>
+          </div>
           <button class="moderation-btn" data-moderation="shield">…</button>
         </div>
         <span class="platform" aria-label="Twitter">
@@ -379,13 +390,15 @@
       <div class="message">
         <div class="avatar avatar-fallback" aria-hidden="true"></div>
         <div class="header-row">
-          <span class="author">
-            mod_team
-            <span class="role-badge" title="Moderator" data-label="MOD">
-              <img src="../assets/icons/mod.svg" alt="Moderator" />
+          <div class="author-stack">
+            <span class="author">
+              mod_team
+              <span class="role-badge" title="Moderator" data-label="MOD">
+                <img src="../assets/icons/mod.svg" alt="Moderator" />
+              </span>
             </span>
-          </span>
-          <span class="timestamp">LIVE</span>
+            <span class="timestamp">LIVE</span>
+          </div>
           <button class="moderation-btn" data-moderation="shield">…</button>
         </div>
         <span class="platform" aria-label="Twitch">
@@ -429,6 +442,7 @@
       const emojiBtn = document.getElementById('emoji-btn');
       const emojiMenu = document.getElementById('emoji-menu');
       const chatInput = document.querySelector('.chat-input');
+      const inputBar = document.querySelector('.input-bar');
       const badgeImages = document.querySelectorAll('.role-badge img');
 
       const clearThemes = () => {
@@ -459,6 +473,10 @@
         modePill.textContent = mode === 'replay' ? 'Replay' : 'Live';
         modePill.style.background = mode === 'replay' ? 'rgba(116, 146, 255, 0.16)' : modePill.style.background;
         modePill.style.borderColor = mode === 'replay' ? 'rgba(116, 146, 255, 0.3)' : modePill.style.borderColor;
+      }
+
+      if (inputBar) {
+        inputBar.style.display = mode === 'live' ? 'grid' : 'none';
       }
 
       selector?.addEventListener('change', (event) => {
