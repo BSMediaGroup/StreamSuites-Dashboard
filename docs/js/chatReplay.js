@@ -1,44 +1,72 @@
-// Placeholder module for Historical Chat Replay (planned feature)
-// This file intentionally avoids wiring into app.js until the view is ready.
+// Lightweight wiring for the Chat Replay preview surface.
+// The dashboard remains read-only; this module only swaps local preview targets.
 
-/**
- * Planned responsibility: Load a chat log JSON (platform-agnostic)
- * - Accepts local file selection or a provided URL
- * - Validates against schemas/chat_log.schema.json
- * - Remains read-only with no outbound mutations
- */
-function loadChatLogPlaceholder() {
-  // Future implementation will parse JSON shaped by schemas/chat_log.schema.json
-  // and store it in local state for rendering.
-}
-
-/**
- * Planned responsibility: Render messages chronologically
- * - Maintain original ordering and timestamps
- * - Include author display names, platform badges, and message text
- * - Preserve metadata for possible filters (e.g., moderation flags)
- */
-function renderChatTimelinePlaceholder() {
-  // Future implementation will produce DOM nodes or template output
-  // representing each message in the chat log.
-}
-
-/**
- * Planned responsibility: Emulate playback pacing without controlling bots
- * - Playback controls: play, pause, seek, speed adjustments
- * - Timer-based scheduling to mirror original chat cadence
- * - No side effects beyond UI updates
- */
-function playbackControlsPlaceholder() {
-  // Future implementation will coordinate timers to replay chat messages
-  // in sequence while remaining entirely client-side and read-only.
-}
-
-// Export placeholders for future wiring (module pattern can be adjusted later)
-const ChatReplay = {
-  loadChatLogPlaceholder,
-  renderChatTimelinePlaceholder,
-  playbackControlsPlaceholder,
+const buildPreviewUrl = (page, theme, mode) => {
+  const url = new URL(page, window.location.href);
+  url.searchParams.set('theme', theme || 'default');
+  url.searchParams.set('mode', mode || 'replay');
+  return url.toString();
 };
 
-// Intentionally not imported elsewhere yet; this acts as documentation of intent.
+const setActiveModeButton = (buttons, activeButton) => {
+  buttons.forEach((button) => button.classList.toggle('active', button === activeButton));
+};
+
+const setActiveThemeElement = (themeCard, activeElement) => {
+  themeCard?.querySelectorAll('.element').forEach((el) => el.classList.remove('active'));
+  activeElement?.classList.add('active');
+};
+
+function initChatReplayPreview() {
+  const themeCard = document.getElementById('theme-card');
+  const modeButtons = Array.from(document.querySelectorAll('.ss-mode-button'));
+  const popoutButton = document.getElementById('popout-button');
+  const frames = {
+    window: { el: document.getElementById('window-preview'), page: 'chat_replay_window.html' },
+    overlay: { el: document.getElementById('overlay-preview'), page: 'chat_overlay_obs.html' },
+  };
+
+  const activeTheme = themeCard?.querySelector('.element.active')?.dataset.theme || 'default';
+  const activeModeButton = modeButtons.find((button) => button.classList.contains('active'));
+  const activeMode = activeModeButton?.dataset.mode || activeModeButton?.getAttribute('data-mode') || 'replay';
+
+  const state = { theme: activeTheme, mode: activeMode };
+
+  const reloadPreviews = () => {
+    Object.values(frames).forEach(({ el, page }) => {
+      if (!el) return;
+      el.src = buildPreviewUrl(page, state.theme, state.mode);
+    });
+  };
+
+  themeCard?.addEventListener('click', (event) => {
+    const target = event.target.closest('.element');
+    if (!target || !themeCard.contains(target)) return;
+    const nextTheme = target.getAttribute('data-theme');
+    if (!nextTheme) return;
+    state.theme = nextTheme;
+    setActiveThemeElement(themeCard, target);
+    reloadPreviews();
+  });
+
+  modeButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const nextMode = button.getAttribute('data-mode') || button.dataset.mode;
+      if (!nextMode) return;
+      state.mode = nextMode;
+      setActiveModeButton(modeButtons, button);
+      reloadPreviews();
+    });
+  });
+
+  popoutButton?.addEventListener('click', () => {
+    const url = buildPreviewUrl('chat_window.html', state.theme, state.mode);
+    window.open(url, '_blank', 'noopener');
+  });
+
+  reloadPreviews();
+}
+
+window.ChatReplayPreview = {
+  initChatReplayPreview,
+};
