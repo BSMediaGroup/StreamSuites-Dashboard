@@ -4,34 +4,62 @@
   <meta charset="UTF-8" />
   <title>Chat Replay Window — Placeholder</title>
   <style>
+    /* ----------------------------------------------------------------------
+       Font Faces
+       ---------------------------------------------------------------------- */
+    @font-face {
+      font-family: "RechargeBd";
+      src: url("https://raw.githubusercontent.com/BSMediaGroup/Resources/master/FONTS/Recharge%20Bd.otf")
+           format("opentype");
+      font-weight: 700;
+    }
+
+    @font-face {
+      font-family: "SuiGenerisRg";
+      src: url("https://raw.githubusercontent.com/BSMediaGroup/Resources/master/FONTS/Sui%20Generis%20Rg.otf")
+           format("opentype");
+      font-weight: 400;
+    }
+
     :root {
       color-scheme: dark;
-      --bg: #0b1020;
-      --panel: rgba(255, 255, 255, 0.03);
-      --panel-border: rgba(255, 255, 255, 0.06);
-      --panel-shadow: rgba(0, 0, 0, 0.45);
-      --timeline: linear-gradient(180deg, rgba(19, 24, 44, 0.95), rgba(11, 16, 32, 0.96));
-      --muted: #9aa7c7;
-      --text: #e3e9ff;
-      --accent: rgba(40, 52, 90, 0.65);
-    }
-    body.theme-slate {
-      --bg: #0a0f16;
+      --bg: #0a0f1c;
       --panel: rgba(255, 255, 255, 0.04);
       --panel-border: rgba(255, 255, 255, 0.08);
-      --timeline: linear-gradient(180deg, rgba(16, 22, 34, 0.96), rgba(10, 13, 22, 0.95));
-      --muted: #8fa2c4;
-      --text: #e7ecff;
-      --accent: rgba(64, 92, 132, 0.6);
+      --panel-shadow: rgba(0, 0, 0, 0.4);
+      --timeline: linear-gradient(180deg, rgba(14, 18, 32, 0.95), rgba(8, 10, 22, 0.96));
+      --muted: #a2aec9;
+      --text: #e8ecfa;
+      --accent: rgba(52, 74, 118, 0.6);
+    }
+    body.theme-slate {
+      --bg: #0b111c;
+      --panel: rgba(255, 255, 255, 0.05);
+      --panel-border: rgba(255, 255, 255, 0.09);
+      --timeline: linear-gradient(180deg, rgba(18, 22, 34, 0.94), rgba(10, 12, 22, 0.95));
+      --muted: #9aaed0;
+      --text: #eef1ff;
+      --accent: rgba(64, 92, 132, 0.52);
     }
     body.theme-midnight {
-      --bg: #06070d;
-      --panel: rgba(255, 255, 255, 0.05);
-      --panel-border: rgba(255, 255, 255, 0.1);
-      --timeline: linear-gradient(180deg, rgba(9, 12, 22, 0.95), rgba(5, 6, 12, 0.96));
-      --muted: #9fb6e6;
-      --text: #edf2ff;
-      --accent: rgba(98, 120, 168, 0.72);
+      --bg: #060811;
+      --panel: rgba(255, 255, 255, 0.06);
+      --panel-border: rgba(255, 255, 255, 0.12);
+      --timeline: linear-gradient(180deg, rgba(10, 14, 24, 0.95), rgba(6, 8, 14, 0.96));
+      --muted: #a8bce5;
+      --text: #f3f6ff;
+      --accent: rgba(72, 94, 152, 0.7);
+    }
+    body.theme-light {
+      color-scheme: light;
+      --bg: #f5f7fb;
+      --panel: rgba(255, 255, 255, 0.9);
+      --panel-border: rgba(22, 30, 52, 0.12);
+      --panel-shadow: rgba(0, 0, 0, 0.15);
+      --timeline: linear-gradient(180deg, rgba(242, 246, 255, 0.98), rgba(232, 238, 251, 0.98));
+      --muted: #4b5773;
+      --text: #1f2536;
+      --accent: rgba(60, 88, 132, 0.28);
     }
     body {
       margin: 0;
@@ -48,25 +76,45 @@
     }
     .window-header {
       padding: 12px 14px;
-      background: linear-gradient(90deg, var(--accent), rgba(23, 28, 48, 0.9));
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: linear-gradient(90deg, var(--accent), rgba(28, 34, 54, 0.78));
+      border-bottom: 1px solid var(--panel-border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-    }
+      }
     .window-title {
       font-size: 1rem;
       letter-spacing: 0.04em;
       text-transform: uppercase;
+      font-family: "RechargeBd", "SuiGenerisRg", system-ui, sans-serif;
     }
     .badge {
       padding: 4px 8px;
       border-radius: 6px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #c7d6ff;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--panel-border);
+      color: var(--text);
       font-size: 0.75rem;
       letter-spacing: 0.04em;
+    }
+    .window-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .theme-select {
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--text);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-family: "SuiGenerisRg", system-ui, sans-serif;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    body.theme-light .theme-select {
+      background: rgba(0, 0, 0, 0.04);
+      color: var(--text);
     }
     .timeline {
       padding: 14px;
@@ -112,14 +160,22 @@
       filter: grayscale(100%);
     }
     .platform-badge {
-      padding: 4px 8px;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(255, 255, 255, 0.08);
-      color: #dfe6ff;
-      font-size: 0.72rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--panel-border);
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      text-transform: none;
+    }
+    .platform-badge img {
+      width: 16px;
+      height: 16px;
+      display: block;
     }
     .header-row {
       display: flex;
@@ -137,6 +193,21 @@
       font-weight: 700;
       letter-spacing: 0.03em;
       color: #e8edff;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+    }
+    .role-badge img {
+      width: 18px;
+      height: 18px;
+      display: block;
     }
     .text {
       grid-column: 1 / -1;
@@ -149,11 +220,19 @@
     }
   </style>
 </head>
-<body>
+  <body>
   <div class="window-shell">
     <div class="window-header">
       <div class="window-title">Pop-out Chat Window (Placeholder)</div>
-      <span class="badge">Local placeholder</span>
+      <div class="window-controls">
+        <select class="theme-select" id="local-theme-select" aria-label="Switch chat replay theme">
+          <option value="default">Default (Muted Dark)</option>
+          <option value="slate">Slate</option>
+          <option value="midnight">Midnight</option>
+          <option value="light">Light</option>
+        </select>
+        <span class="badge">Local placeholder</span>
+      </div>
     </div>
     <div class="timeline" aria-label="Static chat replay preview">
       <div class="message">
@@ -161,10 +240,18 @@
           <div class="avatar" aria-hidden="true">
             <img src="../assets/placeholders/daniel.png" alt="" />
           </div>
-          <span class="platform-badge">YT</span>
+          <span class="platform-badge" aria-label="YouTube">
+            <img src="../assets/icons/youtube.svg" alt="YouTube" />
+            YouTube
+          </span>
         </div>
         <div class="header-row">
-          <span class="author">creator_live</span>
+          <span class="author">
+            creator_live
+            <span class="role-badge" title="Pro User">
+              <img src="../assets/icons/prouser.svg" alt="Pro user" />
+            </span>
+          </span>
           <span class="timestamp">00:12:04</span>
         </div>
         <div class="text">Welcome to the replay preview. The avatar is pulled from replay metadata to prove circular rendering.</div>
@@ -172,12 +259,20 @@
       <div class="message">
         <div class="avatar-wrap">
           <div class="avatar" aria-hidden="true">
-            <img src="../assets/placeholders/streamsuites.png" alt="" />
+            <img src="../assets/placeholders/streamsuites.jpg" alt="" />
           </div>
-          <span class="platform-badge">TW</span>
+          <span class="platform-badge" aria-label="Twitch">
+            <img src="../assets/icons/twitch.svg" alt="Twitch" />
+            Twitch
+          </span>
         </div>
         <div class="header-row">
-          <span class="author">obs_guest</span>
+          <span class="author">
+            obs_guest
+            <span class="role-badge" title="Moderator">
+              <img src="../assets/icons/mod.svg" alt="Moderator" />
+            </span>
+          </span>
           <span class="timestamp">00:12:36</span>
         </div>
         <div class="text">Stream overlays will hydrate from runtime exports in a future drop. For now this is file-based only.</div>
@@ -185,7 +280,10 @@
       <div class="message">
         <div class="avatar-wrap">
           <div class="avatar avatar-fallback" aria-hidden="true"></div>
-          <span class="platform-badge">RU</span>
+          <span class="platform-badge" aria-label="Rumble">
+            <img src="../assets/icons/rumble.svg" alt="Rumble" />
+            Rumble
+          </span>
         </div>
         <div class="header-row">
           <span class="author">mod_team</span>
@@ -196,12 +294,20 @@
       <div class="message">
         <div class="avatar-wrap">
           <div class="avatar" aria-hidden="true">
-            <img src="../assets/placeholders/hotdog.png" alt="" />
+            <img src="../assets/placeholders/hotdog.jpg" alt="" />
           </div>
-          <span class="platform-badge">TW</span>
+          <span class="platform-badge" aria-label="Discord">
+            <img src="../assets/icons/discord.svg" alt="Discord" />
+            Discord
+          </span>
         </div>
         <div class="header-row">
-          <span class="author">system</span>
+          <span class="author">
+            system
+            <span class="role-badge" title="Owner">
+              <img src="../assets/icons/dcbadge.svg" alt="Owner" />
+            </span>
+          </span>
           <span class="timestamp">00:13:42</span>
         </div>
         <div class="text muted">No outbound calls, no sockets, and no runtime control are wired to this preview.</div>
@@ -211,10 +317,35 @@
   <script>
     (() => {
       const params = new URLSearchParams(window.location.search);
-      const theme = params.get('theme');
-      if (theme) {
-        document.body.classList.add(`theme-${theme}`);
-      }
+      const selector = document.getElementById('local-theme-select');
+      const body = document.body;
+
+      const clearThemes = () => {
+        body.className = body.className
+          .split(' ')
+          .filter((c) => !c.startsWith('theme-'))
+          .join(' ')
+          .trim();
+      };
+
+      const applyTheme = (nextTheme) => {
+        const normalized = nextTheme || 'default';
+        clearThemes();
+        body.classList.add(`theme-${normalized}`);
+        const url = new URL(window.location.href);
+        url.searchParams.set('theme', normalized);
+        window.history.replaceState({}, '', url);
+        if (selector) {
+          selector.value = normalized;
+        }
+      };
+
+      const initialTheme = params.get('theme') || 'default';
+      applyTheme(initialTheme);
+
+      selector?.addEventListener('change', (event) => {
+        applyTheme(event.target.value);
+      });
     })();
   </script>
 </body>
