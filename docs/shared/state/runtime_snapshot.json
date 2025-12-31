@@ -98,5 +98,19 @@
         }
       ]
     }
+  },
+  "restart_intent": {
+    "required": true,
+    "pending": {
+      "system": true,
+      "creators": false,
+      "triggers": true,
+      "platforms": true
+    },
+    "notes": [
+      "Creators config modified",
+      "Triggers updated",
+      "Platform enablement staged"
+    ]
   }
 }

@@ -22,6 +22,63 @@
 <main class="ss-main">
 
   <!-- --------------------------------------------------------- -->
+  <!-- PENDING CHANGES / RESTART QUEUE -->
+  <!-- --------------------------------------------------------- -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Pending Changes / Restart Queue</h2>
+        <p class="muted">
+          Monitor restart-applied updates and avoid assuming live runtime changes.
+        </p>
+      </div>
+      <div class="ss-badge" id="restart-required-flag">Loading…</div>
+    </header>
+
+    <div class="ss-panel-body">
+
+      <div class="ss-alert ss-alert-warning">
+        Changes will take effect when StreamSuites is restarted. This dashboard will never trigger a restart for you.
+      </div>
+
+      <div class="ss-pending-grid" aria-live="polite">
+        <div class="ss-pending-item">
+          <div class="ss-pending-label">System settings</div>
+          <div class="ss-pending-value" id="restart-pending-system">
+            <span class="ss-pending-chip">Loading…</span>
+          </div>
+        </div>
+
+        <div class="ss-pending-item">
+          <div class="ss-pending-label">Creator configuration</div>
+          <div class="ss-pending-value" id="restart-pending-creators">
+            <span class="ss-pending-chip">Loading…</span>
+          </div>
+        </div>
+
+        <div class="ss-pending-item">
+          <div class="ss-pending-label">Triggers</div>
+          <div class="ss-pending-value" id="restart-pending-triggers">
+            <span class="ss-pending-chip">Loading…</span>
+          </div>
+        </div>
+
+        <div class="ss-pending-item">
+          <div class="ss-pending-label">Platform enable flags</div>
+          <div class="ss-pending-value" id="restart-pending-platforms">
+            <span class="ss-pending-chip">Loading…</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ss-restart-summary" id="restart-change-summary">
+        <div class="muted">Restart intent summary will appear here.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------------- -->
   <!-- SYSTEM SETTINGS -->
   <!-- --------------------------------------------------------- -->
   <section class="ss-panel">

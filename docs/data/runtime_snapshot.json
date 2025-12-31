@@ -37,5 +37,19 @@
       "heartbeat_at": "2025-05-20T15:29:15Z",
       "last_error": null
     }
+  },
+  "restart_intent": {
+    "required": true,
+    "pending": {
+      "system": true,
+      "creators": false,
+      "triggers": true,
+      "platforms": true
+    },
+    "notes": [
+      "System settings changed",
+      "Triggers updated",
+      "Platform enablement staged"
+    ]
   }
 }

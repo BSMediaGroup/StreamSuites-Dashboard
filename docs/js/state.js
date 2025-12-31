@@ -361,11 +361,52 @@
 
     const triggers = normalizeRuntimeTriggers(raw.admin?.triggers || raw.triggers);
 
+    const restartIntent = normalizeRestartIntent(raw.restart_intent);
+
     return {
       generatedAt,
       platforms: normalized,
       system,
-      triggers
+      triggers,
+      restartIntent
+    };
+  }
+
+  function normalizeRestartIntent(raw) {
+    if (!raw || typeof raw !== "object") return null;
+
+    const pendingRaw = raw.pending && typeof raw.pending === "object" ? raw.pending : {};
+
+    const pending = {
+      system: pendingRaw.system === true,
+      creators: pendingRaw.creators === true,
+      triggers: pendingRaw.triggers === true,
+      platforms: pendingRaw.platforms === true
+    };
+
+    const hasPending = Object.values(pending).some(Boolean);
+    const required = pickBoolean(raw.required);
+
+    const summaryNotes = Array.isArray(raw.notes)
+      ? raw.notes.filter((n) => typeof n === "string" && n.trim())
+      : [];
+
+    const synthesizedNotes = summaryNotes.length
+      ? summaryNotes
+      : Object.entries(pending)
+          .filter(([, value]) => value)
+          .map(([key]) => {
+            if (key === "platforms") return "Platform enablement staged";
+            if (key === "triggers") return "Triggers updated";
+            if (key === "creators") return "Creators config modified";
+            if (key === "system") return "System settings changed";
+            return `${key} changes pending`;
+          });
+
+    return {
+      required: required === null ? hasPending : required === true,
+      pending,
+      summary: synthesizedNotes
     };
   }
 

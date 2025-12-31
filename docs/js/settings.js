@@ -190,6 +190,13 @@
     );
     el.platformPollingDraft = document.getElementById("platform-polling-draft-state");
     el.platformPollingNotice = document.getElementById("platform-polling-restart");
+
+    el.restartRequiredFlag = document.getElementById("restart-required-flag");
+    el.restartPendingSystem = document.getElementById("restart-pending-system");
+    el.restartPendingCreators = document.getElementById("restart-pending-creators");
+    el.restartPendingTriggers = document.getElementById("restart-pending-triggers");
+    el.restartPendingPlatforms = document.getElementById("restart-pending-platforms");
+    el.restartSummary = document.getElementById("restart-change-summary");
   }
 
   function wireEvents() {
@@ -244,6 +251,7 @@
     }
 
     renderPlatformPolling();
+    renderRestartQueue();
   }
 
   async function hydrateSystemSettings(forceReload = false) {
@@ -256,6 +264,7 @@
     }
 
     renderPlatformPolling();
+    renderRestartQueue();
   }
 
   async function renderDashboardState(forceReload = false) {
@@ -273,6 +282,69 @@
 
     if (el.dashboardState) el.dashboardState.textContent = loaded;
     if (el.dashboardExport) el.dashboardExport.textContent = exported;
+  }
+
+  function renderRestartQueue() {
+    const intent = runtimeSnapshot?.restartIntent || null;
+    const pending = intent?.pending || {};
+    const required = intent?.required === true;
+
+    const summaryList = intent?.summary || [];
+
+    if (el.restartRequiredFlag) {
+      el.restartRequiredFlag.textContent = required
+        ? "Restart required"
+        : intent
+          ? "No restart required"
+          : "Awaiting runtime snapshot";
+      el.restartRequiredFlag.classList.toggle("ss-badge-warning", !!required);
+      el.restartRequiredFlag.classList.toggle("ss-badge-success", intent && !required);
+    }
+
+    updatePendingChip(el.restartPendingSystem, pending.system);
+    updatePendingChip(el.restartPendingCreators, pending.creators);
+    updatePendingChip(el.restartPendingTriggers, pending.triggers);
+    updatePendingChip(el.restartPendingPlatforms, pending.platforms);
+
+    if (el.restartSummary) {
+      el.restartSummary.innerHTML = "";
+      const summary = document.createElement("div");
+      summary.classList.add("muted");
+      summary.textContent = intent
+        ? "Changes will take effect when StreamSuites is restarted."
+        : "Runtime snapshot not available. Pending state unknown.";
+      el.restartSummary.appendChild(summary);
+
+      if (summaryList.length > 0) {
+        const list = document.createElement("ul");
+        summaryList.forEach((entry) => {
+          const li = document.createElement("li");
+          li.textContent = entry;
+          list.appendChild(li);
+        });
+        el.restartSummary.appendChild(list);
+      }
+    }
+  }
+
+  function updatePendingChip(container, isPending) {
+    if (!container) return;
+
+    container.innerHTML = "";
+    const chip = document.createElement("span");
+    chip.classList.add("ss-pending-chip");
+
+    if (isPending === true) {
+      chip.classList.add("pending");
+      chip.textContent = "Pending";
+    } else if (isPending === false) {
+      chip.classList.add("clear");
+      chip.textContent = "Not pending";
+    } else {
+      chip.textContent = "Unknown";
+    }
+
+    container.appendChild(chip);
   }
 
   function getRuntimePollingValue() {
