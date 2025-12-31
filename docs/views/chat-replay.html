@@ -393,7 +393,7 @@
       </div>
       <button class="ss-popout-btn" id="popout-button" type="button">
         <img src="../assets/icons/ui/windows.svg" alt="Pop-out" width="18" height="18" />
-        Open Pop-Out Chat Window
+        Pop-out Chat Window
       </button>
     </header>
 
@@ -525,7 +525,7 @@
           <div class="ss-iframe-frame">
             <iframe
               id="window-preview"
-              src="./views/chat_replay_window.html?theme=default&mode=replay"
+              src="./chat_replay_window.html?theme=default&mode=replay"
               title="Embedded Chat Window Preview"
               style="width:100%;height:360px;border:0;filter:saturate(1);background:#0d1220;"
               loading="lazy"
@@ -544,7 +544,7 @@
           <div class="ss-iframe-frame">
             <iframe
               id="overlay-preview"
-              src="./views/chat_overlay_obs.html?theme=default&mode=replay"
+              src="./chat_overlay_obs.html?theme=default&mode=replay"
               title="OBS / Browser Source Overlay Preview"
               style="width:100%;height:360px;border:0;filter:saturate(1);background:#0d1220;"
               loading="lazy"
@@ -566,52 +566,7 @@
   </span>
 </footer>
 
+<script src="../js/chatReplay.js"></script>
 <script>
-  (() => {
-    const themeCard = document.getElementById('theme-card');
-    const modeButtons = Array.from(document.querySelectorAll('.ss-mode-button'));
-    const popoutButton = document.getElementById('popout-button');
-    const frames = {
-      window: { el: document.getElementById('window-preview'), src: './views/chat_replay_window.html' },
-      overlay: { el: document.getElementById('overlay-preview'), src: './views/chat_overlay_obs.html' }
-    };
-
-    let activeTheme = 'default';
-    let activeMode = 'replay';
-
-    const reloadPreviews = () => {
-      Object.values(frames).forEach(({ el, src }) => {
-        const url = new URL(src, window.location.href);
-        url.searchParams.set('theme', activeTheme);
-        url.searchParams.set('mode', activeMode);
-        el.src = url.toString();
-      });
-    };
-
-    themeCard?.addEventListener('click', (event) => {
-      const target = event.target.closest('.element');
-      if (!target || !themeCard.contains(target)) return;
-      const nextTheme = target.getAttribute('data-theme');
-      if (!nextTheme) return;
-      activeTheme = nextTheme;
-      themeCard.querySelectorAll('.element').forEach((el) => el.classList.remove('active'));
-      target.classList.add('active');
-      reloadPreviews();
-    });
-
-    modeButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        activeMode = button.getAttribute('data-mode');
-        modeButtons.forEach((b) => b.classList.toggle('active', b === button));
-        reloadPreviews();
-      });
-    });
-
-    popoutButton?.addEventListener('click', () => {
-      const url = new URL('./views/chat_window.html', window.location.href);
-      url.searchParams.set('theme', activeTheme);
-      url.searchParams.set('mode', activeMode);
-      window.open(url.toString(), '_blank', 'noopener');
-    });
-  })();
+  window.ChatReplayPreview?.initChatReplayPreview();
 </script>

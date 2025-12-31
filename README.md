@@ -94,6 +94,9 @@ All public pages are independent entry points, GitHub Pages–safe, and reuse `d
 
 ## Unified Chat Replay (Planned)
 - **Dashboard previews only:** `docs/views/chat-replay.html` now includes mode toggles (Replay/Live), Na3ar-17–style theme selection, Lakshay-art–inspired live input styling, and a pop-out control.
+- **Preview wiring + assets:** All chat replay previews point to local HTML under `docs/views/` with assets loaded from `docs/assets/` (no absolute `/assets` references). The dashboard compensates for relative paths so icons and avatar fallbacks resolve inside the iframes.
+- **Live vs. replay:** Mode toggles switch the embedded chat window and the OBS/browser overlay between replay and live UI previews without manual URL edits.
+- **Pop-out purpose:** The “Pop-out Chat Window” button opens the current preview (theme + mode preserved) in a new tab/window for reference while keeping the dashboard read-only.
 - **File-based placeholders:** The pop-out window (`docs/views/chat_replay_window.html` and entrypoint redirect `docs/views/chat_window.html`) and OBS/browser source overlay (`docs/views/chat_overlay_obs.html`) are local HTML mocks surfaced purely for documentation.
 - **Future hydration path:** Runtime replay feeds will hydrate both surfaces once the unified engine is active; today they remain scaffolded and offline.
 - **Avatar support (preview-only):** Avatars are rendered from replay-sourced metadata with a light-gray fallback silhouette (`docs/assets/icons/ui/profile.svg`) when `avatar_url` is missing. The dashboard does not control or author avatars; it only mirrors replay exports. A future screenshot callout will be added once runtime-fed avatars ship.
