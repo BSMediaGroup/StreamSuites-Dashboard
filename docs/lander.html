@@ -600,13 +600,13 @@
       opacity: 1;
     }
 
-    .footer-brand .footer-copyright {
+    .page-copyright {
       position: fixed;
       left: 50%;
-      bottom: 12px;
+      bottom: 14px;
       transform: translateX(-50%);
       font-size: 11px;
-      color: inherit;
+      color: var(--muted);
       text-decoration: none;
       background: none;
       padding: 0;
@@ -614,10 +614,10 @@
       box-shadow: none;
       opacity: 0.85;
       white-space: nowrap;
-      z-index: 6;
+      z-index: 8;
     }
 
-    .footer-brand .footer-copyright:hover {
+    .page-copyright:hover {
       text-decoration: underline;
       opacity: 1;
     }
@@ -630,6 +630,10 @@
       }
       .footer-brand {
         opacity: 0.7;
+      }
+      .page-copyright {
+        bottom: 10px;
+        font-size: 10px;
       }
     }
 
@@ -825,14 +829,15 @@
 
         <div class="footer-brand">
           <span class="footer-version">StreamSuites™ v0.2.0-alpha</span>
-          <a class="footer-copyright" href="https://brainstream.media" target="_blank" rel="noopener noreferrer">
-            © 2025 Brainstream Media Group
-          </a>
         </div>
       </div>
 
     </div>
   </div>
+
+  <a class="page-copyright" href="https://brainstream.media" target="_blank" rel="noopener noreferrer">
+    © 2025 Brainstream Media Group
+  </a>
 
   <script>
     (function () {
