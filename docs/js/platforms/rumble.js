@@ -36,14 +36,14 @@
   }
 
   function hydrateConfig() {
-    setText(el.configEnabled, "deferred (runtime-owned)");
-    setText(el.configChannel, "exposed via runtime exports only");
+    setText(el.configEnabled, "paused (runtime-owned)");
+    setText(el.configChannel, "exported via runtime snapshots");
     setText(el.configBot, "runtime-managed");
     setText(el.configSource, "read-only dashboard snapshot");
   }
 
   function hydrateRuntimePlaceholder() {
-    setText(el.runtimeStatus, "deferred");
+    setText(el.runtimeStatus, "paused");
     setText(el.runtimeUpdated, "waiting for runtime export");
     setText(el.runtimeError, "none reported");
     setText(el.runtimeMessages, "—");
@@ -54,13 +54,13 @@
       el.runtimeBanner.classList.add("ss-alert-warning");
       setText(
         el.runtimeBanner,
-        "Rumble runtime visibility is deferred. Dashboard surfaces the last exported snapshot only."
+        "Rumble ingest is paused by the runtime. The dashboard mirrors the latest exported snapshot only."
       );
     }
   }
 
   function describeRuntimeStatus(entry) {
-    if (!entry) return "deferred";
+    if (!entry) return "paused";
     if (entry.enabled === false) return "disabled";
     return entry.status || "unknown";
   }
@@ -68,13 +68,17 @@
   function renderRuntime(snapshot) {
     const platform = snapshot?.platforms?.[PLATFORM] || null;
     const status = describeRuntimeStatus(platform);
+    const pausedReason = platform?.pausedReason || platform?.paused_reason;
 
     setText(el.runtimeStatus, status.toUpperCase());
     setText(
       el.runtimeUpdated,
-      formatTimestamp(platform?.lastUpdate || snapshot?.generatedAt)
+      formatTimestamp(platform?.heartbeat || platform?.lastUpdate || snapshot?.generatedAt)
     );
-    setText(el.runtimeError, platform?.error || "none reported");
+    setText(
+      el.runtimeError,
+      platform?.error || pausedReason || "none reported"
+    );
 
     const counters = platform?.counters || {};
     const messages = counters.messagesProcessed ?? counters.messages ?? null;
@@ -91,18 +95,21 @@
 
     if (el.runtimeBanner) {
       el.runtimeBanner.classList.remove("ss-alert-danger");
-      el.runtimeBanner.classList.add(
-        status && status.toLowerCase() === "running" ? "ss-alert-success" : "ss-alert-warning"
-      );
+      el.runtimeBanner.classList.add("ss-alert-warning");
+      const detail = pausedReason
+        ? `Paused — ${pausedReason}`
+        : "Paused — runtime-owned controls only";
       setText(
         el.runtimeBanner,
-        "Rumble ingest is deferred; this panel mirrors the latest exported runtime snapshot without issuing commands."
+        `${detail}. The dashboard mirrors the latest exported runtime snapshot without issuing commands.`
       );
     }
   }
 
   async function hydrateRuntime() {
-    const snapshot = await window.StreamSuitesState?.loadRuntimeSnapshot?.();
+    const snapshot = await window.StreamSuitesState?.loadRuntimeSnapshot?.({
+      forceReload: true
+    });
     if (!snapshot || !snapshot.platforms) {
       hydrateRuntimePlaceholder();
       return;
@@ -120,7 +127,7 @@
     if (!el.foundationStatus) return;
     el.foundationStatus.classList.remove("idle");
     el.foundationStatus.classList.add("active");
-    el.foundationStatus.textContent = "● Rumble: Deferred (read-only preview)";
+    el.foundationStatus.textContent = "● Rumble: Paused (read-only preview)";
   }
 
   function init() {

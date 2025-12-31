@@ -13,6 +13,7 @@
 
   const dataPath = `${basePath || ""}/data/roadmap.json`.replace(/\/+/g, "/");
   const fillGradient = "linear-gradient(90deg, #57b9ff, #63ffa2)";
+  const pausedGradient = "linear-gradient(90deg, #ff5f6d, #ffc371)";
   const animationDuration = 1200;
 
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -118,6 +119,11 @@
   function buildCard(entry) {
     const percent = Math.max(0, Math.min(100, Number(entry.percent) || 0));
     const icon = resolveAssetPath(entry.icon || "assets/icons/ui/widget.svg");
+    const isPaused = entry.status === "paused" || entry.id === "rumble-sse";
+    const statusBadge = isPaused
+      ? '<span class="public-roadmap-status paused">Paused</span>'
+      : "";
+    const barFill = isPaused ? pausedGradient : fillGradient;
 
     return `
     <article class="public-glass-card public-roadmap-card ss-progress-row" data-score="${percent}" data-id="${entry.id}" title="${entry.tooltip || ""}" role="button" tabindex="0">
@@ -129,7 +135,7 @@
           </span>
         </div>
         <div class="ss-progress-right">
-          <span class="ss-progress-meta">${entry.meta}</span>
+          <span class="ss-progress-meta">${entry.meta} ${statusBadge}</span>
           <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
             <span>▸</span>
           </button>
@@ -141,7 +147,7 @@
         </div>
       </div>
       <div class="public-progress-wrapper">
-        <progress class="public-roadmap-progress" value="0" max="100" style="--fill:${fillGradient};" aria-label="${entry.title} progress"></progress>
+        <progress class="public-roadmap-progress${isPaused ? " is-paused" : ""}" value="0" max="100" style="--fill:${barFill};" aria-label="${entry.title} progress"></progress>
       </div>
     </article>`;
   }

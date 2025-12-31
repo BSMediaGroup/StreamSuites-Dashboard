@@ -2,23 +2,46 @@
   "meta": {
     "project": "StreamSuites",
     "version": "v0.2.0-alpha",
-    "last_updated": "2025-12-28"
+    "last_updated": "2025-05-20"
   },
   "entries": [
+    {
+      "id": "2025-05-project-resumed",
+      "date": "2025-05-20",
+      "version": "v0.2.0-alpha",
+      "scope": "global",
+      "title": "Project resumed",
+      "summary": "StreamSuites dashboard resumes active monitoring with live runtime snapshots and Rumble marked paused.",
+      "details": [
+        "Removed suspension banners and reinstated active language across public and admin surfaces.",
+        "Dashboard now polls runtime snapshots for platform status, heartbeat timestamps, and paused reasons.",
+        "Rumble remains paused with red status indicators while YouTube and Twitch monitoring stay active."
+      ],
+      "tags": [
+        "resumed",
+        "dashboard",
+        "runtime"
+      ],
+      "is_latest": true
+    },
     {
       "id": "2025-12-project-suspended",
       "date": "2025-12-28",
       "version": "v0.2.0-alpha",
       "scope": "global",
       "title": "Project suspended",
-      "summary": "StreamSuites development has been indefinitely suspended.",
+      "summary": "Historical suspension notice preserved for reference after resumption.",
       "details": [
-        "Core runtime dependencies and third-party platform behaviors proved unstable and non-deterministic under real-world conditions.",
-        "Repeated remediation attempts failed to yield a reliable or automatable baseline suitable for beta testing.",
-        "All further development, testing, and roadmap progression is suspended until conditions materially change."
+        "Documented the temporary suspension triggered by unstable Rumble chat ingestion.",
+        "Recorded mitigation attempts and export shapes used during the pause.",
+        "Superseded by the May 2025 resumption; monitoring now continues with Rumble paused."
       ],
-      "tags": ["suspended", "project-status", "notice"],
-      "is_latest": true
+      "tags": [
+        "suspended",
+        "project-status",
+        "notice"
+      ],
+      "is_latest": false
     },
     {
       "id": "2025-12-global-public-surface",
@@ -32,7 +55,11 @@
         "Mirrored dashboard roadmap snapshots with expandable rows and legend overlays on public pages.",
         "Aligned CTA sweeps, dotted grids, and badge rendering across public shells for consistency."
       ],
-      "tags": ["public-pages", "roadmap", "glass-ui"],
+      "tags": [
+        "public-pages",
+        "roadmap",
+        "glass-ui"
+      ],
       "is_latest": false
     },
     {
@@ -47,7 +74,11 @@
         "Stabilized version badge rendering across public shells to match dashboard runtime conventions.",
         "Kept gradient sweeps and glass treatments runtime-safe for GitHub Pages delivery."
       ],
-      "tags": ["runtime", "rendering", "versioning"],
+      "tags": [
+        "runtime",
+        "rendering",
+        "versioning"
+      ],
       "is_latest": false
     },
     {
@@ -61,7 +92,11 @@
         "Published initial public previews for clips, polls, tallies, and scoreboards.",
         "Documented automation hooks, chat triggers, and upload planning for roadmap visibility."
       ],
-      "tags": ["roadmap", "previews", "dashboard"],
+      "tags": [
+        "roadmap",
+        "previews",
+        "dashboard"
+      ],
       "is_latest": false
     }
   ]

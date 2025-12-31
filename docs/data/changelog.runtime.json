@@ -1,21 +1,46 @@
 {
   "meta": {
     "project": "StreamSuites Runtime",
-    "last_updated": "2025-12-28"
+    "last_updated": "2025-05-20"
   },
   "entries": [
+    {
+      "id": "2025-05-project-resumed",
+      "date": "2025-05-20",
+      "version": "v0.2.0-alpha",
+      "scope": "global",
+      "title": "Project resumed",
+      "summary": "StreamSuites dashboard resumes active monitoring with live runtime snapshots and Rumble marked paused.",
+      "details": [
+        "Removed suspension banners and reinstated active language across public and admin surfaces.",
+        "Dashboard now polls runtime snapshots for platform status, heartbeat timestamps, and paused reasons.",
+        "Rumble remains paused with red status indicators while YouTube and Twitch monitoring stay active."
+      ],
+      "tags": [
+        "resumed",
+        "dashboard",
+        "runtime"
+      ],
+      "is_latest": true
+    },
     {
       "id": "2025-12-project-suspended",
       "date": "2025-12-28",
       "version": "v0.2.0-alpha",
       "scope": "runtime",
       "title": "Runtime suspended",
-      "summary": "Runtime development and ingestion work has been indefinitely suspended.",
+      "summary": "Historical suspension notice preserved for reference after resumption.",
       "details": [
-        "Platform-level instability prevented reliable runtime operation.",
-        "Dashboard now reflects a frozen, read-only snapshot of final runtime state."
+        "Documented the temporary suspension triggered by unstable Rumble chat ingestion.",
+        "Recorded mitigation attempts and export shapes used during the pause.",
+        "Superseded by the May 2025 resumption; monitoring now continues with Rumble paused."
       ],
-      "tags": ["suspended", "runtime", "notice"]
+      "tags": [
+        "suspended",
+        "runtime",
+        "notice"
+      ],
+      "is_latest": false
     },
     {
       "id": "2025-12-runtime-export-refresh",
@@ -29,7 +54,12 @@
         "Kept dashboard merge logic tolerant of missing runtime payloads while preserving dashboard entries.",
         "Matched scope tagging with dashboard releases so combined views stay consistent."
       ],
-      "tags": ["runtime", "exports", "visibility"]
+      "tags": [
+        "runtime",
+        "exports",
+        "visibility"
+      ],
+      "is_latest": false
     }
   ]
 }

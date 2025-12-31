@@ -145,8 +145,13 @@
     const score = Math.max(0, Math.min(100, Number(entry.percent) || 0));
     const normalizedScore = formatScore(score);
     const pulseClass = entry.pulse ? " pulsing" : "";
+    const pausedClass = entry.status === "paused" ? " is-paused" : "";
 
     const icon = resolveAssetPath(entry.icon || "assets/icons/ui/widget.svg");
+    const statusBadge =
+      entry.status === "paused"
+        ? '<span class="public-roadmap-status paused">Paused</span>'
+        : "";
 
     return `
     <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="${normalizedScore}" title="${entry.tooltip || ""}" role="button" tabindex="0">
@@ -158,7 +163,7 @@
           </span>
         </div>
         <div class="ss-progress-right">
-          <span class="ss-progress-meta">${entry.meta}</span>
+          <span class="ss-progress-meta">${entry.meta} ${statusBadge}</span>
           <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
             <span>▸</span>
           </button>
@@ -171,7 +176,7 @@
       </div>
       <div class="ss-skill-wrapper">
         <div class="ss-skill-track">
-          <div class="ss-skill-fill${pulseClass}"></div>
+          <div class="ss-skill-fill${pulseClass}${pausedClass}"></div>
         </div>
       </div>
     </div>`;

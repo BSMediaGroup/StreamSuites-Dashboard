@@ -1,10 +1,10 @@
-# StreamSuites Dashboard — Static, Read-Only Runtime Preview
+# StreamSuites Dashboard — Static, Read-Only Runtime Monitor
 
-StreamSuites Dashboard is a **static, client-side control panel** for inspecting the StreamSuites automation ecosystem without embedding runtime logic or connecting to live chat sources. It stays GitHub Pages–safe (no backend, no auth) and renders exported state for **YouTube, Twitch, and Rumble** as a read-only preview. All execution, chat ingestion, livestream control, and command surfaces live in the StreamSuites runtimes.
+StreamSuites Dashboard is a **static, client-side control panel** for observing the StreamSuites automation ecosystem. It stays GitHub Pages–safe (no backend, no auth) while polling runtime snapshot JSON for **YouTube, Twitch, Rumble, and Discord**. All execution, chat ingestion, livestream control, and command surfaces live in the StreamSuites runtimes.
 
-- **Authority:** Runtime exports are canonical; the dashboard only reads them.
+- **Authority:** Runtime exports are canonical; the dashboard only reads them and refreshes on a timer.
 - **Write safety:** No API calls, no authentication, and no server code. Local edits remain browser-local or downloaded JSON files.
-- **Revival stance:** YouTube + Twitch previews are wired for beta-forward telemetry; Rumble stays visible but clearly deferred/disabled while still showing snapshot facts when present.
+- **Current stance:** YouTube + Twitch previews are ACTIVE with runtime heartbeat polling; Rumble is PAUSED with read-only telemetry and red roadmap treatment.
 - **Audit:** Use the attached audit report for context; do **not** regenerate it.
 
 ## Version & Ownership
@@ -15,8 +15,8 @@ StreamSuites Dashboard is a **static, client-side control panel** for inspecting
 
 ## Operational Boundary
 - **Static control surface** — cannot mutate runtimes or send actions; edits are limited to local JSON drafts and exports.
-- **Offline-first** — no live connections; everything is rendered from shipped or downloaded JSON artifacts.
-- **No API calls** — the browser bundle deliberately avoids live fetches beyond static exports (e.g., no Rumble/YouTube/Twitch APIs).
+- **Runtime snapshot polling** — periodically fetches `shared/state/runtime_snapshot.json` (or bundled fallbacks) for status, heartbeat timestamps, errors, and pause reasons.
+- **No platform APIs** — the browser bundle only fetches snapshot JSON; there are no live chat sockets, auth flows, or control-plane calls.
 - **Runtime exports are authoritative** — the dashboard visualizes whatever the runtime writes to snapshot files.
 - **Visual-only philosophy** — dashboards illuminate runtime exports; control and execution stay in runtimes.
 
@@ -34,6 +34,16 @@ This repository is a **separate but companion project** to the `StreamSuites` ru
 ```
 
 **Architecture reality:** Chat ingest and livestream control live in the runtime (SSE preferred for Rumble with DOM/API fallbacks, Twitch IRC, YouTube polling/RT). Any DOM chat send automation is runtime-owned. The dashboard remains read-only and only surfaces exported snapshots.
+
+## Responsibility Split (Runtime vs Dashboard)
+- **Runtime (authoritative):** Ingests chat, enforces quotas, schedules jobs, posts to platforms, and exports deterministic state (`runtime_snapshot.json`, `quotas.json`, galleries, and admin snapshots). Rumble ingest is currently paused at the runtime level pending stabilization.
+- **Dashboard (read-only):** Polls runtime snapshots for platform status, heartbeat timestamps, last errors, and pause reasons; renders creators/platform drafts from local storage; and presents public galleries without write paths.
+- **Discord control-plane:** Lives in the runtime repo; the dashboard only surfaces exported status for visibility.
+
+## Beta Pathway
+- **Active monitoring:** YouTube and Twitch views poll runtime snapshots on an interval for live status badges and counters.
+- **Paused platform:** Rumble remains visible with red roadmap treatment and read-only telemetry while the ingest pipeline is stabilized in the runtime.
+- **Static hosting:** All pages remain GitHub Pages–safe; polling uses static JSON exports with no backend.
 
 ## Hosting & Deployment Model
 - Hosted as a **static site** (GitHub Pages safe).

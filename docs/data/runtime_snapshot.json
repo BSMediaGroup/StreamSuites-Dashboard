@@ -1,25 +1,38 @@
 {
-  "generated_at": "2025-01-15T12:00:00Z",
+  "generated_at": "2025-05-20T15:30:00Z",
   "platforms": {
     "youtube": {
-      "last_seen": "2025-01-15T11:59:00Z",
-      "status": "online",
-      "error_state": null
+      "status": "running",
+      "heartbeat_at": "2025-05-20T15:29:45Z",
+      "last_error": null,
+      "counters": {
+        "messages_processed": 1842,
+        "triggers_fired": 76
+      }
     },
     "twitch": {
-      "last_seen": null,
-      "status": "offline",
-      "error_state": "credentials_missing"
+      "status": "running",
+      "heartbeat_at": "2025-05-20T15:29:30Z",
+      "last_error": null,
+      "counters": {
+        "messages_processed": 956,
+        "triggers_fired": 42
+      }
     },
     "rumble": {
-      "last_seen": "2025-01-15T11:55:30Z",
-      "status": "online",
-      "error_state": null
+      "status": "paused",
+      "heartbeat_at": "2025-05-20T15:28:00Z",
+      "paused_reason": "Runtime ingest paused for controlled redeploy",
+      "last_error": "ingest paused by operator",
+      "counters": {
+        "messages_processed": 0,
+        "triggers_fired": 0
+      }
     },
     "discord": {
-      "last_seen": "2025-01-15T11:57:10Z",
-      "status": "online",
-      "error_state": null
+      "status": "running",
+      "heartbeat_at": "2025-05-20T15:29:15Z",
+      "last_error": null
     }
   }
 }

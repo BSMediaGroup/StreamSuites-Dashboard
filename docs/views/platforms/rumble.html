@@ -10,12 +10,12 @@
 <header class="ss-header">
   <div class="ss-header-left">
     <h1 class="ss-title">StreamSuites</h1>
-    <span class="ss-subtitle">Rumble Platform</span>
+    <span class="ss-subtitle">Rumble Platform (Paused)</span>
   </div>
 
   <div class="ss-header-right">
     <span id="rumble-foundation-status" class="status-indicator idle">
-      ● Rumble chat: Deferred (read-only)
+      ● Rumble chat: Paused (read-only)
     </span>
   </div>
 </header>
@@ -36,12 +36,9 @@
     <div class="ss-panel-body">
 
       <p class="muted">
-        This toggle controls whether the Rumble platform runtime is enabled
-        globally. Changes require a full StreamSuites runtime restart.
-        Rumble chat prefers the SSE endpoint
-        (<code>https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream</code>)
-        and automatically falls back to DOM-based or API polling modes when
-        SSE is unavailable.
+        This toggle reflects whether the Rumble platform runtime is enabled
+        globally. The ingest pipeline is paused at the runtime while SSE and
+        fallbacks are stabilized. Status surfaces remain visible for parity.
       </p>
 
       <!-- Compact horizontal layout (matches Settings / YouTube / Twitch) -->
@@ -86,7 +83,7 @@
 
     <div class="ss-panel-body">
       <div id="rumble-runtime-banner" class="ss-alert ss-alert-warning">
-        Rumble ingest is deferred. This panel mirrors exported runtime snapshots only.
+        Rumble ingest is paused. This panel mirrors exported runtime snapshots only.
       </div>
 
       <table class="ss-table ss-table-compact">
@@ -126,7 +123,7 @@
 
       <p class="muted" style="margin-top: 0.5rem;">
         Runtime visibility is optional and provided by the StreamSuites runtime repo when exported.
-        Dashboard binding will occur via runtime-exported JSON snapshots once the multi-mode ingest pipeline lands.
+        Dashboard binding polls runtime-exported JSON snapshots while the ingest pipeline remains paused for runtime-side work.
       </p>
     </div>
   </section>
