@@ -320,3 +320,14 @@ button {
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+
+
+.snapshot-health-banner {
+  background: #5c1a1a;
+  color: #fff;
+  padding: 8px 12px;
+  font-size: 13px;
+  text-align: center;
+  z-index: 9999;
+}
