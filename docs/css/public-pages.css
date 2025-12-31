@@ -2025,7 +2025,6 @@ body.viz-expanded {
   line-height: 1.5;
   width: 100%;
   font-family: "SuiGenerisRg", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  overflow-x: auto;
 }
 
 .ss-legend-row { font-size: 0.84em; line-height: 1.45; }

@@ -6,27 +6,8 @@
   },
   "entries": [
     {
-      "id": "2025-12-31-changelog-ordering-fix",
+      "id": "2025-12-project-resumed",
       "date": "2025-12-31",
-      "version": "v0.2.0-alpha",
-      "scope": "dashboard",
-      "title": "Changelog ordering corrected",
-      "summary": "Ensured the public changelog always shows the newest entries first and reflects the latest dashboard snapshot.",
-      "details": [
-        "Pinned merged changelog feeds to descending date order regardless of source JSON sequence.",
-        "Updated public payload metadata to reflect the latest release publishing date.",
-        "Marked ordering fix to keep dashboard updates visible at the top of the list."
-      ],
-      "tags": [
-        "dashboard",
-        "changelog",
-        "ordering"
-      ],
-      "is_latest": true
-    },
-    {
-      "id": "2025-05-project-resumed",
-      "date": "2025-05-20",
       "version": "v0.2.0-alpha",
       "scope": "global",
       "title": "Project resumed",
