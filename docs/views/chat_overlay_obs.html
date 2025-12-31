@@ -147,6 +147,7 @@
       letter-spacing: 0.03em;
       color: #9eb7ff;
       grid-column: span 2;
+      justify-content: space-between;
     }
     .platform {
       display: inline-flex;
@@ -159,6 +160,7 @@
       color: var(--text);
       font-size: 0.76rem;
       letter-spacing: 0.06em;
+      margin-left: auto;
     }
     .platform img {
       width: 16px;
@@ -198,8 +200,9 @@
     }
     .content {
       color: var(--text);
-      line-height: 1.45;
+      line-height: 1.4;
       grid-column: span 2;
+      font-size: 0.94rem;
     }
     .role-badge {
       display: inline-flex;
@@ -226,17 +229,13 @@
 <body>
   <div class="overlay-shell">
     <div class="overlay-header">OBS / Browser Source Overlay</div>
-    <div class="overlay-status">Scaffolded — static placeholder</div>
+    <div class="overlay-status" id="overlay-status">Scaffolded — static placeholder</div>
     <div class="chat-stack" aria-label="Static overlay chat preview">
       <div class="bubble">
         <div class="avatar" aria-hidden="true">
           <img src="../assets/placeholders/streamsuites.jpg" alt="" />
         </div>
         <div class="meta">
-          <span class="platform" aria-label="YouTube">
-            <img src="../assets/icons/youtube.svg" alt="YouTube" />
-            YouTube
-          </span>
           <span class="username">
             creator_live
             <span class="role-badge" title="Pro User">
@@ -244,16 +243,16 @@
             </span>
           </span>
           <span class="timestamp">00:14:22</span>
+          <span class="platform" aria-label="YouTube">
+            <img src="../assets/icons/youtube.svg" alt="YouTube" />
+            YouTube
+          </span>
         </div>
         <div class="content">Unified Chat Replay will hydrate this overlay once runtime feeds are connected.</div>
       </div>
       <div class="bubble alt">
         <div class="avatar avatar-fallback" aria-hidden="true"></div>
         <div class="meta">
-          <span class="platform" aria-label="Rumble">
-            <img src="../assets/icons/rumble.svg" alt="Rumble" />
-            Rumble
-          </span>
           <span class="username">
             guest_overlay
             <span class="role-badge" title="Moderator">
@@ -261,6 +260,10 @@
             </span>
           </span>
           <span class="timestamp">00:15:08</span>
+          <span class="platform" aria-label="Rumble">
+            <img src="../assets/icons/rumble.svg" alt="Rumble" />
+            Rumble
+          </span>
         </div>
         <div class="content">Missing avatar URLs resolve to the light-gray fallback silhouette while keeping platform badges aligned.</div>
       </div>
@@ -269,10 +272,6 @@
           <img src="../assets/placeholders/hotdog.jpg" alt="" />
         </div>
         <div class="meta">
-          <span class="platform" aria-label="Twitch">
-            <img src="../assets/icons/twitch.svg" alt="Twitch" />
-            Twitch
-          </span>
           <span class="username">
             mod_team
             <span class="role-badge" title="Owner">
@@ -280,6 +279,10 @@
             </span>
           </span>
           <span class="timestamp">00:14:47</span>
+          <span class="platform" aria-label="Twitch">
+            <img src="../assets/icons/twitch.svg" alt="Twitch" />
+            Twitch
+          </span>
         </div>
         <div class="content">Platform badge, avatar, username, and message fit without overlap to confirm OBS/browser compatibility.</div>
       </div>
@@ -288,12 +291,12 @@
           <img src="../assets/placeholders/daniel.png" alt="" />
         </div>
         <div class="meta">
+          <span class="username">timeline_host</span>
+          <span class="timestamp">00:15:35</span>
           <span class="platform" aria-label="Twitter">
             <img src="../assets/icons/twitter.svg" alt="Twitter" />
             Twitter/X
           </span>
-          <span class="username">timeline_host</span>
-          <span class="timestamp">00:15:35</span>
         </div>
         <div class="content">Example of a Twitter/X badge coexisting with avatars and message text without crowding.</div>
       </div>
@@ -304,8 +307,13 @@
     (() => {
       const params = new URLSearchParams(window.location.search);
       const theme = params.get('theme');
+      const status = document.getElementById('overlay-status');
+      const mode = (params.get('mode') || 'replay').toLowerCase();
       if (theme) {
         document.body.classList.add(`theme-${theme}`);
+      }
+      if (status) {
+        status.textContent = mode === 'live' ? 'Live mode (placeholder)' : 'Replay mode (placeholder)';
       }
     })();
   </script>
