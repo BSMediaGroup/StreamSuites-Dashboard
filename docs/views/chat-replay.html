@@ -430,11 +430,11 @@
       </div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <button class="ss-popout-btn" id="popout-chat-button" type="button">
-          <img src="./assets/icons/ui/send.svg" alt="Pop-out" width="18" height="18" />
+          <img src="../assets/icons/ui/send.svg" alt="Pop-out" width="18" height="18" />
           Pop-out Chat Window
         </button>
         <button class="ss-popout-btn" id="popout-overlay-button" type="button">
-          <img src="./assets/icons/ui/send.svg" alt="Pop-out" width="18" height="18" />
+          <img src="../assets/icons/ui/send.svg" alt="Pop-out" width="18" height="18" />
           Pop-out OBS Overlay
         </button>
       </div>
@@ -524,27 +524,27 @@
                 <button type="button">👏</button>
               </div>
               <button class="send-icon" type="button" aria-label="Send">
-                <img src="./assets/icons/ui/send.svg" alt="Send" width="18" height="18" />
+                <img src="../assets/icons/ui/send.svg" alt="Send" width="18" height="18" />
               </button>
             </div>
           </div>
           <div class="ss-mock-chat" aria-label="Badge alignment preview">
             <div class="ss-mock-row">
               <div class="avatar" aria-hidden="true">
-                <img src="./assets/placeholders/daniel.png" alt="" />
+                <img src="../assets/placeholders/daniel.png" alt="" />
               </div>
               <div class="meta">
                 <div class="name">daniel_clancy</div>
                 <div class="badges">
-                  <span class="badge" title="Owner"><img src="./assets/icons/dcbadge.svg" alt="Owner" /></span>
-                  <span class="badge" title="Pro User"><img src="./assets/icons/prouser.svg" alt="Pro" /></span>
-                  <span class="badge" title="Moderator"><img src="./assets/icons/mod.svg" alt="Moderator" /></span>
+                  <span class="badge" title="Owner"><img src="../assets/icons/dcbadge.svg" alt="Owner" /></span>
+                  <span class="badge" title="Pro User"><img src="../assets/icons/prouser.svg" alt="Pro" /></span>
+                  <span class="badge" title="Moderator"><img src="../assets/icons/mod.svg" alt="Moderator" /></span>
                 </div>
                 <div class="text">Multi-badge example shows stack ordering with reduced text size and tighter line-height.</div>
               </div>
               <div class="platform-stack">
-                <span class="platform-badge" aria-label="YouTube"><img src="./assets/icons/youtube.svg" alt="YouTube" />YouTube</span>
-                <span class="platform-badge" aria-label="Discord"><img src="./assets/icons/discord.svg" alt="Discord" />Discord</span>
+                <span class="platform-badge" aria-label="YouTube"><img src="../assets/icons/youtube.svg" alt="YouTube" />YouTube</span>
+                <span class="platform-badge" aria-label="Discord"><img src="../assets/icons/discord.svg" alt="Discord" />Discord</span>
               </div>
             </div>
           </div>
@@ -572,7 +572,7 @@
           <div class="ss-iframe-frame">
             <iframe
               id="window-preview"
-              src="./chat_replay_window.html?mode=replay&theme=default"
+              src="../views/chat_replay_window.html?mode=replay&theme=default"
               title="Embedded Chat Window Preview"
               style="width:100%;height:360px;border:0;filter:saturate(1);background:#0d1220;"
               loading="lazy"
@@ -591,7 +591,7 @@
           <div class="ss-iframe-frame">
             <iframe
               id="overlay-preview"
-              src="./chat_overlay_obs.html?theme=default&mode=replay"
+              src="../views/chat_overlay_obs.html?theme=default&mode=replay"
               title="OBS / Browser Source Overlay Preview"
               style="width:100%;height:360px;border:0;filter:saturate(1);background:#0d1220;"
               loading="lazy"
@@ -641,10 +641,10 @@
 
     const windowSrc = () =>
       state.mode === 'live'
-        ? `./chat_window.html?mode=live&theme=${state.theme}`
-        : `./chat_replay_window.html?mode=replay&theme=${state.theme}`;
+        ? `../views/chat_window.html?mode=live&theme=${state.theme}`
+        : `../views/chat_replay_window.html?mode=replay&theme=${state.theme}`;
 
-    const overlaySrc = () => `./chat_overlay_obs.html?theme=${state.theme}&mode=${state.mode}`;
+    const overlaySrc = () => `../views/chat_overlay_obs.html?theme=${state.theme}&mode=${state.mode}`;
 
     const reloadFrames = () => {
       if (windowFrame) {
