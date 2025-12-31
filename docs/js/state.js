@@ -14,6 +14,35 @@
     quotas: null
   };
 
+  const snapshotHealthModule = {
+    promise: null
+  };
+
+  async function getSnapshotHealthModule() {
+    if (snapshotHealthModule.promise) return snapshotHealthModule.promise;
+
+    snapshotHealthModule.promise = import("./utils/snapshot-health.js").catch((err) => {
+      console.warn("[Dashboard][State] Snapshot health module failed to load", err);
+      return null;
+    });
+
+    return snapshotHealthModule.promise;
+  }
+
+  async function reportSnapshotHealth(rawSnapshot) {
+    const module = await getSnapshotHealthModule();
+    if (!module || typeof module.evaluateSnapshotHealth !== "function") return;
+
+    try {
+      const health = module.evaluateSnapshotHealth(rawSnapshot);
+      const render =
+        module.renderSnapshotHealthBanner || module.renderSnapshotWarning || (() => {});
+      render(health);
+    } catch (err) {
+      console.warn("[Dashboard][State] Snapshot health evaluation failed", err);
+    }
+  }
+
   function deepClone(obj) {
     if (obj === null || obj === undefined) return obj;
     return JSON.parse(JSON.stringify(obj));
@@ -268,9 +297,10 @@
       }
     }
 
-    const shared = normalizeRuntimeSnapshot(
-      await loadStateJson("runtime_snapshot.json")
-    );
+    const sharedRaw = await loadStateJson("runtime_snapshot.json");
+    await reportSnapshotHealth(sharedRaw);
+
+    const shared = normalizeRuntimeSnapshot(sharedRaw);
 
     cache.runtimeSnapshot = shared || null;
     return shared ? deepClone(cache.runtimeSnapshot) : null;
