@@ -175,6 +175,13 @@ body {
   flex-shrink: 0;
 }
 
+#app-nav li.nav-disabled,
+#app-nav .nav-overflow-menu li.nav-disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  pointer-events: auto;
+}
+
 #app-nav .nav-overflow {
   position: relative;
   flex-shrink: 0;
