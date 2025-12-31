@@ -16,12 +16,15 @@
   "use strict";
 
   const PLATFORM_KEYS = ["youtube", "twitch", "rumble", "discord"];
+  const INTENT_STORAGE_KEY = "streamsuites.platformIntent";
 
   const el = {
     rows: {}
   };
 
   let platforms = null;
+  let runtimeSnapshot = null;
+  let intent = null;
   let wired = false;
 
   /* ------------------------------------------------------------
@@ -41,6 +44,14 @@
           `[data-platform-row="${key}"] textarea[data-field="notes"]`
         )
       };
+
+      const status = document.querySelector(
+        `[data-platform-status="${key}"]`
+      );
+
+      if (status) {
+        el.rows[key].status = status;
+      }
     });
   }
 
@@ -64,10 +75,99 @@
      HYDRATION + RENDER
      ------------------------------------------------------------ */
 
-  async function hydratePlatforms(forceReload = false) {
+  function normalizeIntent(raw) {
+    if (!raw || typeof raw !== "object") return { platforms: {} };
+
+    const normalized = { platforms: {} };
+    PLATFORM_KEYS.forEach((key) => {
+      const enabled = raw.platforms?.[key]?.enabled;
+      if (enabled === true || enabled === false) {
+        normalized.platforms[key] = { enabled };
+      }
+    });
+
+    return normalized;
+  }
+
+  function loadIntent() {
     try {
-      platforms =
+      const stored =
+        window.App?.storage?.loadFromLocalStorage?.(INTENT_STORAGE_KEY, null) ||
+        null;
+      intent = normalizeIntent(stored);
+    } catch (err) {
+      console.warn("[Platforms] Unable to load platform intent", err);
+      intent = { platforms: {} };
+    }
+  }
+
+  function exportIntentFile() {
+    if (!intent) return;
+    const payload = {
+      generated_at: new Date().toISOString(),
+      platforms: {}
+    };
+
+    PLATFORM_KEYS.forEach((key) => {
+      const enabled = intent.platforms?.[key]?.enabled;
+      if (enabled === true || enabled === false) {
+        payload.platforms[key] = { enabled };
+      }
+    });
+
+    try {
+      window.App?.storage?.saveToLocalStorage?.(INTENT_STORAGE_KEY, payload);
+      window.App?.storage?.downloadJson?.("platform_toggles.delta.json", payload);
+    } catch (err) {
+      console.warn("[Platforms] Unable to persist intent payload", err);
+    }
+  }
+
+  function updateIntent(key, enabled) {
+    if (!intent) intent = { platforms: {} };
+    intent.platforms[key] = { enabled };
+    exportIntentFile();
+  }
+
+  async function hydratePlatforms(forceReload = false) {
+    loadIntent();
+
+    try {
+      runtimeSnapshot =
+        (await window.StreamSuitesState?.loadRuntimeSnapshot?.({ forceReload })) ||
+        null;
+    } catch (err) {
+      console.warn("[Platforms] Unable to hydrate runtime snapshot", err);
+      runtimeSnapshot = null;
+    }
+
+    try {
+      const platformConfig =
         (await window.ConfigState?.loadPlatforms?.({ forceReload })) || null;
+
+      const runtimePlatforms = runtimeSnapshot?.platforms || {};
+      const configPlatforms = platformConfig?.platforms || {};
+
+      const merged = {};
+      PLATFORM_KEYS.forEach((key) => {
+        const runtimeEntry = runtimePlatforms[key] || {};
+        const configEntry = configPlatforms[key] || {};
+        const enabled =
+          typeof runtimeEntry.enabled === "boolean"
+            ? runtimeEntry.enabled
+            : !!configEntry.enabled;
+        const telemetryEnabled =
+          typeof runtimeEntry.telemetry_enabled === "boolean"
+            ? runtimeEntry.telemetry_enabled
+            : !!configEntry.telemetry_enabled;
+        merged[key] = {
+          enabled,
+          telemetry_enabled: telemetryEnabled,
+          notes: configEntry.notes || runtimeEntry.notes || ""
+        };
+      });
+
+      platforms = { schema: "streamsuites.platforms.v1", platforms: merged };
     } catch (err) {
       console.warn("[Platforms] Unable to hydrate platform config", err);
       platforms = null;
@@ -82,8 +182,17 @@
       if (!row) return;
 
       const state = platforms.platforms[key] || {};
+      const desired = intent?.platforms?.[key]?.enabled;
+      const runtimeEnabled = getRuntimeEnabled(key);
+      const effectiveEnabled =
+        desired === true || desired === false
+          ? desired
+          : runtimeEnabled === true || runtimeEnabled === false
+            ? runtimeEnabled
+            : !!state.enabled;
+
       if (row.enabled) {
-        row.enabled.checked = !!state.enabled;
+        row.enabled.checked = !!effectiveEnabled;
         row.enabled.disabled = false;
       }
       if (row.telemetry) {
@@ -94,7 +203,34 @@
         row.notes.value = state.notes || "";
         row.notes.disabled = false;
       }
+
+      if (row.status) {
+        row.status.textContent = describeRestartStatus(desired, runtimeEnabled);
+      }
     });
+  }
+
+  function getRuntimeEnabled(key) {
+    const entry = runtimeSnapshot?.platforms?.[key];
+    if (!entry) return null;
+    return typeof entry.enabled === "boolean" ? entry.enabled : null;
+  }
+
+  function describeRestartStatus(desired, runtimeEnabled) {
+    if (desired === true || desired === false) {
+      if (runtimeEnabled === true || runtimeEnabled === false) {
+        return desired === runtimeEnabled
+          ? "Aligned with runtime"
+          : "Pending restart (intent written)";
+      }
+      return "Pending restart (awaiting runtime)";
+    }
+
+    if (runtimeEnabled === true || runtimeEnabled === false) {
+      return runtimeEnabled ? "Enabled in runtime" : "Disabled in runtime";
+    }
+
+    return "Awaiting telemetry";
   }
 
   /* ------------------------------------------------------------
@@ -132,6 +268,10 @@
       ...platforms.platforms,
       [key]: next
     });
+
+    if (patch.enabled === true || patch.enabled === false) {
+      updateIntent(key, patch.enabled);
+    }
 
     renderRows();
   }

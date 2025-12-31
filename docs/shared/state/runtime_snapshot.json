@@ -1,69 +1,47 @@
 {
   "schema_version": "v1",
-  "generated_at": "2025-12-27T20:19:23.511680Z",
-  "platforms": [
-    {
-      "platform": "discord",
-      "enabled": false,
-      "telemetry_enabled": false,
-      "status": "disabled",
-      "last_heartbeat": null,
-      "error": null
-    },
-    {
-      "platform": "rumble",
+  "generated_at": "2024-06-01T12:00:00Z",
+  "platforms": {
+    "youtube": {
       "enabled": true,
       "telemetry_enabled": true,
       "status": "running",
-      "last_heartbeat": "2025-12-27T20:19:22.625417Z",
-      "error": null
+      "heartbeat_at": "2024-06-01T11:59:45Z",
+      "last_error": null,
+      "counters": {
+        "messages_processed": 1842,
+        "triggers_fired": 76
+      }
     },
-    {
-      "platform": "twitch",
-      "enabled": false,
-      "telemetry_enabled": false,
-      "status": "disabled",
-      "last_heartbeat": null,
-      "error": null
-    },
-    {
-      "platform": "twitter",
+    "twitch": {
       "enabled": true,
       "telemetry_enabled": true,
-      "status": "inactive",
-      "last_heartbeat": null,
-      "error": null
+      "status": "running",
+      "heartbeat_at": "2024-06-01T11:59:30Z",
+      "last_error": null,
+      "counters": {
+        "messages_processed": 956,
+        "triggers_fired": 42
+      }
     },
-    {
-      "platform": "youtube",
+    "rumble": {
       "enabled": true,
       "telemetry_enabled": true,
-      "status": "inactive",
-      "last_heartbeat": null,
-      "error": null
-    }
-  ],
-  "creators": [
-    {
-      "creator_id": "As5TyU",
-      "display_name": "Daniel Clancy",
+      "status": "paused",
+      "paused_reason": "Runtime ingest paused for controlled redeploy",
+      "heartbeat_at": "2024-06-01T11:58:00Z",
+      "last_error": "ingest paused by operator",
+      "counters": {
+        "messages_processed": 0,
+        "triggers_fired": 0
+      }
+    },
+    "discord": {
       "enabled": true,
-      "platforms": {
-        "rumble": true,
-        "youtube": true,
-        "twitch": true,
-        "pilled": false,
-        "twitter": true,
-        "discord": true
-      },
-      "last_heartbeat": "2025-12-27T20:19:22.625417Z",
-      "error": null
+      "telemetry_enabled": true,
+      "status": "running",
+      "heartbeat_at": "2024-06-01T11:59:15Z",
+      "last_error": null
     }
-  ],
-  "rumble_chat": {
-    "chat_id": "424574510",
-    "ingest_status": "FAILED",
-    "error": "[As5TyU] Failed to install EventSource tap on watch page",
-    "updated_at": "2025-12-27T20:19:17.068066Z"
   }
 }
