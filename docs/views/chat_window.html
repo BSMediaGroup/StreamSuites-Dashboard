@@ -155,7 +155,7 @@
     .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
     .avatar-fallback {
-      background: #c7cedf url('../assets/icons/ui/profile.svg') center center/24px 24px no-repeat;
+      background: #c7cedf url('./assets/icons/ui/profile.svg') center center/24px 24px no-repeat;
       filter: grayscale(100%);
     }
 
@@ -188,6 +188,8 @@
       font-size: 0.84rem;
       color: #9bb1ff;
       letter-spacing: 0.02em;
+      display: block;
+      text-align: left;
     }
 
     .text {
@@ -245,73 +247,202 @@
     }
     .moderation-btn.muted { background: rgba(255, 96, 96, 0.12); border-color: rgba(255, 96, 96, 0.5); }
 
-    .input-bar {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      border-top: 1px solid var(--panel-border);
-      background: rgba(10, 12, 20, 0.9);
-      box-shadow: 0 -10px 24px rgba(0, 0, 0, 0.35);
+    .live-input-wrapper {
       position: sticky;
       bottom: 0;
-    }
-    .emoji-btn,
-    .send-btn {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid var(--panel-border);
-      border-radius: 10px;
-      width: 42px;
-      height: 42px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 0 12px rgba(0, 0, 0, 0.35);
-      transition: transform 0.15s ease, box-shadow 0.2s ease;
-    }
-    .emoji-btn:hover,
-    .send-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
-    }
-    .emoji-btn svg { width: 22px; height: 22px; fill: var(--text); }
-    .send-btn img { width: 22px; height: 22px; display: block; }
-    .chat-input {
-      width: 100%;
-      background: rgba(0, 0, 0, 0.35);
-      border: 1px solid var(--panel-border);
-      border-radius: 12px;
-      padding: 10px 12px;
-      color: var(--text);
-      font-family: "SuiGenerisRg", system-ui, sans-serif;
-      font-size: 1rem;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-    }
-    .emoji-menu {
-      position: absolute;
-      bottom: 60px;
-      left: 12px;
+      padding: 14px 16px 16px;
+      background: linear-gradient(180deg, rgba(10, 12, 22, 0.94), rgba(6, 8, 14, 0.96));
+      border-top: 1px solid var(--panel-border);
+      box-shadow: 0 -12px 26px rgba(0, 0, 0, 0.48);
       display: none;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 6px;
-      padding: 8px;
-      background: rgba(12, 16, 28, 0.96);
-      border: 1px solid var(--panel-border);
-      border-radius: 10px;
-      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.45);
-      width: 220px;
+      z-index: 5;
     }
-    .emoji-menu.open { display: grid; }
-    .emoji-menu button {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid var(--panel-border);
-      border-radius: 8px;
-      padding: 6px;
-      cursor: pointer;
-      font-size: 1rem;
+
+    .live-input-wrapper.active { display: block; }
+
+    .composer-shell {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .live-input-wrapper .grid {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(94, 113, 255, 0.2), transparent 32%),
+                  radial-gradient(circle at 80% 0%, rgba(196, 128, 255, 0.18), transparent 32%);
+      filter: blur(18px);
+      opacity: 0.45;
+      pointer-events: none;
+      border-radius: 18px;
+    }
+
+    #poda {
+      position: relative;
+      width: 100%;
+      max-width: 720px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 6px 0;
+    }
+
+    #poda .glow,
+    #poda .darkBorderBg,
+    #poda .white,
+    #poda .border {
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      z-index: 0;
+      filter: blur(3px);
+      overflow: hidden;
+    }
+
+    #poda .glow::before,
+    #poda .darkBorderBg::before,
+    #poda .white::before,
+    #poda .border::before {
+      content: "";
+      position: absolute;
+      width: 620px;
+      height: 620px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-repeat: no-repeat;
+      background-position: 0 0;
+      animation: swirl 14s linear infinite;
+    }
+
+    #poda .glow { filter: blur(16px); opacity: 0.24; }
+    #poda .glow::before {
+      background-image: conic-gradient(#000, #402fb5 10%, #000 34%, #cf30aa 62%, #000 90%);
+    }
+
+    #poda .border::before {
+      background-image: conic-gradient(#16111f, #473cb6 6%, #16111f 16%, #d25bb6 64%, #16111f 80%);
+    }
+
+    #poda .white::before {
+      background-image: conic-gradient(rgba(0, 0, 0, 0) 0%, #a099d8, rgba(0, 0, 0, 0) 10%, #dfa2da 60%, rgba(0, 0, 0, 0) 70%);
+      filter: brightness(1.2);
+    }
+
+    #poda .darkBorderBg::before {
+      background-image: conic-gradient(rgba(0, 0, 0, 0), #18116a 12%, rgba(0, 0, 0, 0) 46%, #6e1b60 68%, rgba(0, 0, 0, 0) 90%);
+      opacity: 0.8;
+    }
+
+    #main {
+      position: relative;
+      width: 100%;
+      background: linear-gradient(180deg, rgba(10, 12, 22, 0.95), rgba(6, 8, 14, 0.96));
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 16px;
+      padding: 14px 60px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 14px 30px rgba(0, 0, 0, 0.46);
+      overflow: hidden;
+      isolation: isolate;
+      z-index: 1;
+    }
+
+    #main .input {
+      width: 100%;
+      background: transparent;
+      border: none;
       color: var(--text);
+      font-size: 1.02rem;
+      font-family: "SuiGenerisRg", system-ui, sans-serif;
+      letter-spacing: 0.02em;
+      z-index: 1;
+    }
+
+    #main .input::placeholder { color: #b9c3de; }
+    #main .input:focus { outline: none; }
+
+    #input-mask,
+    #pink-mask,
+    .filterBorder {
+      position: absolute;
+      inset: 2px;
+      border-radius: 14px;
+      pointer-events: none;
+    }
+
+    #input-mask {
+      background: linear-gradient(120deg, rgba(255, 255, 255, 0.05), rgba(94, 132, 255, 0.08));
+      filter: blur(6px);
+      z-index: 0;
+    }
+
+    #pink-mask {
+      background: radial-gradient(circle at 20% 20%, rgba(207, 48, 170, 0.18), transparent 42%),
+                  radial-gradient(circle at 80% 30%, rgba(83, 83, 255, 0.2), transparent 46%);
+      opacity: 0.9;
+      z-index: 0;
+    }
+
+    .filterBorder {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 0;
+      mix-blend-mode: screen;
+    }
+
+    #search-icon,
+    #filter-icon {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(180deg, #161329, #0d0b24);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow: 0 10px 18px rgba(0, 0, 0, 0.4);
+      z-index: 2;
+    }
+
+    #search-icon { left: 12px; }
+    #filter-icon { right: 12px; cursor: pointer; }
+
+    #search-icon img,
+    #filter-icon img {
+      width: 20px;
+      height: 20px;
+      display: block;
+      filter: drop-shadow(0 0 6px rgba(83, 122, 255, 0.3));
+    }
+
+    #poda::after {
+      content: "";
+      position: absolute;
+      inset: -10px;
+      background: radial-gradient(circle at 50% 0%, rgba(94, 132, 255, 0.14), transparent 40%);
+      filter: blur(26px);
+      z-index: -1;
+    }
+
+    .grid::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+                  linear-gradient(180deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+      background-size: 22px 22px;
+      opacity: 0.25;
+    }
+
+    @keyframes swirl {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
     }
 
     .footer-note {
@@ -340,21 +471,21 @@
     <div class="timeline" aria-label="Live chat placeholder">
       <div class="message">
         <div class="avatar" aria-hidden="true">
-          <img src="../assets/placeholders/streamsuites.jpg" alt="" />
+          <img src="./assets/placeholders/daniel.png" alt="" />
         </div>
         <div class="header-row">
           <div class="author-stack">
             <span class="author">
               creator_live
               <span class="role-badge" title="Pro User" data-label="PRO">
-                <img src="../assets/icons/prouser.svg" alt="Pro user" />
+                <img src="./assets/icons/prouser.svg" alt="Pro user" />
               </span>
             </span>
             <span class="timestamp">LIVE</span>
           </div>
         </div>
         <span class="platform" aria-label="YouTube">
-          <img src="../assets/icons/youtube.svg" alt="YouTube" />
+          <img src="./assets/icons/youtube.svg" alt="YouTube" />
           YouTube
         </span>
         <div class="text">Incoming live messages render with the same badges and avatar alignment used in the overlay preview.</div>
@@ -362,7 +493,7 @@
 
       <div class="message">
         <div class="avatar" aria-hidden="true">
-          <img src="../assets/placeholders/daniel.png" alt="" />
+          <img src="./assets/placeholders/daniel.png" alt="" />
         </div>
         <div class="header-row">
           <div class="author-stack">
@@ -370,19 +501,19 @@
               Daniel Clancy
               <span class="role-pill" title="Admin">ADMIN</span>
               <span class="role-badge" title="Moderator" data-label="MOD">
-                <img src="../assets/icons/mod.svg" alt="Moderator" />
+                <img src="./assets/icons/mod.svg" alt="Moderator" />
               </span>
               <span class="role-badge" title="Pro User" data-label="PRO">
-                <img src="../assets/icons/prouser.svg" alt="Pro user" />
+                <img src="./assets/icons/prouser.svg" alt="Pro user" />
               </span>
             </span>
             <span class="timestamp">LIVE</span>
           </div>
           <button class="moderation-btn" data-moderation="shield">…</button>
         </div>
-        <span class="platform" aria-label="Twitter">
-          <img src="../assets/icons/twitter.svg" alt="Twitter" />
-          Twitter/X
+        <span class="platform" aria-label="Discord">
+          <img src="./assets/icons/discord.svg" alt="Discord" />
+          Discord
         </span>
         <div class="text">Daniel carries admin, mod, and pro badges to verify multi-badge rendering without overlap.</div>
       </div>
@@ -394,7 +525,7 @@
             <span class="author">
               mod_team
               <span class="role-badge" title="Moderator" data-label="MOD">
-                <img src="../assets/icons/mod.svg" alt="Moderator" />
+                <img src="./assets/icons/mod.svg" alt="Moderator" />
               </span>
             </span>
             <span class="timestamp">LIVE</span>
@@ -402,30 +533,41 @@
           <button class="moderation-btn" data-moderation="shield">…</button>
         </div>
         <span class="platform" aria-label="Twitch">
-          <img src="../assets/icons/twitch.svg" alt="Twitch" />
+          <img src="./assets/icons/twitch.svg" alt="Twitch" />
           Twitch
         </span>
         <div class="text">Live mode retains the fallback silhouette when no avatar URL is present.</div>
       </div>
     </div>
 
-    <div class="input-bar" aria-label="Chat composer">
-      <button class="emoji-btn" id="emoji-btn" aria-label="Open emoji picker">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="10" stroke="none"></circle>
-          <circle cx="9" cy="10" r="1.4" fill="var(--text)"></circle>
-          <circle cx="15" cy="10" r="1.4" fill="var(--text)"></circle>
-          <path d="M8 15c1 .8 2.2 1.3 4 1.3s3-.5 4-1.3" stroke="var(--text)" stroke-width="1.6" stroke-linecap="round" fill="none"></path>
-        </svg>
-      </button>
-      <input class="chat-input" type="text" placeholder="Type a message…" aria-label="Chat input" />
-      <button class="send-btn" aria-label="Send message">
-        <img src="../assets/icons/ui/send.svg" alt="Send" />
-      </button>
-      <div class="emoji-menu" id="emoji-menu" aria-label="Emoji menu">
-        <button>😀</button><button>😁</button><button>😂</button><button>😉</button><button>😍</button><button>😎</button>
-        <button>🥳</button><button>🤔</button><button>😴</button><button>🤯</button><button>🙌</button><button>🔥</button>
-        <button>👍</button><button>👀</button><button>💯</button><button>🎉</button><button>🛡️</button><button>⚡</button>
+    <div class="live-input-wrapper" id="live-input-wrapper" aria-label="Chat composer">
+      <div class="composer-shell">
+        <!-- From Uiverse.io by Lakshay-art -->
+        <div class="grid"></div>
+        <div id="poda">
+          <div class="glow"></div>
+          <div class="darkBorderBg"></div>
+          <div class="darkBorderBg"></div>
+          <div class="darkBorderBg"></div>
+          <div class="white"></div>
+          <div class="border"></div>
+          <div id="main">
+            <input placeholder="Type a live message" type="text" name="text" class="input" />
+            <div id="input-mask"></div>
+            <div id="pink-mask"></div>
+            <div class="filterBorder"></div>
+
+            <!-- LEFT ICON: EMOJI BUTTON (PLACEHOLDER ONLY) -->
+            <div id="search-icon">
+              <img src="./assets/icons/ui/profile.svg" />
+            </div>
+
+            <!-- RIGHT ICON: SEND BUTTON -->
+            <div id="filter-icon">
+              <img src="./assets/icons/ui/send.svg" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -439,10 +581,7 @@
       const modePill = document.getElementById('mode-pill');
       const body = document.body;
       const moderationButtons = Array.from(document.querySelectorAll('.moderation-btn'));
-      const emojiBtn = document.getElementById('emoji-btn');
-      const emojiMenu = document.getElementById('emoji-menu');
-      const chatInput = document.querySelector('.chat-input');
-      const inputBar = document.querySelector('.input-bar');
+      const liveInputWrapper = document.getElementById('live-input-wrapper');
       const badgeImages = document.querySelectorAll('.role-badge img');
 
       const clearThemes = () => {
@@ -475,9 +614,7 @@
         modePill.style.borderColor = mode === 'replay' ? 'rgba(116, 146, 255, 0.3)' : modePill.style.borderColor;
       }
 
-      if (inputBar) {
-        inputBar.style.display = mode === 'live' ? 'grid' : 'none';
-      }
+      liveInputWrapper?.classList.toggle('active', mode === 'live');
 
       selector?.addEventListener('change', (event) => {
         applyTheme(event.target.value);
@@ -490,19 +627,6 @@
         });
       });
 
-      emojiBtn?.addEventListener('click', () => {
-        const open = emojiMenu?.classList.toggle('open');
-        if (open) {
-          emojiMenu?.setAttribute('data-open', 'true');
-        } else {
-          emojiMenu?.removeAttribute('data-open');
-        }
-      });
-      emojiMenu?.addEventListener('click', (event) => {
-        if (event.target.tagName === 'BUTTON' && chatInput) {
-          chatInput.value = `${chatInput.value}${event.target.textContent}`;
-        }
-      });
       badgeImages.forEach((img) => {
         img.addEventListener('error', () => {
           const pill = document.createElement('span');

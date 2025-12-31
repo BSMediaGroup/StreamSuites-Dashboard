@@ -430,11 +430,11 @@
       </div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <button class="ss-popout-btn" id="popout-chat-button" type="button">
-          <img src="../assets/icons/ui/windows.svg" alt="Pop-out" width="18" height="18" />
+          <img src="./assets/icons/ui/send.svg" alt="Pop-out" width="18" height="18" />
           Pop-out Chat Window
         </button>
         <button class="ss-popout-btn" id="popout-overlay-button" type="button">
-          <img src="../assets/icons/ui/windows.svg" alt="Pop-out" width="18" height="18" />
+          <img src="./assets/icons/ui/send.svg" alt="Pop-out" width="18" height="18" />
           Pop-out OBS Overlay
         </button>
       </div>
@@ -524,27 +524,27 @@
                 <button type="button">👏</button>
               </div>
               <button class="send-icon" type="button" aria-label="Send">
-                <img src="../assets/icons/ui/send.svg" alt="Send" width="18" height="18" />
+                <img src="./assets/icons/ui/send.svg" alt="Send" width="18" height="18" />
               </button>
             </div>
           </div>
           <div class="ss-mock-chat" aria-label="Badge alignment preview">
             <div class="ss-mock-row">
               <div class="avatar" aria-hidden="true">
-                <img src="../assets/placeholders/daniel.png" alt="" />
+                <img src="./assets/placeholders/daniel.png" alt="" />
               </div>
               <div class="meta">
                 <div class="name">daniel_clancy</div>
                 <div class="badges">
-                  <span class="badge" title="Owner"><img src="../assets/icons/dcbadge.svg" alt="Owner" /></span>
-                  <span class="badge" title="Pro User"><img src="../assets/icons/prouser.svg" alt="Pro" /></span>
-                  <span class="badge" title="Moderator"><img src="../assets/icons/mod.svg" alt="Moderator" /></span>
+                  <span class="badge" title="Owner"><img src="./assets/icons/dcbadge.svg" alt="Owner" /></span>
+                  <span class="badge" title="Pro User"><img src="./assets/icons/prouser.svg" alt="Pro" /></span>
+                  <span class="badge" title="Moderator"><img src="./assets/icons/mod.svg" alt="Moderator" /></span>
                 </div>
                 <div class="text">Multi-badge example shows stack ordering with reduced text size and tighter line-height.</div>
               </div>
               <div class="platform-stack">
-                <span class="platform-badge" aria-label="YouTube"><img src="../assets/icons/youtube.svg" alt="YouTube" />YouTube</span>
-                <span class="platform-badge" aria-label="Discord"><img src="../assets/icons/discord.svg" alt="Discord" />Discord</span>
+                <span class="platform-badge" aria-label="YouTube"><img src="./assets/icons/youtube.svg" alt="YouTube" />YouTube</span>
+                <span class="platform-badge" aria-label="Discord"><img src="./assets/icons/discord.svg" alt="Discord" />Discord</span>
               </div>
             </div>
           </div>
@@ -572,7 +572,7 @@
           <div class="ss-iframe-frame">
             <iframe
               id="window-preview"
-              src="./views/chat_replay_window.html?mode=replay&theme=default"
+              src="./chat_replay_window.html?mode=replay&theme=default"
               title="Embedded Chat Window Preview"
               style="width:100%;height:360px;border:0;filter:saturate(1);background:#0d1220;"
               loading="lazy"
@@ -591,7 +591,7 @@
           <div class="ss-iframe-frame">
             <iframe
               id="overlay-preview"
-              src="./views/chat_overlay_obs.html?theme=default&mode=replay"
+              src="./chat_overlay_obs.html?theme=default&mode=replay"
               title="OBS / Browser Source Overlay Preview"
               style="width:100%;height:360px;border:0;filter:saturate(1);background:#0d1220;"
               loading="lazy"
@@ -613,9 +613,78 @@
   </span>
 </footer>
 
-<script src="../js/chatReplay.js"></script>
 <script>
-  window.ChatReplayPreview?.initChatReplayPreview();
+  (() => {
+    const themeCard = document.getElementById('theme-card');
+    const modeButtons = Array.from(document.querySelectorAll('.ss-mode-button'));
+    const chatButton = document.getElementById('popout-chat-button');
+    const overlayButton = document.getElementById('popout-overlay-button');
+    const windowFrame = document.getElementById('window-preview');
+    const overlayFrame = document.getElementById('overlay-preview');
+
+    const state = {
+      theme: themeCard?.querySelector('.element.active')?.dataset.theme || 'default',
+      mode: modeButtons.find((btn) => btn.classList.contains('active'))?.dataset.mode || 'replay'
+    };
+
+    const setModeButtonState = () => {
+      modeButtons.forEach((button) => button.classList.toggle('active', button.dataset.mode === state.mode));
+    };
+
+    const setThemeState = (nextTheme) => {
+      if (!nextTheme) return;
+      state.theme = nextTheme;
+      themeCard?.querySelectorAll('.element').forEach((el) => {
+        el.classList.toggle('active', el.dataset.theme === state.theme);
+      });
+    };
+
+    const windowSrc = () =>
+      state.mode === 'live'
+        ? `./chat_window.html?mode=live&theme=${state.theme}`
+        : `./chat_replay_window.html?mode=replay&theme=${state.theme}`;
+
+    const overlaySrc = () => `./chat_overlay_obs.html?theme=${state.theme}&mode=${state.mode}`;
+
+    const reloadFrames = () => {
+      if (windowFrame) {
+        windowFrame.src = windowSrc();
+      }
+      if (overlayFrame) {
+        overlayFrame.src = overlaySrc();
+      }
+    };
+
+    themeCard?.addEventListener('click', (event) => {
+      const element = event.target.closest('.element');
+      if (!element || !themeCard.contains(element)) return;
+      const nextTheme = element.dataset.theme;
+      setThemeState(nextTheme);
+      reloadFrames();
+    });
+
+    modeButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const nextMode = button.dataset.mode;
+        if (!nextMode) return;
+        state.mode = nextMode;
+        setModeButtonState();
+        reloadFrames();
+      });
+    });
+
+    chatButton?.addEventListener('click', () => {
+      const target = windowFrame?.src || windowSrc();
+      window.open(target, '_blank', 'noopener');
+    });
+
+    overlayButton?.addEventListener('click', () => {
+      window.open(overlaySrc(), '_blank', 'noopener');
+    });
+
+    setModeButtonState();
+    reloadFrames();
+  })();
 
   (() => {
     const toggle = document.getElementById('emoji-toggle');
@@ -636,20 +705,5 @@
     });
 
     document.addEventListener('click', () => closeMenu());
-  })();
-
-  (() => {
-    const chatButton = document.getElementById('popout-chat-button');
-    const overlayButton = document.getElementById('popout-overlay-button');
-    const windowFrame = document.getElementById('window-preview');
-    const overlayFrame = document.getElementById('overlay-preview');
-
-    const openFrame = (frame) => {
-      if (!frame) return;
-      window.open(frame.src, '_blank', 'noopener');
-    };
-
-    chatButton?.addEventListener('click', () => openFrame(windowFrame));
-    overlayButton?.addEventListener('click', () => openFrame(overlayFrame));
   })();
 </script>
