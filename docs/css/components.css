@@ -649,6 +649,10 @@
   background: rgba(0, 200, 120, 0.12);
 }
 
+.ss-job-disabled td {
+  color: var(--text-secondary);
+}
+
 .ss-restart-summary {
   margin-top: 12px;
   padding: 12px;

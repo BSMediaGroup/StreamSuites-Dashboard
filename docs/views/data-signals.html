@@ -324,12 +324,16 @@
           <input type="search" id="jobs-search" class="ss-input" placeholder="Search jobs by id, type, or state" />
           <span class="muted" id="jobs-count">Loading…</span>
         </div>
+        <p class="muted">Job enablement is read-only. Changes are written for the next restart by the runtime, not this dashboard.</p>
         <table class="ss-table ss-table-compact" id="jobs-table">
           <thead>
             <tr>
               <th data-sort="id">Job ID</th>
               <th data-sort="type">Type</th>
               <th data-sort="state">State</th>
+              <th data-sort="enabled">Enablement</th>
+              <th>Restart</th>
+              <th data-sort="reason">Reason</th>
               <th data-sort="last_run">Last run</th>
               <th data-sort="next_run">Next run</th>
             </tr>
