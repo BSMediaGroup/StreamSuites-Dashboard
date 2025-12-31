@@ -85,6 +85,11 @@ All public pages are independent entry points, GitHub Pages–safe, and reuse `d
 - **Posture:** Read-only; tables hydrate from static JSON exports under `docs/data/`.
 - **Operational notices:** Explicitly notes runtime exports as the source of truth; the dashboard is CMS-style visibility only.
 
+## Unified Chat Replay (Planned)
+- **Dashboard previews only:** `docs/views/chat-replay.html` hosts preview iframes for the unified replay UI without enabling runtime control.
+- **File-based placeholders:** The pop-out window (`docs/views/chat_replay_window.html`) and OBS/browser source overlay (`docs/views/chat_overlay_obs.html`) are local HTML mocks surfaced purely for documentation.
+- **Future hydration path:** Runtime replay feeds will hydrate both surfaces once the unified engine is active; today they remain scaffolded and offline.
+
 ## Design Principles & Schema-Driven Architecture
 - **Static-first, schema-driven, platform-neutral, future-proof.**
 - **Local-first drafts** stored in `localStorage` until exported as deterministic bundles (`creators.json`, `platforms.json`).
@@ -350,6 +355,8 @@ StreamSuites-Dashboard/
 │   └── views
 │       ├── about.html
 │       ├── chat-replay.html
+│       ├── chat_overlay_obs.html
+│       ├── chat_replay_window.html
 │       ├── clips.html
 │       ├── creators.html
 │       ├── data-signals.html

@@ -127,6 +127,12 @@ a:hover {
   color: var(--text-secondary);
 }
 
+#app-nav li.nav-disabled,
+#app-nav .nav-overflow-menu li.nav-disabled {
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.01);
+}
+
 #app-nav li:hover {
   color: var(--link-accent);
   background: rgba(255, 255, 255, 0.02);

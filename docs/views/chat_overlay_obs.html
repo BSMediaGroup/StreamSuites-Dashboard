@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chat Overlay OBS — Placeholder</title>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      margin: 0;
+      font-family: "SuiGenerisRg", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #05060c;
+      color: #e8edff;
+      overflow: hidden;
+    }
+    .overlay-shell {
+      position: relative;
+      height: 100vh;
+      width: 100%;
+      background: radial-gradient(circle at 20% 20%, rgba(68, 120, 255, 0.16), transparent 38%),
+                  radial-gradient(circle at 80% 10%, rgba(120, 92, 255, 0.15), transparent 34%),
+                  linear-gradient(135deg, rgba(12, 18, 32, 0.95), rgba(8, 10, 18, 0.98));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02), 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    .overlay-header {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      padding: 8px 12px;
+      background: rgba(8, 12, 22, 0.82);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-size: 0.82rem;
+    }
+    .overlay-status {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      padding: 8px 10px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      color: #dce6ff;
+    }
+    .chat-stack {
+      position: absolute;
+      inset: 56px 16px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow: hidden;
+    }
+    .bubble {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 4px;
+      max-width: 420px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(6, 10, 18, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+    }
+    .bubble .meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      letter-spacing: 0.03em;
+      color: #9eb7ff;
+    }
+    .bubble .meta .platform {
+      padding: 2px 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.06);
+      color: #dfe6ff;
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .bubble .content {
+      color: #e8edff;
+      line-height: 1.5;
+    }
+    .bubble.alt {
+      align-self: flex-end;
+      background: rgba(13, 20, 36, 0.82);
+    }
+    .note {
+      position: absolute;
+      bottom: 12px;
+      right: 16px;
+      color: #9aa7c7;
+      font-size: 0.9rem;
+      letter-spacing: 0.02em;
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay-shell">
+    <div class="overlay-header">OBS / Browser Source Overlay</div>
+    <div class="overlay-status">Scaffolded — static placeholder</div>
+    <div class="chat-stack" aria-label="Static overlay chat preview">
+      <div class="bubble">
+        <div class="meta">
+          <span class="platform">YT</span>
+          <span>creator_live</span>
+          <span>00:14:22</span>
+        </div>
+        <div class="content">Unified Chat Replay will hydrate this overlay once runtime feeds are connected.</div>
+      </div>
+      <div class="bubble alt">
+        <div class="meta">
+          <span class="platform">TW</span>
+          <span>mod_team</span>
+          <span>00:14:47</span>
+        </div>
+        <div class="content">This documentation-grade preview is file-based only and mirrors the dark glass theme.</div>
+      </div>
+      <div class="bubble">
+        <div class="meta">
+          <span class="platform">RU</span>
+          <span>guest_overlay</span>
+          <span>00:15:08</span>
+        </div>
+        <div class="content">Expect pacing controls and dynamic hydration after the unified replay engine ships.</div>
+      </div>
+    </div>
+    <div class="note">No live sockets. No persistence. Preview only.</div>
+  </div>
+</body>
+</html>
