@@ -97,50 +97,137 @@ The runtime supports multiple ingest paths (SSE preferred, DOM-based fallback, A
 ## Directory Structure (exhaustive)
 ```
 StreamSuites-Dashboard/
+├── .gitignore
 ├── DASHBOARD_AUDIT_REPORT.md
 ├── LICENSE
 ├── README.md
-├── favicon.ico
-├── docs/
+├── dev-notes
+│   ├── compatibility.md
+│   ├── decisions.md
+│   └── roadmap.md
+├── docs
 │   ├── CONTRACTS.md
 │   ├── POST_MORTEM.md
 │   ├── TIERS.md
-│   ├── accessibility.html
+│   ├── Thumbs.db
+│   ├── about
+│   │   ├── about.manifest.json
+│   │   ├── about_part1_core.json
+│   │   ├── about_part2_platforms_interfaces.json
+│   │   └── about_part3_about_system_spec.json
 │   ├── about.html
+│   ├── accessibility.html
+│   ├── assets
+│   │   ├── backgrounds
+│   │   │   ├── .gitkeep
+│   │   │   ├── Thumbs.db
+│   │   │   ├── seodash.jpg
+│   │   │   └── seoshare.jpg
+│   │   ├── fonts
+│   │   │   └── .gitkeep
+│   │   ├── icons
+│   │   │   ├── .gitkeep
+│   │   │   ├── browser-extension.svg
+│   │   │   ├── discord-0.svg
+│   │   │   ├── discord-muted.svg
+│   │   │   ├── discord-silver.svg
+│   │   │   ├── discord-white.svg
+│   │   │   ├── discord.svg
+│   │   │   ├── favicon.ico
+│   │   │   ├── obs-0.svg
+│   │   │   ├── obs-silver.svg
+│   │   │   ├── obs-white.svg
+│   │   │   ├── obs.svg
+│   │   │   ├── pilled-0.svg
+│   │   │   ├── pilled-muted.svg
+│   │   │   ├── pilled-silver.svg
+│   │   │   ├── pilled-white.svg
+│   │   │   ├── pilled.svg
+│   │   │   ├── rumble-0.svg
+│   │   │   ├── rumble-muted.svg
+│   │   │   ├── rumble-silver.svg
+│   │   │   ├── rumble-white.svg
+│   │   │   ├── rumble.svg
+│   │   │   ├── twitch-0.svg
+│   │   │   ├── twitch-silver.svg
+│   │   │   ├── twitch-white.svg
+│   │   │   ├── twitch.svg
+│   │   │   ├── twitter-0.svg
+│   │   │   ├── twitter-muted.svg
+│   │   │   ├── twitter-silver.svg
+│   │   │   ├── twitter-square-0.svg
+│   │   │   ├── twitter-square-muted.svg
+│   │   │   ├── twitter-square-silver.svg
+│   │   │   ├── twitter-square-white.svg
+│   │   │   ├── twitter-square.svg
+│   │   │   ├── twitter-white.svg
+│   │   │   ├── twitter.svg
+│   │   │   ├── ui
+│   │   │   │   ├── Thumbs.db
+│   │   │   │   ├── admin.svg
+│   │   │   │   ├── api.svg
+│   │   │   │   ├── automation.svg
+│   │   │   │   ├── bot.svg
+│   │   │   │   ├── brick.svg
+│   │   │   │   ├── browser.svg
+│   │   │   │   ├── cards.svg
+│   │   │   │   ├── clickpoint.svg
+│   │   │   │   ├── codeblock.svg
+│   │   │   │   ├── cog.svg
+│   │   │   │   ├── dashboard.svg
+│   │   │   │   ├── dashgear.svg
+│   │   │   │   ├── devices.svg
+│   │   │   │   ├── extension.svg
+│   │   │   │   ├── globe.svg
+│   │   │   │   ├── identity.svg
+│   │   │   │   ├── inputs.svg
+│   │   │   │   ├── joystick.svg
+│   │   │   │   ├── memory.svg
+│   │   │   │   ├── options.svg
+│   │   │   │   ├── package.svg
+│   │   │   │   ├── pc.svg
+│   │   │   │   ├── plus.svg
+│   │   │   │   ├── portal.svg
+│   │   │   │   ├── profile.svg
+│   │   │   │   ├── settingsquare.svg
+│   │   │   │   ├── sidebar.svg
+│   │   │   │   ├── storage.svg
+│   │   │   │   ├── switch.svg
+│   │   │   │   ├── terminal.svg
+│   │   │   │   ├── tune.svg
+│   │   │   │   ├── ui.svg
+│   │   │   │   ├── uiscreen.svg
+│   │   │   │   ├── webhook.svg
+│   │   │   │   ├── widget.svg
+│   │   │   │   └── windows.svg
+│   │   │   ├── win1.ico
+│   │   │   ├── x.svg
+│   │   │   ├── youtube-0.svg
+│   │   │   ├── youtube-muted.svg
+│   │   │   ├── youtube-silver.svg
+│   │   │   ├── youtube-white.svg
+│   │   │   └── youtube.svg
+│   │   ├── illustrations
+│   │   │   └── .gitkeep
+│   │   ├── logos
+│   │   │   ├── LOG2-3D-SML.png
+│   │   │   ├── LOG2-3D.png
+│   │   │   ├── LOG2TRIM-SML.png
+│   │   │   ├── LOG2TRIM.png
+│   │   │   ├── Thumbs.db
+│   │   │   ├── logo.png
+│   │   │   ├── logocircle.png
+│   │   │   ├── logocircle.svg
+│   │   │   ├── seodash.jpg
+│   │   │   ├── sswm.png
+│   │   │   └── streamsuites.svg
+│   │   └── placeholders
+│   │       └── .gitkeep
 │   ├── changelog.html
+│   ├── clips
+│   │   └── detail.html
 │   ├── clips.html
-│   ├── favicon.ico
-│   ├── home.html
-│   ├── index.html
-│   ├── lander.html
-│   ├── polls.html
-│   ├── postmortem.html
-│   ├── privacy.html
-│   ├── scoreboards.html
-│   ├── tallies.html
-│   ├── version.json
-│   ├── clips/
-│   │   └── detail.html
-│   ├── polls/
-│   │   ├── detail.html
-│   │   └── results.html
-│   ├── scoreboards/
-│   │   └── detail.html
-│   ├── tallies/
-│   │   └── detail.html
-│   ├── shared/
-│   │   ├── suspension/
-│   │   │   ├── suspension-banner.css
-│   │   │   └── suspension-banner.js
-│   │   └── state/
-│   │       ├── README.md
-│   │       ├── clips.json
-│   │       ├── jobs.json
-│   │       ├── quotas.json
-│   │       ├── runtime_snapshot.json
-│   │       └── discord/
-│   │           └── runtime.json
-│   ├── css/
+│   ├── css
 │   │   ├── base.css
 │   │   ├── components.css
 │   │   ├── layout.css
@@ -148,134 +235,7 @@ StreamSuites-Dashboard/
 │   │   ├── public-pages.css
 │   │   ├── theme-dark.css
 │   │   └── updates.css
-│   ├── views/
-│   │   ├── about.html
-│   │   ├── chat-replay.html
-│   │   ├── clips.html
-│   │   ├── creators.html
-│   │   ├── data-signals.html
-│   │   ├── jobs.html
-│   │   ├── overview.html
-│   │   ├── polls.html
-│   │   ├── ratelimits.html
-│   │   ├── scoreboard-management.html
-│   │   ├── scoreboards.html
-│   │   ├── settings.html
-│   │   ├── support.html
-│   │   ├── tallies.html
-│   │   ├── triggers.html
-│   │   ├── updates.html
-│   │   └── platforms/
-│   │       ├── discord.html
-│   │       ├── rumble.html
-│   │       ├── twitch.html
-│   │       ├── twitter.html
-│   │       └── youtube.html
-│   ├── assets/
-│   │   ├── backgrounds/
-│   │   │   ├── seodash.jpg
-│   │   │   └── seoshare.jpg
-│   │   ├── fonts/
-│   │   ├── icons/
-│   │   │   ├── browser-extension.svg
-│   │   │   ├── discord-0.svg (and variants)
-│   │   │   ├── obs-0.svg (and variants)
-│   │   │   ├── pilled-0.svg (and variants)
-│   │   │   ├── rumble-0.svg (and variants)
-│   │   │   ├── twitch-0.svg (and variants)
-│   │   │   ├── twitter-0.svg / twitter-square-0.svg (and variants)
-│   │   │   ├── youtube-0.svg (and variants)
-│   │   │   └── ui/
-│   │   │       ├── admin.svg
-│   │   │       ├── api.svg
-│   │   │       ├── automation.svg
-│   │   │       ├── bot.svg
-│   │   │       ├── chart.svg
-│   │   │       ├── checklist.svg
-│   │   │       ├── clip.svg
-│   │   │       ├── cloud.svg
-│   │   │       ├── download.svg
-│   │   │       ├── edit.svg
-│   │   │       ├── export.svg
-│   │   │       ├── file.svg
-│   │   │       ├── filter.svg
-│   │   │       ├── folder.svg
-│   │   │       ├── heartbeat.svg
-│   │   │       ├── import.svg
-│   │   │       ├── info.svg
-│   │   │       ├── jobs.svg
-│   │   │       ├── json.svg
-│   │   │       ├── list.svg
-│   │   │       ├── lock.svg
-│   │   │       ├── logs.svg
-│   │   │       ├── monitor.svg
-│   │   │       ├── placeholder.svg
-│   │   │       ├── roadmap.svg
-│   │   │       ├── runtime.svg
-│   │   │       ├── search.svg
-│   │   │       ├── settings.svg
-│   │   │       ├── stats.svg
-│   │   │       ├── support.svg
-│   │   │       ├── webhook.svg
-│   │   │       ├── widget.svg
-│   │   │       └── windows.svg
-│   │   ├── illustrations/
-│   │   ├── logos/
-│   │   │   ├── LOG2-3D-SML.png
-│   │   │   ├── LOG2-3D.png
-│   │   │   ├── LOG2TRIM-SML.png
-│   │   │   ├── LOG2TRIM.png
-│   │   │   ├── logo.png
-│   │   │   ├── logocircle.png
-│   │   │   ├── logocircle.svg
-│   │   │   ├── seodash.jpg
-│   │   │   ├── sswm.png
-│   │   │   └── streamsuites.svg
-│   │   └── placeholders/
-│   ├── js/
-│   │   ├── about.js
-│   │   ├── api.js
-│   │   ├── app.js
-│   │   ├── auth.js
-│   │   ├── changelog-merge.js
-│   │   ├── charts.js
-│   │   ├── chatReplay.js
-│   │   ├── clip-detail.js
-│   │   ├── clips.js
-│   │   ├── creators.js
-│   │   ├── data-signals.js
-│   │   ├── jobs.js
-│   │   ├── overview.js
-│   │   ├── permissions.js
-│   │   ├── platforms.js
-│   │   ├── poll-detail.js
-│   │   ├── public-about.js
-│   │   ├── public-changelog.js
-│   │   ├── public-clips.js
-│   │   ├── public-data.js
-│   │   ├── public-polls.js
-│   │   ├── public-roadmap.js
-│   │   ├── public-tallies.js
-│   │   ├── ratelimits.js
-│   │   ├── render.js
-│   │   ├── settings.js
-│   │   ├── state.js
-│   │   ├── tally-detail.js
-│   │   ├── telemetry.js
-│   │   ├── triggers.js
-│   │   ├── updates.js
-│   │   ├── utils/
-│   │   │   ├── about-data.js
-│   │   │   ├── search-pagination.js
-│   │   │   ├── version-stamp.js
-│   │   │   └── versioning.js
-│   │   └── platforms/
-│   │       ├── discord.js
-│   │       ├── rumble.js
-│   │       ├── twitch.js
-│   │       ├── twitter.js
-│   │       └── youtube.js
-│   ├── data/
+│   ├── data
 │   │   ├── changelog.dashboard.json
 │   │   ├── changelog.runtime.json
 │   │   ├── chat_events.json
@@ -296,46 +256,133 @@ StreamSuites-Dashboard/
 │   │   ├── scoreboards.json
 │   │   ├── tallies.json
 │   │   └── tally_events.json
-│   ├── about/
-│   │   ├── about.manifest.json
-│   │   ├── about_part1_core.json
-│   │   ├── about_part2_platforms_interfaces.json
-│   │   └── about_part3_about_system_spec.json
-│   ├── support/
+│   ├── favicon.ico
+│   ├── home.html
+│   ├── index.html
+│   ├── js
+│   │   ├── about.js
+│   │   ├── api.js
+│   │   ├── app.js
+│   │   ├── auth.js
+│   │   ├── changelog-merge.js
+│   │   ├── charts.js
+│   │   ├── chatReplay.js
+│   │   ├── clip-detail.js
+│   │   ├── clips.js
+│   │   ├── creators.js
+│   │   ├── data-signals.js
+│   │   ├── jobs.js
+│   │   ├── overview.js
+│   │   ├── permissions.js
+│   │   ├── platforms
+│   │   │   ├── discord.js
+│   │   │   ├── rumble.js
+│   │   │   ├── twitch.js
+│   │   │   ├── twitter.js
+│   │   │   └── youtube.js
+│   │   ├── platforms.js
+│   │   ├── poll-detail.js
+│   │   ├── public-about.js
+│   │   ├── public-changelog.js
+│   │   ├── public-clips.js
+│   │   ├── public-data.js
+│   │   ├── public-polls.js
+│   │   ├── public-roadmap.js
+│   │   ├── public-tallies.js
+│   │   ├── ratelimits.js
+│   │   ├── render.js
+│   │   ├── settings.js
+│   │   ├── state.js
+│   │   ├── tally-detail.js
+│   │   ├── telemetry.js
+│   │   ├── triggers.js
+│   │   ├── updates.js
+│   │   └── utils
+│   │       ├── about-data.js
+│   │       ├── search-pagination.js
+│   │       ├── version-stamp.js
+│   │       └── versioning.js
+│   ├── lander.html
+│   ├── polls
+│   │   ├── detail.html
+│   │   └── results.html
+│   ├── polls.html
+│   ├── postmortem.html
+│   ├── privacy.html
+│   ├── scoreboards
+│   │   └── detail.html
+│   ├── scoreboards.html
+│   ├── shared
+│   │   ├── state
+│   │   │   ├── README.md
+│   │   │   ├── clips.json
+│   │   │   ├── discord
+│   │   │   │   └── runtime.json
+│   │   │   ├── jobs.json
+│   │   │   ├── quotas.json
+│   │   │   └── runtime_snapshot.json
+│   │   └── suspension
+│   │       ├── suspension-banner.css
+│   │       └── suspension-banner.js
+│   ├── support
 │   │   ├── index.html
-│   │   └── views/
+│   │   └── views
 │   │       ├── documentation.html
 │   │       └── overview.html
-│   └── tools/
-│       ├── index.html
-│       └── views/
-│           ├── automation.html
-│           ├── overview.html
-│           └── studio.html
-├── schemas/
-│   ├── chat_behaviour.schema.json
-│   ├── chat_log.schema.json
-│   ├── clip_schema.json
-│   ├── creators.schema.json
-│   ├── jobs.schema.json
-│   ├── permissions.schema.json
-│   ├── poll_schema.json
-│   ├── quotas.schema.json
-│   ├── ratelimits.schema.json
-│   ├── services.schema.json
-│   ├── system.schema.json
-│   ├── tiers.schema.json
-│   ├── triggers.schema.json
-│   └── platform/
-│       ├── discord.schema.json
-│       ├── rumble.schema.json
-│       ├── twitch.schema.json
-│       ├── twitter.schema.json
-│       └── youtube.schema.json
-└── dev-notes/
-    ├── compatibility.md
-    ├── decisions.md
-    └── roadmap.md
+│   ├── tallies
+│   │   └── detail.html
+│   ├── tallies.html
+│   ├── tools
+│   │   ├── index.html
+│   │   └── views
+│   │       ├── automation.html
+│   │       ├── overview.html
+│   │       └── studio.html
+│   ├── version.json
+│   └── views
+│       ├── about.html
+│       ├── chat-replay.html
+│       ├── clips.html
+│       ├── creators.html
+│       ├── data-signals.html
+│       ├── jobs.html
+│       ├── overview.html
+│       ├── platforms
+│       │   ├── discord.html
+│       │   ├── rumble.html
+│       │   ├── twitch.html
+│       │   ├── twitter.html
+│       │   └── youtube.html
+│       ├── polls.html
+│       ├── ratelimits.html
+│       ├── scoreboard-management.html
+│       ├── scoreboards.html
+│       ├── settings.html
+│       ├── support.html
+│       ├── tallies.html
+│       ├── triggers.html
+│       └── updates.html
+├── favicon.ico
+└── schemas
+    ├── chat_behaviour.schema.json
+    ├── chat_log.schema.json
+    ├── clip_schema.json
+    ├── creators.schema.json
+    ├── jobs.schema.json
+    ├── permissions.schema.json
+    ├── platform
+    │   ├── discord.schema.json
+    │   ├── rumble.schema.json
+    │   ├── twitch.schema.json
+    │   ├── twitter.schema.json
+    │   └── youtube.schema.json
+    ├── poll_schema.json
+    ├── quotas.schema.json
+    ├── ratelimits.schema.json
+    ├── services.schema.json
+    ├── system.schema.json
+    ├── tiers.schema.json
+    └── triggers.schema.json
 ```
 
 ## Local Preview
