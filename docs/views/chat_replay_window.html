@@ -149,7 +149,7 @@
       display: block;
     }
     .avatar-fallback {
-      background: #c7cedf url('../assets/icons/ui/profile.svg') center center/24px 24px no-repeat;
+      background: #c7cedf url('./assets/icons/ui/profile.svg') center center/24px 24px no-repeat;
       filter: grayscale(100%);
     }
     .platform {
@@ -191,6 +191,8 @@
       font-size: 0.82rem;
       color: #9bb1ff;
       letter-spacing: 0.02em;
+      display: block;
+      text-align: left;
     }
     .author {
       font-weight: 700;
@@ -362,7 +364,7 @@
       <div class="timeline" aria-label="Static chat replay preview">
         <div class="message">
           <div class="avatar" aria-hidden="true">
-            <img src="../assets/placeholders/daniel.png" alt="" />
+            <img src="./assets/placeholders/daniel.png" alt="" />
           </div>
           <div class="header-row">
             <div class="author-stack">
@@ -370,59 +372,59 @@
                 Daniel Clancy
                 <span class="role-pill" title="Admin">ADMIN</span>
                 <span class="role-badge" title="Moderator" data-label="MOD">
-                  <img src="../assets/icons/mod.svg" alt="Moderator" />
+                  <img src="./assets/icons/mod.svg" alt="Moderator" />
                 </span>
                 <span class="role-badge" title="Pro User" data-label="PRO">
-                  <img src="../assets/icons/prouser.svg" alt="Pro user" />
+                  <img src="./assets/icons/prouser.svg" alt="Pro user" />
                 </span>
               </span>
               <span class="timestamp">00:11:32</span>
             </div>
           </div>
           <span class="platform" aria-label="YouTube">
-            <img src="../assets/icons/youtube.svg" alt="YouTube" />
+            <img src="./assets/icons/youtube.svg" alt="YouTube" />
             YouTube
           </span>
           <div class="text">Multi-badge placement (admin + mod + pro) with smaller message text. Platform badges are pinned to the top-right.</div>
         </div>
         <div class="message">
           <div class="avatar" aria-hidden="true">
-            <img src="../assets/placeholders/streamsuites.jpg" alt="" />
+            <img src="./assets/placeholders/daniel.png" alt="" />
           </div>
           <div class="header-row">
             <div class="author-stack">
               <span class="author">
                 creator_live
                 <span class="role-badge" title="Pro User" data-label="PRO">
-                  <img src="../assets/icons/prouser.svg" alt="Pro user" />
+                  <img src="./assets/icons/prouser.svg" alt="Pro user" />
                 </span>
               </span>
               <span class="timestamp">00:12:04</span>
             </div>
           </div>
           <span class="platform" aria-label="YouTube">
-            <img src="../assets/icons/youtube.svg" alt="YouTube" />
+            <img src="./assets/icons/youtube.svg" alt="YouTube" />
             YouTube
           </span>
           <div class="text">Welcome to the replay preview. The avatar is pulled from replay metadata to prove circular rendering.</div>
         </div>
         <div class="message">
           <div class="avatar" aria-hidden="true">
-            <img src="../assets/placeholders/streamsuites.jpg" alt="" />
+            <img src="./assets/placeholders/daniel.png" alt="" />
           </div>
           <div class="header-row">
             <div class="author-stack">
               <span class="author">
                 obs_guest
                 <span class="role-badge" title="Moderator" data-label="MOD">
-                  <img src="../assets/icons/mod.svg" alt="Moderator" />
+                  <img src="./assets/icons/mod.svg" alt="Moderator" />
                 </span>
               </span>
               <span class="timestamp">00:12:36</span>
             </div>
           </div>
           <span class="platform" aria-label="Twitch">
-            <img src="../assets/icons/twitch.svg" alt="Twitch" />
+            <img src="./assets/icons/twitch.svg" alt="Twitch" />
             Twitch
           </span>
           <div class="text">Stream overlays will hydrate from runtime exports in a future drop. For now this is file-based only.</div>
@@ -434,35 +436,35 @@
               <span class="author">
                 mod_team
                 <span class="role-badge" title="Owner" data-label="ADMIN">
-                  <img src="../assets/icons/dcbadge.svg" alt="Owner" />
+                  <img src="./assets/icons/dcbadge.svg" alt="Owner" />
                 </span>
               </span>
               <span class="timestamp">00:13:01</span>
             </div>
           </div>
           <span class="platform" aria-label="Rumble">
-            <img src="../assets/icons/rumble.svg" alt="Rumble" />
+            <img src="./assets/icons/rumble.svg" alt="Rumble" />
             Rumble
           </span>
-          <div class="text">No avatar URL supplied; the light-gray silhouette (docs/assets/icons/ui/profile.svg) confirms fallback coverage.</div>
+          <div class="text">No avatar URL supplied; the light-gray silhouette (./assets/icons/ui/profile.svg) confirms fallback coverage.</div>
         </div>
         <div class="message">
           <div class="avatar" aria-hidden="true">
-            <img src="../assets/placeholders/hotdog.jpg" alt="" />
+            <img src="./assets/placeholders/daniel.png" alt="" />
           </div>
           <div class="header-row">
             <div class="author-stack">
               <span class="author">
                 system
                 <span class="role-badge" title="Owner" data-label="ADMIN">
-                  <img src="../assets/icons/dcbadge.svg" alt="Owner" />
+                  <img src="./assets/icons/dcbadge.svg" alt="Owner" />
                 </span>
               </span>
               <span class="timestamp">00:13:42</span>
             </div>
           </div>
           <span class="platform" aria-label="Discord">
-            <img src="../assets/icons/discord.svg" alt="Discord" />
+            <img src="./assets/icons/discord.svg" alt="Discord" />
             Discord
           </span>
           <div class="text muted">No outbound calls, no sockets, and no runtime control are wired to this preview.</div>
