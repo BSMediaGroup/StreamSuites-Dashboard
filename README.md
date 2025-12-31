@@ -54,7 +54,7 @@ This repository is a **separate but companion project** to the `StreamSuites` ru
 ## Data Sources & Fallbacks
 Runtime telemetry is loaded **client-side** with graceful fallbacks:
 
-1. **Primary:** `docs/shared/state/` — latest runtime exports copied from the StreamSuites runtime repo (e.g., `runtime_snapshot.json`, `quotas.json`, `clips.json`).
+1. **Primary:** `docs/shared/state/` — latest runtime exports copied from the StreamSuites runtime repo (e.g., `runtime_snapshot.json`, `quotas.json`, `clips.json`, and telemetry bundles under `telemetry/`).
 2. **Secondary:** `docs/data/` — bundled sample snapshots used when shared state is missing or stale.
 3. **Local drafts:** `localStorage` entries created by import/export tools (e.g., creators/platforms drafts).
 
@@ -65,6 +65,12 @@ If `shared/state` files are absent, views silently fall back to `docs/data` so t
 - **Twitch:** Mirrors the YouTube pattern with identical polling and fallbacks. Read-only preview only.
 - **Rumble:** Present but marked **Deferred/Disabled**; surfaces the most recent snapshot details if present and never initiates runtime calls.
 - **Other platform views (Discord/Twitter):** Static scaffolds for visibility only.
+
+## Runtime Telemetry Panels (Read-Only)
+- **Events panel:** Newest-first feed of runtime-exported events with severity, timestamp, source, and message; explicitly read-only.
+- **Rates panel:** Numeric indicators for recent windows, rendered without charts to keep the UI light.
+- **Errors panel:** Highlights active or recent errors per subsystem while keeping the presentation non-fatal and informational.
+- **Data sources:** Hydrates from `docs/shared/state/telemetry/{events,rates,errors}.json` with silent fallbacks to `docs/data/telemetry/` when missing.
 
 ## Public-Facing Media Surfaces (Static)
 - **Home (`docs/home.html`)** — public landing surface linking to galleries and the creator dashboard.
@@ -260,7 +266,11 @@ StreamSuites-Dashboard/
 │   │   ├── score_events.json
 │   │   ├── scoreboards.json
 │   │   ├── tallies.json
-│   │   └── tally_events.json
+│   │   ├── tally_events.json
+│   │   └── telemetry
+│   │       ├── errors.json
+│   │       ├── events.json
+│   │       └── rates.json
 │   ├── favicon.ico
 │   ├── home.html
 │   ├── index.html
@@ -334,6 +344,10 @@ StreamSuites-Dashboard/
 │   │   │   ├── runtime_snapshot.json
 │   │   │   ├── scoreboards.json
 │   │   │   ├── tallies.json
+│   │   │   ├── telemetry
+│   │   │   │   ├── errors.json
+│   │   │   │   ├── events.json
+│   │   │   │   └── rates.json
 │   │   └── suspension
 │   │       ├── suspension-banner.css
 │   │       └── suspension-banner.js
@@ -409,6 +423,7 @@ StreamSuites-Dashboard/
 
 ## Runtime Export Consumption
 - **Snapshots:** Dashboard polls `shared/state/runtime_snapshot.json` (platform status) and `shared/state/quotas.json` (API quotas), falling back to `docs/data/*.json` when missing.
+- **Telemetry:** Read-only telemetry panels hydrate from `shared/state/telemetry/{events,rates,errors}.json`, falling back to `docs/data/telemetry/` if absent or stale.
 - **Changelogs/Roadmaps:** Public pages read `docs/data/changelog.*.json` and `docs/data/roadmap.json` only.
 - **Config drafts:** Creators/platforms configs are edited locally and exported as JSON; they do **not** push to runtimes.
 

@@ -1,0 +1,23 @@
+{
+  "generated_at": "2025-02-01T12:00:00Z",
+  "events": [
+    {
+      "timestamp": "2025-02-01T12:00:00Z",
+      "severity": "info",
+      "source": "runtime.exporter",
+      "message": "Runtime snapshot exported for dashboard surfaces."
+    },
+    {
+      "timestamp": "2025-02-01T11:58:00Z",
+      "severity": "warn",
+      "source": "quota.guard",
+      "message": "Quota guard is approaching soft threshold for YouTube API."
+    },
+    {
+      "timestamp": "2025-02-01T11:55:00Z",
+      "severity": "info",
+      "source": "jobs.scheduler",
+      "message": "Scheduler tick completed; jobs evaluated for the current window."
+    }
+  ]
+}
