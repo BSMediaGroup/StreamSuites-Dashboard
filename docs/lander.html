@@ -606,7 +606,7 @@
       bottom: 14px;
       transform: translateX(-50%);
       font-size: 11px;
-      color: var(--muted);
+      color: var(--muted) !important;
       text-decoration: none;
       background: none;
       padding: 0;
@@ -617,8 +617,11 @@
       z-index: 8;
     }
 
+    .page-copyright:visited,
+    .page-copyright:active,
+    .page-copyright:focus-visible,
     .page-copyright:hover {
-      color: var(--muted);
+      color: var(--muted) !important;
       text-decoration: underline;
     }
 
