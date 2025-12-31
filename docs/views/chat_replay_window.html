@@ -81,7 +81,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      }
+    }
     .window-title {
       font-size: 1rem;
       letter-spacing: 0.04em;
@@ -101,6 +101,15 @@
       display: flex;
       align-items: center;
       gap: 8px;
+    }
+    .mode-pill {
+      padding: 5px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--panel-border);
+      background: rgba(255, 255, 255, 0.12);
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
     }
     .theme-select {
       background: rgba(255, 255, 255, 0.12);
@@ -126,14 +135,14 @@
     }
     .message {
       display: grid;
-      grid-template-columns: 64px 1fr;
+      grid-template-columns: 64px 1fr auto;
       gap: 8px 12px;
       padding: 12px;
       border-radius: 10px;
       background: var(--panel);
       border: 1px solid var(--panel-border);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-      align-items: center;
+      align-items: start;
     }
     .avatar-wrap {
       display: flex;
@@ -177,6 +186,13 @@
       height: 16px;
       display: block;
     }
+    .platform-stack {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: flex-end;
+      grid-row: 1 / span 2;
+    }
     .header-row {
       display: flex;
       align-items: center;
@@ -212,7 +228,8 @@
     .text {
       grid-column: 1 / -1;
       color: #dce6ff;
-      line-height: 1.4;
+      line-height: 1.45;
+      font-size: 0.94rem;
     }
     .muted {
       color: var(--muted);
@@ -225,6 +242,7 @@
     <div class="window-header">
       <div class="window-title">Pop-out Chat Window (Placeholder)</div>
       <div class="window-controls">
+        <span class="mode-pill" id="mode-pill">Replay</span>
         <select class="theme-select" id="local-theme-select" aria-label="Switch chat replay theme">
           <option value="default">Default (Muted Dark)</option>
           <option value="slate">Slate</option>
@@ -236,14 +254,36 @@
     </div>
     <div class="timeline" aria-label="Static chat replay preview">
       <div class="message">
-        <div class="avatar-wrap">
-          <div class="avatar" aria-hidden="true">
-            <img src="../assets/placeholders/daniel.png" alt="" />
-          </div>
+        <div class="avatar" aria-hidden="true">
+          <img src="../assets/placeholders/daniel.png" alt="" />
+        </div>
+        <div class="header-row">
+          <span class="author">
+            daniel_clancy
+            <span class="role-badge" title="Owner">
+              <img src="../assets/icons/dcbadge.svg" alt="Owner" />
+            </span>
+            <span class="role-badge" title="Pro User">
+              <img src="../assets/icons/prouser.svg" alt="Pro user" />
+            </span>
+          </span>
+          <span class="timestamp">00:11:32</span>
+        </div>
+        <div class="platform-stack">
           <span class="platform-badge" aria-label="YouTube">
             <img src="../assets/icons/youtube.svg" alt="YouTube" />
             YouTube
           </span>
+          <span class="platform-badge" aria-label="Discord">
+            <img src="../assets/icons/discord.svg" alt="Discord" />
+            Discord
+          </span>
+        </div>
+        <div class="text">Multi-badge placement (owner + pro) with smaller message text. Platform badges are pinned to the top-right.</div>
+      </div>
+      <div class="message">
+        <div class="avatar" aria-hidden="true">
+          <img src="../assets/placeholders/streamsuites.jpg" alt="" />
         </div>
         <div class="header-row">
           <span class="author">
@@ -254,17 +294,17 @@
           </span>
           <span class="timestamp">00:12:04</span>
         </div>
+        <div class="platform-stack">
+          <span class="platform-badge" aria-label="YouTube">
+            <img src="../assets/icons/youtube.svg" alt="YouTube" />
+            YouTube
+          </span>
+        </div>
         <div class="text">Welcome to the replay preview. The avatar is pulled from replay metadata to prove circular rendering.</div>
       </div>
       <div class="message">
-        <div class="avatar-wrap">
-          <div class="avatar" aria-hidden="true">
-            <img src="../assets/placeholders/streamsuites.jpg" alt="" />
-          </div>
-          <span class="platform-badge" aria-label="Twitch">
-            <img src="../assets/icons/twitch.svg" alt="Twitch" />
-            Twitch
-          </span>
+        <div class="avatar" aria-hidden="true">
+          <img src="../assets/placeholders/streamsuites.jpg" alt="" />
         </div>
         <div class="header-row">
           <span class="author">
@@ -275,31 +315,31 @@
           </span>
           <span class="timestamp">00:12:36</span>
         </div>
+        <div class="platform-stack">
+          <span class="platform-badge" aria-label="Twitch">
+            <img src="../assets/icons/twitch.svg" alt="Twitch" />
+            Twitch
+          </span>
+        </div>
         <div class="text">Stream overlays will hydrate from runtime exports in a future drop. For now this is file-based only.</div>
       </div>
       <div class="message">
-        <div class="avatar-wrap">
-          <div class="avatar avatar-fallback" aria-hidden="true"></div>
+        <div class="avatar avatar-fallback" aria-hidden="true"></div>
+        <div class="header-row">
+          <span class="author">mod_team</span>
+          <span class="timestamp">00:13:01</span>
+        </div>
+        <div class="platform-stack">
           <span class="platform-badge" aria-label="Rumble">
             <img src="../assets/icons/rumble.svg" alt="Rumble" />
             Rumble
           </span>
         </div>
-        <div class="header-row">
-          <span class="author">mod_team</span>
-          <span class="timestamp">00:13:01</span>
-        </div>
         <div class="text">No avatar URL supplied; the light-gray silhouette (docs/assets/icons/ui/profile.svg) confirms fallback coverage.</div>
       </div>
       <div class="message">
-        <div class="avatar-wrap">
-          <div class="avatar" aria-hidden="true">
-            <img src="../assets/placeholders/hotdog.jpg" alt="" />
-          </div>
-          <span class="platform-badge" aria-label="Discord">
-            <img src="../assets/icons/discord.svg" alt="Discord" />
-            Discord
-          </span>
+        <div class="avatar" aria-hidden="true">
+          <img src="../assets/placeholders/hotdog.jpg" alt="" />
         </div>
         <div class="header-row">
           <span class="author">
@@ -310,6 +350,12 @@
           </span>
           <span class="timestamp">00:13:42</span>
         </div>
+        <div class="platform-stack">
+          <span class="platform-badge" aria-label="Discord">
+            <img src="../assets/icons/discord.svg" alt="Discord" />
+            Discord
+          </span>
+        </div>
         <div class="text muted">No outbound calls, no sockets, and no runtime control are wired to this preview.</div>
       </div>
     </div>
@@ -318,6 +364,7 @@
     (() => {
       const params = new URLSearchParams(window.location.search);
       const selector = document.getElementById('local-theme-select');
+      const modePill = document.getElementById('mode-pill');
       const body = document.body;
 
       const clearThemes = () => {
@@ -342,6 +389,13 @@
 
       const initialTheme = params.get('theme') || 'default';
       applyTheme(initialTheme);
+
+      const mode = (params.get('mode') || 'replay').toLowerCase();
+      if (modePill) {
+        modePill.textContent = mode === 'live' ? 'Live' : 'Replay';
+        modePill.style.background = mode === 'live' ? 'rgba(83, 255, 164, 0.18)' : modePill.style.background;
+        modePill.style.borderColor = mode === 'live' ? 'rgba(83, 255, 164, 0.35)' : modePill.style.borderColor;
+      }
 
       selector?.addEventListener('change', (event) => {
         applyTheme(event.target.value);
