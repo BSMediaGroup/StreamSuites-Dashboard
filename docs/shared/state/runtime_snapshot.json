@@ -133,9 +133,19 @@
       "last_heartbeat": "2025-12-31T15:52:30.626604Z",
       "error": null
     }
-  ],
-  "triggers": {
-    "source": "shared"
   },
-  "rumble_chat": null
+  "restart_intent": {
+    "required": true,
+    "pending": {
+      "system": true,
+      "creators": false,
+      "triggers": true,
+      "platforms": true
+    },
+    "notes": [
+      "Creators config modified",
+      "Triggers updated",
+      "Platform enablement staged"
+    ]
+  }
 }

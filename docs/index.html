@@ -231,6 +231,19 @@
 
     <!-- Main -->
     <main id="app-main">
+      <div
+        id="restart-required-banner"
+        class="ss-restart-banner hidden"
+        role="status"
+        aria-live="polite"
+      >
+        <div class="ss-restart-banner-text">
+          Pending changes detected — restart required to apply
+        </div>
+        <div class="ss-restart-banner-subtext">
+          Changes will take effect when StreamSuites is restarted.
+        </div>
+      </div>
       <div id="view-container">
         <noscript>
           <p style="padding:20px;color:#f66;">

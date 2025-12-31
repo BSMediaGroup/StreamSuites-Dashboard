@@ -544,6 +544,126 @@
   font-size: 13px;
 }
 
+.ss-restart-banner {
+  margin: 14px 14px 0;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(244, 180, 0, 0.35);
+  background: linear-gradient(
+    135deg,
+    rgba(244, 180, 0, 0.12),
+    rgba(244, 180, 0, 0.06)
+  );
+  color: #f6e4b2;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+}
+
+.ss-restart-banner-text {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+
+.ss-restart-banner-subtext {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #f9f1db;
+}
+
+.ss-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-primary);
+}
+
+.ss-badge-warning {
+  background: rgba(244, 180, 0, 0.12);
+  color: #ffd89c;
+  border-color: rgba(244, 180, 0, 0.45);
+}
+
+.ss-badge-success {
+  background: rgba(0, 200, 120, 0.12);
+  color: #b6f6c8;
+  border-color: rgba(0, 200, 120, 0.45);
+}
+
+.ss-pending-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.ss-pending-item {
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel-alt);
+}
+
+.ss-pending-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.ss-pending-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.ss-pending-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.ss-pending-chip.pending {
+  color: #ffd89c;
+  border-color: rgba(244, 180, 0, 0.55);
+  background: rgba(244, 180, 0, 0.12);
+}
+
+.ss-pending-chip.clear {
+  color: #b6f6c8;
+  border-color: rgba(0, 200, 120, 0.5);
+  background: rgba(0, 200, 120, 0.12);
+}
+
+.ss-restart-summary {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel-alt);
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.ss-restart-summary ul {
+  margin: 8px 0 0 16px;
+  padding: 0;
+}
+
 .ss-toggle-note {
   margin-top: 6px;
   font-size: 12px;

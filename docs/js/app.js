@@ -259,6 +259,70 @@ App.state.runtimeSnapshot = {
   }
 };
 
+const RestartIndicator = {
+  el: null,
+  timer: null,
+  intervalMs: 4000,
+
+  init() {
+    this.el = document.getElementById("restart-required-banner");
+    this.refresh();
+
+    if (this.timer) return;
+    this.timer = setInterval(() => this.refresh(), this.intervalMs);
+  },
+
+  refresh() {
+    if (!this.el) {
+      this.el = document.getElementById("restart-required-banner");
+      if (!this.el) return;
+    }
+
+    const raw = App.state?.runtimeSnapshot?.getSnapshot?.();
+    const normalized = window.StreamSuitesState?.normalizeRuntimeSnapshot?.(raw);
+    const intent = normalized?.restartIntent;
+    const required = intent?.required === true;
+
+    const categories = intent?.pending
+      ? Object.entries(intent.pending)
+          .filter(([, value]) => value)
+          .map(([key]) => {
+            if (key === "platforms") return "platform enable flags";
+            if (key === "triggers") return "triggers";
+            if (key === "creators") return "creator configuration";
+            if (key === "system") return "system settings";
+            return key;
+          })
+      : [];
+
+    const textEl = this.el.querySelector(".ss-restart-banner-text");
+    const subEl = this.el.querySelector(".ss-restart-banner-subtext");
+
+    if (textEl) {
+      textEl.textContent =
+        "Pending changes detected — restart required to apply";
+    }
+
+    if (subEl) {
+      if (intent) {
+        const categoryText = categories.length
+          ? `Pending: ${categories.join(", ")}.`
+          : "Pending changes require restart.";
+        subEl.textContent = `${categoryText} Changes will take effect when StreamSuites is restarted.`;
+      } else {
+        subEl.textContent =
+          "Restart intent unavailable. Changes apply after a manual restart.";
+      }
+    }
+
+    if (required) {
+      this.el.classList.remove("hidden");
+    } else {
+      this.el.classList.add("hidden");
+    }
+  }
+};
+
 /* ----------------------------------------------------------------------
    View Registration
    ---------------------------------------------------------------------- */
@@ -522,6 +586,7 @@ function initApp() {
 
   App.state.quotas.start();
   App.state.runtimeSnapshot.start();
+  RestartIndicator.init();
 
   const initialView = resolveInitialView();
   loadView(initialView);
