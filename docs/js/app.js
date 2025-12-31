@@ -362,10 +362,12 @@ async function loadView(name) {
     return;
   }
 
-  const viewPath = `docs/views/${view.templatePath}.html`;
+  const viewPath = `views/${view.templatePath}.html`;
+  const basePath = window.location.pathname.replace(/docs\/[^/]*$/, "");
+  const viewUrl = new URL(viewPath, `${window.location.origin}${basePath}`);
 
   try {
-    const res = await fetch(new URL(viewPath, document.baseURI));
+    const res = await fetch(viewUrl);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const html = await res.text();
