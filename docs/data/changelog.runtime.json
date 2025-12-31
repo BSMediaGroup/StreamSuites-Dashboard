@@ -21,7 +21,7 @@
         "dashboard",
         "runtime"
       ],
-      "is_latest": true
+      "is_latest": false
     },
     {
       "id": "2025-12-project-suspended",
