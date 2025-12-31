@@ -1,9 +1,28 @@
 {
   "meta": {
     "project": "StreamSuites Runtime",
-    "last_updated": "2025-05-20"
+    "last_updated": "2025-12-31"
   },
   "entries": [
+    {
+      "id": "2025-12-31-runtime-ordering-fix",
+      "date": "2025-12-31",
+      "version": "v0.2.0-alpha",
+      "scope": "runtime",
+      "title": "Runtime changelog ordering fixed",
+      "summary": "Public changelog now renders runtime entries newest first to match publishing order.",
+      "details": [
+        "Normalized changelog payloads so date parsing is reliable for runtime entries.",
+        "Ensured the merged public feed sorts runtime items in descending order without relying on source ordering.",
+        "Updated metadata timestamps to reflect the latest runtime release snapshot."
+      ],
+      "tags": [
+        "runtime",
+        "changelog",
+        "ordering"
+      ],
+      "is_latest": true
+    },
     {
       "id": "2025-05-project-resumed",
       "date": "2025-05-20",
@@ -21,7 +40,7 @@
         "dashboard",
         "runtime"
       ],
-      "is_latest": true
+      "is_latest": false
     },
     {
       "id": "2025-12-project-suspended",
