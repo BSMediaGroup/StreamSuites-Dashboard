@@ -40,10 +40,25 @@
 
   <section class="ss-panel">
     <header class="ss-panel-header">
-      <h2>Preview Targets</h2>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;">
+        <h2 style="margin:0;">Preview Targets</h2>
+        <label style="display:flex;align-items:center;gap:8px;font-weight:600;">
+          Theme
+          <select id="theme-select" class="ss-input" style="min-width:140px;">
+            <option value="default">Default</option>
+            <option value="slate">Slate</option>
+            <option value="midnight">Midnight</option>
+            <option value="light">Light</option>
+          </select>
+        </label>
+      </div>
     </header>
 
     <div class="ss-panel-body">
+      <p style="margin-bottom:12px;">
+        Avatar visibility is enforced across both previews. The theme selector reloads each frame with
+        replay-sourced avatars (or the light-gray fallback silhouette) to confirm consistency.
+      </p>
       <div class="ss-grid two-cols" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;align-items:start;">
 
         <div class="ss-card" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;box-shadow:0 12px 28px rgba(0,0,0,0.28);">
@@ -56,7 +71,8 @@
           </div>
           <div class="ss-preview-frame" style="background:#0d1220;border:1px solid rgba(255,255,255,0.08);border-radius:8px;overflow:hidden;">
             <iframe
-              src="./views/chat_replay_window.html"
+              id="window-preview"
+              src="./views/chat_replay_window.html?theme=default"
               title="Pop-out Chat Window Preview"
               style="width:100%;height:360px;border:0;filter:saturate(1);background:#0d1220;"
               loading="lazy"
@@ -74,7 +90,8 @@
           </div>
           <div class="ss-preview-frame" style="background:#0d1220;border:1px solid rgba(255,255,255,0.08);border-radius:8px;overflow:hidden;">
             <iframe
-              src="./views/chat_overlay_obs.html"
+              id="overlay-preview"
+              src="./views/chat_overlay_obs.html?theme=default"
               title="OBS / Browser Source Overlay Preview"
               style="width:100%;height:360px;border:0;filter:saturate(1);background:#0d1220;"
               loading="lazy"
@@ -96,3 +113,30 @@
     Unified Chat Replay previews are scaffolded only; runtime hydration will be added later.
   </span>
 </footer>
+
+<script>
+  (() => {
+    const select = document.getElementById('theme-select');
+    const frames = {
+      window: {
+        el: document.getElementById('window-preview'),
+        src: './views/chat_replay_window.html'
+      },
+      overlay: {
+        el: document.getElementById('overlay-preview'),
+        src: './views/chat_overlay_obs.html'
+      }
+    };
+
+    const reloadPreviews = () => {
+      const theme = select.value || 'default';
+      Object.values(frames).forEach(({ el, src }) => {
+        const url = new URL(src, window.location.href);
+        url.searchParams.set('theme', theme);
+        el.src = url.toString();
+      });
+    };
+
+    select.addEventListener('change', reloadPreviews);
+  })();
+</script>

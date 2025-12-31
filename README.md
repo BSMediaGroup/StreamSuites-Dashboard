@@ -96,6 +96,9 @@ All public pages are independent entry points, GitHub Pages–safe, and reuse `d
 - **Dashboard previews only:** `docs/views/chat-replay.html` hosts preview iframes for the unified replay UI without enabling runtime control.
 - **File-based placeholders:** The pop-out window (`docs/views/chat_replay_window.html`) and OBS/browser source overlay (`docs/views/chat_overlay_obs.html`) are local HTML mocks surfaced purely for documentation.
 - **Future hydration path:** Runtime replay feeds will hydrate both surfaces once the unified engine is active; today they remain scaffolded and offline.
+- **Avatar support (preview-only):** Avatars are rendered from replay-sourced metadata with a light-gray fallback silhouette (`docs/assets/icons/ui/profile.svg`) when `avatar_url` is missing. The dashboard does not control or author avatars; it only mirrors replay exports. A future screenshot callout will be added once runtime-fed avatars ship.
+- **Badge + font fidelity:** Platform badges now use the provided SVG icons (YouTube, Twitch, Rumble, Twitter/X, Discord) with role badges (pro, moderator, owner) and the RechargeBd/SuiGeneris font stack across themes, including the light option.
+- **Placeholder coverage:** Previews reference `docs/assets/placeholders/daniel.png`, `docs/assets/placeholders/streamsuites.jpg`, and `docs/assets/placeholders/hotdog.jpg`, falling back to `docs/assets/icons/ui/profile.svg` if no avatar URL is present.
 
 ## Design Principles & Schema-Driven Architecture
 - **Static-first, schema-driven, platform-neutral, future-proof.**
