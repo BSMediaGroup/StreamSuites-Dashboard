@@ -68,6 +68,8 @@
       const versionEl = ensureElement(brand, ".footer-version", "span", "footer-version");
       versionEl.textContent = meta.versionText;
 
+      if (brand.hasAttribute("data-no-copyright")) return;
+
       const copyrightAnchor = brand.querySelector("a");
       if (copyrightAnchor) {
         copyrightAnchor.textContent = meta.copyrightText;
