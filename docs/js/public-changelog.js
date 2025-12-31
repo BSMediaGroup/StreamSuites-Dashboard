@@ -30,6 +30,17 @@
     });
   }
 
+  function parseDateToTime(value, label = "") {
+    if (!value) return Number.NEGATIVE_INFINITY;
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      const suffix = label ? ` for entry: ${label}` : "";
+      console.warn(`[Changelog] Unrecognized date ${value}${suffix}`);
+      return Number.NEGATIVE_INFINITY;
+    }
+    return parsed.getTime();
+  }
+
   function renderScopeTag(scope) {
     if (!scope) return "";
     const scopeKey = String(scope).toLowerCase();
@@ -139,8 +150,16 @@
     }
 
     const sorted = [...releases].sort((a, b) => {
-      if (!a.date || !b.date) return 0;
-      return new Date(b.date) - new Date(a.date);
+      const aTime = parseDateToTime(a?.date, a?.title || a?.version || "");
+      const bTime = parseDateToTime(b?.date, b?.title || b?.version || "");
+
+      if (aTime === bTime) {
+        const aKey = a?.id || a?.title || "";
+        const bKey = b?.id || b?.title || "";
+        return String(aKey).localeCompare(String(bKey));
+      }
+
+      return bTime - aTime;
     });
 
     const explicitLatestIndex = sorted.findIndex((entry) => entry.is_latest);
