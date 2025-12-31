@@ -204,6 +204,61 @@ App.state.quotas = {
   }
 };
 
+/* ======================================================================
+   ADDITIVE: RUNTIME SNAPSHOT FEED (READ-ONLY)
+   ====================================================================== */
+
+App.state.runtimeSnapshot = {
+  latest: null,
+  lastFetchedAt: null,
+  lastError: null,
+  intervalMs: 4000,
+  _timer: null,
+
+  async fetchOnce() {
+    const sources = [
+      new URL("shared/state/runtime_snapshot.json", document.baseURI),
+      new URL("data/runtime_snapshot.json", document.baseURI)
+    ];
+
+    for (const url of sources) {
+      try {
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) {
+          this.lastError = `HTTP ${res.status} for ${url}`;
+          continue;
+        }
+
+        const data = await res.json();
+        this.latest = data;
+        this.lastFetchedAt = Date.now();
+        this.lastError = null;
+        return;
+      } catch (err) {
+        this.lastError = String(err);
+      }
+    }
+  },
+
+  start() {
+    if (this._timer) return;
+    this.fetchOnce();
+    this._timer = setInterval(() => {
+      this.fetchOnce();
+    }, this.intervalMs);
+  },
+
+  stop() {
+    if (!this._timer) return;
+    clearInterval(this._timer);
+    this._timer = null;
+  },
+
+  getSnapshot() {
+    return this.latest;
+  }
+};
+
 /* ----------------------------------------------------------------------
    View Registration
    ---------------------------------------------------------------------- */
@@ -466,6 +521,7 @@ function initApp() {
   bindHashChange();
 
   App.state.quotas.start();
+  App.state.runtimeSnapshot.start();
 
   const initialView = resolveInitialView();
   loadView(initialView);

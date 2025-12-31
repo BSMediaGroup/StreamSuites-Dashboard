@@ -83,34 +83,40 @@
     </header>
 
     <div class="ss-panel-body">
-      <div id="yt-runtime-banner" class="ss-alert ss-alert-danger">
-        No runtime connected. This dashboard is static and does not talk to YouTube.
+      <div id="yt-runtime-banner" class="ss-alert ss-alert-warning">
+        Read-only preview. Hydrates from runtime snapshots when present; no live controls.
       </div>
 
       <table class="ss-table ss-table-compact">
         <tbody>
           <tr>
-            <td>Runtime State</td>
+            <td>Platform Status</td>
             <td id="yt-runtime-status" class="align-right muted">
               offline / unknown
             </td>
           </tr>
           <tr>
-            <td>Active Livestream</td>
-            <td id="yt-runtime-stream" class="align-right muted">
+            <td>Last Update</td>
+            <td id="yt-runtime-updated" class="align-right muted">
               not available
             </td>
           </tr>
           <tr>
-            <td>Last Heartbeat</td>
-            <td id="yt-runtime-heartbeat" class="align-right muted">
-              not available
+            <td>Last Error</td>
+            <td id="yt-runtime-error" class="align-right muted">
+              none reported
             </td>
           </tr>
           <tr>
-            <td>Last Seen Message</td>
-            <td id="yt-runtime-last-message" class="align-right muted">
-              not available
+            <td>Messages Processed</td>
+            <td id="yt-runtime-messages" class="align-right muted">
+              —
+            </td>
+          </tr>
+          <tr>
+            <td>Triggers Fired</td>
+            <td id="yt-runtime-triggers" class="align-right muted">
+              —
             </td>
           </tr>
         </tbody>

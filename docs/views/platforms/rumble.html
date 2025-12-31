@@ -15,7 +15,7 @@
 
   <div class="ss-header-right">
     <span id="rumble-foundation-status" class="status-indicator idle">
-      ● Rumble chat: Architecture solved (SSE-first with fallbacks)
+      ● Rumble chat: Deferred (read-only)
     </span>
   </div>
 </header>
@@ -85,34 +85,40 @@
     </header>
 
     <div class="ss-panel-body">
-      <div id="rumble-runtime-banner" class="ss-alert ss-alert-danger">
-        No runtime connected. This dashboard is static and does not talk to Rumble.
+      <div id="rumble-runtime-banner" class="ss-alert ss-alert-warning">
+        Rumble ingest is deferred. This panel mirrors exported runtime snapshots only.
       </div>
 
       <table class="ss-table ss-table-compact">
         <tbody>
           <tr>
-            <td>Runtime State</td>
+            <td>Platform Status</td>
             <td id="rumble-runtime-status" class="align-right muted">
-              offline / unknown
+              deferred
             </td>
           </tr>
           <tr>
-            <td>Active Livestream</td>
-            <td id="rumble-runtime-stream" class="align-right muted">
-              not available
+            <td>Last Update</td>
+            <td id="rumble-runtime-updated" class="align-right muted">
+              waiting for runtime export
             </td>
           </tr>
           <tr>
-            <td>Last Heartbeat</td>
-            <td id="rumble-runtime-heartbeat" class="align-right muted">
-              not available
+            <td>Last Error</td>
+            <td id="rumble-runtime-error" class="align-right muted">
+              none reported
             </td>
           </tr>
           <tr>
-            <td>Last Seen Message</td>
-            <td id="rumble-runtime-last-message" class="align-right muted">
-              not available
+            <td>Messages Processed</td>
+            <td id="rumble-runtime-messages" class="align-right muted">
+              —
+            </td>
+          </tr>
+          <tr>
+            <td>Triggers Fired</td>
+            <td id="rumble-runtime-triggers" class="align-right muted">
+              —
             </td>
           </tr>
         </tbody>

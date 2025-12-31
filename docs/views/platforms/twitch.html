@@ -85,28 +85,40 @@
     </header>
 
     <div class="ss-panel-body">
-      <div id="tw-runtime-banner" class="ss-alert ss-alert-danger">
-        No runtime connected. This dashboard is static and does not talk to Twitch.
+      <div id="tw-runtime-banner" class="ss-alert ss-alert-warning">
+        Read-only preview. Hydrates from runtime snapshots when present; no live controls.
       </div>
 
       <table class="ss-table ss-table-compact">
         <tbody>
           <tr>
-            <td>Runtime State</td>
+            <td>Platform Status</td>
             <td id="tw-runtime-status" class="align-right muted">
               offline / unknown
             </td>
           </tr>
           <tr>
-            <td>Last Heartbeat</td>
-            <td id="tw-runtime-heartbeat" class="align-right muted">
+            <td>Last Update</td>
+            <td id="tw-runtime-updated" class="align-right muted">
               not available
             </td>
           </tr>
           <tr>
-            <td>Last Seen Message</td>
-            <td id="tw-runtime-last-message" class="align-right muted">
-              not available
+            <td>Last Error</td>
+            <td id="tw-runtime-error" class="align-right muted">
+              none reported
+            </td>
+          </tr>
+          <tr>
+            <td>Messages Processed</td>
+            <td id="tw-runtime-messages" class="align-right muted">
+              —
+            </td>
+          </tr>
+          <tr>
+            <td>Triggers Fired</td>
+            <td id="tw-runtime-triggers" class="align-right muted">
+              —
             </td>
           </tr>
         </tbody>

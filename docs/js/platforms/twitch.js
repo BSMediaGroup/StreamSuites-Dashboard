@@ -1,14 +1,20 @@
 (() => {
   "use strict";
 
+  const PLATFORM = "twitch";
+  const REFRESH_INTERVAL = 6000;
+
   const el = {};
+  let runtimeTimer = null;
 
   function cacheElements() {
     el.foundationStatus = document.getElementById("tw-foundation-status");
     el.runtimeBanner = document.getElementById("tw-runtime-banner");
     el.runtimeStatus = document.getElementById("tw-runtime-status");
-    el.runtimeHeartbeat = document.getElementById("tw-runtime-heartbeat");
-    el.runtimeLastMessage = document.getElementById("tw-runtime-last-message");
+    el.runtimeUpdated = document.getElementById("tw-runtime-updated");
+    el.runtimeError = document.getElementById("tw-runtime-error");
+    el.runtimeMessages = document.getElementById("tw-runtime-messages");
+    el.runtimeTriggers = document.getElementById("tw-runtime-triggers");
 
     el.configEnabled = document.getElementById("tw-config-enabled");
     el.configChannel = document.getElementById("tw-config-channel");
@@ -18,6 +24,14 @@
   function setText(target, value) {
     if (!target) return;
     target.textContent = value;
+  }
+
+  function formatTimestamp(value) {
+    return (
+      window.StreamSuitesState?.formatTimestamp?.(value) ||
+      value ||
+      "not reported"
+    );
   }
 
   function getStorage() {
@@ -121,8 +135,10 @@
 
   function hydrateRuntimePlaceholder() {
     setText(el.runtimeStatus, "offline / unknown");
-    setText(el.runtimeHeartbeat, "no runtime snapshot");
-    setText(el.runtimeLastMessage, "no runtime snapshot");
+    setText(el.runtimeUpdated, "no runtime snapshot");
+    setText(el.runtimeError, "not reported");
+    setText(el.runtimeMessages, "—");
+    setText(el.runtimeTriggers, "—");
 
     if (el.runtimeBanner) {
       el.runtimeBanner.classList.add("ss-alert-danger");
@@ -132,6 +148,67 @@
         "No runtime connected. StreamSuites runtime exports will hydrate this view when available."
       );
     }
+  }
+
+  function describeRuntimeStatus(entry) {
+    if (!entry) return "no runtime snapshot";
+    if (entry.enabled === false) return "disabled";
+    return entry.status || "unknown";
+  }
+
+  function renderRuntime(snapshot) {
+    const platform = snapshot?.platforms?.[PLATFORM] || null;
+    const status = describeRuntimeStatus(platform);
+    setText(el.runtimeStatus, status.toUpperCase());
+
+    const updated = formatTimestamp(
+      platform?.lastUpdate || snapshot?.generatedAt
+    );
+    setText(el.runtimeUpdated, updated);
+
+    setText(
+      el.runtimeError,
+      platform?.error || "none reported"
+    );
+
+    const counters = platform?.counters || {};
+    const messages = counters.messagesProcessed ?? counters.messages ?? null;
+    const triggers = counters.triggersFired ?? counters.triggers ?? null;
+
+    setText(
+      el.runtimeMessages,
+      Number.isFinite(messages) ? messages.toLocaleString() : "—"
+    );
+    setText(
+      el.runtimeTriggers,
+      Number.isFinite(triggers) ? triggers.toLocaleString() : "—"
+    );
+
+    if (el.runtimeBanner) {
+      el.runtimeBanner.classList.remove("ss-alert-danger", "ss-alert-success");
+      el.runtimeBanner.classList.add(
+        status && status.toLowerCase() === "running" ? "ss-alert-success" : "ss-alert-warning"
+      );
+      setText(
+        el.runtimeBanner,
+        "Read-only preview sourced from runtime exports (shared/state → data fallback)."
+      );
+    }
+  }
+
+  async function hydrateRuntime() {
+    const snapshot = await window.StreamSuitesState?.loadRuntimeSnapshot?.();
+    if (!snapshot || !snapshot.platforms) {
+      hydrateRuntimePlaceholder();
+      return;
+    }
+
+    renderRuntime(snapshot);
+  }
+
+  function startRuntimePolling() {
+    hydrateRuntime();
+    runtimeTimer = setInterval(hydrateRuntime, REFRESH_INTERVAL);
   }
 
   function setFoundationStatus() {
@@ -146,10 +223,14 @@
     setFoundationStatus();
     await hydrateConfig();
     hydrateRuntimePlaceholder();
+    startRuntimePolling();
   }
 
   function destroy() {
-    // No intervals or listeners to clean up yet.
+    if (runtimeTimer) {
+      clearInterval(runtimeTimer);
+      runtimeTimer = null;
+    }
   }
 
   window.TwitchView = {

@@ -9,6 +9,16 @@
 
   const STORAGE_KEY = "streamsuites.stateRootOverride";
 
+  const cache = {
+    runtimeSnapshot: null,
+    quotas: null
+  };
+
+  function deepClone(obj) {
+    if (obj === null || obj === undefined) return obj;
+    return JSON.parse(JSON.stringify(obj));
+  }
+
   function normalizeRoot(root) {
     if (typeof root !== "string" || !root.trim()) return null;
     return root.trim().replace(/\/+$/, "/");
@@ -82,6 +92,20 @@
     return null;
   }
 
+  async function fetchFallbackJson(relativePath) {
+    try {
+      const res = await fetch(relativePath, { cache: "no-store" });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (err) {
+      console.warn(
+        `[Dashboard][State] Fallback fetch failed for ${relativePath}`,
+        err
+      );
+      return null;
+    }
+  }
+
   function pickString(...values) {
     for (const value of values) {
       if (typeof value === "string" && value.trim() !== "") {
@@ -119,6 +143,184 @@
       console.warn("[Dashboard][State] Failed to format timestamp", err);
       return timestamp;
     }
+  }
+
+  function normalizeCounters(raw) {
+    if (!raw || typeof raw !== "object") return null;
+
+    const counters = {};
+    const picks = {
+      messagesProcessed: ["messages_processed", "messages", "messages_seen"],
+      triggersFired: ["triggers_fired", "triggers", "actions"],
+      errors: ["errors", "errors_seen"]
+    };
+
+    Object.entries(picks).forEach(([key, candidates]) => {
+      for (const candidate of candidates) {
+        const value = raw[candidate];
+        if (Number.isFinite(value)) {
+          counters[key] = value;
+          break;
+        }
+      }
+    });
+
+    return Object.keys(counters).length > 0 ? counters : null;
+  }
+
+  function normalizePlatformSnapshot(raw) {
+    if (!raw || typeof raw !== "object") return null;
+
+    const status = pickString(
+      raw.status,
+      raw.connection_status,
+      raw.state
+    ) || "unknown";
+
+    const lastUpdate = pickString(
+      raw.last_heartbeat,
+      raw.last_seen,
+      raw.updated_at,
+      raw.last_update,
+      raw.last_event,
+      raw.last_message
+    );
+
+    const error = raw.error ?? raw.error_state ?? raw.last_error;
+
+    return {
+      platform: pickString(raw.platform, raw.id, raw.name),
+      enabled: pickBoolean(raw.enabled),
+      telemetryEnabled: pickBoolean(raw.telemetry_enabled),
+      status,
+      lastUpdate,
+      error: typeof error === "string" ? error : null,
+      counters: normalizeCounters(raw.counters || raw.metrics || raw.counts || {})
+    };
+  }
+
+  function normalizeRuntimeSnapshot(raw) {
+    if (!raw || typeof raw !== "object") return null;
+
+    const generatedAt = pickString(
+      raw.generated_at,
+      raw.updated_at,
+      raw.timestamp
+    );
+
+    const platforms = Array.isArray(raw.platforms)
+      ? raw.platforms
+      : raw.platforms && typeof raw.platforms === "object"
+        ? Object.keys(raw.platforms).map((key) => ({
+          platform: key,
+          ...(raw.platforms[key] || {})
+        }))
+        : [];
+
+    const normalized = {};
+    platforms.forEach((entry) => {
+      const platform = normalizePlatformSnapshot(entry);
+      if (platform && platform.platform) {
+        normalized[platform.platform] = platform;
+      }
+    });
+
+    return {
+      generatedAt,
+      platforms: normalized
+    };
+  }
+
+  async function loadRuntimeSnapshot(options = {}) {
+    if (cache.runtimeSnapshot && !options.forceReload) {
+      return deepClone(cache.runtimeSnapshot);
+    }
+
+    const runtimeState = window.App?.state?.runtimeSnapshot;
+
+    if (runtimeState?.getSnapshot) {
+      const polled = normalizeRuntimeSnapshot(runtimeState.getSnapshot());
+      if (polled && Object.keys(polled.platforms).length > 0) {
+        cache.runtimeSnapshot = polled;
+        return deepClone(cache.runtimeSnapshot);
+      }
+    }
+
+    if (options.forceReload && runtimeState?.fetchOnce) {
+      try {
+        await runtimeState.fetchOnce();
+      } catch (err) {
+        console.warn("[Dashboard][State] runtime snapshot refresh failed", err);
+      }
+      const refreshed = normalizeRuntimeSnapshot(runtimeState?.getSnapshot?.());
+      if (refreshed && Object.keys(refreshed.platforms).length > 0) {
+        cache.runtimeSnapshot = refreshed;
+        return deepClone(cache.runtimeSnapshot);
+      }
+    }
+
+    const shared = normalizeRuntimeSnapshot(
+      await loadStateJson("runtime_snapshot.json")
+    );
+
+    if (shared && Object.keys(shared.platforms).length > 0) {
+      cache.runtimeSnapshot = shared;
+      return deepClone(cache.runtimeSnapshot);
+    }
+
+    const fallback = normalizeRuntimeSnapshot(
+      await fetchFallbackJson("./data/runtime_snapshot.json")
+    );
+
+    cache.runtimeSnapshot = fallback || null;
+    return fallback ? deepClone(fallback) : null;
+  }
+
+  async function loadQuotasSnapshot(options = {}) {
+    const normalize = (raw) => {
+      if (!raw) return null;
+      if (Array.isArray(raw)) return raw;
+      if (Array.isArray(raw.platforms)) return raw.platforms;
+      if (Array.isArray(raw.quotas)) return raw.quotas;
+      return null;
+    };
+
+    if (cache.quotas && !options.forceReload) {
+      return deepClone(cache.quotas);
+    }
+
+    const quotasState = window.App?.state?.quotas;
+    if (quotasState?.getSnapshot) {
+      const snapshot = normalize(quotasState.getSnapshot());
+      if (snapshot) {
+        cache.quotas = snapshot;
+        return deepClone(snapshot);
+      }
+    }
+
+    if (options.forceReload && quotasState?.fetchOnce) {
+      try {
+        await quotasState.fetchOnce();
+      } catch (err) {
+        console.warn("[Dashboard][State] quota refresh failed", err);
+      }
+
+      const snapshot = normalize(quotasState?.getSnapshot?.());
+      if (snapshot) {
+        cache.quotas = snapshot;
+        return deepClone(snapshot);
+      }
+    }
+
+    const shared = normalize(await loadStateJson("quotas.json"));
+    if (shared) {
+      cache.quotas = shared;
+      return deepClone(shared);
+    }
+
+    const fallback = normalize(await fetchFallbackJson("./data/quotas.json"));
+    cache.quotas = fallback || null;
+    return fallback ? deepClone(fallback) : null;
   }
 
   function normalizeDiscordRuntime(raw) {
@@ -171,6 +373,9 @@
   window.StreamSuitesState = {
     formatTimestamp,
     loadStateJson,
+    loadRuntimeSnapshot,
+    normalizeRuntimeSnapshot,
+    loadQuotasSnapshot,
     loadDiscordRuntimeSnapshot,
     normalizeDiscordRuntime,
     describeDiscordConnection
@@ -520,32 +725,11 @@
   }
 
   async function loadRuntimeSnapshot(options = {}) {
-    if (cache.runtimeSnapshot && !options.forceReload) {
-      return deepClone(cache.runtimeSnapshot);
+    if (window.StreamSuitesState?.loadRuntimeSnapshot) {
+      return window.StreamSuitesState.loadRuntimeSnapshot(options);
     }
 
-    const data = await fetchJson(DATA_PATHS.runtimeSnapshot);
-    if (!data || typeof data !== "object" || !data.platforms) {
-      cache.runtimeSnapshot = null;
-      return null;
-    }
-
-    const normalized = { generated_at: data.generated_at || null, platforms: {} };
-
-    PLATFORM_KEYS.forEach((key) => {
-      const entry = data.platforms[key] || {};
-      normalized.platforms[key] = {
-        last_seen: entry.last_seen || null,
-        status: entry.status || "unknown",
-        error_state:
-          entry.error_state === null || typeof entry.error_state === "string"
-            ? entry.error_state
-            : null
-      };
-    });
-
-    cache.runtimeSnapshot = normalized;
-    return deepClone(cache.runtimeSnapshot);
+    return null;
   }
 
   async function exportAllConfigs() {
