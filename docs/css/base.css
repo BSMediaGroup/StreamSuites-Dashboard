@@ -149,6 +149,7 @@ body {
   width: 100%;
   overflow: visible;
   white-space: nowrap;
+  position: relative;
 }
 
 #app-nav ul {
@@ -223,6 +224,73 @@ body {
 
 #app-nav .is-hidden {
   display: none !important;
+}
+
+/* ------------------------------
+   Navigation — mobile collapse
+   ------------------------------ */
+
+#app-nav .nav-toggle {
+  top: 10px;
+  left: 12px;
+}
+
+#app-nav .nav-toggle-trigger {
+  display: none;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-panel);
+  color: var(--text-primary);
+}
+
+@media (max-width: 960px) {
+  #app-header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  #app-nav .nav-shell {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  #app-nav .nav-toggle-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #app-nav ul {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    gap: 8px;
+    background: linear-gradient(139deg, rgba(36, 40, 50, 1) 0%, rgba(37, 28, 40, 1) 100%);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 12px 10px;
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.4);
+  }
+
+  #app-nav ul li {
+    width: 100%;
+  }
+
+  #app-nav .nav-overflow {
+    display: none;
+  }
+
+  #app-nav .nav-toggle:checked ~ ul {
+    display: flex;
+  }
+}
+
+@media (min-width: 961px) {
+  #app-nav .nav-toggle-trigger {
+    display: none;
+  }
 }
 
 /* ------------------------------
