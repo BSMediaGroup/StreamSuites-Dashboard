@@ -21,9 +21,16 @@ function initChatReplayPreview() {
   const themeCard = document.getElementById('theme-card');
   const modeButtons = Array.from(document.querySelectorAll('.ss-mode-button'));
   const popoutButton = document.getElementById('popout-button');
+  const basePath = window.location.pathname.includes('/views/') ? '../' : './';
   const frames = {
-    window: { el: document.getElementById('window-preview'), page: 'chat_replay_window.html' },
-    overlay: { el: document.getElementById('overlay-preview'), page: 'chat_overlay_obs.html' },
+    window: {
+      el: document.getElementById('window-preview'),
+      pages: {
+        replay: `${basePath}views/chat_replay_window.html`,
+        live: `${basePath}views/chat_window.html`,
+      }
+    },
+    overlay: { el: document.getElementById('overlay-preview'), page: `${basePath}views/chat_overlay_obs.html` },
   };
 
   const activeTheme = themeCard?.querySelector('.element.active')?.dataset.theme || 'default';
@@ -33,9 +40,10 @@ function initChatReplayPreview() {
   const state = { theme: activeTheme, mode: activeMode };
 
   const reloadPreviews = () => {
-    Object.values(frames).forEach(({ el, page }) => {
-      if (!el) return;
-      el.src = buildPreviewUrl(page, state.theme, state.mode);
+    Object.values(frames).forEach((frame) => {
+      if (!frame.el) return;
+      const page = frame.pages?.[state.mode] || frame.pages?.replay || frame.page;
+      frame.el.src = buildPreviewUrl(page, state.theme, state.mode);
     });
   };
 
@@ -60,7 +68,8 @@ function initChatReplayPreview() {
   });
 
   popoutButton?.addEventListener('click', () => {
-    const url = buildPreviewUrl('chat_window.html', state.theme, state.mode);
+    const targetPage = state.mode === 'live' ? 'chat_window.html' : 'chat_replay_window.html';
+    const url = buildPreviewUrl(`${basePath}views/${targetPage}`, state.theme, state.mode);
     window.open(url, '_blank', 'noopener');
   });
 

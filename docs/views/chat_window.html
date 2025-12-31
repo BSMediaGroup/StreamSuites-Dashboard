@@ -2,40 +2,355 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Chat Window (Pop-Out)</title>
+  <title>Chat Window (Live)</title>
   <style>
+    @font-face {
+      font-family: "RechargeBd";
+      src: url("https://raw.githubusercontent.com/BSMediaGroup/Resources/master/FONTS/Recharge%20Bd.otf")
+           format("opentype");
+      font-weight: 700;
+    }
+
+    @font-face {
+      font-family: "SuiGenerisRg";
+      src: url("https://raw.githubusercontent.com/BSMediaGroup/Resources/master/FONTS/Sui%20Generis%20Rg.otf")
+           format("opentype");
+      font-weight: 400;
+    }
+
+    :root {
+      color-scheme: dark;
+      --bg: #0a0f1c;
+      --panel: rgba(255, 255, 255, 0.04);
+      --panel-border: rgba(255, 255, 255, 0.1);
+      --panel-shadow: rgba(0, 0, 0, 0.38);
+      --muted: #9fb0d1;
+      --text: #e7ecfa;
+      --accent: rgba(72, 106, 176, 0.25);
+    }
+
+    body.theme-slate {
+      --bg: #0b111c;
+      --panel: rgba(255, 255, 255, 0.05);
+      --panel-border: rgba(255, 255, 255, 0.12);
+      --muted: #a6b6d5;
+      --text: #eef2ff;
+      --accent: rgba(86, 120, 184, 0.28);
+    }
+
+    body.theme-midnight {
+      --bg: #060811;
+      --panel: rgba(255, 255, 255, 0.06);
+      --panel-border: rgba(255, 255, 255, 0.16);
+      --muted: #acbce1;
+      --text: #f5f6ff;
+      --accent: rgba(104, 128, 196, 0.32);
+    }
+
+    body.theme-light {
+      color-scheme: light;
+      --bg: #f5f7fb;
+      --panel: rgba(255, 255, 255, 0.92);
+      --panel-border: rgba(20, 28, 48, 0.12);
+      --panel-shadow: rgba(0, 0, 0, 0.18);
+      --muted: #4b5875;
+      --text: #1f2536;
+      --accent: rgba(72, 106, 176, 0.2);
+    }
+
     body {
       margin: 0;
-      background: #0a0f1c;
-      color: #e8ecfa;
-      display: grid;
-      place-items: center;
-      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
       font-family: "SuiGenerisRg", system-ui, -apple-system, "Segoe UI", sans-serif;
     }
-    .notice {
-      padding: 18px 20px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+
+    .window-shell {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: 100vh;
+    }
+
+    .window-header {
+      padding: 12px 16px;
+      background: linear-gradient(90deg, rgba(58, 82, 138, 0.38), rgba(18, 22, 38, 0.9));
+      border-bottom: 1px solid var(--panel-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .title {
+      font-family: "RechargeBd", "SuiGenerisRg", system-ui, sans-serif;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-size: 1rem;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge {
+      padding: 4px 8px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--panel-border);
+      font-size: 0.82rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .theme-select {
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--text);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-family: "SuiGenerisRg", system-ui, sans-serif;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    body.theme-light .theme-select {
+      background: rgba(0, 0, 0, 0.04);
+      color: var(--text);
+    }
+
+    .timeline {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: linear-gradient(180deg, rgba(10, 14, 26, 0.94), rgba(8, 10, 18, 0.96));
+    }
+
+    .message {
+      display: grid;
+      grid-template-columns: 56px 1fr auto;
+      gap: 8px 12px;
+      padding: 12px;
       border-radius: 12px;
-      text-align: center;
-      max-width: 520px;
-      line-height: 1.5;
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32);
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 24px var(--panel-shadow);
+      align-items: start;
+    }
+
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: #11162a;
+      align-self: flex-start;
+      grid-row: 1 / span 2;
+    }
+
+    .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .avatar-fallback {
+      background: #c7cedf url('../assets/icons/ui/profile.svg') center center/24px 24px no-repeat;
+      filter: grayscale(100%);
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      color: var(--text);
+    }
+
+    .author {
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      color: #e8edff;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .timestamp {
+      font-size: 0.84rem;
+      color: #9bb1ff;
+      letter-spacing: 0.02em;
+    }
+
+    .text {
+      grid-column: 1 / -1;
+      color: #dce6ff;
+      line-height: 1.45;
+      font-size: 0.94rem;
+    }
+
+    .platform-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--panel-border);
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      text-transform: none;
+    }
+
+    .platform-badge img { width: 16px; height: 16px; display: block; }
+
+    .platform-stack {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: flex-end;
+      grid-row: 1 / span 2;
+    }
+
+    .role-badge { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; }
+    .role-badge img { width: 18px; height: 18px; display: block; }
+
+    .footer-note {
+      padding: 12px 16px 18px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      letter-spacing: 0.02em;
     }
   </style>
 </head>
 <body>
-  <div class="notice" id="redirect-notice">Opening pop-out chat window…</div>
+  <div class="window-shell">
+    <div class="window-header">
+      <div class="title">Live Chat Window</div>
+      <div class="header-actions">
+        <select class="theme-select" id="live-theme-select" aria-label="Switch chat theme">
+          <option value="default">Default (Muted Dark)</option>
+          <option value="slate">Slate</option>
+          <option value="midnight">Midnight</option>
+          <option value="light">Light</option>
+        </select>
+        <span class="badge" id="mode-pill">Live</span>
+      </div>
+    </div>
+
+    <div class="timeline" aria-label="Live chat placeholder">
+      <div class="message">
+        <div class="avatar" aria-hidden="true">
+          <img src="../assets/placeholders/streamsuites.jpg" alt="" />
+        </div>
+        <div class="header-row">
+          <span class="author">
+            creator_live
+            <span class="role-badge" title="Pro User">
+              <img src="../assets/icons/prouser.svg" alt="Pro user" />
+            </span>
+          </span>
+          <span class="timestamp">LIVE</span>
+        </div>
+        <div class="platform-stack">
+          <span class="platform-badge" aria-label="YouTube">
+            <img src="../assets/icons/youtube.svg" alt="YouTube" />
+            YouTube
+          </span>
+          <span class="platform-badge" aria-label="Discord">
+            <img src="../assets/icons/discord.svg" alt="Discord" />
+            Discord
+          </span>
+        </div>
+        <div class="text">Incoming live messages render with the same badges and avatar alignment used in the overlay preview.</div>
+      </div>
+
+      <div class="message">
+        <div class="avatar" aria-hidden="true">
+          <img src="../assets/placeholders/daniel.png" alt="" />
+        </div>
+        <div class="header-row">
+          <span class="author">
+            timeline_host
+            <span class="role-badge" title="Owner">
+              <img src="../assets/icons/dcbadge.svg" alt="Owner" />
+            </span>
+          </span>
+          <span class="timestamp">LIVE</span>
+        </div>
+        <div class="platform-stack">
+          <span class="platform-badge" aria-label="Twitter">
+            <img src="../assets/icons/twitter.svg" alt="Twitter" />
+            Twitter/X
+          </span>
+        </div>
+        <div class="text">Example of a Twitter/X badge coexisting with avatars and message text without crowding.</div>
+      </div>
+
+      <div class="message">
+        <div class="avatar avatar-fallback" aria-hidden="true"></div>
+        <div class="header-row">
+          <span class="author">
+            mod_team
+            <span class="role-badge" title="Moderator">
+              <img src="../assets/icons/mod.svg" alt="Moderator" />
+            </span>
+          </span>
+          <span class="timestamp">LIVE</span>
+        </div>
+        <div class="platform-stack">
+          <span class="platform-badge" aria-label="Twitch">
+            <img src="../assets/icons/twitch.svg" alt="Twitch" />
+            Twitch
+          </span>
+        </div>
+        <div class="text">Live mode retains the fallback silhouette when no avatar URL is present.</div>
+      </div>
+    </div>
+
+    <div class="footer-note">Live mode is placeholder-only. No sockets or persistence are wired to this preview.</div>
+  </div>
+
   <script>
     (() => {
-      const current = new URL(window.location.href);
-      const theme = current.searchParams.get('theme') || 'default';
-      const mode = current.searchParams.get('mode') || 'replay';
-      const target = new URL('./chat_replay_window.html', window.location.href);
-      target.searchParams.set('theme', theme);
-      target.searchParams.set('mode', mode);
-      window.location.replace(target.toString());
+      const params = new URLSearchParams(window.location.search);
+      const selector = document.getElementById('live-theme-select');
+      const modePill = document.getElementById('mode-pill');
+      const body = document.body;
+
+      const clearThemes = () => {
+        body.className = body.className
+          .split(' ')
+          .filter((c) => !c.startsWith('theme-'))
+          .join(' ')
+          .trim();
+      };
+
+      const applyTheme = (nextTheme) => {
+        const normalized = nextTheme || 'default';
+        clearThemes();
+        body.classList.add(`theme-${normalized}`);
+        const url = new URL(window.location.href);
+        url.searchParams.set('theme', normalized);
+        window.history.replaceState({}, '', url);
+        if (selector) {
+          selector.value = normalized;
+        }
+      };
+
+      const initialTheme = params.get('theme') || 'default';
+      applyTheme(initialTheme);
+
+      const mode = (params.get('mode') || 'live').toLowerCase();
+      if (modePill) {
+        modePill.textContent = mode === 'replay' ? 'Replay' : 'Live';
+        modePill.style.background = mode === 'replay' ? 'rgba(116, 146, 255, 0.16)' : modePill.style.background;
+        modePill.style.borderColor = mode === 'replay' ? 'rgba(116, 146, 255, 0.3)' : modePill.style.borderColor;
+      }
+
+      selector?.addEventListener('change', (event) => {
+        applyTheme(event.target.value);
+      });
     })();
   </script>
 </body>

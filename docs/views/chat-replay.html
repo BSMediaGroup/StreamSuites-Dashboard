@@ -154,7 +154,7 @@
     position: absolute;
     inset: 0;
     border-radius: 14px;
-    filter: blur(4px);
+    filter: blur(3px);
     z-index: -2;
   }
 
@@ -174,19 +174,19 @@
     transition: all 2s ease;
   }
 
-  .live-input .glow { filter: blur(24px); opacity: 0.35; }
+  .live-input .glow { filter: blur(14px); opacity: 0.22; }
   .live-input .glow::before {
     background-image: conic-gradient(#000, #402fb5 8%, #000 36%, #cf30aa 62%, #000 88%);
   }
 
   .live-input .border::before {
     background-image: conic-gradient(#1c191c, #402fb5 6%, #1c191c 16%, #cf30aa 64%, #1c191c 80%);
-    filter: brightness(1.2);
+    filter: brightness(1.08);
   }
 
   .live-input .white::before {
     background-image: conic-gradient(rgba(0, 0, 0, 0) 0%, #a099d8, rgba(0, 0, 0, 0) 10%, #dfa2da 60%, rgba(0, 0, 0, 0) 70%);
-    filter: brightness(1.4);
+    filter: brightness(1.2);
   }
 
   .live-input .darkBorderBg::before {
@@ -200,7 +200,7 @@
     height: 56px;
     border-radius: 12px;
     color: #f7f8ff;
-    padding-inline: 56px 20px;
+    padding-inline: 54px 52px;
     font-size: 17px;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
@@ -208,24 +208,60 @@
   .live-input .input-field::placeholder { color: #c0b9c0; }
   .live-input .input-field:focus { outline: none; }
 
-  .live-input .filter-icon {
+  .live-input .emoji-toggle,
+  .live-input .send-icon {
     position: absolute;
-    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
     display: grid;
     place-items: center;
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
     border-radius: 10px;
     background: linear-gradient(180deg, #161329, #0d0b24);
     border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
   }
 
-  .live-input .search-icon {
+  .live-input .emoji-toggle { left: 10px; }
+  .live-input .send-icon { right: 10px; color: #f7f8ff; fill: currentColor; }
+
+  .emoji-menu {
     position: absolute;
-    left: 18px;
-    top: 50%;
-    transform: translateY(-50%);
+    left: 10px;
+    bottom: calc(100% + 8px);
+    background: #0d1220;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 8px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+    display: grid;
+    grid-template-columns: repeat(6, 28px);
+    gap: 6px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(6px);
+    transition: all 0.2s ease;
+    z-index: 5;
+  }
+
+  .emoji-menu.open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .emoji-menu button {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 16px;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    padding: 0;
   }
 
   .ss-mock-chat {
@@ -252,6 +288,7 @@
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.14);
     background: #0c1020;
+    align-self: flex-start;
   }
 
   .ss-mock-row .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -458,27 +495,31 @@
               <div class="white"></div>
               <div class="border"></div>
               <input class="input-field" type="text" placeholder="Type a live message" />
-              <div class="search-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" height="24" fill="none" class="feather feather-search">
-                  <circle stroke="url(#search)" r="8" cy="11" cx="11"></circle>
-                  <line stroke="url(#searchl)" y2="16.65" y1="22" x2="16.65" x1="22"></line>
-                  <defs>
-                    <linearGradient gradientTransform="rotate(50)" id="search">
-                      <stop stop-color="#f8e7f8" offset="0%"></stop>
-                      <stop stop-color="#b6a9b7" offset="50%"></stop>
-                    </linearGradient>
-                    <linearGradient id="searchl">
-                      <stop stop-color="#b6a9b7" offset="0%"></stop>
-                      <stop stop-color="#837484" offset="50%"></stop>
-                    </linearGradient>
-                  </defs>
+              <div class="emoji-toggle" id="emoji-toggle" aria-label="Toggle emoji menu">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="9" stroke="#e6dcff" stroke-width="1.6" />
+                  <circle cx="9" cy="10" r="1.2" fill="#e6dcff" />
+                  <circle cx="15" cy="10" r="1.2" fill="#e6dcff" />
+                  <path d="M8.4 14.5C9.2 16 10.6 17 12.1 17C13.6 17 15 16 15.8 14.5" stroke="#e6dcff" stroke-width="1.6" stroke-linecap="round" />
                 </svg>
               </div>
-              <div class="filter-icon" aria-hidden="true">
-                <svg preserveAspectRatio="none" height="27" width="27" viewBox="4.8 4.56 14.832 15.408" fill="none">
-                  <path d="M8.16 6.65002H15.83C16.47 6.65002 16.99 7.17002 16.99 7.81002V9.09002C16.99 9.56002 16.7 10.14 16.41 10.43L13.91 12.64C13.56 12.93 13.33 13.51 13.33 13.98V16.48C13.33 16.83 13.1 17.29 12.81 17.47L12 17.98C11.24 18.45 10.2 17.92 10.2 16.99V13.91C10.2 13.5 9.97 12.98 9.73 12.69L7.52 10.36C7.23 10.08 7 9.55002 7 9.20002V7.87002C7 7.17002 7.52 6.65002 8.16 6.65002Z" stroke="#d6d6e6" stroke-width="1" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"></path>
-                </svg>
+              <div class="emoji-menu" id="emoji-menu" aria-label="Emoji picker">
+                <button type="button">😀</button>
+                <button type="button">😎</button>
+                <button type="button">😉</button>
+                <button type="button">😍</button>
+                <button type="button">😇</button>
+                <button type="button">🤔</button>
+                <button type="button">🤖</button>
+                <button type="button">🔥</button>
+                <button type="button">🎉</button>
+                <button type="button">🚀</button>
+                <button type="button">🙌</button>
+                <button type="button">👏</button>
               </div>
+              <button class="send-icon" type="button" aria-label="Send">
+                <img src="../assets/icons/ui/send.svg" alt="Send" width="18" height="18" />
+              </button>
             </div>
           </div>
           <div class="ss-mock-chat" aria-label="Badge alignment preview">
@@ -525,7 +566,7 @@
           <div class="ss-iframe-frame">
             <iframe
               id="window-preview"
-              src="./chat_replay_window.html?theme=default&mode=replay"
+              src="./views/chat_replay_window.html?theme=default&mode=replay"
               title="Embedded Chat Window Preview"
               style="width:100%;height:360px;border:0;filter:saturate(1);background:#0d1220;"
               loading="lazy"
@@ -544,7 +585,7 @@
           <div class="ss-iframe-frame">
             <iframe
               id="overlay-preview"
-              src="./chat_overlay_obs.html?theme=default&mode=replay"
+              src="./views/chat_overlay_obs.html?theme=default&mode=replay"
               title="OBS / Browser Source Overlay Preview"
               style="width:100%;height:360px;border:0;filter:saturate(1);background:#0d1220;"
               loading="lazy"
@@ -569,4 +610,25 @@
 <script src="../js/chatReplay.js"></script>
 <script>
   window.ChatReplayPreview?.initChatReplayPreview();
+
+  (() => {
+    const toggle = document.getElementById('emoji-toggle');
+    const menu = document.getElementById('emoji-menu');
+
+    const closeMenu = () => menu?.classList.remove('open');
+
+    toggle?.addEventListener('click', (event) => {
+      event.stopPropagation();
+      menu?.classList.toggle('open');
+    });
+
+    menu?.addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (event.target instanceof HTMLButtonElement) {
+        closeMenu();
+      }
+    });
+
+    document.addEventListener('click', () => closeMenu());
+  })();
 </script>

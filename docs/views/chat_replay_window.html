@@ -144,11 +144,6 @@
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
       align-items: start;
     }
-    .avatar-wrap {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
     .avatar {
       width: 44px;
       height: 44px;
@@ -157,6 +152,7 @@
       border: 1px solid rgba(255, 255, 255, 0.18);
       background: #12182a;
       flex-shrink: 0;
+      align-self: flex-start;
     }
     .avatar img {
       width: 100%;
@@ -192,6 +188,7 @@
       align-items: center;
       justify-content: flex-end;
       grid-row: 1 / span 2;
+      align-self: flex-start;
     }
     .header-row {
       display: flex;
@@ -326,7 +323,12 @@
       <div class="message">
         <div class="avatar avatar-fallback" aria-hidden="true"></div>
         <div class="header-row">
-          <span class="author">mod_team</span>
+          <span class="author">
+            mod_team
+            <span class="role-badge" title="Owner">
+              <img src="../assets/icons/dcbadge.svg" alt="Owner" />
+            </span>
+          </span>
           <span class="timestamp">00:13:01</span>
         </div>
         <div class="platform-stack">
