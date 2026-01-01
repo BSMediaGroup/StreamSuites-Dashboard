@@ -128,75 +128,90 @@
   }
 
   .ss-chat-input {
-    padding: 8px 0;
+    padding: 12px 0;
   }
 
-  .ss-chat-input-inner {
-    background: #0b0f1c;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  .ss-chat-input-shell {
+    position: relative;
+    background: #05060e;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 14px;
+    padding: 14px;
+    padding-bottom: 70px;
+    min-height: 140px;
+  }
+
+  .ss-chat-textarea-wrap {
+    overflow-y: auto;
   }
 
   .ss-chat-textarea {
     width: 100%;
     min-height: 96px;
-    resize: vertical;
+    resize: none;
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: none;
+    color: #f5f7ff;
+    padding: 12px;
     border-radius: 10px;
-    color: #f2f5ff;
-    padding: 10px 12px;
-    font-size: 0.98rem;
+    font-size: 1rem;
     font-family: "SuiGenerisRg", system-ui, -apple-system, "Segoe UI", sans-serif;
     letter-spacing: 0.02em;
+    line-height: 1.4;
   }
 
-  .ss-chat-textarea::placeholder { color: rgba(255, 255, 255, 0.5); }
-  .ss-chat-textarea:focus { outline: none; border-color: rgba(126, 158, 255, 0.5); }
+  .ss-chat-textarea::placeholder { color: rgba(255, 255, 255, 0.55); }
+  .ss-chat-textarea:focus { outline: none; }
 
-  .ss-chat-input-actions {
+  .ss-chat-actions {
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 12px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
+  }
+
+  .ss-chat-actions-left {
+    display: flex;
+    align-items: center;
     gap: 10px;
   }
 
-  .ss-chat-input-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
   .ss-icon-btn {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.12);
     background: rgba(255, 255, 255, 0.06);
-    cursor: default;
-  }
-
-  .ss-send-btn {
+    color: rgba(255, 255, 255, 0.7);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
+    cursor: pointer;
+  }
+
+  .ss-icon-btn svg { width: 18px; height: 18px; }
+
+  .ss-send-btn {
+    width: 46px;
+    height: 46px;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(110, 167, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(86, 138, 255, 0.18);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
   }
 
   .ss-send-btn img {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     display: block;
-    filter: invert(48%) sepia(53%) saturate(1608%) hue-rotate(195deg) brightness(101%) contrast(102%);
+    filter: invert(43%) sepia(79%) saturate(1454%) hue-rotate(201deg) brightness(98%) contrast(99%);
   }
 
   .ss-mock-chat {
@@ -430,21 +445,40 @@
         <div>
           <p style="margin-top:0;">Live input preview mirrors the Lakshay-art treatment with our dark palette.</p>
           <div class="ss-chat-input" aria-label="Live input preview">
-            <div class="ss-chat-input-inner">
-              <textarea
-                rows="3"
-                class="ss-chat-textarea"
-                placeholder="Type a live message"
-              ></textarea>
-
-              <div class="ss-chat-input-actions">
-                <div class="ss-chat-input-left">
-                  <button class="ss-icon-btn" type="button" aria-label="Attach file"></button>
-                  <button class="ss-icon-btn" type="button" aria-label="Insert link"></button>
+            <div class="ss-chat-input-shell">
+              <div class="ss-chat-textarea-wrap">
+                <textarea
+                  rows="3"
+                  class="ss-chat-textarea"
+                  placeholder="Ask me anything..."
+                ></textarea>
+              </div>
+              <div class="ss-chat-actions">
+                <div class="ss-chat-actions-left">
+                  <button class="ss-icon-btn" type="button" aria-label="Attach file">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                    </svg>
+                  </button>
+                  <button class="ss-icon-btn" type="button" aria-label="Attach web link">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle r="10" cy="12" cx="12"></circle>
+                      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+                      <path d="M2 12h20"></path>
+                    </svg>
+                  </button>
+                  <button class="ss-icon-btn" type="button" aria-label="Attach Figma link">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M5 5.5A3.5 3.5 0 0 1 8.5 2H12v7H8.5A3.5 3.5 0 0 1 5 5.5z"></path>
+                      <path d="M12 2h3.5a3.5 3.5 0 1 1 0 7H12V2z"></path>
+                      <path d="M12 12.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 1 1-7 0z"></path>
+                      <path d="M5 19.5A3.5 3.5 0 0 1 8.5 16H12v3.5a3.5 3.5 0 1 1-7 0z"></path>
+                      <path d="M5 12.5A3.5 3.5 0 0 1 8.5 9H12v7H8.5A3.5 3.5 0 0 1 5 12.5z"></path>
+                    </svg>
+                  </button>
                 </div>
-
                 <button class="ss-send-btn" type="button" aria-label="Send">
-                  <img src="./assets/icons/ui/send.svg" alt="Send" />
+                  <img src="../assets/icons/ui/send.svg" alt="Send" />
                 </button>
               </div>
             </div>
@@ -494,7 +528,7 @@
           <div class="ss-iframe-frame">
             <iframe
               id="window-preview"
-              src="./chat_replay_window.html?mode=replay&theme=default"
+              src="../views/chat_replay_window.html?mode=replay&theme=default"
               title="Embedded Chat Window Preview"
               style="width:100%;height:360px;border:0;filter:saturate(1);background:#0d1220;"
               loading="lazy"
@@ -513,7 +547,7 @@
           <div class="ss-iframe-frame">
             <iframe
               id="overlay-preview"
-              src="./chat_overlay_obs.html?theme=default&mode=replay"
+              src="../views/chat_overlay_obs.html?theme=default&mode=replay"
               title="OBS / Browser Source Overlay Preview"
               style="width:100%;height:360px;border:0;filter:saturate(1);background:#0d1220;"
               loading="lazy"
@@ -543,6 +577,7 @@
     const overlayButton = document.getElementById('popout-overlay-button');
     const windowFrame = document.getElementById('window-preview');
     const overlayFrame = document.getElementById('overlay-preview');
+    const basePath = window.location.pathname.includes('/views/') ? '../' : './';
 
     const state = {
       theme: themeCard?.querySelector('.element.active')?.dataset.theme || 'default',
@@ -563,10 +598,10 @@
 
     const windowSrc = () =>
       state.mode === 'live'
-        ? `./chat_window.html?mode=live&theme=${state.theme}`
-        : `./chat_replay_window.html?mode=replay&theme=${state.theme}`;
+        ? `${basePath}views/chat_window.html?mode=live&theme=${state.theme}`
+        : `${basePath}views/chat_replay_window.html?mode=replay&theme=${state.theme}`;
 
-    const overlaySrc = () => `./chat_overlay_obs.html?theme=${state.theme}&mode=${state.mode}`;
+    const overlaySrc = () => `${basePath}views/chat_overlay_obs.html?theme=${state.theme}&mode=${state.mode}`;
 
     const reloadFrames = () => {
       if (windowFrame) {
