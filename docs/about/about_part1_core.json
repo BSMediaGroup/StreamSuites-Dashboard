@@ -54,7 +54,7 @@
           },
           "developer": {
             "title": "Alpha Versioning and Licensing",
-            "body": "The runtime is explicitly marked v0.2.1-alpha (Build 2025.02) using semantic versioning with prerelease tags. Documentation emphasizes that breaking changes are still possible and contract permanence is not guaranteed. The dashboard mirrors runtime version metadata via docs/version.json and is expected to stay in lockstep with runtime versioning. Licensing posture is Proprietary / All Rights Reserved under Brainstream Media Group."
+            "body": "The runtime is explicitly marked v0.2.2-alpha (Build 2025.03) using semantic versioning with prerelease tags. Documentation emphasizes that breaking changes are still possible and contract permanence is not guaranteed. The dashboard mirrors runtime version metadata via docs/version.json and is expected to stay in lockstep with runtime versioning. Licensing posture is Proprietary / All Rights Reserved under Brainstream Media Group."
           }
         }
       ]
