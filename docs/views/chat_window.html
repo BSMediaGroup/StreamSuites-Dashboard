@@ -304,6 +304,13 @@
       gap: 10px;
     }
 
+    .chat-input-toolbar {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .emoji-btn,
     .send-btn {
       border-radius: 12px;
@@ -352,6 +359,61 @@
     .send-btn svg {
       width: 22px;
       height: 22px;
+    }
+
+    #emoji-toggle {
+      cursor: pointer;
+      pointer-events: auto;
+      z-index: 10;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.06);
+      padding: 10px;
+      height: 44px;
+      width: 44px;
+      transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+      color: rgba(232, 220, 234, 0.78);
+      line-height: 1;
+    }
+
+    #emoji-toggle svg {
+      width: 20px;
+      height: 20px;
+      display: block;
+    }
+
+    #emoji-toggle:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(245, 228, 238, 0.9);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    #emoji-menu {
+      position: absolute;
+      bottom: 60px;
+      left: 12px;
+      display: flex;
+      gap: 6px;
+      padding: 8px;
+      background: #0b0f18;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      z-index: 9999;
+      pointer-events: auto;
+    }
+
+    #emoji-menu[hidden] {
+      display: none !important;
+    }
+
+    #emoji-menu button {
+      background: transparent;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
     }
 
     .footer-note {
@@ -454,12 +516,21 @@
         <div class="live-chat-input">
           <textarea placeholder="Type a live message"></textarea>
 
-          <div class="input-toolbar">
-            <button class="emoji-btn" type="button" aria-label="Insert emoji">
+          <div class="chat-input-toolbar">
+            <button id="emoji-toggle" type="button" aria-label="Emoji">
               <svg viewBox="0 0 960 960" aria-hidden="true" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path d="M480 699q66 0 121.5-35.5T682 567H278q26 61 81 96.5T480 699ZM302 427l45-45 45 45 36-36-81-81-81 81 36 36Zm267 0 45-45 45 45 36-36-81-81-81 81 36 36ZM480 880q-83 0-156-31.5T197 763q-54-54-85.5-127T80 480q0-83 31.5-156T197 197q54-54 127-85.5T480 80q83 0 156 31.5T763 197q54 54 85.5 127T880 480q0 83-31.5 156T763 763q-54 54-127 85.5T480 880Zm0-400Zm0 340q142.38 0 241.19-98.81Q820 621.37 820 480q0-142.38-98.81-241.19T480 140q-142.37 0-241.19 98.81Q140 337.62 140 480q0 142.37 98.81 241.19Q337.63 780 480 780Z" />
               </svg>
             </button>
+
+            <div id="emoji-menu" hidden>
+              <button type="button">😀</button>
+              <button type="button">😂</button>
+              <button type="button">🔥</button>
+              <button type="button">❤️</button>
+              <button type="button">👍</button>
+            </div>
+
             <button class="send-btn" type="button" aria-label="Send">
               <svg viewBox="0 0 960 960" aria-hidden="true" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path d="M120 800V555l302-75-302-77V160l760 320L120 800Z" />
@@ -535,6 +606,34 @@
         }, { once: true });
       });
     })();
+  </script>
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const toggle = document.getElementById("emoji-toggle");
+  const menu = document.getElementById("emoji-menu");
+  const textarea = document.querySelector("textarea");
+
+  if (!toggle || !menu || !textarea) return;
+
+  toggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    menu.hidden = !menu.hidden;
+  });
+
+  menu.querySelectorAll("button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      textarea.value += btn.textContent;
+      menu.hidden = true;
+      textarea.focus();
+    });
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!menu.contains(e.target) && e.target !== toggle) {
+      menu.hidden = true;
+    }
+  });
+});
   </script>
 </body>
 </html>
