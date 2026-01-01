@@ -277,8 +277,6 @@
       box-shadow: 0 12px 24px rgba(0, 0, 0, 0.32);
     }
 
-    .chat-textarea-wrap { overflow-y: auto; }
-
     .chat-textarea {
       width: 100%;
       min-height: 96px;
@@ -293,6 +291,7 @@
       letter-spacing: 0.02em;
       line-height: 1.4;
       overflow: hidden;
+      height: auto;
     }
 
     .chat-textarea::placeholder { color: rgba(255, 255, 255, 0.55); }
@@ -333,9 +332,15 @@
       width: 18px;
       height: 18px;
       display: block;
-      background: currentColor;
-      mask: url('../assets/icons/ui/emoji.svg') center/contain no-repeat;
-      -webkit-mask: url('../assets/icons/ui/emoji.svg') center/contain no-repeat;
+      background-color: currentColor;
+      mask-image: url('../assets/icons/ui/emoji.svg');
+      -webkit-mask-image: url('../assets/icons/ui/emoji.svg');
+      mask-repeat: no-repeat;
+      -webkit-mask-repeat: no-repeat;
+      mask-position: center;
+      -webkit-mask-position: center;
+      mask-size: contain;
+      -webkit-mask-size: contain;
     }
 
     .chat-send-btn {
@@ -361,9 +366,15 @@
       width: 22px;
       height: 22px;
       display: block;
-      background: currentColor;
-      mask: url('../assets/icons/ui/send.svg') center/contain no-repeat;
-      -webkit-mask: url('../assets/icons/ui/send.svg') center/contain no-repeat;
+      background-color: currentColor;
+      mask-image: url('../assets/icons/ui/send.svg');
+      -webkit-mask-image: url('../assets/icons/ui/send.svg');
+      mask-repeat: no-repeat;
+      -webkit-mask-repeat: no-repeat;
+      mask-position: center;
+      -webkit-mask-position: center;
+      mask-size: contain;
+      -webkit-mask-size: contain;
     }
 
     .footer-note {
@@ -464,14 +475,12 @@
     <div class="live-input-wrapper" id="live-input-wrapper" aria-label="Chat composer">
       <div class="live-input-shell">
         <div class="chat-input-container">
-          <div class="chat-textarea-wrap">
-            <textarea
-              rows="3"
-              class="chat-textarea"
-              placeholder="Type a live message"
-              style="overflow: hidden; outline: none"
-            ></textarea>
-          </div>
+          <textarea
+            rows="3"
+            class="chat-textarea"
+            placeholder="Type a live message"
+            style="overflow: hidden; outline: none"
+          ></textarea>
           <div class="chat-input-toolbar">
             <div class="chat-toolbar-left">
               <button class="chat-icon-btn" type="button" aria-label="Insert emoji">
