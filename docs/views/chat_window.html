@@ -28,6 +28,8 @@
       --text: #e7ecfa;
       --accent: rgba(72, 106, 176, 0.25);
       --accent-blue: #4da2ff;
+      --chat-action-size: 46px;
+      --ui-icon-muted: rgba(255, 255, 255, 0.55);
     }
 
     body.theme-slate {
@@ -93,27 +95,44 @@
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+      padding-right: 6px;
     }
 
-    .chat-settings {
-      position: absolute;
-      top: 10px;
-      right: 10px;
+    .header-actions .theme-select {
+      min-width: 172px;
     }
 
-    .settings-btn-wrap {
-      background: rgba(255,255,255,0.05);
-      border-radius: 8px;
-      padding: 6px;
+    .header-actions .badge {
+      margin-right: 4px;
     }
 
-    .settings-btn {
-      transition: transform 0.4s ease;
+    .settings-toggle {
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.06);
+      padding: 10px;
+      height: 40px;
+      width: 40px;
+      transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.3s ease;
+      color: var(--ui-icon-muted);
     }
 
-    .settings-btn-wrap:hover .settings-btn {
-      transform: rotate(60deg);
+    .settings-toggle svg {
+      width: 20px;
+      height: 20px;
+      display: block;
+    }
+
+    .settings-toggle:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(245, 228, 238, 0.9);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: rotate(12deg);
     }
 
     .badge {
@@ -208,7 +227,7 @@
 
     .timestamp {
       font-size: 0.84rem;
-      color: #9bb1ff;
+      color: rgba(140, 200, 255, 0.85);
       letter-spacing: 0.02em;
       display: block;
       text-align: left;
@@ -349,7 +368,7 @@
     }
 
     .emoji-btn {
-      color: rgba(232, 220, 234, 0.78);
+      color: var(--ui-icon-muted);
     }
 
     .emoji-btn:hover {
@@ -397,7 +416,7 @@
       height: 44px;
       width: 44px;
       transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-      color: rgba(232, 220, 234, 0.78);
+      color: var(--ui-icon-muted);
       line-height: 1;
     }
 
@@ -482,42 +501,92 @@
       z-index: 20;
     }
 
-    .postas-avatar {
-      width: 32px;
-      height: 32px;
+    #postas-toggle {
+      width: var(--chat-action-size);
+      height: var(--chat-action-size);
       border-radius: 50%;
-      background: #2a2f3a;
-      padding: 6px;
-      filter: brightness(0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.06);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+      color: var(--ui-icon-muted);
     }
 
-    #postas-menu {
-      position: absolute;
-      bottom: 44px;
-      left: 0;
-      background: #0b0f18;
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 10px;
+    #postas-toggle:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.75);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .postas-icon {
+      width: 22px;
+      height: 22px;
+      background-color: currentColor;
+      mask: url('../assets/icons/ui/profile.svg') center / contain no-repeat;
+      -webkit-mask: url('../assets/icons/ui/profile.svg') center / contain no-repeat;
+      display: block;
+    }
+
+    .menu-panel {
+      position: fixed;
+      background: rgba(10, 14, 24, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
       padding: 8px;
-      min-width: 140px;
+      min-width: 160px;
       display: flex;
       flex-direction: column;
       gap: 6px;
       z-index: 9999;
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.42);
+      backdrop-filter: blur(10px);
     }
 
-    #postas-menu button {
+    .menu-panel[hidden] {
+      display: none !important;
+    }
+
+    .menu-panel .menu-title {
+      font-size: 12px;
+      opacity: 0.6;
+      margin-bottom: 2px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .menu-panel button,
+    .menu-panel .menu-item {
       background: transparent;
       border: none;
-      color: rgba(255,255,255,0.6);
+      color: rgba(255, 255, 255, 0.75);
       text-align: left;
       font-size: 13px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
     }
 
-    .postas-title {
-      font-size: 12px;
-      opacity: 0.5;
-      margin-bottom: 4px;
+    .menu-panel button:hover,
+    .menu-panel .menu-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.92);
+    }
+
+    .menu-divider {
+      border: none;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      margin: 4px 0;
+    }
+
+    .menu-panel button:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
     }
 
     .footer-note {
@@ -540,11 +609,18 @@
           <option value="light">Light</option>
         </select>
         <span class="badge" id="mode-pill">Live</span>
-      </div>
-      <div class="chat-settings">
-        <button class="settings-btn-wrap" aria-label="Settings">
-          <svg class="settings-btn" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff"><path d="m388-80-20-126q-19-7-40-19t-37-25l-118 54-93-164 108-79q-2-9-2.5-20.5T185-480q0-9 .5-20.5T188-521L80-600l93-164 118 54q16-13 37-25t40-18l20-127h184l20 126q19 7 40.5 18.5T669-710l118-54 93 164-108 77q2 10 2.5 21.5t.5 21.5q0 10-.5 21t-2.5 21l108 78-93 164-118-54q-16 13-36.5 25.5T592-206L572-80H388Zm92-270q54 0 92-38t38-92q0-54-38-92t-92-38q-54 0-92 38t-38 92q0 54 38 92t92 38Z"/></svg>
+        <button class="settings-toggle" id="settings-toggle" aria-label="Settings">
+          <svg xmlns="http://www.w3.org/2000/svg" height="22" viewBox="0 -960 960 960" width="22" fill="currentColor"><path d="M388-80 368-206q-19-7-40-19t-37-25l-118 54-93-164 108-79q-2-9-2.5-20.5T185-480q0-9 .5-20.5T188-521L80-600l93-164 118 54q16-13 37-25t40-18l20-127h184l20 126q19 7 40.5 18.5T669-710l118-54 93 164-108 77q2 10 2.5 21.5t.5 21.5q0 10-.5 21t-2.5 21l108 78-93 164-118-54q-16 13-36.5 25.5T592-206L572-80H388Zm92-270q54 0 92-38t38-92q0-54-38-92t-92-38q-54 0-92 38t-38 92q0 54 38 92t92 38Z"/></svg>
         </button>
+      </div>
+      <div id="settings-menu" class="menu-panel" hidden>
+        <div class="menu-title">Settings</div>
+        <button type="button" class="menu-item">Account (placeholder)</button>
+        <button type="button" class="menu-item">Hotkeys (placeholder)</button>
+        <button type="button" class="menu-item">Moderation (placeholder)</button>
+        <button type="button" class="menu-item">Appearance (placeholder)</button>
+        <hr class="menu-divider" />
+        <button type="button" class="menu-item">About (placeholder)</button>
       </div>
     </div>
 
@@ -561,7 +637,7 @@
                 <img src="../assets/icons/prouser.svg" alt="Pro user" />
               </span>
             </span>
-            <span class="timestamp">LIVE</span>
+            <span class="timestamp">00:14:22</span>
           </div>
         </div>
         <span class="platform" aria-label="YouTube">
@@ -587,7 +663,7 @@
                 <img src="../assets/icons/prouser.svg" alt="Pro user" />
               </span>
             </span>
-            <span class="timestamp">LIVE</span>
+            <span class="timestamp">00:15:08</span>
           </div>
           <button class="moderation-btn" data-moderation="shield">…</button>
         </div>
@@ -608,7 +684,7 @@
                 <img src="../assets/icons/mod.svg" alt="Moderator" />
               </span>
             </span>
-            <span class="timestamp">LIVE</span>
+            <span class="timestamp">00:17:36</span>
           </div>
           <button class="moderation-btn" data-moderation="shield">…</button>
         </div>
@@ -627,19 +703,18 @@
 
           <div class="chat-postas">
             <button id="postas-toggle" aria-label="Post as">
-              <img
-                src="../assets/icons/ui/profile.svg"
-                alt="Post as"
-                class="postas-avatar"
-              />
+              <span class="postas-icon" aria-hidden="true"></span>
             </button>
 
-            <div id="postas-menu" hidden>
-              <div class="postas-title">Post as</div>
-              <button disabled>YouTube</button>
-              <button disabled>Twitch</button>
-              <button disabled>Discord</button>
-              <button disabled>Rumble</button>
+            <div id="postas-menu" class="menu-panel" hidden>
+              <div class="menu-title">Post as</div>
+              <button disabled class="menu-item">Post to All</button>
+              <button disabled class="menu-item">YouTube</button>
+              <button disabled class="menu-item">Twitch</button>
+              <button disabled class="menu-item">Discord</button>
+              <button disabled class="menu-item">Rumble</button>
+              <hr class="menu-divider" />
+              <button class="menu-item">Login</button>
             </div>
           </div>
 
@@ -880,18 +955,74 @@ document.addEventListener("DOMContentLoaded", () => {
   </script>
   <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const toggle = document.getElementById("postas-toggle");
-  const menu = document.getElementById("postas-menu");
+  const postasToggle = document.getElementById("postas-toggle");
+  const postasMenu = document.getElementById("postas-menu");
+  const settingsToggle = document.getElementById("settings-toggle");
+  const settingsMenu = document.getElementById("settings-menu");
 
-  if (!toggle || !menu) return;
+  const menus = [
+    { toggle: postasToggle, menu: postasMenu, preferAbove: true },
+    { toggle: settingsToggle, menu: settingsMenu, preferAbove: false },
+  ];
 
-  toggle.addEventListener("click", (e) => {
-    e.stopPropagation();
-    menu.hidden = !menu.hidden;
+  const closeAllMenus = () => {
+    menus.forEach(({ menu }) => {
+      menu?.setAttribute("hidden", "");
+    });
+  };
+
+  const positionMenu = ({ menu, toggle, preferAbove }) => {
+    if (!menu || !toggle) return;
+    menu.removeAttribute("hidden");
+    menu.style.visibility = "hidden";
+    const menuRect = menu.getBoundingClientRect();
+    const toggleRect = toggle.getBoundingClientRect();
+    const width = menuRect.width || menu.offsetWidth;
+    const height = menuRect.height || menu.offsetHeight;
+
+    let left = Math.max(8, Math.min(toggleRect.left, window.innerWidth - width - 8));
+    let desiredTop = preferAbove ? toggleRect.top - height - 10 : toggleRect.bottom + 10;
+
+    if (preferAbove && desiredTop < 8) {
+      desiredTop = toggleRect.bottom + 10;
+    } else if (!preferAbove && desiredTop + height > window.innerHeight - 8) {
+      desiredTop = Math.max(8, toggleRect.top - height - 10);
+    }
+
+    menu.style.left = `${left}px`;
+    menu.style.top = `${Math.max(8, desiredTop)}px`;
+    menu.style.visibility = "visible";
+  };
+
+  const toggleMenu = (config) => {
+    const { menu } = config;
+    if (!menu) return;
+    const isOpen = !menu.hasAttribute("hidden");
+    closeAllMenus();
+    if (!isOpen) {
+      positionMenu(config);
+    }
+  };
+
+  menus.forEach((config) => {
+    config.toggle?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      toggleMenu(config);
+    });
+
+    config.menu?.addEventListener("click", (event) => {
+      event.stopPropagation();
+    });
   });
 
   document.addEventListener("click", () => {
-    menu.hidden = true;
+    closeAllMenus();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeAllMenus();
+    }
   });
 });
   </script>
