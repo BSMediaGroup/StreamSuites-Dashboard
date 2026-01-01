@@ -80,6 +80,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
+      position: relative;
     }
 
     .title {
@@ -93,6 +94,26 @@
       display: flex;
       align-items: center;
       gap: 10px;
+    }
+
+    .chat-settings {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+
+    .settings-btn-wrap {
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      padding: 6px;
+    }
+
+    .settings-btn {
+      transition: transform 0.4s ease;
+    }
+
+    .settings-btn-wrap:hover .settings-btn {
+      transform: rotate(60deg);
     }
 
     .badge {
@@ -276,6 +297,7 @@
       grid-template-columns: 1fr auto;
       gap: 12px;
       align-items: end;
+      position: relative;
     }
 
     .live-chat-input textarea {
@@ -393,10 +415,12 @@
 
     #emoji-menu {
       position: absolute;
+      left: auto;
+      right: 0;
       bottom: 60px;
-      left: 12px;
-      display: flex;
-      gap: 6px;
+      max-width: 260px;
+      max-height: 220px;
+      overflow-y: auto;
       padding: 8px;
       background: #0b0f18;
       border: 1px solid rgba(255, 255, 255, 0.1);
@@ -414,6 +438,86 @@
       border: none;
       font-size: 18px;
       cursor: pointer;
+    }
+
+    .emoji-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+      position: sticky;
+      top: 0;
+      background: #0b0f18;
+      padding-bottom: 4px;
+    }
+
+    .emoji-tabs button {
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 6px 8px;
+      background: rgba(255, 255, 255, 0.04);
+      font-size: 16px;
+      color: #fff;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .emoji-tabs button.active {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .emoji-section {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+    }
+
+    .emoji-section[hidden] {
+      display: none;
+    }
+
+    .chat-postas {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      z-index: 20;
+    }
+
+    .postas-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #2a2f3a;
+      padding: 6px;
+      filter: brightness(0.85);
+    }
+
+    #postas-menu {
+      position: absolute;
+      bottom: 44px;
+      left: 0;
+      background: #0b0f18;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 8px;
+      min-width: 140px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 9999;
+    }
+
+    #postas-menu button {
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,0.6);
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .postas-title {
+      font-size: 12px;
+      opacity: 0.5;
+      margin-bottom: 4px;
     }
 
     .footer-note {
@@ -436,6 +540,11 @@
           <option value="light">Light</option>
         </select>
         <span class="badge" id="mode-pill">Live</span>
+      </div>
+      <div class="chat-settings">
+        <button class="settings-btn-wrap" aria-label="Settings">
+          <svg class="settings-btn" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff"><path d="m388-80-20-126q-19-7-40-19t-37-25l-118 54-93-164 108-79q-2-9-2.5-20.5T185-480q0-9 .5-20.5T188-521L80-600l93-164 118 54q16-13 37-25t40-18l20-127h184l20 126q19 7 40.5 18.5T669-710l118-54 93 164-108 77q2 10 2.5 21.5t.5 21.5q0 10-.5 21t-2.5 21l108 78-93 164-118-54q-16 13-36.5 25.5T592-206L572-80H388Zm92-270q54 0 92-38t38-92q0-54-38-92t-92-38q-54 0-92 38t-38 92q0 54 38 92t92 38Z"/></svg>
+        </button>
       </div>
     </div>
 
@@ -516,19 +625,127 @@
         <div class="live-chat-input">
           <textarea placeholder="Type a live message"></textarea>
 
+          <div class="chat-postas">
+            <button id="postas-toggle" aria-label="Post as">
+              <img
+                src="../assets/icons/ui/profile.svg"
+                alt="Post as"
+                class="postas-avatar"
+              />
+            </button>
+
+            <div id="postas-menu" hidden>
+              <div class="postas-title">Post as</div>
+              <button disabled>YouTube</button>
+              <button disabled>Twitch</button>
+              <button disabled>Discord</button>
+              <button disabled>Rumble</button>
+            </div>
+          </div>
+
           <div class="chat-input-toolbar">
             <button id="emoji-toggle" type="button" aria-label="Emoji">
               <svg viewBox="0 0 960 960" aria-hidden="true" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M480 699q66 0 121.5-35.5T682 567H278q26 61 81 96.5T480 699ZM302 427l45-45 45 45 36-36-81-81-81 81 36 36Zm267 0 45-45 45 45 36-36-81-81-81 81 36 36ZM480 880q-83 0-156-31.5T197 763q-54-54-85.5-127T80 480q0-83 31.5-156T197 197q54-54 127-85.5T480 80q83 0 156 31.5T763 197q54 54 85.5 127T880 480q0 83-31.5 156T763 763q-54 54-127 85.5T480 880Zm0-400Zm0 340q142.38 0 241.19-98.81Q820 621.37 820 480q0-142.38-98.81-241.19T480 140q-142.37 0-241.19 98.81Q140 337.62 140 480q0 142.37 98.81 241.19Q337.63 780 480 780Z" />
+                <path d="M480 699q66 0 121.5-35.5T682 567H278q26 61 81 96.5T480 699ZM302 427l45-45 45 45 36-36-81-81-81 81 36 36
+Zm267 0 45-45 45 45 36-36-81-81-81 81 36 36ZM480 880q-83 0-156-31.5T197 763q-54-54-85.5-127T80 480q0-83 31.5-156T197 197q54-54 127-85.5T480 80q83 0 156 31.5T763 197q54 54 85.5 127T880 480q0 83-31.5 156T763 763q-54 54-127 85.5T480 880Zm0-400Zm0 340q142.38 0 241.19-98.81Q820 621.37 820 480q0-142.38-98.81-241.19T480 140q-142.37 0-241.19 98.81Q140 337.62 140 480q0 142.37 98.81 241.19Q337.63 780 480 780Z" />
               </svg>
             </button>
 
             <div id="emoji-menu" hidden>
-              <button type="button">😀</button>
-              <button type="button">😂</button>
-              <button type="button">🔥</button>
-              <button type="button">❤️</button>
-              <button type="button">👍</button>
+              <div class="emoji-tabs">
+                <button type="button" data-category="smile" class="active">😊</button>
+                <button type="button" data-category="fire">🔥</button>
+                <button type="button" data-category="heart">❤️</button>
+                <button type="button" data-category="thumbs">👍</button>
+              </div>
+              <div class="emoji-section" data-category="smile">
+                <button type="button">😀</button>
+                <button type="button">😁</button>
+                <button type="button">😂</button>
+                <button type="button">🤣</button>
+                <button type="button">😃</button>
+                <button type="button">😄</button>
+                <button type="button">😅</button>
+                <button type="button">😆</button>
+                <button type="button">😉</button>
+                <button type="button">😊</button>
+                <button type="button">😋</button>
+                <button type="button">😎</button>
+                <button type="button">😍</button>
+                <button type="button">😘</button>
+                <button type="button">😗</button>
+                <button type="button">😙</button>
+                <button type="button">😚</button>
+                <button type="button">🙂</button>
+                <button type="button">🤗</button>
+                <button type="button">🤩</button>
+              </div>
+              <div class="emoji-section" data-category="fire" hidden>
+                <button type="button">🔥</button>
+                <button type="button">⚡</button>
+                <button type="button">✨</button>
+                <button type="button">🌟</button>
+                <button type="button">💥</button>
+                <button type="button">🌠</button>
+                <button type="button">🧨</button>
+                <button type="button">🚀</button>
+                <button type="button">🏎️</button>
+                <button type="button">🏆</button>
+                <button type="button">🎯</button>
+                <button type="button">🥇</button>
+                <button type="button">🔋</button>
+                <button type="button">🎆</button>
+                <button type="button">🎇</button>
+                <button type="button">🌋</button>
+                <button type="button">💡</button>
+                <button type="button">🛡️</button>
+                <button type="button">🧭</button>
+                <button type="button">🛰️</button>
+              </div>
+              <div class="emoji-section" data-category="heart" hidden>
+                <button type="button">❤️</button>
+                <button type="button">🧡</button>
+                <button type="button">💛</button>
+                <button type="button">💚</button>
+                <button type="button">💙</button>
+                <button type="button">💜</button>
+                <button type="button">🤎</button>
+                <button type="button">🖤</button>
+                <button type="button">🤍</button>
+                <button type="button">💘</button>
+                <button type="button">💝</button>
+                <button type="button">💖</button>
+                <button type="button">💗</button>
+                <button type="button">💓</button>
+                <button type="button">💞</button>
+                <button type="button">💕</button>
+                <button type="button">💟</button>
+                <button type="button">❣️</button>
+                <button type="button">💌</button>
+                <button type="button">🥰</button>
+              </div>
+              <div class="emoji-section" data-category="thumbs" hidden>
+                <button type="button">👍</button>
+                <button type="button">👌</button>
+                <button type="button">✌️</button>
+                <button type="button">🤙</button>
+                <button type="button">🤘</button>
+                <button type="button">🤞</button>
+                <button type="button">🤜</button>
+                <button type="button">🤛</button>
+                <button type="button">👏</button>
+                <button type="button">🙌</button>
+                <button type="button">🫡</button>
+                <button type="button">🤝</button>
+                <button type="button">🙏</button>
+                <button type="button">👐</button>
+                <button type="button">✋</button>
+                <button type="button">🖐️</button>
+                <button type="button">🤲</button>
+                <button type="button">🫶</button>
+                <button type="button">💪</button>
+                <button type="button">🦾</button>
+              </div>
             </div>
 
             <button class="send-btn" type="button" aria-label="Send">
@@ -537,10 +754,9 @@
               </svg>
             </button>
           </div>
-        </div>
       </div>
     </div>
-
+    
     <div class="footer-note">Live mode is placeholder-only. No sockets or persistence are wired to this preview.</div>
   </div>
 
@@ -612,6 +828,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const toggle = document.getElementById("emoji-toggle");
   const menu = document.getElementById("emoji-menu");
   const textarea = document.querySelector("textarea");
+  const tabButtons = menu?.querySelectorAll(".emoji-tabs button") || [];
+  const sections = menu?.querySelectorAll(".emoji-section") || [];
 
   if (!toggle || !menu || !textarea) return;
 
@@ -620,7 +838,32 @@ document.addEventListener("DOMContentLoaded", () => {
     menu.hidden = !menu.hidden;
   });
 
-  menu.querySelectorAll("button").forEach(btn => {
+  const setActiveCategory = (category) => {
+    sections.forEach((section) => {
+      section.hidden = section.dataset.category !== category;
+    });
+
+    tabButtons.forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.category === category);
+    });
+  };
+
+  const initialCategory = tabButtons[0]?.dataset.category;
+  if (initialCategory) {
+    setActiveCategory(initialCategory);
+  }
+
+  tabButtons.forEach((btn) => {
+    btn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const category = btn.dataset.category;
+      if (category) {
+        setActiveCategory(category);
+      }
+    });
+  });
+
+  menu.querySelectorAll(".emoji-section button").forEach((btn) => {
     btn.addEventListener("click", () => {
       textarea.value += btn.textContent;
       menu.hidden = true;
@@ -632,6 +875,23 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!menu.contains(e.target) && e.target !== toggle) {
       menu.hidden = true;
     }
+  });
+});
+  </script>
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const toggle = document.getElementById("postas-toggle");
+  const menu = document.getElementById("postas-menu");
+
+  if (!toggle || !menu) return;
+
+  toggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    menu.hidden = !menu.hidden;
+  });
+
+  document.addEventListener("click", () => {
+    menu.hidden = true;
   });
 });
   </script>
