@@ -1,5 +1,14 @@
 [
   {
+    "id": "2026-01-alpha-version-sync",
+    "date": "2026-01-01",
+    "title": "Alpha metadata corrected",
+    "description": "Recorded the v0.2.2-alpha metadata refresh while preserving historical runtime entries at their original versions.",
+    "version": "v0.2.2-alpha",
+    "scope": "runtime",
+    "tags": ["alpha", "metadata", "runtime"]
+  },
+  {
     "id": "2026-01-runtime-resumed",
     "date": "2026-01-15",
     "title": "Runtime resumed",

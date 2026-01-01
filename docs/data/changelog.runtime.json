@@ -1,9 +1,28 @@
 {
   "meta": {
     "project": "StreamSuites Runtime",
-    "last_updated": "2025-12-31"
+    "last_updated": "2026-01-01"
   },
   "entries": [
+    {
+      "id": "2026-01-alpha-version-sync",
+      "date": "2026-01-01",
+      "version": "v0.2.2-alpha",
+      "scope": "runtime",
+      "title": "Alpha metadata corrected",
+      "summary": "Captured the v0.2.2-alpha metadata update while preserving historical runtime changelog versions.",
+      "details": [
+        "Documented the alpha-stage metadata sweep across runtime exports without altering prior release identifiers.",
+        "Maintained v0.2.1-alpha labels on December runtime records for audit continuity.",
+        "Flagged the metadata refresh as non-runtime-executing to keep static delivery intact."
+      ],
+      "tags": [
+        "alpha",
+        "metadata",
+        "runtime"
+      ],
+      "is_latest": true
+    },
     {
       "id": "2025-12-project-resumed",
       "date": "2025-12-31",
