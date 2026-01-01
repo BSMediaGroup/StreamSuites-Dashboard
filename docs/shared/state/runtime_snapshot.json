@@ -4,8 +4,8 @@
   "heartbeat": "2025-12-31T16:51:44.283467Z",
   "runtime": {
     "project": "StreamSuites Runtime",
-    "version": "v0.2.1-alpha",
-    "build": "2025.01"
+    "version": "v0.2.2-alpha",
+    "build": "2025.03"
   },
   "system": {
     "platform_polling_enabled": true,

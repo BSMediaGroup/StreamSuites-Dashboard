@@ -1,14 +1,14 @@
 {
   "meta": {
     "project": "StreamSuites",
-    "version": "v0.2.1-alpha",
+    "version": "v0.2.2-alpha",
     "last_updated": "2025-12-31"
   },
   "entries": [
     {
       "id": "2025-12-project-resumed",
       "date": "2025-12-31",
-      "version": "v0.2.1-alpha",
+      "version": "v0.2.2-alpha",
       "scope": "global",
       "title": "Project resumed",
       "summary": "StreamSuites dashboard resumes active monitoring with live runtime snapshots and Rumble marked paused.",
@@ -27,7 +27,7 @@
     {
       "id": "2025-12-project-suspended",
       "date": "2025-12-28",
-      "version": "v0.2.1-alpha",
+      "version": "v0.2.2-alpha",
       "scope": "global",
       "title": "Project suspended",
       "summary": "Historical suspension notice preserved for reference after resumption.",
@@ -46,7 +46,7 @@
     {
       "id": "2025-12-global-public-surface",
       "date": "2025-12-25",
-      "version": "v0.2.1-alpha",
+      "version": "v0.2.2-alpha",
       "scope": "global",
       "title": "Public surface refresh",
       "summary": "Public static shells gain roadmap parity, glass treatments, and consistent badges.",

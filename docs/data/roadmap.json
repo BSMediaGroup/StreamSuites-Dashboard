@@ -143,17 +143,17 @@
     "icon": "./assets/icons/ui/options.svg",
     "tooltip": "64% · 60–65% Integrated — Contracts enforced for current modules with replay/overlay coverage; expansion continues per drop."
   },
-  {
-    "id": "chat-replay",
-    "order": 14,
-    "title": "Unified Live Chat Replay Module",
-    "percent": 52,
-    "meta": "52% · Replay UI + OBS/browser overlays",
-    "status": "partial",
-    "description": "Chat replay is meant to store and rehydrate message archives for post-stream review across platforms. Replay and live-mode scaffolds exist in the dashboard, with pop-out replay windows, OBS/browser-source overlays, theme and badge support, and avatar fallbacks. Export streams remain draft-only and are not yet rendering live data on dashboard or public pages.",
-    "icon": "./assets/icons/ui/extension.svg",
-    "tooltip": "52% · 50–55% Functional — Replay/live scaffolds, OBS overlays, and theming exist; stabilized exports and rendering still pending."
-  },
+    {
+      "id": "chat-replay",
+      "order": 14,
+      "title": "Unified Live Chat Replay Module",
+      "percent": 85,
+      "meta": "85% · UI complete preview; runtime hydration not started",
+      "status": "partial",
+      "description": "Unified Chat Replay UI is UI COMPLETE / PREVIEW ONLY. Live Chat Window is UI COMPLETE / NO RUNTIME. OBS / Browser Source Overlay is UI COMPLETE / NO RUNTIME. Browser Extension (Live Chat Replay) is UI COMPLETE / RUNTIME PENDING. Multi-platform badge rendering is COMPLETE. Avatar fallback & identity handling is COMPLETE. Runtime hydration is NOT STARTED. Export streams remain draft-only and are not yet rendering live data on dashboard or public pages.",
+      "icon": "./assets/icons/ui/extension.svg",
+      "tooltip": "85% · UI complete previews — Replay/live windows, OBS/browser overlays, and browser extension mocks are UI-complete previews with badge + avatar fidelity; runtime hydration is not started."
+    },
   {
     "id": "winforms-gui",
     "order": 15,

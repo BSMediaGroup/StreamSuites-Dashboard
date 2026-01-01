@@ -1,15 +1,16 @@
 # StreamSuites Dashboard — Static, Read-Only Runtime Monitor
 
-StreamSuites Dashboard is a **static, client-side control panel** for observing the StreamSuites automation ecosystem. It stays GitHub Pages–safe (no backend, no auth) while polling runtime snapshot JSON for **YouTube, Twitch, Rumble, and Discord**. All execution, chat ingestion, livestream control, and command surfaces live in the StreamSuites runtimes.
+StreamSuites Dashboard is a **static, client-side preview surface** for observing the StreamSuites automation ecosystem. It stays GitHub Pages–safe (no backend, no auth) while loading snapshot JSON for **YouTube, Twitch, Rumble, and Discord**. All execution, chat ingestion, livestream control, and command surfaces live in the StreamSuites runtimes, not here.
 
+- **Preview/scaffold only:** The dashboard is intentionally static, read-only, and ships bundled snapshots to demonstrate layout and schema alignment. Runtime hydration for chat replay/live overlays has **not started**.
 - **Authority:** Runtime exports are canonical; the dashboard only reads them and refreshes on a timer.
 - **Write safety:** No API calls, no authentication, and no server code. Local edits remain browser-local or downloaded JSON files.
-- **Current stance:** YouTube + Twitch previews are ACTIVE with runtime heartbeat polling; Rumble is PAUSED with read-only telemetry and red roadmap treatment.
+- **Current stance:** Static previews only. YouTube + Twitch previews present snapshot-driven heartbeat telemetry; Rumble remains PAUSED with read-only telemetry and red roadmap treatment. No runtime feeds are wired into chat replay or overlays yet.
 - **Audit:** Use the attached audit report for context; do **not** regenerate it.
 
 ## Version & Ownership
-- **Current version:** StreamSuites™ v0.2.1-alpha (from `docs/version.json`).
-- **Build:** 2025.02 (alpha channel, stamped via `docs/version.json`).
+- **Current version:** StreamSuites™ v0.2.2-alpha (from `docs/version.json`).
+- **Build:** 2025.03 (alpha channel, stamped via `docs/version.json`).
 - **Dashboard role:** Static, read-only, and non-authoritative. Reflects runtime exports and local drafts only.
 - **Licensing notice:** Proprietary • All Rights Reserved • © 2026 Brainstream Media Group • Owner: Daniel Clancy.
 - **Alpha-stage disclaimer:** Active alpha surface; schemas, exports, and visualizations may change as runtime contracts stabilize.
@@ -23,6 +24,10 @@ StreamSuites Dashboard is a **static, client-side control panel** for observing 
 
 ## Relationship to StreamSuites (Main Repo)
 This repository is a **separate but companion project** to the `StreamSuites` runtime. Runtimes produce exports and consume schemas; the dashboard renders those exports and drafts config bundles.
+
+- **Runtime-owned execution:** Chat ingestion, overlays, livestream control, and command dispatch live in the runtime repo. This dashboard stays static, read-only, and preview-only until runtime hydration is wired.
+- **No runtime feeds yet:** Bundled snapshots (docs/data + docs/shared/state) illustrate layout and schema alignment; there are no live chat feeds, overlays, or replay hydrations in this repo.
+- **Roadmap source:** The roadmap visible in the dashboard is driven by `docs/data/roadmap.json`; updates here propagate directly to the UI.
 
 ```
 [StreamSuites Runtime] <— consumes schemas — [StreamSuites-Dashboard (static, read-only)]
@@ -73,6 +78,15 @@ If `shared/state` files are absent, views silently fall back to `docs/data` so t
 - **Errors panel:** Highlights active or recent errors per subsystem while keeping the presentation non-fatal and informational.
 - **Data sources:** Hydrates from `docs/shared/state/telemetry/{events,rates,errors}.json` with silent fallbacks to `docs/data/telemetry/` when missing.
 
+## Roadmap alignment (v0.2.2-alpha)
+- **Unified Chat Replay UI:** UI COMPLETE / PREVIEW ONLY — all dashboards show static preview mocks driven by local JSON.
+- **Live Chat Window:** UI COMPLETE / NO RUNTIME — pop-out and embedded live chat windows are static HTML only.
+- **OBS / Browser Source Overlay:** UI COMPLETE / NO RUNTIME — overlay HTML exists as a preview with no live data wiring.
+- **Browser Extension (Live Chat Replay):** UI COMPLETE / RUNTIME PENDING — preview exists; runtime coupling is deferred.
+- **Multi-platform badge rendering:** COMPLETE — platform + role badges render in the previews with finalized assets.
+- **Avatar fallback & identity handling:** COMPLETE — previews include silhouette fallbacks and identity labels without runtime mutation.
+- **Runtime hydration:** NOT STARTED — no live chat or overlay data is being hydrated; the roadmap entries remain preview-only.
+
 ## Public-Facing Media Surfaces (Static)
 - **Home (`docs/home.html`)** — public landing surface linking to galleries and the creator dashboard.
 - **Clips (`docs/clips.html`)** — standalone clips gallery (static placeholders) plus detail view (`docs/clips/detail.html`).
@@ -92,16 +106,14 @@ All public pages are independent entry points, GitHub Pages–safe, and reuse `d
 - **Posture:** Read-only; tables hydrate from static JSON exports under `docs/data/`.
 - **Operational notices:** Explicitly notes runtime exports as the source of truth; the dashboard is CMS-style visibility only.
 
-## Unified Chat Replay (Planned)
-- **Dashboard previews only:** `docs/views/chat-replay.html` now includes mode toggles (Replay/Live), Na3ar-17–style theme selection, Lakshay-art–inspired live input styling, and a pop-out control.
-- **Preview wiring + assets:** All chat replay previews point to local HTML under `docs/views/` with assets loaded from `docs/assets/` (no absolute `/assets` references). The dashboard compensates for relative paths so icons and avatar fallbacks resolve inside the iframes.
-- **Live vs. replay:** Mode toggles switch the embedded chat window between `docs/views/chat_replay_window.html` (replay) and `docs/views/chat_window.html` (live) while passing mode + theme to the OBS/browser overlay preview (`docs/views/chat_overlay_obs.html`).
-- **Pop-out purpose:** The “Pop-out Chat Window” button opens the current preview (theme + mode preserved) in a new tab/window for reference while keeping the dashboard read-only.
-- **File-based placeholders:** The pop-out windows (`docs/views/chat_replay_window.html` for replay, `docs/views/chat_window.html` for live) and OBS/browser source overlay (`docs/views/chat_overlay_obs.html`) are local HTML mocks surfaced purely for documentation.
-- **Future hydration path:** Runtime replay feeds will hydrate both surfaces once the unified engine is active; today they remain scaffolded and offline.
-- **Avatar support (preview-only):** Avatars are rendered from replay-sourced metadata with a light-gray fallback silhouette (`docs/assets/icons/ui/profile.svg`) when `avatar_url` is missing. The dashboard does not control or author avatars; it only mirrors replay exports. A future screenshot callout will be added once runtime-fed avatars ship.
-- **Badge + font fidelity:** Platform badges now use the provided SVG icons (YouTube, Twitch, Rumble, Twitter/X, Discord) with role badges (pro, moderator, owner) and the RechargeBd/SuiGeneris font stack across themes, including the light option. Messages use reduced text sizing for overlay parity and keep badges pinned to the top-right in the preview mocks.
+## Unified Chat Replay (Preview-only)
+- **UI COMPLETE / PREVIEW ONLY:** `docs/views/chat-replay.html` surfaces the full UI with mode toggles (Replay/Live), Na3ar-17–style theme selection, Lakshay-art–inspired live input styling, and a pop-out control — all powered by bundled JSON, not runtime feeds.
+- **Live Chat Window (UI COMPLETE / NO RUNTIME):** `docs/views/chat_window.html` is rendered as a static mock in the dashboard and pop-out flows; no sockets or runtime hydration are wired.
+- **Replay window & overlays:** `docs/views/chat_replay_window.html` (replay) and `docs/views/chat_overlay_obs.html` (OBS/browser source) are UI complete with theme + mode propagation but **NO RUNTIME** data.
+- **Browser Extension (UI COMPLETE / RUNTIME PENDING):** The extension preview is UI-complete and references the same assets; runtime coupling is deferred.
+- **Badges & avatars (COMPLETE):** Platform + role badges render with finalized SVGs and the RechargeBd/SuiGeneris font stack; avatar fallback/identity handling uses `docs/assets/icons/ui/profile.svg` and embedded labels without mutating runtime data.
 - **Placeholder coverage:** Previews reference `docs/assets/placeholders/daniel.png`, `docs/assets/placeholders/streamsuites.jpg`, and `docs/assets/placeholders/hotdog.jpg`, falling back to `docs/assets/icons/ui/profile.svg` if no avatar URL is present.
+- **Hydration status:** Runtime hydration is NOT STARTED. Export streams remain draft-only and are not rendering live data on dashboard or public pages. File-based placeholders exist purely for documentation.
 - **CSS sources cited:** Theme selector structure adapted from Na3ar-17 (Uiverse.io); live input visuals adapted from Lakshay-art (Uiverse.io) with StreamSuites color/treatment tweaks.
 
 ## Design Principles & Schema-Driven Architecture
@@ -271,6 +283,7 @@ StreamSuites-Dashboard/
 │   │   ├── rate_limits.json
 │   │   ├── roadmap.json
 │   │   ├── runtime_snapshot.json
+│   │   ├── system.json
 │   │   ├── score_events.json
 │   │   ├── scoreboards.json
 │   │   ├── tallies.json
