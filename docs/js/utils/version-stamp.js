@@ -1,7 +1,7 @@
 /* ======================================================================
    StreamSuites™ Dashboard — Version Stamp Helper
    Project: StreamSuites™
-   Version: v0.2.1-alpha
+   Version: v0.2.2-alpha
    Owner: Daniel Clancy
    Copyright: © 2026 Brainstream Media Group
    ====================================================================== */

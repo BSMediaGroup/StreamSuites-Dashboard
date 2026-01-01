@@ -1,10 +1,29 @@
 {
   "meta": {
     "project": "StreamSuites",
-    "version": "v0.2.1-alpha",
-    "last_updated": "2025-12-31"
+    "version": "v0.2.2-alpha",
+    "last_updated": "2026-01-01"
   },
   "entries": [
+    {
+      "id": "2026-01-alpha-version-sync",
+      "date": "2026-01-01",
+      "version": "v0.2.2-alpha",
+      "scope": "dashboard",
+      "title": "Alpha metadata corrected",
+      "summary": "Recorded the v0.2.2-alpha metadata sync while preserving historical entries at their original versions.",
+      "details": [
+        "Added explicit changelog coverage for the late-alpha metadata refresh across public and admin surfaces.",
+        "Ensured prior dashboard entries remain pinned to their original v0.2.1-alpha and 0.1.x identifiers.",
+        "Aligned about-page version badges with the current build while keeping legacy notes intact."
+      ],
+      "tags": [
+        "alpha",
+        "metadata",
+        "dashboard"
+      ],
+      "is_latest": true
+    },
     {
       "id": "2025-12-project-resumed",
       "date": "2025-12-31",
