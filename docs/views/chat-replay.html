@@ -127,56 +127,60 @@
     color: #ffffff;
   }
 
-  .composer-shell {
-    position: relative;
-    display: flex;
-    align-items: flex-end;
-    gap: 10px;
+  .ss-chat-input {
     padding: 8px 0;
   }
 
-  .composer-actions {
-    display: grid;
-    gap: 8px;
-  }
-
-  .composer-action {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background: rgba(255, 255, 255, 0.06);
-    display: grid;
-    place-items: center;
-    color: #dfe6ff;
-    cursor: default;
-  }
-
-  .composer-field {
-    flex: 1;
-    display: flex;
-    gap: 10px;
-    align-items: flex-end;
-  }
-
-  .composer-textarea {
-    width: 100%;
-    min-height: 96px;
+  .ss-chat-input-inner {
     background: #0b0f1c;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .ss-chat-textarea {
+    width: 100%;
+    min-height: 96px;
+    resize: vertical;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
     color: #f2f5ff;
     padding: 10px 12px;
     font-size: 0.98rem;
     font-family: "SuiGenerisRg", system-ui, -apple-system, "Segoe UI", sans-serif;
     letter-spacing: 0.02em;
-    resize: vertical;
   }
 
-  .composer-textarea::placeholder { color: rgba(255, 255, 255, 0.5); }
-  .composer-textarea:focus { outline: none; border-color: rgba(126, 158, 255, 0.5); }
+  .ss-chat-textarea::placeholder { color: rgba(255, 255, 255, 0.5); }
+  .ss-chat-textarea:focus { outline: none; border-color: rgba(126, 158, 255, 0.5); }
 
-  .composer-send {
+  .ss-chat-input-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .ss-chat-input-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .ss-icon-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    cursor: default;
+  }
+
+  .ss-send-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -185,21 +189,14 @@
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.14);
     background: rgba(110, 167, 255, 0.16);
-    color: #7ea6ff;
     cursor: pointer;
-    transition: background 0.2s ease, transform 0.1s ease;
   }
 
-  .composer-send:hover { background: rgba(110, 167, 255, 0.22); }
-  .composer-send:active { transform: translateY(1px); }
-
-  .composer-send .icon {
+  .ss-send-btn img {
     width: 20px;
     height: 20px;
     display: block;
-    background: currentColor;
-    mask: url('../assets/icons/ui/send.svg') center/contain no-repeat;
-    -webkit-mask: url('../assets/icons/ui/send.svg') center/contain no-repeat;
+    filter: invert(48%) sepia(53%) saturate(1608%) hue-rotate(195deg) brightness(101%) contrast(102%);
   }
 
   .ss-mock-chat {
@@ -368,11 +365,11 @@
       </div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <button class="ss-popout-btn" id="popout-chat-button" type="button">
-          <img src="../assets/icons/ui/send.svg" alt="Pop-out" width="18" height="18" />
+          <img src="./assets/icons/ui/send.svg" alt="Pop-out" width="18" height="18" />
           Pop-out Chat Window
         </button>
         <button class="ss-popout-btn" id="popout-overlay-button" type="button">
-          <img src="../assets/icons/ui/send.svg" alt="Pop-out" width="18" height="18" />
+          <img src="./assets/icons/ui/send.svg" alt="Pop-out" width="18" height="18" />
           Pop-out OBS Overlay
         </button>
       </div>
@@ -432,35 +429,44 @@
 
         <div>
           <p style="margin-top:0;">Live input preview mirrors the Lakshay-art treatment with our dark palette.</p>
-          <div class="composer-shell" aria-label="Live input preview">
-            <div class="composer-actions" aria-hidden="true">
-              <div class="composer-action">…</div>
-              <div class="composer-action">…</div>
-            </div>
-            <div class="composer-field">
-              <textarea class="composer-textarea" rows="3" placeholder="Type a live message"></textarea>
-              <button class="composer-send" type="button" aria-label="Send">
-                <span class="icon" aria-hidden="true"></span>
-              </button>
+          <div class="ss-chat-input" aria-label="Live input preview">
+            <div class="ss-chat-input-inner">
+              <textarea
+                rows="3"
+                class="ss-chat-textarea"
+                placeholder="Type a live message"
+              ></textarea>
+
+              <div class="ss-chat-input-actions">
+                <div class="ss-chat-input-left">
+                  <button class="ss-icon-btn" type="button" aria-label="Attach file"></button>
+                  <button class="ss-icon-btn" type="button" aria-label="Insert link"></button>
+                </div>
+
+                <button class="ss-send-btn" type="button" aria-label="Send">
+                  <img src="./assets/icons/ui/send.svg" alt="Send" />
+                </button>
+              </div>
             </div>
           </div>
+
           <div class="ss-mock-chat" aria-label="Badge alignment preview">
             <div class="ss-mock-row">
               <div class="avatar" aria-hidden="true">
-                <img src="../assets/placeholders/daniel.png" alt="" />
+                <img src="./assets/placeholders/daniel.png" alt="" />
               </div>
               <div class="meta">
                 <div class="name">daniel_clancy</div>
                 <div class="badges">
-                  <span class="badge" title="Owner"><img src="../assets/icons/dcbadge.svg" alt="Owner" /></span>
-                  <span class="badge" title="Pro User"><img src="../assets/icons/prouser.svg" alt="Pro" /></span>
-                  <span class="badge" title="Moderator"><img src="../assets/icons/mod.svg" alt="Moderator" /></span>
+                  <span class="badge" title="Owner"><img src="./assets/icons/dcbadge.svg" alt="Owner" /></span>
+                  <span class="badge" title="Pro User"><img src="./assets/icons/prouser.svg" alt="Pro" /></span>
+                  <span class="badge" title="Moderator"><img src="./assets/icons/mod.svg" alt="Moderator" /></span>
                 </div>
                 <div class="text">Multi-badge example shows stack ordering with reduced text size and tighter line-height.</div>
               </div>
               <div class="platform-stack">
-                <span class="platform-badge" aria-label="YouTube"><img src="../assets/icons/youtube.svg" alt="YouTube" />YouTube</span>
-                <span class="platform-badge" aria-label="Discord"><img src="../assets/icons/discord.svg" alt="Discord" />Discord</span>
+                <span class="platform-badge" aria-label="YouTube"><img src="./assets/icons/youtube.svg" alt="YouTube" />YouTube</span>
+                <span class="platform-badge" aria-label="Discord"><img src="./assets/icons/discord.svg" alt="Discord" />Discord</span>
               </div>
             </div>
           </div>
@@ -488,7 +494,7 @@
           <div class="ss-iframe-frame">
             <iframe
               id="window-preview"
-              src="chat_replay_window.html?mode=replay&theme=default"
+              src="./chat_replay_window.html?mode=replay&theme=default"
               title="Embedded Chat Window Preview"
               style="width:100%;height:360px;border:0;filter:saturate(1);background:#0d1220;"
               loading="lazy"
@@ -507,7 +513,7 @@
           <div class="ss-iframe-frame">
             <iframe
               id="overlay-preview"
-              src="chat_overlay_obs.html?theme=default&mode=replay"
+              src="./chat_overlay_obs.html?theme=default&mode=replay"
               title="OBS / Browser Source Overlay Preview"
               style="width:100%;height:360px;border:0;filter:saturate(1);background:#0d1220;"
               loading="lazy"
@@ -557,10 +563,10 @@
 
     const windowSrc = () =>
       state.mode === 'live'
-        ? `chat_window.html?mode=live&theme=${state.theme}`
-        : `chat_replay_window.html?mode=replay&theme=${state.theme}`;
+        ? `./chat_window.html?mode=live&theme=${state.theme}`
+        : `./chat_replay_window.html?mode=replay&theme=${state.theme}`;
 
-    const overlaySrc = () => `chat_overlay_obs.html?theme=${state.theme}&mode=${state.mode}`;
+    const overlaySrc = () => `./chat_overlay_obs.html?theme=${state.theme}&mode=${state.mode}`;
 
     const reloadFrames = () => {
       if (windowFrame) {
