@@ -186,6 +186,9 @@
       </div>
 
       <div class="header-right">
+        <span id="app-mode" class="status-indicator warning">
+          ● static mode (read-only)
+        </span>
         <span id="app-status" class="status-indicator idle">
           ● idle
         </span>
@@ -228,6 +231,8 @@
           <li data-view="rumble">Rumble</li>
           <li data-view="youtube">YouTube</li>
           <li data-view="twitch">Twitch</li>
+          <li data-view="kick">Kick</li>
+          <li data-view="pilled">Pilled</li>
           <li data-view="twitter">Twitter</li>
           <li data-view="discord">Discord</li>
           <li data-view="support">Support</li>
@@ -327,6 +332,8 @@
   <script src="./js/platforms/youtube.js"></script>
   <script src="./js/platforms/twitch.js"></script>
   <script src="./js/platforms/discord.js"></script>
+  <script src="./js/platforms/kick.js"></script>
+  <script src="./js/platforms/pilled.js"></script>
 
   <!-- Minimal Status Wiring -->
   <script>

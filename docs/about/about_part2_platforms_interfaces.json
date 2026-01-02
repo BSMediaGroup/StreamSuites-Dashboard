@@ -79,6 +79,44 @@
       ]
     },
     {
+      "id": "kick-scaffolded",
+      "order": 18.5,
+      "title": "Kick — First-Class Scaffold With Parity Goals",
+      "entries": [
+        {
+          "id": "kick-foundation",
+          "order": 1,
+          "consumer": {
+            "title": "Kick Surfaces Are Visible and Read-Only",
+            "body": "Kick is now a first-class platform in the dashboard, mirroring YouTube and Twitch layouts while remaining read-only. Dedicated Kick views and settings rows signal parity intent without pretending live control exists."
+          },
+          "developer": {
+            "title": "Scaffolded Integration Awaiting Runtime Exports",
+            "body": "Kick wiring is scaffolded to hydrate from runtime snapshots when available, reusing the same normalization and quota placeholder patterns as other chat platforms. Dashboard toggles stay disabled, routing remains static-first, and runtime exports from the authoritative repo will populate the new Kick view without enabling mutations."
+          }
+        }
+      ]
+    },
+    {
+      "id": "pilled-planned",
+      "order": 18.6,
+      "title": "Pilled — Planned Ingest-Only Path",
+      "entries": [
+        {
+          "id": "pilled-roadmap",
+          "order": 1,
+          "consumer": {
+            "title": "Planned, Ingest-Only Visibility",
+            "body": "Pilled appears in the dashboard as a planned platform with a dedicated read-only view. It is labeled ingest-only and does not expose admin controls, keeping expectations clear for operators and viewers."
+          },
+          "developer": {
+            "title": "Reserved Export Slot Without Mutation",
+            "body": "Pilled is reserved as an ingest-only integration. Dashboard scaffolding is limited to snapshot rendering once runtime collectors export data. Switches are locked, telemetry is disabled by default, and all mutations remain off until the runtime path is implemented in the authoritative repository."
+          }
+        }
+      ]
+    },
+    {
       "id": "discord-control-plane",
       "order": 19,
       "title": "Discord — Control Plane, Not a Stream Platform",
