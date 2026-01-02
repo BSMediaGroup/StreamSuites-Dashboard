@@ -26,6 +26,14 @@ const App = {
   initialized: false,
   storage: {},
   state: {}, // ✅ ADDITIVE — read-only runtime snapshots live here
+  creatorContext: {
+    creatorId: null,
+    permissions: {
+      mode: "admin",
+      readOnly: false
+    },
+    platformScopes: []
+  },
   mode: {
     current: "static",
     reason: "static-first default",
@@ -739,6 +747,12 @@ async function initApp() {
   if (App.initialized) return;
 
   console.info("[Dashboard] Initializing StreamSuites dashboard");
+
+  try {
+    window.StreamSuitesState?.loadCreatorContext?.();
+  } catch (err) {
+    console.warn("[Dashboard] Creator context load skipped", err);
+  }
 
   await detectConnectedMode();
 
