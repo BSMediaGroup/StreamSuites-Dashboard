@@ -19,12 +19,12 @@
     "kick": {
       "enabled": true,
       "telemetry_enabled": true,
-      "notes": "Scaffolded ingestion + export parity planned; dashboard wiring is read-only."
+      "notes": "Scaffolded ingestion with export parity planned; dashboard wiring is read-only and hydrates runtime exports when present."
     },
     "pilled": {
       "enabled": false,
       "telemetry_enabled": false,
-      "notes": "Planned ingest-only platform; visibility is read-only until runtime path is delivered."
+      "notes": "Planned ingest / replay-only platform; dashboard renders placeholders only until the runtime collector ships."
     },
     "discord": {
       "enabled": true,

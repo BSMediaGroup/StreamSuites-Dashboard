@@ -1,4 +1,15 @@
 {
   "schema": "streamsuites.system.v1",
-  "platform_polling_enabled": true
+  "platform_polling_enabled": true,
+  "platform_status": {
+    "kick": "scaffolded-read-only",
+    "pilled": "planned-ingest-only"
+  },
+  "applications": {
+    "desktop_admin": {
+      "title": "Desktop Admin Application (Local, Planned)",
+      "status": "planned",
+      "notes": "Dashboard awareness only; runtime keeps control and no bindings exist."
+    }
+  }
 }

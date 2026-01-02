@@ -8,6 +8,7 @@
   let runtimeTimer = null;
   let currentMode = null;
   let lastRuntimeSnapshot = null;
+  let modeListener = null;
 
   function cacheElements() {
     el.foundationStatus = document.getElementById("pilled-foundation-status");
@@ -26,6 +27,16 @@
   function setText(target, value) {
     if (!target) return;
     target.textContent = value;
+  }
+
+  function lockControls() {
+    const scope = document.getElementById("view-container");
+    if (!scope) return;
+
+    scope.querySelectorAll("input, select, textarea, button").forEach((node) => {
+      node.disabled = true;
+      node.setAttribute("aria-disabled", "true");
+    });
   }
 
   function formatTimestamp(value) {
@@ -82,20 +93,25 @@
     );
   }
 
-  function hydrateRuntimePlaceholder() {
-    lastRuntimeSnapshot = null;
-    setText(el.runtimeStatus, "planned / offline");
-    setText(el.runtimeUpdated, "no runtime snapshot yet");
-    setText(el.runtimeError, "not reported");
+  function hydrateRuntimePlaceholder(snapshot = null) {
+    lastRuntimeSnapshot = snapshot;
+    const plannedLabel = "PLANNED — INGEST / REPLAY ONLY";
+    const updatedAt = snapshot?.generatedAt || snapshot?.generated_at || snapshot?.timestamp;
+
+    setText(el.runtimeStatus, plannedLabel);
+    setText(el.runtimeUpdated, updatedAt ? formatTimestamp(updatedAt) : "no runtime snapshot yet");
+    setText(el.runtimeError, "read-only placeholder (no runtime writes)");
     setText(el.runtimeMessages, "—");
     setText(el.runtimeTriggers, "—");
 
     if (el.runtimeBanner) {
       el.runtimeBanner.classList.add("ss-alert-warning");
       el.runtimeBanner.classList.remove("hidden", "ss-alert-success", "ss-alert-danger");
+      const modeLabel = currentMode?.current || "static";
+      const snapshotNote = snapshot ? "Runtime export detected; placeholders only." : "Awaiting runtime export.";
       setText(
         el.runtimeBanner,
-        `Planned ingest-only view (controls locked). Runtime exports will render here; dashboard remains read-only (${currentMode?.current || "static"} mode).`
+        `${plannedLabel}. ${snapshotNote} Mode: ${modeLabel}.`
       );
     }
   }
@@ -122,49 +138,8 @@
   }
 
   function renderRuntime(snapshot) {
-    const platform = selectPlatform(snapshot);
-    const status = describeRuntimeStatus(platform);
-    setText(el.runtimeStatus, status.toUpperCase());
-
-    const updated = formatTimestamp(
-      platform?.lastUpdate || platform?.last_heartbeat || snapshot?.generatedAt
-    );
-    setText(el.runtimeUpdated, updated);
-
-    setText(
-      el.runtimeError,
-      platform?.error || "none reported"
-    );
-
-    const counters = platform?.counters || {};
-    const messages = resolveCounterValue(counters, [
-      "messagesProcessed",
-      "messages_processed",
-      "messages"
-    ]);
-    const triggers = resolveCounterValue(counters, [
-      "triggersFired",
-      "triggers_fired",
-      "triggers"
-    ]);
-
-    setText(
-      el.runtimeMessages,
-      Number.isFinite(messages) ? messages.toLocaleString() : "—"
-    );
-    setText(
-      el.runtimeTriggers,
-      Number.isFinite(triggers) ? triggers.toLocaleString() : "—"
-    );
-
-    if (el.runtimeBanner) {
-      el.runtimeBanner.classList.remove("ss-alert-danger", "ss-alert-success");
-      el.runtimeBanner.classList.add("ss-alert-warning");
-      setText(
-        el.runtimeBanner,
-        `Read-only preview sourced from runtime exports (shared/state → data fallback). Mode: ${currentMode?.current || "static"}.`
-      );
-    }
+    const normalized = window.StreamSuitesState?.normalizeRuntimeSnapshot?.(snapshot);
+    hydrateRuntimePlaceholder(normalized || snapshot || null);
   }
 
   async function hydrateRuntime() {
@@ -174,9 +149,17 @@
       await runtimeState.fetchOnce();
     }
 
-    const snapshot = runtimeState?.getSnapshot?.();
+    let snapshot = runtimeState?.getSnapshot?.();
 
-    if (!snapshot || !snapshot.platforms) {
+    if (!snapshot) {
+      try {
+        snapshot = await window.StreamSuitesState?.loadRuntimeSnapshot?.({ forceReload: true });
+      } catch (err) {
+        console.warn("[PilledView] Runtime snapshot load failed", err);
+      }
+    }
+
+    if (!snapshot) {
       hydrateRuntimePlaceholder();
       return;
     }
@@ -210,6 +193,11 @@
     cacheElements();
     currentMode = modeState || window.App?.mode || { current: "static", reason: "static-first default" };
     setFoundationStatus();
+    lockControls();
+    if (!modeListener) {
+      modeListener = (event) => onModeChange(event.detail);
+      window.addEventListener("streamsuites:modechange", modeListener);
+    }
     await hydrateConfig();
     hydrateRuntimePlaceholder();
     startRuntimePolling();
@@ -219,6 +207,11 @@
     if (runtimeTimer) {
       clearInterval(runtimeTimer);
       runtimeTimer = null;
+    }
+
+    if (modeListener) {
+      window.removeEventListener("streamsuites:modechange", modeListener);
+      modeListener = null;
     }
   }
 

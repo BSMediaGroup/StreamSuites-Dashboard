@@ -104,11 +104,11 @@
     "order": 8.6,
     "title": "Pilled Ingest-Only Path",
     "percent": 6,
-    "meta": "6% · Planned ingest-only",
+    "meta": "6% · Planned ingest / replay-only placeholders",
     "status": "planned",
-    "description": "Pilled is reserved as an ingest-only platform with a dedicated read-only dashboard view. No runtime collector exists yet; switches are locked and telemetry is disabled until the authoritative runtime ships exports, which will hydrate from shared/state/runtime_snapshot.json once present.",
+    "description": "Pilled is reserved as an ingest-only platform with a dedicated read-only dashboard view. No runtime collector exists yet; switches are locked and telemetry is disabled until the authoritative runtime ships exports, which will hydrate from shared/state/runtime_snapshot.json once present. The dashboard renders placeholders even when exports exist to reinforce the ingest-only contract.",
     "icon": "./assets/icons/pilled-silver.svg",
-    "tooltip": "6% · 0–10% Planned — Read-only dashboard slot reserved; runtime collector not yet implemented."
+    "tooltip": "6% · 0–10% Planned — Read-only dashboard slot reserved; runtime collector not yet implemented and dashboard shows placeholders only."
   },
   {
     "id": "twitter-integration",
@@ -181,11 +181,11 @@
     "order": 15,
     "title": "Desktop Admin Application (Local, Planned)",
     "percent": 22,
-    "meta": "22% · Local EXE concept (Visual Studio 2026)",
+    "meta": "22% · Local EXE concept (dashboard awareness only)",
     "status": "planned",
-    "description": "A Windows-first desktop Admin EXE is planned to mirror the dashboard’s admin views with local, authoritative control. It will read runtime state and write configuration locally, then hand changes back to the runtime without bypassing safety. No UI bindings or remote control paths are assumed; the entry documents the planned, local-only foundation with later parity targets for macOS and Linux.",
+    "description": "A Windows-first desktop Admin EXE is planned to mirror the dashboard’s admin views with local, authoritative control. It will read runtime state and write configuration locally, then hand changes back to the runtime without bypassing safety. No UI bindings or remote control paths are assumed; the entry documents the planned, local-only foundation with later parity targets for macOS and Linux. The dashboard only surfaces this planned work; no UI controls are wired.",
     "icon": "./assets/icons/ui/windows.svg",
-    "tooltip": "22% · 20–30% Planned foundation — Local Admin EXE concept; bindings and cross-platform ports remain future work."
+    "tooltip": "22% · 20–30% Planned foundation — Local Admin EXE concept; dashboard lists it for awareness only and bindings remain future work."
   },
   {
     "id": "scoreboards",
