@@ -6,6 +6,8 @@
 
   const el = {};
   let runtimeTimer = null;
+  let currentMode = null;
+  let lastRuntimeSnapshot = null;
 
   function cacheElements() {
     el.foundationStatus = document.getElementById("pilled-foundation-status");
@@ -63,8 +65,8 @@
     setText(
       el.configMode,
       platformConfig?.enabled === true
-        ? "ingest-only (planned)"
-        : "ingest-only (planned)"
+        ? "ingest-only (locked preview)"
+        : "ingest-only (locked preview)"
     );
     setText(
       el.configCreators,
@@ -81,6 +83,7 @@
   }
 
   function hydrateRuntimePlaceholder() {
+    lastRuntimeSnapshot = null;
     setText(el.runtimeStatus, "planned / offline");
     setText(el.runtimeUpdated, "no runtime snapshot yet");
     setText(el.runtimeError, "not reported");
@@ -92,7 +95,7 @@
       el.runtimeBanner.classList.remove("hidden", "ss-alert-success", "ss-alert-danger");
       setText(
         el.runtimeBanner,
-        `Planned ingest-only view. Runtime exports will render here; dashboard remains read-only (${App.mode?.current || "static"} mode).`
+        `Planned ingest-only view (controls locked). Runtime exports will render here; dashboard remains read-only (${currentMode?.current || "static"} mode).`
       );
     }
   }
@@ -100,16 +103,31 @@
   function describeRuntimeStatus(entry) {
     if (!entry) return "planned";
     if (entry.enabled === false) return "disabled";
-    return entry.status || "planned";
+    return entry.status || entry.state || "planned";
+  }
+
+  function selectPlatform(snapshot) {
+    if (!snapshot || !snapshot.platforms) return null;
+    if (Array.isArray(snapshot.platforms)) {
+      return snapshot.platforms.find((p) => p.platform === PLATFORM || p.name === PLATFORM) || null;
+    }
+    return snapshot.platforms[PLATFORM] || null;
+  }
+
+  function resolveCounterValue(counters, keys) {
+    for (const key of keys) {
+      if (typeof counters[key] === "number") return counters[key];
+    }
+    return null;
   }
 
   function renderRuntime(snapshot) {
-    const platform = snapshot?.platforms?.[PLATFORM] || null;
+    const platform = selectPlatform(snapshot);
     const status = describeRuntimeStatus(platform);
     setText(el.runtimeStatus, status.toUpperCase());
 
     const updated = formatTimestamp(
-      platform?.lastUpdate || snapshot?.generatedAt
+      platform?.lastUpdate || platform?.last_heartbeat || snapshot?.generatedAt
     );
     setText(el.runtimeUpdated, updated);
 
@@ -119,8 +137,16 @@
     );
 
     const counters = platform?.counters || {};
-    const messages = counters.messagesProcessed ?? counters.messages ?? null;
-    const triggers = counters.triggersFired ?? counters.triggers ?? null;
+    const messages = resolveCounterValue(counters, [
+      "messagesProcessed",
+      "messages_processed",
+      "messages"
+    ]);
+    const triggers = resolveCounterValue(counters, [
+      "triggersFired",
+      "triggers_fired",
+      "triggers"
+    ]);
 
     setText(
       el.runtimeMessages,
@@ -136,7 +162,7 @@
       el.runtimeBanner.classList.add("ss-alert-warning");
       setText(
         el.runtimeBanner,
-        `Read-only preview sourced from runtime exports (shared/state → data fallback). Mode: ${App.mode?.current || "static"}.`
+        `Read-only preview sourced from runtime exports (shared/state → data fallback). Mode: ${currentMode?.current || "static"}.`
       );
     }
   }
@@ -155,6 +181,7 @@
       return;
     }
 
+    lastRuntimeSnapshot = snapshot;
     renderRuntime(snapshot);
   }
 
@@ -167,11 +194,21 @@
     if (!el.foundationStatus) return;
     el.foundationStatus.classList.remove("idle", "active");
     el.foundationStatus.classList.add("warning");
-    el.foundationStatus.textContent = "● Pilled integration: Planned";
+    el.foundationStatus.textContent = "● Pilled integration: Ingest-only (planned)";
   }
 
-  async function init() {
+  function onModeChange(modeState) {
+    currentMode = modeState || currentMode;
+    if (lastRuntimeSnapshot) {
+      renderRuntime(lastRuntimeSnapshot);
+    } else {
+      hydrateRuntimePlaceholder();
+    }
+  }
+
+  async function init(modeState) {
     cacheElements();
+    currentMode = modeState || window.App?.mode || { current: "static", reason: "static-first default" };
     setFoundationStatus();
     await hydrateConfig();
     hydrateRuntimePlaceholder();
@@ -187,6 +224,7 @@
 
   window.PilledView = {
     init,
-    destroy
+    destroy,
+    onModeChange
   };
 })();
