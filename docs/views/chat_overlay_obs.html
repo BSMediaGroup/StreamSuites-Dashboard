@@ -87,6 +87,7 @@
                   linear-gradient(135deg, rgba(12, 18, 32, 0.95), rgba(8, 10, 18, 0.98));
       border: 1px solid var(--border);
       box-shadow: inset 0 0 0 1px var(--glow), 0 10px 30px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
     }
     .overlay-shell.blocked {
       display: grid;
@@ -104,6 +105,12 @@
       gap: 10px;
       z-index: 3;
       pointer-events: none;
+      padding: 6px 8px;
+      backdrop-filter: blur(12px);
+      background: linear-gradient(135deg, rgba(8, 10, 18, 0.75), rgba(10, 14, 24, 0.78));
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
     }
     .overlay-header {
       padding: 8px 12px;
@@ -130,11 +137,19 @@
     }
     .chat-stack {
       position: absolute;
-      inset: 86px 16px 16px 16px;
+      inset: 120px 18px 18px 18px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
       overflow: hidden;
+      z-index: 1;
+    }
+    .chat-stack.hidden { display: none; }
+    .chat-stack.design-preview {
+      opacity: 0.65;
+      pointer-events: none;
+      filter: grayscale(8%);
+      transform: translateY(6px);
     }
     .chat-stack.hidden { display: none; }
     .chat-stack.design-preview {
