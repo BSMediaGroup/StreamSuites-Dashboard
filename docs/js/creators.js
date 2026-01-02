@@ -16,7 +16,7 @@
   "use strict";
 
   const ADMIN_DEFAULT_TIER = "open";
-  const PLATFORM_KEYS = ["youtube", "twitch", "rumble", "discord"];
+  const PLATFORM_KEYS = ["youtube", "twitch", "kick", "pilled", "rumble", "discord"];
 
   const el = {};
 
@@ -85,6 +85,8 @@
 
     el.checkboxYouTube = document.getElementById("platform-youtube");
     el.checkboxTwitch = document.getElementById("platform-twitch");
+    el.checkboxKick = document.getElementById("platform-kick");
+    el.checkboxPilled = document.getElementById("platform-pilled");
     el.checkboxRumble = document.getElementById("platform-rumble");
     el.checkboxDiscord = document.getElementById("platform-discord");
 
@@ -280,6 +282,8 @@
     const flags = platformsEnabled || {};
     el.checkboxYouTube.checked = !!flags.youtube;
     el.checkboxTwitch.checked = !!flags.twitch;
+    el.checkboxKick.checked = !!flags.kick;
+    el.checkboxPilled.checked = !!flags.pilled;
     el.checkboxRumble.checked = !!flags.rumble;
     el.checkboxDiscord.checked = !!flags.discord;
   }
@@ -317,6 +321,8 @@
     const platformsEnabled = {
       youtube: el.checkboxYouTube.checked,
       twitch: el.checkboxTwitch.checked,
+      kick: el.checkboxKick.checked,
+      pilled: el.checkboxPilled.checked,
       rumble: el.checkboxRumble.checked,
       discord: el.checkboxDiscord.checked
     };
@@ -331,6 +337,8 @@
       platforms: {
         youtube: { enabled: platformsEnabled.youtube },
         twitch: { enabled: platformsEnabled.twitch },
+        kick: { enabled: platformsEnabled.kick },
+        pilled: { enabled: platformsEnabled.pilled },
         rumble: {
           enabled: platformsEnabled.rumble,
           watch_url: el.inputRumbleWatchUrl?.value.trim() || ""

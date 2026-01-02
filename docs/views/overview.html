@@ -68,6 +68,14 @@
             <td id="ov-rumble-enabled-count" class="align-right">—</td>
           </tr>
           <tr>
+            <td>Kick Enabled Creators</td>
+            <td id="ov-kick-enabled-count" class="align-right">—</td>
+          </tr>
+          <tr>
+            <td>Pilled Enabled Creators</td>
+            <td id="ov-pilled-enabled-count" class="align-right">—</td>
+          </tr>
+          <tr>
             <td>Twitch Enabled Creators</td>
             <td id="ov-twitch-enabled-count" class="align-right">—</td>
           </tr>
@@ -120,6 +128,18 @@
             <td id="telemetry-rumble-status" class="align-right muted">—</td>
             <td id="telemetry-rumble-last" class="align-right muted">—</td>
             <td id="telemetry-rumble-error" class="align-right muted">—</td>
+          </tr>
+          <tr data-platform="kick">
+            <td>Kick</td>
+            <td id="telemetry-kick-status" class="align-right muted">—</td>
+            <td id="telemetry-kick-last" class="align-right muted">—</td>
+            <td id="telemetry-kick-error" class="align-right muted">—</td>
+          </tr>
+          <tr data-platform="pilled">
+            <td>Pilled</td>
+            <td id="telemetry-pilled-status" class="align-right muted">—</td>
+            <td id="telemetry-pilled-last" class="align-right muted">—</td>
+            <td id="telemetry-pilled-error" class="align-right muted">—</td>
           </tr>
           <tr data-platform="discord">
             <td>Discord</td>
@@ -351,6 +371,74 @@
         Rumble chat ingests via SSE when available and falls back to DOM or API polling
         (<code>https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream</code> is preferred).
         Dashboard hydration relies on runtime-exported snapshots.
+      </p>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------------- -->
+  <!-- KICK -->
+  <!-- --------------------------------------------------------- -->
+  <section class="ss-panel" data-view="kick" tabindex="0" role="button" style="cursor:pointer;">
+    <header class="ss-panel-header">
+      <h2>
+        Kick Integration
+        <span class="ss-platform-badge foundation" id="badge-kick">
+          Scaffold (Runtime Export)
+        </span>
+      </h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <table class="ss-table ss-table-compact">
+        <tbody>
+          <tr>
+            <td>Local Config</td>
+            <td id="ov-kick-config" class="align-right muted">Loading…</td>
+          </tr>
+          <tr>
+            <td>Runtime</td>
+            <td id="ov-kick-runtime" class="align-right muted">offline / unknown</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="muted" style="margin-top: 0.5rem;">
+        Kick scaffolding is first-class and hydrates from runtime snapshots when present. Control-plane
+        actions remain locked; dashboard parity matches other platforms with read-only indicators.
+      </p>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------------- -->
+  <!-- PILLED -->
+  <!-- --------------------------------------------------------- -->
+  <section class="ss-panel" data-view="pilled" tabindex="0" role="button" style="cursor:pointer;">
+    <header class="ss-panel-header">
+      <h2>
+        Pilled Integration
+        <span class="ss-platform-badge warning" id="badge-pilled">
+          Ingest-Only (Control-Plane Unavailable)
+        </span>
+      </h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <table class="ss-table ss-table-compact">
+        <tbody>
+          <tr>
+            <td>Local Config</td>
+            <td id="ov-pilled-config" class="align-right muted">Loading…</td>
+          </tr>
+          <tr>
+            <td>Runtime</td>
+            <td id="ov-pilled-runtime" class="align-right muted">ingest-only / planned</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="muted" style="margin-top: 0.5rem;">
+        Pilled is treated as a first-class ingest and replay target with no dashboard control-plane. Runtime
+        exports hydrate this surface; controls stay disabled to preserve read-only behavior.
       </p>
     </div>
   </section>

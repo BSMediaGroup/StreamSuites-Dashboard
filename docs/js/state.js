@@ -695,7 +695,7 @@
 (() => {
   "use strict";
 
-  const PLATFORM_KEYS = ["youtube", "twitch", "rumble", "discord"];
+  const PLATFORM_KEYS = ["youtube", "twitch", "kick", "pilled", "rumble", "discord"];
 
   const DATA_PATHS = {
     creators: "data/creators.json",
@@ -714,12 +714,16 @@
       platforms_enabled: {
         youtube: false,
         twitch: false,
+        kick: true,
+        pilled: false,
         rumble: true,
         discord: true
       },
       platforms: {
         youtube: { enabled: false },
         twitch: { enabled: false },
+        kick: { enabled: true, channel: "daniel_live" },
+        pilled: { enabled: false },
         rumble: {
           enabled: true,
           watch_url: "https://rumble.com/vXXXX-demo-live.html"
@@ -741,6 +745,20 @@
         enabled: false,
         telemetry_enabled: true,
         notes: "Enable when Twitch credentials are provisioned."
+      },
+      kick: {
+        enabled: true,
+        telemetry_enabled: true,
+        replay_supported: false,
+        overlay_supported: false,
+        notes: "Scaffolded ingestion with read-only exports."
+      },
+      pilled: {
+        enabled: false,
+        telemetry_enabled: false,
+        replay_supported: false,
+        overlay_supported: false,
+        notes: "Planned ingest-only integration; dashboard stays read-only."
       },
       rumble: {
         enabled: true,

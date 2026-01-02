@@ -28,21 +28,51 @@
 <main class="ss-main" data-scope="creator">
 
   <!-- ------------------------------------------------------- -->
-  <!-- PLATFORM VISIBILITY -->
+  <!-- GLOBAL PLATFORM SERVICE -->
   <!-- ------------------------------------------------------- -->
   <section class="ss-panel" data-scope="admin">
     <header class="ss-panel-header">
-      <h2>Platform Readiness</h2>
+      <h2>Global Service Status</h2>
     </header>
 
     <div class="ss-panel-body">
       <p class="muted">
-        Pilled appears as a planned ingest-only integration. This view is
-        intentionally read-only and will hydrate from exported snapshots
-        once runtime collectors are available. Admin controls remain
-        permanently disabled in the dashboard; ingestion is runtime-only.
-        Snapshot placeholders are rendered even when runtime exports exist
-        to make the ingest-only contract explicit.
+        Pilled is a first-class ingest-only integration. Control-plane toggles are
+        intentionally locked; this surface mirrors runtime exports without enabling
+        writes. Navigation and layout match other platform pages for parity.
+      </p>
+
+      <table class="ss-table ss-table-compact">
+        <tbody>
+          <tr>
+            <td>Pilled Service Enabled</td>
+            <td class="align-right">
+              <label class="ss-checkbox-field" aria-label="Pilled global service toggle">
+                <span class="checkbox-wrapper">
+                  <input type="checkbox" disabled data-service="pilled" />
+                  <div class="checkbox"></div>
+                </span>
+                <span class="sr-only">Pilled service enabled</span>
+              </label>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------- -->
+  <!-- LOCAL CONFIGURATION VISIBILITY -->
+  <!-- ------------------------------------------------------- -->
+  <section class="ss-panel" data-scope="admin">
+    <header class="ss-panel-header">
+      <h2>Local Configuration</h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <p class="muted">
+        Hydrates from creators and platform exports when present. Read-only placeholders
+        remain even without runtime collectors to reinforce ingest-only behavior.
       </p>
 
       <table class="ss-table ss-table-compact">
@@ -57,6 +87,12 @@
             <td>Creators Enabled</td>
             <td id="pilled-config-creators" class="align-right muted">
               none configured
+            </td>
+          </tr>
+          <tr>
+            <td>Control Plane</td>
+            <td id="pilled-config-control" class="align-right muted">
+              not available (ingest-only)
             </td>
           </tr>
           <tr>

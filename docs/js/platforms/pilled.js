@@ -21,6 +21,7 @@
 
     el.configMode = document.getElementById("pilled-config-mode");
     el.configCreators = document.getElementById("pilled-config-creators");
+    el.configControl = document.getElementById("pilled-config-control");
     el.configSource = document.getElementById("pilled-config-source");
   }
 
@@ -90,6 +91,13 @@
       platformConfig?.notes
         ? platformConfig.notes
         : "awaiting runtime export"
+    );
+
+    setText(
+      el.configControl,
+      platformConfig?.enabled === false
+        ? "disabled (control-plane unavailable)"
+        : "not available (ingest-only)"
     );
   }
 
