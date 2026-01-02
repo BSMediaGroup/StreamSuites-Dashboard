@@ -92,7 +92,7 @@
       el.runtimeBanner.classList.remove("hidden", "ss-alert-success", "ss-alert-danger");
       setText(
         el.runtimeBanner,
-        "Planned ingest-only view. Runtime exports will render here; dashboard remains read-only."
+        `Planned ingest-only view. Runtime exports will render here; dashboard remains read-only (${App.mode?.current || "static"} mode).`
       );
     }
   }
@@ -136,15 +136,20 @@
       el.runtimeBanner.classList.add("ss-alert-warning");
       setText(
         el.runtimeBanner,
-        "Read-only preview sourced from runtime exports (shared/state → data fallback)."
+        `Read-only preview sourced from runtime exports (shared/state → data fallback). Mode: ${App.mode?.current || "static"}.`
       );
     }
   }
 
   async function hydrateRuntime() {
-    const snapshot = await window.StreamSuitesState?.loadRuntimeSnapshot?.({
-      forceReload: true
-    });
+    const runtimeState = window.App?.state?.runtimeSnapshot;
+
+    if (runtimeState?.fetchOnce && !runtimeState.getSnapshot?.()) {
+      await runtimeState.fetchOnce();
+    }
+
+    const snapshot = runtimeState?.getSnapshot?.();
+
     if (!snapshot || !snapshot.platforms) {
       hydrateRuntimePlaceholder();
       return;

@@ -166,7 +166,7 @@
       el.runtimeBanner.classList.remove("hidden");
       setText(
         el.runtimeBanner,
-        "Monitoring resumes as runtime snapshots arrive. This view stays read-only and mirrors runtime exports."
+        `Monitoring resumes as runtime snapshots arrive. This view stays read-only and mirrors runtime exports (${App.mode?.current || "static"} mode).`
       );
     }
   }
@@ -212,15 +212,20 @@
       );
       setText(
         el.runtimeBanner,
-        "Read-only preview sourced from runtime exports (shared/state → data fallback)."
+        `Read-only preview sourced from runtime exports (shared/state → data fallback). Mode: ${App.mode?.current || "static"}.`
       );
     }
   }
 
   async function hydrateRuntime() {
-    const snapshot = await window.StreamSuitesState?.loadRuntimeSnapshot?.({
-      forceReload: true
-    });
+    const runtimeState = window.App?.state?.runtimeSnapshot;
+
+    if (runtimeState?.fetchOnce && !runtimeState.getSnapshot?.()) {
+      await runtimeState.fetchOnce();
+    }
+
+    const snapshot = runtimeState?.getSnapshot?.();
+
     if (!snapshot || !snapshot.platforms) {
       hydrateRuntimePlaceholder();
       return;

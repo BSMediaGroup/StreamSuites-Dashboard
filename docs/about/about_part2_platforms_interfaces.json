@@ -88,11 +88,11 @@
           "order": 1,
           "consumer": {
             "title": "Kick Surfaces Are Visible and Read-Only",
-            "body": "Kick is now a first-class platform in the dashboard, mirroring YouTube and Twitch layouts while remaining read-only. Dedicated Kick views and settings rows signal parity intent without pretending live control exists."
+            "body": "Kick is now a first-class platform in the dashboard, mirroring YouTube and Twitch layouts while remaining read-only. Dedicated Kick views and settings rows signal parity intent without pretending live control exists, and the header mode badge clarifies when connected snapshots are available."
           },
           "developer": {
             "title": "Scaffolded Integration Awaiting Runtime Exports",
-            "body": "Kick wiring is scaffolded to hydrate from runtime snapshots when available, reusing the same normalization and quota placeholder patterns as other chat platforms. Dashboard toggles stay disabled, routing remains static-first, and runtime exports from the authoritative repo will populate the new Kick view without enabling mutations."
+            "body": "Kick wiring is scaffolded to hydrate from runtime snapshots when available, reusing the same normalization and quota placeholder patterns as other chat platforms. Dashboard toggles stay disabled, routing remains static-first, and runtime exports from the authoritative repo will populate the new Kick view without enabling mutations. Hydration prefers shared/state/runtime_snapshot.json with docs/data fallbacks so static hosting stays intact."
           }
         }
       ]
@@ -111,7 +111,26 @@
           },
           "developer": {
             "title": "Reserved Export Slot Without Mutation",
-            "body": "Pilled is reserved as an ingest-only integration. Dashboard scaffolding is limited to snapshot rendering once runtime collectors export data. Switches are locked, telemetry is disabled by default, and all mutations remain off until the runtime path is implemented in the authoritative repository."
+            "body": "Pilled is reserved as an ingest-only integration. Dashboard scaffolding is limited to snapshot rendering once runtime collectors export data. Switches are locked, telemetry is disabled by default, and all mutations remain off until the runtime path is implemented in the authoritative repository. Hydration will mirror Kick, preferring shared/state/runtime_snapshot.json when available."
+          }
+        }
+      ]
+    },
+    {
+      "id": "admin-desktop-app",
+      "order": 18.7,
+      "title": "Desktop Admin App (Planned)",
+      "entries": [
+        {
+          "id": "admin-desktop-contract",
+          "order": 1,
+          "consumer": {
+            "title": "Local, Authoritative Admin UI",
+            "body": "A Windows-first, WinForms-style Admin app is planned to mirror the dashboard’s admin views with local control. It will respect the same static-first defaults while providing a desktop experience for operators who prefer an executable over a browser view."
+          },
+          "developer": {
+            "title": "Contract Notes and Future Parity Targets",
+            "body": "The Admin desktop EXE (Visual Studio 2026 target) will read runtime state, write configuration locally, and trigger runtime reloads without bypassing safety gates. Windows is the initial target, with future parity goals for macOS and Linux. No runtime bindings are implemented yet; this entry documents the foundation only."
           }
         }
       ]

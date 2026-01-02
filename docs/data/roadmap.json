@@ -92,23 +92,23 @@
     "id": "kick-foundation",
     "order": 8.5,
     "title": "Kick Platform Foundation",
-    "percent": 20,
-    "meta": "20% · Scaffolded / dashboard-visible",
+    "percent": 22,
+    "meta": "22% · Scaffolded / in-progress",
     "status": "partial",
-    "description": "Kick now has first-class dashboard scaffolding with dedicated views and settings rows. Runtime ingestion remains in planning; dashboards stay read-only and hydrate from exported snapshots once available.",
+    "description": "Kick now has first-class dashboard scaffolding with dedicated views and settings rows. Dashboards stay read-only and hydrate from shared/state/runtime_snapshot.json when present, falling back to bundled docs/data/runtime_snapshot.json. Runtime ingestion remains in planning while connected-mode clarity keeps controls locked.",
     "icon": "./assets/icons/ui/widget.svg",
-    "tooltip": "20% · 15–25% Scaffolded — Dashboard and settings visible; runtime ingest/export still in progress."
+    "tooltip": "22% · 20–25% Scaffolded — Dashboard and settings visible; runtime ingest/export still in progress and connected-mode is read-only."
   },
   {
     "id": "pilled-ingest",
     "order": 8.6,
     "title": "Pilled Ingest-Only Path",
-    "percent": 5,
-    "meta": "5% · Planned ingest-only",
+    "percent": 6,
+    "meta": "6% · Planned ingest-only",
     "status": "planned",
-    "description": "Pilled is reserved as an ingest-only platform with a dedicated read-only dashboard view. No runtime collector exists yet; switches are locked and telemetry is disabled until the authoritative runtime ships exports.",
+    "description": "Pilled is reserved as an ingest-only platform with a dedicated read-only dashboard view. No runtime collector exists yet; switches are locked and telemetry is disabled until the authoritative runtime ships exports, which will hydrate from shared/state/runtime_snapshot.json once present.",
     "icon": "./assets/icons/ui/widget.svg",
-    "tooltip": "5% · 0–10% Planned — Read-only dashboard slot reserved; runtime collector not yet implemented."
+    "tooltip": "6% · 0–10% Planned — Read-only dashboard slot reserved; runtime collector not yet implemented."
   },
   {
     "id": "twitter-integration",
@@ -177,15 +177,15 @@
       "tooltip": "85% · UI complete previews — Replay/live windows, OBS/browser overlays, and browser extension mocks are UI-complete previews with badge + avatar fidelity; runtime hydration is not started."
     },
   {
-    "id": "winforms-gui",
+    "id": "admin-desktop-app",
     "order": 15,
-    "title": "WinForms GUI (Admin & System Controls)",
-    "percent": 20,
-    "meta": "20% · Planning",
+    "title": "Desktop Admin App (WinForms-Style)",
+    "percent": 22,
+    "meta": "22% · Planned foundation (Visual Studio 2026)",
     "status": "planned",
-    "description": "A WinForms control surface is planned for operators who prefer a desktop UI. It is intended to mirror admin views and telemetry without bypassing runtime safety. Planning and layout considerations are in place, but no runtime coupling or exports are implemented yet.",
+    "description": "A Windows-first desktop Admin EXE is planned to mirror the dashboard’s admin views with local, authoritative control. It will read runtime state, write configuration locally, and trigger runtime reloads without bypassing safety. Initial build targets Visual Studio 2026/WinForms, with future parity targets for macOS and Linux; no runtime binding is implemented yet.",
     "icon": "./assets/icons/ui/windows.svg",
-    "tooltip": "20% · 20–30% Scaffolded — Foundational runtime scaffolding exists (schemas, registries, state paths). No logic execution."
+    "tooltip": "22% · 20–30% Planned foundation — Windows EXE scaffold planned; runtime bindings and cross-platform ports are future work."
   },
   {
     "id": "scoreboards",
