@@ -8,6 +8,36 @@ const buildPreviewUrl = (page, theme, mode) => {
   return url.toString();
 };
 
+const formatReplayTimestamp = (value) => {
+  return window.StreamSuitesState?.formatTimestamp?.(value) || value || '—';
+};
+
+async function loadReplayState() {
+  const snapshot = await window.ConfigState?.loadRuntimeSnapshot?.();
+  if (!snapshot || !snapshot.replay) {
+    return {
+      available: false,
+      overlaySafe: null,
+      eventCount: null,
+      lastEventAt: null,
+      platforms: [],
+      source: snapshot?.source || null
+    };
+  }
+
+  const replay = snapshot.replay;
+
+  return {
+    available: replay.available === true,
+    overlaySafe: replay.overlaySafe === true,
+    eventCount: Number.isInteger(replay.eventCount) ? replay.eventCount : null,
+    lastEventAt: formatReplayTimestamp(replay.lastEventAt),
+    platforms: Array.isArray(replay.platforms) ? replay.platforms : [],
+    source: snapshot.source || null,
+    mode: replay.mode || null
+  };
+}
+
 const setActiveModeButton = (buttons, activeButton) => {
   buttons.forEach((button) => button.classList.toggle('active', button === activeButton));
 };
@@ -78,4 +108,5 @@ function initChatReplayPreview() {
 
 window.ChatReplayPreview = {
   initChatReplayPreview,
+  loadReplayState
 };
