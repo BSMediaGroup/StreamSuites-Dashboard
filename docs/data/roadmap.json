@@ -34,6 +34,17 @@
     "tooltip": "60% · 60–65% Integrated — Overhauled creator surface with draft exports; live apply remains off."
   },
   {
+    "id": "creator-dashboard-parity",
+    "order": 3.5,
+    "title": "Creator Dashboard Parity",
+    "percent": 20,
+    "meta": "Planned · Foundation",
+    "status": "planned",
+    "description": "Planned foundation for creator parity that keeps the dashboard read-only while mirroring admin data slices. The focus is on context-aware rendering, scoped platform visibility, and inert permissions scaffolding without enabling writes or live mutations.",
+    "icon": "./assets/icons/ui/uiscreen.svg",
+    "tooltip": "Planned · Foundation — Read-only creator parity scaffolding without mutations."
+  },
+  {
     "id": "public-interface",
     "order": 4,
     "title": "Public Interface & Gallery Surface",

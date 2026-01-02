@@ -21,8 +21,26 @@
   const el = {};
 
   let creators = [];
+  let visibleCreators = [];
   let editingCreatorId = null;
   let wired = false;
+
+  function getCreatorScopeId() {
+    const scopedId = window.App?.creatorContext?.creatorId;
+    return typeof scopedId === "string" && scopedId.trim() ? scopedId.trim() : null;
+  }
+
+  function isCreatorReadOnly() {
+    const mode = window.App?.creatorContext?.permissions?.mode;
+    return mode === "creator" || Boolean(getCreatorScopeId());
+  }
+
+  function refreshVisibleCreators() {
+    const scopedId = getCreatorScopeId();
+    visibleCreators = scopedId
+      ? creators.filter((creator) => creator?.creator_id === scopedId)
+      : creators.slice();
+  }
 
   /* ------------------------------------------------------------
      INIT / DESTROY
@@ -36,6 +54,7 @@
 
   function destroy() {
     creators = [];
+    visibleCreators = [];
     editingCreatorId = null;
     wired = false;
   }
@@ -79,10 +98,12 @@
   function wireEvents() {
     if (wired) return;
 
+    const readOnly = isCreatorReadOnly();
+
     el.btnAddCreator?.addEventListener("click", () => openEditor());
     el.btnRefresh?.addEventListener("click", () => hydrateCreators(true));
     el.btnCancelEdit?.addEventListener("click", closeEditor);
-
+    
     el.checkboxRumble?.addEventListener("change", () => {
       if (!el.rumbleConfig) return;
       el.rumbleConfig.classList.toggle(
@@ -91,7 +112,16 @@
       );
     });
 
-    el.creatorForm?.addEventListener("submit", onSubmitCreator);
+    if (readOnly) {
+      [el.btnAddCreator, el.btnCancelEdit, el.btnImport, el.btnExport].forEach((btn) => {
+        if (btn) {
+          btn.disabled = true;
+          btn.setAttribute("aria-disabled", "true");
+        }
+      });
+    } else {
+      el.creatorForm?.addEventListener("submit", onSubmitCreator);
+    }
 
     wired = true;
   }
@@ -109,10 +139,12 @@
       creators = [];
     }
 
+    refreshVisibleCreators();
     renderCreators();
   }
 
   function persistCreators() {
+    if (isCreatorReadOnly()) return;
     if (!window.ConfigState?.saveCreators) return;
     creators = window.ConfigState.saveCreators(creators);
   }
@@ -125,14 +157,14 @@
     if (!el.tableBody) return;
     el.tableBody.innerHTML = "";
 
-    if (!creators.length) {
+    if (!visibleCreators.length) {
       el.emptyState?.classList.remove("hidden");
       return;
     }
 
     el.emptyState?.classList.add("hidden");
 
-    creators.forEach((creator) => {
+    visibleCreators.forEach((creator) => {
       const tr = document.createElement("tr");
 
       tr.innerHTML = `
@@ -149,13 +181,30 @@
         </td>
       `;
 
-      tr.querySelector('[data-action="edit"]')?.addEventListener("click", () => {
-        openEditor(creator);
-      });
+      const editButton = tr.querySelector('[data-action="edit"]');
+      const toggleButton = tr.querySelector('[data-action="toggle"]');
 
-      tr.querySelector('[data-action="toggle"]')?.addEventListener("click", () => {
-        toggleCreatorActive(creator.creator_id);
-      });
+      if (editButton) {
+        if (isCreatorReadOnly()) {
+          editButton.disabled = true;
+          editButton.setAttribute("aria-disabled", "true");
+        } else {
+          editButton.addEventListener("click", () => {
+            openEditor(creator);
+          });
+        }
+      }
+
+      if (toggleButton) {
+        if (isCreatorReadOnly()) {
+          toggleButton.disabled = true;
+          toggleButton.setAttribute("aria-disabled", "true");
+        } else {
+          toggleButton.addEventListener("click", () => {
+            toggleCreatorActive(creator.creator_id);
+          });
+        }
+      }
 
       el.tableBody.appendChild(tr);
     });
@@ -183,6 +232,8 @@
      ------------------------------------------------------------ */
 
   function openEditor(creator = null) {
+    if (isCreatorReadOnly()) return;
+
     el.editorPanel?.classList.remove("hidden");
 
     if (creator) {
@@ -240,6 +291,8 @@
   function onSubmitCreator(event) {
     event.preventDefault();
 
+    if (isCreatorReadOnly()) return;
+
     const formData = readForm();
     if (!formData) return;
 
@@ -253,6 +306,7 @@
 
     persistCreators();
     closeEditor();
+    refreshVisibleCreators();
     renderCreators();
   }
 
@@ -307,11 +361,14 @@
   }
 
   function toggleCreatorActive(creatorId) {
+    if (isCreatorReadOnly()) return;
+
     const idx = creators.findIndex((c) => c.creator_id === creatorId);
     if (idx === -1) return;
 
     creators[idx].disabled = !creators[idx].disabled;
     persistCreators();
+    refreshVisibleCreators();
     renderCreators();
   }
 
@@ -320,10 +377,16 @@
      ------------------------------------------------------------ */
 
   function exportCreators() {
+    if (isCreatorReadOnly()) return;
     window.ConfigState?.exportCreatorsFile?.(creators);
   }
 
   function importCreatorsFromFile(file, onError) {
+    if (isCreatorReadOnly()) {
+      onError?.("Creator view is read-only");
+      return;
+    }
+
     App.storage.importJsonFromFile(file)
       .then((data) => {
         try {
@@ -332,6 +395,7 @@
             window.ConfigState?.applyCreatorsImport?.(payload);
           if (!imported) throw new Error("Invalid creators payload");
           creators = imported;
+          refreshVisibleCreators();
           renderCreators();
         } catch (err) {
           console.error("[Creators] Import failed", err);

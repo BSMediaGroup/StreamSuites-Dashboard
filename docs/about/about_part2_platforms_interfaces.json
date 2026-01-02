@@ -117,6 +117,25 @@
       ]
     },
     {
+      "id": "creator-parity-foundation",
+      "order": 18.65,
+      "title": "Creator Dashboard Parity (Read-Only)",
+      "entries": [
+        {
+          "id": "creator-parity-inert",
+          "order": 1,
+          "consumer": {
+            "title": "Creators See Their Data, Not Controls",
+            "body": "Creator parity is being prepared as a read-only mode so creators can see their own status, platform readiness, and roadmap context without exposing admin controls or live mutations. The experience mirrors the admin dashboard layout but keeps buttons inert and clearly non-destructive."
+          },
+          "developer": {
+            "title": "Context-Aware Rendering Without Writes",
+            "body": "The dashboard now accepts a creator context (creatorId, permissions, platform scopes) so views can filter data and gate sections without enabling writes. Scaffolding is inert by design: state loading stays static-first, controls remain disabled, and platform views are marked for future scope-based visibility without altering hosting or runtime behavior."
+          }
+        }
+      ]
+    },
+    {
       "id": "admin-desktop-app",
       "order": 18.7,
       "title": "Desktop Admin Application (Local, Planned)",

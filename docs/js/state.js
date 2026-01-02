@@ -16,6 +16,17 @@
     quotas: null
   };
 
+  const DEFAULT_CREATOR_CONTEXT = Object.freeze({
+    creatorId: null,
+    permissions: Object.freeze({
+      mode: "admin",
+      readOnly: false
+    }),
+    platformScopes: Object.freeze([])
+  });
+
+  let creatorContext = null;
+
   const snapshotHealthModule = {
     promise: null
   };
@@ -48,6 +59,59 @@
   function deepClone(obj) {
     if (obj === null || obj === undefined) return obj;
     return JSON.parse(JSON.stringify(obj));
+  }
+
+  creatorContext = deepClone(DEFAULT_CREATOR_CONTEXT);
+
+  function getCreatorContext() {
+    if (!creatorContext) {
+      creatorContext = deepClone(DEFAULT_CREATOR_CONTEXT);
+    }
+    return deepClone(creatorContext);
+  }
+
+  function deriveCreatorContext(options = {}) {
+    const params = new URLSearchParams(window.location.search);
+    const requestedCreator = options.creatorId ?? params.get("creatorId");
+    const normalizedCreator =
+      typeof requestedCreator === "string" && requestedCreator.trim()
+        ? requestedCreator.trim()
+        : null;
+
+    const scopeValue = options.platformScopes ?? params.get("platformScopes");
+    let platformScopes = [];
+
+    if (Array.isArray(scopeValue)) {
+      platformScopes = scopeValue
+        .map((value) => (typeof value === "string" ? value.trim() : ""))
+        .filter(Boolean);
+    } else if (typeof scopeValue === "string" && scopeValue.trim()) {
+      platformScopes = scopeValue
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean);
+    }
+
+    const mode = normalizedCreator ? "creator" : "admin";
+
+    return {
+      creatorId: normalizedCreator,
+      permissions: {
+        mode,
+        readOnly: options.readOnly === true || mode === "creator"
+      },
+      platformScopes
+    };
+  }
+
+  function loadCreatorContext(options = {}) {
+    creatorContext = deriveCreatorContext(options);
+
+    if (window.App) {
+      window.App.creatorContext = deepClone(creatorContext);
+    }
+
+    return getCreatorContext();
   }
 
   function normalizeRoot(root) {
@@ -550,6 +614,8 @@
     loadStateJson,
     loadRuntimeSnapshot,
     normalizeRuntimeSnapshot,
+    loadCreatorContext,
+    getCreatorContext,
     loadQuotasSnapshot,
     loadDiscordRuntimeSnapshot,
     normalizeDiscordRuntime,
