@@ -88,6 +88,11 @@
       border: 1px solid var(--border);
       box-shadow: inset 0 0 0 1px var(--glow), 0 10px 30px rgba(0, 0, 0, 0.5);
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 12px 12px 18px;
+      box-sizing: border-box;
     }
     .overlay-shell.blocked {
       display: grid;
@@ -95,10 +100,8 @@
       text-align: center;
     }
     .overlay-top {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      right: 12px;
+      position: sticky;
+      top: 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -136,26 +139,22 @@
       white-space: nowrap;
     }
     .chat-stack {
-      position: absolute;
-      inset: 120px 18px 18px 18px;
+      position: relative;
       display: flex;
       flex-direction: column;
       gap: 12px;
       overflow: hidden;
       z-index: 1;
+      padding: 6px 6px 42px;
+      flex: 1;
+      box-sizing: border-box;
     }
     .chat-stack.hidden { display: none; }
     .chat-stack.design-preview {
-      opacity: 0.65;
+      opacity: 0.82;
       pointer-events: none;
-      filter: grayscale(8%);
-      transform: translateY(6px);
-    }
-    .chat-stack.hidden { display: none; }
-    .chat-stack.design-preview {
-      opacity: 0.35;
-      pointer-events: none;
-      filter: grayscale(12%);
+      filter: saturate(0.9) contrast(0.96);
+      transform: translateY(4px);
     }
     .bubble {
       display: flex;
