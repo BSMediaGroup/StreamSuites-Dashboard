@@ -162,7 +162,12 @@ StreamSuites-Dashboard/
 │   │   │   └── .gitkeep
 │   │   ├── icons
 │   │   │   ├── .gitkeep
+│   │   │   ├── dcbadge.svg
 │   │   │   ├── browser-extension.svg
+│   │   │   ├── kick-0.svg
+│   │   │   ├── kick-silver.svg
+│   │   │   ├── kick-white.svg
+│   │   │   ├── kick.svg
 │   │   │   ├── discord-0.svg
 │   │   │   ├── discord-muted.svg
 │   │   │   ├── discord-silver.svg
@@ -183,6 +188,7 @@ StreamSuites-Dashboard/
 │   │   │   ├── rumble-silver.svg
 │   │   │   ├── rumble-white.svg
 │   │   │   ├── rumble.svg
+│   │   │   ├── mod.svg
 │   │   │   ├── twitch-0.svg
 │   │   │   ├── twitch-silver.svg
 │   │   │   ├── twitch-white.svg
@@ -197,6 +203,7 @@ StreamSuites-Dashboard/
 │   │   │   ├── twitter-square.svg
 │   │   │   ├── twitter-white.svg
 │   │   │   ├── twitter.svg
+│   │   │   ├── prouser.svg
 │   │   │   ├── ui
 │   │   │   │   ├── Thumbs.db
 │   │   │   │   ├── admin.svg
@@ -257,7 +264,10 @@ StreamSuites-Dashboard/
 │   │   │   ├── sswm.png
 │   │   │   └── streamsuites.svg
 │   │   └── placeholders
-│   │       └── .gitkeep
+│   │       ├── .gitkeep
+│   │       ├── daniel.png
+│   │       ├── hotdog.jpg
+│   │       └── streamsuites.jpg
 │   ├── changelog.html
 │   ├── clips
 │   │   └── detail.html
@@ -342,6 +352,7 @@ StreamSuites-Dashboard/
 │   │   └── utils
 │   │       ├── about-data.js
 │   │       ├── search-pagination.js
+│   │       ├── snapshot-health.js
 │   │       ├── version-stamp.js
 │   │       └── versioning.js
 │   ├── lander.html
