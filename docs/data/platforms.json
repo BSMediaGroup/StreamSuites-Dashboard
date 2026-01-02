@@ -16,6 +16,16 @@
       "telemetry_enabled": true,
       "notes": "SSE-preferred chat ingest with DOM/API fallbacks; live testing complete."
     },
+    "kick": {
+      "enabled": true,
+      "telemetry_enabled": true,
+      "notes": "Scaffolded ingestion + export parity planned; dashboard wiring is read-only."
+    },
+    "pilled": {
+      "enabled": false,
+      "telemetry_enabled": false,
+      "notes": "Planned ingest-only platform; visibility is read-only until runtime path is delivered."
+    },
     "discord": {
       "enabled": true,
       "telemetry_enabled": true,

@@ -26,6 +26,12 @@ const App = {
   initialized: false,
   storage: {},
   state: {}, // ✅ ADDITIVE — read-only runtime snapshots live here
+  mode: {
+    current: "static",
+    reason: "static-first default",
+    isLocalhost: false,
+    snapshotDetected: false
+  },
 
   // ✅ ADDITIVE — deferred anchor scroll support
   pendingAnchor: null
@@ -44,6 +50,80 @@ function $(selector, scope = document) {
 
 function $all(selector, scope = document) {
   return Array.from(scope.querySelectorAll(selector));
+}
+
+/* ----------------------------------------------------------------------
+   CONNECTED MODE DETECTION (READ-ONLY)
+   ---------------------------------------------------------------------- */
+
+const LOCALHOST_HOSTNAMES = new Set([
+  "localhost",
+  "127.0.0.1",
+  "0.0.0.0"
+]);
+
+function setModeIndicator(modeState) {
+  const indicator = document.getElementById("app-mode");
+  if (!indicator) return;
+
+  indicator.classList.remove("idle", "active", "warning", "critical");
+
+  if (modeState.current === "connected") {
+    indicator.classList.add("active");
+    indicator.textContent = `● connected mode (${modeState.reason})`;
+  } else {
+    indicator.classList.add("warning");
+    indicator.textContent = `● static mode (${modeState.reason})`;
+  }
+}
+
+async function detectConnectedMode() {
+  const hostname = window.location?.hostname || "";
+  const params = new URLSearchParams(window.location.search);
+  const forcedMode = params.get("mode");
+
+  const modeState = {
+    current: "static",
+    reason: "static-first default",
+    isLocalhost: LOCALHOST_HOSTNAMES.has(hostname),
+    snapshotDetected: false,
+    hostname
+  };
+
+  if (forcedMode === "static") {
+    App.mode = modeState;
+    setModeIndicator(modeState);
+    return modeState;
+  }
+
+  let snapshot = null;
+  try {
+    snapshot = await window.StreamSuitesState?.loadRuntimeSnapshot?.({
+      forceReload: true
+    });
+  } catch (err) {
+    console.warn("[Dashboard] Connected mode detection failed", err);
+  }
+
+  modeState.snapshotDetected = !!(snapshot && typeof snapshot === "object");
+
+  if (forcedMode === "connected") {
+    modeState.current = "connected";
+    modeState.reason = "query override: connected";
+  } else if (modeState.snapshotDetected && (modeState.isLocalhost || snapshot?.runtime)) {
+    modeState.current = "connected";
+    modeState.reason = modeState.isLocalhost
+      ? "localhost runtime exports detected"
+      : "runtime exports detected (read-only)";
+  } else if (modeState.isLocalhost) {
+    modeState.reason = "localhost detected; static fallback";
+  } else {
+    modeState.reason = "static-first deployment (no runtime exports)";
+  }
+
+  App.mode = modeState;
+  setModeIndicator(modeState);
+  return modeState;
 }
 
 /* ----------------------------------------------------------------------
@@ -581,6 +661,8 @@ function initApp() {
 
   console.info("[Dashboard] Initializing StreamSuites dashboard");
 
+  detectConnectedMode();
+
   bindNavigation();
   bindNavOverflow();
   bindDelegatedNavigation();
@@ -673,6 +755,24 @@ registerView("twitch", {
   },
   onUnload: () => {
     window.TwitchView?.destroy?.();
+  }
+});
+registerView("kick", {
+  templatePath: "platforms/kick",
+  onLoad: () => {
+    window.KickView?.init?.();
+  },
+  onUnload: () => {
+    window.KickView?.destroy?.();
+  }
+});
+registerView("pilled", {
+  templatePath: "platforms/pilled",
+  onLoad: () => {
+    window.PilledView?.init?.();
+  },
+  onUnload: () => {
+    window.PilledView?.destroy?.();
   }
 });
 registerView("twitter", { templatePath: "platforms/twitter" });

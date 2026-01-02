@@ -15,8 +15,8 @@
 (() => {
   "use strict";
 
-  const PLATFORM_KEYS = ["youtube", "twitch", "rumble", "discord"];
-  const LOCKED_PLATFORMS = { rumble: true };
+  const PLATFORM_KEYS = ["youtube", "twitch", "kick", "pilled", "rumble", "discord"];
+  const LOCKED_PLATFORMS = { rumble: true, pilled: true };
   const INTENT_STORAGE_KEY = "streamsuites.platformIntent";
 
   const el = {

@@ -271,6 +271,93 @@
             </td>
           </tr>
 
+          <!-- Kick -->
+          <tr data-platform-row="kick">
+            <td>Kick</td>
+            <td class="align-right">
+              <label class="switch-button" aria-label="Kick service toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input type="checkbox" data-service="kick" data-field="enabled" />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
+              </label>
+              <div class="ss-toggle-note">Applies on next restart</div>
+            </td>
+            <td class="align-right">
+              <label class="switch-button" aria-label="Kick telemetry toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input type="checkbox" data-field="telemetry_enabled" />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
+              </label>
+            </td>
+            <td class="align-right">
+              <span class="muted" data-platform-status="kick">Awaiting telemetry</span>
+            </td>
+            <td>
+              <textarea
+                class="ss-input"
+                rows="2"
+                data-field="notes"
+                placeholder="Operational notes for Kick runtime"
+              ></textarea>
+            </td>
+          </tr>
+
+          <!-- Pilled -->
+          <tr data-platform-row="pilled">
+            <td>Pilled (Planned)</td>
+            <td class="align-right">
+              <label class="switch-button" aria-label="Pilled service toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input type="checkbox" data-service="pilled" data-field="enabled" data-locked="true" disabled />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
+              </label>
+              <div class="ss-toggle-note">Planned ingest-only; locked</div>
+            </td>
+            <td class="align-right">
+              <label class="switch-button" aria-label="Pilled telemetry toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input type="checkbox" data-field="telemetry_enabled" disabled />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
+              </label>
+            </td>
+            <td class="align-right">
+              <span class="muted" data-platform-status="pilled">Planned</span>
+            </td>
+            <td>
+              <textarea
+                class="ss-input"
+                rows="2"
+                data-field="notes"
+                placeholder="Planned ingest-only platform; dashboard visibility only"
+                disabled
+              ></textarea>
+            </td>
+          </tr>
+
           <!-- Rumble -->
           <tr data-platform-row="rumble">
             <td>Rumble</td>

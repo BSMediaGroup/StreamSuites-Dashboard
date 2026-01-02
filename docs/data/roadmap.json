@@ -89,6 +89,28 @@
     "tooltip": "30% · 25–30% Scaffolded — Foundational scaffolding with partial mappings; live exports not enabled."
   },
   {
+    "id": "kick-foundation",
+    "order": 8.5,
+    "title": "Kick Platform Foundation",
+    "percent": 20,
+    "meta": "20% · Scaffolded / dashboard-visible",
+    "status": "partial",
+    "description": "Kick now has first-class dashboard scaffolding with dedicated views and settings rows. Runtime ingestion remains in planning; dashboards stay read-only and hydrate from exported snapshots once available.",
+    "icon": "./assets/icons/ui/widget.svg",
+    "tooltip": "20% · 15–25% Scaffolded — Dashboard and settings visible; runtime ingest/export still in progress."
+  },
+  {
+    "id": "pilled-ingest",
+    "order": 8.6,
+    "title": "Pilled Ingest-Only Path",
+    "percent": 5,
+    "meta": "5% · Planned ingest-only",
+    "status": "planned",
+    "description": "Pilled is reserved as an ingest-only platform with a dedicated read-only dashboard view. No runtime collector exists yet; switches are locked and telemetry is disabled until the authoritative runtime ships exports.",
+    "icon": "./assets/icons/ui/widget.svg",
+    "tooltip": "5% · 0–10% Planned — Read-only dashboard slot reserved; runtime collector not yet implemented."
+  },
+  {
     "id": "twitter-integration",
     "order": 9,
     "title": "Twitter Client / Integration",

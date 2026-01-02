@@ -1,11 +1,11 @@
 # StreamSuites Dashboard — Static, Read-Only Runtime Monitor
 
-StreamSuites Dashboard is a **static, client-side preview surface** for observing the StreamSuites automation ecosystem. It stays GitHub Pages–safe (no backend, no auth) while loading snapshot JSON for **YouTube, Twitch, Rumble, and Discord**. All execution, chat ingestion, livestream control, and command surfaces live in the StreamSuites runtimes, not here.
+StreamSuites Dashboard is a **static, client-side preview surface** for observing the StreamSuites automation ecosystem. It stays GitHub Pages–safe (no backend, no auth) while loading snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progress), Pilled (planned ingest-only), and Discord**. All execution, chat ingestion, livestream control, and command surfaces live in the StreamSuites runtimes, not here.
 
 - **Preview/scaffold only:** The dashboard is intentionally static, read-only, and ships bundled snapshots to demonstrate layout and schema alignment. Runtime hydration for chat replay/live overlays has **not started**.
 - **Authority:** Runtime exports are canonical; the dashboard only reads them and refreshes on a timer.
 - **Write safety:** No API calls, no authentication, and no server code. Local edits remain browser-local or downloaded JSON files.
-- **Current stance:** Static previews only. YouTube + Twitch previews present snapshot-driven heartbeat telemetry; Rumble remains PAUSED with read-only telemetry and red roadmap treatment. No runtime feeds are wired into chat replay or overlays yet.
+- **Current stance:** Static previews only. YouTube + Twitch previews present snapshot-driven heartbeat telemetry; Rumble remains PAUSED with read-only telemetry and red roadmap treatment; **Kick is scaffolded/in-progress** with read-only runtime snapshot hydration; **Pilled is planned/ingest-only** and locked to read-only placeholders. No runtime feeds are wired into chat replay or overlays yet.
 - **Audit:** Use the attached audit report for context; do **not** regenerate it.
 
 ## Version & Ownership
@@ -17,7 +17,7 @@ StreamSuites Dashboard is a **static, client-side preview surface** for observin
 
 ## Operational Boundary
 - **Static control surface** — cannot mutate runtimes or send actions; edits are limited to local JSON drafts and exports.
-- **Runtime snapshot polling** — periodically fetches `shared/state/runtime_snapshot.json` (or bundled fallbacks) for status, heartbeat timestamps, errors, and pause reasons.
+- **Runtime snapshot polling** — periodically fetches `shared/state/runtime_snapshot.json` (or bundled fallbacks) for status, heartbeat timestamps, errors, and pause reasons. The header mode badge (`#app-mode`) clarifies whether runtime exports are reachable (connected, read-only) or the UI is in static fallback.
 - **No platform APIs** — the browser bundle only fetches snapshot JSON; there are no live chat sockets, auth flows, or control-plane calls.
 - **Runtime exports are authoritative** — the dashboard visualizes whatever the runtime writes to snapshot files.
 - **Visual-only philosophy** — dashboards illuminate runtime exports; control and execution stay in runtimes.
@@ -48,7 +48,9 @@ This repository is a **separate but companion project** to the `StreamSuites` ru
 
 ## Beta Pathway
 - **Active monitoring:** YouTube and Twitch views poll runtime snapshots on an interval for live status badges and counters.
+- **Scaffolded platform:** Kick view hydrates runtime exports (when available) read-only and mirrors YouTube/Twitch scaffolding while remaining non-authoritative.
 - **Paused platform:** Rumble remains visible with red roadmap treatment and read-only telemetry while the ingest pipeline is stabilized in the runtime.
+- **Planned ingest-only:** Pilled view is read-only/locked and marked as planned; no runtime actions are available.
 - **Static hosting:** All pages remain GitHub Pages–safe; polling uses static JSON exports with no backend.
 
 ## Hosting & Deployment Model
@@ -69,7 +71,9 @@ If `shared/state` files are absent, views silently fall back to `docs/data` so t
 ## Platform Runtime Previews (Read-Only)
 - **YouTube:** Polls `runtime_snapshot.json` and `quotas.json` to show status, last update, errors, and counters. No livestream controls.
 - **Twitch:** Mirrors the YouTube pattern with identical polling and fallbacks. Read-only preview only.
+- **Kick:** Scaffolded/in-progress view that hydrates runtime snapshot exports when available, shows creator wiring status, and stays read-only.
 - **Rumble:** Present but marked **Deferred/Disabled**; surfaces the most recent snapshot details if present and never initiates runtime calls.
+- **Pilled:** Planned ingest-only view; controls are locked and display read-only placeholders without attempting runtime calls.
 - **Other platform views (Discord/Twitter):** Static scaffolds for visibility only.
 
 ## Runtime Telemetry Panels (Read-Only)
@@ -312,6 +316,8 @@ StreamSuites-Dashboard/
 │   │   ├── permissions.js
 │   │   ├── platforms
 │   │   │   ├── discord.js
+│   │   │   ├── kick.js
+│   │   │   ├── pilled.js
 │   │   │   ├── rumble.js
 │   │   │   ├── twitch.js
 │   │   │   ├── twitter.js
@@ -400,6 +406,8 @@ StreamSuites-Dashboard/
 │       ├── overview.html
 │       ├── platforms
 │       │   ├── discord.html
+│       │   ├── kick.html
+│       │   ├── pilled.html
 │       │   ├── rumble.html
 │       │   ├── twitch.html
 │       │   ├── twitter.html
