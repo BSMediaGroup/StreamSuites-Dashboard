@@ -77,6 +77,12 @@ function setModeIndicator(modeState) {
   }
 }
 
+function setModeDataset(target) {
+  if (!target) return;
+  target.dataset.appMode = App.mode?.current || "static";
+  target.dataset.appModeReason = App.mode?.reason || "static-first default";
+}
+
 async function detectConnectedMode() {
   const hostname = window.location?.hostname || "";
   const params = new URLSearchParams(window.location.search);
@@ -453,10 +459,12 @@ async function loadView(name) {
     const html = await res.text();
     container.innerHTML = html;
 
+    setModeDataset(container);
+
     App.currentView = name;
 
     try {
-      view.onLoad();
+      view.onLoad(App.mode);
     } catch (e) {
       console.error(`[Dashboard] View load error (${name})`, e);
     }
@@ -656,12 +664,15 @@ function bindHashChange() {
    App Init
    ---------------------------------------------------------------------- */
 
-function initApp() {
+async function initApp() {
   if (App.initialized) return;
 
   console.info("[Dashboard] Initializing StreamSuites dashboard");
 
-  detectConnectedMode();
+  await detectConnectedMode();
+
+  setModeDataset(document.getElementById("app"));
+  setModeDataset(document.getElementById("view-container"));
 
   bindNavigation();
   bindNavOverflow();
