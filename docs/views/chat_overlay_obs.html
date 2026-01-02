@@ -93,10 +93,19 @@
       place-items: center;
       text-align: center;
     }
-    .overlay-header {
+    .overlay-top {
       position: absolute;
       top: 12px;
       left: 12px;
+      right: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      z-index: 3;
+      pointer-events: none;
+    }
+    .overlay-header {
       padding: 8px 12px;
       background: var(--header);
       border-radius: 12px;
@@ -106,22 +115,22 @@
       text-transform: uppercase;
       font-size: 0.82rem;
       font-family: "RechargeBd", "SuiGenerisRg", system-ui, sans-serif;
+      pointer-events: auto;
     }
     .overlay-status {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      padding: 8px 10px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 7px 10px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
       border-radius: 10px;
-      font-size: 0.75rem;
+      font-size: 0.74rem;
       letter-spacing: 0.05em;
       color: #dce6ff;
+      pointer-events: auto;
+      white-space: nowrap;
     }
     .chat-stack {
       position: absolute;
-      inset: 56px 16px 16px 16px;
+      inset: 86px 16px 16px 16px;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -129,7 +138,7 @@
     }
     .chat-stack.hidden { display: none; }
     .chat-stack.design-preview {
-      opacity: 0.45;
+      opacity: 0.35;
       pointer-events: none;
       filter: grayscale(12%);
     }
@@ -282,8 +291,10 @@
 </head>
 <body>
     <div class="overlay-shell">
-      <div class="overlay-header">OBS / Browser Source Overlay</div>
-      <div class="overlay-status" id="overlay-status">Scaffolded — static placeholder</div>
+      <div class="overlay-top">
+        <div class="overlay-header">OBS / Browser Source Overlay</div>
+        <div class="overlay-status" id="overlay-status">Scaffolded — static placeholder</div>
+      </div>
       <div class="chat-stack" aria-label="Static overlay chat preview">
         <div class="bubble">
           <div class="meta">
