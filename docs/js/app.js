@@ -95,6 +95,14 @@ function applyModeState(modeState) {
   setModeDataset(document.getElementById("app"));
   setModeDataset(document.getElementById("view-container"));
 
+  // Broadcast the current mode so platform views can mirror state even when
+  // loaded later in the session.
+  try {
+    window.dispatchEvent(new CustomEvent("streamsuites:modechange", { detail: modeState }));
+  } catch (err) {
+    console.warn("[Dashboard] Mode broadcast failed", err);
+  }
+
   if (App.currentView) {
     const activeContainerId = App.views[App.currentView]?.containerId || "view-container";
     setModeDataset(document.getElementById(activeContainerId));
@@ -121,7 +129,8 @@ async function detectConnectedMode(options = {}) {
     reason: "static-first default",
     isLocalhost: LOCALHOST_HOSTNAMES.has(hostname),
     snapshotDetected: false,
-    hostname
+    hostname,
+    source: null
   };
 
   if (forcedMode === "static") {
@@ -132,11 +141,21 @@ async function detectConnectedMode(options = {}) {
   let snapshot = injectedSnapshot;
   let snapshotSource = sourceLabel;
 
+  const runtimeState = window.App?.state?.runtimeSnapshot;
+
+  if (!snapshot && runtimeState?.getSnapshot) {
+    const normalizedPolled = window.StreamSuitesState?.normalizeRuntimeSnapshot?.(
+      runtimeState.getSnapshot()
+    );
+    if (normalizedPolled && Object.keys(normalizedPolled.platforms || {}).length) {
+      snapshot = normalizedPolled;
+      snapshotSource = runtimeState.lastSource || "runtime:polled";
+    }
+  }
+
   if (!snapshot) {
     try {
-      snapshot = await window.StreamSuitesState?.loadRuntimeSnapshot?.({
-        forceReload: true
-      });
+      snapshot = await window.StreamSuitesState?.loadRuntimeSnapshot?.({ forceReload: true });
       snapshotSource = "runtime:auto";
     } catch (err) {
       console.warn("[Dashboard] Connected mode detection failed", err);
@@ -144,16 +163,30 @@ async function detectConnectedMode(options = {}) {
   }
 
   modeState.snapshotDetected = !!(snapshot && typeof snapshot === "object");
-  const runtimeDerived = snapshotSource.includes("shared/state") || Boolean(snapshot?.runtime);
+  const runtimeDerived =
+    (snapshotSource && snapshotSource.includes("shared/state")) ||
+    Boolean(snapshot?.runtime) ||
+    Boolean(snapshot?.system || snapshot?.platforms);
+
+  if (snapshotSource) {
+    modeState.source = snapshotSource;
+  }
 
   if (forcedMode === "connected") {
     modeState.current = "connected";
     modeState.reason = "query override: connected";
   } else if (modeState.snapshotDetected && runtimeDerived) {
     modeState.current = "connected";
-    modeState.reason = modeState.isLocalhost
-      ? "runtime exports detected on localhost"
-      : "runtime exports detected (read-only)";
+    const isRuntimePath = snapshotSource?.includes("shared/state") || snapshotSource?.includes("runtime_snapshot");
+    if (modeState.isLocalhost && isRuntimePath) {
+      modeState.reason = "runtime exports detected on localhost";
+    } else if (modeState.isLocalhost) {
+      modeState.reason = "localhost detected with snapshot (read-only)";
+    } else if (isRuntimePath) {
+      modeState.reason = "runtime exports detected (read-only)";
+    } else {
+      modeState.reason = "snapshot detected (read-only)";
+    }
   } else if (modeState.isLocalhost) {
     modeState.reason = "localhost detected; static fallback";
   } else if (modeState.snapshotDetected) {

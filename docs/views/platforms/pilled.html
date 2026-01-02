@@ -12,7 +12,7 @@
 <header class="ss-header">
   <div class="ss-header-left">
     <h1 class="ss-title">StreamSuites</h1>
-    <span class="ss-subtitle">Pilled Platform (Planned)</span>
+    <span class="ss-subtitle">Pilled Platform — Planned — Ingest / Replay Only</span>
   </div>
 
   <div class="ss-header-right">
@@ -41,6 +41,8 @@
         intentionally read-only and will hydrate from exported snapshots
         once runtime collectors are available. Admin controls remain
         permanently disabled in the dashboard; ingestion is runtime-only.
+        Snapshot placeholders are rendered even when runtime exports exist
+        to make the ingest-only contract explicit.
       </p>
 
       <table class="ss-table ss-table-compact">
@@ -78,8 +80,9 @@
 
     <div class="ss-panel-body">
       <div id="pilled-runtime-banner" class="ss-alert ss-alert-warning">
-        Planned ingest-only view. Runtime exports will render here when the
-        collector ships; dashboard remains read-only.
+        Planned — Ingest / Replay Only. Runtime exports are observed for
+        completeness, but this dashboard surface renders placeholders only
+        and never issues writes.
       </div>
 
       <table class="ss-table ss-table-compact">

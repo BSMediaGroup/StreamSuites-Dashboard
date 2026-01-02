@@ -8,11 +8,14 @@
   let runtimeTimer = null;
   let currentMode = null;
   let lastRuntimeSnapshot = null;
+  let lastRuntimeSource = null;
+  let modeListener = null;
 
   function cacheElements() {
     el.foundationStatus = document.getElementById("kick-foundation-status");
     el.runtimeBanner = document.getElementById("kick-runtime-banner");
     el.runtimeStatus = document.getElementById("kick-runtime-status");
+    el.runtimeEnabled = document.getElementById("kick-runtime-enabled");
     el.runtimeUpdated = document.getElementById("kick-runtime-updated");
     el.runtimeError = document.getElementById("kick-runtime-error");
     el.runtimeMessages = document.getElementById("kick-runtime-messages");
@@ -158,7 +161,9 @@
 
   function hydrateRuntimePlaceholder() {
     lastRuntimeSnapshot = null;
+    lastRuntimeSource = null;
     setText(el.runtimeStatus, "awaiting snapshot");
+    setText(el.runtimeEnabled, "unknown");
     setText(el.runtimeUpdated, "no runtime snapshot yet");
     setText(el.runtimeError, "not reported");
     setText(el.runtimeMessages, "—");
@@ -196,19 +201,40 @@
     return null;
   }
 
-  function renderRuntime(snapshot) {
-    const platform = selectPlatform(snapshot);
+  function renderRuntime(snapshot, sourceLabel = "") {
+    const normalized = window.StreamSuitesState?.normalizeRuntimeSnapshot?.(snapshot);
+    if (!normalized) {
+      hydrateRuntimePlaceholder();
+      return;
+    }
+
+    const platform = selectPlatform(normalized);
+    if (!platform) {
+      hydrateRuntimePlaceholder();
+      return;
+    }
+
+    const enabledState = platform.enabled;
+    setText(
+      el.runtimeEnabled,
+      enabledState === true
+        ? "ENABLED"
+        : enabledState === false
+          ? "DISABLED"
+          : "NOT REPORTED"
+    );
+
     const status = describeRuntimeStatus(platform);
     setText(el.runtimeStatus, status.toUpperCase());
 
     const updated = formatTimestamp(
-      platform?.lastUpdate || platform?.last_heartbeat || snapshot?.generatedAt
+      platform?.lastUpdate || platform?.heartbeat || normalized?.generatedAt
     );
     setText(el.runtimeUpdated, updated);
 
     setText(
       el.runtimeError,
-      platform?.error || "none reported"
+      platform?.error || platform?.pausedReason || "none reported"
     );
 
     const counters = platform?.counters || {};
@@ -232,6 +258,9 @@
       Number.isFinite(triggers) ? triggers.toLocaleString() : "—"
     );
 
+    const modeLabel = currentMode?.current || "static";
+    const sourceNote = sourceLabel || window.App?.state?.runtimeSnapshot?.lastSource || "runtime export";
+
     if (el.runtimeBanner) {
       el.runtimeBanner.classList.remove("ss-alert-danger", "ss-alert-success");
       el.runtimeBanner.classList.add(
@@ -239,9 +268,19 @@
       );
       setText(
         el.runtimeBanner,
-        `Read-only preview sourced from runtime exports (shared/state → data fallback). Mode: ${currentMode?.current || "static"}.`
+        `Read-only preview sourced from runtime exports (${sourceNote}). Mode: ${modeLabel}.`
       );
     }
+  }
+
+  function lockControls() {
+    const scope = document.getElementById("view-container");
+    if (!scope) return;
+
+    scope.querySelectorAll("input, select, textarea, button").forEach((node) => {
+      node.disabled = true;
+      node.setAttribute("aria-disabled", "true");
+    });
   }
 
   async function hydrateRuntime() {
@@ -251,7 +290,17 @@
       await runtimeState.fetchOnce();
     }
 
-    const snapshot = runtimeState?.getSnapshot?.();
+    let snapshot = runtimeState?.getSnapshot?.();
+    let sourceLabel = runtimeState?.lastSource || "";
+
+    if (!snapshot || !snapshot.platforms) {
+      try {
+        snapshot = await window.StreamSuitesState?.loadRuntimeSnapshot?.({ forceReload: true });
+        sourceLabel = sourceLabel || "data/runtime_snapshot.json";
+      } catch (err) {
+        console.warn("[KickView] Runtime snapshot load failed", err);
+      }
+    }
 
     if (!snapshot || !snapshot.platforms) {
       hydrateRuntimePlaceholder();
@@ -259,7 +308,8 @@
     }
 
     lastRuntimeSnapshot = snapshot;
-    renderRuntime(snapshot);
+    lastRuntimeSource = sourceLabel || null;
+    renderRuntime(snapshot, sourceLabel);
   }
 
   function startRuntimePolling() {
@@ -277,7 +327,7 @@
   function onModeChange(modeState) {
     currentMode = modeState || currentMode;
     if (lastRuntimeSnapshot) {
-      renderRuntime(lastRuntimeSnapshot);
+      renderRuntime(lastRuntimeSnapshot, lastRuntimeSource);
     } else {
       hydrateRuntimePlaceholder();
     }
@@ -287,6 +337,11 @@
     cacheElements();
     currentMode = modeState || window.App?.mode || { current: "static", reason: "static-first default" };
     setFoundationStatus();
+    lockControls();
+    if (!modeListener) {
+      modeListener = (event) => onModeChange(event.detail);
+      window.addEventListener("streamsuites:modechange", modeListener);
+    }
     await hydrateConfig();
     hydrateRuntimePlaceholder();
     startRuntimePolling();
@@ -296,6 +351,11 @@
     if (runtimeTimer) {
       clearInterval(runtimeTimer);
       runtimeTimer = null;
+    }
+
+    if (modeListener) {
+      window.removeEventListener("streamsuites:modechange", modeListener);
+      modeListener = null;
     }
   }
 

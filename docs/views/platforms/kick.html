@@ -80,7 +80,8 @@
 
     <div class="ss-panel-body">
       <div id="kick-runtime-banner" class="ss-alert ss-alert-warning">
-        Read-only preview. Hydrates from runtime snapshots when present; no live controls.
+        Read-only preview. Hydrates from runtime exports when present (shared/state preferred),
+        with bundled fallback in static mode. Controls stay locked.
       </div>
 
       <table class="ss-table ss-table-compact">
@@ -89,6 +90,12 @@
             <td>Platform Status</td>
             <td id="kick-runtime-status" class="align-right muted">
               offline / unknown
+            </td>
+          </tr>
+          <tr>
+            <td>Enabled State</td>
+            <td id="kick-runtime-enabled" class="align-right muted">
+              unknown
             </td>
           </tr>
           <tr>
