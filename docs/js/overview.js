@@ -24,6 +24,8 @@
     el.triggersCount = document.getElementById("ov-triggers-count");
 
     el.rumbleEnabledCount = document.getElementById("ov-rumble-enabled-count");
+    el.kickEnabledCount = document.getElementById("ov-kick-enabled-count");
+    el.pilledEnabledCount = document.getElementById("ov-pilled-enabled-count");
     el.twitchEnabledCount = document.getElementById("ov-twitch-enabled-count");
     el.youtubeEnabledCount = document.getElementById("ov-youtube-enabled-count");
 
@@ -36,6 +38,12 @@
     el.rumbleConfig = document.getElementById("ov-rumble-config");
     el.rumbleRuntime = document.getElementById("ov-rumble-runtime");
 
+    el.kickConfig = document.getElementById("ov-kick-config");
+    el.kickRuntime = document.getElementById("ov-kick-runtime");
+
+    el.pilledConfig = document.getElementById("ov-pilled-config");
+    el.pilledRuntime = document.getElementById("ov-pilled-runtime");
+
     el.twitchConfig = document.getElementById("ov-twitch-config");
     el.twitchRuntime = document.getElementById("ov-twitch-runtime");
     el.youtubeConfig = document.getElementById("ov-youtube-config");
@@ -44,6 +52,8 @@
     /* Platform badges */
     el.badgeDiscord = document.getElementById("badge-discord");
     el.badgeRumble = document.getElementById("badge-rumble");
+    el.badgeKick = document.getElementById("badge-kick");
+    el.badgePilled = document.getElementById("badge-pilled");
     el.badgeTwitch = document.getElementById("badge-twitch");
     el.badgeYouTube = document.getElementById("badge-youtube");
 
@@ -64,6 +74,16 @@
         status: document.getElementById("telemetry-twitch-status"),
         last: document.getElementById("telemetry-twitch-last"),
         error: document.getElementById("telemetry-twitch-error")
+      },
+      kick: {
+        status: document.getElementById("telemetry-kick-status"),
+        last: document.getElementById("telemetry-kick-last"),
+        error: document.getElementById("telemetry-kick-error")
+      },
+      pilled: {
+        status: document.getElementById("telemetry-pilled-status"),
+        last: document.getElementById("telemetry-pilled-last"),
+        error: document.getElementById("telemetry-pilled-error")
       },
       rumble: {
         status: document.getElementById("telemetry-rumble-status"),
@@ -156,12 +176,18 @@
     setText(el.creatorsCount, String(creatorsArr.length));
 
     let rumbleEnabled = 0;
+    let kickEnabled = 0;
+    let pilledEnabled = 0;
     let twitchEnabled = 0;
     let youtubeEnabled = 0;
 
     for (const c of creatorsArr) {
       if (c?.platforms?.rumble === true || c?.platforms?.rumble?.enabled)
         rumbleEnabled++;
+      if (c?.platforms?.kick === true || c?.platforms?.kick?.enabled)
+        kickEnabled++;
+      if (c?.platforms?.pilled === true || c?.platforms?.pilled?.enabled)
+        pilledEnabled++;
       if (c?.platforms?.twitch === true || c?.platforms?.twitch?.enabled)
         twitchEnabled++;
       if (c?.platforms?.youtube === true || c?.platforms?.youtube?.enabled)
@@ -169,6 +195,8 @@
     }
 
     setText(el.rumbleEnabledCount, String(rumbleEnabled));
+    setText(el.kickEnabledCount, String(kickEnabled));
+    setText(el.pilledEnabledCount, String(pilledEnabled));
     setText(el.twitchEnabledCount, String(twitchEnabled));
     setText(el.youtubeEnabledCount, String(youtubeEnabled));
 
@@ -182,6 +210,16 @@
     setText(
       el.rumbleConfig,
       describePlatformState(platformState, "rumble", rumbleEnabled)
+    );
+
+    setText(
+      el.kickConfig,
+      describePlatformState(platformState, "kick", kickEnabled)
+    );
+
+    setText(
+      el.pilledConfig,
+      describePlatformState(platformState, "pilled", pilledEnabled)
     );
 
     setText(
@@ -328,6 +366,8 @@
     const map = {
       badgeDiscord: "discord",
       badgeRumble: "rumble",
+      badgeKick: "kick",
+      badgePilled: "pilled",
       badgeTwitch: "twitch",
       badgeYouTube: "youtube"
     };
@@ -357,6 +397,8 @@
     const keys = window.Telemetry?.PLATFORM_KEYS || [
       "youtube",
       "twitch",
+      "kick",
+      "pilled",
       "rumble",
       "discord"
     ];
@@ -382,6 +424,22 @@
     el.telemetryEmpty?.classList.add("hidden");
 
     const keys = window.Telemetry?.PLATFORM_KEYS || Object.keys(snapshot.platforms);
+    const runtimeTargets = {
+      rumble: el.rumbleRuntime,
+      kick: el.kickRuntime,
+      pilled: el.pilledRuntime,
+      twitch: el.twitchRuntime,
+      youtube: el.youtubeRuntime
+    };
+
+    const badgeTargets = {
+      rumble: el.badgeRumble,
+      kick: el.badgeKick,
+      pilled: el.badgePilled,
+      twitch: el.badgeTwitch,
+      youtube: el.badgeYouTube
+    };
+
     keys.forEach((key) => {
       const desc =
         window.Telemetry?.describePlatform?.(key, snapshot) || {};
@@ -394,6 +452,28 @@
       setText(row.status, `${enabledPrefix}${statusText}`.trim());
       setText(row.last, desc.last_seen || "—");
       setText(row.error, desc.error_state || "—");
+
+      const runtimeNode = runtimeTargets[key];
+      if (runtimeNode) {
+        const runtimeLabel = `${enabledPrefix}${statusText}`.trim() || "unknown";
+        setText(runtimeNode, runtimeLabel);
+      }
+
+      const badgeNode = badgeTargets[key];
+      if (badgeNode) {
+        if (key === "kick") {
+          badgeNode.textContent =
+            desc.enabled === false ? "Disabled in Runtime" : "Scaffold (Runtime Export)";
+        } else if (key === "pilled") {
+          badgeNode.textContent = desc.enabled === false
+            ? "Control-Plane Locked"
+            : "Ingest-Only (Control-Plane Unavailable)";
+        } else if (key === "rumble") {
+          badgeNode.textContent = desc.status
+            ? `${desc.status}`.replace(/^\w/, (c) => c.toUpperCase())
+            : "Architecture Solved (SSE-first)";
+        }
+      }
     });
   }
 
@@ -620,6 +700,8 @@
     refreshTelemetry();
 
     setText(el.rumbleRuntime, "offline / unknown");
+    setText(el.kickRuntime, "offline / unknown");
+    setText(el.pilledRuntime, "ingest-only / planned");
     setText(el.twitchRuntime, "offline / unknown");
     setText(el.youtubeRuntime, "offline / not connected");
 

@@ -14,7 +14,7 @@
 (() => {
   "use strict";
 
-  const PLATFORM_KEYS = ["youtube", "twitch", "rumble", "discord"];
+  const PLATFORM_KEYS = ["youtube", "twitch", "kick", "pilled", "rumble", "discord"];
 
   const TELEMETRY_PATHS = {
     events: "telemetry/events.json",
