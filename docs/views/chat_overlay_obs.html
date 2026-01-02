@@ -88,6 +88,11 @@
       border: 1px solid var(--border);
       box-shadow: inset 0 0 0 1px var(--glow), 0 10px 30px rgba(0, 0, 0, 0.5);
     }
+    .overlay-shell.blocked {
+      display: grid;
+      place-items: center;
+      text-align: center;
+    }
     .overlay-header {
       position: absolute;
       top: 12px;
@@ -121,6 +126,12 @@
       flex-direction: column;
       gap: 10px;
       overflow: hidden;
+    }
+    .chat-stack.hidden { display: none; }
+    .chat-stack.design-preview {
+      opacity: 0.45;
+      pointer-events: none;
+      filter: grayscale(12%);
     }
     .bubble {
       display: flex;
@@ -251,6 +262,22 @@
       font-size: 0.9rem;
       letter-spacing: 0.02em;
     }
+    .blocked-message {
+      max-width: 620px;
+      margin: 0 auto;
+      padding: 18px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.35);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+      color: var(--text);
+    }
+    .blocked-message strong {
+      display: block;
+      margin-bottom: 6px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
   </style>
 </head>
 <body>
@@ -344,9 +371,15 @@
           </div>
           <div class="content">Daniel carries admin, mod, and pro badges to verify multi-badge rendering without overlap.</div>
         </div>
+          </div>
+        <div class="note">No live sockets. No persistence. Preview only.</div>
+        <div class="blocked-message" id="blocked-message" style="display:none;">
+          <strong>Replay unavailable</strong>
+          <span id="blocked-reason">Runtime export did not approve overlay rendering.</span>
+        </div>
       </div>
-    <div class="note">No live sockets. No persistence. Preview only.</div>
-  </div>
+  <script src="../js/state.js"></script>
+  <script src="../js/chatReplay.js"></script>
   <script>
     (() => {
       const params = new URLSearchParams(window.location.search);
@@ -356,6 +389,11 @@
       if (theme) {
         document.body.classList.add(`theme-${theme}`);
       }
+      const chatStack = document.querySelector('.chat-stack');
+      const blockedMessage = document.getElementById('blocked-message');
+      const blockedReason = document.getElementById('blocked-reason');
+      const showPlaceholders = params.get('placeholders') !== 'off';
+
       if (status) {
         status.textContent = mode === 'live' ? 'Live mode (placeholder)' : 'Replay mode (placeholder)';
       }
@@ -367,6 +405,50 @@
           img.parentElement.replaceWith(pill);
         }, { once: true });
       });
+
+        async function evaluateOverlaySafety() {
+          try {
+            const replayState = await window.ChatReplayPreview?.loadReplayState?.();
+          const overlaySafe = replayState?.overlaySafe === true;
+          if (!overlaySafe) {
+            status.textContent = 'Replay unavailable';
+            blockedMessage.style.display = 'block';
+            blockedReason.textContent = replayState?.available
+              ? 'Runtime flagged overlay as unsafe.'
+              : 'No approved replay export found.';
+
+            if (showPlaceholders) {
+              chatStack?.classList.remove('hidden');
+              chatStack?.classList.add('design-preview');
+              chatStack?.setAttribute('aria-hidden', 'true');
+            } else {
+              chatStack?.classList.add('hidden');
+            }
+            return;
+          }
+
+          status.textContent = replayState.available
+            ? `Replay active${typeof replayState.eventCount === 'number' ? ` — ${replayState.eventCount} events` : ''}`
+            : 'Replay export present';
+          blockedMessage.style.display = 'none';
+          chatStack?.classList.remove('hidden', 'design-preview');
+          chatStack?.removeAttribute('aria-hidden');
+          } catch (err) {
+            console.warn('[Overlay] Failed to evaluate overlay safety', err);
+            status.textContent = 'Replay unavailable';
+          blockedMessage.style.display = 'block';
+          blockedReason.textContent = 'Overlay safety could not be confirmed.';
+          if (showPlaceholders) {
+            chatStack?.classList.remove('hidden');
+            chatStack?.classList.add('design-preview');
+            chatStack?.setAttribute('aria-hidden', 'true');
+          } else {
+            chatStack?.classList.add('hidden');
+          }
+          }
+        }
+
+      evaluateOverlaySafety();
     })();
   </script>
 </body>
