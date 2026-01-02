@@ -96,7 +96,7 @@
     "meta": "22% · Scaffolded / in-progress",
     "status": "partial",
     "description": "Kick now has first-class dashboard scaffolding with dedicated views and settings rows. Dashboards stay read-only and hydrate from shared/state/runtime_snapshot.json when present, falling back to bundled docs/data/runtime_snapshot.json. Runtime ingestion remains in planning while connected-mode clarity keeps controls locked.",
-    "icon": "./assets/icons/ui/kick-silver.svg",
+    "icon": "./assets/icons/kick-silver.svg",
     "tooltip": "22% · 20–25% Scaffolded — Dashboard and settings visible; runtime ingest/export still in progress and connected-mode is read-only."
   },
   {
@@ -107,7 +107,7 @@
     "meta": "6% · Planned ingest-only",
     "status": "planned",
     "description": "Pilled is reserved as an ingest-only platform with a dedicated read-only dashboard view. No runtime collector exists yet; switches are locked and telemetry is disabled until the authoritative runtime ships exports, which will hydrate from shared/state/runtime_snapshot.json once present.",
-    "icon": "./assets/icons/ui/pilled-silver.svg",
+    "icon": "./assets/icons/pilled-silver.svg",
     "tooltip": "6% · 0–10% Planned — Read-only dashboard slot reserved; runtime collector not yet implemented."
   },
   {
