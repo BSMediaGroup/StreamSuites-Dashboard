@@ -1,0 +1,277 @@
+<style>
+  .design-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+
+  .design-card {
+    padding: 14px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    background: var(--bg-panel-alt);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+  }
+
+  .design-card h3 {
+    margin: 0;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+  }
+
+  .design-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .design-chip {
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-subtle);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+  }
+
+  .design-panel-sample {
+    border: 1px dashed var(--border-subtle);
+    padding: 10px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-panel);
+  }
+
+  .design-typo h4 {
+    margin: 0;
+    letter-spacing: 0.04em;
+  }
+
+  .design-typo p {
+    margin: 6px 0;
+  }
+
+  .design-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 10px;
+  }
+
+  .design-icon {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    background: var(--bg-panel);
+  }
+
+  .design-icon img {
+    width: 22px;
+    height: 22px;
+  }
+
+  .design-bubble {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  }
+
+  .design-bubble .meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+  }
+
+  .design-bubble .content {
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+
+  .design-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .design-dot.success { background: #2dd4a6; }
+  .design-dot.warning { background: #f4b400; }
+  .design-dot.danger { background: #f66; }
+</style>
+
+<header class="ss-header">
+  <div class="ss-header-left">
+    <h1 class="ss-title">Design System</h1>
+    <span class="ss-subtitle">UI super-view • static reference only</span>
+  </div>
+  <div class="ss-header-right">
+    <span class="ss-badge">Static</span>
+    <span class="ss-badge ss-badge-warning">Preview only</span>
+  </div>
+</header>
+
+<main class="ss-main">
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Reference surface</h2>
+    </header>
+    <div class="ss-panel-body">
+      <p class="muted" style="margin-top:0;">
+        Visual catalogue of StreamSuites dashboard components. No runtime wiring, no hydration, and no persistence.
+        Everything on this page is sample-only.
+      </p>
+      <div class="design-row">
+        <span class="design-chip">Buttons</span>
+        <span class="design-chip">Checkboxes</span>
+        <span class="design-chip">Toggles</span>
+        <span class="design-chip">Badges</span>
+        <span class="design-chip">Status</span>
+        <span class="design-chip">Cards</span>
+        <span class="design-chip">Typography</span>
+        <span class="design-chip">Icons</span>
+        <span class="design-chip">Replay / Overlay</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Components</h2>
+    </header>
+    <div class="ss-panel-body design-grid">
+
+      <div class="design-card">
+        <h3>Buttons</h3>
+        <div class="design-row">
+          <button class="ss-btn ss-btn-primary" type="button">Primary</button>
+          <button class="ss-btn ss-btn-secondary" type="button">Secondary</button>
+          <button class="ss-btn ss-btn-primary" type="button" disabled>Disabled</button>
+        </div>
+      </div>
+
+      <div class="design-card">
+        <h3>Checkboxes (standard)</h3>
+        <div class="design-row">
+          <label class="ss-checkbox-field">
+            <span class="checkbox-wrapper">
+              <input type="checkbox" checked />
+              <div class="checkbox"></div>
+            </span>
+            <span class="checkbox-label-text">Checked</span>
+          </label>
+          <label class="ss-checkbox-field">
+            <span class="checkbox-wrapper">
+              <input type="checkbox" />
+              <div class="checkbox"></div>
+            </span>
+            <span class="checkbox-label-text">Unchecked</span>
+          </label>
+          <label class="ss-checkbox-field">
+            <span class="checkbox-wrapper">
+              <input type="checkbox" disabled />
+              <div class="checkbox"></div>
+            </span>
+            <span class="checkbox-label-text">Disabled</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="design-card">
+        <h3>Toggles</h3>
+        <p class="muted" style="margin:0;">Use the checkbox foundation for toggle states.</p>
+        <div class="design-row">
+          <label class="ss-checkbox-field">
+            <span class="checkbox-wrapper">
+              <input type="checkbox" checked />
+              <div class="checkbox"></div>
+            </span>
+            <span class="checkbox-label-text">On</span>
+          </label>
+          <label class="ss-checkbox-field">
+            <span class="checkbox-wrapper">
+              <input type="checkbox" />
+              <div class="checkbox"></div>
+            </span>
+            <span class="checkbox-label-text">Off</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="design-card">
+        <h3>Badges & Status</h3>
+        <div class="design-row">
+          <span class="ss-badge">Default</span>
+          <span class="ss-badge ss-badge-warning">Warning</span>
+          <span class="ss-badge ss-badge-danger">Critical</span>
+        </div>
+        <div class="design-row" style="margin-top:6px;">
+          <span class="design-dot success"></span> <span class="muted">Active</span>
+          <span class="design-dot warning"></span> <span class="muted">Degraded</span>
+          <span class="design-dot danger"></span> <span class="muted">Paused</span>
+        </div>
+      </div>
+
+      <div class="design-card">
+        <h3>Cards & Panels</h3>
+        <div class="design-panel-sample">
+          <strong>Panel shell</strong>
+          <p class="muted" style="margin:4px 0 0 0;">Use <code>.ss-panel</code> and <code>.ss-panel-header</code> for section framing.</p>
+        </div>
+      </div>
+
+      <div class="design-card design-typo">
+        <h3>Typography</h3>
+        <h4>Heading 4</h4>
+        <p class="muted">Caption / helper text</p>
+        <p>Body copy for standard paragraphs.</p>
+        <p><strong>Emphasis</strong> and <code>code treatments</code> remain available.</p>
+      </div>
+
+      <div class="design-card">
+        <h3>Icons</h3>
+        <div class="design-icon-grid">
+          <div class="design-icon"><img src="assets/icons/youtube.svg" alt="YouTube" />YouTube</div>
+          <div class="design-icon"><img src="assets/icons/twitch.svg" alt="Twitch" />Twitch</div>
+          <div class="design-icon"><img src="assets/icons/rumble.svg" alt="Rumble" />Rumble</div>
+          <div class="design-icon"><img src="assets/icons/discord.svg" alt="Discord" />Discord</div>
+          <div class="design-icon"><img src="assets/icons/prouser.svg" alt="Pro" />Badges</div>
+          <div class="design-icon"><img src="assets/icons/ui/send.svg" alt="Send" />UI</div>
+        </div>
+      </div>
+
+      <div class="design-card">
+        <h3>Replay UI sample</h3>
+        <div class="design-bubble">
+          <div class="meta">
+            <span class="design-dot success"></span>
+            <span class="muted">runtime_snapshot.replay</span>
+            <span class="muted">overlay_safe=true</span>
+          </div>
+          <div class="content">Overlay/replay elements align with the unified chat bubble layout.</div>
+        </div>
+      </div>
+
+      <div class="design-card">
+        <h3>Overlay UI sample</h3>
+        <div class="design-bubble">
+          <div class="meta">
+            <span class="design-dot warning"></span>
+            <span class="muted">overlay gate</span>
+          </div>
+          <div class="content">Overlay rendering must be approved by <code>replay.overlay_safe</code>.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</main>

@@ -406,6 +406,7 @@ StreamSuites-Dashboard/
 │   ├── version.json
 │   └── views
 │       ├── about.html
+│       ├── design.html
 │       ├── chat-replay.html
 │       ├── chat_overlay_obs.html
 │       ├── chat_replay_window.html

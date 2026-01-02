@@ -704,7 +704,9 @@
 
       if (replayBadge) replayBadge.textContent = connectionLabel;
       if (replayAvailability) replayAvailability.textContent = available ? 'Replay available' : 'Replay unavailable';
-      if (replayOverlay) replayOverlay.textContent = overlaySafe ? 'Overlay safe' : 'Overlay blocked by runtime';
+      if (replayOverlay) replayOverlay.textContent = overlaySafe
+        ? 'Overlay approved (overlay_safe=true)'
+        : 'Overlay blocked (overlay_safe=false)';
       if (replayEventCount) {
         replayEventCount.textContent = Number.isInteger(replayState?.eventCount)
           ? replayState.eventCount
