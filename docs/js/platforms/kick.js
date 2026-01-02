@@ -6,6 +6,8 @@
 
   const el = {};
   let runtimeTimer = null;
+  let currentMode = null;
+  let lastRuntimeSnapshot = null;
 
   function cacheElements() {
     el.foundationStatus = document.getElementById("kick-foundation-status");
@@ -155,6 +157,7 @@
   }
 
   function hydrateRuntimePlaceholder() {
+    lastRuntimeSnapshot = null;
     setText(el.runtimeStatus, "awaiting snapshot");
     setText(el.runtimeUpdated, "no runtime snapshot yet");
     setText(el.runtimeError, "not reported");
@@ -166,24 +169,40 @@
       el.runtimeBanner.classList.remove("hidden");
       setText(
         el.runtimeBanner,
-        `Monitoring resumes as runtime snapshots arrive. This view stays read-only and mirrors runtime exports (${App.mode?.current || "static"} mode).`
+        `Monitoring resumes as runtime snapshots arrive. This view stays read-only and mirrors runtime exports (${currentMode?.current || "static"} mode).`
       );
     }
   }
 
   function describeRuntimeStatus(entry) {
-    if (!entry) return "no runtime snapshot";
+    if (!entry) return "not exported";
     if (entry.enabled === false) return "disabled";
-    return entry.status || "unknown";
+    if (entry.paused) return "paused";
+    return entry.status || entry.state || "unknown";
+  }
+
+  function selectPlatform(snapshot) {
+    if (!snapshot || !snapshot.platforms) return null;
+    if (Array.isArray(snapshot.platforms)) {
+      return snapshot.platforms.find((p) => p.platform === PLATFORM || p.name === PLATFORM) || null;
+    }
+    return snapshot.platforms[PLATFORM] || null;
+  }
+
+  function resolveCounterValue(counters, keys) {
+    for (const key of keys) {
+      if (typeof counters[key] === "number") return counters[key];
+    }
+    return null;
   }
 
   function renderRuntime(snapshot) {
-    const platform = snapshot?.platforms?.[PLATFORM] || null;
+    const platform = selectPlatform(snapshot);
     const status = describeRuntimeStatus(platform);
     setText(el.runtimeStatus, status.toUpperCase());
 
     const updated = formatTimestamp(
-      platform?.lastUpdate || snapshot?.generatedAt
+      platform?.lastUpdate || platform?.last_heartbeat || snapshot?.generatedAt
     );
     setText(el.runtimeUpdated, updated);
 
@@ -193,8 +212,16 @@
     );
 
     const counters = platform?.counters || {};
-    const messages = counters.messagesProcessed ?? counters.messages ?? null;
-    const triggers = counters.triggersFired ?? counters.triggers ?? null;
+    const messages = resolveCounterValue(counters, [
+      "messagesProcessed",
+      "messages_processed",
+      "messages"
+    ]);
+    const triggers = resolveCounterValue(counters, [
+      "triggersFired",
+      "triggers_fired",
+      "triggers"
+    ]);
 
     setText(
       el.runtimeMessages,
@@ -212,7 +239,7 @@
       );
       setText(
         el.runtimeBanner,
-        `Read-only preview sourced from runtime exports (shared/state → data fallback). Mode: ${App.mode?.current || "static"}.`
+        `Read-only preview sourced from runtime exports (shared/state → data fallback). Mode: ${currentMode?.current || "static"}.`
       );
     }
   }
@@ -231,6 +258,7 @@
       return;
     }
 
+    lastRuntimeSnapshot = snapshot;
     renderRuntime(snapshot);
   }
 
@@ -246,8 +274,18 @@
     el.foundationStatus.textContent = "● Kick integration: Scaffold";
   }
 
-  async function init() {
+  function onModeChange(modeState) {
+    currentMode = modeState || currentMode;
+    if (lastRuntimeSnapshot) {
+      renderRuntime(lastRuntimeSnapshot);
+    } else {
+      hydrateRuntimePlaceholder();
+    }
+  }
+
+  async function init(modeState) {
     cacheElements();
+    currentMode = modeState || window.App?.mode || { current: "static", reason: "static-first default" };
     setFoundationStatus();
     await hydrateConfig();
     hydrateRuntimePlaceholder();
@@ -263,6 +301,7 @@
 
   window.KickView = {
     init,
-    destroy
+    destroy,
+    onModeChange
   };
 })();

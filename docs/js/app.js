@@ -83,10 +83,38 @@ function setModeDataset(target) {
   target.dataset.appModeReason = App.mode?.reason || "static-first default";
 }
 
-async function detectConnectedMode() {
+function applyModeState(modeState) {
+  const previous = App.mode || {};
+  const changed =
+    previous.current !== modeState.current ||
+    previous.reason !== modeState.reason ||
+    previous.snapshotDetected !== modeState.snapshotDetected;
+
+  App.mode = modeState;
+  setModeIndicator(modeState);
+  setModeDataset(document.getElementById("app"));
+  setModeDataset(document.getElementById("view-container"));
+
+  if (App.currentView) {
+    const activeContainerId = App.views[App.currentView]?.containerId || "view-container";
+    setModeDataset(document.getElementById(activeContainerId));
+  }
+
+  if (changed && App.currentView && App.views[App.currentView]?.onModeChange) {
+    try {
+      App.views[App.currentView].onModeChange(modeState);
+    } catch (err) {
+      console.warn("[Dashboard] View mode change handler failed", err);
+    }
+  }
+}
+
+async function detectConnectedMode(options = {}) {
   const hostname = window.location?.hostname || "";
   const params = new URLSearchParams(window.location.search);
   const forcedMode = params.get("mode");
+  const injectedSnapshot = options.snapshot || null;
+  const sourceLabel = options.sourceLabel || "";
 
   const modeState = {
     current: "static",
@@ -97,38 +125,44 @@ async function detectConnectedMode() {
   };
 
   if (forcedMode === "static") {
-    App.mode = modeState;
-    setModeIndicator(modeState);
+    applyModeState(modeState);
     return modeState;
   }
 
-  let snapshot = null;
-  try {
-    snapshot = await window.StreamSuitesState?.loadRuntimeSnapshot?.({
-      forceReload: true
-    });
-  } catch (err) {
-    console.warn("[Dashboard] Connected mode detection failed", err);
+  let snapshot = injectedSnapshot;
+  let snapshotSource = sourceLabel;
+
+  if (!snapshot) {
+    try {
+      snapshot = await window.StreamSuitesState?.loadRuntimeSnapshot?.({
+        forceReload: true
+      });
+      snapshotSource = "runtime:auto";
+    } catch (err) {
+      console.warn("[Dashboard] Connected mode detection failed", err);
+    }
   }
 
   modeState.snapshotDetected = !!(snapshot && typeof snapshot === "object");
+  const runtimeDerived = snapshotSource.includes("shared/state") || Boolean(snapshot?.runtime);
 
   if (forcedMode === "connected") {
     modeState.current = "connected";
     modeState.reason = "query override: connected";
-  } else if (modeState.snapshotDetected && (modeState.isLocalhost || snapshot?.runtime)) {
+  } else if (modeState.snapshotDetected && runtimeDerived) {
     modeState.current = "connected";
     modeState.reason = modeState.isLocalhost
-      ? "localhost runtime exports detected"
+      ? "runtime exports detected on localhost"
       : "runtime exports detected (read-only)";
   } else if (modeState.isLocalhost) {
     modeState.reason = "localhost detected; static fallback";
+  } else if (modeState.snapshotDetected) {
+    modeState.reason = "bundled snapshot detected (static preview)";
   } else {
     modeState.reason = "static-first deployment (no runtime exports)";
   }
 
-  App.mode = modeState;
-  setModeIndicator(modeState);
+  applyModeState(modeState);
   return modeState;
 }
 
@@ -300,6 +334,7 @@ App.state.runtimeSnapshot = {
   lastError: null,
   intervalMs: 4000,
   _timer: null,
+  lastSource: null,
 
   async fetchOnce() {
     const sources = [
@@ -317,8 +352,10 @@ App.state.runtimeSnapshot = {
 
         const data = await res.json();
         this.latest = data;
+        this.lastSource = url.toString();
         this.lastFetchedAt = Date.now();
         this.lastError = null;
+        detectConnectedMode({ snapshot: data, sourceLabel: url.pathname });
         return;
       } catch (err) {
         this.lastError = String(err);
@@ -418,6 +455,7 @@ function registerView(name, config) {
     name,
     onLoad: config.onLoad || (() => {}),
     onUnload: config.onUnload || (() => {}),
+    onModeChange: config.onModeChange || null,
     containerId: config.containerId || "view-container",
     templatePath: config.templatePath || name
   };
@@ -770,20 +808,26 @@ registerView("twitch", {
 });
 registerView("kick", {
   templatePath: "platforms/kick",
-  onLoad: () => {
-    window.KickView?.init?.();
+  onLoad: (mode) => {
+    window.KickView?.init?.(mode);
   },
   onUnload: () => {
     window.KickView?.destroy?.();
+  },
+  onModeChange: (mode) => {
+    window.KickView?.onModeChange?.(mode);
   }
 });
 registerView("pilled", {
   templatePath: "platforms/pilled",
-  onLoad: () => {
-    window.PilledView?.init?.();
+  onLoad: (mode) => {
+    window.PilledView?.init?.(mode);
   },
   onUnload: () => {
     window.PilledView?.destroy?.();
+  },
+  onModeChange: (mode) => {
+    window.PilledView?.onModeChange?.(mode);
   }
 });
 registerView("twitter", { templatePath: "platforms/twitter" });

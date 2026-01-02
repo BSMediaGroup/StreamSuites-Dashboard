@@ -179,13 +179,13 @@
   {
     "id": "admin-desktop-app",
     "order": 15,
-    "title": "Desktop Admin App (WinForms-Style)",
+    "title": "Desktop Admin Application (Local, Planned)",
     "percent": 22,
-    "meta": "22% · Planned foundation (Visual Studio 2026)",
+    "meta": "22% · Local EXE concept (Visual Studio 2026)",
     "status": "planned",
-    "description": "A Windows-first desktop Admin EXE is planned to mirror the dashboard’s admin views with local, authoritative control. It will read runtime state, write configuration locally, and trigger runtime reloads without bypassing safety. Initial build targets Visual Studio 2026/WinForms, with future parity targets for macOS and Linux; no runtime binding is implemented yet.",
+    "description": "A Windows-first desktop Admin EXE is planned to mirror the dashboard’s admin views with local, authoritative control. It will read runtime state and write configuration locally, then hand changes back to the runtime without bypassing safety. No UI bindings or remote control paths are assumed; the entry documents the planned, local-only foundation with later parity targets for macOS and Linux.",
     "icon": "./assets/icons/ui/windows.svg",
-    "tooltip": "22% · 20–30% Planned foundation — Windows EXE scaffold planned; runtime bindings and cross-platform ports are future work."
+    "tooltip": "22% · 20–30% Planned foundation — Local Admin EXE concept; bindings and cross-platform ports remain future work."
   },
   {
     "id": "scoreboards",

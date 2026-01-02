@@ -17,7 +17,7 @@
 
   <div class="ss-header-right">
     <span id="pilled-foundation-status" class="status-indicator idle">
-      ● Pilled integration: Planned
+      ● Pilled integration: Ingest-only (planned)
     </span>
   </div>
 </header>
@@ -39,8 +39,8 @@
       <p class="muted">
         Pilled appears as a planned ingest-only integration. This view is
         intentionally read-only and will hydrate from exported snapshots
-        once runtime collectors are available. No admin controls will be
-        exposed in the dashboard.
+        once runtime collectors are available. Admin controls remain
+        permanently disabled in the dashboard; ingestion is runtime-only.
       </p>
 
       <table class="ss-table ss-table-compact">
@@ -48,7 +48,7 @@
           <tr>
             <td>Planned Mode</td>
             <td id="pilled-config-mode" class="align-right muted">
-              ingest-only (planned)
+              ingest-only (locked preview)
             </td>
           </tr>
           <tr>
@@ -60,7 +60,7 @@
           <tr>
             <td>Source</td>
             <td id="pilled-config-source" class="align-right muted">
-              awaiting runtime export
+              awaiting runtime export (read-only)
             </td>
           </tr>
         </tbody>
