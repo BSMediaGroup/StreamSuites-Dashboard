@@ -14,7 +14,9 @@ const formatReplayTimestamp = (value) => {
 
 async function loadReplayState() {
   const snapshot = await window.ConfigState?.loadRuntimeSnapshot?.();
-  if (!snapshot || !snapshot.replay) {
+  const replay = snapshot?.replay;
+
+  if (!snapshot || !replay) {
     return {
       available: false,
       overlaySafe: null,
@@ -25,16 +27,24 @@ async function loadReplayState() {
     };
   }
 
-  const replay = snapshot.replay;
+  const overlaySafe = replay.overlay_safe === true || replay.overlaySafe === true;
+  const eventCount =
+    Number.isInteger(replay.event_count) || Number.isInteger(replay.eventCount)
+      ? replay.event_count ?? replay.eventCount
+      : null;
+  const lastEventAt = replay.last_event_at || replay.lastEventAt || null;
+  const platforms = Array.isArray(replay.platforms) ? replay.platforms : [];
+  const mode = replay.mode || null;
+  const available = replay.available === true;
 
   return {
-    available: replay.available === true,
-    overlaySafe: replay.overlaySafe === true,
-    eventCount: Number.isInteger(replay.eventCount) ? replay.eventCount : null,
-    lastEventAt: formatReplayTimestamp(replay.lastEventAt),
-    platforms: Array.isArray(replay.platforms) ? replay.platforms : [],
+    available,
+    overlaySafe,
+    eventCount,
+    lastEventAt: formatReplayTimestamp(lastEventAt),
+    platforms,
     source: snapshot.source || null,
-    mode: replay.mode || null
+    mode
   };
 }
 

@@ -904,6 +904,7 @@ registerView("settings", {
   }
 });
 registerView("chat-replay", {});
+registerView("design", {});
 registerView("updates", {
   onLoad: () => {
     window.UpdatesView?.init?.();
