@@ -127,6 +127,27 @@
     color: #ffffff;
   }
 
+  .ss-replay-status {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .ss-status-card {
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .ss-status-card .label { font-size: 0.82rem; color: #aab4c9; letter-spacing: 0.03em; }
+  .ss-status-card .value { font-weight: 700; letter-spacing: 0.02em; margin-top: 4px; }
+  .ss-status-card .hint { color: #8ea0c6; font-size: 0.85rem; }
+
+  .ss-platform-list { list-style: none; padding-left: 0; margin: 8px 0 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .ss-platform-list li { padding: 6px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); font-size: 0.9rem; }
+
   .ss-chat-input { padding: 12px 0; }
 
   .ss-chat-input-shell {
@@ -369,6 +390,40 @@
 
   <section class="ss-panel">
     <header class="ss-panel-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+      <h2 style="margin:0;">Runtime Replay State</h2>
+      <span class="ss-badge" id="replay-connection-badge">Checking…</span>
+    </header>
+
+    <div class="ss-panel-body">
+      <p class="muted" style="margin-top:0;">Derived directly from <code>runtime_snapshot.replay</code>. No heuristics or file guessing applied.</p>
+      <div class="ss-replay-status">
+        <div class="ss-status-card">
+          <div class="label">Replay availability</div>
+          <div class="value" id="replay-availability">Checking…</div>
+          <div class="hint" id="replay-mode-hint">—</div>
+        </div>
+        <div class="ss-status-card">
+          <div class="label">Overlay safety</div>
+          <div class="value" id="replay-overlay-safe">Not evaluated</div>
+          <div class="hint">Runtime-controlled gate for OBS/browser overlays.</div>
+        </div>
+        <div class="ss-status-card">
+          <div class="label">Event count</div>
+          <div class="value" id="replay-event-count">—</div>
+          <div class="hint">Total events exported in replay snapshot.</div>
+        </div>
+        <div class="ss-status-card">
+          <div class="label">Last event</div>
+          <div class="value" id="replay-last-event">—</div>
+          <div class="hint">Timestamp reported by runtime.</div>
+        </div>
+      </div>
+      <ul class="ss-platform-list" id="replay-platform-list" aria-label="Replay platform coverage"></ul>
+    </div>
+  </section>
+
+  <section class="ss-panel">
+    <header class="ss-panel-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <h2 style="margin:0;">Modes &amp; Controls</h2>
         <div class="ss-mode-toggle" role="group" aria-label="Replay or Live">
@@ -570,6 +625,8 @@
   </span>
 </footer>
 
+<script src="../js/state.js"></script>
+<script src="../js/chatReplay.js"></script>
 <script>
   (() => {
     const themeCard = document.getElementById('theme-card');
@@ -579,6 +636,13 @@
     const windowFrame = document.getElementById('window-preview');
     const overlayFrame = document.getElementById('overlay-preview');
     const basePath = window.location.pathname.includes('/views/') ? './' : 'views/';
+    const replayBadge = document.getElementById('replay-connection-badge');
+    const replayAvailability = document.getElementById('replay-availability');
+    const replayOverlay = document.getElementById('replay-overlay-safe');
+    const replayEventCount = document.getElementById('replay-event-count');
+    const replayLastEvent = document.getElementById('replay-last-event');
+    const replayModeHint = document.getElementById('replay-mode-hint');
+    const replayPlatformList = document.getElementById('replay-platform-list');
 
     const state = {
       theme: themeCard?.querySelector('.element.active')?.dataset.theme || 'default',
@@ -613,6 +677,50 @@
       }
     };
 
+    const renderPlatformCoverage = (platforms = []) => {
+      if (!replayPlatformList) return;
+      replayPlatformList.innerHTML = '';
+
+      if (!Array.isArray(platforms) || platforms.length === 0) {
+        const li = document.createElement('li');
+        li.textContent = 'No replay platforms reported';
+        replayPlatformList.append(li);
+        return;
+      }
+
+      platforms.forEach((platform) => {
+        const li = document.createElement('li');
+        const status = platform.available === false ? 'inactive' : 'active';
+        li.textContent = `${platform.platform} (${status})`;
+        replayPlatformList.append(li);
+      });
+    };
+
+    const hydrateReplayState = async () => {
+      const replayState = await window.ChatReplayPreview?.loadReplayState?.();
+      const connectionLabel = replayState?.source === 'connected' ? 'Connected runtime' : 'Static snapshot';
+      const available = replayState?.available === true;
+      const overlaySafe = replayState?.overlaySafe === true;
+
+      if (replayBadge) replayBadge.textContent = connectionLabel;
+      if (replayAvailability) replayAvailability.textContent = available ? 'Replay available' : 'Replay unavailable';
+      if (replayOverlay) replayOverlay.textContent = overlaySafe ? 'Overlay safe' : 'Overlay blocked by runtime';
+      if (replayEventCount) {
+        replayEventCount.textContent = Number.isInteger(replayState?.eventCount)
+          ? replayState.eventCount
+          : 'not reported';
+      }
+      if (replayLastEvent) {
+        replayLastEvent.textContent =
+          window.StreamSuitesState?.formatTimestamp?.(replayState?.lastEventAt) || replayState?.lastEventAt || 'not reported';
+      }
+      if (replayModeHint) {
+        replayModeHint.textContent = replayState?.mode ? `Mode: ${replayState.mode}` : 'Mode not reported';
+      }
+
+      renderPlatformCoverage(replayState?.platforms);
+    };
+
     themeCard?.addEventListener('click', (event) => {
       const element = event.target.closest('.element');
       if (!element || !themeCard.contains(element)) return;
@@ -642,6 +750,7 @@
 
     setModeButtonState();
     reloadFrames();
+    hydrateReplayState();
   })();
 
 </script>

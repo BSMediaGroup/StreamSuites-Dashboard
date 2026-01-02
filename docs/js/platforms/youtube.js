@@ -24,6 +24,7 @@
     el.configChannel = document.getElementById("yt-config-channel");
     el.configBot = document.getElementById("yt-config-bot");
     el.configSource = document.getElementById("yt-config-source");
+    el.replayFlags = document.getElementById("yt-replay-flags");
 
     /* API quota bars */
     el.quotaDailyFill = document.querySelector(
@@ -146,6 +147,33 @@
     );
   }
 
+  function describeReplayCapability(platformConfig) {
+    if (!platformConfig) return "not reported";
+    if (platformConfig.replay_supported === true) return "Replay supported";
+    if (platformConfig.replay_supported === false) return "Replay unsupported";
+    return "Replay not reported";
+  }
+
+  function describeOverlayCapability(platformConfig) {
+    if (!platformConfig) return "not reported";
+    if (platformConfig.overlay_supported === true) return "Overlay supported";
+    if (platformConfig.overlay_supported === false) return "Overlay unsupported";
+    return "Overlay not reported";
+  }
+
+  function renderReplayFlags(platformConfig) {
+    const target = el.replayFlags || el.runtimeBanner;
+    if (!target) return;
+    const container = el.replayFlags || document.createElement("div");
+    container.classList.add("muted");
+    container.textContent = `${describeReplayCapability(platformConfig)} • ${describeOverlayCapability(platformConfig)}`;
+
+    if (!el.replayFlags && !target.querySelector(".yt-replay-flags")) {
+      container.classList.add("yt-replay-flags");
+      target.appendChild(container);
+    }
+  }
+
   /* ============================================================
      LOCAL CONFIG HYDRATION
      ============================================================ */
@@ -180,6 +208,8 @@
           ? "local creators config"
           : "no creators loaded"
     );
+
+    renderReplayFlags(platformConfig);
   }
 
   /* ============================================================

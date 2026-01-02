@@ -432,7 +432,68 @@
       platforms: normalized,
       system,
       triggers,
-      restartIntent
+      restartIntent,
+      replay: normalizeReplaySnapshot(raw.replay, generatedAt)
+    };
+  }
+
+  function normalizeReplaySnapshot(raw, generatedAt = null) {
+    if (!raw || typeof raw !== "object") return null;
+
+    const available = pickBoolean(raw.available, raw.enabled, raw.active);
+    const overlaySafe = pickBoolean(raw.overlay_safe, raw.overlaySafe);
+    const mode = pickString(raw.mode, raw.state);
+    const eventCount = pickInteger(
+      raw.event_count,
+      raw.events_processed,
+      raw.events?.count,
+      raw.events
+    );
+    const lastEventAt = pickString(
+      raw.last_event_at,
+      raw.last_event,
+      raw.lastEventAt,
+      raw.last_event_time,
+      raw.last_seen,
+      generatedAt
+    );
+
+    const platformsRaw = Array.isArray(raw.platforms)
+      ? raw.platforms
+      : raw.platforms && typeof raw.platforms === "object"
+        ? Object.keys(raw.platforms).map((key) => ({ platform: key, ...(raw.platforms[key] || {}) }))
+        : [];
+
+    const platforms = platformsRaw
+      .map((entry) => normalizeReplayPlatform(entry))
+      .filter(Boolean);
+
+    const replayState = {
+      available,
+      overlaySafe,
+      mode,
+      eventCount,
+      lastEventAt,
+      platforms
+    };
+
+    return Object.values(replayState).some((value) => value !== null && value !== undefined)
+      ? replayState
+      : null;
+  }
+
+  function normalizeReplayPlatform(raw) {
+    if (!raw || typeof raw !== "object") return null;
+
+    const platform = pickString(raw.platform, raw.id, raw.name);
+    if (!platform) return null;
+
+    return {
+      platform,
+      available: pickBoolean(raw.available, raw.enabled, raw.active),
+      overlaySupported: pickBoolean(raw.overlay_supported, raw.overlaySafe, raw.overlay_safe),
+      eventCount: pickInteger(raw.event_count, raw.events),
+      lastEventAt: pickString(raw.last_event_at, raw.last_event, raw.last_seen)
     };
   }
 
@@ -486,7 +547,7 @@
       const hasPlatforms = polled && Object.keys(polled.platforms).length > 0;
       const hasTriggers = polled?.triggers;
       if (polled && (hasPlatforms || hasTriggers)) {
-        cache.runtimeSnapshot = polled;
+        cache.runtimeSnapshot = { ...polled, source: "connected" };
         return deepClone(cache.runtimeSnapshot);
       }
     }
@@ -501,7 +562,7 @@
       const hasPlatforms = refreshed && Object.keys(refreshed.platforms).length > 0;
       const hasTriggers = refreshed?.triggers;
       if (refreshed && (hasPlatforms || hasTriggers)) {
-        cache.runtimeSnapshot = refreshed;
+        cache.runtimeSnapshot = { ...refreshed, source: "connected" };
         return deepClone(cache.runtimeSnapshot);
       }
     }
@@ -511,7 +572,7 @@
 
     const shared = normalizeRuntimeSnapshot(sharedRaw);
 
-    cache.runtimeSnapshot = shared || null;
+    cache.runtimeSnapshot = shared ? { ...shared, source: "static" } : null;
     return shared ? deepClone(cache.runtimeSnapshot) : null;
   }
 
@@ -762,6 +823,14 @@
     return {
       enabled,
       telemetry_enabled: telemetry,
+      replay_supported:
+        entry?.replay_supported === true || entry?.replay_supported === false
+          ? entry.replay_supported
+          : false,
+      overlay_supported:
+        entry?.overlay_supported === true || entry?.overlay_supported === false
+          ? entry.overlay_supported
+          : false,
       notes: typeof entry?.notes === "string" ? entry.notes : ""
     };
   }
