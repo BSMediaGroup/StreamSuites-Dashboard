@@ -203,11 +203,11 @@
 
   .design-badge-stack .ss-badge,
   .design-badge-stack .pill {
-    min-width: 110px;
+    min-width: 94px;
     justify-content: center;
     text-align: center;
-    padding: 9px 16px;
-    font-size: 12px;
+    padding: 8px 14px;
+    font-size: 10.5px;
     line-height: 1.1;
     display: inline-flex;
     align-items: center;
@@ -379,6 +379,210 @@
     display: grid;
     gap: 10px;
   }
+
+  .ss-progress-card {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 10px 12px;
+    transition: border-color 0.2s ease, background 0.2s ease;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .ss-progress-card + .ss-progress-card {
+    margin-top: 4px;
+  }
+
+  .ss-progress-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .ss-progress-row.is-open {
+    border-color: rgba(0, 198, 255, 0.5);
+    background: radial-gradient(circle at 15% 20%, rgba(0, 198, 255, 0.08), rgba(255, 255, 255, 0.02));
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  }
+
+  .ss-progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .ss-progress-main {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .ss-progress-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+  }
+
+  .ss-progress-icon {
+    display: inline-flex;
+    width: 16px;
+    height: 16px;
+    background-color: currentColor;
+    mask: var(--progress-icon) center / contain no-repeat;
+    -webkit-mask: var(--progress-icon) center / contain no-repeat;
+  }
+
+  .ss-progress-right {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .ss-progress-meta {
+    white-space: nowrap;
+  }
+
+  .ss-progress-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+  }
+
+  .ss-progress-toggle span {
+    display: inline-block;
+    transition: transform 0.18s ease;
+  }
+
+  .ss-progress-row.is-open .ss-progress-toggle span {
+    transform: rotate(90deg) translateX(-2px);
+  }
+
+  .ss-skill-description {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+    color: var(--text-secondary);
+  }
+
+  .ss-skill-description-inner {
+    padding: 6px 10px 0 0;
+  }
+
+  .ss-skill-wrapper {
+    width: 100%;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .ss-skill-track {
+    position: relative;
+    width: 100%;
+    height: 3px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .ss-skill-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #00c6ff, #00aaff, #00f6ff);
+    box-shadow: 0 0 6px rgba(0, 170, 255, 0.7), 0 0 14px rgba(0, 170, 255, 0.55);
+  }
+
+  .ss-skill-fill.is-paused {
+    background: linear-gradient(90deg, #ff5f6d, #ffc371);
+    box-shadow: 0 0 6px rgba(255, 119, 119, 0.7), 0 0 14px rgba(255, 196, 113, 0.55);
+  }
+
+  .public-glass-card {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 12px;
+    background: linear-gradient(180deg, rgba(9, 12, 20, 0.92), rgba(9, 12, 20, 0.86));
+    box-shadow: 0 12px 22px rgba(0, 0, 0, 0.28);
+  }
+
+  .public-roadmap-card .ss-progress-label {
+    align-items: flex-start;
+  }
+
+  .public-roadmap-kicker {
+    display: inline-flex;
+    font-size: 12px;
+    color: var(--text-secondary);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .public-roadmap-title {
+    margin: 2px 0;
+  }
+
+  .public-roadmap-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    background: rgba(87, 186, 120, 0.18);
+    border: 1px solid rgba(87, 186, 120, 0.55);
+    color: #c8f4d8;
+  }
+
+  .public-roadmap-status.paused {
+    background: rgba(244, 180, 0, 0.14);
+    border-color: rgba(244, 180, 0, 0.45);
+    color: #f6e4b2;
+  }
+
+  .public-roadmap-progress {
+    width: 100%;
+    height: 12px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .public-roadmap-progress::-webkit-progress-bar {
+    background: transparent;
+  }
+
+  .public-roadmap-progress::-webkit-progress-value {
+    background: linear-gradient(90deg, #57b9ff, #63ffa2);
+  }
+
+  .public-roadmap-progress::-moz-progress-bar {
+    background: linear-gradient(90deg, #57b9ff, #63ffa2);
+  }
+
+  .public-roadmap-progress.is-paused::-webkit-progress-value,
+  .public-roadmap-progress.is-paused::-moz-progress-bar {
+    background: linear-gradient(90deg, #ff5f6d, #ffc371);
+  }
+
+  .public-roadmap-progress.is-glow::-webkit-progress-value,
+  .public-roadmap-progress.is-glow::-moz-progress-bar {
+    box-shadow: 0 0 12px rgba(87, 185, 255, 0.65), 0 0 20px rgba(99, 255, 162, 0.4);
+  }
 </style>
 
 <header class="ss-header">
@@ -531,7 +735,7 @@
         </div>
       </div>
 
-      <div class="design-card full" data-category="cards replay overlay">
+      <div class="design-card half" data-category="cards replay overlay">
         <div class="design-row" style="justify-content: space-between; align-items: center; gap: 10px;">
           <div>
             <h3 style="margin:0;">Chat Window Controls</h3>
@@ -543,7 +747,7 @@
           <iframe
             class="chat-window-frame"
             title="Chat window preview"
-            src="/StreamSuites-Dashboard/docs/views/chat_window.html"
+            src="./chat_window.html"
             loading="lazy"
           ></iframe>
           <p class="design-subnote">Full chat window preview (emoji, post-as, settings) rendered directly from chat_window.html.</p>
@@ -644,19 +848,85 @@
           <article class="public-glass-panel">
             <div class="section-meta">Status bars & progress</div>
             <div class="status-bar-samples">
-              <div class="ss-progress-row">
-                <div class="ss-progress-label"><span>Live sync</span><span class="ss-progress-meta">64%</span></div>
-                <div class="ss-progress"><div class="ss-progress-bar" style="width: 64%;"></div></div>
+              <div class="ss-progress-card ss-progress-row ss-skill-row is-open" data-score="72">
+                <div class="ss-progress-label">
+                  <div class="ss-progress-main">
+                    <span class="ss-progress-title">
+                      <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('../assets/icons/ui/widget.svg')"></span>
+                      Overlay kit delivery
+                    </span>
+                    <span class="muted">Matches dashboard About page skill rows.</span>
+                  </div>
+                  <div class="ss-progress-right">
+                    <span class="ss-progress-meta">7.2 / 10</span>
+                    <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="true" aria-label="Toggle detail">
+                      <span>▸</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="ss-skill-description" aria-hidden="false" style="max-height: 140px;">
+                  <div class="ss-skill-description-inner">
+                    <p class="muted">Full width About page card styling with open detail text.</p>
+                  </div>
+                </div>
+                <div class="ss-skill-wrapper">
+                  <div class="ss-skill-track"><div class="ss-skill-fill" style="width: 72%;"></div></div>
+                </div>
               </div>
-              <div class="ss-progress-row">
-                <div class="ss-progress-label"><span>Replay buffer</span><span class="ss-progress-meta">82%</span></div>
-                <div class="ss-progress"><div class="ss-progress-bar" style="width: 82%; background: linear-gradient(90deg, #57b9ff, #63ffa2);"></div></div>
+
+              <div class="ss-progress-card ss-progress-row ss-skill-row" data-score="28">
+                <div class="ss-progress-label">
+                  <div class="ss-progress-main">
+                    <span class="ss-progress-title">
+                      <span class="ss-progress-icon" aria-hidden="true" style="--progress-icon: url('../assets/icons/ui/dashboard.svg')"></span>
+                      Automation rollout
+                    </span>
+                    <span class="muted">Collapsed About card with paused fill styling.</span>
+                  </div>
+                  <div class="ss-progress-right">
+                    <span class="ss-progress-meta">2.8 / 10</span>
+                    <button class="ss-progress-toggle ss-skill-toggle" type="button" aria-expanded="false" aria-label="Toggle detail">
+                      <span>▸</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="ss-skill-description" aria-hidden="true">
+                  <div class="ss-skill-description-inner">
+                    <p class="muted">Detail remains hidden until toggled.</p>
+                  </div>
+                </div>
+                <div class="ss-skill-wrapper">
+                  <div class="ss-skill-track"><div class="ss-skill-fill is-paused" style="width: 28%;"></div></div>
+                </div>
               </div>
-              <div class="ss-skill-wrapper" data-skill-target="72">
-                <div class="ss-skill-track"><div class="ss-skill-fill" style="width: 0%;"></div></div>
-              </div>
-              <progress class="public-roadmap-progress is-glow" max="100" value="48" aria-label="Roadmap progress"></progress>
-              <progress class="public-roadmap-progress is-paused" max="100" value="20" aria-label="Paused status"></progress>
+
+              <article class="public-glass-card public-roadmap-card ss-progress-row" data-score="48" data-id="public-roadmap" role="button" tabindex="0">
+                <div class="ss-progress-label">
+                  <div class="ss-progress-main">
+                    <span class="public-roadmap-kicker">Public roadmap</span>
+                    <h3 class="public-roadmap-title">Changelog progress sample</h3>
+                    <p class="muted">Public changelog progress bar (glow variant).</p>
+                  </div>
+                  <div class="ss-progress-right">
+                    <span class="public-roadmap-status">Active</span>
+                  </div>
+                </div>
+                <progress class="public-roadmap-progress is-glow" max="100" value="48" aria-label="Roadmap progress"></progress>
+              </article>
+
+              <article class="public-glass-card public-roadmap-card ss-progress-row" data-score="20" data-id="public-roadmap-paused" role="button" tabindex="0">
+                <div class="ss-progress-label">
+                  <div class="ss-progress-main">
+                    <span class="public-roadmap-kicker">Public roadmap</span>
+                    <h3 class="public-roadmap-title">Paused milestone</h3>
+                    <p class="muted">Matches the paused bar from public pages.</p>
+                  </div>
+                  <div class="ss-progress-right">
+                    <span class="public-roadmap-status paused">Paused</span>
+                  </div>
+                </div>
+                <progress class="public-roadmap-progress is-paused" max="100" value="20" aria-label="Paused status"></progress>
+              </article>
             </div>
           </article>
         </div>
@@ -742,8 +1012,8 @@
           <div class="design-shell">
             <header id="app-header">
               <div class="header-left">
-                <a href="https://bsmediagroup.github.io/StreamSuites-Dashboard/lander.html">
-                  <img src="/StreamSuites-Dashboard/docs/assets/logos/LOG2-3D-SML.png" alt="StreamSuites Logo" />
+                <a href="../lander.html">
+                  <img src="../assets/logos/LOG2-3D-SML.png" alt="StreamSuites Logo" />
                   <h1 class="app-title">StreamSuites</h1>
                   <span class="dashboard-badge" aria-label="Admin dashboard badge">
                     ADMIN DASHBOARD
@@ -760,7 +1030,7 @@
             <footer id="app-footer">
               <div class="footer-left">
                 <img
-                  src="/StreamSuites-Dashboard/docs/assets/icons/discord-silver.svg"
+                  src="../assets/icons/discord-silver.svg"
                   alt="Discord"
                   class="discord-icon"
                 />
@@ -776,7 +1046,7 @@
                   © 2026 Brainstream Media Group
                 </a>
                 <span class="footer-sep">•</span>
-                <a href="/StreamSuites-Dashboard/docs/home.html">Public Home</a>
+                <a href="../home.html">Public Home</a>
               </div>
 
               <div class="footer-right">
@@ -861,9 +1131,9 @@
               </label>
               <div class="header-actions">
                 <span class="pill">public beta</span>
-                <a class="quiet-link" href="/StreamSuites-Dashboard/docs/home.html">Home</a>
-                <a class="quiet-link" href="/StreamSuites-Dashboard/docs/scoreboards.html">Scoreboards</a>
-                <a class="cta-link" href="/StreamSuites-Dashboard/docs/clips.html">View clips</a>
+                <a class="quiet-link" href="../home.html">Home</a>
+                <a class="quiet-link" href="../scoreboards.html">Scoreboards</a>
+                <a class="cta-link" href="../clips.html">View clips</a>
               </div>
             </div>
           </div>
@@ -915,7 +1185,7 @@
             <div>twitch.svg</div>
           </div>
           <div class="icon-variant">
-            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/twitch-0.svg" alt="Twitch muted" /></div>
+            <div class="icon-chip"><img src="../assets/icons/twitch-0.svg" alt="Twitch muted" /></div>
             <div>twitch-0.svg</div>
           </div>
           <div class="icon-variant dark">
@@ -939,7 +1209,7 @@
             <div>obs.svg</div>
           </div>
           <div class="icon-variant">
-            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/obs-0.svg" alt="OBS muted" /></div>
+            <div class="icon-chip"><img src="../assets/icons/obs-0.svg" alt="OBS muted" /></div>
             <div>obs-0.svg</div>
           </div>
           <div class="icon-variant dark">
@@ -951,7 +1221,7 @@
             <div>kick.svg</div>
           </div>
           <div class="icon-variant">
-            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/kick-0.svg" alt="Kick muted" /></div>
+            <div class="icon-chip"><img src="../assets/icons/kick-0.svg" alt="Kick muted" /></div>
             <div>kick-0.svg</div>
           </div>
           <div class="icon-variant dark">
@@ -1023,7 +1293,7 @@
     const popoutBtn = document.getElementById('chat-popout');
     if (popoutBtn) {
       popoutBtn.addEventListener('click', () => {
-        const popoutUrl = '/StreamSuites-Dashboard/docs/views/chat_window.html';
+        const popoutUrl = './chat_window.html';
         window.open(popoutUrl, 'chatWindowPreview', 'width=560,height=900,noopener,noreferrer');
       });
     }

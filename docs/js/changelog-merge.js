@@ -24,8 +24,13 @@ function resolveBasePath() {
 
   const parts = window.location.pathname.split("/").filter(Boolean);
   if (!parts.length) return "";
-  const root = parts[0] === "docs" ? "docs" : parts[0];
-  return `/${root}`;
+  const docsIndex = parts.indexOf("docs");
+  if (docsIndex === -1) {
+    return `/${parts[0]}`;
+  }
+
+  const rootParts = parts.slice(0, docsIndex + 1);
+  return `/${rootParts.join("/")}`;
 }
 
 function normalizePath(basePath, relative) {
