@@ -47,17 +47,22 @@
           <tr>
             <td>Twitter Service Enabled</td>
             <td class="align-right">
-              <label class="ss-checkbox-field" aria-label="Twitter service toggle">
-                <span class="checkbox-wrapper">
-                  <input
-                    type="checkbox"
-                    disabled
-                    data-service="twitter"
-                  />
-                  <div class="checkbox"></div>
-                </span>
-                <span class="sr-only">Twitter service enabled</span>
+              <label class="switch-button" aria-label="Twitter service toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input
+                      type="checkbox"
+                      disabled
+                      data-service="twitter"
+                    />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
               </label>
+              <span class="sr-only">Twitter service enabled</span>
             </td>
           </tr>
 

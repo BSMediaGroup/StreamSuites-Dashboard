@@ -47,13 +47,18 @@
           <tr>
             <td>Pilled Service Enabled</td>
             <td class="align-right">
-              <label class="ss-checkbox-field" aria-label="Pilled global service toggle">
-                <span class="checkbox-wrapper">
-                  <input type="checkbox" disabled data-service="pilled" />
-                  <div class="checkbox"></div>
-                </span>
-                <span class="sr-only">Pilled service enabled</span>
+              <label class="switch-button" aria-label="Pilled global service toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input type="checkbox" disabled data-service="pilled" />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
               </label>
+              <span class="sr-only">Pilled service enabled</span>
             </td>
           </tr>
         </tbody>

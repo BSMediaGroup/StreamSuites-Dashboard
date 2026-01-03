@@ -102,12 +102,10 @@
       </div>
 
       <div class="ss-form-row checkbox-row">
-        <label class="ss-checkbox-field">
-          <span class="checkbox-wrapper">
-            <input type="checkbox" disabled />
-            <div class="checkbox"></div>
-          </span>
-          <span class="checkbox-label-text">Enable verbose logging</span>
+        <label class="ss-checkbox-wrapper">
+          <input type="checkbox" disabled />
+          <div class="ss-checkbox"></div>
+          <span class="ss-checkbox-label">Enable verbose logging</span>
         </label>
       </div>
 
@@ -133,12 +131,10 @@
       </p>
 
       <div class="ss-form-row checkbox-row">
-        <label for="platform-polling-toggle" class="ss-checkbox-field">
-          <span class="checkbox-wrapper">
-            <input type="checkbox" id="platform-polling-toggle" />
-            <div class="checkbox"></div>
-          </span>
-          <span class="checkbox-label-text">Platform polling enabled (applies on restart)</span>
+        <label class="ss-checkbox-wrapper">
+          <input type="checkbox" id="platform-polling-toggle" />
+          <div class="ss-checkbox"></div>
+          <span class="ss-checkbox-label">Platform polling enabled (applies on restart)</span>
         </label>
       </div>
 
@@ -195,23 +191,33 @@
           <tr data-platform-row="youtube">
             <td>YouTube</td>
             <td class="align-right">
-              <label class="ss-checkbox-field" aria-label="YouTube service toggle">
-                <span class="checkbox-wrapper">
-                  <input type="checkbox" data-service="youtube" data-field="enabled" />
-                  <div class="checkbox"></div>
-                </span>
-                <span class="sr-only">YouTube Service Enabled</span>
+              <label class="switch-button" aria-label="YouTube service toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input type="checkbox" data-service="youtube" data-field="enabled" />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
               </label>
+              <span class="sr-only">YouTube Service Enabled</span>
               <div class="ss-toggle-note">Applies on next restart</div>
             </td>
             <td class="align-right">
-              <label class="ss-checkbox-field" aria-label="YouTube telemetry toggle">
-                <span class="checkbox-wrapper">
-                  <input type="checkbox" data-field="telemetry_enabled" />
-                  <div class="checkbox"></div>
-                </span>
-                <span class="sr-only">YouTube telemetry enabled</span>
+              <label class="switch-button" aria-label="YouTube telemetry toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input type="checkbox" data-field="telemetry_enabled" />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
               </label>
+              <span class="sr-only">YouTube telemetry enabled</span>
             </td>
             <td class="align-right">
               <span class="muted" data-platform-status="youtube">Awaiting telemetry</span>
@@ -230,23 +236,33 @@
           <tr data-platform-row="twitch">
             <td>Twitch</td>
             <td class="align-right">
-              <label class="ss-checkbox-field" aria-label="Twitch service toggle">
-                <span class="checkbox-wrapper">
-                  <input type="checkbox" data-service="twitch" data-field="enabled" />
-                  <div class="checkbox"></div>
-                </span>
-                <span class="sr-only">Twitch Service Enabled</span>
+              <label class="switch-button" aria-label="Twitch service toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input type="checkbox" data-service="twitch" data-field="enabled" />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
               </label>
+              <span class="sr-only">Twitch Service Enabled</span>
               <div class="ss-toggle-note">Applies on next restart</div>
             </td>
             <td class="align-right">
-              <label class="ss-checkbox-field" aria-label="Twitch telemetry toggle">
-                <span class="checkbox-wrapper">
-                  <input type="checkbox" data-field="telemetry_enabled" />
-                  <div class="checkbox"></div>
-                </span>
-                <span class="sr-only">Twitch telemetry enabled</span>
+              <label class="switch-button" aria-label="Twitch telemetry toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input type="checkbox" data-field="telemetry_enabled" />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
               </label>
+              <span class="sr-only">Twitch telemetry enabled</span>
             </td>
             <td class="align-right">
               <span class="muted" data-platform-status="twitch">Awaiting telemetry</span>
@@ -265,23 +281,33 @@
           <tr data-platform-row="kick">
             <td>Kick</td>
             <td class="align-right">
-              <label class="ss-checkbox-field" aria-label="Kick service toggle">
-                <span class="checkbox-wrapper">
-                  <input type="checkbox" data-service="kick" data-field="enabled" />
-                  <div class="checkbox"></div>
-                </span>
-                <span class="sr-only">Kick Service Enabled</span>
+              <label class="switch-button" aria-label="Kick service toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input type="checkbox" data-service="kick" data-field="enabled" />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
               </label>
+              <span class="sr-only">Kick Service Enabled</span>
               <div class="ss-toggle-note">Applies on next restart</div>
             </td>
             <td class="align-right">
-              <label class="ss-checkbox-field" aria-label="Kick telemetry toggle">
-                <span class="checkbox-wrapper">
-                  <input type="checkbox" data-field="telemetry_enabled" />
-                  <div class="checkbox"></div>
-                </span>
-                <span class="sr-only">Kick telemetry enabled</span>
+              <label class="switch-button" aria-label="Kick telemetry toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input type="checkbox" data-field="telemetry_enabled" />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
               </label>
+              <span class="sr-only">Kick telemetry enabled</span>
             </td>
             <td class="align-right">
               <span class="muted" data-platform-status="kick">Awaiting telemetry</span>
@@ -300,29 +326,39 @@
           <tr data-platform-row="pilled">
             <td>Pilled (Planned)</td>
             <td class="align-right">
-              <label class="ss-checkbox-field" aria-label="Pilled service toggle">
-                <span class="checkbox-wrapper">
-                  <input
-                    type="checkbox"
-                    data-service="pilled"
-                    data-field="enabled"
-                    data-locked="true"
-                    disabled
-                  />
-                  <div class="checkbox"></div>
-                </span>
-                <span class="sr-only">Pilled Service Enabled</span>
+              <label class="switch-button" aria-label="Pilled service toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input
+                      type="checkbox"
+                      data-service="pilled"
+                      data-field="enabled"
+                      data-locked="true"
+                      disabled
+                    />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
               </label>
+              <span class="sr-only">Pilled Service Enabled</span>
               <div class="ss-toggle-note">Planned ingest-only; locked</div>
             </td>
             <td class="align-right">
-              <label class="ss-checkbox-field" aria-label="Pilled telemetry toggle">
-                <span class="checkbox-wrapper">
-                  <input type="checkbox" data-field="telemetry_enabled" disabled />
-                  <div class="checkbox"></div>
-                </span>
-                <span class="sr-only">Pilled telemetry enabled</span>
+              <label class="switch-button" aria-label="Pilled telemetry toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input type="checkbox" data-field="telemetry_enabled" disabled />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
               </label>
+              <span class="sr-only">Pilled telemetry enabled</span>
             </td>
             <td class="align-right">
               <span class="muted" data-platform-status="pilled">Planned</span>
@@ -342,29 +378,39 @@
           <tr data-platform-row="rumble">
             <td>Rumble</td>
             <td class="align-right">
-              <label class="ss-checkbox-field" aria-label="Rumble service toggle">
-                <span class="checkbox-wrapper">
-                  <input
-                    type="checkbox"
-                    data-service="rumble"
-                    data-field="enabled"
-                    data-locked="true"
-                    disabled
-                  />
-                  <div class="checkbox"></div>
-                </span>
-                <span class="sr-only">Rumble Service Enabled</span>
+              <label class="switch-button" aria-label="Rumble service toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input
+                      type="checkbox"
+                      data-service="rumble"
+                      data-field="enabled"
+                      data-locked="true"
+                      disabled
+                    />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
               </label>
+              <span class="sr-only">Rumble Service Enabled</span>
               <div class="ss-toggle-note paused">Paused (runtime-controlled)</div>
             </td>
             <td class="align-right">
-              <label class="ss-checkbox-field" aria-label="Rumble telemetry toggle">
-                <span class="checkbox-wrapper">
-                  <input type="checkbox" data-field="telemetry_enabled" data-locked="true" disabled />
-                  <div class="checkbox"></div>
-                </span>
-                <span class="sr-only">Rumble telemetry enabled</span>
+              <label class="switch-button" aria-label="Rumble telemetry toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input type="checkbox" data-field="telemetry_enabled" data-locked="true" disabled />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
               </label>
+              <span class="sr-only">Rumble telemetry enabled</span>
             </td>
             <td class="align-right">
               <span class="muted" data-platform-status="rumble">Awaiting telemetry</span>
@@ -383,22 +429,32 @@
           <tr>
             <td>Twitter</td>
             <td class="align-right">
-              <label class="ss-checkbox-field" aria-label="Twitter service toggle">
-                <span class="checkbox-wrapper">
-                  <input type="checkbox" disabled data-service="twitter" />
-                  <div class="checkbox"></div>
-                </span>
-                <span class="sr-only">Twitter Service Enabled</span>
+              <label class="switch-button" aria-label="Twitter service toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input type="checkbox" disabled data-service="twitter" />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
               </label>
+              <span class="sr-only">Twitter Service Enabled</span>
             </td>
             <td class="align-right">
-              <label class="ss-checkbox-field" aria-label="Twitter telemetry toggle">
-                <span class="checkbox-wrapper">
-                  <input type="checkbox" disabled />
-                  <div class="checkbox"></div>
-                </span>
-                <span class="sr-only">Twitter telemetry enabled</span>
+              <label class="switch-button" aria-label="Twitter telemetry toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input type="checkbox" disabled />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
               </label>
+              <span class="sr-only">Twitter telemetry enabled</span>
             </td>
             <td class="align-right">
               <span class="muted" data-platform-status="twitter">Runtime-owned</span>
@@ -420,23 +476,33 @@
               <span class="muted">(control-plane)</span>
             </td>
             <td class="align-right">
-              <label class="ss-checkbox-field" aria-label="Discord service toggle">
-                <span class="checkbox-wrapper">
-                  <input type="checkbox" data-service="discord" data-field="enabled" />
-                  <div class="checkbox"></div>
-                </span>
-                <span class="sr-only">Discord Service Enabled</span>
+              <label class="switch-button" aria-label="Discord service toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input type="checkbox" data-service="discord" data-field="enabled" />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
               </label>
+              <span class="sr-only">Discord Service Enabled</span>
               <div class="ss-toggle-note">Applies on next restart</div>
             </td>
             <td class="align-right">
-              <label class="ss-checkbox-field" aria-label="Discord telemetry toggle">
-                <span class="checkbox-wrapper">
-                  <input type="checkbox" data-field="telemetry_enabled" />
-                  <div class="checkbox"></div>
-                </span>
-                <span class="sr-only">Discord telemetry enabled</span>
+              <label class="switch-button" aria-label="Discord telemetry toggle">
+                <div class="switch-scale">
+                  <div class="switch-outer">
+                    <input type="checkbox" data-field="telemetry_enabled" />
+                    <div class="ss-switch-inner">
+                      <span class="ss-switch-toggle"></span>
+                      <span class="ss-switch-indicator"></span>
+                    </div>
+                  </div>
+                </div>
               </label>
+              <span class="sr-only">Discord telemetry enabled</span>
             </td>
             <td class="align-right">
               <span class="muted" data-platform-status="discord">Awaiting telemetry</span>
@@ -528,12 +594,10 @@
       </div>
 
       <div class="ss-form-row checkbox-row">
-        <label class="ss-checkbox-field">
-          <span class="checkbox-wrapper">
-            <input type="checkbox" disabled />
-            <div class="checkbox"></div>
-          </span>
-          <span class="checkbox-label-text">Enable global chat responses</span>
+        <label class="ss-checkbox-wrapper">
+          <input type="checkbox" disabled />
+          <div class="ss-checkbox"></div>
+          <span class="ss-checkbox-label">Enable global chat responses</span>
         </label>
       </div>
 
@@ -551,22 +615,18 @@
     <div class="ss-panel-body">
 
       <div class="ss-form-row checkbox-row">
-        <label class="ss-checkbox-field">
-          <span class="checkbox-wrapper">
-            <input type="checkbox" disabled />
-            <div class="checkbox"></div>
-          </span>
-          <span class="checkbox-label-text">Require confirmation for destructive actions</span>
+        <label class="ss-checkbox-wrapper">
+          <input type="checkbox" disabled />
+          <div class="ss-checkbox"></div>
+          <span class="ss-checkbox-label">Require confirmation for destructive actions</span>
         </label>
       </div>
 
       <div class="ss-form-row checkbox-row">
-        <label class="ss-checkbox-field">
-          <span class="checkbox-wrapper">
-            <input type="checkbox" disabled />
-            <div class="checkbox"></div>
-          </span>
-          <span class="checkbox-label-text">Lock dashboard to read-only mode</span>
+        <label class="ss-checkbox-wrapper">
+          <input type="checkbox" disabled />
+          <div class="ss-checkbox"></div>
+          <span class="ss-checkbox-label">Lock dashboard to read-only mode</span>
         </label>
       </div>
 
