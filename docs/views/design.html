@@ -625,6 +625,125 @@
       </div>
 
       <div class="design-card">
+        <h3>Tables & Toolbars</h3>
+        <div class="design-table-wrap">
+          <div class="table-toolbar">
+            <div class="table-toolbar-left">
+              <input type="search" class="ss-input" placeholder="Search rows" />
+            </div>
+            <div class="table-toolbar-right">
+              <span class="design-subnote">Pagination shown as pill group</span>
+            </div>
+          </div>
+          <table class="ss-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th class="align-right">State</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Primary row</td>
+                <td class="align-right"><span class="ss-badge">Active</span></td>
+                <td>Standard table spacing</td>
+              </tr>
+              <tr>
+                <td>Secondary row</td>
+                <td class="align-right"><span class="ss-badge ss-badge-warning">Pending</span></td>
+                <td>Supports inline controls</td>
+              </tr>
+            </tbody>
+          </table>
+          <table class="ss-table ss-table-compact" style="margin-top: 8px;">
+            <thead>
+              <tr>
+                <th>Compact name</th>
+                <th class="align-right">Status</th>
+                <th>Snippet</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Overlay cell</td>
+                <td class="align-right"><span class="ss-badge ss-badge-danger">Blocked</span></td>
+                <td>Compact density</td>
+              </tr>
+              <tr>
+                <td>Replay cell</td>
+                <td class="align-right"><span class="ss-badge">Allowed</span></td>
+                <td>For chat overlays</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="design-table-note">Compact rows: add <code>.ss-table-compact</code> for tighter overlays and admin lists.</div>
+        </div>
+      </div>
+
+      <div class="design-card">
+        <h3>Headers & Footers</h3>
+        <div class="design-footer-demos">
+          <div class="design-shell">
+            <header class="ss-header" style="padding: 10px 12px;">
+              <div class="ss-header-left">
+                <h3 style="margin:0;">Dashboard header</h3>
+              </div>
+              <div class="ss-header-right">
+                <span class="ss-badge">Admin</span>
+              </div>
+            </header>
+            <footer class="ss-footer" style="padding: 8px 12px;">
+              <span class="muted">Dashboard footer links</span>
+            </footer>
+          </div>
+          <div class="design-shell">
+            <header class="public-header">
+              <div class="brand">Public header</div>
+              <nav class="public-menu">
+                <a class="active" href="#">Overview</a>
+                <a href="#">Tools</a>
+                <a href="#">Support</a>
+              </nav>
+            </header>
+            <footer class="public-footer">
+              <div class="footer-left">Public footer</div>
+              <div class="footer-right">Links</div>
+            </footer>
+          </div>
+        </div>
+      </div>
+
+      <div class="design-card">
+        <h3>Navigation & Mobile Menus</h3>
+        <div class="design-stack">
+          <div class="design-nav-demo">
+            <div class="design-subnote">Hamburger toggle (.nav-toggle)</div>
+            <input type="checkbox" id="demo-nav-toggle" class="nav-toggle" aria-label="Toggle navigation" />
+            <label class="hamburger nav-toggle-trigger" for="demo-nav-toggle">
+              <span></span>
+              <span></span>
+              <span></span>
+            </label>
+            <ul>
+              <li><a class="active" href="#">Dashboard</a></li>
+              <li><a href="#">Creators</a></li>
+              <li><a href="#">Settings</a></li>
+            </ul>
+          </div>
+          <div class="design-nav-demo">
+            <div class="design-subnote">Public menu (.public-menu)</div>
+            <nav class="public-menu">
+              <a class="active" href="#">Home</a>
+              <a href="#">Scoreboards</a>
+              <a href="#">Clips</a>
+              <a href="#">Polls</a>
+            </nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="design-card">
         <h3>Icons</h3>
         <div class="design-icon-grid">
           <div class="design-icon"><img src="assets/icons/youtube.svg" alt="YouTube" />YouTube</div>
