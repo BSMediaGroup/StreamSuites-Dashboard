@@ -1,8 +1,9 @@
 <style>
   .design-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 16px;
+    align-items: start;
   }
 
   .design-card {
@@ -270,16 +271,20 @@
     display: none;
   }
 
+  .design-card[data-tags~="toggles"] {
+    align-items: flex-start;
+  }
+
   .design-chat-preview {
-    min-height: 360px;
+    min-height: 620px;
   }
 
   .design-chat-preview .chat-window-body {
-    min-height: 260px;
+    min-height: 420px;
   }
 
   .design-chat-preview .live-chat-input textarea {
-    min-height: 120px;
+    min-height: 180px;
   }
 
   .design-chat-preview .chat-message-list {
@@ -338,6 +343,7 @@
     justify-content: flex-start;
     align-items: flex-start;
     gap: 16px;
+    width: 100%;
   }
 
   .design-icon {
@@ -347,6 +353,69 @@
   .chat-window-sample .menu-panel[hidden],
   .chat-window-sample .emoji-menu[hidden] {
     display: none;
+  }
+
+  .design-shell .public-menu-group .hamburger {
+    display: inline-flex;
+  }
+
+  .design-shell .public-menu-group .header-actions {
+    display: inline-flex;
+  }
+
+  .icon-variant-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+  }
+
+  .icon-variant {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    background: var(--bg-panel);
+  }
+
+  .icon-variant .icon-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: var(--bg-panel-alt);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .icon-variant img {
+    width: 22px;
+    height: 22px;
+  }
+
+  .icon-variant.dark {
+    background: linear-gradient(180deg, rgba(9, 12, 20, 0.9), rgba(9, 12, 20, 0.8));
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+  }
+
+  .glass-button-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .status-bar-samples {
+    display: grid;
+    gap: 10px;
   }
 </style>
 
@@ -501,96 +570,251 @@
       </div>
 
       <div class="design-card wide" data-tags="cards replay overlay">
-        <h3>Chat Window Controls</h3>
-        <p class="muted" style="margin:0;">Live/replay composer styles from chat_window.html.</p>
-        <div class="chat-window-sample design-chat-preview">
-          <div class="chat-window-header">
-            <div class="chat-title">Live Chat Window</div>
+        <div class="design-row" style="justify-content: space-between; align-items: center; gap: 10px;">
+          <div>
+            <h3 style="margin:0;">Chat Window Controls</h3>
+            <p class="muted" style="margin:2px 0 0 0;">Live/replay composer styles from chat_window.html.</p>
+          </div>
+          <button id="chat-popout" class="ss-btn ss-btn-secondary" type="button">Pop-out preview</button>
+        </div>
+        <div class="chat-window-sample design-chat-preview window-shell">
+          <div class="window-header">
+            <div class="title">Live Chat Window</div>
             <div class="header-actions">
-              <select class="theme-select" aria-label="Switch chat theme">
-                <option>Default</option>
-                <option>Slate</option>
-                <option>Midnight</option>
-                <option>Light</option>
+              <select class="theme-select" id="live-theme-select" aria-label="Switch chat theme">
+                <option value="default">Default (Muted Dark)</option>
+                <option value="slate">Slate</option>
+                <option value="midnight">Midnight</option>
+                <option value="light">Light</option>
               </select>
-              <span class="badge">Live</span>
-              <button class="settings-toggle" type="button" aria-label="Settings" aria-expanded="false">
-                <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor"><path d="M388-80 368-206q-19-7-40-19t-37-25l-118 54-93-164 108-79q-2-9-2.5-20.5T185-480q0-9 .5-20.5T188-521L80-600l93-164 118 54q16-13 37-25t40-18l20-127h184l20 126q19 7 40.5 18.5T669-710l118-54 93 164-108 77q2 10 2.5 21.5t.5 21.5q0 10-.5 21t-2.5 21l108 78-93 164-118-54q-16 13-36.5 25.5T592-206L572-80H388Zm92-270q54 0 92-38t38-92q0-54-38-92t-92-38q-54 0-92 38t-38 92q0 54 38 92t92 38Z"/></svg>
+              <span class="badge" id="mode-pill">Live</span>
+              <button class="settings-toggle" id="settings-toggle" aria-label="Settings">
+                <svg xmlns="http://www.w3.org/2000/svg" height="22" viewBox="0 -960 960 960" width="22" fill="currentColor"><path d="M388-80 368-206q-19-7-40-19t-37-25l-118 54-93-164 108-79q-2-9-2.5-20.5T185-480q0-9 .5-20.5T188-521L80-600l93-164 118 54q16-13 37-25t40-18l20-127h184l20 126q19 7 40.5 18.5T669-710l118-54 93 164-108 77q2 10 2.5 21.5t.5 21.5q0 10-.5 21t-2.5 21l108 78-93 164-118-54q-16 13-36.5 25.5T592-206L572-80H388Zm92-270q54 0 92-38t38-92q0-54-38-92t-92-38q-54 0-92 38t-38 92q0 54 38 92t92 38Z"/></svg>
               </button>
-              <div class="menu-panel" style="right: 0; top: 54px;" hidden>
-                <div class="menu-title">Settings</div>
-                <button type="button" class="menu-item">Account (placeholder)</button>
-                <button type="button" class="menu-item">Hotkeys (placeholder)</button>
-                <button type="button" class="menu-item">Moderation (placeholder)</button>
-                <button type="button" class="menu-item">Appearance (placeholder)</button>
-                <hr class="menu-divider" />
-                <button type="button" class="menu-item">About (placeholder)</button>
-              </div>
+            </div>
+            <div id="settings-menu" class="menu-panel" hidden>
+              <div class="menu-title">Settings</div>
+              <button type="button" class="menu-item">Account (placeholder)</button>
+              <button type="button" class="menu-item">Hotkeys (placeholder)</button>
+              <button type="button" class="menu-item">Moderation (placeholder)</button>
+              <button type="button" class="menu-item">Appearance (placeholder)</button>
+              <hr class="menu-divider" />
+              <button type="button" class="menu-item">About (placeholder)</button>
             </div>
           </div>
 
-          <div class="chat-window-body">
-            <div class="chat-message-list">
-              <div class="chat-message">
-                <div class="chat-avatar">AM</div>
-                <div class="chat-bubble">
-                  <div class="meta"><span class="badge">Mod</span><span>Alex</span><span>18:32</span></div>
-                  <div class="message">Reminder: keep overlays synced across platforms. Replay preview is linked.</div>
+          <div class="timeline" aria-label="Live chat placeholder">
+            <div class="message">
+              <div class="avatar" aria-hidden="true">
+                <img src="../assets/placeholders/daniel.png" alt="" />
+              </div>
+              <div class="header-row">
+                <div class="author-stack">
+                  <span class="author">
+                    creator_live
+                    <span class="role-badge" title="Pro User" data-label="PRO">
+                      <img src="../assets/icons/prouser.svg" alt="Pro user" />
+                    </span>
+                  </span>
+                  <span class="timestamp">00:14:22</span>
                 </div>
               </div>
-              <div class="chat-message">
-                <div class="chat-avatar">BR</div>
-                <div class="chat-bubble">
-                  <div class="meta"><span class="badge">Live</span><span>Bea</span><span>18:33</span></div>
-                  <div class="message">Queued the highlight reel. Ready to post on send.</div>
-                </div>
-              </div>
+              <span class="platform" aria-label="YouTube">
+                <img src="../assets/icons/youtube.svg" alt="YouTube" />
+                YouTube
+              </span>
+              <div class="text">Incoming live messages render with the same badges and avatar alignment used in the overlay preview.</div>
             </div>
-            <div class="live-chat-input">
-              <textarea placeholder="Type a live message"></textarea>
 
-              <div class="chat-postas">
-                <button class="postas-toggle" type="button" aria-label="Post as" aria-expanded="false">
-                  <span class="postas-icon" aria-hidden="true"></span>
-                </button>
-                <div class="menu-panel" hidden>
-                  <div class="menu-title">Post as</div>
-                  <button class="menu-item" type="button" disabled>Post to All</button>
-                  <button class="menu-item" type="button" disabled>YouTube</button>
-                  <button class="menu-item" type="button" disabled>Twitch</button>
-                  <button class="menu-item" type="button" disabled>Discord</button>
-                  <button class="menu-item" type="button">Login</button>
-                  <hr class="menu-divider" />
-                  <button class="menu-item" type="button">Reconnect</button>
-                </div>
+            <div class="message">
+              <div class="avatar" aria-hidden="true">
+                <img src="../assets/placeholders/daniel.png" alt="" />
               </div>
+              <div class="header-row">
+                <div class="author-stack">
+                  <span class="author">
+                    Daniel Clancy
+                    <span class="role-pill" title="Admin">ADMIN</span>
+                    <span class="role-badge" title="Moderator" data-label="MOD">
+                      <img src="../assets/icons/mod.svg" alt="Moderator" />
+                    </span>
+                    <span class="role-badge" title="Pro User" data-label="PRO">
+                      <img src="../assets/icons/prouser.svg" alt="Pro user" />
+                    </span>
+                  </span>
+                  <span class="timestamp">00:15:08</span>
+                </div>
+                <button class="moderation-btn" data-moderation="shield">…</button>
+              </div>
+              <span class="platform" aria-label="Discord">
+                <img src="../assets/icons/discord.svg" alt="Discord" />
+                Discord
+              </span>
+              <div class="text">Daniel carries admin, mod, and pro badges to verify multi-badge rendering without overlap.</div>
+            </div>
 
-              <div class="chat-input-toolbar">
-                <button class="emoji-btn emoji-toggle" type="button" aria-label="Emoji" aria-expanded="false">
-                  <svg viewBox="0 0 960 960" aria-hidden="true" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M480 699q66 0 121.5-35.5T682 567H278q26 61 81 96.5T480 699ZM302 427l45-45 45 45 36-36-81-81-81 81 36 36Zm267 0 45-45 45 45 36-36-81-81-81 81 36 36ZM480 880q-83 0-156-31.5T197 763q-54-54-85.5-127T80 480q0-83 31.5-156T197 197q54-54 127-85.5T480 80q83 0 156 31.5T763 197q54 54 85.5 127T880 480q0 83-31.5 156T763 763q-54 54-127 85.5T480 880Zm0-400Zm0 340q142.38 0 241.19-98.81Q820 621.37 820 480q0-142.38-98.81-241.19T480 140q-142.37 0-241.19 98.81Q140 337.62 140 480q0 142.37 98.81 241.19Q337.63 780 480 780Z" />
-                  </svg>
-                </button>
-                <div class="emoji-menu" hidden>
-                  <button type="button">😊</button>
-                  <button type="button">🔥</button>
-                  <button type="button">❤️</button>
-                  <button type="button">👍</button>
-                  <button type="button">🙌</button>
-                  <button type="button">🥳</button>
+            <div class="message">
+              <div class="avatar avatar-fallback" aria-hidden="true"></div>
+              <div class="header-row">
+                <div class="author-stack">
+                  <span class="author">
+                    mod_team
+                    <span class="role-badge" title="Moderator" data-label="MOD">
+                      <img src="../assets/icons/mod.svg" alt="Moderator" />
+                    </span>
+                  </span>
+                  <span class="timestamp">00:17:36</span>
                 </div>
-                <button class="send-btn" type="button" aria-label="Send">
-                  <svg viewBox="0 0 960 960" aria-hidden="true" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M120 800V555l302-75-302-77V160l760 320L120 800Z" />
-                  </svg>
-                </button>
+                <button class="moderation-btn" data-moderation="shield">…</button>
               </div>
+              <span class="platform" aria-label="Twitch">
+                <img src="../assets/icons/twitch.svg" alt="Twitch" />
+                Twitch
+              </span>
+              <div class="text">Live mode retains the fallback silhouette when no avatar URL is present.</div>
             </div>
           </div>
+
+          <div class="live-input-wrapper" id="live-input-wrapper" aria-label="Chat composer">
+            <div class="live-input-shell">
+              <div class="live-chat-input">
+                <textarea placeholder="Type a live message"></textarea>
+
+                <div class="chat-postas">
+                  <button id="postas-toggle" aria-label="Post as">
+                    <span class="postas-icon" aria-hidden="true"></span>
+                  </button>
+
+                  <div id="postas-menu" class="menu-panel" hidden>
+                    <div class="menu-title">Post as</div>
+                    <button disabled class="menu-item">Post to All</button>
+                    <button disabled class="menu-item">YouTube</button>
+                    <button disabled class="menu-item">Twitch</button>
+                    <button disabled class="menu-item">Discord</button>
+                    <button disabled class="menu-item">Rumble</button>
+                    <hr class="menu-divider" />
+                    <button class="menu-item">Login</button>
+                  </div>
+                </div>
+
+                <div class="chat-input-toolbar">
+                  <button id="emoji-toggle" type="button" aria-label="Emoji">
+                    <svg viewBox="0 0 960 960" aria-hidden="true" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M480 699q66 0 121.5-35.5T682 567H278q26 61 81 96.5T480 699ZM302 427l45-45 45 45 36-36-81-81-81 81 36 36Zm267 0 45-45 45 45 36-36-81-81-81 81 36 36ZM480 880q-83 0-156-31.5T197 763q-54-54-85.5-127T80 480q0-83 31.5-156T197 197q54-54 127-85.5T480 80q83 0 156 31.5T763 197q54 54 85.5 127T880 480q0 83-31.5 156T763 763q-54 54-127 85.5T480 880Zm0-400Zm0 340q142.38 0 241.19-98.81Q820 621.37 820 480q0-142.38-98.81-241.19T480 140q-142.37 0-241.19 98.81Q140 337.62 140 480q0 142.37 98.81 241.19Q337.63 780 480 780Z" />
+                    </svg>
+                  </button>
+
+                  <div id="emoji-menu" hidden>
+                    <div class="emoji-tabs">
+                      <button type="button" data-category="smile" class="active">😊</button>
+                      <button type="button" data-category="fire">🔥</button>
+                      <button type="button" data-category="heart">❤️</button>
+                      <button type="button" data-category="thumbs">👍</button>
+                    </div>
+                    <div class="emoji-section" data-category="smile">
+                      <button type="button">😀</button>
+                      <button type="button">😁</button>
+                      <button type="button">😂</button>
+                      <button type="button">🤣</button>
+                      <button type="button">😃</button>
+                      <button type="button">😄</button>
+                      <button type="button">😅</button>
+                      <button type="button">😆</button>
+                      <button type="button">😉</button>
+                      <button type="button">😊</button>
+                      <button type="button">😋</button>
+                      <button type="button">😎</button>
+                      <button type="button">😍</button>
+                      <button type="button">😘</button>
+                      <button type="button">😗</button>
+                      <button type="button">😙</button>
+                      <button type="button">😚</button>
+                      <button type="button">🙂</button>
+                      <button type="button">🤗</button>
+                      <button type="button">🤩</button>
+                    </div>
+                    <div class="emoji-section" data-category="fire" hidden>
+                      <button type="button">🔥</button>
+                      <button type="button">⚡</button>
+                      <button type="button">✨</button>
+                      <button type="button">🌟</button>
+                      <button type="button">💥</button>
+                      <button type="button">🌠</button>
+                      <button type="button">🧨</button>
+                      <button type="button">🚀</button>
+                      <button type="button">🏎️</button>
+                      <button type="button">🏆</button>
+                      <button type="button">🎯</button>
+                      <button type="button">🥇</button>
+                      <button type="button">🔋</button>
+                      <button type="button">🎆</button>
+                      <button type="button">🎇</button>
+                      <button type="button">🌋</button>
+                      <button type="button">💡</button>
+                      <button type="button">🛡️</button>
+                      <button type="button">🧭</button>
+                      <button type="button">🛰️</button>
+                    </div>
+                    <div class="emoji-section" data-category="heart" hidden>
+                      <button type="button">❤️</button>
+                      <button type="button">🧡</button>
+                      <button type="button">💛</button>
+                      <button type="button">💚</button>
+                      <button type="button">💙</button>
+                      <button type="button">💜</button>
+                      <button type="button">🤎</button>
+                      <button type="button">🖤</button>
+                      <button type="button">🤍</button>
+                      <button type="button">💘</button>
+                      <button type="button">💝</button>
+                      <button type="button">💖</button>
+                      <button type="button">💗</button>
+                      <button type="button">💓</button>
+                      <button type="button">💞</button>
+                      <button type="button">💕</button>
+                      <button type="button">💟</button>
+                      <button type="button">❣️</button>
+                      <button type="button">💌</button>
+                      <button type="button">🥰</button>
+                    </div>
+                    <div class="emoji-section" data-category="thumbs" hidden>
+                      <button type="button">👍</button>
+                      <button type="button">👌</button>
+                      <button type="button">✌️</button>
+                      <button type="button">🤙</button>
+                      <button type="button">🤘</button>
+                      <button type="button">🤞</button>
+                      <button type="button">🤜</button>
+                      <button type="button">🤛</button>
+                      <button type="button">👏</button>
+                      <button type="button">🙌</button>
+                      <button type="button">🫡</button>
+                      <button type="button">🤝</button>
+                      <button type="button">🙏</button>
+                      <button type="button">👐</button>
+                      <button type="button">✋</button>
+                      <button type="button">🖐️</button>
+                      <button type="button">🤲</button>
+                      <button type="button">🫶</button>
+                      <button type="button">💪</button>
+                      <button type="button">🦾</button>
+                    </div>
+                  </div>
+
+                  <button class="send-btn" type="button" aria-label="Send">
+                    <svg viewBox="0 0 960 960" aria-hidden="true" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M120 800V555l302-75-302-77V160l760 320L120 800Z" />
+                    </svg>
+                  </button>
+                </div>
+            </div>
+          </div>
+
+          <div class="footer-note">Live mode is placeholder-only. No sockets or persistence are wired to this preview.</div>
         </div>
       </div>
 
-      <div class="design-card wide" data-tags="badges status">
+<div class="design-card wide" data-tags="badges status">
         <h3>Badges, Pills & Status</h3>
         <div class="design-badge-stack">
           <span class="ss-badge">Default</span>
@@ -606,7 +830,7 @@
         </div>
       </div>
 
-      <div class="design-card wide" data-tags="cards status">
+      <div class="design-card full" data-tags="cards status">
         <h3>Panels, Bars & Cards</h3>
         <div class="design-panel-sample">
           <header class="ss-panel-header" style="padding: 0 0 8px 0;">
@@ -624,6 +848,76 @@
             </div>
           </div>
           <div class="ss-restart-banner">Restart required. Platform polling changes apply after StreamSuites restarts.</div>
+        </div>
+      </div>
+
+      <div class="design-card full" data-tags="cards status public overlay">
+        <h3>Public Glass & System Elements</h3>
+        <div class="glass-grid">
+          <article class="public-glass-card">
+            <h3>Studio kit</h3>
+            <p class="muted">Overlay pack and tally widgets rendered on the same glass shell as the public pages.</p>
+            <div class="public-columns">
+              <div class="public-glass-panel">
+                <div class="section-meta">Supported platforms</div>
+                <ul class="public-list">
+                  <li>Twitch</li>
+                  <li>YouTube Live</li>
+                  <li>Discord stage callouts</li>
+                </ul>
+              </div>
+              <div class="public-glass-panel">
+                <div class="section-meta">Includes</div>
+                <ul class="public-list">
+                  <li>Scene overlays + scoreboard widgets</li>
+                  <li>Poll + tally mirroring elements</li>
+                  <li>Static starter CSS tuned for dark glass</li>
+                </ul>
+              </div>
+            </div>
+            <div class="public-button-grid" style="margin-top: 12px;">
+              <svg class="dotted-grid" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <pattern id="studioGrid" width="30" height="30" patternUnits="userSpaceOnUse">
+                    <circle cx="2" cy="2" r="1" fill="rgba(0,0,0,0.25)" />
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#studioGrid)" />
+              </svg>
+              <div class="button-row">
+                <div class="button-wrap">
+                  <button class="public-btn"><span>Download overlay</span></button>
+                  <div class="button-shadow"></div>
+                </div>
+                <div class="button-wrap">
+                  <button class="public-btn"><span>View starter CSS</span></button>
+                  <div class="button-shadow"></div>
+                </div>
+                <div class="button-wrap">
+                  <button class="public-btn"><span>Muted glass</span></button>
+                  <div class="button-shadow"></div>
+                </div>
+              </div>
+            </div>
+          </article>
+          <article class="public-glass-panel">
+            <div class="section-meta">Status bars & progress</div>
+            <div class="status-bar-samples">
+              <div class="ss-progress-row">
+                <div class="ss-progress-label"><span>Live sync</span><span class="ss-progress-meta">64%</span></div>
+                <div class="ss-progress"><div class="ss-progress-bar" style="width: 64%;"></div></div>
+              </div>
+              <div class="ss-progress-row">
+                <div class="ss-progress-label"><span>Replay buffer</span><span class="ss-progress-meta">82%</span></div>
+                <div class="ss-progress"><div class="ss-progress-bar" style="width: 82%; background: linear-gradient(90deg, #57b9ff, #63ffa2);"></div></div>
+              </div>
+              <div class="ss-skill-wrapper" data-skill-target="72">
+                <div class="ss-skill-track"><div class="ss-skill-fill" style="width: 0%;"></div></div>
+              </div>
+              <progress class="public-roadmap-progress is-glow" max="100" value="48" aria-label="Roadmap progress"></progress>
+              <progress class="public-roadmap-progress is-paused" max="100" value="20" aria-label="Paused status"></progress>
+            </div>
+          </article>
         </div>
       </div>
 
@@ -705,30 +999,50 @@
         <h3>Headers & Footers</h3>
         <div class="design-stack">
           <div class="design-shell">
-            <header class="ss-header" style="padding: 12px 14px;">
+            <header class="ss-header">
               <div class="ss-header-left">
-                <h3 style="margin:0;">Dashboard header</h3>
+                <h1 class="ss-title">StreamSuites</h1>
+                <span class="ss-subtitle">Creators</span>
               </div>
-              <div class="ss-header-right">
-                <span class="ss-badge">Admin</span>
+              <div class="ss-header-right" data-scope="admin">
+                <button class="ss-btn ss-btn-secondary">Import</button>
+                <button class="ss-btn ss-btn-secondary">Export</button>
+                <button class="ss-btn ss-btn-secondary">Refresh</button>
+                <button class="ss-btn ss-btn-primary">Add Creator</button>
               </div>
             </header>
-            <footer class="ss-footer" style="padding: 10px 14px; margin-top: 8px;">
-              <span class="muted">Dashboard footer links</span>
+            <footer class="ss-footer">
+              <span class="muted">Overview is read-only and reflects locally stored configuration.</span>
             </footer>
           </div>
           <div class="design-shell">
             <header class="public-header">
-              <div class="brand">Public header</div>
-              <nav class="public-menu">
-                <a class="active" href="#">Overview</a>
-                <a href="#">Tools</a>
-                <a href="#">Support</a>
-              </nav>
+              <a href="../lander.html" class="brand-mark">
+                <img src="../assets/logos/logo.png" alt="StreamSuites" />
+                <div class="brand-title">
+                  <h1>StreamSuites™</h1>
+                  <p class="brand-subtitle">Public Polls</p>
+                </div>
+              </a>
+              <div class="public-menu-group">
+                <input type="checkbox" id="design-public-menu-toggle" class="nav-toggle" aria-label="Toggle navigation" />
+                <label class="hamburger" for="design-public-menu-toggle">
+                  <span class="sr-only">Toggle navigation</span>
+                  <svg viewBox="0 0 32 32" aria-hidden="true">
+                    <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"></path>
+                    <path class="line" d="M7 16 27 16"></path>
+                  </svg>
+                </label>
+                <div class="header-actions">
+                  <span class="pill">public beta</span>
+                  <a class="quiet-link" href="../home.html">Home</a>
+                  <a class="cta-link" href="../clips.html">View clips</a>
+                </div>
+              </div>
             </header>
             <footer class="public-footer" style="margin-top: 8px;">
-              <div class="footer-left">Public footer</div>
-              <div class="footer-right">Links</div>
+              <span>StreamSuites™ Media Surface • Polls</span>
+              <a href="../index.html">Creator dashboard</a>
             </footer>
           </div>
         </div>
@@ -765,18 +1079,64 @@
 
       <div class="design-card" data-tags="icons">
         <h3>Icons</h3>
-        <div class="design-icon-grid">
-          <div class="design-icon"><img src="assets/icons/youtube.svg" alt="YouTube" />YouTube</div>
-          <div class="design-icon"><img src="assets/icons/twitch.svg" alt="Twitch" />Twitch</div>
-          <div class="design-icon"><img src="assets/icons/rumble.svg" alt="Rumble" />Rumble</div>
-          <div class="design-icon"><img src="assets/icons/discord.svg" alt="Discord" />Discord</div>
-          <div class="design-icon"><img src="assets/icons/kick.svg" alt="Kick" />Kick</div>
-          <div class="design-icon"><img src="assets/icons/obs.svg" alt="OBS" />OBS</div>
-          <div class="design-icon"><img src="assets/icons/prouser.svg" alt="Pro" />Pro badge</div>
-          <div class="design-icon"><img src="assets/icons/dcbadge.svg" alt="DC" />DC badge</div>
-          <div class="design-icon"><img src="assets/icons/mod.svg" alt="Moderator" />Mod badge</div>
-          <div class="design-icon"><img src="assets/icons/pilled.svg" alt="Pilled" />Pilled</div>
-          <div class="design-icon"><img src="assets/icons/ui/send.svg" alt="UI" />UI</div>
+        <p class="muted" style="margin:0;">Default, muted, and silver (white) variants. Muted icons use <code>iconname-muted.svg</code>; white icons use <code>iconname-silver.svg</code>.</p>
+        <div class="design-icon-grid" style="margin-top:8px;">
+          <div class="design-icon"><img src="../assets/icons/youtube.svg" alt="YouTube" />YouTube</div>
+          <div class="design-icon"><img src="../assets/icons/twitch.svg" alt="Twitch" />Twitch</div>
+          <div class="design-icon"><img src="../assets/icons/rumble.svg" alt="Rumble" />Rumble</div>
+          <div class="design-icon"><img src="../assets/icons/discord.svg" alt="Discord" />Discord</div>
+          <div class="design-icon"><img src="../assets/icons/pilled.svg" alt="Pilled" />Pilled</div>
+          <div class="design-icon"><img src="../assets/icons/obs.svg" alt="OBS" />OBS</div>
+        </div>
+        <div class="icon-variant-grid" style="margin-top:10px;">
+          <div class="icon-variant">
+            <div class="icon-chip"><img src="../assets/icons/rumble.svg" alt="Rumble" /></div>
+            <div>rumble.svg</div>
+          </div>
+          <div class="icon-variant">
+            <div class="icon-chip"><img src="../assets/icons/rumble-muted.svg" alt="Rumble muted" /></div>
+            <div>rumble-muted.svg</div>
+          </div>
+          <div class="icon-variant dark">
+            <div class="icon-chip"><img src="../assets/icons/rumble-silver.svg" alt="Rumble silver" /></div>
+            <div>rumble-silver.svg</div>
+          </div>
+          <div class="icon-variant">
+            <div class="icon-chip"><img src="../assets/icons/discord.svg" alt="Discord" /></div>
+            <div>discord.svg</div>
+          </div>
+          <div class="icon-variant">
+            <div class="icon-chip"><img src="../assets/icons/discord-muted.svg" alt="Discord muted" /></div>
+            <div>discord-muted.svg</div>
+          </div>
+          <div class="icon-variant dark">
+            <div class="icon-chip"><img src="../assets/icons/discord-silver.svg" alt="Discord silver" /></div>
+            <div>discord-silver.svg</div>
+          </div>
+          <div class="icon-variant">
+            <div class="icon-chip"><img src="../assets/icons/twitch.svg" alt="Twitch" /></div>
+            <div>twitch.svg</div>
+          </div>
+          <div class="icon-variant">
+            <div class="icon-chip"><img src="../assets/icons/twitter-muted.svg" alt="Twitter muted" /></div>
+            <div>twitter-muted.svg</div>
+          </div>
+          <div class="icon-variant dark">
+            <div class="icon-chip"><img src="../assets/icons/twitch-silver.svg" alt="Twitch silver" /></div>
+            <div>twitch-silver.svg</div>
+          </div>
+          <div class="icon-variant">
+            <div class="icon-chip"><img src="../assets/icons/pilled.svg" alt="Pilled" /></div>
+            <div>pilled.svg</div>
+          </div>
+          <div class="icon-variant">
+            <div class="icon-chip"><img src="../assets/icons/pilled-muted.svg" alt="Pilled muted" /></div>
+            <div>pilled-muted.svg</div>
+          </div>
+          <div class="icon-variant dark">
+            <div class="icon-chip"><img src="../assets/icons/pilled-silver.svg" alt="Pilled silver" /></div>
+            <div>pilled-silver.svg</div>
+          </div>
         </div>
       </div>
 
@@ -825,7 +1185,7 @@
           .map((tag) => tag.trim())
           .filter(Boolean);
         const matches =
-          activeFilters.length === 0 || activeFilters.every((filter) => tags.includes(filter));
+          activeFilters.length === 0 || activeFilters.some((filter) => tags.includes(filter));
         card.classList.toggle('is-filtered-out', !matches);
       });
     };
@@ -839,35 +1199,100 @@
 
     applyFilters();
 
+    const popoutBtn = document.getElementById('chat-popout');
+    if (popoutBtn) {
+      popoutBtn.addEventListener('click', () => {
+        const popoutUrl = new URL('chat_window.html', window.location.href);
+        window.open(popoutUrl.toString(), 'chatWindowPreview', 'width=1280,height=900,noopener,noreferrer');
+      });
+    }
+
     const chatPreview = document.querySelector('.design-chat-preview');
 
     if (chatPreview) {
-      const panelPairs = [
-        [chatPreview.querySelector('.settings-toggle'), chatPreview.querySelector('.chat-window-header .menu-panel')],
-        [chatPreview.querySelector('.postas-toggle'), chatPreview.querySelector('.chat-postas .menu-panel')],
-        [chatPreview.querySelector('.emoji-toggle'), chatPreview.querySelector('.emoji-menu')],
-      ].filter(([button, panel]) => button && panel);
+      const emojiToggle = chatPreview.querySelector('#emoji-toggle');
+      const emojiMenu = chatPreview.querySelector('#emoji-menu');
+      const postasToggle = chatPreview.querySelector('#postas-toggle');
+      const postasMenu = chatPreview.querySelector('#postas-menu');
+      const settingsToggle = chatPreview.querySelector('#settings-toggle');
+      const settingsMenu = chatPreview.querySelector('#settings-menu');
+      const textarea = chatPreview.querySelector('.live-chat-input textarea');
+      const tabButtons = emojiMenu ? Array.from(emojiMenu.querySelectorAll('.emoji-tabs button')) : [];
+      const sections = emojiMenu ? Array.from(emojiMenu.querySelectorAll('.emoji-section')) : [];
+      const moderationButtons = Array.from(chatPreview.querySelectorAll('.moderation-btn'));
 
-      const closeAllPanels = (exceptPanel = null) => {
-        panelPairs.forEach(([button, panel]) => {
-          const shouldHide = panel !== exceptPanel;
-          if (shouldHide) {
-            panel.hidden = true;
-            button.setAttribute('aria-expanded', 'false');
-          }
+      const menuConfigs = [
+        { toggle: settingsToggle, menu: settingsMenu },
+        { toggle: postasToggle, menu: postasMenu },
+        { toggle: emojiToggle, menu: emojiMenu },
+      ].filter(({ toggle, menu }) => toggle && menu);
+
+      const closeAllPanels = () => {
+        menuConfigs.forEach(({ toggle, menu }) => {
+          menu.hidden = true;
+          toggle.setAttribute('aria-expanded', 'false');
         });
       };
 
-      panelPairs.forEach(([button, panel]) => {
-        button.addEventListener('click', (event) => {
-          event.stopPropagation();
-          const willOpen = panel.hidden;
-          closeAllPanels(willOpen ? panel : null);
-          panel.hidden = !willOpen;
-          button.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      const toggleMenu = (config) => {
+        const { toggle, menu } = config;
+        const willOpen = menu.hidden;
+        closeAllPanels();
+        menu.hidden = !willOpen;
+        toggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      };
+
+      const setActiveCategory = (category) => {
+        sections.forEach((section) => {
+          section.hidden = section.dataset.category !== category;
         });
 
-        panel.addEventListener('click', (event) => {
+        tabButtons.forEach((btn) => {
+          btn.classList.toggle('active', btn.dataset.category === category);
+        });
+      };
+
+      const initialCategory = tabButtons[0]?.dataset.category;
+      if (initialCategory) {
+        setActiveCategory(initialCategory);
+      }
+
+      tabButtons.forEach((btn) => {
+        btn.addEventListener('click', (event) => {
+          event.stopPropagation();
+          const category = btn.dataset.category;
+          if (category) {
+            setActiveCategory(category);
+          }
+        });
+      });
+
+      emojiMenu?.querySelectorAll('.emoji-section button').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          if (textarea) {
+            textarea.value += btn.textContent;
+            textarea.focus();
+          }
+          emojiMenu.hidden = true;
+          emojiToggle?.setAttribute('aria-expanded', 'false');
+        });
+      });
+
+      moderationButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const isMuted = btn.classList.toggle('muted');
+          btn.textContent = isMuted ? 'Muted' : '…';
+        });
+      });
+
+      menuConfigs.forEach((config) => {
+        const { toggle, menu } = config;
+        toggle.addEventListener('click', (event) => {
+          event.stopPropagation();
+          toggleMenu(config);
+        });
+
+        menu.addEventListener('click', (event) => {
           event.stopPropagation();
         });
       });
@@ -878,13 +1303,28 @@
           return;
         }
 
-        const clickedInsidePanel = panelPairs.some(([, panel]) => panel.contains(event.target));
-        const clickedToggle = panelPairs.some(([button]) => button.contains(event.target));
+        const inPanel = menuConfigs.some(({ menu }) => menu.contains(event.target));
+        const inToggle = menuConfigs.some(({ toggle }) => toggle.contains(event.target));
 
-        if (!clickedInsidePanel && !clickedToggle) {
+        if (!inPanel && !inToggle) {
+          closeAllPanels();
+        }
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
           closeAllPanels();
         }
       });
     }
+
+    document.querySelectorAll('.ss-skill-wrapper').forEach((wrapper) => {
+      const target = Number(wrapper.dataset.skillTarget || 0);
+      const fill = wrapper.querySelector('.ss-skill-fill');
+      if (!fill) return;
+      requestAnimationFrame(() => {
+        fill.style.width = `${Math.min(100, Math.max(0, target))}%`;
+      });
+    });
   });
 </script>
