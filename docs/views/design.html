@@ -75,6 +75,12 @@
     height: 22px;
   }
 
+  .design-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   .design-bubble {
     background: var(--bg-panel);
     border: 1px solid var(--border-subtle);
@@ -160,50 +166,64 @@
       </div>
 
       <div class="design-card">
-        <h3>Checkboxes (standard)</h3>
+        <h3>Checkbox (Glowing)</h3>
         <div class="design-row">
-          <label class="ss-checkbox-field">
-            <span class="checkbox-wrapper checkbox-ui">
+          <div class="checkbox-row">
+            <label class="ss-checkbox-wrapper">
               <input type="checkbox" checked />
-              <div class="checkbox"></div>
-            </span>
-            <span class="checkbox-label-text">Checked</span>
-          </label>
-          <label class="ss-checkbox-field">
-            <span class="checkbox-wrapper checkbox-ui">
+              <div class="ss-checkbox"></div>
+              <span class="ss-checkbox-label">Checked</span>
+            </label>
+          </div>
+          <div class="checkbox-row">
+            <label class="ss-checkbox-wrapper">
               <input type="checkbox" />
-              <div class="checkbox"></div>
-            </span>
-            <span class="checkbox-label-text">Unchecked</span>
-          </label>
-          <label class="ss-checkbox-field">
-            <span class="checkbox-wrapper checkbox-ui">
+              <div class="ss-checkbox"></div>
+              <span class="ss-checkbox-label">Unchecked</span>
+            </label>
+          </div>
+          <div class="checkbox-row">
+            <label class="ss-checkbox-wrapper">
               <input type="checkbox" disabled />
-              <div class="checkbox"></div>
-            </span>
-            <span class="checkbox-label-text">Disabled</span>
-          </label>
+              <div class="ss-checkbox"></div>
+              <span class="ss-checkbox-label">Disabled</span>
+            </label>
+          </div>
         </div>
       </div>
 
       <div class="design-card">
-        <h3>Toggles</h3>
-        <p class="muted" style="margin:0;">Use the checkbox foundation for toggle states.</p>
+        <h3>Toggle Switch (Admin12121)</h3>
+        <p class="muted" style="margin:0;">Exact switch-button geometry.</p>
         <div class="design-row">
-          <label class="ss-checkbox-field">
-            <span class="checkbox-wrapper">
-              <input type="checkbox" checked />
-              <div class="checkbox"></div>
-            </span>
-            <span class="checkbox-label-text">On</span>
-          </label>
-          <label class="ss-checkbox-field">
-            <span class="checkbox-wrapper">
-              <input type="checkbox" />
-              <div class="checkbox"></div>
-            </span>
-            <span class="checkbox-label-text">Off</span>
-          </label>
+          <div class="design-toggle">
+            <label class="switch-button" aria-label="Platform toggle">
+              <div class="switch-scale">
+                <div class="switch-outer">
+                  <input type="checkbox" checked />
+                  <div class="ss-switch-inner">
+                    <span class="ss-switch-toggle"></span>
+                    <span class="ss-switch-indicator"></span>
+                  </div>
+                </div>
+              </div>
+            </label>
+            <span class="muted">On</span>
+          </div>
+          <div class="design-toggle">
+            <label class="switch-button" aria-label="Platform toggle">
+              <div class="switch-scale">
+                <div class="switch-outer">
+                  <input type="checkbox" />
+                  <div class="ss-switch-inner">
+                    <span class="ss-switch-toggle"></span>
+                    <span class="ss-switch-indicator"></span>
+                  </div>
+                </div>
+              </div>
+            </label>
+            <span class="muted">Off</span>
+          </div>
         </div>
       </div>
 
