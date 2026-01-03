@@ -782,6 +782,24 @@
   color: #bcd6ff;
 }
 
+.pill-default {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.pill-warning {
+  background: rgba(244, 180, 0, 0.16);
+  border-color: rgba(244, 180, 0, 0.55);
+  color: #f6e4b2;
+}
+
+.pill-critical {
+  background: rgba(217, 83, 79, 0.2);
+  border-color: rgba(217, 83, 79, 0.55);
+  color: #ffd6d2;
+}
+
 .ss-restart-note {
   display: none;
   margin-top: 10px;

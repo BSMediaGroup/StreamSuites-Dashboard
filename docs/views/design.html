@@ -1,12 +1,13 @@
 <style>
   .design-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    grid-template-columns: repeat(12, minmax(0, 1fr));
     gap: 18px;
     align-items: start;
   }
 
   .design-card {
+    grid-column: span 6;
     padding: 14px;
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
@@ -17,8 +18,13 @@
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
   }
 
-  .design-card.wide {
-    grid-column: span 2;
+  .design-card.half {
+    grid-column: span 6;
+  }
+
+  .design-card.wide,
+  .design-card.double {
+    grid-column: span 8;
   }
 
   .design-card.full {
@@ -79,10 +85,13 @@
     gap: 10px;
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 1200px) {
+    .design-card,
+    .design-card.half,
     .design-card.wide,
+    .design-card.double,
     .design-card.full {
-      grid-column: auto;
+      grid-column: 1 / -1;
     }
   }
 
@@ -269,83 +278,34 @@
     display: none;
   }
 
-  .design-card[data-tags~="toggles"] {
+  .design-card[data-category~="toggles"] {
     align-items: flex-start;
   }
 
-  .design-card[data-tags~="toggles"] .design-toggle {
+  .design-card[data-category~="toggles"] .design-toggle {
     align-items: center;
   }
 
-  .design-chat-preview {
-    min-height: 620px;
-  }
-
-  .design-chat-preview .chat-window-body {
-    min-height: 420px;
-  }
-
-  .design-chat-preview .live-chat-input textarea {
-    min-height: 180px;
-  }
-
-  .design-chat-preview .chat-message-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-
-  .design-chat-preview .chat-message {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 10px;
-    align-items: start;
-  }
-
-  .design-chat-preview .chat-avatar {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    background: linear-gradient(140deg, #5ee0c2, #4da2ff);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: #0a0f1c;
-    font-weight: 700;
-    font-size: 12px;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.38);
-  }
-
-  .design-chat-preview .chat-bubble {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 10px 12px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
-  }
-
-  .design-chat-preview .chat-bubble .meta {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    color: #9fb0d1;
-    text-transform: uppercase;
-  }
-
-  .design-chat-preview .chat-bubble .message {
-    margin-top: 6px;
-    color: #e7ecfa;
-    font-size: 13px;
-  }
-
-  .design-card[data-tags~="toggles"] .design-row {
+  .design-card[data-category~="toggles"] .design-row {
     justify-content: flex-start;
     align-items: center;
     gap: 16px;
     width: 100%;
+  }
+
+  .chat-frame-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .chat-window-frame {
+    width: 100%;
+    height: 880px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    background: var(--bg-panel);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
   }
 
   .design-icon {
@@ -467,7 +427,7 @@
     </header>
     <div class="ss-panel-body design-grid">
 
-      <div class="design-card" data-tags="buttons">
+      <div class="design-card" data-category="buttons">
         <h3>Buttons</h3>
         <div class="design-row design-toggle-row">
           <button class="ss-btn ss-btn-primary" type="button">Primary</button>
@@ -480,7 +440,7 @@
         </div>
       </div>
 
-      <div class="design-card wide" data-tags="forms">
+      <div class="design-card wide" data-category="forms">
         <h3>Form Inputs</h3>
         <div class="design-form-grid">
           <div class="ss-form-row">
@@ -509,7 +469,7 @@
         </div>
       </div>
 
-      <div class="design-card" data-tags="checkboxes forms">
+      <div class="design-card" data-category="checkboxes forms">
         <h3>Checkbox (Glowing)</h3>
         <div class="design-row">
           <div class="checkbox-row">
@@ -536,7 +496,7 @@
         </div>
       </div>
 
-      <div class="design-card" data-tags="toggles">
+      <div class="design-card" data-category="toggles">
         <h3>Toggle Switch (Admin12121)</h3>
         <p class="muted" style="margin:0;">Exact switch-button geometry.</p>
         <div class="design-row design-toggle-row">
@@ -571,257 +531,36 @@
         </div>
       </div>
 
-      <div class="design-card wide" data-tags="cards replay overlay">
+      <div class="design-card full" data-category="cards replay overlay">
         <div class="design-row" style="justify-content: space-between; align-items: center; gap: 10px;">
           <div>
             <h3 style="margin:0;">Chat Window Controls</h3>
-            <p class="muted" style="margin:2px 0 0 0;">Live/replay composer styles from chat_window.html.</p>
+            <p class="muted" style="margin:2px 0 0 0;">Embedded 1:1 view of docs/views/chat_window.html.</p>
           </div>
           <button id="chat-popout" class="ss-btn ss-btn-secondary" type="button">Pop-out preview</button>
         </div>
-        <div class="chat-window-sample design-chat-preview window-shell">
-          <div class="window-header">
-            <div class="title">Live Chat Window</div>
-            <div class="header-actions">
-              <select class="theme-select" id="live-theme-select" aria-label="Switch chat theme">
-                <option value="default">Default (Muted Dark)</option>
-                <option value="slate">Slate</option>
-                <option value="midnight">Midnight</option>
-                <option value="light">Light</option>
-              </select>
-              <span class="badge" id="mode-pill">Live</span>
-              <button class="settings-toggle" id="settings-toggle" aria-label="Settings">
-                <svg xmlns="http://www.w3.org/2000/svg" height="22" viewBox="0 -960 960 960" width="22" fill="currentColor"><path d="M388-80 368-206q-19-7-40-19t-37-25l-118 54-93-164 108-79q-2-9-2.5-20.5T185-480q0-9 .5-20.5T188-521L80-600l93-164 118 54q16-13 37-25t40-18l20-127h184l20 126q19 7 40.5 18.5T669-710l118-54 93 164-108 77q2 10 2.5 21.5t.5 21.5q0 10-.5 21t-2.5 21l108 78-93 164-118-54q-16 13-36.5 25.5T592-206L572-80H388Zm92-270q54 0 92-38t38-92q0-54-38-92t-92-38q-54 0-92 38t-38 92q0 54 38 92t92 38Z"/></svg>
-              </button>
-            </div>
-            <div id="settings-menu" class="menu-panel" hidden>
-              <div class="menu-title">Settings</div>
-              <button type="button" class="menu-item">Account (placeholder)</button>
-              <button type="button" class="menu-item">Hotkeys (placeholder)</button>
-              <button type="button" class="menu-item">Moderation (placeholder)</button>
-              <button type="button" class="menu-item">Appearance (placeholder)</button>
-              <hr class="menu-divider" />
-              <button type="button" class="menu-item">About (placeholder)</button>
-            </div>
-          </div>
-
-          <div class="timeline" aria-label="Live chat placeholder">
-            <div class="message">
-              <div class="avatar" aria-hidden="true">
-                <img src="../assets/placeholders/daniel.png" alt="" />
-              </div>
-              <div class="header-row">
-                <div class="author-stack">
-                  <span class="author">
-                    creator_live
-                    <span class="role-badge" title="Pro User" data-label="PRO">
-                      <img src="../assets/icons/prouser.svg" alt="Pro user" />
-                    </span>
-                  </span>
-                  <span class="timestamp">00:14:22</span>
-                </div>
-              </div>
-              <span class="platform" aria-label="YouTube">
-                <img src="../assets/icons/youtube.svg" alt="YouTube" />
-                YouTube
-              </span>
-              <div class="text">Incoming live messages render with the same badges and avatar alignment used in the overlay preview.</div>
-            </div>
-
-            <div class="message">
-              <div class="avatar" aria-hidden="true">
-                <img src="../assets/placeholders/daniel.png" alt="" />
-              </div>
-              <div class="header-row">
-                <div class="author-stack">
-                  <span class="author">
-                    Daniel Clancy
-                    <span class="role-pill" title="Admin">ADMIN</span>
-                    <span class="role-badge" title="Moderator" data-label="MOD">
-                      <img src="../assets/icons/mod.svg" alt="Moderator" />
-                    </span>
-                    <span class="role-badge" title="Pro User" data-label="PRO">
-                      <img src="../assets/icons/prouser.svg" alt="Pro user" />
-                    </span>
-                  </span>
-                  <span class="timestamp">00:15:08</span>
-                </div>
-                <button class="moderation-btn" data-moderation="shield">…</button>
-              </div>
-              <span class="platform" aria-label="Discord">
-                <img src="../assets/icons/discord.svg" alt="Discord" />
-                Discord
-              </span>
-              <div class="text">Daniel carries admin, mod, and pro badges to verify multi-badge rendering without overlap.</div>
-            </div>
-
-            <div class="message">
-              <div class="avatar avatar-fallback" aria-hidden="true"></div>
-              <div class="header-row">
-                <div class="author-stack">
-                  <span class="author">
-                    mod_team
-                    <span class="role-badge" title="Moderator" data-label="MOD">
-                      <img src="../assets/icons/mod.svg" alt="Moderator" />
-                    </span>
-                  </span>
-                  <span class="timestamp">00:17:36</span>
-                </div>
-                <button class="moderation-btn" data-moderation="shield">…</button>
-              </div>
-              <span class="platform" aria-label="Twitch">
-                <img src="../assets/icons/twitch.svg" alt="Twitch" />
-                Twitch
-              </span>
-              <div class="text">Live mode retains the fallback silhouette when no avatar URL is present.</div>
-            </div>
-          </div>
-
-          <div class="live-input-wrapper" id="live-input-wrapper" aria-label="Chat composer">
-            <div class="live-input-shell">
-              <div class="live-chat-input">
-                <textarea placeholder="Type a live message"></textarea>
-
-                <div class="chat-postas">
-                  <button id="postas-toggle" aria-label="Post as">
-                    <span class="postas-icon" aria-hidden="true"></span>
-                  </button>
-
-                  <div id="postas-menu" class="menu-panel" hidden>
-                    <div class="menu-title">Post as</div>
-                    <button disabled class="menu-item">Post to All</button>
-                    <button disabled class="menu-item">YouTube</button>
-                    <button disabled class="menu-item">Twitch</button>
-                    <button disabled class="menu-item">Discord</button>
-                    <button disabled class="menu-item">Rumble</button>
-                    <hr class="menu-divider" />
-                    <button class="menu-item">Login</button>
-                  </div>
-                </div>
-
-                <div class="chat-input-toolbar">
-                  <button id="emoji-toggle" type="button" aria-label="Emoji">
-                    <svg viewBox="0 0 960 960" aria-hidden="true" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M480 699q66 0 121.5-35.5T682 567H278q26 61 81 96.5T480 699ZM302 427l45-45 45 45 36-36-81-81-81 81 36 36Zm267 0 45-45 45 45 36-36-81-81-81 81 36 36ZM480 880q-83 0-156-31.5T197 763q-54-54-85.5-127T80 480q0-83 31.5-156T197 197q54-54 127-85.5T480 80q83 0 156 31.5T763 197q54 54 85.5 127T880 480q0 83-31.5 156T763 763q-54 54-127 85.5T480 880Zm0-400Zm0 340q142.38 0 241.19-98.81Q820 621.37 820 480q0-142.38-98.81-241.19T480 140q-142.37 0-241.19 98.81Q140 337.62 140 480q0 142.37 98.81 241.19Q337.63 780 480 780Z" />
-                    </svg>
-                  </button>
-
-                  <div id="emoji-menu" hidden>
-                    <div class="emoji-tabs">
-                      <button type="button" data-category="smile" class="active">😊</button>
-                      <button type="button" data-category="fire">🔥</button>
-                      <button type="button" data-category="heart">❤️</button>
-                      <button type="button" data-category="thumbs">👍</button>
-                    </div>
-                    <div class="emoji-section" data-category="smile">
-                      <button type="button">😀</button>
-                      <button type="button">😁</button>
-                      <button type="button">😂</button>
-                      <button type="button">🤣</button>
-                      <button type="button">😃</button>
-                      <button type="button">😄</button>
-                      <button type="button">😅</button>
-                      <button type="button">😆</button>
-                      <button type="button">😉</button>
-                      <button type="button">😊</button>
-                      <button type="button">😋</button>
-                      <button type="button">😎</button>
-                      <button type="button">😍</button>
-                      <button type="button">😘</button>
-                      <button type="button">😗</button>
-                      <button type="button">😙</button>
-                      <button type="button">😚</button>
-                      <button type="button">🙂</button>
-                      <button type="button">🤗</button>
-                      <button type="button">🤩</button>
-                    </div>
-                    <div class="emoji-section" data-category="fire" hidden>
-                      <button type="button">🔥</button>
-                      <button type="button">⚡</button>
-                      <button type="button">✨</button>
-                      <button type="button">🌟</button>
-                      <button type="button">💥</button>
-                      <button type="button">🌠</button>
-                      <button type="button">🧨</button>
-                      <button type="button">🚀</button>
-                      <button type="button">🏎️</button>
-                      <button type="button">🏆</button>
-                      <button type="button">🎯</button>
-                      <button type="button">🥇</button>
-                      <button type="button">🔋</button>
-                      <button type="button">🎆</button>
-                      <button type="button">🎇</button>
-                      <button type="button">🌋</button>
-                      <button type="button">💡</button>
-                      <button type="button">🛡️</button>
-                      <button type="button">🧭</button>
-                      <button type="button">🛰️</button>
-                    </div>
-                    <div class="emoji-section" data-category="heart" hidden>
-                      <button type="button">❤️</button>
-                      <button type="button">🧡</button>
-                      <button type="button">💛</button>
-                      <button type="button">💚</button>
-                      <button type="button">💙</button>
-                      <button type="button">💜</button>
-                      <button type="button">🤎</button>
-                      <button type="button">🖤</button>
-                      <button type="button">🤍</button>
-                      <button type="button">💘</button>
-                      <button type="button">💝</button>
-                      <button type="button">💖</button>
-                      <button type="button">💗</button>
-                      <button type="button">💓</button>
-                      <button type="button">💞</button>
-                      <button type="button">💕</button>
-                      <button type="button">💟</button>
-                      <button type="button">❣️</button>
-                      <button type="button">💌</button>
-                      <button type="button">🥰</button>
-                    </div>
-                    <div class="emoji-section" data-category="thumbs" hidden>
-                      <button type="button">👍</button>
-                      <button type="button">👌</button>
-                      <button type="button">✌️</button>
-                      <button type="button">🤙</button>
-                      <button type="button">🤘</button>
-                      <button type="button">🤞</button>
-                      <button type="button">🤜</button>
-                      <button type="button">🤛</button>
-                      <button type="button">👏</button>
-                      <button type="button">🙌</button>
-                      <button type="button">🫡</button>
-                      <button type="button">🤝</button>
-                      <button type="button">🙏</button>
-                      <button type="button">👐</button>
-                      <button type="button">✋</button>
-                      <button type="button">🖐️</button>
-                      <button type="button">🤲</button>
-                      <button type="button">🫶</button>
-                      <button type="button">💪</button>
-                      <button type="button">🦾</button>
-                    </div>
-                  </div>
-
-                  <button class="send-btn" type="button" aria-label="Send">
-                    <svg viewBox="0 0 960 960" aria-hidden="true" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M120 800V555l302-75-302-77V160l760 320L120 800Z" />
-                    </svg>
-                  </button>
-                </div>
-            </div>
-          </div>
-
-          <div class="footer-note">Live mode is placeholder-only. No sockets or persistence are wired to this preview.</div>
+        <div class="chat-frame-wrap">
+          <iframe
+            class="chat-window-frame"
+            title="Chat window preview"
+            src="/StreamSuites-Dashboard/docs/views/chat_window.html"
+            loading="lazy"
+          ></iframe>
+          <p class="design-subnote">Full chat window preview (emoji, post-as, settings) rendered directly from chat_window.html.</p>
         </div>
       </div>
 
-<div class="design-card wide" data-tags="badges status">
+      <div class="design-card wide" data-category="badges status">
         <h3>Badges, Pills & Status</h3>
         <div class="design-badge-stack">
-          <span class="ss-badge">Default</span>
-          <span class="ss-badge ss-badge-warning">Warning</span>
-          <span class="ss-badge ss-badge-danger">Critical</span>
+          <span class="ss-badge">Default badge</span>
+          <span class="ss-badge ss-badge-warning">Warning badge</span>
+          <span class="ss-badge ss-badge-danger">Critical badge</span>
+        </div>
+        <div class="design-badge-stack">
+          <span class="pill pill-default">Default pill</span>
+          <span class="pill pill-warning">Warning pill</span>
+          <span class="pill pill-critical">Critical pill</span>
           <span class="pill pill-public">Public pill</span>
           <span class="pill pill-success">Success pill</span>
         </div>
@@ -832,7 +571,7 @@
         </div>
       </div>
 
-      <div class="design-card full" data-tags="cards status">
+      <div class="design-card full" data-category="cards status">
         <h3>Panels, Bars & Cards</h3>
         <div class="design-panel-sample">
           <header class="ss-panel-header" style="padding: 0 0 8px 0;">
@@ -853,7 +592,7 @@
         </div>
       </div>
 
-      <div class="design-card full" data-tags="cards status public overlay">
+      <div class="design-card full" data-category="cards status public overlay">
         <h3>Public Glass & System Elements</h3>
         <div class="glass-grid">
           <article class="public-glass-card">
@@ -923,7 +662,7 @@
         </div>
       </div>
 
-      <div class="design-card" data-tags="alerts">
+      <div class="design-card" data-category="alerts">
         <h3>Alerts & Empty States</h3>
         <div class="design-stack">
           <div class="ss-alert">Inline notice</div>
@@ -932,7 +671,7 @@
         </div>
       </div>
 
-      <div class="design-card design-typo" data-tags="typography">
+      <div class="design-card design-typo" data-category="typography">
         <h3>Typography</h3>
         <h4>Heading 4</h4>
         <p class="muted">Caption / helper text</p>
@@ -940,7 +679,7 @@
         <p><strong>Emphasis</strong> and <code>code treatments</code> remain available.</p>
       </div>
 
-      <div class="design-card wide" data-tags="tables cards">
+      <div class="design-card wide" data-category="tables cards">
         <h3>Tables & Toolbars</h3>
         <div class="design-table-wrap">
           <div class="table-toolbar">
@@ -997,30 +736,60 @@
         </div>
       </div>
 
-      <div class="design-card full" data-tags="headers navigation cards">
+      <div class="design-card full" data-category="headers navigation cards">
         <h3>Headers & Footers</h3>
         <div class="design-stack">
           <div class="design-shell">
-            <header class="ss-header">
-              <div class="ss-header-left">
-                <h1 class="ss-title">StreamSuites</h1>
-                <span class="ss-subtitle">Creators</span>
+            <header id="app-header">
+              <div class="header-left">
+                <a href="https://bsmediagroup.github.io/StreamSuites-Dashboard/lander.html">
+                  <img src="/StreamSuites-Dashboard/docs/assets/logos/LOG2-3D-SML.png" alt="StreamSuites Logo" />
+                  <h1 class="app-title">StreamSuites</h1>
+                  <span class="dashboard-badge" aria-label="Admin dashboard badge">
+                    ADMIN DASHBOARD
+                  </span>
+                </a>
               </div>
-              <div class="ss-header-right" data-scope="admin">
-                <button class="ss-btn ss-btn-secondary">Import</button>
-                <button class="ss-btn ss-btn-secondary">Export</button>
-                <button class="ss-btn ss-btn-secondary">Refresh</button>
-                <button class="ss-btn ss-btn-primary">Add Creator</button>
+
+              <div class="header-right">
+                <span class="status-indicator warning">● static mode (read-only)</span>
+                <span class="status-indicator idle">● idle</span>
               </div>
             </header>
-            <footer class="ss-footer">
-              <span class="muted">Overview is read-only and reflects locally stored configuration.</span>
+
+            <footer id="app-footer">
+              <div class="footer-left">
+                <img
+                  src="/StreamSuites-Dashboard/docs/assets/icons/discord-silver.svg"
+                  alt="Discord"
+                  class="discord-icon"
+                />
+                <a href="https://support.streamsuites.app" target="_blank" rel="noopener noreferrer">
+                  Support Server
+                </a>
+              </div>
+
+              <div class="footer-center">
+                <span class="footer-version">StreamSuites™ v0.2.2-alpha</span>
+                <span class="footer-sep">•</span>
+                <a href="https://brainstream.media" target="_blank" rel="noopener noreferrer">
+                  © 2026 Brainstream Media Group
+                </a>
+                <span class="footer-sep">•</span>
+                <a href="/StreamSuites-Dashboard/docs/home.html">Public Home</a>
+              </div>
+
+              <div class="footer-right">
+                <a href="mailto:admin@streamsuites.app" target="_blank" rel="noopener noreferrer">
+                  admin@streamsuites.app
+                </a>
+              </div>
             </footer>
           </div>
           <div class="design-shell">
             <header class="public-header">
-              <a href="../lander.html" class="brand-mark">
-                <img src="../assets/logos/logo.png" alt="StreamSuites" />
+              <a href="/StreamSuites-Dashboard/lander.html" class="brand-mark">
+                <img src="/StreamSuites-Dashboard/docs/assets/logos/logo.png" alt="StreamSuites" />
                 <div class="brand-title">
                   <h1>StreamSuites™</h1>
                   <p class="brand-subtitle">Public Polls</p>
@@ -1037,140 +806,162 @@
                 </label>
                 <div class="header-actions">
                   <span class="pill">public beta</span>
-                  <a class="quiet-link" href="../home.html">Home</a>
-                  <a class="cta-link" href="../clips.html">View clips</a>
+                  <a class="quiet-link" href="/StreamSuites-Dashboard/docs/home.html">Home</a>
+                  <a class="cta-link" href="/StreamSuites-Dashboard/docs/clips.html">View clips</a>
                 </div>
               </div>
             </header>
             <footer class="public-footer" style="margin-top: 8px;">
               <span>StreamSuites™ Media Surface • Polls</span>
-              <a href="../index.html">Creator dashboard</a>
+              <a href="/StreamSuites-Dashboard/docs/index.html">Creator dashboard</a>
             </footer>
           </div>
         </div>
       </div>
 
-      <div class="design-card wide" data-tags="navigation">
+      <div class="design-card wide" data-category="navigation">
         <h3>Navigation & Mobile Menus</h3>
         <div class="design-stack">
-          <div class="design-nav-demo">
-            <div class="design-subnote">Hamburger toggle (.nav-toggle)</div>
-            <input type="checkbox" id="demo-nav-toggle" class="nav-toggle" aria-label="Toggle navigation" />
-            <label class="hamburger nav-toggle-trigger" for="demo-nav-toggle">
-              <span></span>
-              <span></span>
-              <span></span>
-            </label>
-            <ul>
-              <li><a class="active" href="#">Dashboard</a></li>
-              <li><a href="#">Creators</a></li>
-              <li><a href="#">Settings</a></li>
-            </ul>
-          </div>
-          <div class="design-nav-demo">
-            <div class="design-subnote">Public menu (.public-menu)</div>
-            <nav class="public-menu">
-              <a class="active" href="#">Home</a>
-              <a href="#">Scoreboards</a>
-              <a href="#">Clips</a>
-              <a href="#">Polls</a>
+          <div class="design-shell">
+            <div class="design-subnote">Dashboard navigation (nav-shell with overflow toggle)</div>
+            <nav id="design-admin-nav" aria-label="Dashboard navigation">
+              <div class="nav-shell">
+                <input type="checkbox" id="design-admin-nav-toggle" class="nav-toggle" aria-label="Toggle navigation" />
+                <label class="hamburger nav-toggle-trigger" for="design-admin-nav-toggle">
+                  <span class="sr-only">Toggle navigation</span>
+                  <svg viewBox="0 0 32 32" aria-hidden="true">
+                    <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"></path>
+                    <path class="line" d="M7 16 27 16"></path>
+                  </svg>
+                </label>
+                <ul id="design-admin-nav-list">
+                  <li data-view="overview">Overview</li>
+                  <li data-view="creators">Creators</li>
+                  <li data-view="triggers">Chat Triggers</li>
+                  <li data-view="jobs">Jobs</li>
+                  <li data-view="clips">Clips</li>
+                  <li data-view="polls">Polls</li>
+                  <li data-view="scoreboards">Scoreboards</li>
+                  <li data-view="data-signals">Data &amp; Signals</li>
+                  <li data-view="settings">Settings</li>
+                </ul>
+              </div>
             </nav>
+          </div>
+          <div class="design-shell">
+            <div class="design-subnote">Public menu group (mobile hamburger)</div>
+            <div class="public-menu-group">
+              <input type="checkbox" id="design-public-nav-toggle" class="nav-toggle" aria-label="Toggle navigation" />
+              <label class="hamburger" for="design-public-nav-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <svg viewBox="0 0 32 32" aria-hidden="true">
+                  <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"></path>
+                  <path class="line" d="M7 16 27 16"></path>
+                </svg>
+              </label>
+              <div class="header-actions">
+                <span class="pill">public beta</span>
+                <a class="quiet-link" href="/StreamSuites-Dashboard/docs/home.html">Home</a>
+                <a class="quiet-link" href="/StreamSuites-Dashboard/docs/scoreboards.html">Scoreboards</a>
+                <a class="cta-link" href="/StreamSuites-Dashboard/docs/clips.html">View clips</a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="design-card" data-tags="icons">
+      <div class="design-card" data-category="icons">
         <h3>Icons</h3>
         <p class="muted" style="margin:0;">Default, muted, and silver (white) variants. Muted icons use <code>iconname-muted.svg</code>; white icons use <code>iconname-silver.svg</code>.</p>
         <div class="icon-variant-grid" style="margin-top:10px;">
           <div class="icon-variant">
-            <div class="icon-chip"><img src="../assets/icons/youtube.svg" alt="YouTube" /></div>
+            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/youtube.svg" alt="YouTube" /></div>
             <div>youtube.svg</div>
           </div>
           <div class="icon-variant">
-            <div class="icon-chip"><img src="../assets/icons/youtube-muted.svg" alt="YouTube muted" /></div>
+            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/youtube-muted.svg" alt="YouTube muted" /></div>
             <div>youtube-muted.svg</div>
           </div>
           <div class="icon-variant dark">
-            <div class="icon-chip"><img src="../assets/icons/youtube-silver.svg" alt="YouTube silver" /></div>
+            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/youtube-silver.svg" alt="YouTube silver" /></div>
             <div>youtube-silver.svg</div>
           </div>
           <div class="icon-variant">
-            <div class="icon-chip"><img src="../assets/icons/rumble.svg" alt="Rumble" /></div>
+            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/rumble.svg" alt="Rumble" /></div>
             <div>rumble.svg</div>
           </div>
           <div class="icon-variant">
-            <div class="icon-chip"><img src="../assets/icons/rumble-muted.svg" alt="Rumble muted" /></div>
+            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/rumble-muted.svg" alt="Rumble muted" /></div>
             <div>rumble-muted.svg</div>
           </div>
           <div class="icon-variant dark">
-            <div class="icon-chip"><img src="../assets/icons/rumble-silver.svg" alt="Rumble silver" /></div>
+            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/rumble-silver.svg" alt="Rumble silver" /></div>
             <div>rumble-silver.svg</div>
           </div>
           <div class="icon-variant">
-            <div class="icon-chip"><img src="../assets/icons/discord.svg" alt="Discord" /></div>
+            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/discord.svg" alt="Discord" /></div>
             <div>discord.svg</div>
           </div>
           <div class="icon-variant">
-            <div class="icon-chip"><img src="../assets/icons/discord-muted.svg" alt="Discord muted" /></div>
+            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/discord-muted.svg" alt="Discord muted" /></div>
             <div>discord-muted.svg</div>
           </div>
           <div class="icon-variant dark">
-            <div class="icon-chip"><img src="../assets/icons/discord-silver.svg" alt="Discord silver" /></div>
+            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/discord-silver.svg" alt="Discord silver" /></div>
             <div>discord-silver.svg</div>
           </div>
           <div class="icon-variant">
-            <div class="icon-chip"><img src="../assets/icons/twitch.svg" alt="Twitch" /></div>
+            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/twitch.svg" alt="Twitch" /></div>
             <div>twitch.svg</div>
           </div>
           <div class="icon-variant">
-            <div class="icon-chip"><img src="../assets/icons/twitch-0.svg" alt="Twitch muted" /></div>
-            <div>twitch-muted.svg</div>
+            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/twitch-0.svg" alt="Twitch muted" /></div>
+            <div>twitch-0.svg</div>
           </div>
           <div class="icon-variant dark">
-            <div class="icon-chip"><img src="../assets/icons/twitch-silver.svg" alt="Twitch silver" /></div>
+            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/twitch-silver.svg" alt="Twitch silver" /></div>
             <div>twitch-silver.svg</div>
           </div>
           <div class="icon-variant">
-            <div class="icon-chip"><img src="../assets/icons/pilled.svg" alt="Pilled" /></div>
+            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/pilled.svg" alt="Pilled" /></div>
             <div>pilled.svg</div>
           </div>
           <div class="icon-variant">
-            <div class="icon-chip"><img src="../assets/icons/pilled-muted.svg" alt="Pilled muted" /></div>
+            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/pilled-muted.svg" alt="Pilled muted" /></div>
             <div>pilled-muted.svg</div>
           </div>
           <div class="icon-variant dark">
-            <div class="icon-chip"><img src="../assets/icons/pilled-silver.svg" alt="Pilled silver" /></div>
+            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/pilled-silver.svg" alt="Pilled silver" /></div>
             <div>pilled-silver.svg</div>
           </div>
           <div class="icon-variant">
-            <div class="icon-chip"><img src="../assets/icons/obs.svg" alt="OBS" /></div>
+            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/obs.svg" alt="OBS" /></div>
             <div>obs.svg</div>
           </div>
           <div class="icon-variant">
-            <div class="icon-chip"><img src="../assets/icons/obs-0.svg" alt="OBS muted" /></div>
-            <div>obs-muted.svg</div>
+            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/obs-0.svg" alt="OBS muted" /></div>
+            <div>obs-0.svg</div>
           </div>
           <div class="icon-variant dark">
-            <div class="icon-chip"><img src="../assets/icons/obs-silver.svg" alt="OBS silver" /></div>
+            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/obs-silver.svg" alt="OBS silver" /></div>
             <div>obs-silver.svg</div>
           </div>
           <div class="icon-variant">
-            <div class="icon-chip"><img src="../assets/icons/kick.svg" alt="Kick" /></div>
+            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/kick.svg" alt="Kick" /></div>
             <div>kick.svg</div>
           </div>
           <div class="icon-variant">
-            <div class="icon-chip"><img src="../assets/icons/kick-0.svg" alt="Kick muted" /></div>
-            <div>kick-muted.svg</div>
+            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/kick-0.svg" alt="Kick muted" /></div>
+            <div>kick-0.svg</div>
           </div>
           <div class="icon-variant dark">
-            <div class="icon-chip"><img src="../assets/icons/kick-silver.svg" alt="Kick silver" /></div>
+            <div class="icon-chip"><img src="/StreamSuites-Dashboard/docs/assets/icons/kick-silver.svg" alt="Kick silver" /></div>
             <div>kick-silver.svg</div>
           </div>
         </div>
       </div>
 
-      <div class="design-card wide" data-tags="replay overlay cards">
+      <div class="design-card wide" data-category="replay overlay cards">
         <h3>Chat, Replay & Overlay</h3>
         <div class="design-stack">
           <div class="design-bubble">
@@ -1202,7 +993,7 @@
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const chips = Array.from(document.querySelectorAll('.design-chip[data-filter]'));
-    const cards = Array.from(document.querySelectorAll('.design-card[data-tags]'));
+    const cards = Array.from(document.querySelectorAll('.design-card[data-category]'));
 
     const applyFilters = () => {
       const activeFilters = chips
@@ -1210,7 +1001,7 @@
         .map((chip) => chip.dataset.filter);
 
       cards.forEach((card) => {
-        const tags = (card.dataset.tags || '')
+        const tags = (card.dataset.category || '')
           .split(/\s+/)
           .map((tag) => tag.trim())
           .filter(Boolean);
@@ -1232,8 +1023,8 @@
     const popoutBtn = document.getElementById('chat-popout');
     if (popoutBtn) {
       popoutBtn.addEventListener('click', () => {
-        const popoutUrl = new URL('chat_window.html', window.location.href);
-        window.open(popoutUrl.toString(), 'chatWindowPreview', 'width=560,height=900,noopener,noreferrer');
+        const popoutUrl = '/StreamSuites-Dashboard/docs/views/chat_window.html';
+        window.open(popoutUrl, 'chatWindowPreview', 'width=560,height=900,noopener,noreferrer');
       });
     }
 
