@@ -75,6 +75,103 @@
     height: 22px;
   }
 
+  .design-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+  }
+
+  .design-table-wrap {
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--bg-panel);
+  }
+
+  .design-table-wrap .table-toolbar {
+    padding: 10px 12px;
+    background: var(--bg-panel-alt);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .design-table-note {
+    margin: 8px 0 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .design-footer-demos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+  }
+
+  .design-shell,
+  .design-footer-preview,
+  .design-nav-demo {
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    background: var(--bg-panel);
+    padding: 10px;
+  }
+
+  .design-shell {
+    overflow: hidden;
+  }
+
+  .design-footer-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .design-nav-demo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .design-nav-demo ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .design-nav-demo a {
+    color: var(--text-primary);
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid transparent;
+  }
+
+  .design-nav-demo a.active {
+    border-color: var(--accent-primary);
+  }
+
+  .design-pill-row,
+  .design-badge-stack {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .design-subnote {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .design-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
   .design-toggle {
     display: inline-flex;
     align-items: center;
@@ -138,11 +235,16 @@
       </p>
       <div class="design-row">
         <span class="design-chip">Buttons</span>
+        <span class="design-chip">Forms</span>
         <span class="design-chip">Checkboxes</span>
         <span class="design-chip">Toggles</span>
         <span class="design-chip">Badges</span>
         <span class="design-chip">Status</span>
         <span class="design-chip">Cards</span>
+        <span class="design-chip">Tables</span>
+        <span class="design-chip">Navigation</span>
+        <span class="design-chip">Headers / Footers</span>
+        <span class="design-chip">Alerts</span>
         <span class="design-chip">Typography</span>
         <span class="design-chip">Icons</span>
         <span class="design-chip">Replay / Overlay</span>
@@ -163,6 +265,39 @@
           <button class="ss-btn ss-btn-secondary" type="button">Secondary</button>
           <button class="ss-btn ss-btn-primary" type="button" disabled>Disabled</button>
         </div>
+        <div class="design-row">
+          <button class="ss-btn ss-btn-danger" type="button">Danger</button>
+          <button class="ss-btn ss-btn-secondary ss-btn-small" type="button">Small</button>
+        </div>
+      </div>
+
+      <div class="design-card">
+        <h3>Form Inputs</h3>
+        <div class="design-form-grid">
+          <div class="ss-form-row">
+            <label>Text</label>
+            <input type="text" placeholder="Creator name" />
+          </div>
+          <div class="ss-form-row">
+            <label>Number</label>
+            <input type="number" placeholder="Seconds" />
+          </div>
+          <div class="ss-form-row">
+            <label>Select</label>
+            <select>
+              <option>Runtime</option>
+              <option>Staged</option>
+            </select>
+          </div>
+          <div class="ss-form-row">
+            <label>Search</label>
+            <input type="search" class="ss-input" placeholder="Filter table rows" />
+          </div>
+          <div class="ss-form-row" style="grid-column: 1 / -1;">
+            <label>Textarea</label>
+            <textarea rows="2" placeholder="Replay note, overlay instructions, or admin memo"></textarea>
+          </div>
+        </div>
       </div>
 
       <div class="design-card">
@@ -172,21 +307,21 @@
             <label class="ss-checkbox-wrapper">
               <input type="checkbox" checked />
               <div class="ss-checkbox"></div>
-              <span class="ss-checkbox-label">Checked</span>
+              <span class="ss-checkbox-text">Checked</span>
             </label>
           </div>
           <div class="checkbox-row">
             <label class="ss-checkbox-wrapper">
               <input type="checkbox" />
               <div class="ss-checkbox"></div>
-              <span class="ss-checkbox-label">Unchecked</span>
+              <span class="ss-checkbox-text">Unchecked</span>
             </label>
           </div>
           <div class="checkbox-row">
-            <label class="ss-checkbox-wrapper">
+            <label class="ss-checkbox-wrapper ss-checkbox-disabled">
               <input type="checkbox" disabled />
               <div class="ss-checkbox"></div>
-              <span class="ss-checkbox-label">Disabled</span>
+              <span class="ss-checkbox-text">Disabled</span>
             </label>
           </div>
         </div>
@@ -228,11 +363,13 @@
       </div>
 
       <div class="design-card">
-        <h3>Badges & Status</h3>
-        <div class="design-row">
+        <h3>Badges, Pills & Status</h3>
+        <div class="design-badge-stack">
           <span class="ss-badge">Default</span>
           <span class="ss-badge ss-badge-warning">Warning</span>
           <span class="ss-badge ss-badge-danger">Critical</span>
+          <span class="pill">Public pill</span>
+          <span class="pill pill-success">Success pill</span>
         </div>
         <div class="design-row" style="margin-top:6px;">
           <span class="design-dot success"></span> <span class="muted">Active</span>
@@ -242,10 +379,32 @@
       </div>
 
       <div class="design-card">
-        <h3>Cards & Panels</h3>
+        <h3>Panels, Bars & Cards</h3>
         <div class="design-panel-sample">
-          <strong>Panel shell</strong>
-          <p class="muted" style="margin:4px 0 0 0;">Use <code>.ss-panel</code> and <code>.ss-panel-header</code> for section framing.</p>
+          <header class="ss-panel-header" style="padding: 0 0 8px 0;">
+            <h4 style="margin: 0;">Panel header</h4>
+            <p class="muted" style="margin: 2px 0 0 0;">Supports helper actions and inline status rows.</p>
+          </header>
+          <div class="ss-inline-status-row">
+            <div class="ss-inline-status-block">
+              <div class="label">Runtime status</div>
+              <div class="value">Healthy</div>
+            </div>
+            <div class="ss-inline-status-block">
+              <div class="label">Next launch</div>
+              <div class="value">Staged</div>
+            </div>
+          </div>
+          <div class="ss-restart-banner">Restart required. Platform polling changes apply after StreamSuites restarts.</div>
+        </div>
+      </div>
+
+      <div class="design-card">
+        <h3>Alerts & Empty States</h3>
+        <div class="design-stack">
+          <div class="ss-alert">Inline notice</div>
+          <div class="ss-alert ss-alert-danger">Danger notice</div>
+          <div class="ss-empty-state">Empty state / placeholder</div>
         </div>
       </div>
 
@@ -255,6 +414,125 @@
         <p class="muted">Caption / helper text</p>
         <p>Body copy for standard paragraphs.</p>
         <p><strong>Emphasis</strong> and <code>code treatments</code> remain available.</p>
+      </div>
+
+      <div class="design-card">
+        <h3>Tables & Toolbars</h3>
+        <div class="design-table-wrap">
+          <div class="table-toolbar">
+            <div class="table-toolbar-left">
+              <input type="search" class="ss-input" placeholder="Search rows" />
+            </div>
+            <div class="table-toolbar-right">
+              <span class="design-subnote">Pagination shown as pill group</span>
+            </div>
+          </div>
+          <table class="ss-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th class="align-right">State</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Primary row</td>
+                <td class="align-right"><span class="ss-badge">Active</span></td>
+                <td>Standard table spacing</td>
+              </tr>
+              <tr>
+                <td>Secondary row</td>
+                <td class="align-right"><span class="ss-badge ss-badge-warning">Pending</span></td>
+                <td>Supports inline controls</td>
+              </tr>
+            </tbody>
+          </table>
+          <table class="ss-table ss-table-compact" style="margin-top: 8px;">
+            <thead>
+              <tr>
+                <th>Compact name</th>
+                <th class="align-right">Status</th>
+                <th>Snippet</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Overlay cell</td>
+                <td class="align-right"><span class="ss-badge ss-badge-danger">Blocked</span></td>
+                <td>Compact density</td>
+              </tr>
+              <tr>
+                <td>Replay cell</td>
+                <td class="align-right"><span class="ss-badge">Allowed</span></td>
+                <td>For chat overlays</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="design-table-note">Compact rows: add <code>.ss-table-compact</code> for tighter overlays and admin lists.</div>
+        </div>
+      </div>
+
+      <div class="design-card">
+        <h3>Headers & Footers</h3>
+        <div class="design-footer-demos">
+          <div class="design-shell">
+            <header class="ss-header" style="padding: 10px 12px;">
+              <div class="ss-header-left">
+                <h3 style="margin:0;">Dashboard header</h3>
+              </div>
+              <div class="ss-header-right">
+                <span class="ss-badge">Admin</span>
+              </div>
+            </header>
+            <footer class="ss-footer" style="padding: 8px 12px;">
+              <span class="muted">Dashboard footer links</span>
+            </footer>
+          </div>
+          <div class="design-shell">
+            <header class="public-header">
+              <div class="brand">Public header</div>
+              <nav class="public-menu">
+                <a class="active" href="#">Overview</a>
+                <a href="#">Tools</a>
+                <a href="#">Support</a>
+              </nav>
+            </header>
+            <footer class="public-footer">
+              <div class="footer-left">Public footer</div>
+              <div class="footer-right">Links</div>
+            </footer>
+          </div>
+        </div>
+      </div>
+
+      <div class="design-card">
+        <h3>Navigation & Mobile Menus</h3>
+        <div class="design-stack">
+          <div class="design-nav-demo">
+            <div class="design-subnote">Hamburger toggle (.nav-toggle)</div>
+            <input type="checkbox" id="demo-nav-toggle" class="nav-toggle" aria-label="Toggle navigation" />
+            <label class="hamburger nav-toggle-trigger" for="demo-nav-toggle">
+              <span></span>
+              <span></span>
+              <span></span>
+            </label>
+            <ul>
+              <li><a class="active" href="#">Dashboard</a></li>
+              <li><a href="#">Creators</a></li>
+              <li><a href="#">Settings</a></li>
+            </ul>
+          </div>
+          <div class="design-nav-demo">
+            <div class="design-subnote">Public menu (.public-menu)</div>
+            <nav class="public-menu">
+              <a class="active" href="#">Home</a>
+              <a href="#">Scoreboards</a>
+              <a href="#">Clips</a>
+              <a href="#">Polls</a>
+            </nav>
+          </div>
+        </div>
       </div>
 
       <div class="design-card">
@@ -270,25 +548,27 @@
       </div>
 
       <div class="design-card">
-        <h3>Replay UI sample</h3>
-        <div class="design-bubble">
-          <div class="meta">
-            <span class="design-dot success"></span>
-            <span class="muted">runtime_snapshot.replay</span>
-            <span class="muted">overlay_safe=true</span>
+        <h3>Chat, Replay & Overlay</h3>
+        <div class="design-stack">
+          <div class="design-bubble">
+            <div class="meta">
+              <span class="design-dot success"></span>
+              <span class="muted">runtime_snapshot.replay</span>
+              <span class="muted">overlay_safe=true</span>
+            </div>
+            <div class="content">Overlay/replay elements align with the unified chat bubble layout.</div>
           </div>
-          <div class="content">Overlay/replay elements align with the unified chat bubble layout.</div>
-        </div>
-      </div>
-
-      <div class="design-card">
-        <h3>Overlay UI sample</h3>
-        <div class="design-bubble">
-          <div class="meta">
-            <span class="design-dot warning"></span>
-            <span class="muted">overlay gate</span>
+          <div class="design-bubble">
+            <div class="meta">
+              <span class="design-dot warning"></span>
+              <span class="muted">overlay gate</span>
+            </div>
+            <div class="content">Overlay rendering must be approved by <code>replay.overlay_safe</code>.</div>
           </div>
-          <div class="content">Overlay rendering must be approved by <code>replay.overlay_safe</code>.</div>
+          <div class="ss-form-row">
+            <label>Chat input (textarea)</label>
+            <textarea rows="2" placeholder="Type a chat response or replay note"></textarea>
+          </div>
         </div>
       </div>
 
