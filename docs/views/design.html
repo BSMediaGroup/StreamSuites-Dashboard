@@ -363,6 +363,80 @@
       </div>
 
       <div class="design-card">
+        <h3>Chat Window Controls</h3>
+        <p class="muted" style="margin:0;">Live/replay composer styles from chat_window.html.</p>
+        <div class="chat-window-sample">
+          <div class="chat-window-header">
+            <div class="chat-title">Live Chat Window</div>
+            <div class="header-actions">
+              <select class="theme-select" aria-label="Switch chat theme">
+                <option>Default</option>
+                <option>Slate</option>
+                <option>Midnight</option>
+                <option>Light</option>
+              </select>
+              <span class="badge">Live</span>
+              <button class="settings-toggle" type="button" aria-label="Settings">
+                <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor"><path d="M388-80 368-206q-19-7-40-19t-37-25l-118 54-93-164 108-79q-2-9-2.5-20.5T185-480q0-9 .5-20.5T188-521L80-600l93-164 118 54q16-13 37-25t40-18l20-127h184l20 126q19 7 40.5 18.5T669-710l118-54 93 164-108 77q2 10 2.5 21.5t.5 21.5q0 10-.5 21t-2.5 21l108 78-93 164-118-54q-16 13-36.5 25.5T592-206L572-80H388Zm92-270q54 0 92-38t38-92q0-54-38-92t-92-38q-54 0-92 38t-38 92q0 54 38 92t92 38Z"/></svg>
+              </button>
+              <div class="menu-panel" style="right: 0; top: 54px;">
+                <div class="menu-title">Settings</div>
+                <button type="button" class="menu-item">Account (placeholder)</button>
+                <button type="button" class="menu-item">Hotkeys (placeholder)</button>
+                <button type="button" class="menu-item">Moderation (placeholder)</button>
+                <button type="button" class="menu-item">Appearance (placeholder)</button>
+                <hr class="menu-divider" />
+                <button type="button" class="menu-item">About (placeholder)</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-window-body">
+            <div class="live-chat-input">
+              <textarea placeholder="Type a live message"></textarea>
+
+              <div class="chat-postas">
+                <button class="postas-toggle" type="button" aria-label="Post as">
+                  <span class="postas-icon" aria-hidden="true"></span>
+                </button>
+                <div class="menu-panel">
+                  <div class="menu-title">Post as</div>
+                  <button class="menu-item" type="button" disabled>Post to All</button>
+                  <button class="menu-item" type="button" disabled>YouTube</button>
+                  <button class="menu-item" type="button" disabled>Twitch</button>
+                  <button class="menu-item" type="button" disabled>Discord</button>
+                  <button class="menu-item" type="button">Login</button>
+                  <hr class="menu-divider" />
+                  <button class="menu-item" type="button">Reconnect</button>
+                </div>
+              </div>
+
+              <div class="chat-input-toolbar">
+                <button class="emoji-btn emoji-toggle" type="button" aria-label="Emoji">
+                  <svg viewBox="0 0 960 960" aria-hidden="true" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M480 699q66 0 121.5-35.5T682 567H278q26 61 81 96.5T480 699ZM302 427l45-45 45 45 36-36-81-81-81 81 36 36Zm267 0 45-45 45 45 36-36-81-81-81 81 36 36ZM480 880q-83 0-156-31.5T197 763q-54-54-85.5-127T80 480q0-83 31.5-156T197 197q54-54 127-85.5T480 80q83 0 156 31.5T763 197q54 54 85.5 127T880 480q0 83-31.5 156T763 763q-54 54-127 85.5T480 880Zm0-400Zm0 340q142.38 0 241.19-98.81Q820 621.37 820 480q0-142.38-98.81-241.19T480 140q-142.37 0-241.19 98.81Q140 337.62 140 480q0 142.37 98.81 241.19Q337.63 780 480 780Z" />
+                  </svg>
+                </button>
+                <div class="emoji-menu">
+                  <button type="button">😊</button>
+                  <button type="button">🔥</button>
+                  <button type="button">❤️</button>
+                  <button type="button">👍</button>
+                  <button type="button">🙌</button>
+                  <button type="button">🥳</button>
+                </div>
+                <button class="send-btn" type="button" aria-label="Send">
+                  <svg viewBox="0 0 960 960" aria-hidden="true" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M120 800V555l302-75-302-77V160l760 320L120 800Z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="design-card">
         <h3>Badges, Pills & Status</h3>
         <div class="design-badge-stack">
           <span class="ss-badge">Default</span>
