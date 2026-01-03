@@ -560,12 +560,10 @@
   gap: 8px;
   min-height: 24px;
   min-width: 24px;
-  transform-style: preserve-3d;
-  transition: transform 0.5s ease;
 }
 
 .ss-checkbox-wrapper:hover {
-  transform: rotateX(10deg) rotateY(10deg);
+  transform: none;
 }
 
 .ss-checkbox-wrapper input {
@@ -592,7 +590,6 @@
     inset 0 3px 6px rgba(255, 255, 255, 0.12);
   overflow: hidden;
   transition: all 0.3s ease;
-  transform-style: preserve-3d;
 }
 
 .ss-checkbox::before {
@@ -627,7 +624,7 @@
 }
 
 .ss-checkbox-wrapper:hover .ss-checkbox {
-  transform: translateY(-2px) translateZ(4px);
+  transform: scale(1.06);
   box-shadow:
     0 6px 10px rgba(0, 0, 0, 0.4),
     inset 0 -3px 6px rgba(0, 0, 0, 0.22),

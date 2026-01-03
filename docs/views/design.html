@@ -44,6 +44,16 @@
     border: 1px solid var(--border-subtle);
     font-size: 12px;
     letter-spacing: 0.04em;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .design-chip.active {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: #0b0d10;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
   }
 
   .design-panel-sample {
@@ -79,15 +89,20 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px;
+    padding: 10px 12px;
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-sm);
     background: var(--bg-panel);
+    white-space: nowrap;
   }
 
   .design-icon img {
     width: 22px;
     height: 22px;
+  }
+
+  .design-icon img[alt="UI"] {
+    filter: brightness(0) saturate(100%) invert(50%) sepia(75%) saturate(830%) hue-rotate(179deg) brightness(102%) contrast(94%);
   }
 
   .design-form-grid {
@@ -176,6 +191,21 @@
     flex-wrap: wrap;
   }
 
+  .design-badge-stack .ss-badge {
+    padding: 8px 14px;
+    border-radius: 999px;
+    letter-spacing: 0.05em;
+    font-size: 11px;
+    min-width: 96px;
+    justify-content: center;
+  }
+
+  .design-badge-stack .pill {
+    min-width: 96px;
+    justify-content: center;
+    text-align: center;
+  }
+
   .design-subnote {
     font-size: 12px;
     color: var(--text-secondary);
@@ -191,6 +221,16 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
+  }
+
+  .design-toggle-row {
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .design-toggle .muted {
+    margin-left: 2px;
   }
 
   .design-bubble {
@@ -225,6 +265,89 @@
   .design-dot.success { background: #2dd4a6; }
   .design-dot.warning { background: #f4b400; }
   .design-dot.danger { background: #f66; }
+
+  .design-card.is-filtered-out {
+    display: none;
+  }
+
+  .design-chat-preview {
+    min-height: 360px;
+  }
+
+  .design-chat-preview .chat-window-body {
+    min-height: 260px;
+  }
+
+  .design-chat-preview .live-chat-input textarea {
+    min-height: 120px;
+  }
+
+  .design-chat-preview .chat-message-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .design-chat-preview .chat-message {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px;
+    align-items: start;
+  }
+
+  .design-chat-preview .chat-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(140deg, #5ee0c2, #4da2ff);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #0a0f1c;
+    font-weight: 700;
+    font-size: 12px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.38);
+  }
+
+  .design-chat-preview .chat-bubble {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 10px 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+  }
+
+  .design-chat-preview .chat-bubble .meta {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: #9fb0d1;
+    text-transform: uppercase;
+  }
+
+  .design-chat-preview .chat-bubble .message {
+    margin-top: 6px;
+    color: #e7ecfa;
+    font-size: 13px;
+  }
+
+  .design-card[data-tags~="toggles"] .design-row {
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .design-icon {
+    padding: 10px 16px;
+  }
+
+  .chat-window-sample .menu-panel[hidden],
+  .chat-window-sample .emoji-menu[hidden] {
+    display: none;
+  }
 </style>
 
 <header class="ss-header">
@@ -249,20 +372,20 @@
         Everything on this page is sample-only.
       </p>
       <div class="design-row">
-        <span class="design-chip">Buttons</span>
-        <span class="design-chip">Forms</span>
-        <span class="design-chip">Checkboxes</span>
-        <span class="design-chip">Toggles</span>
-        <span class="design-chip">Badges</span>
-        <span class="design-chip">Status</span>
-        <span class="design-chip">Cards</span>
-        <span class="design-chip">Tables</span>
-        <span class="design-chip">Navigation</span>
-        <span class="design-chip">Headers / Footers</span>
-        <span class="design-chip">Alerts</span>
-        <span class="design-chip">Typography</span>
-        <span class="design-chip">Icons</span>
-        <span class="design-chip">Replay / Overlay</span>
+        <span class="design-chip" data-filter="buttons">Buttons</span>
+        <span class="design-chip" data-filter="forms">Forms</span>
+        <span class="design-chip" data-filter="checkboxes">Checkboxes</span>
+        <span class="design-chip" data-filter="toggles">Toggles</span>
+        <span class="design-chip" data-filter="badges">Badges</span>
+        <span class="design-chip" data-filter="status">Status</span>
+        <span class="design-chip" data-filter="cards">Cards</span>
+        <span class="design-chip" data-filter="tables">Tables</span>
+        <span class="design-chip" data-filter="navigation">Navigation</span>
+        <span class="design-chip" data-filter="headers">Headers / Footers</span>
+        <span class="design-chip" data-filter="alerts">Alerts</span>
+        <span class="design-chip" data-filter="typography">Typography</span>
+        <span class="design-chip" data-filter="icons">Icons</span>
+        <span class="design-chip" data-filter="replay">Replay / Overlay</span>
       </div>
     </div>
   </section>
@@ -273,9 +396,9 @@
     </header>
     <div class="ss-panel-body design-grid">
 
-      <div class="design-card">
+      <div class="design-card" data-tags="buttons">
         <h3>Buttons</h3>
-        <div class="design-row">
+        <div class="design-row design-toggle-row">
           <button class="ss-btn ss-btn-primary" type="button">Primary</button>
           <button class="ss-btn ss-btn-secondary" type="button">Secondary</button>
           <button class="ss-btn ss-btn-primary" type="button" disabled>Disabled</button>
@@ -286,7 +409,7 @@
         </div>
       </div>
 
-      <div class="design-card wide">
+      <div class="design-card wide" data-tags="forms">
         <h3>Form Inputs</h3>
         <div class="design-form-grid">
           <div class="ss-form-row">
@@ -315,7 +438,7 @@
         </div>
       </div>
 
-      <div class="design-card">
+      <div class="design-card" data-tags="checkboxes forms">
         <h3>Checkbox (Glowing)</h3>
         <div class="design-row">
           <div class="checkbox-row">
@@ -342,10 +465,10 @@
         </div>
       </div>
 
-      <div class="design-card">
+      <div class="design-card" data-tags="toggles">
         <h3>Toggle Switch (Admin12121)</h3>
         <p class="muted" style="margin:0;">Exact switch-button geometry.</p>
-        <div class="design-row">
+        <div class="design-row design-toggle-row">
           <div class="design-toggle">
             <label class="switch-button" aria-label="Platform toggle">
               <div class="switch-scale">
@@ -377,10 +500,10 @@
         </div>
       </div>
 
-      <div class="design-card wide">
+      <div class="design-card wide" data-tags="cards replay overlay">
         <h3>Chat Window Controls</h3>
         <p class="muted" style="margin:0;">Live/replay composer styles from chat_window.html.</p>
-        <div class="chat-window-sample">
+        <div class="chat-window-sample design-chat-preview">
           <div class="chat-window-header">
             <div class="chat-title">Live Chat Window</div>
             <div class="header-actions">
@@ -391,10 +514,10 @@
                 <option>Light</option>
               </select>
               <span class="badge">Live</span>
-              <button class="settings-toggle" type="button" aria-label="Settings">
+              <button class="settings-toggle" type="button" aria-label="Settings" aria-expanded="false">
                 <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor"><path d="M388-80 368-206q-19-7-40-19t-37-25l-118 54-93-164 108-79q-2-9-2.5-20.5T185-480q0-9 .5-20.5T188-521L80-600l93-164 118 54q16-13 37-25t40-18l20-127h184l20 126q19 7 40.5 18.5T669-710l118-54 93 164-108 77q2 10 2.5 21.5t.5 21.5q0 10-.5 21t-2.5 21l108 78-93 164-118-54q-16 13-36.5 25.5T592-206L572-80H388Zm92-270q54 0 92-38t38-92q0-54-38-92t-92-38q-54 0-92 38t-38 92q0 54 38 92t92 38Z"/></svg>
               </button>
-              <div class="menu-panel" style="right: 0; top: 54px;">
+              <div class="menu-panel" style="right: 0; top: 54px;" hidden>
                 <div class="menu-title">Settings</div>
                 <button type="button" class="menu-item">Account (placeholder)</button>
                 <button type="button" class="menu-item">Hotkeys (placeholder)</button>
@@ -407,14 +530,30 @@
           </div>
 
           <div class="chat-window-body">
+            <div class="chat-message-list">
+              <div class="chat-message">
+                <div class="chat-avatar">AM</div>
+                <div class="chat-bubble">
+                  <div class="meta"><span class="badge">Mod</span><span>Alex</span><span>18:32</span></div>
+                  <div class="message">Reminder: keep overlays synced across platforms. Replay preview is linked.</div>
+                </div>
+              </div>
+              <div class="chat-message">
+                <div class="chat-avatar">BR</div>
+                <div class="chat-bubble">
+                  <div class="meta"><span class="badge">Live</span><span>Bea</span><span>18:33</span></div>
+                  <div class="message">Queued the highlight reel. Ready to post on send.</div>
+                </div>
+              </div>
+            </div>
             <div class="live-chat-input">
               <textarea placeholder="Type a live message"></textarea>
 
               <div class="chat-postas">
-                <button class="postas-toggle" type="button" aria-label="Post as">
+                <button class="postas-toggle" type="button" aria-label="Post as" aria-expanded="false">
                   <span class="postas-icon" aria-hidden="true"></span>
                 </button>
-                <div class="menu-panel">
+                <div class="menu-panel" hidden>
                   <div class="menu-title">Post as</div>
                   <button class="menu-item" type="button" disabled>Post to All</button>
                   <button class="menu-item" type="button" disabled>YouTube</button>
@@ -427,12 +566,12 @@
               </div>
 
               <div class="chat-input-toolbar">
-                <button class="emoji-btn emoji-toggle" type="button" aria-label="Emoji">
+                <button class="emoji-btn emoji-toggle" type="button" aria-label="Emoji" aria-expanded="false">
                   <svg viewBox="0 0 960 960" aria-hidden="true" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                     <path d="M480 699q66 0 121.5-35.5T682 567H278q26 61 81 96.5T480 699ZM302 427l45-45 45 45 36-36-81-81-81 81 36 36Zm267 0 45-45 45 45 36-36-81-81-81 81 36 36ZM480 880q-83 0-156-31.5T197 763q-54-54-85.5-127T80 480q0-83 31.5-156T197 197q54-54 127-85.5T480 80q83 0 156 31.5T763 197q54 54 85.5 127T880 480q0 83-31.5 156T763 763q-54 54-127 85.5T480 880Zm0-400Zm0 340q142.38 0 241.19-98.81Q820 621.37 820 480q0-142.38-98.81-241.19T480 140q-142.37 0-241.19 98.81Q140 337.62 140 480q0 142.37 98.81 241.19Q337.63 780 480 780Z" />
                   </svg>
                 </button>
-                <div class="emoji-menu">
+                <div class="emoji-menu" hidden>
                   <button type="button">😊</button>
                   <button type="button">🔥</button>
                   <button type="button">❤️</button>
@@ -451,7 +590,7 @@
         </div>
       </div>
 
-      <div class="design-card wide">
+      <div class="design-card wide" data-tags="badges status">
         <h3>Badges, Pills & Status</h3>
         <div class="design-badge-stack">
           <span class="ss-badge">Default</span>
@@ -467,7 +606,7 @@
         </div>
       </div>
 
-      <div class="design-card wide">
+      <div class="design-card wide" data-tags="cards status">
         <h3>Panels, Bars & Cards</h3>
         <div class="design-panel-sample">
           <header class="ss-panel-header" style="padding: 0 0 8px 0;">
@@ -488,7 +627,7 @@
         </div>
       </div>
 
-      <div class="design-card">
+      <div class="design-card" data-tags="alerts">
         <h3>Alerts & Empty States</h3>
         <div class="design-stack">
           <div class="ss-alert">Inline notice</div>
@@ -497,7 +636,7 @@
         </div>
       </div>
 
-      <div class="design-card design-typo">
+      <div class="design-card design-typo" data-tags="typography">
         <h3>Typography</h3>
         <h4>Heading 4</h4>
         <p class="muted">Caption / helper text</p>
@@ -505,7 +644,7 @@
         <p><strong>Emphasis</strong> and <code>code treatments</code> remain available.</p>
       </div>
 
-      <div class="design-card wide">
+      <div class="design-card wide" data-tags="tables cards">
         <h3>Tables & Toolbars</h3>
         <div class="design-table-wrap">
           <div class="table-toolbar">
@@ -562,11 +701,11 @@
         </div>
       </div>
 
-      <div class="design-card wide">
+      <div class="design-card full" data-tags="headers navigation cards">
         <h3>Headers & Footers</h3>
-        <div class="design-footer-demos">
+        <div class="design-stack">
           <div class="design-shell">
-            <header class="ss-header" style="padding: 10px 12px;">
+            <header class="ss-header" style="padding: 12px 14px;">
               <div class="ss-header-left">
                 <h3 style="margin:0;">Dashboard header</h3>
               </div>
@@ -574,7 +713,7 @@
                 <span class="ss-badge">Admin</span>
               </div>
             </header>
-            <footer class="ss-footer" style="padding: 8px 12px;">
+            <footer class="ss-footer" style="padding: 10px 14px; margin-top: 8px;">
               <span class="muted">Dashboard footer links</span>
             </footer>
           </div>
@@ -587,7 +726,7 @@
                 <a href="#">Support</a>
               </nav>
             </header>
-            <footer class="public-footer">
+            <footer class="public-footer" style="margin-top: 8px;">
               <div class="footer-left">Public footer</div>
               <div class="footer-right">Links</div>
             </footer>
@@ -595,7 +734,7 @@
         </div>
       </div>
 
-      <div class="design-card wide">
+      <div class="design-card wide" data-tags="navigation">
         <h3>Navigation & Mobile Menus</h3>
         <div class="design-stack">
           <div class="design-nav-demo">
@@ -624,126 +763,7 @@
         </div>
       </div>
 
-      <div class="design-card">
-        <h3>Tables & Toolbars</h3>
-        <div class="design-table-wrap">
-          <div class="table-toolbar">
-            <div class="table-toolbar-left">
-              <input type="search" class="ss-input" placeholder="Search rows" />
-            </div>
-            <div class="table-toolbar-right">
-              <span class="design-subnote">Pagination shown as pill group</span>
-            </div>
-          </div>
-          <table class="ss-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th class="align-right">State</th>
-                <th>Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Primary row</td>
-                <td class="align-right"><span class="ss-badge">Active</span></td>
-                <td>Standard table spacing</td>
-              </tr>
-              <tr>
-                <td>Secondary row</td>
-                <td class="align-right"><span class="ss-badge ss-badge-warning">Pending</span></td>
-                <td>Supports inline controls</td>
-              </tr>
-            </tbody>
-          </table>
-          <table class="ss-table ss-table-compact" style="margin-top: 8px;">
-            <thead>
-              <tr>
-                <th>Compact name</th>
-                <th class="align-right">Status</th>
-                <th>Snippet</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Overlay cell</td>
-                <td class="align-right"><span class="ss-badge ss-badge-danger">Blocked</span></td>
-                <td>Compact density</td>
-              </tr>
-              <tr>
-                <td>Replay cell</td>
-                <td class="align-right"><span class="ss-badge">Allowed</span></td>
-                <td>For chat overlays</td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="design-table-note">Compact rows: add <code>.ss-table-compact</code> for tighter overlays and admin lists.</div>
-        </div>
-      </div>
-
-      <div class="design-card">
-        <h3>Headers & Footers</h3>
-        <div class="design-footer-demos">
-          <div class="design-shell">
-            <header class="ss-header" style="padding: 10px 12px;">
-              <div class="ss-header-left">
-                <h3 style="margin:0;">Dashboard header</h3>
-              </div>
-              <div class="ss-header-right">
-                <span class="ss-badge">Admin</span>
-              </div>
-            </header>
-            <footer class="ss-footer" style="padding: 8px 12px;">
-              <span class="muted">Dashboard footer links</span>
-            </footer>
-          </div>
-          <div class="design-shell">
-            <header class="public-header">
-              <div class="brand">Public header</div>
-              <nav class="public-menu">
-                <a class="active" href="#">Overview</a>
-                <a href="#">Tools</a>
-                <a href="#">Support</a>
-              </nav>
-            </header>
-            <footer class="public-footer">
-              <div class="footer-left">Public footer</div>
-              <div class="footer-right">Links</div>
-            </footer>
-          </div>
-        </div>
-      </div>
-
-      <div class="design-card">
-        <h3>Navigation & Mobile Menus</h3>
-        <div class="design-stack">
-          <div class="design-nav-demo">
-            <div class="design-subnote">Hamburger toggle (.nav-toggle)</div>
-            <input type="checkbox" id="demo-nav-toggle" class="nav-toggle" aria-label="Toggle navigation" />
-            <label class="hamburger nav-toggle-trigger" for="demo-nav-toggle">
-              <span></span>
-              <span></span>
-              <span></span>
-            </label>
-            <ul>
-              <li><a class="active" href="#">Dashboard</a></li>
-              <li><a href="#">Creators</a></li>
-              <li><a href="#">Settings</a></li>
-            </ul>
-          </div>
-          <div class="design-nav-demo">
-            <div class="design-subnote">Public menu (.public-menu)</div>
-            <nav class="public-menu">
-              <a class="active" href="#">Home</a>
-              <a href="#">Scoreboards</a>
-              <a href="#">Clips</a>
-              <a href="#">Polls</a>
-            </nav>
-          </div>
-        </div>
-      </div>
-
-      <div class="design-card">
+      <div class="design-card" data-tags="icons">
         <h3>Icons</h3>
         <div class="design-icon-grid">
           <div class="design-icon"><img src="assets/icons/youtube.svg" alt="YouTube" />YouTube</div>
@@ -756,11 +776,11 @@
           <div class="design-icon"><img src="assets/icons/dcbadge.svg" alt="DC" />DC badge</div>
           <div class="design-icon"><img src="assets/icons/mod.svg" alt="Moderator" />Mod badge</div>
           <div class="design-icon"><img src="assets/icons/pilled.svg" alt="Pilled" />Pilled</div>
-          <div class="design-icon"><img src="assets/icons/ui/send.svg" alt="Send" />UI</div>
+          <div class="design-icon"><img src="assets/icons/ui/send.svg" alt="UI" />UI</div>
         </div>
       </div>
 
-      <div class="design-card wide">
+      <div class="design-card wide" data-tags="replay overlay cards">
         <h3>Chat, Replay & Overlay</h3>
         <div class="design-stack">
           <div class="design-bubble">
@@ -788,3 +808,83 @@
     </div>
   </section>
 </main>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const chips = Array.from(document.querySelectorAll('.design-chip[data-filter]'));
+    const cards = Array.from(document.querySelectorAll('.design-card[data-tags]'));
+
+    const applyFilters = () => {
+      const activeFilters = chips
+        .filter((chip) => chip.classList.contains('active'))
+        .map((chip) => chip.dataset.filter);
+
+      cards.forEach((card) => {
+        const tags = (card.dataset.tags || '')
+          .split(/\s+/)
+          .map((tag) => tag.trim())
+          .filter(Boolean);
+        const matches =
+          activeFilters.length === 0 || activeFilters.every((filter) => tags.includes(filter));
+        card.classList.toggle('is-filtered-out', !matches);
+      });
+    };
+
+    chips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        chip.classList.toggle('active');
+        applyFilters();
+      });
+    });
+
+    applyFilters();
+
+    const chatPreview = document.querySelector('.design-chat-preview');
+
+    if (chatPreview) {
+      const panelPairs = [
+        [chatPreview.querySelector('.settings-toggle'), chatPreview.querySelector('.chat-window-header .menu-panel')],
+        [chatPreview.querySelector('.postas-toggle'), chatPreview.querySelector('.chat-postas .menu-panel')],
+        [chatPreview.querySelector('.emoji-toggle'), chatPreview.querySelector('.emoji-menu')],
+      ].filter(([button, panel]) => button && panel);
+
+      const closeAllPanels = (exceptPanel = null) => {
+        panelPairs.forEach(([button, panel]) => {
+          const shouldHide = panel !== exceptPanel;
+          if (shouldHide) {
+            panel.hidden = true;
+            button.setAttribute('aria-expanded', 'false');
+          }
+        });
+      };
+
+      panelPairs.forEach(([button, panel]) => {
+        button.addEventListener('click', (event) => {
+          event.stopPropagation();
+          const willOpen = panel.hidden;
+          closeAllPanels(willOpen ? panel : null);
+          panel.hidden = !willOpen;
+          button.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        });
+
+        panel.addEventListener('click', (event) => {
+          event.stopPropagation();
+        });
+      });
+
+      document.addEventListener('click', (event) => {
+        if (!chatPreview.contains(event.target)) {
+          closeAllPanels();
+          return;
+        }
+
+        const clickedInsidePanel = panelPairs.some(([, panel]) => panel.contains(event.target));
+        const clickedToggle = panelPairs.some(([button]) => button.contains(event.target));
+
+        if (!clickedInsidePanel && !clickedToggle) {
+          closeAllPanels();
+        }
+      });
+    }
+  });
+</script>
