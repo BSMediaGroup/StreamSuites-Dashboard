@@ -102,7 +102,7 @@
   }
 
   .design-icon img[alt="UI"] {
-    filter: invert(52%) sepia(93%) saturate(624%) hue-rotate(178deg) brightness(102%) contrast(96%);
+    filter: brightness(0) saturate(100%) invert(50%) sepia(75%) saturate(830%) hue-rotate(179deg) brightness(102%) contrast(94%);
   }
 
   .design-form-grid {
@@ -192,10 +192,18 @@
   }
 
   .design-badge-stack .ss-badge {
-    padding: 6px 12px;
+    padding: 8px 14px;
     border-radius: 999px;
     letter-spacing: 0.05em;
     font-size: 11px;
+    min-width: 96px;
+    justify-content: center;
+  }
+
+  .design-badge-stack .pill {
+    min-width: 96px;
+    justify-content: center;
+    text-align: center;
   }
 
   .design-subnote {
@@ -263,15 +271,77 @@
   }
 
   .design-chat-preview {
-    min-height: 260px;
+    min-height: 360px;
   }
 
   .design-chat-preview .chat-window-body {
-    min-height: 220px;
+    min-height: 260px;
   }
 
   .design-chat-preview .live-chat-input textarea {
     min-height: 120px;
+  }
+
+  .design-chat-preview .chat-message-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .design-chat-preview .chat-message {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px;
+    align-items: start;
+  }
+
+  .design-chat-preview .chat-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(140deg, #5ee0c2, #4da2ff);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #0a0f1c;
+    font-weight: 700;
+    font-size: 12px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.38);
+  }
+
+  .design-chat-preview .chat-bubble {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 10px 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+  }
+
+  .design-chat-preview .chat-bubble .meta {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: #9fb0d1;
+    text-transform: uppercase;
+  }
+
+  .design-chat-preview .chat-bubble .message {
+    margin-top: 6px;
+    color: #e7ecfa;
+    font-size: 13px;
+  }
+
+  .design-card[data-tags~="toggles"] .design-row {
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .design-icon {
+    padding: 10px 16px;
   }
 
   .chat-window-sample .menu-panel[hidden],
@@ -398,7 +468,7 @@
       <div class="design-card" data-tags="toggles">
         <h3>Toggle Switch (Admin12121)</h3>
         <p class="muted" style="margin:0;">Exact switch-button geometry.</p>
-        <div class="design-row">
+        <div class="design-row design-toggle-row">
           <div class="design-toggle">
             <label class="switch-button" aria-label="Platform toggle">
               <div class="switch-scale">
@@ -460,6 +530,22 @@
           </div>
 
           <div class="chat-window-body">
+            <div class="chat-message-list">
+              <div class="chat-message">
+                <div class="chat-avatar">AM</div>
+                <div class="chat-bubble">
+                  <div class="meta"><span class="badge">Mod</span><span>Alex</span><span>18:32</span></div>
+                  <div class="message">Reminder: keep overlays synced across platforms. Replay preview is linked.</div>
+                </div>
+              </div>
+              <div class="chat-message">
+                <div class="chat-avatar">BR</div>
+                <div class="chat-bubble">
+                  <div class="meta"><span class="badge">Live</span><span>Bea</span><span>18:33</span></div>
+                  <div class="message">Queued the highlight reel. Ready to post on send.</div>
+                </div>
+              </div>
+            </div>
             <div class="live-chat-input">
               <textarea placeholder="Type a live message"></textarea>
 
@@ -615,11 +701,11 @@
         </div>
       </div>
 
-      <div class="design-card wide" data-tags="headers navigation cards">
+      <div class="design-card full" data-tags="headers navigation cards">
         <h3>Headers & Footers</h3>
-        <div class="design-footer-demos">
+        <div class="design-stack">
           <div class="design-shell">
-            <header class="ss-header" style="padding: 10px 12px;">
+            <header class="ss-header" style="padding: 12px 14px;">
               <div class="ss-header-left">
                 <h3 style="margin:0;">Dashboard header</h3>
               </div>
@@ -627,7 +713,7 @@
                 <span class="ss-badge">Admin</span>
               </div>
             </header>
-            <footer class="ss-footer" style="padding: 8px 12px;">
+            <footer class="ss-footer" style="padding: 10px 14px; margin-top: 8px;">
               <span class="muted">Dashboard footer links</span>
             </footer>
           </div>
@@ -640,7 +726,7 @@
                 <a href="#">Support</a>
               </nav>
             </header>
-            <footer class="public-footer">
+            <footer class="public-footer" style="margin-top: 8px;">
               <div class="footer-left">Public footer</div>
               <div class="footer-right">Links</div>
             </footer>
@@ -690,7 +776,7 @@
           <div class="design-icon"><img src="assets/icons/dcbadge.svg" alt="DC" />DC badge</div>
           <div class="design-icon"><img src="assets/icons/mod.svg" alt="Moderator" />Mod badge</div>
           <div class="design-icon"><img src="assets/icons/pilled.svg" alt="Pilled" />Pilled</div>
-          <div class="design-icon"><img src="assets/icons/ui/send.svg" alt="Send" />UI</div>
+          <div class="design-icon"><img src="assets/icons/ui/send.svg" alt="UI" />UI</div>
         </div>
       </div>
 
@@ -738,7 +824,8 @@
           .split(/\s+/)
           .map((tag) => tag.trim())
           .filter(Boolean);
-        const matches = activeFilters.length === 0 || activeFilters.some((filter) => tags.includes(filter));
+        const matches =
+          activeFilters.length === 0 || activeFilters.every((filter) => tags.includes(filter));
         card.classList.toggle('is-filtered-out', !matches);
       });
     };
@@ -778,6 +865,10 @@
           closeAllPanels(willOpen ? panel : null);
           panel.hidden = !willOpen;
           button.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        });
+
+        panel.addEventListener('click', (event) => {
+          event.stopPropagation();
         });
       });
 
