@@ -1,8 +1,8 @@
 <style>
   .design-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 18px;
     align-items: start;
   }
 
@@ -192,19 +192,17 @@
     flex-wrap: wrap;
   }
 
-  .design-badge-stack .ss-badge {
-    padding: 8px 14px;
-    border-radius: 999px;
-    letter-spacing: 0.05em;
-    font-size: 11px;
-    min-width: 96px;
-    justify-content: center;
-  }
-
+  .design-badge-stack .ss-badge,
   .design-badge-stack .pill {
-    min-width: 96px;
+    min-width: 110px;
     justify-content: center;
     text-align: center;
+    padding: 9px 16px;
+    font-size: 12px;
+    line-height: 1.1;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
   }
 
   .design-subnote {
@@ -275,6 +273,10 @@
     align-items: flex-start;
   }
 
+  .design-card[data-tags~="toggles"] .design-toggle {
+    align-items: center;
+  }
+
   .design-chat-preview {
     min-height: 620px;
   }
@@ -341,7 +343,7 @@
 
   .design-card[data-tags~="toggles"] .design-row {
     justify-content: flex-start;
-    align-items: flex-start;
+    align-items: center;
     gap: 16px;
     width: 100%;
   }
@@ -1080,15 +1082,19 @@
       <div class="design-card" data-tags="icons">
         <h3>Icons</h3>
         <p class="muted" style="margin:0;">Default, muted, and silver (white) variants. Muted icons use <code>iconname-muted.svg</code>; white icons use <code>iconname-silver.svg</code>.</p>
-        <div class="design-icon-grid" style="margin-top:8px;">
-          <div class="design-icon"><img src="../assets/icons/youtube.svg" alt="YouTube" />YouTube</div>
-          <div class="design-icon"><img src="../assets/icons/twitch.svg" alt="Twitch" />Twitch</div>
-          <div class="design-icon"><img src="../assets/icons/rumble.svg" alt="Rumble" />Rumble</div>
-          <div class="design-icon"><img src="../assets/icons/discord.svg" alt="Discord" />Discord</div>
-          <div class="design-icon"><img src="../assets/icons/pilled.svg" alt="Pilled" />Pilled</div>
-          <div class="design-icon"><img src="../assets/icons/obs.svg" alt="OBS" />OBS</div>
-        </div>
         <div class="icon-variant-grid" style="margin-top:10px;">
+          <div class="icon-variant">
+            <div class="icon-chip"><img src="../assets/icons/youtube.svg" alt="YouTube" /></div>
+            <div>youtube.svg</div>
+          </div>
+          <div class="icon-variant">
+            <div class="icon-chip"><img src="../assets/icons/youtube-muted.svg" alt="YouTube muted" /></div>
+            <div>youtube-muted.svg</div>
+          </div>
+          <div class="icon-variant dark">
+            <div class="icon-chip"><img src="../assets/icons/youtube-silver.svg" alt="YouTube silver" /></div>
+            <div>youtube-silver.svg</div>
+          </div>
           <div class="icon-variant">
             <div class="icon-chip"><img src="../assets/icons/rumble.svg" alt="Rumble" /></div>
             <div>rumble.svg</div>
@@ -1118,8 +1124,8 @@
             <div>twitch.svg</div>
           </div>
           <div class="icon-variant">
-            <div class="icon-chip"><img src="../assets/icons/twitter-muted.svg" alt="Twitter muted" /></div>
-            <div>twitter-muted.svg</div>
+            <div class="icon-chip"><img src="../assets/icons/twitch-0.svg" alt="Twitch muted" /></div>
+            <div>twitch-muted.svg</div>
           </div>
           <div class="icon-variant dark">
             <div class="icon-chip"><img src="../assets/icons/twitch-silver.svg" alt="Twitch silver" /></div>
@@ -1136,6 +1142,30 @@
           <div class="icon-variant dark">
             <div class="icon-chip"><img src="../assets/icons/pilled-silver.svg" alt="Pilled silver" /></div>
             <div>pilled-silver.svg</div>
+          </div>
+          <div class="icon-variant">
+            <div class="icon-chip"><img src="../assets/icons/obs.svg" alt="OBS" /></div>
+            <div>obs.svg</div>
+          </div>
+          <div class="icon-variant">
+            <div class="icon-chip"><img src="../assets/icons/obs-0.svg" alt="OBS muted" /></div>
+            <div>obs-muted.svg</div>
+          </div>
+          <div class="icon-variant dark">
+            <div class="icon-chip"><img src="../assets/icons/obs-silver.svg" alt="OBS silver" /></div>
+            <div>obs-silver.svg</div>
+          </div>
+          <div class="icon-variant">
+            <div class="icon-chip"><img src="../assets/icons/kick.svg" alt="Kick" /></div>
+            <div>kick.svg</div>
+          </div>
+          <div class="icon-variant">
+            <div class="icon-chip"><img src="../assets/icons/kick-0.svg" alt="Kick muted" /></div>
+            <div>kick-muted.svg</div>
+          </div>
+          <div class="icon-variant dark">
+            <div class="icon-chip"><img src="../assets/icons/kick-silver.svg" alt="Kick silver" /></div>
+            <div>kick-silver.svg</div>
           </div>
         </div>
       </div>
@@ -1203,7 +1233,7 @@
     if (popoutBtn) {
       popoutBtn.addEventListener('click', () => {
         const popoutUrl = new URL('chat_window.html', window.location.href);
-        window.open(popoutUrl.toString(), 'chatWindowPreview', 'width=1280,height=900,noopener,noreferrer');
+        window.open(popoutUrl.toString(), 'chatWindowPreview', 'width=560,height=900,noopener,noreferrer');
       });
     }
 
@@ -1217,6 +1247,9 @@
       const settingsToggle = chatPreview.querySelector('#settings-toggle');
       const settingsMenu = chatPreview.querySelector('#settings-menu');
       const textarea = chatPreview.querySelector('.live-chat-input textarea');
+      const themeSelect = chatPreview.querySelector('#live-theme-select');
+      const modePill = chatPreview.querySelector('#mode-pill');
+      const liveInputWrapper = chatPreview.querySelector('#live-input-wrapper');
       const tabButtons = emojiMenu ? Array.from(emojiMenu.querySelectorAll('.emoji-tabs button')) : [];
       const sections = emojiMenu ? Array.from(emojiMenu.querySelectorAll('.emoji-section')) : [];
       const moderationButtons = Array.from(chatPreview.querySelectorAll('.moderation-btn'));
@@ -1226,6 +1259,44 @@
         { toggle: postasToggle, menu: postasMenu },
         { toggle: emojiToggle, menu: emojiMenu },
       ].filter(({ toggle, menu }) => toggle && menu);
+
+      const clearThemes = () => {
+        chatPreview.className = chatPreview.className
+          .split(' ')
+          .filter((c) => !c.startsWith('theme-'))
+          .join(' ')
+          .trim();
+      };
+
+      const applyTheme = (theme) => {
+        const next = theme || 'default';
+        clearThemes();
+        chatPreview.classList.add(`theme-${next}`);
+        if (themeSelect) {
+          themeSelect.value = next;
+        }
+      };
+
+      const setMode = (mode) => {
+        const nextMode = mode === 'replay' ? 'replay' : 'live';
+        if (modePill) {
+          modePill.textContent = nextMode === 'replay' ? 'Replay' : 'Live';
+          modePill.classList.toggle('is-replay', nextMode === 'replay');
+        }
+        liveInputWrapper?.classList.toggle('active', nextMode === 'live');
+      };
+
+      applyTheme(themeSelect?.value || 'default');
+      setMode('live');
+
+      themeSelect?.addEventListener('change', (event) => {
+        applyTheme(event.target.value);
+      });
+
+      modePill?.addEventListener('click', () => {
+        const next = modePill.textContent?.trim().toLowerCase() === 'live' ? 'replay' : 'live';
+        setMode(next);
+      });
 
       const closeAllPanels = () => {
         menuConfigs.forEach(({ toggle, menu }) => {
