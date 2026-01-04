@@ -1,20 +1,48 @@
 {
   "schema_version": "v1",
-  "generated_at": "2025-12-31T16:51:44.283467Z",
-  "heartbeat": "2025-12-31T16:51:44.283467Z",
+  "generated_at": "2026-01-04T06:46:00.392685Z",
+  "heartbeat": "2026-01-04T06:46:00.392685Z",
   "runtime": {
-    "project": "StreamSuites Runtime",
+    "project": "StreamSuites\u2122 Runtime",
     "version": "v0.2.2-alpha",
     "build": "2025.03"
   },
   "system": {
-    "platform_polling_enabled": true,
+    "platform_polling_enabled": {
+      "enabled": true
+    },
     "platforms": {
       "youtube": true,
       "twitch": true,
-      "discord": true
+      "discord": true,
+      "kick": false
+    },
+    "hot_reload": {
+      "enabled": false,
+      "watch_path": "runtime/exports",
+      "interval_seconds": 5.0
     }
   },
+  "jobs": [
+    {
+      "name": "clips",
+      "enabled": true,
+      "applied": true,
+      "reason": null
+    },
+    {
+      "name": "polls",
+      "enabled": true,
+      "applied": true,
+      "reason": null
+    },
+    {
+      "name": "tallies",
+      "enabled": true,
+      "applied": true,
+      "reason": null
+    }
+  ],
   "platforms": [
     {
       "name": "discord",
@@ -34,7 +62,53 @@
         "triggers": 0,
         "actions": 0,
         "actions_failed": 0
-      }
+      },
+      "replay_supported": false,
+      "overlay_supported": false
+    },
+    {
+      "name": "kick",
+      "platform": "kick",
+      "enabled": false,
+      "paused": false,
+      "telemetry_enabled": true,
+      "state": "disabled",
+      "status": "disabled",
+      "paused_reason": null,
+      "last_heartbeat": null,
+      "last_success_ts": null,
+      "last_event_ts": null,
+      "error": null,
+      "counters": {
+        "messages": 0,
+        "triggers": 0,
+        "actions": 0,
+        "actions_failed": 0
+      },
+      "replay_supported": false,
+      "overlay_supported": false
+    },
+    {
+      "name": "pilled",
+      "platform": "pilled",
+      "enabled": false,
+      "paused": false,
+      "telemetry_enabled": false,
+      "state": "disabled",
+      "status": "disabled",
+      "paused_reason": null,
+      "last_heartbeat": null,
+      "last_success_ts": null,
+      "last_event_ts": null,
+      "error": null,
+      "counters": {
+        "messages": 0,
+        "triggers": 0,
+        "actions": 0,
+        "actions_failed": 0
+      },
+      "replay_supported": true,
+      "overlay_supported": false
     },
     {
       "name": "rumble",
@@ -44,8 +118,8 @@
       "telemetry_enabled": true,
       "state": "paused",
       "status": "paused",
-      "paused_reason": "Platform ingestion paused",
-      "last_heartbeat": "2025-12-31T16:51:42.118695Z",
+      "paused_reason": "Rumble dependencies unavailable: No module named 'playwright'",
+      "last_heartbeat": "2026-01-04T06:45:59.308999Z",
       "last_success_ts": null,
       "last_event_ts": null,
       "error": null,
@@ -54,7 +128,9 @@
         "triggers": 0,
         "actions": 0,
         "actions_failed": 0
-      }
+      },
+      "replay_supported": false,
+      "overlay_supported": false
     },
     {
       "name": "twitch",
@@ -74,7 +150,9 @@
         "triggers": 0,
         "actions": 0,
         "actions_failed": 0
-      }
+      },
+      "replay_supported": true,
+      "overlay_supported": true
     },
     {
       "name": "twitter",
@@ -94,7 +172,9 @@
         "triggers": 0,
         "actions": 0,
         "actions_failed": 0
-      }
+      },
+      "replay_supported": false,
+      "overlay_supported": false
     },
     {
       "name": "youtube",
@@ -114,7 +194,9 @@
         "triggers": 0,
         "actions": 0,
         "actions_failed": 0
-      }
+      },
+      "replay_supported": true,
+      "overlay_supported": true
     }
   ],
   "creators": [
@@ -130,7 +212,7 @@
         "twitter": true,
         "discord": true
       },
-      "last_heartbeat": "2025-12-31T16:51:42.118695Z",
+      "last_heartbeat": "2026-01-04T06:45:59.307992Z",
       "error": null
     }
   ],
@@ -138,6 +220,13 @@
     "source": "shared"
   },
   "rumble_chat": null,
+  "replay": {
+    "available": false,
+    "platforms": [],
+    "event_count": 0,
+    "last_event_timestamp": null,
+    "overlay_safe": false
+  },
   "restart_intent": {
     "required": false,
     "pending": {
