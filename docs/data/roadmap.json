@@ -190,13 +190,13 @@
   {
     "id": "admin-desktop-app",
     "order": 15,
-    "title": "Desktop Admin Application (Local, Planned)",
-    "percent": 22,
-    "meta": "22% · Local EXE concept (dashboard awareness only)",
-    "status": "planned",
-    "description": "A Windows-first desktop Admin EXE is planned to mirror the dashboard’s admin views with local, authoritative control. It will read runtime state and write configuration locally, then hand changes back to the runtime without bypassing safety. No UI bindings or remote control paths are assumed; the entry documents the planned, local-only foundation with later parity targets for macOS and Linux. The dashboard only surfaces this planned work; no UI controls are wired.",
+    "title": "Desktop Admin Application (Local, Active)",
+    "percent": 85,
+    "meta": "85% · Local EXE concept (dashboard awareness only)",
+    "status": "active",
+    "description": "A Windows-first desktop Admin EXE is actively being built to mirror the dashboard’s admin views with local, authoritative control. It will read runtime state and write configuration locally, then hand changes back to the runtime without bypassing safety. No UI bindings or remote control paths are assumed; the entry documents the active development of a local-only foundation with later parity targets for macOS and Linux. The dashboard only surfaces this active work; no UI controls are wired yet.",
     "icon": "./assets/icons/ui/windows.svg",
-    "tooltip": "22% · 20–30% Planned foundation — Local Admin EXE concept; dashboard lists it for awareness only and bindings remain future work."
+    "tooltip": "85% · 80–90% In Progress — Local Admin EXE functionality is actively being developed for Windows, planned for future macOS and Linux parity."
   },
   {
     "id": "scoreboards",
