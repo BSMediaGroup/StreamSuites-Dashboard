@@ -1,6 +1,18 @@
 "use strict";
 
 const CHANGELOG_SCOPES = ["dashboard", "runtime", "global"];
+const DETAIL_KEYS = ["details", "bullets", "items", "changes", "entries"];
+
+function stripPrefixStar(value) {
+  if (!value) return value;
+  return String(value).replace(/^\s*[★⭐]\s*/, "");
+}
+
+function isPresent(value) {
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === "string") return Boolean(value.trim());
+  return value != null;
+}
 
 function parseDateSafe(value, label = "") {
   if (!value) return Number.NEGATIVE_INFINITY;
@@ -38,6 +50,52 @@ function normalizePath(basePath, relative) {
   return normalized.replace(/([^:])\/\/+/, "$1/");
 }
 
+function normalizeDetailItem(detail) {
+  if (!detail) return null;
+  if (typeof detail === "string") {
+    const trimmed = detail.trim();
+    return trimmed ? trimmed : null;
+  }
+
+  if (typeof detail === "object" && isPresent(detail.text)) {
+    return {
+      ...detail,
+      text: String(detail.text).trim(),
+      link: detail.link
+    };
+  }
+
+  return null;
+}
+
+function normalizeDetails(entry) {
+  for (const key of DETAIL_KEYS) {
+    const candidate = entry?.[key];
+    if (Array.isArray(candidate)) {
+      const normalized = candidate.map(normalizeDetailItem).filter(Boolean);
+      if (normalized.length) return normalized;
+    }
+  }
+
+  if (typeof entry?.body === "string") {
+    const lines = entry.body
+      .split(/\r?\n+/)
+      .map((item) => item.replace(/^[\s]*[-*•]\s*/, "").trim())
+      .filter(Boolean);
+    if (lines.length) return lines;
+  }
+
+  if (typeof entry?.description === "string" && entry.description.trim()) {
+    return [entry.description.trim()];
+  }
+
+  if (typeof entry?.summary === "string" && entry.summary.trim()) {
+    return [entry.summary.trim()];
+  }
+
+  return [];
+}
+
 async function fetchChangelog(path, { silent } = {}) {
   try {
     const res = await fetch(path, { cache: "no-store" });
@@ -61,11 +119,78 @@ function normalizeScope(value, fallback = "dashboard") {
 
 function normalizeEntry(entry, fallbackScope) {
   if (!entry || typeof entry !== "object") return null;
+  const summary = entry.summary || entry.description || "";
+  const normalizedDetails = normalizeDetails(entry);
+  const tags = Array.isArray(entry.tags)
+    ? entry.tags.filter((tag) => isPresent(tag)).map((tag) => String(tag))
+    : [];
+
   return {
     ...entry,
+    id: entry.id != null ? String(entry.id) : entry.id,
+    title: stripPrefixStar(entry.title || entry.version || ""),
+    summary,
+    details: normalizedDetails,
+    description: entry.description || "",
     scope: normalizeScope(entry.scope, fallbackScope),
-    tags: Array.isArray(entry.tags) ? entry.tags : []
+    tags,
+    is_latest: false,
+    pinned: false
   };
+}
+
+function dedupeList(values = []) {
+  const seen = new Set();
+  return values.filter((value) => {
+    const key = typeof value === "object" ? JSON.stringify(value) : String(value);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function mergeDetails(existing = [], incoming = []) {
+  const combined = [...(Array.isArray(existing) ? existing : []), ...(Array.isArray(incoming) ? incoming : [])];
+  return dedupeList(combined.filter(Boolean));
+}
+
+function mergeTags(existing = [], incoming = []) {
+  return dedupeList([...(Array.isArray(existing) ? existing : []), ...(Array.isArray(incoming) ? incoming : [])]);
+}
+
+function preferValue(primary, fallback) {
+  return isPresent(primary) ? primary : fallback;
+}
+
+function mergeEntry(existing, incoming) {
+  const baseDate = parseDateSafe(existing?.date, existing?.id || existing?.title || "");
+  const incomingDate = parseDateSafe(incoming?.date, incoming?.id || incoming?.title || "");
+  const primary = incomingDate > baseDate ? incoming : existing;
+  const secondary = primary === existing ? incoming : existing;
+
+  return {
+    ...secondary,
+    ...primary,
+    title: stripPrefixStar(preferValue(primary.title, secondary.title)),
+    version: preferValue(primary.version, secondary.version),
+    date: preferValue(primary.date, secondary.date),
+    summary: preferValue(primary.summary, secondary.summary),
+    description: preferValue(primary.description, secondary.description),
+    scope: preferValue(primary.scope, secondary.scope),
+    details: mergeDetails(primary.details, secondary.details),
+    tags: mergeTags(primary.tags, secondary.tags),
+    is_latest: false,
+    pinned: false
+  };
+}
+
+function buildEntryKey(entry) {
+  if (!entry) return null;
+  if (isPresent(entry.id)) return String(entry.id);
+  const datePart = entry.date ? String(entry.date) : "";
+  const titlePart = entry.title ? String(entry.title).toLowerCase().replace(/\s+/g, "-") : "";
+  const composite = `${datePart}__${titlePart}`.replace(/_+$/, "");
+  return composite.trim() || null;
 }
 
 function mergeEntries(...entrySets) {
@@ -74,7 +199,9 @@ function mergeEntries(...entrySets) {
 
   entrySets.flat().forEach((entry) => {
     if (!entry) return;
-    const key = entry.id != null ? String(entry.id) : null;
+    if (String(entry.title || "").trim().toLowerCase() === "runtime resumed") return;
+
+    const key = buildEntryKey(entry);
     if (!key) {
       withoutIds.push(entry);
       return;
@@ -86,27 +213,25 @@ function mergeEntries(...entrySets) {
     }
 
     const existing = seen.get(key);
-    const existingDate = parseDateSafe(existing?.date, existing?.id || existing?.title || "");
-    const incomingDate = parseDateSafe(entry?.date, entry?.id || entry?.title || "");
-
-    if (incomingDate > existingDate) {
-      seen.set(key, entry);
-    }
+    const merged = mergeEntry(existing, entry);
+    seen.set(key, merged);
   });
 
   const merged = [...seen.values(), ...withoutIds];
-  return merged.sort((a, b) => {
-    const aDate = parseDateSafe(a?.date, a?.id || a?.title || "");
-    const bDate = parseDateSafe(b?.date, b?.id || b?.title || "");
+  return merged
+    .filter(Boolean)
+    .sort((a, b) => {
+      const aDate = parseDateSafe(a?.date, a?.id || a?.title || "");
+      const bDate = parseDateSafe(b?.date, b?.id || b?.title || "");
 
-    if (aDate === bDate) {
-      const aKey = a?.id || a?.title || "";
-      const bKey = b?.id || b?.title || "";
-      return String(aKey).localeCompare(String(bKey));
-    }
+      if (aDate === bDate) {
+        const aKey = a?.id || a?.title || "";
+        const bKey = b?.id || b?.title || "";
+        return String(aKey).localeCompare(String(bKey));
+      }
 
-    return bDate - aDate;
-  });
+      return bDate - aDate;
+    });
 }
 
 export async function loadMergedChangelog() {
@@ -114,13 +239,13 @@ export async function loadMergedChangelog() {
   const dashboardPath = normalizePath(basePath, "data/changelog.dashboard.json");
   const runtimePath = normalizePath(basePath, "data/changelog.runtime.json");
 
-  const dashboardEntries = (await fetchChangelog(dashboardPath)).map((entry) =>
-    normalizeEntry(entry, "dashboard")
-  );
+  const dashboardEntries = (await fetchChangelog(dashboardPath))
+    .map((entry) => normalizeEntry(entry, "dashboard"))
+    .filter(Boolean);
 
-  const runtimeEntries = (await fetchChangelog(runtimePath, { silent: true })).map((entry) =>
-    normalizeEntry(entry, "runtime")
-  );
+  const runtimeEntries = (await fetchChangelog(runtimePath, { silent: true }))
+    .map((entry) => normalizeEntry(entry, "runtime"))
+    .filter(Boolean);
 
   return mergeEntries(dashboardEntries, runtimeEntries);
 }
