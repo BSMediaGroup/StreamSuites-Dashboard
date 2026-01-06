@@ -2,14 +2,14 @@
   "meta": {
     "source": "runtime",
     "project": "StreamSuites",
-    "version": "v0.2.3-alpha",
+    "version": "0.2.3-alpha",
     "generated_at": "2025-04-01"
   },
   "entries": [
     {
       "id": "2025-04-architecture-clarification",
       "date": "2025-04-01",
-      "version": "v0.2.3-alpha",
+      "version": "0.2.3-alpha",
       "scope": "runtime",
       "title": "Runtime authority and admin boundaries clarified",
       "summary": "Documented the two-repo architecture with the runtime as the sole authority, a privileged local WinForms admin, and a downstream read-only web dashboard consumer.",
@@ -24,7 +24,7 @@
     {
       "id": "2026-01-alpha-version-sync",
       "date": "2026-01-01",
-      "version": "v0.2.3-alpha",
+      "version": "0.2.3-alpha",
       "scope": "runtime",
       "title": "Alpha metadata corrected",
       "summary": "Captured the v0.2.2-alpha metadata refresh while keeping prior runtime records at their original versions.",
@@ -38,7 +38,7 @@
     {
       "id": "2026-01-runtime-resumed",
       "date": "2026-01-15",
-      "version": "v0.2.3-alpha",
+      "version": "0.2.3-alpha",
       "scope": "runtime",
       "title": "Runtime development resumed",
       "summary": "Runtime execution resumed with Rumble paused and YouTube/Twitch prioritized for ingestion.",
@@ -52,7 +52,7 @@
     {
       "id": "2025-12-project-suspended",
       "date": "2025-12-28",
-      "version": "v0.2.3-alpha",
+      "version": "0.2.3-alpha",
       "scope": "runtime",
       "title": "Runtime development suspended",
       "summary": "Runtime execution and ingestion development has been suspended.",
@@ -66,7 +66,7 @@
     {
       "id": "2025-02-runtime-quotas",
       "date": "2025-12-20",
-      "version": "v0.2.3-alpha",
+      "version": "0.2.3-alpha",
       "scope": "runtime",
       "title": "Quota enforcement hardened",
       "summary": "Daily quota enforcement stabilized across platforms.",
