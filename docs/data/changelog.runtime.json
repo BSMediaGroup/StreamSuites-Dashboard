@@ -1,21 +1,12 @@
 [
   {
-    "id": "2025-04-architecture-clarification",
-    "date": "2025-04-01",
-    "title": "Architecture and authority clarified",
-    "description": "Documented the two-repo architecture, affirming the runtime as the sole authority with a privileged WinForms admin and read-only web dashboard consumers. Path configuration groundwork continues without changing runtime behavior.",
+    "id": "2026-01-architecture-authority",
+    "date": "2026-01-06",
+    "title": "⭐ Architecture and authority clarified",
+    "description": "Clarified the two-repository architecture: the runtime remains the sole authority with a privileged local WinForms admin control plane and a downstream read-only web dashboard. Path configuration groundwork continues without altering runtime behavior.",
     "version": "0.2.3-alpha",
     "scope": "runtime",
-    "tags": ["architecture", "authority", "metadata"]
-  },
-  {
-    "id": "2026-01-alpha-version-sync",
-    "date": "2026-01-01",
-    "title": "Alpha metadata corrected",
-    "description": "Recorded the v0.2.2-alpha metadata refresh while preserving historical runtime entries at their original versions.",
-    "version": "0.2.3-alpha",
-    "scope": "runtime",
-    "tags": ["alpha", "metadata", "runtime"]
+    "tags": ["architecture", "authority", "admin"]
   },
   {
     "id": "2026-01-runtime-resumed",

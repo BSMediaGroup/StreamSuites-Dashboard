@@ -3,37 +3,23 @@
     "source": "runtime",
     "project": "StreamSuites",
     "version": "0.2.3-alpha",
-    "generated_at": "2025-04-01"
+    "generated_at": "2026-01-06"
   },
   "entries": [
     {
-      "id": "2025-04-architecture-clarification",
-      "date": "2025-04-01",
+      "id": "2026-01-architecture-authority",
+      "date": "2026-01-06",
       "version": "0.2.3-alpha",
       "scope": "runtime",
-      "title": "Runtime authority and admin boundaries clarified",
-      "summary": "Documented the two-repo architecture with the runtime as the sole authority, a privileged local WinForms admin, and a downstream read-only web dashboard consumer.",
+      "title": "⭐ Runtime authority and admin boundaries clarified",
+      "summary": "Clarified the two-repository architecture with the runtime as the sole authority, a privileged local WinForms admin control plane, and a downstream read-only web dashboard consumer.",
       "details": [
-        "Clarified the runtime as the authoritative source of state, snapshots, and control.",
-        "Confirmed the WinForms Desktop Admin as the privileged local control plane with filesystem/process access.",
-        "Documented the web dashboard as a downstream reader of exported JSON with no control authority.",
-        "Noted ongoing path configuration groundwork and reiterated no breaking runtime behavior changes in this release."
+        "Reiterated the runtime as the authoritative source of state, snapshots, telemetry, and control.",
+        "Described the WinForms Desktop Admin as the privileged local interface with filesystem and process control.",
+        "Confirmed the web dashboard consumes exported JSON only and holds no control or filesystem authority.",
+        "Noted ongoing path configuration groundwork with no breaking runtime behavior changes."
       ],
       "tags": ["architecture", "authority", "admin"]
-    },
-    {
-      "id": "2026-01-alpha-version-sync",
-      "date": "2026-01-01",
-      "version": "0.2.3-alpha",
-      "scope": "runtime",
-      "title": "Alpha metadata corrected",
-      "summary": "Captured the v0.2.2-alpha metadata refresh while keeping prior runtime records at their original versions.",
-      "details": [
-        "Logged the late-alpha metadata sweep across public and dashboard surfaces without altering history.",
-        "Preserved December runtime entries at v0.2.1-alpha for audit continuity.",
-        "Clarified this change is documentation-only and does not enable runtime execution."
-      ],
-      "tags": ["alpha", "metadata", "runtime"]
     },
     {
       "id": "2026-01-runtime-resumed",
