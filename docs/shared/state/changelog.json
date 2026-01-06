@@ -14,54 +14,110 @@
       "title": "⭐ Runtime authority and admin boundaries clarified",
       "summary": "Clarified the two-repository architecture with the runtime as the sole authority, a privileged local WinForms admin control plane, and a downstream read-only web dashboard consumer.",
       "details": [
-        "Reiterated the runtime as the authoritative source of state, snapshots, telemetry, and control.",
-        "Described the WinForms Desktop Admin as the privileged local interface with filesystem and process control.",
-        "Confirmed the web dashboard consumes exported JSON only and holds no control or filesystem authority.",
+        "Reaffirmed the runtime as the authoritative source of state, snapshots, telemetry, and control.",
+        "Described the WinForms Desktop Admin as the privileged local interface with filesystem and process authority.",
+        "Confirmed the web dashboard consumes exported JSON only and holds no process or filesystem control.",
         "Noted ongoing path configuration groundwork with no breaking runtime behavior changes."
       ],
       "tags": ["architecture", "authority", "admin"]
     },
     {
-      "id": "2026-01-runtime-resumed",
-      "date": "2026-01-15",
+      "id": "2026-01-alpha-metadata-corrected",
+      "date": "2026-01-06",
       "version": "0.2.3-alpha",
       "scope": "runtime",
-      "title": "Runtime development resumed",
-      "summary": "Runtime execution resumed with Rumble paused and YouTube/Twitch prioritized for ingestion.",
+      "title": "Alpha metadata corrected",
+      "summary": "Recorded the v0.2.3-alpha metadata refresh while keeping historical entries pinned to their original identifiers.",
       "details": [
-        "Explicit platform state tracking introduced (ACTIVE, PAUSED, DISABLED).",
-        "Rumble marked as PAUSED with telemetry preserved and scheduler skip logic.",
-        "YouTube and Twitch stabilized for continued chat ingestion development."
+        "Captured the alpha metadata regeneration for dashboards and admin surfaces.",
+        "Preserved older entries at their historical version numbers for traceability.",
+        "Aligned exported JSON shapes for read-only consumers that render their own prefixes."
       ],
-      "tags": ["resumed", "runtime", "status"]
+      "tags": ["alpha", "metadata", "exports"]
+    },
+    {
+      "id": "2025-12-project-resumed",
+      "date": "2025-12-31",
+      "version": "0.2.1-alpha",
+      "scope": "global",
+      "title": "Project resumed",
+      "summary": "StreamSuites monitoring resumed with live runtime snapshots while Rumble stays paused.",
+      "details": [
+        "Removed suspension messaging and reinstated active monitoring language across public and admin surfaces.",
+        "Dashboard polling restored for platform status, heartbeat timestamps, and paused reasons.",
+        "Rumble kept in a PAUSED state while YouTube and Twitch monitoring continue." 
+      ],
+      "tags": ["resumed", "dashboard", "runtime"]
     },
     {
       "id": "2025-12-project-suspended",
       "date": "2025-12-28",
-      "version": "0.2.3-alpha",
-      "scope": "runtime",
-      "title": "Runtime development suspended",
-      "summary": "Runtime execution and ingestion development has been suspended.",
+      "version": "0.2.0-alpha",
+      "scope": "global",
+      "title": "Project suspended",
+      "summary": "Historical suspension notice preserved for reference after unstable ingestion halted progress.",
       "details": [
-        "External platform interfaces failed to provide stable, supportable ingestion paths.",
-        "Runtime behavior could not be made deterministic enough for safe automation.",
-        "No further runtime changes are planned until external conditions materially change."
+        "Documented the pause triggered by unreliable external chat ingestion.",
+        "Recorded mitigation attempts and export shapes used during the suspension.",
+        "Superseded by the late-December resumption while keeping the historical record intact."
       ],
-      "tags": ["suspended", "runtime", "status"]
+      "tags": ["suspended", "project-status", "notice"]
     },
     {
-      "id": "2025-02-runtime-quotas",
+      "id": "2025-12-global-public-surface",
+      "date": "2025-12-25",
+      "version": "0.2.0-alpha",
+      "scope": "global",
+      "title": "Public surface refresh",
+      "summary": "Public static shells gained roadmap parity, glass treatments, and consistent badges.",
+      "details": [
+        "Delivered refreshed public pages for support, tools, about, privacy, changelog, and accessibility.",
+        "Mirrored dashboard roadmap snapshots with expandable rows and legends on public pages.",
+        "Aligned CTA sweeps, dotted grids, and badge rendering across public shells for consistency."
+      ],
+      "tags": ["public-pages", "roadmap", "ui"]
+    },
+    {
+      "id": "2025-12-runtime-quotas",
       "date": "2025-12-20",
-      "version": "0.2.3-alpha",
+      "version": "0.2.0-alpha",
       "scope": "runtime",
       "title": "Quota enforcement hardened",
-      "summary": "Daily quota enforcement stabilized across platforms.",
+      "summary": "Daily quota enforcement stabilized across platforms with consolidated registry handling.",
       "details": [
-        "QuotaRegistry consolidated",
-        "Snapshot export cadence stabilized",
-        "Dashboard visibility confirmed read-only"
+        "Consolidated QuotaRegistry behavior across platforms.",
+        "Stabilized snapshot export cadence for downstream readers.",
+        "Confirmed dashboard visibility remains read-only for quota data."
       ],
       "tags": ["quotas", "stability", "exports"]
+    },
+    {
+      "id": "2025-12-runtime-readonly",
+      "date": "2025-12-19",
+      "version": "0.1.x",
+      "scope": "runtime",
+      "title": "Read-only runtime scaffolding",
+      "summary": "Ensured static rendering paths stay deterministic and versioned for public previews.",
+      "details": [
+        "Swapped roadmap progress bars to native <progress> elements for deterministic rendering.",
+        "Stabilized version badge rendering across public shells to mirror runtime conventions.",
+        "Kept gradient sweeps and glass treatments runtime-safe for GitHub Pages delivery."
+      ],
+      "tags": ["runtime", "rendering", "versioning"]
+    },
+    {
+      "id": "2025-12-dashboard-roadmap",
+      "date": "2025-12-18",
+      "version": "0.1.x",
+      "scope": "dashboard",
+      "title": "Dashboard roadmap foundations",
+      "summary": "Documented roadmap intent and aligned progress displays with dashboard styling.",
+      "details": [
+        "Published initial public previews for clips, polls, tallies, and scoreboards.",
+        "Documented automation hooks, chat triggers, and upload planning for visibility.",
+        "Kept roadmap legends and progress indicators consistent across dashboard and public shells."
+      ],
+      "tags": ["roadmap", "previews", "dashboard"]
     }
   ]
 }
