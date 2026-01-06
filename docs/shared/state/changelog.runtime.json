@@ -1,19 +1,19 @@
 [
   {
-    "id": "2026-01-alpha-version-sync",
-    "date": "2026-01-01",
-    "title": "Alpha metadata corrected",
-    "description": "Recorded the v0.2.2-alpha metadata refresh while preserving historical runtime entries at their original versions.",
-    "version": "v0.2.2-alpha",
+    "id": "2026-01-architecture-authority",
+    "date": "2026-01-06",
+    "title": "⭐ Architecture and authority clarified",
+    "description": "Clarified the two-repository architecture: the runtime remains the sole authority with a privileged local WinForms admin control plane and a downstream read-only web dashboard. Path configuration groundwork continues without altering runtime behavior.",
+    "version": "0.2.3-alpha",
     "scope": "runtime",
-    "tags": ["alpha", "metadata", "runtime"]
+    "tags": ["architecture", "authority", "admin"]
   },
   {
     "id": "2026-01-runtime-resumed",
     "date": "2026-01-15",
     "title": "Runtime resumed",
     "description": "Runtime execution resumed with explicit platform states; Rumble remains PAUSED while YouTube and Twitch move forward.",
-    "version": "v0.2.2-alpha",
+    "version": "0.2.3-alpha",
     "scope": "runtime",
     "tags": ["resumed", "runtime", "status"]
   },
@@ -22,7 +22,7 @@
     "date": "2025-12-28",
     "title": "Runtime suspended",
     "description": "Runtime development was indefinitely suspended after repeated failures to achieve a stable, deterministic ingestion baseline across external platforms.",
-    "version": "v0.2.2-alpha",
+    "version": "0.2.3-alpha",
     "scope": "runtime",
     "tags": ["suspended", "runtime", "status"]
   },
@@ -31,7 +31,7 @@
     "date": "2025-12-20",
     "title": "Quota enforcement hardened",
     "description": "Daily quota enforcement was stabilized across platforms, consolidating the QuotaRegistry and keeping snapshot exports aligned for downstream readers.",
-    "version": "v0.2.2-alpha",
+    "version": "0.2.3-alpha",
     "scope": "runtime",
     "tags": ["quotas", "stability", "exports"]
   }

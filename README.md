@@ -9,11 +9,45 @@ StreamSuites Dashboard is a **static, client-side preview surface** for observin
 - **Audit:** Use the attached audit report for context; do **not** regenerate it.
 
 ## Version & Ownership
-- **Current version:** StreamSuites™ v0.2.2-alpha (from `docs/version.json`).
-- **Build:** 2025.03 (alpha channel, stamped via `docs/version.json`).
+- **Current version:** StreamSuites™ v0.2.3-alpha (from `docs/version.json`).
+- **Build:** 2025.04 (alpha channel, stamped via `docs/version.json`).
 - **Dashboard role:** Static, read-only, and non-authoritative. Reflects runtime exports and local drafts only.
 - **Licensing notice:** Proprietary • All Rights Reserved • © 2026 Brainstream Media Group • Owner: Daniel Clancy.
 - **Alpha-stage disclaimer:** Active alpha surface; schemas, exports, and visualizations may change as runtime contracts stabilize.
+
+## Architecture Overview
+- **Authoritative runtime:** This repository hosts the StreamSuites runtime and is the authoritative source of state, snapshots, telemetry, and control. All other dashboards consume exports originating here.
+- **State origination:** Runtime-owned exports (e.g., snapshots, telemetry bundles, changelogs) originate in the runtime and are published for downstream readers.
+- **Downstream consumers:** Static dashboards and other surfaces ingest exported JSON from this repo; they do not author or mutate runtime data.
+
+## WinForms Desktop Admin Dashboard
+- **Location:** `desktop-admin/` (local WinForms application distributed with this repository).
+- **Execution model:** Runs on the same machine as the runtime with direct filesystem access.
+- **Snapshot handling:** Reads runtime snapshots directly from disk for immediate administrative visibility.
+- **Control surface:** Can launch or terminate runtime processes, manage local paths, and adjust configuration without network dependencies.
+- **Roadmap posture:** Intended to become the primary admin interface over time while retaining local-only authority.
+
+## Relationship to Web Dashboard
+- **Separate repository:** The web dashboard lives in a separate repo and is intentionally less capable.
+- **Read-only inputs:** It consumes runtime-exported JSON only and never defines its own versioning.
+- **No control plane:** Lacks process control and filesystem authority and does not depend on the WinForms Desktop Admin.
+- **Design constraint:** Downstream consumer by design; it visualizes exports but cannot alter runtime state.
+
+## Versioning Policy
+- **VERSION (e.g., v0.2.3-alpha):** Captures semantic capability level and any feature, behavior, or contract changes.
+- **BUILD (e.g., 2025.04):** Stamps regenerated artifacts (exports, docs, binaries) and serves as a diagnostic/reproducibility identifier.
+- **Implications:** Version changes indicate meaningful project evolution; build changes signal freshly generated artifacts even if features are unchanged.
+
+## Version Consumption Matrix
+- **Runtime:** Source of truth for VERSION and BUILD.
+- **WinForms Desktop Admin:** Reads runtime version/build directly and surfaces authoritative metadata locally.
+- **Web Dashboard:** Reads version/build from exported JSON; it never defines its own values.
+
+## Path & State Flow
+- **Authoritative snapshot:** `runtime/exports/runtime_snapshot.json` remains the canonical export.
+- **Local admin access:** WinForms Desktop Admin reads snapshots directly from disk for privileged operations.
+- **Web dashboard access:** Static dashboards read published/exported JSON only; they do not require or influence the local admin app.
+- **Configurable paths:** Local path configuration may be adjusted via admin tooling to point exports and consumers to the correct locations.
 
 ## Operational Boundary
 - **Static control surface** — cannot mutate runtimes or send actions; edits are limited to local JSON drafts and exports.
@@ -136,6 +170,8 @@ StreamSuites-Dashboard/
 ├── DASHBOARD_AUDIT_REPORT.md
 ├── LICENSE
 ├── README.md
+├── changelog
+│   └── changelog.runtime.json
 ├── dev-notes
 │   ├── compatibility.md
 │   ├── decisions.md
@@ -434,6 +470,11 @@ StreamSuites-Dashboard/
 │       ├── triggers.html
 │       └── updates.html
 ├── favicon.ico
+├── runtime
+│   ├── exports
+│   │   ├── changelog.json
+│   │   └── changelog.runtime.json
+│   └── version.py
 └── schemas
     ├── chat_behaviour.schema.json
     ├── chat_log.schema.json
