@@ -1,67 +1,92 @@
 # StreamSuites Dashboard — Static, Read-Only Runtime Monitor
 
-StreamSuites Dashboard is a **static, client-side preview surface** for observing the StreamSuites automation ecosystem. It stays GitHub Pages–safe (no backend, no auth) while loading snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progress), Pilled (planned ingest-only), and Discord**. All execution, chat ingestion, livestream control, and command surfaces live in the StreamSuites runtimes, not here.
+StreamSuites Dashboard is a **static, client-side observability surface** for monitoring the StreamSuites ecosystem.  
+It is intentionally **GitHub Pages–safe** (no backend, no authentication, no server execution) and exists solely to **visualize runtime-exported state**.
 
-- **Preview/scaffold only:** The dashboard is intentionally static, read-only, and ships bundled snapshots to demonstrate layout and schema alignment. Runtime hydration for chat replay/live overlays has **not started**.
-- **Authority:** Runtime exports are canonical; the dashboard only reads them and refreshes on a timer.
-- **Write safety:** No API calls, no authentication, and no server code. Local edits remain browser-local or downloaded JSON files.
-- **Current stance:** Static previews only. YouTube + Twitch previews present snapshot-driven heartbeat telemetry; Rumble remains PAUSED with read-only telemetry and red roadmap treatment; **Kick is scaffolded/in-progress** with read-only runtime snapshot hydration; **Pilled is planned/ingest-only** and locked to read-only placeholders. No runtime feeds are wired into chat replay or overlays yet.
-- **Audit:** Use the attached audit report for context; do **not** regenerate it.
+All execution, chat ingestion, livestream control, scheduling, and command dispatch live in the **StreamSuites Runtime** repository — never here.
+
+The dashboard loads snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progress), Pilled (planned ingest-only), and Discord** and renders them as a read-only preview surface.
+
+- **Preview / scaffold only:** The dashboard is intentionally static and read-only. Bundled snapshots demonstrate layout, schema alignment, and UI behavior. Runtime hydration for live chat, overlays, or replay feeds has **not started**.
+- **Authority model:** Runtime exports are canonical. This dashboard only reads exported artifacts and refreshes them on a timer.
+- **Write safety:** No API calls, no authentication, no mutation paths. Any edits are browser-local (`localStorage`) or operate on downloaded JSON files only.
+- **Current stance:** Static previews only.
+  - **YouTube & Twitch:** Snapshot-driven heartbeat telemetry (read-only).
+  - **Rumble:** PAUSED at runtime level; visible with read-only telemetry and red roadmap treatment.
+  - **Kick:** Scaffolded / in-progress; hydrates runtime snapshots when present but remains read-only.
+  - **Pilled:** Planned / ingest-only; locked to placeholders and read-only.
+- **Audit context:** Refer to the attached audit report for historical and architectural context. **Do not regenerate it.**
 
 ## Version & Ownership
-- **Current version:** StreamSuites™ v0.2.3-alpha (from `docs/version.json`).
-- **Build:** 2025.04 (alpha channel, stamped via `docs/version.json`).
-- **Dashboard role:** Static, read-only, and non-authoritative. Reflects runtime exports and local drafts only.
-- **Licensing notice:** Proprietary • All Rights Reserved • © 2026 Brainstream Media Group • Owner: Daniel Clancy.
-- **Alpha-stage disclaimer:** Active alpha surface; schemas, exports, and visualizations may change as runtime contracts stabilize.
+
+- **Current version:** StreamSuites™ `v0.2.3-alpha` (read from `docs/version.json`).
+- **Build:** Runtime-stamped build identifier (read from `docs/version.json`).
+- **Dashboard role:** Non-authoritative. Static, read-only consumer of runtime exports and local drafts.
+- **Licensing:** Proprietary • All Rights Reserved • © 2026 Brainstream Media Group.
+- **Owner:** Daniel Clancy.
+- **Alpha disclaimer:** Active alpha surface. Schemas, exports, and visualizations may evolve as runtime contracts stabilize.
 
 ## Architecture Overview
-- **Authoritative runtime:** This repository hosts the StreamSuites runtime and is the authoritative source of state, snapshots, telemetry, and control. All other dashboards consume exports originating here.
-- **State origination:** Runtime-owned exports (e.g., snapshots, telemetry bundles, changelogs) originate in the runtime and are published for downstream readers.
-- **Downstream consumers:** Static dashboards and other surfaces ingest exported JSON from this repo; they do not author or mutate runtime data.
+
+- **Authoritative runtime:** The StreamSuites Runtime repository is the single source of truth for execution, state, telemetry, exports, and lifecycle control.
+- **State origination:** All snapshots, telemetry bundles, changelogs, and manifests originate in the runtime and are published for downstream readers.
+- **Downstream consumers:** This dashboard and other visualization surfaces ingest exported JSON only. They never author, mutate, or control runtime state.
 
 ## WinForms Desktop Admin Dashboard
-- **Location:** `desktop-admin/` (local WinForms application distributed with this repository).
+
+- **Location:** `desktop-admin/` (local WinForms application).
 - **Execution model:** Runs on the same machine as the runtime with direct filesystem access.
 - **Snapshot handling:** Reads runtime snapshots directly from disk for immediate administrative visibility.
-- **Control surface:** Can launch or terminate runtime processes, manage local paths, and adjust configuration without network dependencies.
-- **Roadmap posture:** Intended to become the primary admin interface over time while retaining local-only authority.
+- **Control surface:** Can launch and terminate runtime processes, manage local paths, and adjust configuration without network dependencies.
+- **Roadmap posture:** Intended to become the primary administrative interface over time while remaining strictly local.
 
 ## Relationship to Web Dashboard
-- **Separate repository:** The web dashboard lives in a separate repo and is intentionally less capable.
-- **Read-only inputs:** It consumes runtime-exported JSON only and never defines its own versioning.
-- **No control plane:** Lacks process control and filesystem authority and does not depend on the WinForms Desktop Admin.
-- **Design constraint:** Downstream consumer by design; it visualizes exports but cannot alter runtime state.
+
+- **Separate repository:** The web dashboard lives in its own repository.
+- **Read-only inputs:** Consumes runtime-exported JSON only and never defines its own versioning.
+- **No control plane:** No process control, no filesystem authority, no execution rights.
+- **Design constraint:** Downstream consumer by design — visualization only.
 
 ## Versioning Policy
-- **VERSION (e.g., v0.2.3-alpha):** Captures semantic capability level and any feature, behavior, or contract changes.
-- **BUILD (e.g., 2025.04):** Stamps regenerated artifacts (exports, docs, binaries) and serves as a diagnostic/reproducibility identifier.
-- **Implications:** Version changes indicate meaningful project evolution; build changes signal freshly generated artifacts even if features are unchanged.
+
+- **VERSION** (e.g. `v0.2.3-alpha`)
+  - Indicates semantic capability level.
+  - Changes reflect feature, behavior, or contract evolution.
+- **BUILD** (e.g. `YYYY.MM.DD+NNN`)
+  - Identifies regenerated artifacts (exports, documentation, bundles).
+  - Used for diagnostics and reproducibility.
+
+Version changes imply meaningful project evolution.  
+Build changes imply freshly generated artifacts, even when features are unchanged.
 
 ## Version Consumption Matrix
+
 - **Runtime:** Source of truth for VERSION and BUILD.
-- **WinForms Desktop Admin:** Reads runtime version/build directly and surfaces authoritative metadata locally.
-- **Web Dashboard:** Reads version/build from exported JSON; it never defines its own values.
+- **WinForms Desktop Admin:** Reads runtime version/build directly and displays authoritative metadata.
+- **Web Dashboard:** Reads version/build from exported JSON only and never defines its own values.
 
 ## Path & State Flow
-- **Authoritative snapshot:** `runtime/exports/runtime_snapshot.json` remains the canonical export.
-- **Local admin access:** WinForms Desktop Admin reads snapshots directly from disk for privileged operations.
-- **Web dashboard access:** Static dashboards read published/exported JSON only; they do not require or influence the local admin app.
-- **Configurable paths:** Local path configuration may be adjusted via admin tooling to point exports and consumers to the correct locations.
+
+- **Authoritative snapshot:** `runtime/exports/runtime_snapshot.json`
+- **Local admin access:** WinForms Desktop Admin reads snapshots directly from disk.
+- **Web dashboard access:** Reads published/exported JSON only.
+- **Configurable paths:** Local path configuration may be adjusted via admin tooling to align exports and consumers.
 
 ## Operational Boundary
-- **Static control surface** — cannot mutate runtimes or send actions; edits are limited to local JSON drafts and exports.
-- **Runtime snapshot polling** — periodically fetches `shared/state/runtime_snapshot.json` (or bundled fallbacks) for status, heartbeat timestamps, errors, and pause reasons. The header mode badge (`#app-mode`) clarifies whether runtime exports are reachable (connected, read-only) or the UI is in static fallback.
-- **No platform APIs** — the browser bundle only fetches snapshot JSON; there are no live chat sockets, auth flows, or control-plane calls.
-- **Runtime exports are authoritative** — the dashboard visualizes whatever the runtime writes to snapshot files.
-- **Visual-only philosophy** — dashboards illuminate runtime exports; control and execution stay in runtimes.
+
+- **Static control surface:** Cannot mutate runtimes or issue commands.
+- **Runtime snapshot polling:** Periodically fetches `shared/state/runtime_snapshot.json` (or bundled fallbacks) to render status, heartbeat timestamps, errors, and pause reasons.
+- **Header mode badge:** `#app-mode` indicates connected/read-only or static fallback.
+- **No platform APIs:** No sockets, no auth flows, no control-plane calls.
+- **Visual-only philosophy:** Dashboards illuminate runtime exports; execution remains runtime-owned.
 
 ## Relationship to StreamSuites (Main Repo)
-This repository is a **separate but companion project** to the `StreamSuites` runtime. Runtimes produce exports and consume schemas; the dashboard renders those exports and drafts config bundles.
 
-- **Runtime-owned execution:** Chat ingestion, overlays, livestream control, and command dispatch live in the runtime repo. This dashboard stays static, read-only, and preview-only until runtime hydration is wired.
-- **No runtime feeds yet:** Bundled snapshots (docs/data + docs/shared/state) illustrate layout and schema alignment; there are no live chat feeds, overlays, or replay hydrations in this repo.
-- **Roadmap source:** The roadmap visible in the dashboard is driven by `docs/data/roadmap.json`; updates here propagate directly to the UI.
+This repository is a **companion project** to the StreamSuites Runtime.
+
+- **Runtime-owned execution:** Chat ingest, overlays, livestream control, and command dispatch live in the runtime.
+- **Dashboard posture:** Static, read-only, preview-only until runtime hydration is explicitly enabled.
+- **Roadmap source:** Dashboard roadmap is driven by `docs/data/roadmap.json`; changes propagate directly to the UI.
 
 ```
 [StreamSuites Runtime] <— consumes schemas — [StreamSuites-Dashboard (static, read-only)]
@@ -73,97 +98,100 @@ This repository is a **separate but companion project** to the `StreamSuites` ru
          +— Rumble chat ingest (runtime-owned; SSE best-effort with DOM/API fallbacks; dashboard hydrates exported snapshots)
 ```
 
-**Architecture reality:** Chat ingest and livestream control live in the runtime (SSE preferred for Rumble with DOM/API fallbacks, Twitch IRC, YouTube polling/RT). Any DOM chat send automation is runtime-owned. The dashboard remains read-only and only surfaces exported snapshots.
+**Architecture reality:** Chat ingest and livestream control live in the runtime (SSE preferred for Rumble with DOM/API fallbacks, Twitch IRC, YouTube polling/RT). Any DOM chat send automation is runtime-owned. The dashboard only visualizes exported snapshots.
 
 ## Responsibility Split (Runtime vs Dashboard)
-- **Runtime (authoritative):** Ingests chat, enforces quotas, schedules jobs, posts to platforms, and exports deterministic state (`runtime_snapshot.json`, `quotas.json`, galleries, and admin snapshots). Rumble ingest is currently paused at the runtime level pending stabilization.
-- **Dashboard (read-only):** Polls runtime snapshots for platform status, heartbeat timestamps, last errors, and pause reasons; renders creators/platform drafts from local storage; and presents public galleries without write paths.
-- **Discord control-plane:** Lives in the runtime repo; the dashboard only surfaces exported status for visibility.
+
+- **Runtime (authoritative):**
+  - Ingests chat
+  - Enforces quotas
+  - Schedules jobs
+  - Posts to platforms
+  - Exports deterministic state (`runtime_snapshot.json`, `quotas.json`, telemetry)
+  - Rumble ingest currently paused pending stabilization
+- **Dashboard (read-only):**
+  - Polls runtime snapshots for status, heartbeat, errors, pause reasons
+  - Renders creator/platform drafts from local storage
+  - Presents public galleries with no write paths
+- **Discord control-plane:** Lives entirely in the runtime; dashboard displays visibility only.
 
 ## Beta Pathway
-- **Active monitoring:** YouTube and Twitch views poll runtime snapshots on an interval for live status badges and counters.
-- **Scaffolded platform:** Kick view hydrates runtime exports (when available) read-only and mirrors YouTube/Twitch scaffolding while remaining non-authoritative.
-- **Paused platform:** Rumble remains visible with red roadmap treatment and read-only telemetry while the ingest pipeline is stabilized in the runtime.
-- **Planned ingest-only:** Pilled view is read-only/locked and marked as planned; no runtime actions are available.
-- **Static hosting:** All pages remain GitHub Pages–safe; polling uses static JSON exports with no backend.
+
+- **Active monitoring:** YouTube and Twitch poll runtime snapshots for status badges and counters.
+- **Scaffolded platform:** Kick mirrors YouTube/Twitch scaffolding in read-only mode.
+- **Paused platform:** Rumble remains visible with red roadmap treatment.
+- **Planned ingest-only:** Pilled is locked and read-only.
+- **Static hosting:** All pages remain GitHub Pages–safe.
 
 ## Hosting & Deployment Model
-- Hosted as a **static site** (GitHub Pages safe).
-- No authentication or backend.
-- Iframe/embed friendly (e.g., Wix Studio or static hosts).
-- All logic runs in the browser and reads JSON snapshots or drafts.
+
+- Static site hosting (GitHub Pages).
+- No backend.
+- No authentication.
+- Embed/iframe friendly (e.g., Wix Studio).
+- All logic runs client-side.
 
 ## Data Sources & Fallbacks
-Runtime telemetry is loaded **client-side** with graceful fallbacks:
 
-1. **Primary:** `docs/shared/state/` — latest runtime exports copied from the StreamSuites runtime repo (e.g., `runtime_snapshot.json`, `quotas.json`, `clips.json`, and telemetry bundles under `telemetry/`).
-2. **Secondary:** `docs/data/` — bundled sample snapshots used when shared state is missing or stale.
-3. **Local drafts:** `localStorage` entries created by import/export tools (e.g., creators/platforms drafts).
+Runtime telemetry loads client-side with graceful fallbacks:
 
-If `shared/state` files are absent, views silently fall back to `docs/data` so the UI stays populated.
+1. **Primary:** `docs/shared/state/` — latest runtime exports copied from the runtime repo.
+2. **Secondary:** `docs/data/` — bundled sample snapshots.
+3. **Local drafts:** `localStorage` via import/export tools.
+
+If shared state is missing, the UI silently falls back to bundled data.
 
 ## Platform Runtime Previews (Read-Only)
-- **YouTube:** Polls `runtime_snapshot.json` and `quotas.json` to show status, last update, errors, and counters. No livestream controls.
-- **Twitch:** Mirrors the YouTube pattern with identical polling and fallbacks. Read-only preview only.
-- **Kick:** Scaffolded/in-progress view that hydrates runtime snapshot exports when available, shows creator wiring status, and stays read-only.
-- **Rumble:** Present but marked **Deferred/Disabled**; surfaces the most recent snapshot details if present and never initiates runtime calls.
-- **Pilled:** Planned ingest-only view; controls are locked and display read-only placeholders without attempting runtime calls.
-- **Other platform views (Discord/Twitter):** Static scaffolds for visibility only.
+
+- **YouTube:** Snapshot polling for status, errors, counters.
+- **Twitch:** Same pattern as YouTube.
+- **Kick:** Scaffolded view; read-only snapshot hydration.
+- **Rumble:** Deferred/Disabled; read-only snapshot display.
+- **Pilled:** Planned ingest-only; placeholders only.
+- **Discord/Twitter:** Static visibility scaffolds.
 
 ## Runtime Telemetry Panels (Read-Only)
-- **Events panel:** Newest-first feed of runtime-exported events with severity, timestamp, source, and message; explicitly read-only.
-- **Rates panel:** Numeric indicators for recent windows, rendered without charts to keep the UI light.
-- **Errors panel:** Highlights active or recent errors per subsystem while keeping the presentation non-fatal and informational.
-- **Data sources:** Hydrates from `docs/shared/state/telemetry/{events,rates,errors}.json` with silent fallbacks to `docs/data/telemetry/` when missing.
 
-## Roadmap alignment (v0.2.2-alpha)
-- **Unified Chat Replay UI:** UI COMPLETE / PREVIEW ONLY — all dashboards show static preview mocks driven by local JSON.
-- **Live Chat Window:** UI COMPLETE / NO RUNTIME — pop-out and embedded live chat windows are static HTML only.
-- **OBS / Browser Source Overlay:** UI COMPLETE / NO RUNTIME — overlay HTML exists as a preview with no live data wiring.
-- **Browser Extension (Live Chat Replay):** UI COMPLETE / RUNTIME PENDING — preview exists; runtime coupling is deferred.
-- **Multi-platform badge rendering:** COMPLETE — platform + role badges render in the previews with finalized assets.
-- **Avatar fallback & identity handling:** COMPLETE — previews include silhouette fallbacks and identity labels without runtime mutation.
-- **Runtime hydration:** NOT STARTED — no live chat or overlay data is being hydrated; the roadmap entries remain preview-only.
+- **Events:** Newest-first exported events.
+- **Rates:** Numeric indicators for recent windows.
+- **Errors:** Non-fatal visibility into subsystem errors.
+- **Sources:** `docs/shared/state/telemetry/*` with fallback to `docs/data/telemetry/`.
+
+## Roadmap Alignment (v0.2.2-alpha)
+
+- **Unified Chat Replay UI:** UI COMPLETE / PREVIEW ONLY
+- **Live Chat Window:** UI COMPLETE / NO RUNTIME
+- **OBS / Browser Overlay:** UI COMPLETE / NO RUNTIME
+- **Browser Extension:** UI COMPLETE / RUNTIME PENDING
+- **Badge rendering:** COMPLETE
+- **Avatar fallback:** COMPLETE
+- **Runtime hydration:** NOT STARTED
 
 ## Public-Facing Media Surfaces (Static)
-- **Home (`docs/home.html`)** — public landing surface linking to galleries and the creator dashboard.
-- **Clips (`docs/clips.html`)** — standalone clips gallery (static placeholders) plus detail view (`docs/clips/detail.html`).
-- **Polls (`docs/polls.html`)** — standalone polls gallery with detail/results views (`docs/polls/detail.html`, `docs/polls/results.html`).
-- **Tallies (`docs/tallies.html`)** — standalone tallies gallery with detail view (`docs/tallies/detail.html`).
-- **Scoreboards (`docs/scoreboards.html`)** — standalone scoreboards gallery with detail view (`docs/scoreboards/detail.html`).
-- **About (`docs/about.html`)** — manifest-driven public About surface (`docs/about/about.manifest.json` + parts) with optional developer sections.
-- **Privacy / Accessibility / Changelog / Lander / Postmortem** — static public pages sharing the dark-glass theme.
-- **Support (`docs/support/index.html`)** — public support parent with documentation/overview subviews.
-- **Tools (`docs/tools/index.html`)** — public tools parent with automation/overview/studio subviews.
 
-All public pages are independent entry points, GitHub Pages–safe, and reuse `docs/css/public-pages.css`.
+- Home, Clips, Polls, Tallies, Scoreboards, About, Privacy, Accessibility, Changelog, Postmortem, Support, Tools
+- All pages are independent, static entry points and reuse the shared dark-glass theme.
 
-## Data & Signals Dashboard View
-- **View:** `docs/views/data-signals.html` with wiring in `docs/js/data-signals.js`.
-- **Purpose:** Render runtime-owned entities, append-style signals, and administrative exports with client-side search/pagination (via `docs/js/utils/search-pagination.js`).
-- **Posture:** Read-only; tables hydrate from static JSON exports under `docs/data/`.
-- **Operational notices:** Explicitly notes runtime exports as the source of truth; the dashboard is CMS-style visibility only.
+## Unified Chat Replay (Preview-Only)
 
-## Unified Chat Replay (Preview-only)
-- **UI COMPLETE / PREVIEW ONLY:** `docs/views/chat-replay.html` surfaces the full UI with mode toggles (Replay/Live), Na3ar-17–style theme selection, Lakshay-art–inspired live input styling, and a pop-out control — all powered by bundled JSON, not runtime feeds.
-- **Live Chat Window (UI COMPLETE / NO RUNTIME):** `docs/views/chat_window.html` is rendered as a static mock in the dashboard and pop-out flows; no sockets or runtime hydration are wired.
-- **Replay window & overlays:** `docs/views/chat_replay_window.html` (replay) and `docs/views/chat_overlay_obs.html` (OBS/browser source) are UI complete with theme + mode propagation but **NO RUNTIME** data.
-- **Browser Extension (UI COMPLETE / RUNTIME PENDING):** The extension preview is UI-complete and references the same assets; runtime coupling is deferred.
-- **Badges & avatars (COMPLETE):** Platform + role badges render with finalized SVGs and the RechargeBd/SuiGeneris font stack; avatar fallback/identity handling uses `docs/assets/icons/ui/profile.svg` and embedded labels without mutating runtime data.
-- **Placeholder coverage:** Previews reference `docs/assets/placeholders/daniel.png`, `docs/assets/placeholders/streamsuites.jpg`, and `docs/assets/placeholders/hotdog.jpg`, falling back to `docs/assets/icons/ui/profile.svg` if no avatar URL is present.
-- **Hydration status:** Runtime hydration is NOT STARTED. Export streams remain draft-only and are not rendering live data on dashboard or public pages. File-based placeholders exist purely for documentation.
-- **CSS sources cited:** Theme selector structure adapted from Na3ar-17 (Uiverse.io); live input visuals adapted from Lakshay-art (Uiverse.io) with StreamSuites color/treatment tweaks.
+- UI complete across dashboard, pop-out, OBS overlay, and extension previews.
+- No sockets, no runtime feeds, no mutation paths.
+- All data is placeholder-only and export-driven.
 
 ## Design Principles & Schema-Driven Architecture
-- **Static-first, schema-driven, platform-neutral, future-proof.**
-- **Local-first drafts** stored in `localStorage` until exported as deterministic bundles (`creators.json`, `platforms.json`).
-- **Validation without a backend** using schemas under `/schemas` shared with runtimes.
-- **Runtime-agnostic:** Streaming runtime and Discord control-plane can consume the same schemas; the dashboard stays static.
+
+- Static-first
+- Schema-driven
+- Platform-neutral
+- Runtime-agnostic
+- Future-proof without backend coupling
 
 ### Rumble Chat Ingest Notes (Runtime-Owned)
-The runtime supports multiple ingest paths (SSE preferred, DOM-based fallback, API polling fallback). The dashboard remains neutral and simply renders exported snapshots describing whichever path the runtime used.
 
-## Directory Structure (exhaustive)
+The runtime supports multiple ingest paths (SSE preferred, DOM fallback, API polling fallback).  
+The dashboard remains neutral and only visualizes exported snapshots describing the active ingest path.
+
+## Directory Structure (Exhaustive)
 ```
 StreamSuites-Dashboard/
 ├── .gitignore
