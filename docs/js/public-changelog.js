@@ -70,6 +70,17 @@
     return `<li>${content}</li>`;
   }
 
+  function resolveDetails(release) {
+    if (Array.isArray(release?.details) && release.details.length) return release.details;
+    if (Array.isArray(release?.entries) && release.entries.length) return release.entries;
+    if (Array.isArray(release?.changes) && release.changes.length) return release.changes;
+    if (Array.isArray(release?.items) && release.items.length) return release.items;
+    if (Array.isArray(release?.bullets) && release.bullets.length) return release.bullets;
+    if (release?.summary) return [release.summary];
+    if (release?.description) return [release.description];
+    return [];
+  }
+
   function renderDetails(details) {
     if (!Array.isArray(details) || !details.length) {
       return "<p class=\"muted\">No entries available.</p>";
@@ -85,7 +96,7 @@
   function renderRelease(release, isCurrent) {
     const dateLabel = formatDate(release.date);
     const scopeTag = renderScopeTag(release.scope);
-    const isLatest = isCurrent || release.is_latest;
+    const isLatest = isCurrent;
     const versionTag = release.version
       ? `<span class="pill ss-tag-version">Version ${release.version}</span>`
       : "";
@@ -108,7 +119,7 @@
           </div>
           ${release.summary ? `<span class="lede">${release.summary}</span>` : ""}
         </div>
-        <div class="changelog-body">${tagsRow}${renderDetails(release.details)}</div>
+        <div class="changelog-body">${tagsRow}${renderDetails(resolveDetails(release))}</div>
       </article>
     `;
   }
@@ -162,11 +173,8 @@
       return bTime - aTime;
     });
 
-    const explicitLatestIndex = sorted.findIndex((entry) => entry.is_latest);
-    const latestIndex = explicitLatestIndex >= 0 ? explicitLatestIndex : 0;
-
     container.innerHTML = sorted
-      .map((release, index) => renderRelease(release, index === latestIndex))
+      .map((release, index) => renderRelease(release, index === 0))
       .join("");
   }
 
