@@ -1,5 +1,10 @@
 # Roadmap Milestones
 
+- **Phase: Local Admin Priority (active)**
+  - Advance the WinForms Desktop Admin as the privileged local control plane and primary administrative surface
+  - Keep the web dashboard downstream/read-only with versioning driven by runtime exports
+  - Continue path management and configuration work to keep exports discoverable to local and downstream consumers
+
 - **Phase: Twitch Foundations (current)**
   - Add deterministic dashboard scaffolds for Twitch configuration visibility
   - Keep runtime connectivity optional and read-only (no live bot control)
