@@ -1,10 +1,88 @@
 {
-  "generated_at": "2025-02-01T12:00:00Z",
-  "window": "Last 5 minutes",
-  "rates": {
-    "runtime.events_per_min": 18,
-    "exports.writes_per_min": 3,
-    "errors.per_min": 0,
-    "sse.messages_per_min": 42
-  }
+  "schema_version": "v1",
+  "generated_at": "2026-01-06T04:24:31.977146Z",
+  "windows": [
+    {
+      "window": "60s",
+      "metrics": {
+        "messages": {
+          "discord": 0,
+          "kick": 0,
+          "pilled": 0,
+          "rumble": 0,
+          "twitch": 0,
+          "twitter": 0,
+          "youtube": 0
+        },
+        "triggers": {
+          "discord": 0,
+          "kick": 0,
+          "pilled": 0,
+          "rumble": 0,
+          "twitch": 0,
+          "twitter": 0,
+          "youtube": 0
+        },
+        "actions": {
+          "discord": 0,
+          "kick": 0,
+          "pilled": 0,
+          "rumble": 0,
+          "twitch": 0,
+          "twitter": 0,
+          "youtube": 0
+        },
+        "actions_failed": {
+          "discord": 0,
+          "kick": 0,
+          "pilled": 0,
+          "rumble": 0,
+          "twitch": 0,
+          "twitter": 0,
+          "youtube": 0
+        }
+      }
+    },
+    {
+      "window": "5m",
+      "metrics": {
+        "messages": {
+          "discord": 0,
+          "kick": 0,
+          "pilled": 0,
+          "rumble": 0,
+          "twitch": 0,
+          "twitter": 0,
+          "youtube": 0
+        },
+        "triggers": {
+          "discord": 0,
+          "kick": 0,
+          "pilled": 0,
+          "rumble": 0,
+          "twitch": 0,
+          "twitter": 0,
+          "youtube": 0
+        },
+        "actions": {
+          "discord": 0,
+          "kick": 0,
+          "pilled": 0,
+          "rumble": 0,
+          "twitch": 0,
+          "twitter": 0,
+          "youtube": 0
+        },
+        "actions_failed": {
+          "discord": 0,
+          "kick": 0,
+          "pilled": 0,
+          "rumble": 0,
+          "twitch": 0,
+          "twitter": 0,
+          "youtube": 0
+        }
+      }
+    }
+  ]
 }
