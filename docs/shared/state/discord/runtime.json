@@ -1,0 +1,22 @@
+{
+  "running": true,
+  "connected": false,
+  "last_heartbeat_ts": "2026-01-09T22:59:40.066978+00:00",
+  "task_count": 3,
+  "tasks": 3,
+  "guild_count": null,
+  "status": {
+    "text": "\ud83c\udf0e streamsuites.app",
+    "emoji": null
+  },
+  "presence": {
+    "status_text": "\ud83c\udf0e streamsuites.app",
+    "status_emoji": null
+  },
+  "heartbeat": {
+    "started_at": "2026-01-09T22:59:40.030975+00:00",
+    "last_tick_at": "2026-01-09T22:59:40.066978+00:00",
+    "connected": false,
+    "metadata": {}
+  }
+}
