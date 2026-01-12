@@ -9,8 +9,6 @@
   "use strict";
 
   const ACTIVE_GUILD_KEY = "streamsuites.discord.activeGuild";
-  const DISCORD_PERMISSION_ADMINISTRATOR = 0x8n;
-  const DISCORD_PERMISSION_MANAGE_GUILD = 0x20n;
 
   const el = {
     selector: null,
@@ -25,41 +23,14 @@
     runtimeOverrideDetected: false,
     runtimeLoaded: false,
     status: "missing",
-    session: null
+    session: null,
+    viewObserver: null
   };
 
   function coerceText(value) {
     if (value === null || value === undefined) return "";
     if (typeof value === "string") return value.trim();
     return String(value).trim();
-  }
-
-  function parsePermissionBits(value) {
-    if (typeof value === "bigint") return value;
-    if (typeof value === "number" && Number.isFinite(value)) {
-      return BigInt(value);
-    }
-    if (typeof value === "string" && value.trim()) {
-      try {
-        return BigInt(value);
-      } catch (err) {
-        return 0n;
-      }
-    }
-    return 0n;
-  }
-
-  function hasGuildAccess(guild) {
-    if (!guild || typeof guild !== "object") return false;
-    if (guild.owner === true) return true;
-    const permissions = parsePermissionBits(guild.permissions);
-    if ((permissions & DISCORD_PERMISSION_ADMINISTRATOR) === DISCORD_PERMISSION_ADMINISTRATOR) {
-      return true;
-    }
-    return (
-      (permissions & DISCORD_PERMISSION_MANAGE_GUILD) ===
-      DISCORD_PERMISSION_MANAGE_GUILD
-    );
   }
 
   function parseBooleanFlag(value) {
@@ -74,73 +45,18 @@
     return null;
   }
 
-  function normalizeOverrideUserIds(value) {
-    if (!value) return [];
-    if (Array.isArray(value)) {
-      return value.map((entry) => coerceText(entry)).filter(Boolean);
-    }
-    if (typeof value === "string") {
-      return value
-        .split(/[,\s]+/)
-        .map((entry) => coerceText(entry))
-        .filter(Boolean);
-    }
-    return [];
+  function resolveAuthorizationReason(runtimeGuild) {
+    if (!runtimeGuild || typeof runtimeGuild !== "object") return "";
+    return coerceText(
+      runtimeGuild.authorization_reason ?? runtimeGuild.authorizationReason
+    );
   }
 
-  function getRuntimeAdminOverrideSignal(runtimeGuild, oauthUserId) {
+  function isAuthorizedForUser(runtimeGuild) {
     if (!runtimeGuild || typeof runtimeGuild !== "object") return false;
-
-    const directFlag = parseBooleanFlag(
-      runtimeGuild.authorized_by_admin_override ??
-        runtimeGuild.admin_override ??
-        runtimeGuild.admin_override_active ??
-        runtimeGuild.adminOverrideActive
-    );
-    if (directFlag === true) return true;
-
-    const overrideUsers = normalizeOverrideUserIds(
-      runtimeGuild.admin_override_user_ids ??
-        runtimeGuild.admin_override_users ??
-        runtimeGuild.adminOverrideUserIds ??
-        runtimeGuild.adminOverrideUsers ??
-        runtimeGuild.authorized_admin_ids
-    );
-
-    if (oauthUserId && overrideUsers.includes(oauthUserId)) return true;
-
-    const nestedOverride = runtimeGuild.admin_override;
-    if (nestedOverride && typeof nestedOverride === "object") {
-      const nestedFlag = parseBooleanFlag(
-        nestedOverride.authorized ?? nestedOverride.active ?? nestedOverride.enabled
-      );
-      if (nestedFlag === true) return true;
-
-      const nestedUsers = normalizeOverrideUserIds(
-        nestedOverride.user_ids ?? nestedOverride.users ?? nestedOverride.userIds
-      );
-      if (oauthUserId && nestedUsers.includes(oauthUserId)) return true;
-    }
-
-    return false;
-  }
-
-  function resolveOAuthPermissionsValid(runtimeGuild, oauthGuild) {
-    if (runtimeGuild && typeof runtimeGuild === "object") {
-      const runtimeFlag = parseBooleanFlag(runtimeGuild.oauth_permissions_valid);
-      if (runtimeFlag === true || runtimeFlag === false) return runtimeFlag === true;
-    }
-    return hasGuildAccess(oauthGuild);
-  }
-
-  function parseBotPresence(value) {
-    if (typeof value === "boolean") return value;
-    if (typeof value === "number") return value !== 0;
-    if (typeof value === "string" && value.trim()) {
-      const normalized = value.trim().toLowerCase();
-      return normalized !== "false" && normalized !== "0" && normalized !== "no";
-    }
-    return true;
+    const flag = parseBooleanFlag(runtimeGuild.authorized_for_user);
+    if (flag === true) return true;
+    return resolveAuthorizationReason(runtimeGuild) === "admin_override";
   }
 
   function extractRuntimeGuildList(raw) {
@@ -160,14 +76,13 @@
       if (!entry || typeof entry !== "object") return;
       const id = coerceText(entry.guild_id || entry.id || entry.guildId);
       if (!id) return;
-      const botPresent = parseBotPresence(entry.bot_present);
-      if (!botPresent) return;
       const name = coerceText(entry.guild_name || entry.name || entry.label);
       normalized.set(id, {
         ...entry,
         guild_id: id,
         guild_name: name,
-        bot_present: true
+        id,
+        name
       });
     });
 
@@ -183,36 +98,23 @@
         .map((guild) => [coerceText(guild?.id), guild])
         .filter(([id]) => id)
     );
-    const oauthUserId = coerceText(session?.user?.id);
-
     runtimeGuilds.forEach((runtimeGuild, id) => {
       const oauthGuild = oauthGuildMap.get(id) || null;
-      const oauthValid = resolveOAuthPermissionsValid(runtimeGuild, oauthGuild);
-      const adminOverride = getRuntimeAdminOverrideSignal(runtimeGuild, oauthUserId);
-
-      if (oauthValid || adminOverride) {
-        authorized.set(id, {
-          ...runtimeGuild,
-          ...(oauthGuild || {}),
-          runtime: runtimeGuild,
-          adminOverride
-        });
-        return;
-      }
-
-      unauthorized.set(id, {
-        ...runtimeGuild,
+      const authorizationReason = resolveAuthorizationReason(runtimeGuild);
+      const adminOverride = authorizationReason === "admin_override";
+      const authorizedForUser = isAuthorizedForUser(runtimeGuild);
+      const merged = {
         ...(oauthGuild || {}),
+        ...runtimeGuild,
         runtime: runtimeGuild,
+        authorizationReason,
         adminOverride
-      });
-    });
+      };
 
-    oauthGuilds.forEach((guild) => {
-      const id = coerceText(guild?.id);
-      if (!id || runtimeGuilds.has(id)) return;
-      if (hasGuildAccess(guild)) {
-        unauthorized.set(id, guild);
+      if (authorizedForUser) {
+        authorized.set(id, merged);
+      } else {
+        unauthorized.set(id, merged);
       }
     });
     return { authorized, unauthorized };
@@ -334,9 +236,16 @@
       const opt = document.createElement("option");
       opt.value = guildId;
       const label = formatGuildLabel(guild);
-      opt.textContent = guild.adminOverride ? `${label} — Authorized (Admin Override)` : label;
+      opt.textContent = guild.adminOverride
+        ? `${label} — Authorized as StreamSuites Administrator`
+        : label;
       el.selector.appendChild(opt);
     });
+
+    if (el.selector.hasAttribute("data-discord-guild-readonly")) {
+      el.selector.disabled = true;
+      return;
+    }
 
     el.selector.disabled = false;
   }
@@ -387,7 +296,7 @@
     const activeGuild = state.authorizedGuilds.get(state.activeGuildId);
     if (activeGuild) {
       const overrideTag = activeGuild.adminOverride
-        ? " (Authorized by Admin Override)"
+        ? " — Authorized as StreamSuites Administrator"
         : "";
       el.status.textContent = `Active: ${formatGuildLabel(activeGuild)}${overrideTag}`;
       return;
@@ -459,11 +368,7 @@
     state.authorizedGuilds = authorized;
     state.unauthorizedGuilds = unauthorized;
     state.runtimeOverrideDetected = Array.from(state.runtimeGuilds.values()).some(
-      (guild) =>
-        getRuntimeAdminOverrideSignal(
-          guild,
-          coerceText(state.session?.user?.id)
-        )
+      (guild) => resolveAuthorizationReason(guild) === "admin_override"
     );
     updateSelectorOptions();
     updateSelectorValue();
@@ -518,17 +423,20 @@
     console.info(`[Discord Guild] Active guild ID changed: ${normalized || "none"}`);
   }
 
-  function bindEvents() {
-    if (el.selector) {
-      el.selector.addEventListener("change", () => {
-        const selected = coerceText(el.selector.value);
-        if (selected && !state.authorizedGuilds.has(selected)) {
-          return;
-        }
-        setActiveGuildId(selected);
-      });
-    }
+  function bindSelector() {
+    if (!el.selector || el.selector.dataset.discordGuildBound) return;
+    el.selector.dataset.discordGuildBound = "true";
+    el.selector.addEventListener("change", () => {
+      const selected = coerceText(el.selector.value);
+      if (selected && !state.authorizedGuilds.has(selected)) {
+        return;
+      }
+      setActiveGuildId(selected);
+    });
+  }
 
+  function bindEvents() {
+    bindSelector();
     window.addEventListener("streamsuites:discord-auth", handleAuthEvent);
   }
 
@@ -537,13 +445,29 @@
     el.status = document.getElementById("discord-guild-status");
   }
 
-  function init() {
+  function refreshElements() {
     cacheElements();
-    state.activeGuildId = loadActiveGuildId();
-    state.session = window.StreamSuitesAuth?.session || null;
+    bindSelector();
     updateSelectorOptions();
     updateSelectorValue();
+    updateStatusText();
+  }
+
+  function observeViewContainer() {
+    const container = document.getElementById("view-container");
+    if (!container || state.viewObserver) return;
+    state.viewObserver = new MutationObserver(() => {
+      refreshElements();
+    });
+    state.viewObserver.observe(container, { childList: true, subtree: true });
+  }
+
+  function init() {
+    state.activeGuildId = loadActiveGuildId();
+    state.session = window.StreamSuitesAuth?.session || null;
+    refreshElements();
     bindEvents();
+    observeViewContainer();
     loadRuntimeGuilds();
     evaluateStatus();
   }
