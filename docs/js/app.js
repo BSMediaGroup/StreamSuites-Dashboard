@@ -933,14 +933,6 @@ async function initApp() {
     bindDelegatedNavigation();
     bindHashChange();
 
-    if (window.__RUNTIME_AVAILABLE__ === true) {
-      App.state.quotas.start();
-      App.state.runtimeSnapshot.start();
-      RestartIndicator.init();
-    } else {
-      console.info("[Dashboard] Runtime unavailable. Polling disabled.");
-    }
-
     const initialView = resolveInitialView();
     loadView(initialView);
 
@@ -949,11 +941,24 @@ async function initApp() {
 
   try {
     await initDashboard();
+    maybeStartRuntimePolling();
     clearTimeout(watchdog);
   } catch (err) {
     clearTimeout(watchdog);
     throw err;
   }
+}
+
+function maybeStartRuntimePolling() {
+  if (window.__RUNTIME_AVAILABLE__ !== true) {
+    console.info("[Dashboard] Runtime offline. Polling not started.");
+    return;
+  }
+
+  console.info("[Dashboard] Starting runtime polling.");
+  App.state.quotas.start();
+  App.state.runtimeSnapshot.start();
+  RestartIndicator.init();
 }
 
 /* ----------------------------------------------------------------------
