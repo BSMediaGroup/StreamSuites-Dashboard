@@ -4,19 +4,46 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>StreamSuites | Chat Replay</title>
+  <link rel="icon" href="/StreamSuites-Dashboard/favicon.ico" />
   <script>
     window.__STREAMSUITES_STANDALONE__ = "livechat";
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
-  />
   <link rel="stylesheet" href="static/chat.css" />
   <link rel="stylesheet" href="static/themes/theme-default.css" />
   <link rel="stylesheet" href="static/themes/theme-slate.css" />
   <link rel="stylesheet" href="static/themes/theme-midnight.css" />
+  <style>
+    @font-face {
+      font-family: "RechargeBd";
+      src: url("https://raw.githubusercontent.com/BSMediaGroup/Resources/master/FONTS/Recharge%20Bd.otf")
+           format("opentype");
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "SuiGenerisRg";
+      src: url("https://raw.githubusercontent.com/BSMediaGroup/Resources/master/FONTS/Sui%20Generis%20Rg.otf")
+           format("opentype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    body,
+    .chat-shell,
+    .chat-log,
+    .chat-message {
+      font-family: "SuiGenerisRg", system-ui, sans-serif;
+    }
+
+    h1,
+    h2,
+    .chat-header {
+      font-family: "RechargeBd", "SuiGenerisRg", system-ui, sans-serif;
+    }
+  </style>
 </head>
 <body class="chat-shell" data-asset-base="assets/">
   <script>

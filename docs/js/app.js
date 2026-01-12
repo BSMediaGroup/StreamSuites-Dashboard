@@ -13,13 +13,17 @@
   - Deterministic load order
   - Works on GitHub Pages + iframe embeds (Wix)
   - All feature logic lives in per-view files
-  - Storage abstraction supports JSON import/export
+   - Storage abstraction supports JSON import/export
 */
 
 /* ----------------------------------------------------------------------
    Global App State
    ---------------------------------------------------------------------- */
 
+const streamsuitesPathname = window.location?.pathname || "";
+if (streamsuitesPathname.includes("/livechat/")) {
+  // Guard: never bootstrap the dashboard runtime inside LiveChat.
+} else {
 function shouldBlockDashboardRuntime() {
   const guard = window.StreamSuitesDashboardGuard;
   if (guard && typeof guard.shouldBlock === "boolean") {
@@ -1022,3 +1026,4 @@ App.exportRuntimeCreators = async function () {
 
   App.storage.downloadJson("creators.json", runtime);
 };
+}
