@@ -1,6 +1,10 @@
 (() => {
+  const POLL_INTERVAL_MS = 12000;
+  const RUNTIME_POLL_PATH = "./shared/state/polls.json";
+
   const grid = document.getElementById("polls-grid");
   const emptyState = document.getElementById("polls-empty");
+  let pollTimer = null;
 
   function renderSkeleton(count = 4) {
     if (!grid) return;
@@ -150,9 +154,126 @@
     grid.appendChild(fragment);
   }
 
+  function formatTimestamp(value) {
+    if (!value) return "Scheduled";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleString(undefined, { hour12: false });
+  }
+
+  function normalizeOptions(options = []) {
+    const normalized = Array.isArray(options) ? options : [];
+    const totalVotes = normalized.reduce((sum, option) => {
+      const votes = option?.votes ?? option?.count ?? option?.value ?? 0;
+      return sum + (Number.isFinite(votes) ? votes : 0);
+    }, 0);
+
+    return normalized.map((option) => {
+      const votes = option?.votes ?? option?.count ?? option?.value ?? 0;
+      const percent =
+        typeof option?.percent === "number"
+          ? option.percent
+          : totalVotes > 0
+            ? Math.round((votes / totalVotes) * 100)
+            : 0;
+      return {
+        label: option?.label || option?.name || option?.option || "Option",
+        votes: Number.isFinite(votes) ? votes : 0,
+        percent
+      };
+    });
+  }
+
+  function normalizePoll(raw) {
+    if (!raw || typeof raw !== "object") return null;
+    const id = raw.id || raw.poll_id || raw.pollId;
+    if (!id) return null;
+
+    return {
+      id,
+      question: raw.question || raw.title || "Creator poll",
+      creator: raw.creator || "Creator",
+      status: raw.status || raw.state || "Pending",
+      timestamp: formatTimestamp(raw.opened_at || raw.created_at || raw.createdAt),
+      summary: raw.summary || raw.description || "",
+      chartType: raw.chart_type || raw.chartType || "bar",
+      options: normalizeOptions(raw.options || raw.choices || []),
+      createdAt: formatTimestamp(raw.created_at || raw.opened_at || raw.createdAt),
+      updatedAt: formatTimestamp(raw.updated_at || raw.updatedAt || raw.closed_at),
+      closesAt: formatTimestamp(raw.closed_at || raw.closes_at || raw.closesAt)
+    };
+  }
+
+  function normalizePollsPayload(payload) {
+    if (!payload) return [];
+    const items =
+      payload.polls ||
+      payload.items ||
+      (Array.isArray(payload) ? payload : null);
+    if (!Array.isArray(items)) return [];
+    return items.map(normalizePoll).filter(Boolean);
+  }
+
+  async function fetchRuntimePolls() {
+    try {
+      const res = await fetch(new URL(RUNTIME_POLL_PATH, document.baseURI), {
+        cache: "no-store"
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return normalizePollsPayload(data);
+    } catch (err) {
+      console.warn("[Polls] Failed to load runtime polls", err);
+      return null;
+    }
+  }
+
+  function getFallbackPolls() {
+    const fallback = window.publicPolls || [];
+    if (Array.isArray(fallback) && fallback.length > 0 && fallback[0]?.options) {
+      return fallback;
+    }
+    return normalizePollsPayload(fallback);
+  }
+
+  async function hydratePolls() {
+    const runtimePolls = await fetchRuntimePolls();
+    const items = runtimePolls && runtimePolls.length > 0 ? runtimePolls : getFallbackPolls();
+    window.publicPolls = items;
+    window.publicPollMap = items.reduce((acc, poll) => {
+      acc[poll.id] = poll;
+      return acc;
+    }, {});
+    renderPolls(items);
+  }
+
+  function startPolling() {
+    if (pollTimer) return;
+    pollTimer = setInterval(hydratePolls, POLL_INTERVAL_MS);
+  }
+
+  function stopPolling() {
+    if (!pollTimer) return;
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
+
+  function handleVisibility() {
+    if (document.visibilityState === "visible") {
+      hydratePolls();
+      startPolling();
+    } else {
+      stopPolling();
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     if (!grid) return;
     renderSkeleton();
-    requestAnimationFrame(() => renderPolls(window.publicPolls || []));
+    requestAnimationFrame(() => {
+      hydratePolls();
+      startPolling();
+    });
+    document.addEventListener("visibilitychange", handleVisibility);
   });
 })();
