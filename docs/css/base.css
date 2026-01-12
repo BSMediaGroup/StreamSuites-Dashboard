@@ -102,6 +102,69 @@ body {
   gap: 10px;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.discord-auth {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.discord-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.discord-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.discord-username {
+  font-size: 12px;
+  letter-spacing: 0.03em;
+}
+
+.discord-auth-status {
+  font-size: 11px;
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+body.discord-auth-required [data-discord-locked] {
+  opacity: 0.55;
+  filter: grayscale(0.3);
+  pointer-events: none;
+}
+
+body.discord-auth-required [data-discord-locked].is-locked,
+body.discord-auth-required [data-discord-nav] {
+  pointer-events: none;
+}
+
+.ss-auth-lock {
+  margin-bottom: 16px;
+}
+
+body.discord-authenticated .ss-auth-lock {
+  display: none;
+}
+
 /* Logo alignment: nudge down to visually align with title baseline */
 .header-left img {
   position: relative;
@@ -117,11 +180,6 @@ body {
 .app-subtitle {
   font-size: 13px;
   opacity: 0.8;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
 }
 
 .status-indicator {

@@ -26,11 +26,19 @@
 <!-- MAIN -->
 <!-- ========================================================= -->
 <main class="ss-main" data-scope="creator">
+  <div class="ss-auth-lock">
+    <div class="ss-alert ss-alert-warning">
+      Discord sections are locked. Log in with Discord to continue.
+      <button class="ss-btn ss-btn-secondary ss-btn-small" data-discord-login>
+        Login with Discord
+      </button>
+    </div>
+  </div>
 
   <!-- --------------------------------------------------------- -->
   <!-- RUNTIME CONNECTIVITY (DETERMINISTIC PLACEHOLDER) -->
   <!-- --------------------------------------------------------- -->
-  <section class="ss-panel" data-scope="admin">
+  <section class="ss-panel" data-scope="admin" data-discord-locked>
     <header class="ss-panel-header">
       <h2>Runtime Connectivity</h2>
     </header>
@@ -70,7 +78,7 @@
   <!-- --------------------------------------------------------- -->
   <!-- CONNECTION DETAILS -->
   <!-- --------------------------------------------------------- -->
-  <section class="ss-panel" data-scope="admin">
+  <section class="ss-panel" data-scope="admin" data-discord-locked>
     <header class="ss-panel-header">
       <h2>Connection Details</h2>
     </header>
@@ -104,7 +112,7 @@
   <!-- --------------------------------------------------------- -->
   <!-- DISCORD MODULES (PLANNED) -->
   <!-- --------------------------------------------------------- -->
-  <section class="ss-panel" data-scope="admin">
+  <section class="ss-panel" data-scope="admin" data-discord-locked>
     <header class="ss-panel-header">
       <h2>Discord Modules (Planned)</h2>
     </header>
