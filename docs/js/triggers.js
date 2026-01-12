@@ -53,6 +53,13 @@
   const btnRefresh = document.getElementById("btn-refresh-triggers");
   const btnSave = document.getElementById("btn-save-triggers");
 
+  const activityList = document.getElementById("triggers-activity-list");
+  const activityEmpty = document.getElementById("triggers-activity-empty");
+  const activityError = document.getElementById("triggers-activity-error");
+  const activityStatus = document.getElementById("triggers-activity-status");
+  const activityExported = document.getElementById("triggers-activity-exported");
+  const btnRefreshActivity = document.getElementById("btn-refresh-trigger-activity");
+
   /* ------------------------------------------------------------
      STATE
      ------------------------------------------------------------ */
@@ -62,6 +69,7 @@
   let currentCreator = null;
   let editIndex = null;
   let snapshotGeneratedAt = null;
+  let activityPollHandle = null;
 
   /* ------------------------------------------------------------
      INIT
@@ -74,6 +82,8 @@
     hideEditor();
     hydrateFromRuntime();
     renderBanner();
+    fetchTriggerActivity();
+    startActivityPolling();
   }
 
   /* ------------------------------------------------------------
@@ -85,6 +95,7 @@
     btnCancel?.addEventListener("click", hideEditor);
     btnRefresh?.addEventListener("click", () => hydrateFromRuntime(true));
     btnSave?.addEventListener("click", onSaveDraft);
+    btnRefreshActivity?.addEventListener("click", () => fetchTriggerActivity(true));
 
     tableBody?.addEventListener("click", onTableClick);
     form?.addEventListener("submit", onSubmit);
@@ -498,11 +509,167 @@
   }
 
   /* ------------------------------------------------------------
+     RECENT ACTIVITY
+     ------------------------------------------------------------ */
+
+  function normalizeActivityItems(raw) {
+    const items = Array.isArray(raw?.events)
+      ? raw.events
+      : Array.isArray(raw?.items)
+        ? raw.items
+        : Array.isArray(raw)
+          ? raw
+          : [];
+
+    return items
+      .filter((entry) => entry && typeof entry === "object")
+      .map((entry) => {
+        const timestamp = entry.timestamp || entry.at || entry.time || entry.created_at;
+        const platform = entry.platform || entry.source || entry.origin || "unknown";
+        const command =
+          entry.command || entry.trigger || entry.phrase || entry.match || entry.action;
+        const user =
+          entry.user ||
+          entry.username ||
+          entry.requested_by ||
+          entry.requester ||
+          entry.actor ||
+          "unknown viewer";
+        const jobId = entry.job_id || entry.job || entry.clip_job_id || entry.entity_id;
+        const summary = entry.summary || entry.message || entry.description;
+
+        return {
+          timestamp,
+          platform,
+          command,
+          user,
+          jobId,
+          summary
+        };
+      })
+      .sort((a, b) => {
+        const aTime = new Date(a.timestamp || 0).getTime();
+        const bTime = new Date(b.timestamp || 0).getTime();
+        return bTime - aTime;
+      });
+  }
+
+  function renderActivityStatus(message) {
+    if (!activityStatus) return;
+    activityStatus.textContent = message;
+  }
+
+  function showActivityError(message) {
+    if (!activityError) return;
+    activityError.textContent = message;
+    activityError.classList.remove("hidden");
+  }
+
+  function hideActivityError() {
+    if (!activityError) return;
+    activityError.classList.add("hidden");
+    activityError.textContent = "";
+  }
+
+  function renderActivity(items, meta = {}) {
+    if (!activityList) return;
+
+    activityList.innerHTML = "";
+    const exportedAt =
+      meta?.exported_at ||
+      meta?.exportedAt ||
+      meta?.generated_at ||
+      meta?.updated_at ||
+      null;
+    if (activityExported) {
+      activityExported.textContent = exportedAt
+        ? formatTimestampDisplay(exportedAt)
+        : "—";
+    }
+    if (!Array.isArray(items) || !items.length) {
+      activityEmpty?.classList.remove("hidden");
+      return;
+    }
+
+    activityEmpty?.classList.add("hidden");
+
+    items.forEach((entry) => {
+      const li = document.createElement("li");
+      const timestamp = formatTimestampDisplay(entry.timestamp);
+      const command = entry.command ? `${entry.command}` : "Trigger";
+      const platform = entry.platform ? `${entry.platform}` : "unknown source";
+      const user = entry.user ? `${entry.user}` : "unknown viewer";
+      const jobLabel = entry.jobId ? ` (job ${entry.jobId})` : "";
+      const summary = entry.summary ? ` — ${entry.summary}` : "";
+      li.textContent = `${timestamp} • ${platform} • ${command} by ${user}${jobLabel}${summary}`;
+      activityList.appendChild(li);
+    });
+
+  }
+
+  async function fetchTriggerActivity(forceReload = false) {
+    hideActivityError();
+
+    let data = null;
+
+    if (!forceReload && activityList?.dataset?.loaded === "true") {
+      renderActivityStatus("Up to date");
+    }
+
+    if (typeof window.StreamSuitesState?.loadStateJson === "function") {
+      data = await window.StreamSuitesState.loadStateJson("chat_events.json");
+    }
+
+    if (!data) {
+      try {
+        const res = await fetch(new URL("data/chat_events.json", document.baseURI), {
+          cache: "no-store"
+        });
+        if (res.ok) {
+          data = await res.json();
+        }
+      } catch (err) {
+        console.warn("[Triggers] Failed to load fallback chat_events.json", err);
+      }
+    }
+
+    if (!data) {
+      showActivityError("No trigger activity exports available.");
+      renderActivity([], {});
+      renderActivityStatus("No data");
+      return;
+    }
+
+    const items = normalizeActivityItems(data);
+    renderActivity(items, data.meta || data);
+    if (activityList?.dataset) {
+      activityList.dataset.loaded = "true";
+    }
+    renderActivityStatus(
+      `Last updated ${new Date().toLocaleTimeString(undefined, { hour12: false })}`
+    );
+  }
+
+  function startActivityPolling() {
+    if (activityPollHandle) return;
+    activityPollHandle = setInterval(() => fetchTriggerActivity(), 15000);
+  }
+
+  function stopActivityPolling() {
+    if (!activityPollHandle) return;
+    clearInterval(activityPollHandle);
+    activityPollHandle = null;
+  }
+
+  /* ------------------------------------------------------------
      PUBLIC API
      ------------------------------------------------------------ */
 
   window.TriggersView = {
     init,
-    destroy: hideEditor
+    destroy: () => {
+      stopActivityPolling();
+      hideEditor();
+    }
   };
 })();

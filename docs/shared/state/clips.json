@@ -10,6 +10,8 @@
       "clip_id": "clip-000001",
       "creator": "example-creator",
       "title": "Example clip title",
+      "requested_by": "ViewerX",
+      "requested_by_platform": "twitch",
       "state": "published",
       "published_at": "2024-01-01T00:00:00Z",
       "duration_seconds": 42,
