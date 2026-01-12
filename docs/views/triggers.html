@@ -84,6 +84,43 @@
 </div>
 
 <!-- =========================================================
+     RECENT TRIGGER ACTIVITY
+     ========================================================= -->
+<section class="ss-panel">
+  <header class="ss-panel-header">
+    <div class="ss-panel-header-main">
+      <h2>Recent Trigger Activity</h2>
+      <p class="muted" style="margin:6px 0 0;">
+        Viewer-triggered commands captured from runtime exports (read-only).
+      </p>
+    </div>
+  </header>
+
+  <div class="ss-toolbar">
+    <div class="ss-toolbar-left">
+      <button id="btn-refresh-trigger-activity" class="ss-btn ss-btn-secondary ss-btn-small">
+        Refresh activity
+      </button>
+      <span id="triggers-activity-status" class="muted">Waiting for exports…</span>
+    </div>
+  </div>
+
+  <div class="ss-panel-body">
+    <div id="triggers-activity-error" class="ss-alert ss-alert-danger hidden"></div>
+
+    <div class="ss-meta-row">
+      <div><strong>Last export:</strong> <span id="triggers-activity-exported">—</span></div>
+    </div>
+
+    <ul id="triggers-activity-list" class="ss-list muted"></ul>
+
+    <div id="triggers-activity-empty" class="ss-empty hidden">
+      No trigger activity exported yet.
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
      TRIGGER EDITOR
      ========================================================= -->
 <section id="trigger-editor" class="ss-panel hidden">
