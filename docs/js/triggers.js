@@ -575,6 +575,17 @@
     if (!activityList) return;
 
     activityList.innerHTML = "";
+    const exportedAt =
+      meta?.exported_at ||
+      meta?.exportedAt ||
+      meta?.generated_at ||
+      meta?.updated_at ||
+      null;
+    if (activityExported) {
+      activityExported.textContent = exportedAt
+        ? formatTimestampDisplay(exportedAt)
+        : "—";
+    }
     if (!Array.isArray(items) || !items.length) {
       activityEmpty?.classList.remove("hidden");
       return;
@@ -594,17 +605,6 @@
       activityList.appendChild(li);
     });
 
-    const exportedAt =
-      meta?.exported_at ||
-      meta?.exportedAt ||
-      meta?.generated_at ||
-      meta?.updated_at ||
-      null;
-    if (activityExported) {
-      activityExported.textContent = exportedAt
-        ? formatTimestampDisplay(exportedAt)
-        : "—";
-    }
   }
 
   async function fetchTriggerActivity(forceReload = false) {
