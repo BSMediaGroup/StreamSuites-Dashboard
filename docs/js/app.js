@@ -24,15 +24,27 @@ const streamsuitesPathname = window.location?.pathname || "";
 if (streamsuitesPathname.includes("/livechat/")) {
   // Guard: never bootstrap the dashboard runtime inside LiveChat.
 } else {
-class DashboardInitAbort extends Error {
-  constructor(message, payload) {
-    super(message);
-    this.name = "DashboardInitAbort";
-    this.payload = payload || {};
-  }
+if (!window.__STREAMSUITES_APP_MODE__) {
+  window.__STREAMSUITES_APP_MODE__ = "BOOT";
 }
 
-window.DashboardInitAbort = DashboardInitAbort;
+if (!window.StreamSuitesAppMode) {
+  window.StreamSuitesAppMode = {
+    get() {
+      return window.__STREAMSUITES_APP_MODE__ || "BOOT";
+    },
+    set(mode, detail = {}) {
+      window.__STREAMSUITES_APP_MODE__ = mode;
+      try {
+        window.dispatchEvent(
+          new CustomEvent("streamsuites:app-mode", { detail: { mode, ...detail } })
+        );
+      } catch (err) {
+        console.warn("[Dashboard] App mode broadcast failed", err);
+      }
+    }
+  };
+}
 
 function shouldBlockDashboardRuntime() {
   const guard = window.StreamSuitesDashboardGuard;
@@ -96,6 +108,43 @@ function $(selector, scope = document) {
 
 function $all(selector, scope = document) {
   return Array.from(scope.querySelectorAll(selector));
+}
+
+function getAppMode() {
+  return window.StreamSuitesAppMode?.get?.() || window.__STREAMSUITES_APP_MODE__ || "BOOT";
+}
+
+function setAppMode(mode, detail = {}) {
+  if (window.StreamSuitesAppMode?.set) {
+    window.StreamSuitesAppMode.set(mode, detail);
+  } else {
+    window.__STREAMSUITES_APP_MODE__ = mode;
+    try {
+      window.dispatchEvent(
+        new CustomEvent("streamsuites:app-mode", { detail: { mode, ...detail } })
+      );
+    } catch (err) {
+      console.warn("[Dashboard] App mode broadcast failed", err);
+    }
+  }
+}
+
+function waitForAppMode() {
+  const current = getAppMode();
+  if (current !== "BOOT") return Promise.resolve(current);
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      window.removeEventListener("streamsuites:app-mode", onModeChange);
+      resolve(getAppMode());
+    }, 2000);
+    const onModeChange = (event) => {
+      if (event?.detail?.mode) {
+        clearTimeout(timeout);
+        resolve(event.detail.mode);
+      }
+    };
+    window.addEventListener("streamsuites:app-mode", onModeChange, { once: true });
+  });
 }
 
 /* ----------------------------------------------------------------------
@@ -392,6 +441,10 @@ App.state.quotas = {
   },
 
   start() {
+    if (getAppMode() !== "NORMAL") {
+      console.info("[Dashboard] Polling disabled in blocked mode.");
+      return;
+    }
     if (!isRuntimeAvailable()) return;
     if (this._timer) return;
     this.fetchOnce();
@@ -472,6 +525,10 @@ App.state.runtimeSnapshot = {
   },
 
   start() {
+    if (getAppMode() !== "NORMAL") {
+      console.info("[Dashboard] Polling disabled in blocked mode.");
+      return;
+    }
     if (!isRuntimeAvailable()) return;
     if (this._timer) return;
     this.fetchOnce();
@@ -497,6 +554,10 @@ const RestartIndicator = {
   intervalMs: 4000,
 
   init() {
+    if (getAppMode() !== "NORMAL") {
+      console.info("[Dashboard] Polling disabled in blocked mode.");
+      return;
+    }
     this.el = document.getElementById("restart-required-banner");
     this.refresh();
 
@@ -837,6 +898,17 @@ async function initApp() {
   }, 3000);
 
   async function initDashboard() {
+    const resolvedMode = await waitForAppMode();
+    if (resolvedMode === "BOOT") {
+      setAppMode("NORMAL", { reason: "boot-timeout" });
+    }
+    if (getAppMode() === "BLOCKED_NO_GUILDS") {
+      console.warn("[Dashboard] Init aborted: no authorized Discord guilds.");
+      return;
+    }
+    if (getAppMode() !== "NORMAL") {
+      setAppMode("NORMAL", { reason: "init-start" });
+    }
     console.info("[Dashboard] Initializing StreamSuites dashboard");
 
     try {
@@ -870,14 +942,6 @@ async function initApp() {
     clearTimeout(watchdog);
   } catch (err) {
     clearTimeout(watchdog);
-    if (err && err.name === "DashboardInitAbort") {
-      console.warn(
-        "[Dashboard] Initialization aborted:",
-        err.message,
-        err.payload || {}
-      );
-      return;
-    }
     throw err;
   }
 }
