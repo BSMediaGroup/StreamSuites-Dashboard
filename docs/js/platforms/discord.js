@@ -6,6 +6,23 @@
 
   const el = {};
 
+  function renderLockedState() {
+    const main =
+      document.querySelector("main.ss-main") || document.querySelector("main");
+    if (!main) return;
+    main.innerHTML = `
+      <section class="ss-panel">
+        <header class="ss-panel-header">
+          <h2>Discord not connected to runtime</h2>
+        </header>
+        <div class="ss-panel-body">
+          <p class="muted">Discord features are unavailable because no authorized guilds were found for this login.</p>
+          <p class="muted">Ask a runtime administrator to authorize a guild or log in with a Discord account that has access.</p>
+        </div>
+      </section>
+    `;
+  }
+
   function cacheElements() {
     el.runtime = document.getElementById("dc-runtime-state");
     el.connection = document.getElementById("dc-connection");
@@ -131,6 +148,10 @@
   }
 
   function init() {
+    if (window.__DISCORD_FEATURES_ENABLED__ === false) {
+      renderLockedState();
+      return;
+    }
     cacheElements();
     renderRuntime(null);
     refresh();

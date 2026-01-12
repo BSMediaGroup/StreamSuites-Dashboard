@@ -30,6 +30,11 @@
   if (shouldBlockDashboardRuntime()) return;
   const appModeController = window.StreamSuitesAppMode;
   const ACTIVE_GUILD_KEY = "streamsuites.discord.activeGuild";
+  const CREATOR_DISCORD_USER_ID = "1130875539373170688";
+
+  if (typeof window.__DISCORD_FEATURES_ENABLED__ === "undefined") {
+    window.__DISCORD_FEATURES_ENABLED__ = true;
+  }
 
   const el = {
     selector: null,
@@ -43,12 +48,12 @@
     runtimeGuilds: new Map(),
     runtimeOverrideDetected: false,
     runtimeLoaded: false,
-    noAuthorizedGuilds: false,
-    noAuthorizedGuildsLogged: false,
     status: "missing",
     session: null,
     viewObserver: null,
-    eventsBound: false
+    eventsBound: false,
+    discordFeaturesDisabledLogged: false,
+    creatorOverrideLogged: false
   };
 
   function coerceText(value) {
@@ -126,6 +131,12 @@
     });
 
     return normalized;
+  }
+
+  function isCreatorUser() {
+    const user = window.__DISCORD_OAUTH_USER__;
+    const id = coerceText(user?.id || user?.user_id);
+    return Boolean(id && id === CREATOR_DISCORD_USER_ID);
   }
 
   function buildAuthorizedGuilds(session, runtimeGuilds) {
@@ -387,28 +398,6 @@
     window.dispatchEvent(new CustomEvent("streamsuites:discord-guild", { detail }));
   }
 
-  function renderNoAuthorizedGuildsBlock(oauthCount, runtimeCount) {
-    const root =
-      document.getElementById("app") ||
-      document.getElementById("root") ||
-      document.body;
-    root.innerHTML = `
-      <div style="padding:24px;font-family:system-ui;color:#fff;background:#111">
-        <h2 style="margin:0 0 12px 0">No authorized Discord guilds</h2>
-        <p style="margin:0 0 12px 0">OAuth guilds: ${oauthCount} • Runtime guilds: ${runtimeCount}</p>
-        <button id="discord-guild-relogin" style="padding:10px 14px;border:0;border-radius:6px;background:#5865f2;color:#fff;cursor:pointer">
-          Re-run Discord login
-        </button>
-      </div>
-    `;
-    const reloginButton = root.querySelector("#discord-guild-relogin");
-    if (reloginButton) {
-      reloginButton.addEventListener("click", () => {
-        window.location.reload();
-      });
-    }
-  }
-
   function logGuildCounts() {
     if (window.__STREAMSUITES_RUNTIME_AVAILABLE__ === false) {
       console.info("[Discord Guild] Runtime unavailable; skipping auth gating.");
@@ -424,59 +413,36 @@
     console.info(
       `[Discord Guild] Runtime admin override detected: ${state.runtimeOverrideDetected}`
     );
-
-    const authorizedGuilds = Array.from(state.authorizedGuilds.values());
-    if (authorizedGuilds.length === 0 && !state.runtimeOverrideDetected) {
-      console.error(
-        "[Discord Guild] BLOCKING INIT: no authorized guilds and no admin override. Aborting dashboard init."
-      );
-      setAppMode("BLOCKED_NO_GUILDS", {
-        reason: "no-authorized-guilds",
-        oauthGuilds: oauthCount,
-        runtimeGuilds: runtimeCount
-      });
-      renderNoAuthorizedGuildsBlock(oauthCount, runtimeCount);
-      return false;
-    }
-
-    return true;
   }
 
-  function enterNoAuthorizedGuildState() {
-    if (state.noAuthorizedGuilds) return;
-    state.noAuthorizedGuilds = true;
-    if (!state.noAuthorizedGuildsLogged) {
-      const oauthCount = Array.isArray(state.session?.guilds)
-        ? state.session.guilds.length
-        : 0;
-      const runtimeCount = state.runtimeGuilds.size;
-      console.warn(
-        `[Discord Guild] No authorized guilds detected (OAuth guilds: ${oauthCount} | Runtime guilds: ${runtimeCount}). Halting dashboard bootstrap.`
-      );
-      state.noAuthorizedGuildsLogged = true;
+  function updateDiscordFeatureFlag() {
+    const authorizedCount = state.authorizedGuilds.size;
+    const creator = isCreatorUser();
+
+    if (creator) {
+      window.__DISCORD_FEATURES_ENABLED__ = true;
+      if (!state.creatorOverrideLogged) {
+        console.info("[Discord] Creator override active.");
+        state.creatorOverrideLogged = true;
+      }
+      return;
     }
 
-    window.ConfigState?.updateDashboardState?.({
-      discord_authorization_state: "NO_AUTHORIZED_GUILDS"
-    });
-
-    if (state.viewObserver) {
-      state.viewObserver.disconnect();
-      state.viewObserver = null;
+    if (authorizedCount === 0 && !state.runtimeOverrideDetected) {
+      window.__DISCORD_FEATURES_ENABLED__ = false;
+      if (!state.discordFeaturesDisabledLogged) {
+        console.info("[Discord] No authorized guilds. Discord features disabled.");
+        state.discordFeaturesDisabledLogged = true;
+      }
+      return;
     }
 
-    if (state.eventsBound) {
-      window.removeEventListener("streamsuites:discord-auth", handleAuthEvent);
-      state.eventsBound = false;
-    }
-
-    updateSelectorOptions();
-    updateSelectorValue();
-    setStatus("no-access", { reason: "no-authorized-guilds" });
+    window.__DISCORD_FEATURES_ENABLED__ = true;
   }
 
   function updateAuthorization() {
     if (window.__STREAMSUITES_RUNTIME_AVAILABLE__ === false) {
+      window.__DISCORD_FEATURES_ENABLED__ = true;
       updateSelectorOptions();
       updateSelectorValue();
       setStatus("ready");
@@ -495,13 +461,8 @@
       (guild) => resolveAuthorizationReason(guild) === "admin_override"
     );
 
-    const shouldContinue = logGuildCounts();
-
-    if (!shouldContinue) {
-      enterNoAuthorizedGuildState();
-      return;
-    }
-
+    logGuildCounts();
+    updateDiscordFeatureFlag();
     setAppMode("NORMAL", { reason: "authorized-guilds" });
     updateSelectorOptions();
     updateSelectorValue();
@@ -511,7 +472,9 @@
 
   function handleAuthEvent(event) {
     state.session = event?.detail?.session || window.StreamSuitesAuth?.session || null;
-    const oauthUserId = coerceText(state.session?.user?.id);
+    const oauthUserId = coerceText(
+      state.session?.user?.id || state.session?.user?.user_id
+    );
     if (oauthUserId) {
       console.info(`[Discord Guild] OAuth user ID: ${oauthUserId}`);
     }
@@ -569,7 +532,7 @@
   }
 
   function bindEvents() {
-    if (state.eventsBound || state.noAuthorizedGuilds) return;
+    if (state.eventsBound) return;
     bindSelector();
     window.addEventListener("streamsuites:discord-auth", handleAuthEvent);
     state.eventsBound = true;
@@ -603,9 +566,6 @@
     refreshElements();
     bindEvents();
     await loadRuntimeGuilds();
-    if (window.__STREAMSUITES_APP_MODE__ === "BLOCKED_NO_GUILDS") {
-      return;
-    }
     evaluateStatus();
   }
 

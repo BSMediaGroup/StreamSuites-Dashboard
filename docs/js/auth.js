@@ -7,6 +7,9 @@
 (function () {
   const pathname = window.location?.pathname || "";
   if (pathname.includes("/livechat/")) return;
+  if (typeof window.__DISCORD_FEATURES_ENABLED__ === "undefined") {
+    window.__DISCORD_FEATURES_ENABLED__ = true;
+  }
 
   function shouldBlockDashboardRuntime() {
     const guard = window.StreamSuitesDashboardGuard;
@@ -46,6 +49,20 @@
       loginStatus: null
     },
     loggedSessionNotified: false,
+
+    setGlobalOAuthUser(user) {
+      if (!user) {
+        window.__DISCORD_OAUTH_USER__ = null;
+        return;
+      }
+      const id = user.id || user.user_id || "";
+      window.__DISCORD_OAUTH_USER__ = {
+        id,
+        username: user.username,
+        avatar: user.avatar,
+        discriminator: user.discriminator
+      };
+    },
 
     init() {
       this.cacheElements();
@@ -281,6 +298,7 @@
       }
 
       if (!loggedIn) {
+        this.setGlobalOAuthUser(null);
         this.emitSessionChange();
         return;
       }
@@ -291,6 +309,7 @@
       }
 
       const user = this.session.user;
+      this.setGlobalOAuthUser(user);
       if (this.elements.userName) {
         this.elements.userName.textContent = user.username;
       }

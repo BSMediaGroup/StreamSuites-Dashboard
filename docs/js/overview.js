@@ -321,7 +321,24 @@
     target.textContent = status || "Unknown";
   }
 
+  function renderDiscordUnavailable() {
+    const unavailable = "Unavailable";
+    setText(el.discordRuntime, unavailable);
+    setText(el.discordConnection, unavailable);
+    setText(el.discordHeartbeat, "—");
+    setText(el.discordGuilds, "—");
+    setText(el.discordPresence, "—");
+    setStatusBadge(el.discordBotStatus, unavailable);
+    if (el.badgeDiscord) {
+      el.badgeDiscord.textContent = "Unavailable";
+    }
+  }
+
   async function refreshDiscord() {
+    if (window.__DISCORD_FEATURES_ENABLED__ === false) {
+      renderDiscordUnavailable();
+      return;
+    }
     const runtime =
       (await window.StreamSuitesState?.loadDiscordRuntimeSnapshot?.()) || null;
 
