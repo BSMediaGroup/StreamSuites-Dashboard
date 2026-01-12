@@ -463,6 +463,7 @@ StreamSuites-Dashboard/
 │   │       └── versioning.js
 │   ├── livechat/
 │   |   ├── index.html
+│   |   ├── favicon.ico
 │   |   ├── partials/
 │   |   │   ├── footer_live.html
 │   |   │   ├── footer_replay.html
