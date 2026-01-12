@@ -850,6 +850,7 @@
     schema: "streamsuites.dashboard_state.v1",
     last_loaded_at: null,
     last_export_at: null,
+    discord_authorization_state: null,
     draft_sources: {
       creators: DATA_PATHS.creators,
       platforms: DATA_PATHS.platforms,
