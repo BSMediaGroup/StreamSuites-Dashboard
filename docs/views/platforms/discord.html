@@ -43,6 +43,27 @@
   </div>
 
   <!-- --------------------------------------------------------- -->
+  <!-- GUILD SELECTION -->
+  <!-- --------------------------------------------------------- -->
+  <section class="ss-panel" data-scope="admin">
+    <header class="ss-panel-header">
+      <h2>Guild Selection</h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <div class="ss-form-row">
+        <label for="discord-active-guild">Active Guild</label>
+        <select id="discord-active-guild" class="ss-input">
+          <option value="">Select an eligible guild</option>
+        </select>
+      </div>
+      <p id="discord-guild-status" class="muted">
+        Select a Discord guild to manage settings.
+      </p>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------------- -->
   <!-- RUNTIME CONNECTIVITY (DETERMINISTIC PLACEHOLDER) -->
   <!-- --------------------------------------------------------- -->
   <section class="ss-panel" data-scope="admin" data-discord-locked data-discord-guild-locked>

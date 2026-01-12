@@ -340,6 +340,21 @@
         </tbody>
       </table>
 
+      <div class="ss-form-row">
+        <label for="discord-active-guild">Active Guild</label>
+        <select
+          id="discord-active-guild"
+          class="ss-input"
+          data-discord-guild-readonly="true"
+          disabled
+        >
+          <option value="">Select an eligible guild</option>
+        </select>
+      </div>
+      <p id="discord-guild-status" class="muted">
+        Select a Discord guild to manage settings.
+      </p>
+
       <p class="muted" style="margin-top: 0.5rem;">
         Discord status is read-only and may be unavailable if the control-plane runtime is not deployed.
       </p>

@@ -23,8 +23,7 @@
       userWrap: null,
       userName: null,
       userAvatar: null,
-      loginStatus: null,
-      guildRow: null
+      loginStatus: null
     },
     loggedSessionNotified: false,
 
@@ -42,7 +41,6 @@
       this.elements.userName = document.getElementById("discord-username");
       this.elements.userAvatar = document.getElementById("discord-avatar");
       this.elements.loginStatus = document.getElementById("discord-auth-status");
-      this.elements.guildRow = document.getElementById("discord-guild-row");
     },
 
     loadConfig() {
@@ -260,10 +258,6 @@
 
       if (this.elements.userWrap) {
         this.elements.userWrap.classList.toggle("hidden", !loggedIn);
-      }
-
-      if (this.elements.guildRow) {
-        this.elements.guildRow.classList.toggle("hidden", !loggedIn);
       }
 
       if (!loggedIn) {
