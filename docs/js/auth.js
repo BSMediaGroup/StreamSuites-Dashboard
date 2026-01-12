@@ -68,6 +68,13 @@
         .split(/[,\s]+/)
         .map((scope) => scope.trim())
         .filter(Boolean);
+
+      if (!this.config.clientId || !this.config.redirectUri) {
+        console.warn(
+          "[Discord Auth] OAuth disabled — missing clientId or redirectUri",
+          this.config
+        );
+      }
     },
 
     bindEvents() {
