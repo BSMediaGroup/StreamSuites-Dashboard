@@ -228,12 +228,17 @@
     el.foundationStatus.textContent = "● Twitch integration: Foundation";
   }
 
-  async function init() {
+  function init() {
     cacheElements();
     setFoundationStatus();
-    await hydrateConfig();
-    hydrateRuntimePlaceholder();
-    startRuntimePolling();
+
+    setTimeout(() => {
+      (async () => {
+        await hydrateConfig();
+        hydrateRuntimePlaceholder();
+        startRuntimePolling();
+      })();
+    }, 0);
   }
 
   function destroy() {

@@ -341,7 +341,7 @@
     }
   }
 
-  async function init(modeState) {
+  function init(modeState) {
     cacheElements();
     currentMode = modeState || window.App?.mode || { current: "static", reason: "static-first default" };
     setFoundationStatus();
@@ -350,9 +350,14 @@
       modeListener = (event) => onModeChange(event.detail);
       window.addEventListener("streamsuites:modechange", modeListener);
     }
-    await hydrateConfig();
-    hydrateRuntimePlaceholder();
-    startRuntimePolling();
+
+    setTimeout(() => {
+      (async () => {
+        await hydrateConfig();
+        hydrateRuntimePlaceholder();
+        startRuntimePolling();
+      })();
+    }, 0);
   }
 
   function destroy() {

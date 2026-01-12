@@ -413,7 +413,7 @@
     el.foundationStatus.textContent = "● YouTube integration: Scaffold";
   }
 
-  async function init() {
+  function init() {
     cacheElements();
     if (!isRuntimeAvailable()) {
       renderRuntimeDisconnected();
@@ -421,12 +421,17 @@
       return;
     }
     setFoundationStatus();
-    await hydrateConfig();
-    hydrateRuntimePlaceholder();
-    startRuntimePolling();
 
-    const hydrated = await hydrateQuotaFromRuntime();
-    if (!hydrated) updateQuotaFallback();
+    setTimeout(() => {
+      (async () => {
+        await hydrateConfig();
+        hydrateRuntimePlaceholder();
+        startRuntimePolling();
+
+        const hydrated = await hydrateQuotaFromRuntime();
+        if (!hydrated) updateQuotaFallback();
+      })();
+    }, 0);
   }
 
   function destroy() {

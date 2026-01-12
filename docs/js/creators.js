@@ -46,10 +46,12 @@
      INIT / DESTROY
      ------------------------------------------------------------ */
 
-  async function init() {
+  function init() {
     cacheElements();
     wireEvents();
-    await hydrateCreators();
+    setTimeout(() => {
+      void hydrateCreators();
+    }, 0);
   }
 
   function destroy() {

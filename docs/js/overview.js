@@ -852,18 +852,9 @@
      VIEW LIFECYCLE
      ============================================================ */
 
-  async function init() {
+  function init() {
     cacheElements();
-    if (!isRuntimeAvailable()) {
-      renderRuntimeDisconnected();
-      console.info("[Dashboard] Runtime unavailable. Polling disabled.");
-      return;
-    }
     updateSystemStatus();
-    await updateLocalMetrics();
-    refreshDiscord();
-    refreshAdminActivity();
-    refreshTelemetry();
 
     setText(el.rumbleRuntime, "offline / unknown");
     setText(el.kickRuntime, "offline / unknown");
@@ -872,6 +863,20 @@
     setText(el.youtubeRuntime, "offline / not connected");
 
     bindBadgeClicks();
+
+    if (!isRuntimeAvailable()) {
+      renderRuntimeDisconnected();
+      console.info("[Dashboard] Runtime unavailable. Polling disabled.");
+      return;
+    }
+
+    setTimeout(() => {
+      void updateLocalMetrics();
+      void refreshDiscord();
+      void refreshAdminActivity();
+      void refreshTelemetry();
+      updateQuotaFromRuntime();
+    }, 0);
 
     updateQuotaFromRuntime();
     quotaRefreshHandle = setInterval(updateQuotaFromRuntime, 3000);

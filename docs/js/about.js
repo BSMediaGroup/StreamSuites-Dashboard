@@ -495,52 +495,56 @@
     });
   }
 
-  async function init() {
+  function init() {
     if (!window.AboutData) {
       console.warn("[AboutView] AboutData loader is missing.");
       return;
     }
 
-    let data;
-    try {
-      data = await AboutData.load();
-    } catch (err) {
-      console.warn("[AboutView] Failed to load about data", err);
-      renderErrors([
-        {
-          source: "about",
-          message: err?.message || "Unexpected error loading about data"
-        }
-      ]);
-      return;
-    }
-
-    const scopedSections = await loadScopedSections();
-
-    renderMeta(data.version, data.lastUpdated, data.build);
-    renderVersionMetaFromRuntime();
-    renderErrors(data.errors);
-    renderSections(
-      scopedSections.length
-        ? scopedSections
-        : [
+    setTimeout(() => {
+      (async () => {
+        let data;
+        try {
+          data = await AboutData.load();
+        } catch (err) {
+          console.warn("[AboutView] Failed to load about data", err);
+          renderErrors([
             {
-              key: "about",
-              title: "About StreamSuites",
-              tone: "general",
-              sections: Array.isArray(data.sections) ? data.sections : []
+              source: "about",
+              message: err?.message || "Unexpected error loading about data"
             }
-          ]
-    );
-    const roadmap = await loadRoadmapData();
-    const rows = renderRoadmapRows(roadmap);
-    initSkillBars(rows);
-    initSkillToggles(rows);
-    scrollToHashTarget();
+          ]);
+          return;
+        }
 
-    const hashHandler = () => scrollToHashTarget();
-    window.addEventListener("hashchange", hashHandler);
-    cleanupFns.push(() => window.removeEventListener("hashchange", hashHandler));
+        const scopedSections = await loadScopedSections();
+
+        renderMeta(data.version, data.lastUpdated, data.build);
+        renderVersionMetaFromRuntime();
+        renderErrors(data.errors);
+        renderSections(
+          scopedSections.length
+            ? scopedSections
+            : [
+                {
+                  key: "about",
+                  title: "About StreamSuites",
+                  tone: "general",
+                  sections: Array.isArray(data.sections) ? data.sections : []
+                }
+              ]
+        );
+        const roadmap = await loadRoadmapData();
+        const rows = renderRoadmapRows(roadmap);
+        initSkillBars(rows);
+        initSkillToggles(rows);
+        scrollToHashTarget();
+
+        const hashHandler = () => scrollToHashTarget();
+        window.addEventListener("hashchange", hashHandler);
+        cleanupFns.push(() => window.removeEventListener("hashchange", hashHandler));
+      })();
+    }, 0);
   }
 
   function destroy() {
