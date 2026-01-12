@@ -2,7 +2,7 @@
   "name": "StreamSuites™",
   "version": "0.2.3-alpha",
   "version_note": "Version strings must be stored raw. UI prefixes are applied at render time only.",
-  "build": "2026.01.12+010",
+  "build": "2026.01.12+011",
   "owner": "Daniel Clancy",
   "copyright": "© 2026 Brainstream Media Group",
   "license": "Proprietary"
