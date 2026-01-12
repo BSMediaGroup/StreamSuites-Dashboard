@@ -351,6 +351,7 @@
       admin: 0
     }
   };
+  let runtimePollingLogged = false;
 
   function escapeHtml(value) {
     if (value === null || value === undefined) return "—";
@@ -588,6 +589,13 @@
   }
 
   function startPolling() {
+    if (window.__RUNTIME_AVAILABLE__ !== true) {
+      if (!runtimePollingLogged) {
+        console.info("[Dashboard] Runtime unavailable. Polling disabled.");
+        runtimePollingLogged = true;
+      }
+      return;
+    }
     if (state.pollHandle) return;
     state.pollHandle = setInterval(async () => {
       await hydrateSection(ENTITY_CONFIGS, "entities");

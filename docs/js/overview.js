@@ -144,7 +144,7 @@
   }
 
   function isRuntimeAvailable() {
-    return window.__STREAMSUITES_RUNTIME_AVAILABLE__ !== false;
+    return window.__RUNTIME_AVAILABLE__ === true;
   }
 
   function getAppStorage() {
@@ -856,6 +856,7 @@
     cacheElements();
     if (!isRuntimeAvailable()) {
       renderRuntimeDisconnected();
+      console.info("[Dashboard] Runtime unavailable. Polling disabled.");
       return;
     }
     updateSystemStatus();

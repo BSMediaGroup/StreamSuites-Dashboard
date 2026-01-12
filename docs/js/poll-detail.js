@@ -5,6 +5,7 @@
   const POLL_REFRESH_MS = 12000;
   let poll = null;
   let pollTimer = null;
+  let runtimePollingLogged = false;
   let initialized = false;
   const defaultPalette = ["#8cc736", "#ffae00", "#5bc0de", "#7e03aa"];
 
@@ -87,14 +88,25 @@
   };
 
   const fetchRuntimePolls = async () => {
+    const loader = window.StreamSuitesState?.loadStateJson;
+    if (typeof loader === "function") {
+      const data = await loader("polls.json");
+      return normalizePollsPayload(data);
+    }
+
     try {
       const res = await fetch(new URL(RUNTIME_POLL_PATH, document.baseURI), {
         cache: "no-store"
       });
-      if (!res.ok) return null;
+      if (!res.ok) {
+        window.__RUNTIME_AVAILABLE__ = false;
+        return null;
+      }
       const data = await res.json();
+      window.__RUNTIME_AVAILABLE__ = true;
       return normalizePollsPayload(data);
     } catch (err) {
+      window.__RUNTIME_AVAILABLE__ = false;
       console.warn("[Poll Detail] Failed to load runtime polls", err);
       return null;
     }
@@ -532,6 +544,13 @@
   }
 
   function startPolling() {
+    if (window.__RUNTIME_AVAILABLE__ !== true) {
+      if (!runtimePollingLogged) {
+        console.info("[Dashboard] Runtime unavailable. Polling disabled.");
+        runtimePollingLogged = true;
+      }
+      return;
+    }
     if (pollTimer) return;
     pollTimer = setInterval(refreshPoll, POLL_REFRESH_MS);
   }

@@ -5,6 +5,8 @@
   const grid = document.getElementById("clips-grid");
   const emptyState = document.getElementById("clips-empty");
   let clipTimer = null;
+  let runtimePollingLogged = false;
+  let runtimeProbeComplete = false;
 
   const fallbackThumb = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
     <svg width="640" height="360" viewBox="0 0 640 360" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -216,14 +218,25 @@
   }
 
   async function fetchRuntimeClips() {
+    const loader = window.StreamSuitesState?.loadStateJson;
+    if (typeof loader === "function") {
+      const data = await loader("clips.json");
+      return normalizeClipsPayload(data);
+    }
+
     try {
       const res = await fetch(new URL(RUNTIME_CLIP_PATH, document.baseURI), {
         cache: "no-store"
       });
-      if (!res.ok) return null;
+      if (!res.ok) {
+        window.__RUNTIME_AVAILABLE__ = false;
+        return null;
+      }
       const data = await res.json();
+      window.__RUNTIME_AVAILABLE__ = true;
       return normalizeClipsPayload(data);
     } catch (err) {
+      window.__RUNTIME_AVAILABLE__ = false;
       console.warn("[Clips] Failed to load runtime clips", err);
       return null;
     }
@@ -238,13 +251,24 @@
   }
 
   async function hydrateClips() {
-    const runtimeClips = await fetchRuntimeClips();
+    let runtimeClips = null;
+    if (window.__RUNTIME_AVAILABLE__ === true || !runtimeProbeComplete) {
+      runtimeClips = await fetchRuntimeClips();
+      runtimeProbeComplete = true;
+    }
     const items = runtimeClips && runtimeClips.length > 0 ? runtimeClips : getFallbackClips();
     window.publicClips = items;
     renderClips(items);
   }
 
   function startPolling() {
+    if (window.__RUNTIME_AVAILABLE__ !== true) {
+      if (!runtimePollingLogged) {
+        console.info("[Dashboard] Runtime unavailable. Polling disabled.");
+        runtimePollingLogged = true;
+      }
+      return;
+    }
     if (clipTimer) return;
     clipTimer = setInterval(hydrateClips, CLIP_INTERVAL_MS);
   }

@@ -6,6 +6,7 @@
 
   const el = {};
   let runtimeTimer = null;
+  let runtimePollingLogged = false;
   let currentMode = null;
   let lastRuntimeSnapshot = null;
   let modeListener = null;
@@ -177,6 +178,13 @@
   }
 
   function startRuntimePolling() {
+    if (window.__RUNTIME_AVAILABLE__ !== true) {
+      if (!runtimePollingLogged) {
+        console.info("[Dashboard] Runtime unavailable. Polling disabled.");
+        runtimePollingLogged = true;
+      }
+      return;
+    }
     hydrateRuntime();
     runtimeTimer = setInterval(hydrateRuntime, REFRESH_INTERVAL);
   }

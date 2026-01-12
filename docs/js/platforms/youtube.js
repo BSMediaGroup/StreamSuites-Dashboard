@@ -6,6 +6,7 @@
 
   const el = {};
   let runtimeTimer = null;
+  let runtimePollingLogged = false;
 
   /* ============================================================
      ELEMENT CACHE
@@ -60,7 +61,7 @@
   }
 
   function isRuntimeAvailable() {
-    return window.__STREAMSUITES_RUNTIME_AVAILABLE__ !== false;
+    return window.__RUNTIME_AVAILABLE__ === true;
   }
 
   function getStorage() {
@@ -299,6 +300,13 @@
   }
 
   function startRuntimePolling() {
+    if (window.__RUNTIME_AVAILABLE__ !== true) {
+      if (!runtimePollingLogged) {
+        console.info("[Dashboard] Runtime unavailable. Polling disabled.");
+        runtimePollingLogged = true;
+      }
+      return;
+    }
     hydrateRuntime();
     runtimeTimer = setInterval(hydrateRuntime, REFRESH_INTERVAL);
   }
@@ -409,6 +417,7 @@
     cacheElements();
     if (!isRuntimeAvailable()) {
       renderRuntimeDisconnected();
+      console.info("[Dashboard] Runtime unavailable. Polling disabled.");
       return;
     }
     setFoundationStatus();

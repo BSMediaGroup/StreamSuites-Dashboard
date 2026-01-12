@@ -399,7 +399,7 @@
   }
 
   function logGuildCounts() {
-    if (window.__STREAMSUITES_RUNTIME_AVAILABLE__ === false) {
+    if (window.__RUNTIME_AVAILABLE__ === false) {
       console.info("[Discord Guild] Runtime unavailable; skipping auth gating.");
       return true;
     }
@@ -441,7 +441,7 @@
   }
 
   function updateAuthorization() {
-    if (window.__STREAMSUITES_RUNTIME_AVAILABLE__ === false) {
+    if (window.__RUNTIME_AVAILABLE__ === false) {
       window.__DISCORD_FEATURES_ENABLED__ = true;
       updateSelectorOptions();
       updateSelectorValue();
