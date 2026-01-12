@@ -20,6 +20,22 @@
    Global App State
    ---------------------------------------------------------------------- */
 
+function shouldBlockDashboardRuntime() {
+  const guard = window.StreamSuitesDashboardGuard;
+  if (guard && typeof guard.shouldBlock === "boolean") {
+    return guard.shouldBlock;
+  }
+
+  const pathname = (window.location?.pathname || "").toLowerCase();
+  const standaloneFlagDefined = typeof window.__STREAMSUITES_STANDALONE__ !== "undefined";
+  const isLivechatPath =
+    pathname.startsWith("/streamsuites-dashboard/livechat") ||
+    pathname.endsWith("/livechat/") ||
+    pathname.endsWith("/livechat/index.html");
+
+  return standaloneFlagDefined || isLivechatPath;
+}
+
 const App = {
   currentView: null,
   views: {},
@@ -520,6 +536,7 @@ function registerView(name, config) {
    ---------------------------------------------------------------------- */
 
 async function loadView(name) {
+  if (shouldBlockDashboardRuntime()) return;
   const view = App.views[name];
   if (!view) {
     console.warn(`[Dashboard] Unknown view: ${name}`);
@@ -543,6 +560,14 @@ async function loadView(name) {
   const viewPath = `views/${view.templatePath}.html`;
   const basePath = window.location.pathname.replace(/docs\/[^/]*$/, "");
   const viewUrl = new URL(viewPath, `${window.location.origin}${basePath}`);
+  const viewPathLower = viewUrl.pathname.toLowerCase();
+  if (
+    viewPathLower.includes("/livechat/") ||
+    viewPathLower.endsWith("/livechat/index.html")
+  ) {
+    console.warn("[Dashboard] LiveChat path excluded from view loader.", viewUrl.pathname);
+    return;
+  }
 
   try {
     const res = await fetch(viewUrl);
@@ -757,6 +782,7 @@ function bindHashChange() {
    ---------------------------------------------------------------------- */
 
 async function initApp() {
+  if (shouldBlockDashboardRuntime()) return;
   if (App.initialized) return;
 
   console.info("[Dashboard] Initializing StreamSuites dashboard");

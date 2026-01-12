@@ -458,6 +458,7 @@ StreamSuites-Dashboard/
 │   │       ├── about-data.js
 │   │       ├── search-pagination.js
 │   │       ├── snapshot-health.js
+│   │       ├── standalone-guard.js
 │   │       ├── version-stamp.js
 │   │       └── versioning.js
 │   ├── livechat/
