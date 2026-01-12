@@ -8,6 +8,7 @@
   "use strict";
 
   const DATA_ROOT = "data";
+  const POLL_INTERVAL_MS = 15000;
 
   const ENTITY_CONFIGS = {
     clips: {
@@ -343,6 +344,7 @@
 
   const state = {
     managers: {},
+    pollHandle: null,
     totals: {
       entities: 0,
       signals: 0,
@@ -458,6 +460,15 @@
   }
 
   async function fetchJson(path) {
+    const runtimePath = path?.startsWith(`${DATA_ROOT}/`)
+      ? path.replace(`${DATA_ROOT}/`, "")
+      : null;
+
+    if (runtimePath && typeof window.StreamSuitesState?.loadStateJson === "function") {
+      const runtimeData = await window.StreamSuitesState.loadStateJson(runtimePath);
+      if (runtimeData) return runtimeData;
+    }
+
     try {
       const res = await fetch(new URL(path, document.baseURI));
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -522,6 +533,11 @@
   }
 
   function ensureManager(cfg, key, data) {
+    if (state.managers[key]) {
+      state.managers[key].setData(data);
+      return;
+    }
+
     const manager = SearchPagination.createTableManager({
       data,
       searchFields: cfg.searchFields,
@@ -563,10 +579,27 @@
     await hydrateSection(ENTITY_CONFIGS, "entities");
     await hydrateSection(SIGNAL_CONFIGS, "signals");
     await hydrateSection(ADMIN_CONFIGS, "admin");
+    startPolling();
   }
 
   function destroy() {
+    stopPolling();
     state.managers = {};
+  }
+
+  function startPolling() {
+    if (state.pollHandle) return;
+    state.pollHandle = setInterval(async () => {
+      await hydrateSection(ENTITY_CONFIGS, "entities");
+      await hydrateSection(SIGNAL_CONFIGS, "signals");
+      await hydrateSection(ADMIN_CONFIGS, "admin");
+    }, POLL_INTERVAL_MS);
+  }
+
+  function stopPolling() {
+    if (!state.pollHandle) return;
+    clearInterval(state.pollHandle);
+    state.pollHandle = null;
   }
 
   window.DataSignalsView = { init, destroy };

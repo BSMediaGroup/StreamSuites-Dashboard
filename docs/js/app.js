@@ -396,6 +396,19 @@ App.state.runtimeSnapshot = {
         this.lastSource = url.toString();
         this.lastFetchedAt = Date.now();
         this.lastError = null;
+        try {
+          window.dispatchEvent(
+            new CustomEvent("streamsuites:runtimeSnapshot", {
+              detail: {
+                snapshot: data,
+                source: this.lastSource,
+                fetchedAt: this.lastFetchedAt
+              }
+            })
+          );
+        } catch (err) {
+          console.warn("[Dashboard] Runtime snapshot event dispatch failed", err);
+        }
         detectConnectedMode({ snapshot: data, sourceLabel: url.pathname });
         return;
       } catch (err) {

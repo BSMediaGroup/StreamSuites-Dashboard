@@ -34,6 +34,8 @@
   let runtimeSnapshot = null;
   let systemConfig = null;
   let wired = false;
+  let runtimeListener = null;
+  let visibilityListener = null;
 
   /* ------------------------------------------------------------
      INIT
@@ -47,6 +49,7 @@
     await hydrateRuntimeState();
     await hydrateSystemSettings();
     await renderDashboardState();
+    bindRuntimeListeners();
   }
 
   /* ------------------------------------------------------------
@@ -233,6 +236,30 @@
     });
 
     wired = true;
+  }
+
+  function bindRuntimeListeners() {
+    if (!runtimeListener) {
+      runtimeListener = (event) => {
+        const rawSnapshot = event?.detail?.snapshot || null;
+        const normalized =
+          window.StreamSuitesState?.normalizeRuntimeSnapshot?.(rawSnapshot) || rawSnapshot;
+        if (!normalized) return;
+        runtimeSnapshot = normalized;
+        renderPlatformPolling();
+        renderRestartQueue();
+        window.PlatformsManager?.refresh?.(true);
+      };
+      window.addEventListener("streamsuites:runtimeSnapshot", runtimeListener);
+    }
+
+    if (!visibilityListener) {
+      visibilityListener = () => {
+        if (document.visibilityState !== "visible") return;
+        App.state?.runtimeSnapshot?.fetchOnce?.();
+      };
+      document.addEventListener("visibilitychange", visibilityListener);
+    }
   }
 
   async function hydratePlatforms() {
@@ -431,6 +458,14 @@
     wired = false;
     runtimeSnapshot = null;
     systemConfig = null;
+    if (runtimeListener) {
+      window.removeEventListener("streamsuites:runtimeSnapshot", runtimeListener);
+      runtimeListener = null;
+    }
+    if (visibilityListener) {
+      document.removeEventListener("visibilitychange", visibilityListener);
+      visibilityListener = null;
+    }
     window.PlatformsManager?.destroy?.();
   }
 

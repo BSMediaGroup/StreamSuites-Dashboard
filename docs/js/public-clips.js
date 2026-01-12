@@ -1,6 +1,10 @@
 (() => {
+  const CLIP_INTERVAL_MS = 12000;
+  const RUNTIME_CLIP_PATH = "./shared/state/clips.json";
+
   const grid = document.getElementById("clips-grid");
   const emptyState = document.getElementById("clips-empty");
+  let clipTimer = null;
 
   const fallbackThumb = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
     <svg width="640" height="360" viewBox="0 0 640 360" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -171,9 +175,102 @@
     grid.appendChild(fragment);
   }
 
+  function formatDate(value) {
+    if (!value) return "—";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleString(undefined, { hour12: false });
+  }
+
+  function normalizeClip(raw) {
+    if (!raw || typeof raw !== "object") return null;
+    const id = raw.id || raw.clip_id || raw.clipId;
+    if (!id) return null;
+
+    const durationSeconds = raw.duration_seconds || raw.duration || raw.length_seconds;
+    const duration = Number.isFinite(durationSeconds)
+      ? new Date(durationSeconds * 1000).toISOString().substring(14, 19)
+      : raw.duration || "Soon";
+
+    return {
+      id,
+      title: raw.title || raw.name || "Untitled clip",
+      creator: raw.creator || "Creator",
+      platform: raw.platform || raw.source_platform || raw.destination_platform || "StreamSuites",
+      status: raw.status || raw.state || "Pending",
+      duration,
+      date: formatDate(raw.published_at || raw.created_at || raw.createdAt),
+      url: raw.url || raw.link || raw.destination_url || null,
+      thumbnail: raw.thumbnail_url || raw.thumbnail || null
+    };
+  }
+
+  function normalizeClipsPayload(payload) {
+    if (!payload) return [];
+    const items =
+      payload.clips ||
+      payload.items ||
+      (Array.isArray(payload) ? payload : null);
+    if (!Array.isArray(items)) return [];
+    return items.map(normalizeClip).filter(Boolean);
+  }
+
+  async function fetchRuntimeClips() {
+    try {
+      const res = await fetch(new URL(RUNTIME_CLIP_PATH, document.baseURI), {
+        cache: "no-store"
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return normalizeClipsPayload(data);
+    } catch (err) {
+      console.warn("[Clips] Failed to load runtime clips", err);
+      return null;
+    }
+  }
+
+  function getFallbackClips() {
+    const fallback = window.publicClips || [];
+    if (Array.isArray(fallback) && fallback.length > 0 && fallback[0]?.title) {
+      return fallback;
+    }
+    return normalizeClipsPayload(fallback);
+  }
+
+  async function hydrateClips() {
+    const runtimeClips = await fetchRuntimeClips();
+    const items = runtimeClips && runtimeClips.length > 0 ? runtimeClips : getFallbackClips();
+    window.publicClips = items;
+    renderClips(items);
+  }
+
+  function startPolling() {
+    if (clipTimer) return;
+    clipTimer = setInterval(hydrateClips, CLIP_INTERVAL_MS);
+  }
+
+  function stopPolling() {
+    if (!clipTimer) return;
+    clearInterval(clipTimer);
+    clipTimer = null;
+  }
+
+  function handleVisibility() {
+    if (document.visibilityState === "visible") {
+      hydrateClips();
+      startPolling();
+    } else {
+      stopPolling();
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     if (!grid) return;
     renderSkeleton(6);
-    requestAnimationFrame(() => renderClips(window.publicClips || []));
+    requestAnimationFrame(() => {
+      hydrateClips();
+      startPolling();
+    });
+    document.addEventListener("visibilitychange", handleVisibility);
   });
 })();

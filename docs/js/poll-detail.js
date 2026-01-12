@@ -1,7 +1,11 @@
 (() => {
   const params = new URLSearchParams(window.location.search);
   const pollId = params.get("id");
-  const poll = window.publicPollMap?.[pollId] || (window.publicPolls || [])[0];
+  const RUNTIME_POLL_PATH = "../shared/state/polls.json";
+  const POLL_REFRESH_MS = 12000;
+  let poll = null;
+  let pollTimer = null;
+  let initialized = false;
   const defaultPalette = ["#8cc736", "#ffae00", "#5bc0de", "#7e03aa"];
 
   const metaEl = document.getElementById("poll-meta");
@@ -22,11 +26,88 @@
   const visualizationPanel = document.querySelector(".visualization-panel");
   const vizOverlay = document.getElementById("viz-overlay");
 
-  if (!poll) {
-    if (titleEl) titleEl.textContent = "Poll not found";
-    if (subtitleEl) subtitleEl.textContent = "The requested poll ID is unavailable. Please return to the polls grid.";
-    return;
-  }
+  const formatTimestamp = (value) => {
+    if (!value) return null;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleString(undefined, { hour12: false });
+  };
+
+  const normalizeOptions = (options = []) => {
+    const normalized = Array.isArray(options) ? options : [];
+    const totalVotes = normalized.reduce((sum, option) => {
+      const votes = option?.votes ?? option?.count ?? option?.value ?? 0;
+      return sum + (Number.isFinite(votes) ? votes : 0);
+    }, 0);
+
+    return normalized.map((option) => {
+      const votes = option?.votes ?? option?.count ?? option?.value ?? 0;
+      const percent =
+        typeof option?.percent === "number"
+          ? option.percent
+          : totalVotes > 0
+            ? Math.round((votes / totalVotes) * 100)
+            : 0;
+      return {
+        label: option?.label || option?.name || option?.option || "Option",
+        votes: Number.isFinite(votes) ? votes : 0,
+        percent,
+        color: option?.color || null
+      };
+    });
+  };
+
+  const normalizePoll = (raw) => {
+    if (!raw || typeof raw !== "object") return null;
+    const id = raw.id || raw.poll_id || raw.pollId;
+    if (!id) return null;
+
+    return {
+      id,
+      question: raw.question || raw.title || "Creator poll",
+      summary: raw.summary || raw.description || "",
+      creator: raw.creator || "Creator",
+      status: raw.status || raw.state || "Pending",
+      options: normalizeOptions(raw.options || raw.choices || []),
+      chartType: raw.chart_type || raw.chartType || "bar",
+      createdAt: formatTimestamp(raw.created_at || raw.opened_at || raw.createdAt),
+      updatedAt: formatTimestamp(raw.updated_at || raw.updatedAt || raw.closed_at),
+      closesAt: formatTimestamp(raw.closed_at || raw.closes_at || raw.closesAt)
+    };
+  };
+
+  const normalizePollsPayload = (payload) => {
+    if (!payload) return [];
+    const items =
+      payload.polls ||
+      payload.items ||
+      (Array.isArray(payload) ? payload : null);
+    if (!Array.isArray(items)) return [];
+    return items.map(normalizePoll).filter(Boolean);
+  };
+
+  const fetchRuntimePolls = async () => {
+    try {
+      const res = await fetch(new URL(RUNTIME_POLL_PATH, document.baseURI), {
+        cache: "no-store"
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return normalizePollsPayload(data);
+    } catch (err) {
+      console.warn("[Poll Detail] Failed to load runtime polls", err);
+      return null;
+    }
+  };
+
+  const resolvePoll = async () => {
+    const runtimePolls = await fetchRuntimePolls();
+    const runtimeMatch = runtimePolls?.find((item) => item.id === pollId);
+    if (runtimeMatch) return runtimeMatch;
+
+    const fallback = window.publicPollMap?.[pollId] || (window.publicPolls || [])[0];
+    return normalizePoll(fallback) || fallback || null;
+  };
 
   const normalizeHex = (value) => {
     if (!value || typeof value !== "string") return null;
@@ -404,22 +485,86 @@
     });
   }
 
-  if (titleEl) titleEl.textContent = poll.question || "Creator poll";
-  if (subtitleEl) subtitleEl.textContent = poll.summary || "Community voting details and breakdown.";
-  if (timestampsEl) {
-    const created = poll.createdAt ? `Created ${poll.createdAt}` : null;
-    const updated = poll.updatedAt ? `Updated ${poll.updatedAt}` : null;
-    const closes = poll.closesAt ? `Closes ${poll.closesAt}` : null;
-    timestampsEl.textContent = [created, updated, closes].filter(Boolean).join(" • ");
+  function renderHeader() {
+    if (titleEl) titleEl.textContent = poll.question || "Creator poll";
+    if (subtitleEl) {
+      subtitleEl.textContent =
+        poll.summary || "Community voting details and breakdown.";
+    }
+    if (timestampsEl) {
+      const created = poll.createdAt ? `Created ${poll.createdAt}` : null;
+      const updated = poll.updatedAt ? `Updated ${poll.updatedAt}` : null;
+      const closes = poll.closesAt ? `Closes ${poll.closesAt}` : null;
+      timestampsEl.textContent = [created, updated, closes].filter(Boolean).join(" • ");
+    }
   }
 
-  renderMeta();
-  renderVotes();
-  renderCharts();
-  buildColorControls();
-  setActiveView("bar");
-  bindToggles();
-  bindColorPanel();
-  bindMaximize();
-  bindPieRotation();
+  function applyPoll(nextPoll, preserveView = true) {
+    poll = nextPoll;
+    renderHeader();
+    renderMeta();
+    renderVotes();
+    renderCharts();
+    buildColorControls();
+
+    const activeView = preserveView
+      ? document.querySelector(".viz-toggle-btn.is-active")?.dataset.view
+      : null;
+    setActiveView(activeView || "bar");
+
+    if (!initialized) {
+      bindToggles();
+      bindColorPanel();
+      bindMaximize();
+      bindPieRotation();
+      initialized = true;
+    }
+  }
+
+  async function refreshPoll() {
+    const runtimePolls = await fetchRuntimePolls();
+    const next = pollId
+      ? runtimePolls?.find((item) => item.id === pollId)
+      : runtimePolls?.[0];
+    if (next) {
+      applyPoll(next, true);
+    }
+  }
+
+  function startPolling() {
+    if (pollTimer) return;
+    pollTimer = setInterval(refreshPoll, POLL_REFRESH_MS);
+  }
+
+  function stopPolling() {
+    if (!pollTimer) return;
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
+
+  async function init() {
+    poll = await resolvePoll();
+    if (!poll) {
+      if (titleEl) titleEl.textContent = "Poll not found";
+      if (subtitleEl) {
+        subtitleEl.textContent =
+          "The requested poll ID is unavailable. Please return to the polls grid.";
+      }
+      return;
+    }
+
+    applyPoll(poll, false);
+    startPolling();
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        refreshPoll();
+        startPolling();
+      } else {
+        stopPolling();
+      }
+    });
+  }
+
+  init();
 })();
