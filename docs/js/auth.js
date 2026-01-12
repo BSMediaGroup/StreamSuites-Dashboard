@@ -251,7 +251,10 @@
         this.elements.userWrap.classList.toggle("hidden", !loggedIn);
       }
 
-      if (!loggedIn) return;
+      if (!loggedIn) {
+        this.emitSessionChange();
+        return;
+      }
 
       const user = this.session.user;
       if (this.elements.userName) {
@@ -262,6 +265,16 @@
         this.elements.userAvatar.src = this.getAvatarUrl(user);
         this.elements.userAvatar.alt = `${user.username} avatar`;
       }
+
+      this.emitSessionChange();
+    },
+
+    emitSessionChange() {
+      window.dispatchEvent(
+        new CustomEvent("streamsuites:discord-auth", {
+          detail: { session: this.session }
+        })
+      );
     },
 
     async exchangeCode(code, verifier) {
