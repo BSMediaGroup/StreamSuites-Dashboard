@@ -1,6 +1,25 @@
 {
   "schema": "streamsuites.system.v1",
   "platform_polling_enabled": true,
+  "discord_bot": {
+    "guilds": [
+      {
+        "guild_id": "947821540123456789",
+        "logging": {
+          "enabled": true,
+          "channel_id": "947821540999000111"
+        },
+        "notifications": {
+          "general_channel_id": "947821540999000222",
+          "rumble_clips_channel_id": null,
+          "youtube_clips_channel_id": "947821540999000333",
+          "kick_clips_channel_id": null,
+          "pilled_clips_channel_id": null,
+          "twitch_clips_channel_id": "947821540999000444"
+        }
+      }
+    ]
+  },
   "platform_status": {
     "kick": "scaffolded-read-only",
     "pilled": "planned-ingest-only"
