@@ -80,13 +80,29 @@
   }
 
   function formatClipper(clip) {
-    return (
-      clip?.clipper ||
-      clip?.clipper_username ||
-      clip?.user ||
+    const clipper =
+      clip?.clipper || clip?.clipper_username || clip?.user || null;
+    const requestedBy =
       clip?.requested_by ||
-      "—"
-    );
+      clip?.requestedBy ||
+      clip?.requested_by_username ||
+      clip?.requester ||
+      null;
+    const requestedPlatform =
+      clip?.requested_by_platform ||
+      clip?.requested_platform ||
+      clip?.requested_source ||
+      clip?.source_platform ||
+      null;
+    const suffix = requestedPlatform ? ` via ${requestedPlatform}` : "";
+
+    if (clipper && requestedBy && requestedBy !== clipper) {
+      return `${clipper} (requested by ${requestedBy}${suffix})`;
+    }
+    if (requestedBy) {
+      return `${requestedBy}${suffix}`;
+    }
+    return clipper || "—";
   }
 
   function resolveDestinationUrl(clip) {
