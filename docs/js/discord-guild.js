@@ -19,7 +19,10 @@
 
   const state = {
     activeGuildId: null,
-    eligibleGuilds: new Map(),
+    authorizedGuilds: new Map(),
+    unauthorizedGuilds: new Map(),
+    runtimeGuilds: new Map(),
+    runtimeLoaded: false,
     status: "missing",
     session: null
   };
@@ -58,16 +61,68 @@
     );
   }
 
-  function buildEligibleGuilds(session) {
-    const eligible = new Map();
+  function parseBotPresence(value) {
+    if (typeof value === "boolean") return value;
+    if (typeof value === "number") return value !== 0;
+    if (typeof value === "string" && value.trim()) {
+      const normalized = value.trim().toLowerCase();
+      return normalized !== "false" && normalized !== "0" && normalized !== "no";
+    }
+    return true;
+  }
+
+  function extractRuntimeGuildList(raw) {
+    if (!raw || typeof raw !== "object") return [];
+    if (Array.isArray(raw.guilds)) return raw.guilds;
+    if (Array.isArray(raw.connected_guilds)) return raw.connected_guilds;
+    if (Array.isArray(raw.discord?.guilds)) return raw.discord.guilds;
+    if (Array.isArray(raw.discord_bot?.guilds)) return raw.discord_bot.guilds;
+    return [];
+  }
+
+  function normalizeRuntimeGuilds(raw) {
+    const guilds = extractRuntimeGuildList(raw);
+    const normalized = new Map();
+
+    guilds.forEach((entry) => {
+      if (!entry || typeof entry !== "object") return;
+      const id = coerceText(entry.guild_id || entry.id || entry.guildId);
+      if (!id) return;
+      const botPresent = parseBotPresence(entry.bot_present);
+      if (!botPresent) return;
+      const name = coerceText(entry.guild_name || entry.name || entry.label);
+      normalized.set(id, {
+        ...entry,
+        guild_id: id,
+        guild_name: name,
+        bot_present: true
+      });
+    });
+
+    return normalized;
+  }
+
+  function buildAuthorizedGuilds(session, runtimeGuilds) {
+    const authorized = new Map();
+    const unauthorized = new Map();
     const guilds = Array.isArray(session?.guilds) ? session.guilds : [];
     guilds.forEach((guild) => {
       const id = coerceText(guild?.id);
       if (!id) return;
-      if (!hasGuildAccess(guild)) return;
-      eligible.set(id, guild);
+      const runtimeGuild = runtimeGuilds.get(id) || null;
+      const hasAccess = hasGuildAccess(guild);
+      if (runtimeGuild && hasAccess) {
+        authorized.set(id, {
+          ...guild,
+          runtime: runtimeGuild
+        });
+        return;
+      }
+      if (runtimeGuild || hasAccess) {
+        unauthorized.set(id, guild);
+      }
     });
-    return eligible;
+    return { authorized, unauthorized };
   }
 
   function loadActiveGuildId() {
@@ -145,18 +200,20 @@
     const option = document.createElement("option");
     option.value = "";
     option.textContent = state.session
-      ? "Select an eligible guild"
+      ? state.runtimeLoaded
+        ? "Select an eligible guild"
+        : "Loading runtime guilds…"
       : "Login to load guilds";
 
     el.selector.innerHTML = "";
     el.selector.appendChild(option);
 
-    if (!state.session) {
+    if (!state.session || !state.runtimeLoaded) {
       el.selector.disabled = true;
       return;
     }
 
-    const eligible = Array.from(state.eligibleGuilds.values()).sort((a, b) => {
+    const eligible = Array.from(state.authorizedGuilds.values()).sort((a, b) => {
       const nameA = coerceText(a?.name).toLowerCase();
       const nameB = coerceText(b?.name).toLowerCase();
       return nameA.localeCompare(nameB);
@@ -165,7 +222,7 @@
     if (eligible.length === 0) {
       const empty = document.createElement("option");
       empty.value = "";
-      empty.textContent = "No eligible guilds";
+      empty.textContent = "No authorized guilds";
       empty.disabled = true;
       el.selector.appendChild(empty);
       el.selector.disabled = true;
@@ -186,7 +243,7 @@
 
   function updateSelectorValue() {
     if (!el.selector) return;
-    if (state.eligibleGuilds.has(state.activeGuildId)) {
+    if (state.authorizedGuilds.has(state.activeGuildId)) {
       el.selector.value = state.activeGuildId;
     } else {
       el.selector.value = "";
@@ -201,22 +258,33 @@
       return;
     }
 
+    if (!state.runtimeLoaded) {
+      el.status.textContent = "Loading runtime guild access.";
+      return;
+    }
+
     if (state.status === "unauthorized") {
       el.status.textContent =
         "Active guild not authorized for this Discord login.";
       return;
     }
 
+    if (state.status === "no-access") {
+      el.status.textContent =
+        "You do not have permission to manage any guilds where the StreamSuites bot is installed.";
+      return;
+    }
+
     if (!state.activeGuildId) {
       const message =
-        state.eligibleGuilds.size === 0
-          ? "No eligible guilds available for this account."
+        state.authorizedGuilds.size === 0
+          ? "You do not have permission to manage any guilds where the StreamSuites bot is installed."
           : "Select an eligible guild to unlock Discord settings.";
       el.status.textContent = message;
       return;
     }
 
-    const activeGuild = state.eligibleGuilds.get(state.activeGuildId);
+    const activeGuild = state.authorizedGuilds.get(state.activeGuildId);
     el.status.textContent = activeGuild
       ? `Active: ${formatGuildLabel(activeGuild)}`
       : "Active guild selected.";
@@ -228,12 +296,22 @@
       return;
     }
 
+    if (!state.runtimeLoaded) {
+      setStatus("missing");
+      return;
+    }
+
+    if (state.authorizedGuilds.size === 0) {
+      setStatus("no-access");
+      return;
+    }
+
     if (!state.activeGuildId) {
       setStatus("missing");
       return;
     }
 
-    if (!state.eligibleGuilds.has(state.activeGuildId)) {
+    if (!state.authorizedGuilds.has(state.activeGuildId)) {
       setStatus("unauthorized");
       return;
     }
@@ -245,19 +323,62 @@
     const detail = {
       status: state.status,
       activeGuildId: state.activeGuildId,
-      activeGuild: state.eligibleGuilds.get(state.activeGuildId) || null,
-      eligibleGuilds: state.eligibleGuilds
+      activeGuild: state.authorizedGuilds.get(state.activeGuildId) || null,
+      eligibleGuilds: state.authorizedGuilds,
+      authorizedGuilds: state.authorizedGuilds,
+      unauthorizedGuilds: state.unauthorizedGuilds,
+      runtimeGuilds: state.runtimeGuilds
     };
 
     window.dispatchEvent(new CustomEvent("streamsuites:discord-guild", { detail }));
   }
 
-  function handleAuthEvent(event) {
-    state.session = event?.detail?.session || window.StreamSuitesAuth?.session || null;
-    state.eligibleGuilds = buildEligibleGuilds(state.session);
+  function logGuildCounts() {
+    const oauthCount = Array.isArray(state.session?.guilds) ? state.session.guilds.length : 0;
+    const runtimeCount = state.runtimeGuilds.size;
+    const authorizedCount = state.authorizedGuilds.size;
+    console.info(
+      `[Discord Guild] OAuth guilds: ${oauthCount} | Runtime guilds: ${runtimeCount} | Authorized guilds: ${authorizedCount}`
+    );
+  }
+
+  function updateAuthorization() {
+    const { authorized, unauthorized } = buildAuthorizedGuilds(
+      state.session,
+      state.runtimeGuilds
+    );
+    state.authorizedGuilds = authorized;
+    state.unauthorizedGuilds = unauthorized;
     updateSelectorOptions();
     updateSelectorValue();
     evaluateStatus();
+    logGuildCounts();
+  }
+
+  function handleAuthEvent(event) {
+    state.session = event?.detail?.session || window.StreamSuitesAuth?.session || null;
+    updateAuthorization();
+  }
+
+  async function loadRuntimeGuilds() {
+    const loader = window.StreamSuitesState?.loadStateJson;
+    if (typeof loader !== "function") {
+      console.warn("[Discord Guild] Runtime guild loader unavailable.");
+      state.runtimeLoaded = true;
+      updateAuthorization();
+      return;
+    }
+
+    try {
+      const runtime = await loader("discord/runtime.json");
+      state.runtimeGuilds = normalizeRuntimeGuilds(runtime);
+    } catch (err) {
+      console.warn("[Discord Guild] Failed to load runtime guilds.", err);
+      state.runtimeGuilds = new Map();
+    }
+
+    state.runtimeLoaded = true;
+    updateAuthorization();
   }
 
   function setActiveGuildId(guildId) {
@@ -272,7 +393,7 @@
     if (el.selector) {
       el.selector.addEventListener("change", () => {
         const selected = coerceText(el.selector.value);
-        if (selected && !state.eligibleGuilds.has(selected)) {
+        if (selected && !state.authorizedGuilds.has(selected)) {
           return;
         }
         setActiveGuildId(selected);
@@ -291,17 +412,20 @@
     cacheElements();
     state.activeGuildId = loadActiveGuildId();
     state.session = window.StreamSuitesAuth?.session || null;
-    state.eligibleGuilds = buildEligibleGuilds(state.session);
     updateSelectorOptions();
     updateSelectorValue();
     bindEvents();
-    evaluateStatus();
+    loadRuntimeGuilds();
+    updateAuthorization();
   }
 
   window.StreamSuitesDiscordGuild = {
     getActiveGuildId: () => state.activeGuildId,
-    getActiveGuild: () => state.eligibleGuilds.get(state.activeGuildId) || null,
-    getEligibleGuilds: () => state.eligibleGuilds,
+    getActiveGuild: () => state.authorizedGuilds.get(state.activeGuildId) || null,
+    getEligibleGuilds: () => state.authorizedGuilds,
+    getAuthorizedGuilds: () => state.authorizedGuilds,
+    getUnauthorizedGuilds: () => state.unauthorizedGuilds,
+    getRuntimeGuilds: () => state.runtimeGuilds,
     getStatus: () => state.status,
     setActiveGuildId
   };
