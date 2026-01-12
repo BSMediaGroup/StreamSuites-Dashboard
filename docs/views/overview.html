@@ -320,6 +320,12 @@
             <td id="ov-discord-connection" class="align-right muted">Loading…</td>
           </tr>
           <tr>
+            <td>Control Bot</td>
+            <td class="align-right">
+              <span id="ov-discord-bot" class="badge offline">Offline</span>
+            </td>
+          </tr>
+          <tr>
             <td>Last Heartbeat</td>
             <td id="ov-discord-heartbeat" class="align-right muted">Loading…</td>
           </tr>
@@ -337,6 +343,42 @@
       <p class="muted" style="margin-top: 0.5rem;">
         Discord status is read-only and may be unavailable if the control-plane runtime is not deployed.
       </p>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------------- -->
+  <!-- ADMIN ACTIVITY -->
+  <!-- --------------------------------------------------------- -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Admin Activity</h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <p class="muted">
+        Recent admin actions from Discord, Desktop, or dashboard interfaces. Events
+        appear when the runtime exports an admin activity feed.
+      </p>
+
+      <table class="ss-table ss-table-compact">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Source</th>
+            <th>User</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="admin-activity-body">
+          <tr>
+            <td colspan="4" class="muted">Loading activity…</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div id="admin-activity-empty" class="ss-empty hidden">
+        No recent admin actions.
+      </div>
     </div>
   </section>
 

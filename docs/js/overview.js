@@ -6,10 +6,12 @@
   const TELEMETRY_MAX_EVENTS = 10;
   const TELEMETRY_MAX_ERRORS = 8;
   const TELEMETRY_MAX_METRICS = 6;
+  const ADMIN_ACTIVITY_MAX = 8;
 
   let refreshHandle = null;
   let quotaRefreshHandle = null;
   let telemetryHandle = null;
+  let adminActivityHandle = null;
 
   const el = {};
 
@@ -34,6 +36,7 @@
     el.discordHeartbeat = document.getElementById("ov-discord-heartbeat");
     el.discordGuilds = document.getElementById("ov-discord-guilds");
     el.discordPresence = document.getElementById("ov-discord-presence");
+    el.discordBotStatus = document.getElementById("ov-discord-bot");
 
     el.rumbleConfig = document.getElementById("ov-rumble-config");
     el.rumbleRuntime = document.getElementById("ov-rumble-runtime");
@@ -116,6 +119,10 @@
     el.telemetryErrorsWarning = document.getElementById(
       "telemetry-errors-warning"
     );
+
+    /* Admin activity */
+    el.adminActivityBody = document.getElementById("admin-activity-body");
+    el.adminActivityEmpty = document.getElementById("admin-activity-empty");
   }
 
   /* ============================================================
@@ -289,19 +296,101 @@
     return "Unknown";
   }
 
+  function setStatusBadge(target, status) {
+    if (!target) return;
+    const normalized = (status || "").toLowerCase();
+    target.classList.remove("online", "offline");
+    target.classList.add("badge");
+
+    if (normalized === "online") {
+      target.classList.add("online");
+      target.textContent = "Online";
+      return;
+    }
+
+    if (normalized === "offline" || normalized === "not running") {
+      target.classList.add("offline");
+      target.textContent = "Offline";
+      return;
+    }
+
+    target.textContent = status || "Unknown";
+  }
+
   async function refreshDiscord() {
     const runtime =
       (await window.StreamSuitesState?.loadDiscordRuntimeSnapshot?.()) || null;
 
-    setText(el.discordRuntime, formatConnection(runtime));
+    const runtimeStatus = formatConnection(runtime);
+
+    setText(el.discordRuntime, runtimeStatus);
     setText(el.discordConnection, formatConnectionDetail(runtime));
     setText(el.discordHeartbeat, formatHeartbeat(runtime));
     setText(el.discordGuilds, formatGuildCount(runtime));
     setText(el.discordPresence, formatPresence(runtime));
+    setStatusBadge(el.discordBotStatus, runtimeStatus);
 
     if (el.badgeDiscord) {
       el.badgeDiscord.textContent =
         runtime && runtime.running ? "Foundation" : "Offline";
+    }
+  }
+
+  /* ============================================================
+     ADMIN ACTIVITY
+     ============================================================ */
+
+  function formatActivityTimestamp(value) {
+    return window.StreamSuitesState?.formatTimestamp?.(value) || "—";
+  }
+
+  function renderAdminActivity(activity) {
+    const body = el.adminActivityBody;
+    if (!body) return;
+
+    const events = Array.isArray(activity?.events) ? activity.events : [];
+    body.innerHTML = "";
+
+    if (!events.length) {
+      toggleEmptyState(el.adminActivityEmpty, true);
+      return;
+    }
+
+    toggleEmptyState(el.adminActivityEmpty, false);
+
+    events.slice(0, ADMIN_ACTIVITY_MAX).forEach((event) => {
+      const row = document.createElement("tr");
+
+      const timeCell = document.createElement("td");
+      timeCell.textContent = formatActivityTimestamp(event.timestamp);
+      row.appendChild(timeCell);
+
+      const sourceCell = document.createElement("td");
+      sourceCell.textContent = event.source || "—";
+      row.appendChild(sourceCell);
+
+      const userCell = document.createElement("td");
+      userCell.textContent = event.user || "—";
+      row.appendChild(userCell);
+
+      const actionCell = document.createElement("td");
+      actionCell.textContent = event.action || "—";
+      row.appendChild(actionCell);
+
+      body.appendChild(row);
+    });
+  }
+
+  async function refreshAdminActivity() {
+    try {
+      const activity =
+        (await window.StreamSuitesState?.loadAdminActivity?.({
+          forceReload: true
+        })) || null;
+      renderAdminActivity(activity);
+    } catch (err) {
+      console.warn("[Overview] Admin activity refresh failed", err);
+      renderAdminActivity(null);
     }
   }
 
@@ -697,6 +786,7 @@
     updateSystemStatus();
     await updateLocalMetrics();
     refreshDiscord();
+    refreshAdminActivity();
     refreshTelemetry();
 
     setText(el.rumbleRuntime, "offline / unknown");
@@ -715,6 +805,9 @@
 
     if (telemetryHandle) clearInterval(telemetryHandle);
     telemetryHandle = setInterval(refreshTelemetry, TELEMETRY_REFRESH_MS);
+
+    if (adminActivityHandle) clearInterval(adminActivityHandle);
+    adminActivityHandle = setInterval(refreshAdminActivity, REFRESH_INTERVAL_MS);
   }
 
   function destroy() {
@@ -729,6 +822,10 @@
     if (telemetryHandle) {
       clearInterval(telemetryHandle);
       telemetryHandle = null;
+    }
+    if (adminActivityHandle) {
+      clearInterval(adminActivityHandle);
+      adminActivityHandle = null;
     }
   }
 

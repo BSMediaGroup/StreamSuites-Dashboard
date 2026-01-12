@@ -13,7 +13,8 @@
 
   const cache = {
     runtimeSnapshot: null,
-    quotas: null
+    quotas: null,
+    adminActivity: null
   };
 
   const DEFAULT_CREATOR_CONTEXT = Object.freeze({
@@ -670,6 +671,76 @@
     return normalizeDiscordRuntime(data);
   }
 
+  function normalizeAdminActivity(raw) {
+    if (!raw || typeof raw !== "object") return null;
+
+    const events = Array.isArray(raw.events)
+      ? raw.events
+      : Array.isArray(raw.activity)
+        ? raw.activity
+        : [];
+
+    const normalized = events
+      .map((event, index) => {
+        if (!event || typeof event !== "object") return null;
+        const timestamp = pickString(
+          event.timestamp,
+          event.ts,
+          event.time,
+          event.occurred_at
+        );
+
+        return {
+          id: pickString(event.id, event.event_id, event.key) || `event-${index}`,
+          timestamp,
+          source: pickString(event.source, event.origin, event.channel),
+          user: pickString(event.user, event.actor, event.username),
+          action: pickString(
+            event.action,
+            event.description,
+            event.summary,
+            event.message
+          )
+        };
+      })
+      .filter(Boolean);
+
+    const toSortValue = (value) => {
+      if (!value) return 0;
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return 0;
+      return date.getTime();
+    };
+
+    normalized.sort((a, b) => toSortValue(b.timestamp) - toSortValue(a.timestamp));
+
+    return {
+      schema: pickString(raw.schema),
+      updatedAt: pickString(raw.updated_at, raw.updatedAt),
+      events: normalized
+    };
+  }
+
+  async function loadAdminActivity(options = {}) {
+    if (!options.forceReload && cache.adminActivity) {
+      return deepClone(cache.adminActivity);
+    }
+
+    const shared = normalizeAdminActivity(
+      await loadStateJson("admin_activity.json")
+    );
+    if (shared) {
+      cache.adminActivity = shared;
+      return deepClone(shared);
+    }
+
+    const fallback = normalizeAdminActivity(
+      await fetchFallbackJson("./data/admin_activity.json")
+    );
+    cache.adminActivity = fallback || null;
+    return fallback ? deepClone(fallback) : null;
+  }
+
   window.StreamSuitesState = {
     formatTimestamp,
     loadStateJson,
@@ -680,7 +751,9 @@
     loadQuotasSnapshot,
     loadDiscordRuntimeSnapshot,
     normalizeDiscordRuntime,
-    describeDiscordConnection
+    describeDiscordConnection,
+    loadAdminActivity,
+    normalizeAdminActivity
   };
 })();
 
