@@ -5,8 +5,8 @@
       <div id="theme-menu-container"></div>
     </div>
   </div>
-  <div class="live-input-wrapper">
-    <div class="live-input-status" aria-live="polite">Live input stub</div>
+  <div class="live-input-wrapper is-replay">
+    <div class="live-input-status visible" aria-live="polite">Replay Mode</div>
     <!-- Input structure kept from Uiverse.io by Lakshay-art -->
     <div class="live-input" id="poda">
       <div class="glow"></div>
@@ -19,7 +19,7 @@
       <div class="border"></div>
 
       <div id="main">
-        <input placeholder="Send a message" type="text" name="text" class="input" />
+        <input placeholder="Send a message" type="text" name="text" class="input" disabled aria-disabled="true" />
         <div id="input-mask"></div>
         <div id="pink-mask"></div>
         <div class="filterBorder"></div>
@@ -64,8 +64,8 @@
       </div>
     </div>
     <div class="live-actions">
-      <button id="emoji-button" class="icon-btn" aria-label="Emoji picker (coming soon)">😀</button>
-      <button id="send-button" class="icon-btn" aria-label="Send message (disabled)">
+      <button id="emoji-button" class="icon-btn" aria-label="Emoji picker (coming soon)" disabled aria-disabled="true">😀</button>
+      <button id="send-button" class="icon-btn" aria-label="Send message (disabled)" disabled aria-disabled="true">
         <img src="../../../docs/assets/icons/ui/send.svg" alt="Send" />
       </button>
     </div>

@@ -8,6 +8,9 @@
 (() => {
   "use strict";
 
+  const pathname = window.location?.pathname || "";
+  if (pathname.includes("/livechat/")) return;
+
   function shouldBlockDashboardRuntime() {
     const guard = window.StreamSuitesDashboardGuard;
     if (guard && typeof guard.shouldBlock === "boolean") {
