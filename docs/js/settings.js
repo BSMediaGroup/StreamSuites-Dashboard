@@ -635,7 +635,11 @@
     }
 
     if (el.discordBotEmptyTitle && el.discordBotEmptySubtitle) {
-      if (!activeGuildId) {
+      if (guildStatus === "no-access") {
+        el.discordBotEmptyTitle.textContent = "No authorized guilds available.";
+        el.discordBotEmptySubtitle.textContent =
+          "You do not have permission to manage any guilds where the StreamSuites bot is installed.";
+      } else if (!activeGuildId) {
         el.discordBotEmptyTitle.textContent = "No active guild selected.";
         el.discordBotEmptySubtitle.textContent =
           "Select an eligible guild to view or edit per-guild settings.";
