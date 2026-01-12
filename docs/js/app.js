@@ -902,10 +902,6 @@ async function initApp() {
     if (resolvedMode === "BOOT") {
       setAppMode("NORMAL", { reason: "boot-timeout" });
     }
-    if (getAppMode() === "BLOCKED_NO_GUILDS") {
-      console.warn("[Dashboard] Init aborted: no authorized Discord guilds.");
-      return;
-    }
     if (getAppMode() !== "NORMAL") {
       setAppMode("NORMAL", { reason: "init-start" });
     }
