@@ -9,6 +9,23 @@
 (() => {
   "use strict";
 
+  function shouldBlockDashboardRuntime() {
+    const guard = window.StreamSuitesDashboardGuard;
+    if (guard && typeof guard.shouldBlock === "boolean") {
+      return guard.shouldBlock;
+    }
+
+    const pathname = (window.location?.pathname || "").toLowerCase();
+    const standaloneFlagDefined = typeof window.__STREAMSUITES_STANDALONE__ !== "undefined";
+    const isLivechatPath =
+      pathname.startsWith("/streamsuites-dashboard/livechat") ||
+      pathname.endsWith("/livechat/") ||
+      pathname.endsWith("/livechat/index.html");
+
+    return standaloneFlagDefined || isLivechatPath;
+  }
+
+  if (shouldBlockDashboardRuntime()) return;
   if (!window.Versioning) return;
 
   function ensureElement(parent, selector, tagName, className) {

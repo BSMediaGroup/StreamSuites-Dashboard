@@ -5,6 +5,23 @@
    ====================================================================== */
 
 (function () {
+  function shouldBlockDashboardRuntime() {
+    const guard = window.StreamSuitesDashboardGuard;
+    if (guard && typeof guard.shouldBlock === "boolean") {
+      return guard.shouldBlock;
+    }
+
+    const pathname = (window.location?.pathname || "").toLowerCase();
+    const standaloneFlagDefined = typeof window.__STREAMSUITES_STANDALONE__ !== "undefined";
+    const isLivechatPath =
+      pathname.startsWith("/streamsuites-dashboard/livechat") ||
+      pathname.endsWith("/livechat/") ||
+      pathname.endsWith("/livechat/index.html");
+
+    return standaloneFlagDefined || isLivechatPath;
+  }
+
+  if (shouldBlockDashboardRuntime()) return;
   const AUTH_STORAGE_KEY = "streamsuites.discord.session";
   const AUTH_FLOW_KEY = "streamsuites.discord.oauth";
   const DISCORD_API_BASE = "https://discord.com/api";

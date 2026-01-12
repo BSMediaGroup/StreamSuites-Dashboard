@@ -353,6 +353,7 @@
   </div>
 
   <!-- Core Scripts -->
+  <script src="./js/utils/standalone-guard.js"></script>
   <script src="./js/utils/versioning.js"></script>
   <script src="./js/utils/version-stamp.js"></script>
   <script src="./js/utils/about-data.js"></script>
@@ -382,6 +383,7 @@
   <!-- Minimal Status Wiring -->
   <script>
     (function () {
+      if (window.StreamSuitesDashboardGuard?.shouldBlock) return;
       const statusEl = document.getElementById("app-status");
       if (!statusEl) return;
 
@@ -401,6 +403,7 @@
   </script>
   <script>
     (function () {
+      if (window.StreamSuitesDashboardGuard?.shouldBlock) return;
       const launch = document.getElementById("livechat-launch");
       if (!launch) return;
 
