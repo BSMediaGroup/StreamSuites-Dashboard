@@ -143,10 +143,6 @@
     return window.Telemetry?.formatTimestamp?.(value) || "—";
   }
 
-  function isRuntimeAvailable() {
-    return window.__RUNTIME_AVAILABLE__ === true;
-  }
-
   function getAppStorage() {
     if (
       typeof window.App === "object" &&
@@ -335,6 +331,9 @@
   }
 
   async function refreshDiscord() {
+    if (window.__RUNTIME_AVAILABLE__ !== true) {
+      return;
+    }
     if (window.__DISCORD_FEATURES_ENABLED__ === false) {
       renderDiscordUnavailable();
       return;
@@ -403,6 +402,9 @@
   }
 
   async function refreshAdminActivity() {
+    if (window.__RUNTIME_AVAILABLE__ !== true) {
+      return;
+    }
     try {
       const activity =
         (await window.StreamSuitesState?.loadAdminActivity?.({
@@ -420,6 +422,9 @@
      ============================================================ */
 
   function animateQuotaBar(fillEl, used, max, status) {
+    if (window.__RUNTIME_AVAILABLE__ !== true) {
+      return;
+    }
     if (!fillEl || !max) return;
 
     const percent = Math.min((used / max) * 100, 100);
@@ -442,6 +447,9 @@
   }
 
   function updateQuotaFromRuntime() {
+    if (window.__RUNTIME_AVAILABLE__ !== true) {
+      return;
+    }
     const snap = window.App?.state?.quotas?.getSnapshot?.();
     if (!snap || typeof snap !== "object") return;
 
@@ -821,6 +829,9 @@
   }
 
   async function refreshTelemetry() {
+    if (window.__RUNTIME_AVAILABLE__ !== true) {
+      return;
+    }
     try {
       const [snapshot, events, rates, errors] = await Promise.all([
         window.Telemetry?.loadSnapshot?.(true),
@@ -864,9 +875,9 @@
 
     bindBadgeClicks();
 
-    if (!isRuntimeAvailable()) {
+    if (window.__RUNTIME_AVAILABLE__ !== true) {
       renderRuntimeDisconnected();
-      console.info("[Dashboard] Runtime unavailable. Polling disabled.");
+      console.info("[Overview] Static offline mode.");
       return;
     }
 
