@@ -460,6 +460,20 @@ StreamSuites-Dashboard/
 │   │       ├── snapshot-health.js
 │   │       ├── version-stamp.js
 │   │       └── versioning.js
+│   ├── livechat/
+│   |   ├── index.html
+│   |   ├── partials/
+│   |   │   ├── footer_live.html
+│   |   │   ├── footer_replay.html
+│   |   │   ├── theme_menu.html
+│   |   │   └── theme_selector.html
+│   |   └── static/
+│   |       ├── chat.css
+│   |       ├── chat_live_input.css
+│   |       └── themes/
+│   |           ├── theme-default.css
+│   |           ├── theme-midnight.css
+│   |           └── theme-slate.css
 │   ├── lander.html
 │   ├── polls
 │   │   ├── detail.html
@@ -539,21 +553,6 @@ StreamSuites-Dashboard/
 │       ├── tallies.html
 │       ├── triggers.html
 │       └── updates.html
-├── livechat/
-|   ├── index.html
-|   ├── partials/
-|   │   ├── footer_live.html
-|   │   ├── footer_replay.html
-|   │   ├── theme_menu.html
-|   │   └── theme_selector.html
-|   └── static/
-|       ├── chat.css
-|       ├── chat_live_input.css
-|       └── themes/
-|           ├── theme-default.css
-|           ├── theme-midnight.css
-|           └── theme-slate.css
-|
 ├── favicon.ico
 ├── runtime
 │   ├── exports
