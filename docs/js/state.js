@@ -859,7 +859,10 @@
 
   const DEFAULT_SYSTEM = {
     schema: "streamsuites.system.v1",
-    platform_polling_enabled: null
+    platform_polling_enabled: null,
+    discord_bot: {
+      guilds: []
+    }
   };
 
   const cache = {
@@ -958,6 +961,16 @@
       platformPollingEnabled === true || platformPollingEnabled === false
         ? platformPollingEnabled
         : null;
+
+    const discordBot =
+      normalized.discord_bot && typeof normalized.discord_bot === "object"
+        ? normalized.discord_bot
+        : {};
+
+    normalized.discord_bot = {
+      ...discordBot,
+      guilds: Array.isArray(discordBot.guilds) ? discordBot.guilds : []
+    };
 
     return normalized;
   }

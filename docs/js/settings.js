@@ -36,6 +36,7 @@
   let wired = false;
   let runtimeListener = null;
   let visibilityListener = null;
+  const DISCORD_CHANNEL_ID_REGEX = /^\d{17,20}$/;
 
   /* ------------------------------------------------------------
      INIT
@@ -193,6 +194,9 @@
     );
     el.platformPollingDraft = document.getElementById("platform-polling-draft-state");
     el.platformPollingNotice = document.getElementById("platform-polling-restart");
+    el.discordBotEmpty = document.getElementById("discord-bot-empty");
+    el.discordBotGuilds = document.getElementById("discord-bot-guilds");
+    el.discordBotTemplate = document.getElementById("discord-bot-guild-template");
 
     el.restartRequiredFlag = document.getElementById("restart-required-flag");
     el.restartPendingSystem = document.getElementById("restart-pending-system");
@@ -292,6 +296,7 @@
 
     renderPlatformPolling();
     renderRestartQueue();
+    renderDiscordBotSettings();
   }
 
   async function renderDashboardState(forceReload = false) {
@@ -434,6 +439,238 @@
         draftState.hasStoredDraft && (runtimeValue === null || runtimeValue !== draftValue);
       el.platformPollingNotice.style.display = needsRestart ? "block" : "none";
     }
+  }
+
+  function coerceText(value) {
+    if (value === null || value === undefined) return "";
+    if (typeof value === "string") return value.trim();
+    return String(value).trim();
+  }
+
+  function getDiscordBotConfig() {
+    if (!systemConfig || typeof systemConfig !== "object") {
+      return { guilds: [] };
+    }
+
+    const source =
+      systemConfig.discord_bot && typeof systemConfig.discord_bot === "object"
+        ? systemConfig.discord_bot
+        : {};
+
+    return {
+      ...source,
+      guilds: Array.isArray(source.guilds) ? source.guilds : []
+    };
+  }
+
+  function normalizeDiscordGuild(entry = {}) {
+    const base = entry && typeof entry === "object" ? entry : {};
+    const logging =
+      base.logging && typeof base.logging === "object" ? base.logging : {};
+    const notifications =
+      base.notifications && typeof base.notifications === "object"
+        ? base.notifications
+        : {};
+
+    const guildName =
+      typeof base.guild_name === "string"
+        ? base.guild_name.trim()
+        : typeof base.name === "string"
+          ? base.name.trim()
+          : typeof base.label === "string"
+            ? base.label.trim()
+            : "";
+
+    return {
+      ...base,
+      guild_id: coerceText(base.guild_id),
+      guild_name: guildName,
+      logging: {
+        ...logging,
+        enabled: logging.enabled === true,
+        channel_id: coerceText(logging.channel_id)
+      },
+      notifications: {
+        ...notifications,
+        general_channel_id: coerceText(notifications.general_channel_id),
+        rumble_clips_channel_id: coerceText(notifications.rumble_clips_channel_id),
+        youtube_clips_channel_id: coerceText(notifications.youtube_clips_channel_id),
+        kick_clips_channel_id: coerceText(notifications.kick_clips_channel_id),
+        pilled_clips_channel_id: coerceText(notifications.pilled_clips_channel_id),
+        twitch_clips_channel_id: coerceText(notifications.twitch_clips_channel_id)
+      }
+    };
+  }
+
+  function getGuildLabel(guild, index) {
+    if (guild.guild_name) {
+      return guild.guild_id
+        ? `${guild.guild_name} (${guild.guild_id})`
+        : guild.guild_name;
+    }
+
+    if (guild.guild_id) {
+      return `Guild ${guild.guild_id}`;
+    }
+
+    return `Guild ${index + 1}`;
+  }
+
+  function updateChannelStatus(statusEl, value) {
+    if (!statusEl) return;
+    const trimmed = coerceText(value);
+    statusEl.classList.remove("pill-success", "pill-warning", "pill-default");
+
+    if (!trimmed) {
+      statusEl.classList.add("pill-default");
+      statusEl.textContent = "Not set";
+      return;
+    }
+
+    if (DISCORD_CHANNEL_ID_REGEX.test(trimmed)) {
+      statusEl.classList.add("pill-success");
+      statusEl.textContent = "Valid ID";
+      return;
+    }
+
+    statusEl.classList.add("pill-warning");
+    statusEl.textContent = "Invalid ID";
+  }
+
+  function persistDiscordBotConfig(updatedBot) {
+    systemConfig =
+      window.ConfigState?.saveSystem?.({ discord_bot: updatedBot }) || {
+        discord_bot: updatedBot
+      };
+    renderDashboardState();
+  }
+
+  function updateDiscordBotGuild(index, updater) {
+    const bot = getDiscordBotConfig();
+    const guilds = Array.isArray(bot.guilds) ? [...bot.guilds] : [];
+    const current = normalizeDiscordGuild(guilds[index] || {});
+    const next = updater ? updater({ ...current }) || current : current;
+    guilds[index] = next;
+    persistDiscordBotConfig({ ...bot, guilds });
+  }
+
+  function renderDiscordBotSettings() {
+    if (!el.discordBotGuilds || !el.discordBotTemplate) return;
+
+    const bot = getDiscordBotConfig();
+    const guilds = Array.isArray(bot.guilds)
+      ? bot.guilds.map((entry) => normalizeDiscordGuild(entry))
+      : [];
+
+    el.discordBotGuilds.innerHTML = "";
+
+    if (el.discordBotEmpty) {
+      el.discordBotEmpty.classList.toggle("hidden", guilds.length !== 0);
+    }
+
+    if (guilds.length === 0) return;
+
+    guilds.forEach((guild, index) => {
+      const fragment = el.discordBotTemplate.content.cloneNode(true);
+      const card = fragment.querySelector(".discord-guild-card");
+      const label = fragment.querySelector("[data-guild-label]");
+
+      if (card) {
+        card.dataset.guildIndex = String(index);
+      }
+
+      if (label) {
+        label.textContent = getGuildLabel(guild, index);
+      }
+
+      const guildIdInput = fragment.querySelector('[data-field="guild-id"]');
+      const guildIdStatus = fragment.querySelector('[data-status="guild-id"]');
+      if (guildIdInput) {
+        guildIdInput.value = guild.guild_id;
+        guildIdInput.addEventListener("input", () => {
+          updateDiscordBotGuild(index, (entry) => ({
+            ...entry,
+            guild_id: coerceText(guildIdInput.value)
+          }));
+          if (label) {
+            const nextGuild = normalizeDiscordGuild({
+              ...guild,
+              guild_id: coerceText(guildIdInput.value)
+            });
+            label.textContent = getGuildLabel(nextGuild, index);
+          }
+          updateChannelStatus(guildIdStatus, guildIdInput.value);
+        });
+      }
+      updateChannelStatus(guildIdStatus, guild.guild_id);
+
+      const loggingEnabled = fragment.querySelector(
+        '[data-field="logging-enabled"]'
+      );
+      if (loggingEnabled) {
+        loggingEnabled.checked = guild.logging.enabled === true;
+        loggingEnabled.addEventListener("change", () => {
+          updateDiscordBotGuild(index, (entry) => ({
+            ...entry,
+            logging: {
+              ...(entry.logging || {}),
+              enabled: loggingEnabled.checked === true
+            }
+          }));
+        });
+      }
+
+      const loggingChannel = fragment.querySelector(
+        '[data-field="logging-channel"]'
+      );
+      const loggingStatus = fragment.querySelector(
+        '[data-status="logging-channel"]'
+      );
+      if (loggingChannel) {
+        loggingChannel.value = guild.logging.channel_id;
+        loggingChannel.addEventListener("input", () => {
+          updateDiscordBotGuild(index, (entry) => ({
+            ...entry,
+            logging: {
+              ...(entry.logging || {}),
+              channel_id: coerceText(loggingChannel.value)
+            }
+          }));
+          updateChannelStatus(loggingStatus, loggingChannel.value);
+        });
+      }
+      updateChannelStatus(loggingStatus, guild.logging.channel_id);
+
+      const channelBindings = [
+        ["general-channel", "general_channel_id"],
+        ["rumble-channel", "rumble_clips_channel_id"],
+        ["youtube-channel", "youtube_clips_channel_id"],
+        ["kick-channel", "kick_clips_channel_id"],
+        ["pilled-channel", "pilled_clips_channel_id"],
+        ["twitch-channel", "twitch_clips_channel_id"]
+      ];
+
+      channelBindings.forEach(([field, key]) => {
+        const input = fragment.querySelector(`[data-field="${field}"]`);
+        const status = fragment.querySelector(`[data-status="${field}"]`);
+        if (input) {
+          input.value = guild.notifications[key] || "";
+          input.addEventListener("input", () => {
+            updateDiscordBotGuild(index, (entry) => ({
+              ...entry,
+              notifications: {
+                ...(entry.notifications || {}),
+                [key]: coerceText(input.value)
+              }
+            }));
+            updateChannelStatus(status, input.value);
+          });
+        }
+        updateChannelStatus(status, guild.notifications[key]);
+      });
+
+      el.discordBotGuilds.appendChild(fragment);
+    });
   }
 
   function updatePlatformPolling(enabled) {

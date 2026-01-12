@@ -527,6 +527,104 @@
     </div>
   </section>
 
+  <!-- --------------------------------------------------------- -->
+  <!-- DISCORD BOT (PER-GUILD SETTINGS) -->
+  <!-- --------------------------------------------------------- -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Discord Bot</h2>
+        <p class="muted">
+          Per-guild logging and notification channels sourced from exported runtime config.
+        </p>
+      </div>
+    </header>
+
+    <div class="ss-panel-body">
+      <div class="ss-alert ss-alert-warning">
+        Channel IDs must match Discord snowflake format. Invalid IDs are flagged and will export
+        as-is until corrected.
+      </div>
+
+      <div id="discord-bot-empty" class="ss-empty-state hidden">
+        <p>No guild configuration exported yet.</p>
+        <p class="muted">
+          Add guild configuration from runtime exports to populate per-guild settings here.
+        </p>
+      </div>
+
+      <div id="discord-bot-guilds"></div>
+
+      <template id="discord-bot-guild-template">
+        <fieldset class="ss-fieldset discord-guild-card">
+          <legend>
+            <span data-guild-label>Discord Guild</span>
+          </legend>
+
+          <div class="ss-form-row">
+            <label>Guild ID</label>
+            <input type="text" class="ss-input" data-field="guild-id" placeholder="Not set" />
+            <span class="pill pill-default" data-status="guild-id">Not set</span>
+          </div>
+
+          <p class="muted" style="margin: 0 0 8px;">Logging</p>
+
+          <div class="ss-form-row checkbox-row">
+            <label class="ss-checkbox-wrapper">
+              <input type="checkbox" data-field="logging-enabled" />
+              <div class="ss-checkbox"></div>
+              <span class="ss-checkbox-text">Logging enabled</span>
+            </label>
+          </div>
+
+          <div class="ss-form-row">
+            <label>Logging channel ID</label>
+            <input type="text" class="ss-input" data-field="logging-channel" placeholder="Not set" />
+            <span class="pill pill-default" data-status="logging-channel">Not set</span>
+          </div>
+
+          <p class="muted" style="margin: 0 0 8px;">Notifications</p>
+
+          <div class="ss-form-row">
+            <label>General notifications channel</label>
+            <input type="text" class="ss-input" data-field="general-channel" placeholder="Not set" />
+            <span class="pill pill-default" data-status="general-channel">Not set</span>
+          </div>
+
+          <div class="ss-form-row">
+            <label>Rumble clips channel</label>
+            <input type="text" class="ss-input" data-field="rumble-channel" placeholder="Not set" />
+            <span class="pill pill-default" data-status="rumble-channel">Not set</span>
+          </div>
+
+          <div class="ss-form-row">
+            <label>YouTube clips channel</label>
+            <input type="text" class="ss-input" data-field="youtube-channel" placeholder="Not set" />
+            <span class="pill pill-default" data-status="youtube-channel">Not set</span>
+          </div>
+
+          <div class="ss-form-row">
+            <label>Kick clips channel</label>
+            <input type="text" class="ss-input" data-field="kick-channel" placeholder="Not set" />
+            <span class="pill pill-default" data-status="kick-channel">Not set</span>
+          </div>
+
+          <div class="ss-form-row">
+            <label>Pilled clips channel</label>
+            <input type="text" class="ss-input" data-field="pilled-channel" placeholder="Not set" />
+            <span class="pill pill-default" data-status="pilled-channel">Not set</span>
+          </div>
+
+          <div class="ss-form-row">
+            <label>Twitch clips channel</label>
+            <input type="text" class="ss-input" data-field="twitch-channel" placeholder="Not set" />
+            <span class="pill pill-default" data-status="twitch-channel">Not set</span>
+          </div>
+        </fieldset>
+      </template>
+    </div>
+  </section>
+
 </main>
 
 
