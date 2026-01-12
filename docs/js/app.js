@@ -24,6 +24,16 @@ const streamsuitesPathname = window.location?.pathname || "";
 if (streamsuitesPathname.includes("/livechat/")) {
   // Guard: never bootstrap the dashboard runtime inside LiveChat.
 } else {
+class DashboardInitAbort extends Error {
+  constructor(message, payload) {
+    super(message);
+    this.name = "DashboardInitAbort";
+    this.payload = payload || {};
+  }
+}
+
+window.DashboardInitAbort = DashboardInitAbort;
+
 function shouldBlockDashboardRuntime() {
   const guard = window.StreamSuitesDashboardGuard;
   if (guard && typeof guard.shouldBlock === "boolean") {
@@ -789,32 +799,62 @@ async function initApp() {
   if (shouldBlockDashboardRuntime()) return;
   if (App.initialized) return;
 
-  console.info("[Dashboard] Initializing StreamSuites dashboard");
+  const watchdog = setTimeout(() => {
+    console.error(
+      "[Dashboard] INIT WATCHDOG TRIPPED: init exceeded 3000ms; forcing abort UI."
+    );
+    const root =
+      document.getElementById("app") ||
+      document.getElementById("root") ||
+      document.body;
+    root.innerHTML =
+      "<div style='padding:16px;font-family:system-ui;color:#fff;background:#111'>Dashboard init watchdog tripped. Check console for the last log line.</div>";
+  }, 3000);
 
-  try {
-    window.StreamSuitesState?.loadCreatorContext?.();
-  } catch (err) {
-    console.warn("[Dashboard] Creator context load skipped", err);
+  async function initDashboard() {
+    console.info("[Dashboard] Initializing StreamSuites dashboard");
+
+    try {
+      window.StreamSuitesState?.loadCreatorContext?.();
+    } catch (err) {
+      console.warn("[Dashboard] Creator context load skipped", err);
+    }
+
+    await detectConnectedMode();
+
+    setModeDataset(document.getElementById("app"));
+    setModeDataset(document.getElementById("view-container"));
+
+    bindNavigation();
+    bindNavOverflow();
+    bindDelegatedNavigation();
+    bindHashChange();
+
+    App.state.quotas.start();
+    App.state.runtimeSnapshot.start();
+    RestartIndicator.init();
+
+    const initialView = resolveInitialView();
+    loadView(initialView);
+
+    App.initialized = true;
   }
 
-  await detectConnectedMode();
-
-  setModeDataset(document.getElementById("app"));
-  setModeDataset(document.getElementById("view-container"));
-
-  bindNavigation();
-  bindNavOverflow();
-  bindDelegatedNavigation();
-  bindHashChange();
-
-  App.state.quotas.start();
-  App.state.runtimeSnapshot.start();
-  RestartIndicator.init();
-
-  const initialView = resolveInitialView();
-  loadView(initialView);
-
-  App.initialized = true;
+  try {
+    await initDashboard();
+    clearTimeout(watchdog);
+  } catch (err) {
+    clearTimeout(watchdog);
+    if (err && err.name === "DashboardInitAbort") {
+      console.warn(
+        "[Dashboard] Initialization aborted:",
+        err.message,
+        err.payload || {}
+      );
+      return;
+    }
+    throw err;
+  }
 }
 
 /* ----------------------------------------------------------------------

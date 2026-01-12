@@ -381,6 +381,36 @@
     console.info(
       `[Discord Guild] Runtime admin override detected: ${state.runtimeOverrideDetected}`
     );
+
+    const authorizedGuilds = Array.from(state.authorizedGuilds.values());
+    if (authorizedGuilds.length === 0 && !state.runtimeOverrideDetected) {
+      console.error(
+        "[Discord Guild] BLOCKING INIT: no authorized guilds and no admin override. Aborting dashboard init."
+      );
+      const root =
+        document.getElementById("app") ||
+        document.getElementById("root") ||
+        document.body;
+      root.innerHTML = `
+        <div style="padding:24px;font-family:system-ui;color:#fff;background:#111">
+          <h2 style="margin:0 0 12px 0">No authorized Discord guilds</h2>
+          <p style="margin:0 0 12px 0">OAuth guilds: ${oauthCount} • Runtime guilds: ${runtimeCount}</p>
+          <button id="discord-guild-relogin" style="padding:10px 14px;border:0;border-radius:6px;background:#5865f2;color:#fff;cursor:pointer">
+            Re-run Discord login
+          </button>
+        </div>
+      `;
+      const reloginButton = root.querySelector("#discord-guild-relogin");
+      if (reloginButton) {
+        reloginButton.addEventListener("click", () => {
+          window.location.reload();
+        });
+      }
+      throw new window.DashboardInitAbort("No authorized guilds", {
+        oauthGuilds: oauthCount,
+        runtimeGuilds: runtimeCount
+      });
+    }
   }
 
   function enterNoAuthorizedGuildState() {
@@ -427,6 +457,8 @@
       (guild) => resolveAuthorizationReason(guild) === "admin_override"
     );
 
+    logGuildCounts();
+
     if (state.authorizedGuilds.size === 0 && !state.runtimeOverrideDetected) {
       enterNoAuthorizedGuildState();
       return;
@@ -435,7 +467,6 @@
     updateSelectorOptions();
     updateSelectorValue();
     evaluateStatus();
-    logGuildCounts();
     observeViewContainer();
   }
 
