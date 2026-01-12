@@ -340,9 +340,19 @@
       raw.discord && typeof raw.discord === "object" ? raw.discord : raw;
 
     const sourceGuilds =
-      discordRoot.guilds && typeof discordRoot.guilds === "object"
+      (discordRoot.guilds && typeof discordRoot.guilds === "object"
         ? discordRoot.guilds
-        : {};
+        : null) ||
+      (discordRoot.config && typeof discordRoot.config === "object"
+        ? discordRoot.config.guilds
+        : null) ||
+      (discordRoot.settings && typeof discordRoot.settings === "object"
+        ? discordRoot.settings.guilds
+        : null) ||
+      (discordRoot.runtime && typeof discordRoot.runtime === "object"
+        ? discordRoot.runtime.guilds
+        : null) ||
+      {};
 
     const guilds = {};
 
@@ -567,6 +577,14 @@
       base.notifications && typeof base.notifications === "object"
         ? base.notifications
         : {};
+    const notificationGeneral =
+      notifications.general && typeof notifications.general === "object"
+        ? notifications.general
+        : {};
+    const notificationClips =
+      notifications.clips && typeof notifications.clips === "object"
+        ? notifications.clips
+        : {};
 
     const guildName =
       typeof base.guild_name === "string"
@@ -579,6 +597,21 @@
 
     const resolvedGuildId = coerceText(guildId || base.guild_id);
 
+    const resolveChannelId = (...values) => {
+      for (const value of values) {
+        const trimmed = coerceText(value);
+        if (trimmed) return trimmed;
+      }
+      return "";
+    };
+
+    const resolveClipChannel = (platform) =>
+      resolveChannelId(
+        notificationClips[platform]?.channel_id,
+        notifications[`${platform}_clips_channel_id`],
+        notifications[`${platform}ClipsChannelId`]
+      );
+
     return {
       ...base,
       guild_id: resolvedGuildId,
@@ -586,16 +619,51 @@
       logging: {
         ...logging,
         enabled: logging.enabled === true,
-        channel_id: coerceText(logging.channel_id)
+        channel_id: resolveChannelId(logging.channel_id, logging.channel)
       },
       notifications: {
         ...notifications,
-        general_channel_id: coerceText(notifications.general_channel_id),
-        rumble_clips_channel_id: coerceText(notifications.rumble_clips_channel_id),
-        youtube_clips_channel_id: coerceText(notifications.youtube_clips_channel_id),
-        kick_clips_channel_id: coerceText(notifications.kick_clips_channel_id),
-        pilled_clips_channel_id: coerceText(notifications.pilled_clips_channel_id),
-        twitch_clips_channel_id: coerceText(notifications.twitch_clips_channel_id)
+        general: {
+          ...notificationGeneral,
+          channel_id: resolveChannelId(
+            notificationGeneral.channel_id,
+            notifications.general_channel_id,
+            notifications.generalChannelId
+          )
+        },
+        clips: {
+          ...notificationClips,
+          rumble: {
+            ...(notificationClips.rumble && typeof notificationClips.rumble === "object"
+              ? notificationClips.rumble
+              : {}),
+            channel_id: resolveClipChannel("rumble")
+          },
+          youtube: {
+            ...(notificationClips.youtube && typeof notificationClips.youtube === "object"
+              ? notificationClips.youtube
+              : {}),
+            channel_id: resolveClipChannel("youtube")
+          },
+          kick: {
+            ...(notificationClips.kick && typeof notificationClips.kick === "object"
+              ? notificationClips.kick
+              : {}),
+            channel_id: resolveClipChannel("kick")
+          },
+          pilled: {
+            ...(notificationClips.pilled && typeof notificationClips.pilled === "object"
+              ? notificationClips.pilled
+              : {}),
+            channel_id: resolveClipChannel("pilled")
+          },
+          twitch: {
+            ...(notificationClips.twitch && typeof notificationClips.twitch === "object"
+              ? notificationClips.twitch
+              : {}),
+            channel_id: resolveClipChannel("twitch")
+          }
+        }
       }
     };
   }
@@ -781,31 +849,75 @@
     updateChannelStatus(loggingStatus, guild.logging.channel_id);
 
     const channelBindings = [
-      ["general-channel", "general_channel_id"],
-      ["rumble-channel", "rumble_clips_channel_id"],
-      ["youtube-channel", "youtube_clips_channel_id"],
-      ["kick-channel", "kick_clips_channel_id"],
-      ["pilled-channel", "pilled_clips_channel_id"],
-      ["twitch-channel", "twitch_clips_channel_id"]
+      ["general-channel", { type: "general" }],
+      ["rumble-channel", { type: "clips", platform: "rumble" }],
+      ["youtube-channel", { type: "clips", platform: "youtube" }],
+      ["kick-channel", { type: "clips", platform: "kick" }],
+      ["pilled-channel", { type: "clips", platform: "pilled" }],
+      ["twitch-channel", { type: "clips", platform: "twitch" }]
     ];
 
-    channelBindings.forEach(([field, key]) => {
+    const getNotificationChannelValue = (guildEntry, binding) => {
+      if (binding.type === "general") {
+        return guildEntry.notifications?.general?.channel_id || "";
+      }
+      if (binding.type === "clips" && binding.platform) {
+        return (
+          guildEntry.notifications?.clips?.[binding.platform]?.channel_id || ""
+        );
+      }
+      return "";
+    };
+
+    const updateNotificationChannelValue = (entry, binding, value) => {
+      if (binding.type === "general") {
+        return {
+          ...entry,
+          notifications: {
+            ...(entry.notifications || {}),
+            general: {
+              ...(entry.notifications?.general || {}),
+              channel_id: value
+            }
+          }
+        };
+      }
+
+      if (binding.type === "clips" && binding.platform) {
+        return {
+          ...entry,
+          notifications: {
+            ...(entry.notifications || {}),
+            clips: {
+              ...(entry.notifications?.clips || {}),
+              [binding.platform]: {
+                ...(entry.notifications?.clips?.[binding.platform] || {}),
+                channel_id: value
+              }
+            }
+          }
+        };
+      }
+
+      return entry;
+    };
+
+    channelBindings.forEach(([field, binding]) => {
       const input = fragment.querySelector(`[data-field="${field}"]`);
       const status = fragment.querySelector(`[data-status="${field}"]`);
+      const value = getNotificationChannelValue(guild, binding);
+
       if (input) {
-        input.value = guild.notifications[key] || "";
+        input.value = value;
         input.addEventListener("input", () => {
-          updateDiscordBotGuild((entry) => ({
-            ...entry,
-            notifications: {
-              ...(entry.notifications || {}),
-              [key]: coerceText(input.value)
-            }
-          }));
-          updateChannelStatus(status, input.value);
+          const nextValue = coerceText(input.value);
+          updateDiscordBotGuild((entry) =>
+            updateNotificationChannelValue(entry, binding, nextValue)
+          );
+          updateChannelStatus(status, nextValue);
         });
       }
-      updateChannelStatus(status, guild.notifications[key]);
+      updateChannelStatus(status, value);
     });
 
     el.discordBotGuilds.appendChild(fragment);
