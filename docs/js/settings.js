@@ -47,17 +47,22 @@
      INIT
      ------------------------------------------------------------ */
 
-  async function init() {
+  function init() {
     cacheElements();
     wireEvents();
     loadSettings();
-    await hydratePlatforms();
-    await hydrateRuntimeState();
-    await hydrateSystemSettings();
-    await hydrateDiscordRuntimeConfig();
-    await renderDashboardState();
-    bindRuntimeListeners();
-    bindGuildListeners();
+
+    setTimeout(() => {
+      (async () => {
+        await hydratePlatforms();
+        await hydrateRuntimeState();
+        await hydrateSystemSettings();
+        await hydrateDiscordRuntimeConfig();
+        await renderDashboardState();
+        bindRuntimeListeners();
+        bindGuildListeners();
+      })();
+    }, 0);
   }
 
   /* ------------------------------------------------------------

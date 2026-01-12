@@ -272,7 +272,13 @@
     });
   }
 
+  function init() {
+    setTimeout(() => {
+      void loadJobs();
+    }, 0);
+  }
+
   window.JobsView = {
-    init: loadJobs
+    init
   };
 })();

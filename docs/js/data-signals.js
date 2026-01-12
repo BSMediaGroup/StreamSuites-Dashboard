@@ -573,14 +573,18 @@
     }
   }
 
-  async function init() {
+  function init() {
     wireTabs("entities");
     wireTabs("signals");
 
-    await hydrateSection(ENTITY_CONFIGS, "entities");
-    await hydrateSection(SIGNAL_CONFIGS, "signals");
-    await hydrateSection(ADMIN_CONFIGS, "admin");
-    startPolling();
+    setTimeout(() => {
+      (async () => {
+        await hydrateSection(ENTITY_CONFIGS, "entities");
+        await hydrateSection(SIGNAL_CONFIGS, "signals");
+        await hydrateSection(ADMIN_CONFIGS, "admin");
+        startPolling();
+      })();
+    }, 0);
   }
 
   function destroy() {
