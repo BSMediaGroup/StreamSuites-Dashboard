@@ -154,6 +154,7 @@
       "discord-guild-unauthorized",
       status === "unauthorized"
     );
+    document.body.classList.toggle("discord-guild-no-access", status === "no-access");
 
     applyGuildLocks(status);
     updateStatusText(detail);
@@ -162,6 +163,11 @@
 
   function applyGuildLocks(status) {
     const locked = status !== "ready";
+    const nav = document.querySelector("[data-discord-nav]");
+    if (nav) {
+      nav.classList.toggle("is-locked", locked);
+      nav.setAttribute("aria-disabled", locked ? "true" : "false");
+    }
     const containers = document.querySelectorAll("[data-discord-guild-locked]");
     containers.forEach((container) => {
       container.classList.toggle("is-guild-locked", locked);
@@ -279,7 +285,7 @@
       const message =
         state.authorizedGuilds.size === 0
           ? "You do not have permission to manage any guilds where the StreamSuites bot is installed."
-          : "Select an eligible guild to unlock Discord settings.";
+          : "Select a Discord guild to manage settings.";
       el.status.textContent = message;
       return;
     }
@@ -357,7 +363,12 @@
 
   function handleAuthEvent(event) {
     state.session = event?.detail?.session || window.StreamSuitesAuth?.session || null;
-    updateAuthorization();
+    if (state.runtimeLoaded) {
+      updateAuthorization();
+      return;
+    }
+    updateSelectorOptions();
+    evaluateStatus();
   }
 
   async function loadRuntimeGuilds() {
@@ -378,6 +389,9 @@
     }
 
     state.runtimeLoaded = true;
+    console.info(
+      `[Discord Guild] Runtime guild count: ${state.runtimeGuilds.size}`
+    );
     updateAuthorization();
   }
 
@@ -387,6 +401,7 @@
     saveActiveGuildId(normalized);
     updateSelectorValue();
     evaluateStatus();
+    console.info(`[Discord Guild] Active guild ID changed: ${normalized || "none"}`);
   }
 
   function bindEvents() {
@@ -416,7 +431,7 @@
     updateSelectorValue();
     bindEvents();
     loadRuntimeGuilds();
-    updateAuthorization();
+    evaluateStatus();
   }
 
   window.StreamSuitesDiscordGuild = {

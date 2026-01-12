@@ -23,8 +23,10 @@
       userWrap: null,
       userName: null,
       userAvatar: null,
-      loginStatus: null
+      loginStatus: null,
+      guildRow: null
     },
+    loggedSessionNotified: false,
 
     init() {
       this.cacheElements();
@@ -40,6 +42,7 @@
       this.elements.userName = document.getElementById("discord-username");
       this.elements.userAvatar = document.getElementById("discord-avatar");
       this.elements.loginStatus = document.getElementById("discord-auth-status");
+      this.elements.guildRow = document.getElementById("discord-guild-row");
     },
 
     loadConfig() {
@@ -227,6 +230,7 @@
 
     logout() {
       this.clearSession();
+      this.loggedSessionNotified = false;
       this.updateUI();
       this.applyLockState();
     },
@@ -243,24 +247,33 @@
       const lockedNav = document.querySelector("[data-discord-nav]");
       if (lockedNav) {
         lockedNav.setAttribute("aria-disabled", locked ? "true" : "false");
-        lockedNav.classList.toggle("is-locked", locked);
       }
     },
 
     updateUI() {
       const loggedIn = Boolean(this.session && this.session.user);
+      const canLogin = this.canStartLogin();
       if (this.elements.loginButton) {
         this.elements.loginButton.classList.toggle("hidden", loggedIn);
-        this.elements.loginButton.disabled = !this.config.clientId;
+        this.elements.loginButton.disabled = !canLogin;
       }
 
       if (this.elements.userWrap) {
         this.elements.userWrap.classList.toggle("hidden", !loggedIn);
       }
 
+      if (this.elements.guildRow) {
+        this.elements.guildRow.classList.toggle("hidden", !loggedIn);
+      }
+
       if (!loggedIn) {
         this.emitSessionChange();
         return;
+      }
+
+      if (!this.loggedSessionNotified) {
+        console.info("[Discord Auth] OAuth session detected.");
+        this.loggedSessionNotified = true;
       }
 
       const user = this.session.user;
@@ -483,6 +496,20 @@
       const bytes = new Uint8Array(32);
       window.crypto.getRandomValues(bytes);
       return this.base64UrlEncode(bytes);
+    },
+
+    isValidRedirectUri(value) {
+      if (!value) return false;
+      try {
+        new URL(value, window.location.href);
+        return true;
+      } catch {
+        return false;
+      }
+    },
+
+    canStartLogin() {
+      return Boolean(this.config.clientId && this.isValidRedirectUri(this.config.redirectUri));
     },
 
     async generateChallenge(verifier) {

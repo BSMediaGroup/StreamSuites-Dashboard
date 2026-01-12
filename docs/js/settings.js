@@ -33,6 +33,7 @@
   let settings = null;
   let runtimeSnapshot = null;
   let systemConfig = null;
+  let runtimeDiscordConfig = null;
   let wired = false;
   let runtimeListener = null;
   let visibilityListener = null;
@@ -53,6 +54,7 @@
     await hydratePlatforms();
     await hydrateRuntimeState();
     await hydrateSystemSettings();
+    await hydrateDiscordRuntimeConfig();
     await renderDashboardState();
     bindRuntimeListeners();
     bindGuildListeners();
@@ -327,6 +329,58 @@
     renderPlatformPolling();
     renderRestartQueue();
     renderDiscordBotSettings();
+  }
+
+  function normalizeRuntimeDiscordConfig(raw) {
+    if (!raw || typeof raw !== "object") {
+      return { guilds: {} };
+    }
+
+    const discordRoot =
+      raw.discord && typeof raw.discord === "object" ? raw.discord : raw;
+
+    const sourceGuilds =
+      discordRoot.guilds && typeof discordRoot.guilds === "object"
+        ? discordRoot.guilds
+        : {};
+
+    const guilds = {};
+
+    if (Array.isArray(sourceGuilds)) {
+      sourceGuilds.forEach((entry) => {
+        const guildId = coerceText(entry?.guild_id || entry?.id);
+        if (!guildId) return;
+        guilds[guildId] = { ...entry, guild_id: guildId };
+      });
+      return { guilds };
+    }
+
+    Object.entries(sourceGuilds).forEach(([guildId, entry]) => {
+      const normalizedId = coerceText(guildId || entry?.guild_id);
+      if (!normalizedId) return;
+      guilds[normalizedId] = {
+        ...(entry && typeof entry === "object" ? entry : {}),
+        guild_id: normalizedId
+      };
+    });
+
+    return { guilds };
+  }
+
+  async function hydrateDiscordRuntimeConfig() {
+    const loader = window.StreamSuitesState?.loadStateJson;
+    if (typeof loader !== "function") {
+      runtimeDiscordConfig = { guilds: {} };
+      return;
+    }
+
+    try {
+      const runtime = await loader("discord/runtime.json");
+      runtimeDiscordConfig = normalizeRuntimeDiscordConfig(runtime);
+    } catch (err) {
+      console.warn("[Settings] Unable to load Discord runtime config", err);
+      runtimeDiscordConfig = { guilds: {} };
+    }
   }
 
   async function renderDashboardState(forceReload = false) {
@@ -658,10 +712,14 @@
 
     const discord = getDiscordConfigStore();
     const activeGuild = getActiveGuild();
-    const guild = normalizeDiscordGuild(
-      discord.guilds[activeGuildId] || {},
-      activeGuildId
-    );
+    const runtimeGuild =
+      runtimeDiscordConfig?.guilds && activeGuildId
+        ? runtimeDiscordConfig.guilds[activeGuildId] || {}
+        : {};
+    const storedGuild = discord.guilds[activeGuildId] || {};
+    const baseGuild =
+      Object.keys(storedGuild).length > 0 ? storedGuild : runtimeGuild;
+    const guild = normalizeDiscordGuild(baseGuild, activeGuildId);
 
     const fragment = el.discordBotTemplate.content.cloneNode(true);
     const card = fragment.querySelector(".discord-guild-card");

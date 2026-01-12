@@ -104,10 +104,31 @@ body {
 
 .header-right {
   display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.header-row {
+  display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   flex-wrap: wrap;
   justify-content: flex-end;
+  width: 100%;
+}
+
+.header-status-row {
+  order: 1;
+}
+
+.header-auth-row {
+  order: 2;
+}
+
+.header-guild-row {
+  order: 3;
 }
 
 .discord-auth {
@@ -115,6 +136,7 @@ body {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  min-height: 32px;
 }
 
 .discord-user {
@@ -137,6 +159,13 @@ body {
 .discord-username {
   font-size: 12px;
   letter-spacing: 0.03em;
+}
+
+.discord-login-icon {
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  vertical-align: middle;
 }
 
 .discord-auth-status {
@@ -170,6 +199,10 @@ body {
   max-width: 240px;
 }
 
+body.discord-guild-no-access .discord-guild-status {
+  color: var(--status-warning, #ffb347);
+}
+
 body.discord-guild-unauthorized .discord-guild-status {
   color: var(--status-critical, #ff6b6b);
 }
@@ -201,6 +234,12 @@ body.discord-auth-required [data-discord-locked] {
 body.discord-auth-required [data-discord-locked].is-locked,
 body.discord-auth-required [data-discord-nav] {
   pointer-events: none;
+}
+
+[data-discord-nav].is-locked {
+  pointer-events: none;
+  opacity: 0.55;
+  filter: grayscale(0.3);
 }
 
 .ss-auth-lock {
