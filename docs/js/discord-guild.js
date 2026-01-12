@@ -22,6 +22,7 @@
     authorizedGuilds: new Map(),
     unauthorizedGuilds: new Map(),
     runtimeGuilds: new Map(),
+    runtimeOverrideDetected: false,
     runtimeLoaded: false,
     status: "missing",
     session: null
@@ -59,6 +60,77 @@
       (permissions & DISCORD_PERMISSION_MANAGE_GUILD) ===
       DISCORD_PERMISSION_MANAGE_GUILD
     );
+  }
+
+  function parseBooleanFlag(value) {
+    if (value === true) return true;
+    if (value === false) return false;
+    if (typeof value === "number") return value !== 0;
+    if (typeof value === "string" && value.trim()) {
+      const normalized = value.trim().toLowerCase();
+      if (["true", "yes", "1", "enabled", "active"].includes(normalized)) return true;
+      if (["false", "no", "0", "disabled", "inactive"].includes(normalized)) return false;
+    }
+    return null;
+  }
+
+  function normalizeOverrideUserIds(value) {
+    if (!value) return [];
+    if (Array.isArray(value)) {
+      return value.map((entry) => coerceText(entry)).filter(Boolean);
+    }
+    if (typeof value === "string") {
+      return value
+        .split(/[,\s]+/)
+        .map((entry) => coerceText(entry))
+        .filter(Boolean);
+    }
+    return [];
+  }
+
+  function getRuntimeAdminOverrideSignal(runtimeGuild, oauthUserId) {
+    if (!runtimeGuild || typeof runtimeGuild !== "object") return false;
+
+    const directFlag = parseBooleanFlag(
+      runtimeGuild.authorized_by_admin_override ??
+        runtimeGuild.admin_override ??
+        runtimeGuild.admin_override_active ??
+        runtimeGuild.adminOverrideActive
+    );
+    if (directFlag === true) return true;
+
+    const overrideUsers = normalizeOverrideUserIds(
+      runtimeGuild.admin_override_user_ids ??
+        runtimeGuild.admin_override_users ??
+        runtimeGuild.adminOverrideUserIds ??
+        runtimeGuild.adminOverrideUsers ??
+        runtimeGuild.authorized_admin_ids
+    );
+
+    if (oauthUserId && overrideUsers.includes(oauthUserId)) return true;
+
+    const nestedOverride = runtimeGuild.admin_override;
+    if (nestedOverride && typeof nestedOverride === "object") {
+      const nestedFlag = parseBooleanFlag(
+        nestedOverride.authorized ?? nestedOverride.active ?? nestedOverride.enabled
+      );
+      if (nestedFlag === true) return true;
+
+      const nestedUsers = normalizeOverrideUserIds(
+        nestedOverride.user_ids ?? nestedOverride.users ?? nestedOverride.userIds
+      );
+      if (oauthUserId && nestedUsers.includes(oauthUserId)) return true;
+    }
+
+    return false;
+  }
+
+  function resolveOAuthPermissionsValid(runtimeGuild, oauthGuild) {
+    if (runtimeGuild && typeof runtimeGuild === "object") {
+      const runtimeFlag = parseBooleanFlag(runtimeGuild.oauth_permissions_valid);
+      if (runtimeFlag === true || runtimeFlag === false) return runtimeFlag === true;
+    }
+    return hasGuildAccess(oauthGuild);
   }
 
   function parseBotPresence(value) {
@@ -105,20 +177,41 @@
   function buildAuthorizedGuilds(session, runtimeGuilds) {
     const authorized = new Map();
     const unauthorized = new Map();
-    const guilds = Array.isArray(session?.guilds) ? session.guilds : [];
-    guilds.forEach((guild) => {
-      const id = coerceText(guild?.id);
-      if (!id) return;
-      const runtimeGuild = runtimeGuilds.get(id) || null;
-      const hasAccess = hasGuildAccess(guild);
-      if (runtimeGuild && hasAccess) {
+    const oauthGuilds = Array.isArray(session?.guilds) ? session.guilds : [];
+    const oauthGuildMap = new Map(
+      oauthGuilds
+        .map((guild) => [coerceText(guild?.id), guild])
+        .filter(([id]) => id)
+    );
+    const oauthUserId = coerceText(session?.user?.id);
+
+    runtimeGuilds.forEach((runtimeGuild, id) => {
+      const oauthGuild = oauthGuildMap.get(id) || null;
+      const oauthValid = resolveOAuthPermissionsValid(runtimeGuild, oauthGuild);
+      const adminOverride = getRuntimeAdminOverrideSignal(runtimeGuild, oauthUserId);
+
+      if (oauthValid || adminOverride) {
         authorized.set(id, {
-          ...guild,
-          runtime: runtimeGuild
+          ...runtimeGuild,
+          ...(oauthGuild || {}),
+          runtime: runtimeGuild,
+          adminOverride
         });
         return;
       }
-      if (runtimeGuild || hasAccess) {
+
+      unauthorized.set(id, {
+        ...runtimeGuild,
+        ...(oauthGuild || {}),
+        runtime: runtimeGuild,
+        adminOverride
+      });
+    });
+
+    oauthGuilds.forEach((guild) => {
+      const id = coerceText(guild?.id);
+      if (!id || runtimeGuilds.has(id)) return;
+      if (hasGuildAccess(guild)) {
         unauthorized.set(id, guild);
       }
     });
@@ -240,7 +333,8 @@
       if (!guildId) return;
       const opt = document.createElement("option");
       opt.value = guildId;
-      opt.textContent = formatGuildLabel(guild);
+      const label = formatGuildLabel(guild);
+      opt.textContent = guild.adminOverride ? `${label} — Authorized (Admin Override)` : label;
       el.selector.appendChild(opt);
     });
 
@@ -291,9 +385,15 @@
     }
 
     const activeGuild = state.authorizedGuilds.get(state.activeGuildId);
-    el.status.textContent = activeGuild
-      ? `Active: ${formatGuildLabel(activeGuild)}`
-      : "Active guild selected.";
+    if (activeGuild) {
+      const overrideTag = activeGuild.adminOverride
+        ? " (Authorized by Admin Override)"
+        : "";
+      el.status.textContent = `Active: ${formatGuildLabel(activeGuild)}${overrideTag}`;
+      return;
+    }
+
+    el.status.textContent = "Active guild selected.";
   }
 
   function evaluateStatus() {
@@ -346,6 +446,9 @@
     console.info(
       `[Discord Guild] OAuth guilds: ${oauthCount} | Runtime guilds: ${runtimeCount} | Authorized guilds: ${authorizedCount}`
     );
+    console.info(
+      `[Discord Guild] Runtime admin override detected: ${state.runtimeOverrideDetected}`
+    );
   }
 
   function updateAuthorization() {
@@ -355,6 +458,13 @@
     );
     state.authorizedGuilds = authorized;
     state.unauthorizedGuilds = unauthorized;
+    state.runtimeOverrideDetected = Array.from(state.runtimeGuilds.values()).some(
+      (guild) =>
+        getRuntimeAdminOverrideSignal(
+          guild,
+          coerceText(state.session?.user?.id)
+        )
+    );
     updateSelectorOptions();
     updateSelectorValue();
     evaluateStatus();
@@ -363,6 +473,10 @@
 
   function handleAuthEvent(event) {
     state.session = event?.detail?.session || window.StreamSuitesAuth?.session || null;
+    const oauthUserId = coerceText(state.session?.user?.id);
+    if (oauthUserId) {
+      console.info(`[Discord Guild] OAuth user ID: ${oauthUserId}`);
+    }
     if (state.runtimeLoaded) {
       updateAuthorization();
       return;
