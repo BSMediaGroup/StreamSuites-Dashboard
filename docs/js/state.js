@@ -12,6 +12,7 @@
   const STORAGE_KEY = "streamsuites.stateRootOverride";
 
   const RUNTIME_AVAILABILITY_FLAG = "__RUNTIME_AVAILABLE__";
+  const STATE_FETCH_TIMEOUT_MS = 1500;
 
   const cache = {
     runtimeSnapshot: null,
@@ -185,27 +186,73 @@
     }
   }
 
-  async function loadStateJson(relativePath) {
-    const roots = getConfiguredStateRoots();
+  async function fetchWithTimeout(url, options = {}, timeoutMs = STATE_FETCH_TIMEOUT_MS) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      return await fetch(url, {
+        ...options,
+        signal: controller.signal,
+        timeoutMs: 0
+      });
+    } finally {
+      clearTimeout(timer);
+    }
+  }
 
-    for (const root of roots) {
+  async function loadStateJson(relativePath) {
+    console.log("[BOOT:STATE:ENTER] loadStateJson", relativePath, performance.now());
+    const roots = getConfiguredStateRoots();
+    const attempts = roots.slice(0, 2);
+
+    for (const root of attempts) {
       const url = buildStateUrl(root, relativePath);
       if (!url) continue;
 
       try {
-        const res = await fetch(url, { cache: "no-store" });
+        const res = await fetchWithTimeout(url, { cache: "no-store" });
+        if (res.status === 404) {
+          console.warn(
+            "[BOOT:STATE:EXIT] loadStateJson 404",
+            relativePath,
+            performance.now()
+          );
+          return null;
+        }
         if (!res.ok) continue;
         const data = await res.json();
+        console.log(
+          "[BOOT:STATE:EXIT] loadStateJson OK",
+          relativePath,
+          performance.now()
+        );
         return data;
-      } catch (err) {}
+      } catch (err) {
+        const isAbort = err?.name === "AbortError";
+        console.warn(
+          "[BOOT:STATE:EXIT] loadStateJson FAIL",
+          relativePath,
+          isAbort ? "timeout" : err,
+          performance.now()
+        );
+        if (isAbort) {
+          return null;
+        }
+      }
     }
 
+    console.log(
+      "[BOOT:STATE:EXIT] loadStateJson MISS",
+      relativePath,
+      performance.now()
+    );
     return undefined;
   }
 
   async function fetchFallbackJson(relativePath) {
     try {
-      const res = await fetch(relativePath, { cache: "no-store" });
+      const res = await fetchWithTimeout(relativePath, { cache: "no-store" });
+      if (res.status === 404) return null;
       if (!res.ok) return null;
       return await res.json();
     } catch (err) {
@@ -914,9 +961,11 @@
 
   async function fetchJson(path) {
     try {
-      const res = await fetch(new URL(path, document.baseURI), {
-        cache: "no-store"
-      });
+      const res = await fetchWithTimeout(
+        new URL(path, document.baseURI),
+        { cache: "no-store" }
+      );
+      if (res.status === 404) return null;
       if (!res.ok) return null;
       return await res.json();
     } catch (err) {
