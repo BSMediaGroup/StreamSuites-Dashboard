@@ -192,34 +192,46 @@
       </div>
 
       <div class="header-right">
-        <div class="discord-auth">
-          <button id="discord-login-button" class="ss-btn ss-btn-secondary">
-            Login with Discord
-          </button>
-          <div id="discord-user" class="discord-user hidden">
-            <img id="discord-avatar" class="discord-avatar" alt="Discord avatar" />
-            <span id="discord-username" class="discord-username"></span>
-            <button id="discord-logout-button" class="ss-btn ss-btn-secondary ss-btn-small">
-              Logout
-            </button>
-          </div>
-          <span id="discord-auth-status" class="discord-auth-status">Discord login required</span>
-        </div>
-        <div class="discord-guild-selector">
-          <label for="discord-active-guild">Active Guild</label>
-          <select id="discord-active-guild" class="ss-input">
-            <option value="">Select an eligible guild</option>
-          </select>
-          <span id="discord-guild-status" class="discord-guild-status">
-            Select an eligible guild to unlock Discord settings.
+        <div class="header-row header-status-row">
+          <span id="app-mode" class="status-indicator warning">
+            ● static mode (read-only)
+          </span>
+          <span id="app-status" class="status-indicator idle">
+            ● idle
           </span>
         </div>
-        <span id="app-mode" class="status-indicator warning">
-          ● static mode (read-only)
-        </span>
-        <span id="app-status" class="status-indicator idle">
-          ● idle
-        </span>
+        <div class="header-row header-auth-row">
+          <div class="discord-auth">
+            <button id="discord-login-button" class="ss-btn ss-btn-secondary">
+              <img
+                src="./assets/icons/discord-white.svg"
+                alt=""
+                aria-hidden="true"
+                class="discord-login-icon"
+              />
+              Login with Discord
+            </button>
+            <div id="discord-user" class="discord-user hidden">
+              <img id="discord-avatar" class="discord-avatar" alt="Discord avatar" />
+              <span id="discord-username" class="discord-username"></span>
+              <button id="discord-logout-button" class="ss-btn ss-btn-secondary ss-btn-small">
+                Logout
+              </button>
+            </div>
+            <span id="discord-auth-status" class="discord-auth-status">Discord login required</span>
+          </div>
+        </div>
+        <div id="discord-guild-row" class="header-row header-guild-row hidden">
+          <div class="discord-guild-selector">
+            <label for="discord-active-guild">Active Guild</label>
+            <select id="discord-active-guild" class="ss-input">
+              <option value="">Select an eligible guild</option>
+            </select>
+            <span id="discord-guild-status" class="discord-guild-status">
+              Select a Discord guild to manage settings.
+            </span>
+          </div>
+        </div>
       </div>
     </header>
 
