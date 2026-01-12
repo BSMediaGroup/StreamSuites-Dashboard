@@ -86,13 +86,35 @@
     }
   }
 
+  function isRuntimeAvailable() {
+    return window.__STREAMSUITES_RUNTIME_AVAILABLE__ !== false;
+  }
+
+  function renderRuntimeDisconnected() {
+    const placeholder = "Runtime not connected";
+    if (el.daily?.fill) {
+      el.daily.fill.style.width = "0%";
+      el.daily.fill.classList.remove("warn", "danger");
+    }
+    if (el.daily?.label) {
+      setText(el.daily.label, placeholder);
+    }
+    if (el.minute?.label) {
+      setText(el.minute.label, placeholder);
+    }
+  }
+
   /* ------------------------------------------------------------
      INIT
      ------------------------------------------------------------ */
 
   function init() {
-    loadRatelimits();
     cacheElements();
+    if (!isRuntimeAvailable()) {
+      renderRuntimeDisconnected();
+      return;
+    }
+    loadRatelimits();
     hydrateQuotaVisibility(); // READ-ONLY
     console.info("[Ratelimits] Loaded configuration (Phase 1B)");
   }

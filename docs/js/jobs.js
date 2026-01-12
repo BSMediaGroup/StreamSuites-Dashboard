@@ -12,21 +12,54 @@
   const elEnableEmpty = document.getElementById("jobs-enable-empty");
   const elError = document.getElementById("jobs-error");
 
+  function hasRequiredElements() {
+    return Boolean(
+      elTotal &&
+        elEnabledTotal &&
+        elDisabledTotal &&
+        elRestartTotal &&
+        elByStatus &&
+        elByType &&
+        elByCreator &&
+        elEnableTable &&
+        elEnableEmpty &&
+        elError
+    );
+  }
+
   function clear(el) {
     el.innerHTML = "";
   }
 
   function showError(msg) {
+    if (!elError) return;
     elError.textContent = msg;
     elError.classList.remove("hidden");
   }
 
   function hideError() {
+    if (!elError) return;
     elError.classList.add("hidden");
     elError.textContent = "";
   }
 
+  function isRuntimeAvailable() {
+    return window.__STREAMSUITES_RUNTIME_AVAILABLE__ !== false;
+  }
+
+  function renderRuntimeDisconnected() {
+    renderUnavailable();
+    showError("Runtime not connected");
+  }
+
   async function loadJobs() {
+    if (!hasRequiredElements()) return;
+
+    if (!isRuntimeAvailable()) {
+      renderRuntimeDisconnected();
+      return;
+    }
+
     hideError();
 
     try {

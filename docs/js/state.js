@@ -11,6 +11,8 @@
 
   const STORAGE_KEY = "streamsuites.stateRootOverride";
 
+  const RUNTIME_AVAILABILITY_FLAG = "__STREAMSUITES_RUNTIME_AVAILABLE__";
+
   const cache = {
     runtimeSnapshot: null,
     quotas: null,
@@ -63,6 +65,27 @@
   }
 
   creatorContext = deepClone(DEFAULT_CREATOR_CONTEXT);
+
+  if (typeof window[RUNTIME_AVAILABILITY_FLAG] === "undefined") {
+    window[RUNTIME_AVAILABILITY_FLAG] = true;
+  }
+
+  let runtimeUnavailableLogged = false;
+
+  function isRuntimeAvailable() {
+    return window[RUNTIME_AVAILABILITY_FLAG] !== false;
+  }
+
+  function markRuntimeUnavailable() {
+    if (window[RUNTIME_AVAILABILITY_FLAG] === false) return;
+    window[RUNTIME_AVAILABILITY_FLAG] = false;
+    if (!runtimeUnavailableLogged) {
+      runtimeUnavailableLogged = true;
+      console.warn(
+        "[Dashboard][State] Runtime state unavailable. Entering static mode."
+      );
+    }
+  }
 
   function getCreatorContext() {
     if (!creatorContext) {
@@ -159,6 +182,10 @@
   }
 
   async function loadStateJson(relativePath) {
+    if (!isRuntimeAvailable()) {
+      return undefined;
+    }
+
     const roots = getConfiguredStateRoots();
 
     for (const root of roots) {
@@ -167,25 +194,13 @@
 
       try {
         const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) {
-          console.warn(
-            `[Dashboard][State] ${relativePath} from ${url} failed: HTTP ${res.status}`
-          );
-          continue;
-        }
+        if (!res.ok) continue;
         return await res.json();
-      } catch (err) {
-        console.warn(
-          `[Dashboard][State] Error loading ${relativePath} from ${url}`,
-          err
-        );
-      }
+      } catch (err) {}
     }
 
-    console.warn(
-      `[Dashboard][State] Unable to load ${relativePath} from any configured state roots.`
-    );
-    return null;
+    markRuntimeUnavailable();
+    return undefined;
   }
 
   async function fetchFallbackJson(relativePath) {

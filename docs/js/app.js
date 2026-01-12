@@ -50,6 +50,14 @@ function shouldBlockDashboardRuntime() {
   return standaloneFlagDefined || isLivechatPath;
 }
 
+function isRuntimeAvailable() {
+  return window.__STREAMSUITES_RUNTIME_AVAILABLE__ !== false;
+}
+
+function markRuntimeUnavailable() {
+  window.__STREAMSUITES_RUNTIME_AVAILABLE__ = false;
+}
+
 const App = {
   currentView: null,
   views: {},
@@ -361,10 +369,15 @@ App.state.quotas = {
   _timer: null,
 
   async fetchOnce() {
+    if (!isRuntimeAvailable()) return;
     try {
       const url = new URL("shared/state/quotas.json", document.baseURI);
       const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) return;
+      if (!res.ok) {
+        markRuntimeUnavailable();
+        this.stop();
+        return;
+      }
 
       const data = await res.json();
 
@@ -373,10 +386,13 @@ App.state.quotas = {
       this.lastError = null;
     } catch (e) {
       this.lastError = String(e);
+      markRuntimeUnavailable();
+      this.stop();
     }
   },
 
   start() {
+    if (!isRuntimeAvailable()) return;
     if (this._timer) return;
     this.fetchOnce();
     this._timer = setInterval(() => {
@@ -408,11 +424,13 @@ App.state.runtimeSnapshot = {
   lastSource: null,
 
   async fetchOnce() {
+    if (!isRuntimeAvailable()) return;
     const sources = [
       new URL("shared/state/runtime_snapshot.json", document.baseURI),
       new URL("data/runtime_snapshot.json", document.baseURI)
     ];
 
+    let fetched = false;
     for (const url of sources) {
       try {
         const res = await fetch(url, { cache: "no-store" });
@@ -422,6 +440,7 @@ App.state.runtimeSnapshot = {
         }
 
         const data = await res.json();
+        fetched = true;
         this.latest = data;
         this.lastSource = url.toString();
         this.lastFetchedAt = Date.now();
@@ -445,9 +464,15 @@ App.state.runtimeSnapshot = {
         this.lastError = String(err);
       }
     }
+
+    if (!fetched) {
+      markRuntimeUnavailable();
+      this.stop();
+    }
   },
 
   start() {
+    if (!isRuntimeAvailable()) return;
     if (this._timer) return;
     this.fetchOnce();
     this._timer = setInterval(() => {

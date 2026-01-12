@@ -143,6 +143,10 @@
     return window.Telemetry?.formatTimestamp?.(value) || "—";
   }
 
+  function isRuntimeAvailable() {
+    return window.__STREAMSUITES_RUNTIME_AVAILABLE__ !== false;
+  }
+
   function getAppStorage() {
     if (
       typeof window.App === "object" &&
@@ -448,6 +452,56 @@
       setText(el.storageState, "available");
     } catch {
       setText(el.storageState, "unavailable");
+    }
+  }
+
+  function renderRuntimeDisconnected() {
+    const placeholder = "Runtime not connected";
+
+    setText(el.dashboardState, "static mode");
+
+    setText(el.discordRuntime, placeholder);
+    setText(el.discordConnection, placeholder);
+    setText(el.discordHeartbeat, placeholder);
+    setText(el.discordGuilds, "—");
+    setText(el.discordPresence, "—");
+
+    if (el.discordBotStatus) {
+      el.discordBotStatus.classList.remove("online");
+      el.discordBotStatus.classList.add("offline");
+      el.discordBotStatus.textContent = "Disconnected";
+    }
+
+    setText(el.rumbleRuntime, placeholder);
+    setText(el.kickRuntime, placeholder);
+    setText(el.pilledRuntime, placeholder);
+    setText(el.twitchRuntime, placeholder);
+    setText(el.youtubeRuntime, placeholder);
+
+    if (el.adminActivityBody) el.adminActivityBody.innerHTML = "";
+    if (el.adminActivityEmpty) {
+      el.adminActivityEmpty.textContent = placeholder;
+      toggleEmptyState(el.adminActivityEmpty, true);
+    }
+
+    if (el.telemetryEmpty) {
+      el.telemetryEmpty.textContent = placeholder;
+      toggleEmptyState(el.telemetryEmpty, true);
+    }
+    if (el.telemetryEventsBody) el.telemetryEventsBody.innerHTML = "";
+    if (el.telemetryEventsEmpty) {
+      el.telemetryEventsEmpty.textContent = placeholder;
+      toggleEmptyState(el.telemetryEventsEmpty, true);
+    }
+    if (el.telemetryRatesGrid) el.telemetryRatesGrid.innerHTML = "";
+    if (el.telemetryRatesEmpty) {
+      el.telemetryRatesEmpty.textContent = placeholder;
+      toggleEmptyState(el.telemetryRatesEmpty, true);
+    }
+    if (el.telemetryErrorsBody) el.telemetryErrorsBody.innerHTML = "";
+    if (el.telemetryErrorsEmpty) {
+      el.telemetryErrorsEmpty.textContent = placeholder;
+      toggleEmptyState(el.telemetryErrorsEmpty, true);
     }
   }
 
@@ -783,6 +837,10 @@
 
   async function init() {
     cacheElements();
+    if (!isRuntimeAvailable()) {
+      renderRuntimeDisconnected();
+      return;
+    }
     updateSystemStatus();
     await updateLocalMetrics();
     refreshDiscord();
