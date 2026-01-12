@@ -22,6 +22,7 @@
   <meta name="discord-client-id" content="1449280789010321420" />
   <meta name="discord-redirect-uri" content="https://bsmediagroup.github.io/StreamSuites-Dashboard/" />
   <meta name="discord-scopes" content="identify guilds" />
+  <meta name="streamsuites-livechat-url" content="" />
 
   <!-- ========================================================= -->
   <!-- Social / Share metadata (ABSOLUTE URLS — REQUIRED) -->
@@ -199,6 +200,17 @@
           <span id="app-status" class="status-indicator idle">
             ● idle
           </span>
+          <a
+            id="livechat-launch"
+            class="ss-btn ss-btn-secondary ss-btn-small disabled"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-disabled="true"
+            title="Configure LiveChat URL to enable"
+          >
+            Open LiveChat
+          </a>
         </div>
         <div class="header-row header-auth-row">
           <div class="discord-auth">
@@ -396,6 +408,45 @@
           setActive();
         }
       });
+    })();
+  </script>
+  <script>
+    (function () {
+      const launch = document.getElementById("livechat-launch");
+      if (!launch) return;
+
+      const params = new URLSearchParams(window.location.search);
+      const paramUrl = params.get("livechatUrl");
+      const metaUrl = document
+        .querySelector('meta[name="streamsuites-livechat-url"]')
+        ?.getAttribute("content");
+
+      const configured =
+        (typeof paramUrl === "string" && paramUrl.trim()) ||
+        (typeof metaUrl === "string" && metaUrl.trim());
+
+      if (!configured) {
+        launch.classList.add("disabled");
+        launch.setAttribute("aria-disabled", "true");
+        launch.setAttribute(
+          "title",
+          "Set ?livechatUrl= or meta streamsuites-livechat-url to enable"
+        );
+        launch.setAttribute("href", "#");
+        return;
+      }
+
+      let resolved = configured;
+      try {
+        resolved = new URL(configured, document.baseURI).toString();
+      } catch (err) {
+        console.warn("[Dashboard] LiveChat URL is not a valid URL", err);
+      }
+
+      launch.setAttribute("href", resolved);
+      launch.classList.remove("disabled");
+      launch.removeAttribute("aria-disabled");
+      launch.setAttribute("title", `Open LiveChat (${resolved})`);
     })();
   </script>
 </body>
