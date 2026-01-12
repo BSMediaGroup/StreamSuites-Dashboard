@@ -84,6 +84,11 @@ const App = {
   initialized: false,
   storage: {},
   state: {}, // ✅ ADDITIVE — read-only runtime snapshots live here
+  boot: {
+    firstViewName: null,
+    firstViewMounted: false,
+    deadlockTimer: null
+  },
   creatorContext: {
     creatorId: null,
     permissions: {
@@ -105,6 +110,46 @@ const App = {
 
 // Expose the App object on window for cross-file access (e.g., Overview view)
 window.App = App;
+
+/* ----------------------------------------------------------------------
+   Fetch timeout safety
+   ---------------------------------------------------------------------- */
+
+const DEFAULT_FETCH_TIMEOUT_MS = 1500;
+
+if (!window.__STREAMSUITES_FETCH_TIMEOUT_PATCHED__) {
+  window.__STREAMSUITES_FETCH_TIMEOUT_PATCHED__ = true;
+  const originalFetch = window.fetch.bind(window);
+
+  window.fetch = (input, init = {}) => {
+    const hasSignal = Boolean(init?.signal);
+    const timeoutMs =
+      typeof init?.timeoutMs === "number" ? init.timeoutMs : DEFAULT_FETCH_TIMEOUT_MS;
+
+    if (!timeoutMs || timeoutMs <= 0) {
+      return originalFetch(input, init);
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    let signal = controller.signal;
+    if (hasSignal && typeof AbortSignal !== "undefined" && AbortSignal.any) {
+      signal = AbortSignal.any([init.signal, controller.signal]);
+    } else if (hasSignal) {
+      signal = init.signal;
+    }
+
+    const nextInit = {
+      ...init,
+      signal
+    };
+
+    return originalFetch(input, nextInit).finally(() => {
+      clearTimeout(timer);
+    });
+  };
+}
 
 /* ----------------------------------------------------------------------
    DOM Helpers
@@ -645,6 +690,33 @@ function registerView(name, config) {
    View Loader
    ---------------------------------------------------------------------- */
 
+const VIEW_FETCH_TIMEOUT_MS = 1500;
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = VIEW_FETCH_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+      timeoutMs: 0
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function markFirstViewMounted(name) {
+  if (App.boot?.firstViewMounted) return;
+  if (App.boot?.firstViewName && App.boot.firstViewName !== name) return;
+  App.boot.firstViewMounted = true;
+  console.log("[BOOT:70] first view mounted", performance.now());
+  if (App.boot?.deadlockTimer) {
+    clearTimeout(App.boot.deadlockTimer);
+    App.boot.deadlockTimer = null;
+  }
+}
+
 async function loadView(name) {
   if (shouldBlockDashboardRuntime()) return;
   const view = App.views[name];
@@ -680,7 +752,7 @@ async function loadView(name) {
   }
 
   try {
-    const res = await fetch(viewUrl);
+    const res = await fetchWithTimeout(viewUrl, { cache: "no-store" });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const html = await res.text();
@@ -712,6 +784,7 @@ async function loadView(name) {
     if (window.Versioning?.stampFooters) {
       window.Versioning.stampFooters();
     }
+    markFirstViewMounted(name);
   } catch (err) {
     console.error(`[Dashboard] Failed to load view ${name}`, err);
     container.innerHTML = `
@@ -720,6 +793,7 @@ async function loadView(name) {
         <p class="text-muted">This module is not yet implemented.</p>
       </div>
     `;
+    markFirstViewMounted(name);
   }
 }
 
@@ -895,6 +969,14 @@ async function initApp() {
   if (shouldBlockDashboardRuntime()) return;
   if (App.initialized) return;
 
+  console.log("[BOOT:10] initApp start", performance.now());
+  App.boot.deadlockTimer = setTimeout(() => {
+    console.error("[BOOT:DEADLOCK] Bootstrap exceeded 2000ms. Dumping state...");
+    console.error("APP_MODE", window.__STREAMSUITES_APP_MODE__);
+    console.error("DISCORD_FEATURES", window.__DISCORD_FEATURES_ENABLED__);
+    console.error("RUNTIME_AVAILABLE", window.__RUNTIME_AVAILABLE__);
+  }, 2000);
+
   const watchdog = setTimeout(() => {
     console.error(
       "[Dashboard] INIT WATCHDOG TRIPPED: init exceeded 3000ms; forcing abort UI."
@@ -907,7 +989,19 @@ async function initApp() {
       "<div style='padding:16px;font-family:system-ui;color:#fff;background:#111'>Dashboard init watchdog tripped. Check console for the last log line.</div>";
   }, 3000);
 
+  console.log("[BOOT:20] auth complete", performance.now());
+  console.log("[BOOT:30] discord init begin", performance.now());
+  const discordInit = window.StreamSuitesDiscordGuild?.init;
+  if (typeof discordInit === "function") {
+    discordInit()
+      .then(() => console.log("[BOOT:DG] init completed", performance.now()))
+      .catch((e) => console.warn("[BOOT:DG] init failed (non-blocking)", e));
+  } else {
+    console.warn("[BOOT:DG] init unavailable");
+  }
+
   async function initDashboard() {
+    console.log("[BOOT:40] dashboard init begin", performance.now());
     const resolvedMode = await waitForAppMode();
     if (resolvedMode === "BOOT") {
       setAppMode("NORMAL", { reason: "boot-timeout" });
@@ -933,7 +1027,11 @@ async function initApp() {
     bindDelegatedNavigation();
     bindHashChange();
 
+    console.log("[BOOT:50] router begin", performance.now());
     const initialView = resolveInitialView();
+    App.boot.firstViewName = initialView;
+    console.log("[BOOT:55] Router ready", performance.now());
+    console.log("[BOOT:60] first view mount begin", performance.now());
     loadView(initialView);
 
     App.initialized = true;

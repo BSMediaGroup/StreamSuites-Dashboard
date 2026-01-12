@@ -53,7 +53,8 @@
     viewObserver: null,
     eventsBound: false,
     discordFeaturesDisabledLogged: false,
-    creatorOverrideLogged: false
+    creatorOverrideLogged: false,
+    initStarted: false
   };
 
   function coerceText(value) {
@@ -441,33 +442,44 @@
   }
 
   function updateAuthorization() {
-    if (window.__RUNTIME_AVAILABLE__ === false) {
-      window.__DISCORD_FEATURES_ENABLED__ = true;
+    console.log("[BOOT:DG:ENTER] updateAuthorization", performance.now());
+    try {
+      if (window.__RUNTIME_AVAILABLE__ === false) {
+        window.__DISCORD_FEATURES_ENABLED__ = true;
+        updateSelectorOptions();
+        updateSelectorValue();
+        setStatus("ready");
+        observeViewContainer();
+        setAppMode("NORMAL", { reason: "runtime-unavailable" });
+        console.log("[BOOT:DG:EXIT] updateAuthorization OK", performance.now());
+        return;
+      }
+
+      const { authorized, unauthorized } = buildAuthorizedGuilds(
+        state.session,
+        state.runtimeGuilds
+      );
+      state.authorizedGuilds = authorized;
+      state.unauthorizedGuilds = unauthorized;
+      state.runtimeOverrideDetected = Array.from(state.runtimeGuilds.values()).some(
+        (guild) => resolveAuthorizationReason(guild) === "admin_override"
+      );
+
+      logGuildCounts();
+      updateDiscordFeatureFlag();
+      setAppMode("NORMAL", { reason: "authorized-guilds" });
       updateSelectorOptions();
       updateSelectorValue();
-      setStatus("ready");
+      evaluateStatus();
       observeViewContainer();
-      setAppMode("NORMAL", { reason: "runtime-unavailable" });
-      return;
+      console.log("[BOOT:DG:EXIT] updateAuthorization OK", performance.now());
+    } catch (err) {
+      console.warn(
+        "[BOOT:DG:EXIT] updateAuthorization FAIL",
+        err,
+        performance.now()
+      );
     }
-
-    const { authorized, unauthorized } = buildAuthorizedGuilds(
-      state.session,
-      state.runtimeGuilds
-    );
-    state.authorizedGuilds = authorized;
-    state.unauthorizedGuilds = unauthorized;
-    state.runtimeOverrideDetected = Array.from(state.runtimeGuilds.values()).some(
-      (guild) => resolveAuthorizationReason(guild) === "admin_override"
-    );
-
-    logGuildCounts();
-    updateDiscordFeatureFlag();
-    setAppMode("NORMAL", { reason: "authorized-guilds" });
-    updateSelectorOptions();
-    updateSelectorValue();
-    evaluateStatus();
-    observeViewContainer();
   }
 
   function handleAuthEvent(event) {
@@ -487,11 +499,13 @@
   }
 
   async function loadRuntimeGuilds() {
+    console.log("[BOOT:DG:ENTER] loadRuntimeGuilds", performance.now());
     const loader = window.StreamSuitesState?.loadStateJson;
     if (typeof loader !== "function") {
       console.warn("[Discord Guild] Runtime guild loader unavailable.");
       state.runtimeLoaded = true;
       updateAuthorization();
+      console.log("[BOOT:DG:EXIT] loadRuntimeGuilds OK", performance.now());
       return;
     }
 
@@ -500,6 +514,11 @@
       state.runtimeGuilds = normalizeRuntimeGuilds(runtime);
     } catch (err) {
       console.warn("[Discord Guild] Failed to load runtime guilds.", err);
+      console.warn(
+        "[BOOT:DG:EXIT] loadRuntimeGuilds FAIL",
+        err,
+        performance.now()
+      );
       state.runtimeGuilds = new Map();
     }
 
@@ -508,6 +527,7 @@
       `[Discord Guild] Runtime guild count: ${state.runtimeGuilds.size}`
     );
     updateAuthorization();
+    console.log("[BOOT:DG:EXIT] loadRuntimeGuilds OK", performance.now());
   }
 
   function setActiveGuildId(guildId) {
@@ -561,12 +581,30 @@
   }
 
   async function init() {
-    state.activeGuildId = loadActiveGuildId();
-    state.session = window.StreamSuitesAuth?.session || null;
-    refreshElements();
-    bindEvents();
-    await loadRuntimeGuilds();
-    evaluateStatus();
+    if (state.initStarted) return;
+    state.initStarted = true;
+    console.log("[BOOT:DG:ENTER] init", performance.now());
+    try {
+      state.activeGuildId = loadActiveGuildId();
+      state.session = window.StreamSuitesAuth?.session || null;
+      refreshElements();
+      bindEvents();
+      loadRuntimeGuilds()
+        .then(() => {
+          console.log("[BOOT:DG:INIT] runtime guilds loaded", performance.now());
+        })
+        .catch((err) => {
+          console.warn("[BOOT:DG:INIT] runtime guilds failed", err);
+        });
+      evaluateStatus();
+      console.log("[BOOT:DG:EXIT] init OK", performance.now());
+    } catch (err) {
+      console.warn(
+        "[Discord Guild] init failed internally; continuing app boot.",
+        err
+      );
+      console.warn("[BOOT:DG:EXIT] init FAIL", err);
+    }
   }
 
   window.StreamSuitesDiscordGuild = {
@@ -577,7 +615,8 @@
     getUnauthorizedGuilds: () => state.unauthorizedGuilds,
     getRuntimeGuilds: () => state.runtimeGuilds,
     getStatus: () => state.status,
-    setActiveGuildId
+    setActiveGuildId,
+    init
   };
 
   document.addEventListener("DOMContentLoaded", init);
