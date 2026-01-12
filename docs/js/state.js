@@ -196,12 +196,10 @@
         const res = await fetch(url, { cache: "no-store" });
         if (!res.ok) continue;
         const data = await res.json();
-        markRuntimeAvailable();
         return data;
       } catch (err) {}
     }
 
-    markRuntimeUnavailable();
     return undefined;
   }
 
@@ -632,10 +630,12 @@
 
     const shared = normalize(await loadStateJson("quotas.json"));
     if (shared) {
+      markRuntimeAvailable();
       cache.quotas = shared;
       return deepClone(shared);
     }
 
+    markRuntimeUnavailable();
     const fallback = normalize(await fetchFallbackJson("./data/quotas.json"));
     cache.quotas = fallback || null;
     return fallback ? deepClone(fallback) : null;
