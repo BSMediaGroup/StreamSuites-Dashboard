@@ -15,6 +15,7 @@
     el.presence = document.getElementById("dc-presence");
     el.statusNote = document.getElementById("dc-runtime-note");
     el.controlStatus = document.getElementById("dc-control-status");
+    el.activeGuild = document.getElementById("dc-active-guild");
   }
 
   function setText(target, value) {
@@ -79,6 +80,26 @@
     return "Not available";
   }
 
+  function formatActiveGuildLabel() {
+    const guildContext = window.StreamSuitesDiscordGuild;
+    const status = guildContext?.getStatus?.() || "missing";
+    const activeGuild = guildContext?.getActiveGuild?.();
+
+    if (status === "unauthorized") {
+      return "Unauthorized";
+    }
+
+    if (status !== "ready" || !activeGuild) {
+      return "No guild selected";
+    }
+
+    const label =
+      typeof activeGuild.name === "string" && activeGuild.name.trim()
+        ? activeGuild.name.trim()
+        : "Discord Guild";
+    return activeGuild.id ? `${label} (${activeGuild.id})` : label;
+  }
+
   function renderRuntime(runtime) {
     setText(el.runtime, formatRuntimeState(runtime));
     setText(el.connection, formatConnection(runtime));
@@ -90,6 +111,7 @@
       el.controlStatus,
       window.StreamSuitesState?.describeDiscordConnection?.(runtime) || "Unknown"
     );
+    setText(el.activeGuild, formatActiveGuildLabel());
 
     if (el.statusNote) {
       if (!runtime || runtime.running === false) {
@@ -115,6 +137,12 @@
 
     if (refreshHandle) clearInterval(refreshHandle);
     refreshHandle = setInterval(refresh, REFRESH_INTERVAL_MS);
+
+    window.addEventListener("streamsuites:discord-guild", renderActiveGuild);
+  }
+
+  function renderActiveGuild() {
+    setText(el.activeGuild, formatActiveGuildLabel());
   }
 
   function destroy() {
@@ -122,6 +150,7 @@
       clearInterval(refreshHandle);
       refreshHandle = null;
     }
+    window.removeEventListener("streamsuites:discord-guild", renderActiveGuild);
   }
 
   window.DiscordView = {

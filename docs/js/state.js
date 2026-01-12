@@ -860,8 +860,8 @@
   const DEFAULT_SYSTEM = {
     schema: "streamsuites.system.v1",
     platform_polling_enabled: null,
-    discord_bot: {
-      guilds: []
+    discord: {
+      guilds: {}
     }
   };
 
@@ -962,15 +962,31 @@
         ? platformPollingEnabled
         : null;
 
-    const discordBot =
-      normalized.discord_bot && typeof normalized.discord_bot === "object"
-        ? normalized.discord_bot
+    const discord =
+      normalized.discord && typeof normalized.discord === "object"
+        ? normalized.discord
         : {};
 
-    normalized.discord_bot = {
-      ...discordBot,
-      guilds: Array.isArray(discordBot.guilds) ? discordBot.guilds : []
+    const guilds =
+      discord.guilds && typeof discord.guilds === "object" ? { ...discord.guilds } : {};
+
+    if (Array.isArray(normalized.discord_bot?.guilds)) {
+      normalized.discord_bot.guilds.forEach((entry) => {
+        const guildId =
+          entry && typeof entry.guild_id === "string" ? entry.guild_id.trim() : "";
+        if (!guildId) return;
+        guilds[guildId] = { ...entry, guild_id: guildId };
+      });
+    }
+
+    normalized.discord = {
+      ...discord,
+      guilds
     };
+
+    if ("discord_bot" in normalized) {
+      delete normalized.discord_bot;
+    }
 
     return normalized;
   }

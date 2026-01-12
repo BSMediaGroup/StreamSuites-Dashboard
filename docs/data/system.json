@@ -1,9 +1,9 @@
 {
   "schema": "streamsuites.system.v1",
   "platform_polling_enabled": true,
-  "discord_bot": {
-    "guilds": [
-      {
+  "discord": {
+    "guilds": {
+      "947821540123456789": {
         "guild_id": "947821540123456789",
         "logging": {
           "enabled": true,
@@ -18,7 +18,7 @@
           "twitch_clips_channel_id": "947821540999000444"
         }
       }
-    ]
+    }
   },
   "platform_status": {
     "kick": "scaffolded-read-only",
