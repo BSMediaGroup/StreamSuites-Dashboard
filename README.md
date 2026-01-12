@@ -345,6 +345,7 @@ StreamSuites-Dashboard/
 │   │   ├── theme-dark.css
 │   │   └── updates.css
 │   ├── data
+│   │   ├── admin_activity.json
 │   │   ├── changelog.dashboard.json
 │   │   ├── changelog.runtime.json
 │   │   ├── chat_events.json
@@ -434,6 +435,7 @@ StreamSuites-Dashboard/
 │   │   │   ├── admin
 │   │   │   │   └── triggers.json
 │   │   │   ├── README.md
+│   │   │   ├── admin_activity.json
 │   │   │   ├── changelog.json
 │   │   │   ├── changelog.runtime.json
 │   │   │   ├── clips.json
