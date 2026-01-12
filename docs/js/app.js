@@ -1,3 +1,48 @@
+window.__STREAMSUITES_SAFE_MODE__ = true;
+console.warn("[SAFE MODE] Render loops disabled");
+
+if (window.__STREAMSUITES_SAFE_MODE__) {
+  const _raf = window.requestAnimationFrame;
+  window.requestAnimationFrame = function () {
+    return 0;
+  };
+}
+
+if (window.__STREAMSUITES_SAFE_MODE__) {
+  window.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}
+
+if (window.__STREAMSUITES_SAFE_MODE__) {
+  window.MutationObserver = class {
+    observe() {}
+    disconnect() {}
+    takeRecords() {
+      return [];
+    }
+  };
+}
+
+if (window.__STREAMSUITES_SAFE_MODE__) {
+  const _setInterval = window.setInterval;
+  window.setInterval = function (fn, t) {
+    console.warn("[SAFE MODE] setInterval blocked", t);
+    return 0;
+  };
+
+  const _setTimeout = window.setTimeout;
+  window.setTimeout = function (fn, t) {
+    if (t === 0) {
+      console.warn("[SAFE MODE] setTimeout(0) blocked");
+      return 0;
+    }
+    return _setTimeout(fn, t);
+  };
+}
+
 /* ======================================================================
    StreamSuites™ Dashboard — app.js
    Project: StreamSuites™
