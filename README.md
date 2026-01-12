@@ -1,15 +1,15 @@
 # StreamSuites Dashboard — Static, Read-Only Runtime Monitor
 
 StreamSuites Dashboard is a **static, client-side observability surface** for monitoring the StreamSuites ecosystem.  
-It is intentionally **GitHub Pages–safe** (no backend, no authentication, no server execution) and exists solely to **visualize runtime-exported state**.
+It is intentionally **GitHub Pages–safe** (no backend, no server execution) and exists to **visualize runtime-exported state** while providing **Discord OAuth–gated configuration** for eligible guilds.
 
 All execution, chat ingestion, livestream control, scheduling, and command dispatch live in the **StreamSuites Runtime** repository — never here.
 
 The dashboard loads snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progress), Pilled (planned ingest-only), and Discord** and renders them as a read-only preview surface.
 
-- **Preview / scaffold only:** The dashboard is intentionally static and read-only. Bundled snapshots demonstrate layout, schema alignment, and UI behavior. Runtime hydration for live chat, overlays, or replay feeds has **not started**.
+- **Preview / scaffold only:** The dashboard is intentionally static and read-only for telemetry. Bundled snapshots demonstrate layout, schema alignment, and UI behavior. Runtime hydration for live chat, overlays, or replay feeds has **not started**.
 - **Authority model:** Runtime exports are canonical. This dashboard only reads exported artifacts and refreshes them on a timer.
-- **Write safety:** No API calls, no authentication, no mutation paths. Any edits are browser-local (`localStorage`) or operate on downloaded JSON files only.
+- **Write safety:** No runtime control plane. Configuration edits are scoped to Discord guild settings only; all other views remain read-only.
 - **Current stance:** Static previews only.
   - **YouTube & Twitch:** Snapshot-driven heartbeat telemetry (read-only).
   - **Rumble:** PAUSED at runtime level; visible with read-only telemetry and red roadmap treatment.
@@ -32,10 +32,49 @@ The dashboard loads snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progre
 - **State origination:** All snapshots, telemetry bundles, changelogs, and manifests originate in the runtime and are published for downstream readers.
 - **Downstream consumers:** This dashboard and other visualization surfaces ingest exported JSON only. They never author, mutate, or control runtime state.
 
+## Authentication & Authorization
+
+- **Discord OAuth2:** The web dashboard uses Discord OAuth2 for authentication.
+- **Scopes required:** `identify`, `guilds`.
+- **No local accounts:** StreamSuites does not create or store user accounts; Discord identity is the sole authentication mechanism.
+- **Why OAuth is required:** OAuth is used to identify the user, enumerate accessible guilds, and gate per-guild configuration access.
+- **Security & scope clarity:** Discord OAuth is required for Discord-specific views; no per-user permissions are stored by StreamSuites, and authorization is always derived from Discord.
+
+## Guild Authorization Model
+
+A user may configure a guild **only if**:
+
+- The StreamSuites bot is present in the guild, **and**
+- The user is the **guild owner**, **or** has **ADMINISTRATOR**, **or** has **MANAGE_GUILD**.
+
+Unauthorized guilds are hidden or locked in the UI. All edits are scoped to the currently selected guild.
+
+## Per-Guild Discord Configuration
+
+The dashboard exposes editable Discord settings per guild:
+
+- Logging enable/disable
+- Logging channel
+- Notification channels:
+  - General
+  - Rumble clips
+  - YouTube clips
+  - Kick clips
+  - Pilled clips
+  - Twitch clips
+
+These settings map directly to runtime configuration; the dashboard does not execute actions itself.
+
+## Relationship to Runtime & WinForms
+
+- **Static and client-side:** This dashboard remains static and client-side.
+- **No direct control:** It does not directly control the runtime.
+- **Configuration handoff:** It edits configuration consumed by the runtime.
+- **Local authority:** The WinForms Desktop Admin (in a separate repository) is authoritative for local administration.
+
 ## WinForms Desktop Admin Dashboard
 
-- **Location:** `desktop-admin/` (local WinForms application).
-- **Execution model:** Runs on the same machine as the runtime with direct filesystem access.
+- **Execution model:** Runs locally alongside the runtime with direct filesystem access.
 - **Snapshot handling:** Reads runtime snapshots directly from disk for immediate administrative visibility.
 - **Control surface:** Can launch and terminate runtime processes, manage local paths, and adjust configuration without network dependencies.
 - **Roadmap posture:** Intended to become the primary administrative interface over time while remaining strictly local.
@@ -77,7 +116,7 @@ Build changes imply freshly generated artifacts, even when features are unchange
 - **Static control surface:** Cannot mutate runtimes or issue commands.
 - **Runtime snapshot polling:** Periodically fetches `shared/state/runtime_snapshot.json` (or bundled fallbacks) to render status, heartbeat timestamps, errors, and pause reasons.
 - **Header mode badge:** `#app-mode` indicates connected/read-only or static fallback.
-- **No platform APIs:** No sockets, no auth flows, no control-plane calls.
+- **No platform APIs:** No sockets or control-plane calls.
 - **Visual-only philosophy:** Dashboards illuminate runtime exports; execution remains runtime-owned.
 
 ## Relationship to StreamSuites (Main Repo)
@@ -127,7 +166,7 @@ This repository is a **companion project** to the StreamSuites Runtime.
 
 - Static site hosting (GitHub Pages).
 - No backend.
-- No authentication.
+- Discord OAuth required for Discord-specific configuration views.
 - Embed/iframe friendly (e.g., Wix Studio).
 - All logic runs client-side.
 
