@@ -28,6 +28,10 @@ if (!window.__STREAMSUITES_APP_MODE__) {
   window.__STREAMSUITES_APP_MODE__ = "BOOT";
 }
 
+if (typeof window.__RUNTIME_AVAILABLE__ === "undefined") {
+  window.__RUNTIME_AVAILABLE__ = false;
+}
+
 if (!window.StreamSuitesAppMode) {
   window.StreamSuitesAppMode = {
     get() {
@@ -63,11 +67,15 @@ function shouldBlockDashboardRuntime() {
 }
 
 function isRuntimeAvailable() {
-  return window.__STREAMSUITES_RUNTIME_AVAILABLE__ !== false;
+  return window.__RUNTIME_AVAILABLE__ === true;
 }
 
 function markRuntimeUnavailable() {
-  window.__STREAMSUITES_RUNTIME_AVAILABLE__ = false;
+  window.__RUNTIME_AVAILABLE__ = false;
+}
+
+function markRuntimeAvailable() {
+  window.__RUNTIME_AVAILABLE__ = true;
 }
 
 const App = {
@@ -429,6 +437,7 @@ App.state.quotas = {
       }
 
       const data = await res.json();
+      markRuntimeAvailable();
 
       this.latest = data;
       this.lastFetchedAt = Date.now();
@@ -498,6 +507,7 @@ App.state.runtimeSnapshot = {
         this.lastSource = url.toString();
         this.lastFetchedAt = Date.now();
         this.lastError = null;
+        markRuntimeAvailable();
         try {
           window.dispatchEvent(
             new CustomEvent("streamsuites:runtimeSnapshot", {
@@ -923,9 +933,13 @@ async function initApp() {
     bindDelegatedNavigation();
     bindHashChange();
 
-    App.state.quotas.start();
-    App.state.runtimeSnapshot.start();
-    RestartIndicator.init();
+    if (window.__RUNTIME_AVAILABLE__ === true) {
+      App.state.quotas.start();
+      App.state.runtimeSnapshot.start();
+      RestartIndicator.init();
+    } else {
+      console.info("[Dashboard] Runtime unavailable. Polling disabled.");
+    }
 
     const initialView = resolveInitialView();
     loadView(initialView);

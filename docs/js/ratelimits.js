@@ -87,7 +87,7 @@
   }
 
   function isRuntimeAvailable() {
-    return window.__STREAMSUITES_RUNTIME_AVAILABLE__ !== false;
+    return window.__RUNTIME_AVAILABLE__ === true;
   }
 
   function renderRuntimeDisconnected() {

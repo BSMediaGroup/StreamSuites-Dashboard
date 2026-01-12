@@ -70,6 +70,7 @@
   let editIndex = null;
   let snapshotGeneratedAt = null;
   let activityPollHandle = null;
+  let runtimePollingLogged = false;
 
   /* ------------------------------------------------------------
      INIT
@@ -651,6 +652,13 @@
   }
 
   function startActivityPolling() {
+    if (window.__RUNTIME_AVAILABLE__ !== true) {
+      if (!runtimePollingLogged) {
+        console.info("[Dashboard] Runtime unavailable. Polling disabled.");
+        runtimePollingLogged = true;
+      }
+      return;
+    }
     if (activityPollHandle) return;
     activityPollHandle = setInterval(() => fetchTriggerActivity(), 15000);
   }

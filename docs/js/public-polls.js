@@ -5,6 +5,8 @@
   const grid = document.getElementById("polls-grid");
   const emptyState = document.getElementById("polls-empty");
   let pollTimer = null;
+  let runtimePollingLogged = false;
+  let runtimeProbeComplete = false;
 
   function renderSkeleton(count = 4) {
     if (!grid) return;
@@ -215,14 +217,25 @@
   }
 
   async function fetchRuntimePolls() {
+    const loader = window.StreamSuitesState?.loadStateJson;
+    if (typeof loader === "function") {
+      const data = await loader("polls.json");
+      return normalizePollsPayload(data);
+    }
+
     try {
       const res = await fetch(new URL(RUNTIME_POLL_PATH, document.baseURI), {
         cache: "no-store"
       });
-      if (!res.ok) return null;
+      if (!res.ok) {
+        window.__RUNTIME_AVAILABLE__ = false;
+        return null;
+      }
       const data = await res.json();
+      window.__RUNTIME_AVAILABLE__ = true;
       return normalizePollsPayload(data);
     } catch (err) {
+      window.__RUNTIME_AVAILABLE__ = false;
       console.warn("[Polls] Failed to load runtime polls", err);
       return null;
     }
@@ -237,7 +250,11 @@
   }
 
   async function hydratePolls() {
-    const runtimePolls = await fetchRuntimePolls();
+    let runtimePolls = null;
+    if (window.__RUNTIME_AVAILABLE__ === true || !runtimeProbeComplete) {
+      runtimePolls = await fetchRuntimePolls();
+      runtimeProbeComplete = true;
+    }
     const items = runtimePolls && runtimePolls.length > 0 ? runtimePolls : getFallbackPolls();
     window.publicPolls = items;
     window.publicPollMap = items.reduce((acc, poll) => {
@@ -248,6 +265,13 @@
   }
 
   function startPolling() {
+    if (window.__RUNTIME_AVAILABLE__ !== true) {
+      if (!runtimePollingLogged) {
+        console.info("[Dashboard] Runtime unavailable. Polling disabled.");
+        runtimePollingLogged = true;
+      }
+      return;
+    }
     if (pollTimer) return;
     pollTimer = setInterval(hydratePolls, POLL_INTERVAL_MS);
   }

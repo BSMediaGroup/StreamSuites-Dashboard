@@ -15,6 +15,7 @@
 
   let pollHandle = null;
   let lastFetchedAt = null;
+  let runtimePollingLogged = false;
 
   function cacheElements() {
     els.refresh = document.getElementById("clips-refresh");
@@ -266,6 +267,13 @@
   }
 
   function startPolling() {
+    if (window.__RUNTIME_AVAILABLE__ !== true) {
+      if (!runtimePollingLogged) {
+        console.info("[Dashboard] Runtime unavailable. Polling disabled.");
+        runtimePollingLogged = true;
+      }
+      return;
+    }
     if (pollHandle) return;
     pollHandle = setInterval(fetchClips, POLL_INTERVAL_MS);
   }

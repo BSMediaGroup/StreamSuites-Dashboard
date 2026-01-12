@@ -3,6 +3,7 @@
 
   const REFRESH_INTERVAL_MS = 15000;
   let refreshHandle = null;
+  let runtimePollingLogged = false;
 
   const el = {};
 
@@ -150,6 +151,15 @@
   function init() {
     if (window.__DISCORD_FEATURES_ENABLED__ === false) {
       renderLockedState();
+      return;
+    }
+    if (window.__RUNTIME_AVAILABLE__ !== true) {
+      cacheElements();
+      renderRuntime(null);
+      if (!runtimePollingLogged) {
+        console.info("[Dashboard] Runtime unavailable. Polling disabled.");
+        runtimePollingLogged = true;
+      }
       return;
     }
     cacheElements();
