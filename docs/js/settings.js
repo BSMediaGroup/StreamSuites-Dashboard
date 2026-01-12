@@ -36,10 +36,11 @@
   let wired = false;
   let runtimeListener = null;
   let visibilityListener = null;
-  let authListener = null;
+  let guildListener = null;
+  let activeGuildId = null;
+  let guildStatus = "missing";
+  let eligibleGuilds = new Map();
   const DISCORD_CHANNEL_ID_REGEX = /^\d{17,20}$/;
-  const DISCORD_PERMISSION_ADMINISTRATOR = 0x8n;
-  const DISCORD_PERMISSION_MANAGE_GUILD = 0x20n;
 
   /* ------------------------------------------------------------
      INIT
@@ -54,7 +55,7 @@
     await hydrateSystemSettings();
     await renderDashboardState();
     bindRuntimeListeners();
-    bindAuthListeners();
+    bindGuildListeners();
   }
 
   /* ------------------------------------------------------------
@@ -199,6 +200,8 @@
     el.platformPollingDraft = document.getElementById("platform-polling-draft-state");
     el.platformPollingNotice = document.getElementById("platform-polling-restart");
     el.discordBotEmpty = document.getElementById("discord-bot-empty");
+    el.discordBotEmptyTitle = document.getElementById("discord-bot-empty-title");
+    el.discordBotEmptySubtitle = document.getElementById("discord-bot-empty-subtitle");
     el.discordBotGuilds = document.getElementById("discord-bot-guilds");
     el.discordBotTemplate = document.getElementById("discord-bot-guild-template");
 
@@ -270,13 +273,27 @@
     }
   }
 
-  function bindAuthListeners() {
-    if (!authListener) {
-      authListener = () => {
+  function bindGuildListeners() {
+    if (!guildListener) {
+      guildListener = (event) => {
+        const detail = event?.detail || {};
+        activeGuildId = detail.activeGuildId || null;
+        guildStatus = detail.status || "missing";
+        eligibleGuilds =
+          detail.eligibleGuilds instanceof Map ? detail.eligibleGuilds : new Map();
         renderDiscordBotSettings();
       };
-      window.addEventListener("streamsuites:discord-auth", authListener);
+      window.addEventListener("streamsuites:discord-guild", guildListener);
     }
+
+    const guildContext = window.StreamSuitesDiscordGuild;
+    if (guildContext) {
+      activeGuildId = guildContext.getActiveGuildId?.() || null;
+      guildStatus = guildContext.getStatus?.() || "missing";
+      eligibleGuilds = guildContext.getEligibleGuilds?.() || new Map();
+    }
+
+    renderDiscordBotSettings();
   }
 
   async function hydratePlatforms() {
@@ -460,74 +477,35 @@
     return String(value).trim();
   }
 
-  function getDiscordBotConfig() {
+  function getDiscordConfigStore() {
     if (!systemConfig || typeof systemConfig !== "object") {
-      return { guilds: [] };
+      return { guilds: {} };
     }
 
     const source =
-      systemConfig.discord_bot && typeof systemConfig.discord_bot === "object"
-        ? systemConfig.discord_bot
+      systemConfig.discord && typeof systemConfig.discord === "object"
+        ? systemConfig.discord
         : {};
+
+    const guilds =
+      source.guilds && typeof source.guilds === "object" ? source.guilds : {};
 
     return {
       ...source,
-      guilds: Array.isArray(source.guilds) ? source.guilds : []
+      guilds: { ...guilds }
     };
   }
 
-  function getDiscordAuthGuilds() {
-    const session = window.StreamSuitesAuth?.session;
-    if (!session || !Array.isArray(session.guilds)) return [];
-    return session.guilds;
+  function getActiveGuild() {
+    if (!activeGuildId) return null;
+    return eligibleGuilds.get(activeGuildId) || null;
   }
 
-  function parsePermissionBits(value) {
-    if (typeof value === "bigint") return value;
-    if (typeof value === "number" && Number.isFinite(value)) {
-      return BigInt(value);
-    }
-    if (typeof value === "string" && value.trim()) {
-      try {
-        return BigInt(value);
-      } catch (err) {
-        return 0n;
-      }
-    }
-    return 0n;
+  function canEditActiveGuild() {
+    return guildStatus === "ready" && !!activeGuildId;
   }
 
-  function hasDiscordGuildAccess(guild) {
-    if (!guild || typeof guild !== "object") return false;
-    if (guild.owner === true) return true;
-    const permissions = parsePermissionBits(guild.permissions);
-    if ((permissions & DISCORD_PERMISSION_ADMINISTRATOR) === DISCORD_PERMISSION_ADMINISTRATOR) {
-      return true;
-    }
-    return (
-      (permissions & DISCORD_PERMISSION_MANAGE_GUILD) ===
-      DISCORD_PERMISSION_MANAGE_GUILD
-    );
-  }
-
-  function getEligibleDiscordGuilds() {
-    const eligible = new Map();
-    getDiscordAuthGuilds().forEach((guild) => {
-      const id = coerceText(guild?.id);
-      if (!id) return;
-      if (!hasDiscordGuildAccess(guild)) return;
-      eligible.set(id, guild);
-    });
-    return eligible;
-  }
-
-  function isEligibleGuildId(guildId, eligibleGuilds) {
-    const normalized = coerceText(guildId);
-    if (!normalized) return false;
-    return eligibleGuilds.has(normalized);
-  }
-
-  function normalizeDiscordGuild(entry = {}) {
+  function normalizeDiscordGuild(entry = {}, guildId = "") {
     const base = entry && typeof entry === "object" ? entry : {};
     const logging =
       base.logging && typeof base.logging === "object" ? base.logging : {};
@@ -545,9 +523,11 @@
             ? base.label.trim()
             : "";
 
+    const resolvedGuildId = coerceText(guildId || base.guild_id);
+
     return {
       ...base,
-      guild_id: coerceText(base.guild_id),
+      guild_id: resolvedGuildId,
       guild_name: guildName,
       logging: {
         ...logging,
@@ -607,163 +587,166 @@
     statusEl.textContent = "Invalid ID";
   }
 
-  function persistDiscordBotConfig(updatedBot) {
+  function persistDiscordGuildConfig(guildId, updatedGuild) {
+    if (!guildId) return;
+    const discord = getDiscordConfigStore();
+    const nextGuilds = {
+      ...discord.guilds,
+      [guildId]: {
+        ...updatedGuild,
+        guild_id: guildId
+      }
+    };
+
     systemConfig =
-      window.ConfigState?.saveSystem?.({ discord_bot: updatedBot }) || {
-        discord_bot: updatedBot
+      window.ConfigState?.saveSystem?.({
+        discord: {
+          ...discord,
+          guilds: nextGuilds
+        }
+      }) || {
+        discord: {
+          ...discord,
+          guilds: nextGuilds
+        }
       };
     renderDashboardState();
   }
 
-  function updateDiscordBotGuild(index, updater) {
-    const bot = getDiscordBotConfig();
-    const guilds = Array.isArray(bot.guilds) ? [...bot.guilds] : [];
-    const current = normalizeDiscordGuild(guilds[index] || {});
-    const eligibleGuilds = getEligibleDiscordGuilds();
-    if (!isEligibleGuildId(current.guild_id, eligibleGuilds)) return;
+  function updateDiscordBotGuild(updater) {
+    if (!canEditActiveGuild()) return;
+    const guildId = activeGuildId;
+    const discord = getDiscordConfigStore();
+    const current = normalizeDiscordGuild(discord.guilds[guildId] || {}, guildId);
     const next = updater ? updater({ ...current }) || current : current;
-    if (!isEligibleGuildId(next.guild_id, eligibleGuilds)) return;
-    guilds[index] = next;
-    persistDiscordBotConfig({ ...bot, guilds });
+    persistDiscordGuildConfig(guildId, next);
   }
 
   function renderDiscordBotSettings() {
     if (!el.discordBotGuilds || !el.discordBotTemplate) return;
 
-    const bot = getDiscordBotConfig();
-    const guilds = Array.isArray(bot.guilds)
-      ? bot.guilds.map((entry) => normalizeDiscordGuild(entry))
-      : [];
-    const eligibleGuilds = getEligibleDiscordGuilds();
-
     el.discordBotGuilds.innerHTML = "";
 
+    const showEmptyState =
+      !systemConfig || !canEditActiveGuild() || !activeGuildId;
+
     if (el.discordBotEmpty) {
-      el.discordBotEmpty.classList.toggle("hidden", guilds.length !== 0);
+      el.discordBotEmpty.classList.toggle("hidden", !showEmptyState);
     }
 
-    if (guilds.length === 0) return;
-
-    guilds.forEach((guild, index) => {
-      const fragment = el.discordBotTemplate.content.cloneNode(true);
-      const card = fragment.querySelector(".discord-guild-card");
-      const label = fragment.querySelector("[data-guild-label]");
-      const oauthGuild = eligibleGuilds.get(guild.guild_id);
-      const hasAccess = Boolean(oauthGuild);
-
-      if (card) {
-        card.dataset.guildIndex = String(index);
-        card.dataset.access = hasAccess ? "eligible" : "no-access";
-        card.setAttribute("aria-disabled", hasAccess ? "false" : "true");
+    if (el.discordBotEmptyTitle && el.discordBotEmptySubtitle) {
+      if (!activeGuildId) {
+        el.discordBotEmptyTitle.textContent = "No active guild selected.";
+        el.discordBotEmptySubtitle.textContent =
+          "Select an eligible guild to view or edit per-guild settings.";
+      } else if (guildStatus === "unauthorized") {
+        el.discordBotEmptyTitle.textContent = "Guild access not authorized.";
+        el.discordBotEmptySubtitle.textContent =
+          "Choose a different guild to unlock Discord settings.";
+      } else {
+        el.discordBotEmptyTitle.textContent = "Discord settings locked.";
+        el.discordBotEmptySubtitle.textContent =
+          "Login and select a guild to unlock per-guild configuration.";
       }
+    }
 
-      if (label) {
-        const baseLabel = getGuildLabel(guild, index, oauthGuild);
-        label.textContent = hasAccess ? baseLabel : `${baseLabel} — No Access`;
-      }
+    if (showEmptyState) return;
 
-      const guildIdInput = fragment.querySelector('[data-field="guild-id"]');
-      const guildIdStatus = fragment.querySelector('[data-status="guild-id"]');
-      if (guildIdInput) {
-        guildIdInput.value = guild.guild_id;
-        guildIdInput.disabled = !hasAccess;
-        if (hasAccess) {
-          guildIdInput.addEventListener("input", () => {
-            const nextId = coerceText(guildIdInput.value);
-            if (!isEligibleGuildId(nextId, eligibleGuilds)) return;
-            updateDiscordBotGuild(index, (entry) => ({
-              ...entry,
-              guild_id: nextId
-            }));
-            if (label) {
-              const nextGuild = normalizeDiscordGuild({
-                ...guild,
-                guild_id: nextId
-              });
-              label.textContent = getGuildLabel(nextGuild, index, oauthGuild);
-            }
-            updateChannelStatus(guildIdStatus, guildIdInput.value);
-          });
-        }
-      }
-      updateChannelStatus(guildIdStatus, guild.guild_id);
+    const discord = getDiscordConfigStore();
+    const activeGuild = getActiveGuild();
+    const guild = normalizeDiscordGuild(
+      discord.guilds[activeGuildId] || {},
+      activeGuildId
+    );
 
-      const loggingEnabled = fragment.querySelector(
-        '[data-field="logging-enabled"]'
-      );
-      if (loggingEnabled) {
-        loggingEnabled.checked = guild.logging.enabled === true;
-        loggingEnabled.disabled = !hasAccess;
-        if (hasAccess) {
-          loggingEnabled.addEventListener("change", () => {
-            updateDiscordBotGuild(index, (entry) => ({
-              ...entry,
-              logging: {
-                ...(entry.logging || {}),
-                enabled: loggingEnabled.checked === true
-              }
-            }));
-          });
-        }
-      }
+    const fragment = el.discordBotTemplate.content.cloneNode(true);
+    const card = fragment.querySelector(".discord-guild-card");
+    const label = fragment.querySelector("[data-guild-label]");
 
-      const loggingChannel = fragment.querySelector(
-        '[data-field="logging-channel"]'
-      );
-      const loggingStatus = fragment.querySelector(
-        '[data-status="logging-channel"]'
-      );
-      if (loggingChannel) {
-        loggingChannel.value = guild.logging.channel_id;
-        loggingChannel.disabled = !hasAccess;
-        if (hasAccess) {
-          loggingChannel.addEventListener("input", () => {
-            updateDiscordBotGuild(index, (entry) => ({
-              ...entry,
-              logging: {
-                ...(entry.logging || {}),
-                channel_id: coerceText(loggingChannel.value)
-              }
-            }));
-            updateChannelStatus(loggingStatus, loggingChannel.value);
-          });
-        }
-      }
-      updateChannelStatus(loggingStatus, guild.logging.channel_id);
+    if (card) {
+      card.dataset.guildIndex = "active";
+      card.dataset.access = "eligible";
+      card.setAttribute("aria-disabled", "false");
+    }
 
-      const channelBindings = [
-        ["general-channel", "general_channel_id"],
-        ["rumble-channel", "rumble_clips_channel_id"],
-        ["youtube-channel", "youtube_clips_channel_id"],
-        ["kick-channel", "kick_clips_channel_id"],
-        ["pilled-channel", "pilled_clips_channel_id"],
-        ["twitch-channel", "twitch_clips_channel_id"]
-      ];
+    if (label) {
+      label.textContent = getGuildLabel(guild, 0, activeGuild);
+    }
 
-      channelBindings.forEach(([field, key]) => {
-        const input = fragment.querySelector(`[data-field="${field}"]`);
-        const status = fragment.querySelector(`[data-status="${field}"]`);
-        if (input) {
-          input.value = guild.notifications[key] || "";
-          input.disabled = !hasAccess;
-          if (hasAccess) {
-            input.addEventListener("input", () => {
-              updateDiscordBotGuild(index, (entry) => ({
-                ...entry,
-                notifications: {
-                  ...(entry.notifications || {}),
-                  [key]: coerceText(input.value)
-                }
-              }));
-              updateChannelStatus(status, input.value);
-            });
+    const guildIdInput = fragment.querySelector('[data-field="guild-id"]');
+    const guildIdStatus = fragment.querySelector('[data-status="guild-id"]');
+    if (guildIdInput) {
+      guildIdInput.value = guild.guild_id;
+      guildIdInput.disabled = true;
+    }
+    updateChannelStatus(guildIdStatus, guild.guild_id);
+
+    const loggingEnabled = fragment.querySelector(
+      '[data-field="logging-enabled"]'
+    );
+    if (loggingEnabled) {
+      loggingEnabled.checked = guild.logging.enabled === true;
+      loggingEnabled.addEventListener("change", () => {
+        updateDiscordBotGuild((entry) => ({
+          ...entry,
+          logging: {
+            ...(entry.logging || {}),
+            enabled: loggingEnabled.checked === true
           }
-        }
-        updateChannelStatus(status, guild.notifications[key]);
+        }));
       });
+    }
 
-      el.discordBotGuilds.appendChild(fragment);
+    const loggingChannel = fragment.querySelector(
+      '[data-field="logging-channel"]'
+    );
+    const loggingStatus = fragment.querySelector(
+      '[data-status="logging-channel"]'
+    );
+    if (loggingChannel) {
+      loggingChannel.value = guild.logging.channel_id;
+      loggingChannel.addEventListener("input", () => {
+        updateDiscordBotGuild((entry) => ({
+          ...entry,
+          logging: {
+            ...(entry.logging || {}),
+            channel_id: coerceText(loggingChannel.value)
+          }
+        }));
+        updateChannelStatus(loggingStatus, loggingChannel.value);
+      });
+    }
+    updateChannelStatus(loggingStatus, guild.logging.channel_id);
+
+    const channelBindings = [
+      ["general-channel", "general_channel_id"],
+      ["rumble-channel", "rumble_clips_channel_id"],
+      ["youtube-channel", "youtube_clips_channel_id"],
+      ["kick-channel", "kick_clips_channel_id"],
+      ["pilled-channel", "pilled_clips_channel_id"],
+      ["twitch-channel", "twitch_clips_channel_id"]
+    ];
+
+    channelBindings.forEach(([field, key]) => {
+      const input = fragment.querySelector(`[data-field="${field}"]`);
+      const status = fragment.querySelector(`[data-status="${field}"]`);
+      if (input) {
+        input.value = guild.notifications[key] || "";
+        input.addEventListener("input", () => {
+          updateDiscordBotGuild((entry) => ({
+            ...entry,
+            notifications: {
+              ...(entry.notifications || {}),
+              [key]: coerceText(input.value)
+            }
+          }));
+          updateChannelStatus(status, input.value);
+        });
+      }
+      updateChannelStatus(status, guild.notifications[key]);
     });
+
+    el.discordBotGuilds.appendChild(fragment);
   }
 
   function updatePlatformPolling(enabled) {
@@ -796,9 +779,9 @@
       document.removeEventListener("visibilitychange", visibilityListener);
       visibilityListener = null;
     }
-    if (authListener) {
-      window.removeEventListener("streamsuites:discord-auth", authListener);
-      authListener = null;
+    if (guildListener) {
+      window.removeEventListener("streamsuites:discord-guild", guildListener);
+      guildListener = null;
     }
     window.PlatformsManager?.destroy?.();
   }

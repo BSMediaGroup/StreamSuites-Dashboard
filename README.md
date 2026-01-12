@@ -386,6 +386,7 @@ StreamSuites-Dashboard/
 │   │   ├── clips.js
 │   │   ├── creators.js
 │   │   ├── data-signals.js
+│   │   ├── discord-guild.js
 │   │   ├── jobs.js
 │   │   ├── overview.js
 │   │   ├── permissions.js

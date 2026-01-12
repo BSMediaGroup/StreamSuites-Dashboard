@@ -146,6 +146,52 @@ body {
   letter-spacing: 0.08em;
 }
 
+.discord-guild-selector {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  min-width: 220px;
+}
+
+.discord-guild-selector label {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.discord-guild-selector select {
+  min-width: 220px;
+}
+
+.discord-guild-status {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-align: right;
+  max-width: 240px;
+}
+
+body.discord-guild-unauthorized .discord-guild-status {
+  color: var(--status-critical, #ff6b6b);
+}
+
+body.discord-guild-missing .discord-guild-status {
+  color: var(--status-warning, #ffb347);
+}
+
+.discord-guild-message {
+  display: none;
+}
+
+body.discord-guild-missing .discord-guild-message[data-state="missing"],
+body.discord-guild-unauthorized .discord-guild-message[data-state="unauthorized"] {
+  display: block;
+}
+
+body.discord-guild-unauthorized [data-discord-guild-locked],
+body.discord-guild-missing [data-discord-guild-locked] {
+  opacity: 0.85;
+}
+
 body.discord-auth-required [data-discord-locked] {
   opacity: 0.55;
   filter: grayscale(0.3);
