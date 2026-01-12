@@ -35,9 +35,11 @@
     )[1];
 
     /* Quota labels */
-    el.quotaDailyLabel = document.querySelector(
+    const quotaLabels = document.querySelectorAll(
       ".ss-quota-row .ss-quota-label span.muted"
     );
+    el.quotaDailyLabel = quotaLabels[0] || null;
+    el.quotaMinuteLabel = quotaLabels[1] || null;
   }
 
   /* ============================================================
@@ -55,6 +57,10 @@
       value ||
       "not reported"
     );
+  }
+
+  function isRuntimeAvailable() {
+    return window.__STREAMSUITES_RUNTIME_AVAILABLE__ !== false;
   }
 
   function getStorage() {
@@ -362,6 +368,32 @@
     }
   }
 
+  function renderRuntimeDisconnected() {
+    const placeholder = "Runtime not connected";
+    setText(el.runtimeStatus, placeholder);
+    setText(el.runtimeUpdated, placeholder);
+    setText(el.runtimeError, placeholder);
+    setText(el.runtimeMessages, "—");
+    setText(el.runtimeTriggers, "—");
+
+    if (el.runtimeBanner) {
+      el.runtimeBanner.classList.add("ss-alert-danger");
+      el.runtimeBanner.classList.remove("ss-alert-warning", "hidden");
+      setText(el.runtimeBanner, placeholder);
+    }
+
+    if (el.quotaDailyFill) {
+      el.quotaDailyFill.style.width = "0%";
+      el.quotaDailyFill.classList.remove("warn", "danger");
+    }
+    if (el.quotaMinuteFill) {
+      el.quotaMinuteFill.style.width = "0%";
+      el.quotaMinuteFill.classList.remove("warn", "danger");
+    }
+    if (el.quotaDailyLabel) setText(el.quotaDailyLabel, placeholder);
+    if (el.quotaMinuteLabel) setText(el.quotaMinuteLabel, placeholder);
+  }
+
   /* ============================================================
      VIEW LIFECYCLE
      ============================================================ */
@@ -375,6 +407,10 @@
 
   async function init() {
     cacheElements();
+    if (!isRuntimeAvailable()) {
+      renderRuntimeDisconnected();
+      return;
+    }
     setFoundationStatus();
     await hydrateConfig();
     hydrateRuntimePlaceholder();
