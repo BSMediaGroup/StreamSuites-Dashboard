@@ -288,6 +288,11 @@
   }
 
   async function hydrateRuntime() {
+    if (window.__STREAMSUITES_RUNTIME_OFFLINE__) {
+      hydrateRuntimePlaceholder();
+      return;
+    }
+
     const snapshot = await window.StreamSuitesState?.loadRuntimeSnapshot?.({
       forceReload: true
     });
@@ -300,6 +305,11 @@
   }
 
   function startRuntimePolling() {
+    if (window.__STREAMSUITES_RUNTIME_OFFLINE__) {
+      hydrateRuntimePlaceholder();
+      return;
+    }
+
     if (window.__RUNTIME_AVAILABLE__ !== true) {
       if (!runtimePollingLogged) {
         console.info("[Dashboard] Runtime unavailable. Polling disabled.");

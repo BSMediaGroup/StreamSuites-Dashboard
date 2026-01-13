@@ -1,6 +1,20 @@
 (() => {
   "use strict";
 
+  /* SAFETY: ensure fetchWithTimeout always exists (SAFE MODE compatible) */
+  if (typeof window.fetchWithTimeout !== "function") {
+    window.fetchWithTimeout = async function (url, opts = {}, timeoutMs = 8000) {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeoutMs);
+
+      try {
+        return await fetch(url, { ...opts, signal: controller.signal });
+      } finally {
+        clearTimeout(id);
+      }
+    };
+  }
+
   const DEFAULT_STATE_ROOTS = [
     "./shared/state/",
     // Runtime repo fallback (read-only, GitHub raw)
@@ -12,7 +26,12 @@
   const STORAGE_KEY = "streamsuites.stateRootOverride";
 
   const RUNTIME_AVAILABILITY_FLAG = "__RUNTIME_AVAILABLE__";
+  const RUNTIME_OFFLINE_FLAG = "__STREAMSUITES_RUNTIME_OFFLINE__";
   const STATE_FETCH_TIMEOUT_MS = 1500;
+
+  /* Tracks which missing state files have already been logged this boot */
+  const _missingStateLogged = new Set();
+  const stateCache = {};
 
   const cache = {
     runtimeSnapshot: null,
@@ -70,6 +89,9 @@
   if (typeof window[RUNTIME_AVAILABILITY_FLAG] === "undefined") {
     window[RUNTIME_AVAILABILITY_FLAG] = false;
   }
+  if (typeof window[RUNTIME_OFFLINE_FLAG] === "undefined") {
+    window[RUNTIME_OFFLINE_FLAG] = window[RUNTIME_AVAILABILITY_FLAG] === false;
+  }
 
   let runtimeUnavailableLogged = false;
   let runtimeDetectedLogged = false;
@@ -77,6 +99,7 @@
   function markRuntimeAvailable() {
     if (window[RUNTIME_AVAILABILITY_FLAG] === true) return;
     window[RUNTIME_AVAILABILITY_FLAG] = true;
+    window[RUNTIME_OFFLINE_FLAG] = false;
     if (!runtimeDetectedLogged) {
       runtimeDetectedLogged = true;
       console.info("[Dashboard] Runtime detected via state JSON.");
@@ -86,6 +109,7 @@
   function markRuntimeUnavailable() {
     if (window[RUNTIME_AVAILABILITY_FLAG] === false) return;
     window[RUNTIME_AVAILABILITY_FLAG] = false;
+    window[RUNTIME_OFFLINE_FLAG] = true;
     if (!runtimeUnavailableLogged) {
       runtimeUnavailableLogged = true;
       console.info("[Dashboard] Runtime not available (static mode).");
@@ -201,6 +225,13 @@
   }
 
   async function loadStateJson(relativePath) {
+    if (
+      window[RUNTIME_OFFLINE_FLAG] === true &&
+      Object.prototype.hasOwnProperty.call(stateCache, relativePath)
+    ) {
+      return stateCache[relativePath];
+    }
+
     console.log("[BOOT:STATE:ENTER] loadStateJson", relativePath, performance.now());
     const roots = getConfiguredStateRoots();
     const attempts = roots.slice(0, 2);
@@ -212,11 +243,13 @@
       try {
         const res = await fetchWithTimeout(url, { cache: "no-store" });
         if (res.status === 404) {
-          console.warn(
-            "[BOOT:STATE:EXIT] loadStateJson 404",
-            relativePath,
-            performance.now()
-          );
+          if (!_missingStateLogged.has(relativePath)) {
+            console.info(
+              `[State][Offline] ${relativePath} not present (runtime offline or export not yet generated)`
+            );
+            _missingStateLogged.add(relativePath);
+          }
+          stateCache[relativePath] = null;
           return null;
         }
         if (!res.ok) continue;

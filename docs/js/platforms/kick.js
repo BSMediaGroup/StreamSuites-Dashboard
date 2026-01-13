@@ -285,6 +285,11 @@
   }
 
   async function hydrateRuntime() {
+    if (window.__STREAMSUITES_RUNTIME_OFFLINE__) {
+      hydrateRuntimePlaceholder();
+      return;
+    }
+
     const runtimeState = window.App?.state?.runtimeSnapshot;
 
     if (runtimeState?.fetchOnce && !runtimeState.getSnapshot?.()) {
@@ -314,6 +319,11 @@
   }
 
   function startRuntimePolling() {
+    if (window.__STREAMSUITES_RUNTIME_OFFLINE__) {
+      hydrateRuntimePlaceholder();
+      return;
+    }
+
     if (window.__RUNTIME_AVAILABLE__ !== true) {
       if (!runtimePollingLogged) {
         console.info("[Dashboard] Runtime unavailable. Polling disabled.");

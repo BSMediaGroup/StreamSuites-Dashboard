@@ -53,6 +53,13 @@
   }
 
   async function loadJobs() {
+    if (window.__STREAMSUITES_RUNTIME_OFFLINE__) {
+      if (hasRequiredElements()) {
+        renderRuntimeDisconnected();
+      }
+      return;
+    }
+
     if (!hasRequiredElements()) return;
 
     if (!isRuntimeAvailable()) {
