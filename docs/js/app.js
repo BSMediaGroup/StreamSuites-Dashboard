@@ -1,16 +1,20 @@
 // ==========================================================
-// StreamSuites SAFE MODE (Crash Containment Layer)
+// StreamSuites SAFE MODE (Hydration-Safe)
 // ==========================================================
 
 window.__STREAMSUITES_SAFE_MODE__ = true;
 console.warn("[SAFE MODE] Render loops restricted");
 
 // ----------------------------------------------------------
+// Internal guards
+// ----------------------------------------------------------
+const __SAFE_TIMEOUT_ZERO_LIMIT__ = 100;
+let __safeTimeoutZeroCount__ = 0;
+
+// ----------------------------------------------------------
 // requestAnimationFrame — HARD BLOCKED
-// Prevents render-loop starvation
 // ----------------------------------------------------------
 if (window.__STREAMSUITES_SAFE_MODE__) {
-  const _raf = window.requestAnimationFrame;
   window.requestAnimationFrame = function () {
     console.warn("[SAFE MODE] requestAnimationFrame blocked");
     return 0;
@@ -19,7 +23,6 @@ if (window.__STREAMSUITES_SAFE_MODE__) {
 
 // ----------------------------------------------------------
 // ResizeObserver — HARD BLOCKED
-// Prevents layout-triggered recursion
 // ----------------------------------------------------------
 if (window.__STREAMSUITES_SAFE_MODE__) {
   window.ResizeObserver = class {
@@ -31,7 +34,6 @@ if (window.__STREAMSUITES_SAFE_MODE__) {
 
 // ----------------------------------------------------------
 // MutationObserver — HARD BLOCKED
-// Prevents DOM self-mutation loops
 // ----------------------------------------------------------
 if (window.__STREAMSUITES_SAFE_MODE__) {
   window.MutationObserver = class {
@@ -44,14 +46,13 @@ if (window.__STREAMSUITES_SAFE_MODE__) {
 }
 
 // ----------------------------------------------------------
-// Timers — SELECTIVELY ALLOWED
-// Blocks zero-delay recursion, allows real work
+// Timers — HYDRATION SAFE
 // ----------------------------------------------------------
 if (window.__STREAMSUITES_SAFE_MODE__) {
   const _setInterval = window.setInterval;
   const _setTimeout = window.setTimeout;
 
-  // Allow only slow intervals (polling, refresh)
+  // Allow slow polling only
   window.setInterval = function (fn, t) {
     if (typeof t === "number" && t >= 5000) {
       return _setInterval(fn, t);
@@ -60,15 +61,20 @@ if (window.__STREAMSUITES_SAFE_MODE__) {
     return 0;
   };
 
-  // Block ONLY zero-delay recursion
+  // Allow LIMITED zero-delay timeouts (for hydration)
   window.setTimeout = function (fn, t) {
     if (t === 0) {
-      console.warn("[SAFE MODE] setTimeout(0) blocked");
+      if (__safeTimeoutZeroCount__ < __SAFE_TIMEOUT_ZERO_LIMIT__) {
+        __safeTimeoutZeroCount__++;
+        return _setTimeout(fn, 0);
+      }
+      console.warn("[SAFE MODE] setTimeout(0) blocked (limit reached)");
       return 0;
     }
     return _setTimeout(fn, t);
   };
 }
+
 
 /* ======================================================================
    StreamSuites™ Dashboard — app.js
