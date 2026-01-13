@@ -21,44 +21,44 @@
         }
       ]
     },
-	{
-	  "id": "two-repositories",
-	  "order": 2,
-	  "title": "The Repositories and Why They Exist",
-	  "entries": [
-		{
-		  "id": "repo-split",
-		  "order": 1,
-		  "consumer": {
-			"title": "Runtime, Dashboard, and Live Chat Launcher",
-			"body": "StreamSuites is organized into three repositories. The Runtime (StreamSuites) is the engine that performs all execution and state management. The Dashboard (StreamSuites-Dashboard) is a static, read-only interface for viewing system state and artifacts. The LiveChat / ChatReplay Launcher (StreamSuites-LiveChat-Launcher) is a small companion application used to launch chat replay and live chat viewer surfaces."
-		  },
-		  "developer": {
-			"title": "Authoritative Runtime with Read-Only Companion Surfaces",
-			"body": "The runtime repository is the single source of truth. It owns execution, canonical state, quotas, schedulers, triggers, platform workers, and deterministic exports. The dashboard repository is static and offline-first: it never runs bots, never mutates runtime state, drafts configuration locally via localStorage, validates against schemas, and renders runtime-exported JSON artifacts without live API calls or a backend. The LiveChat / ChatReplay Launcher repository is intentionally minimal and non-authoritative; it does not own state, does not issue commands, and exists solely to launch and present replay or live chat viewer surfaces that consume the same deterministic exports as the dashboard."
-		  }
-		}
-	  ]
-	},
-	{
-	  "id": "release-posture",
-	  "order": 3,
-	  "title": "Version Stage and Release Posture",
-	  "entries": [
-		{
-		  "id": "late-alpha",
-		  "order": 1,
-		  "consumer": {
-			"title": "Late Alpha Stage",
-			"body": "You’re in late alpha: the system works in meaningful ways, but reliability, observability, and the rules of the world are still being locked down before promising stability to external testers and future users. Read-only dashboards and galleries are usable today, while live controls remain intentionally off."
-		  },
-		  "developer": {
-			"title": "Alpha Versioning and Licensing",
-			"body": "The runtime is explicitly marked v0.2.3-alpha using semantic versioning with prerelease tags. Alpha indicates that breaking changes are still possible and contract permanence is not guaranteed. The dashboard mirrors runtime version metadata via docs/version.json and remains in lockstep with runtime releases. Licensing posture is Proprietary / All Rights Reserved under Brainstream Media Group."
-		  }
-		}
-	  ]
-	},
+    {
+      "id": "two-repositories",
+      "order": 2,
+      "title": "The Repositories and Why They Exist",
+      "entries": [
+        {
+          "id": "repo-split",
+          "order": 1,
+          "consumer": {
+            "title": "Runtime, Dashboard, and Live Chat Launcher",
+            "body": "StreamSuites is organized into three repositories. The Runtime (StreamSuites) is the engine that performs all execution and state management. The Dashboard (StreamSuites-Dashboard) is a static, read-only interface for viewing system state and artifacts. The LiveChat / ChatReplay Launcher (StreamSuites-LiveChat-Launcher) is a small companion application used to launch chat replay and live chat viewer surfaces."
+          },
+          "developer": {
+            "title": "Authoritative Runtime with Read-Only Companion Surfaces",
+            "body": "The runtime repository is the single source of truth. It owns execution, canonical state, quotas, schedulers, triggers, platform workers, and deterministic exports. The dashboard repository is static and offline-first: it never runs bots, never mutates runtime state, drafts configuration locally via localStorage, validates against schemas, and renders runtime-exported JSON artifacts without live API calls or a backend. The LiveChat / ChatReplay Launcher repository is intentionally minimal and non-authoritative; it does not own state, does not issue commands, and exists solely to launch and present replay or live chat viewer surfaces that consume the same deterministic exports as the dashboard."
+          }
+        }
+      ]
+    },
+    {
+      "id": "release-posture",
+      "order": 3,
+      "title": "Version Stage and Release Posture",
+      "entries": [
+        {
+          "id": "late-alpha",
+          "order": 1,
+          "consumer": {
+            "title": "Late Alpha Stage",
+            "body": "You’re in late alpha: the system works in meaningful ways, but reliability, observability, and the rules of the world are still being locked down before promising stability to external testers and future users. Read-only dashboards and galleries are usable today, while live controls remain intentionally off."
+          },
+          "developer": {
+            "title": "Alpha Versioning and Licensing",
+            "body": "The runtime is explicitly marked v0.2.3-alpha using semantic versioning with prerelease tags. Alpha indicates that breaking changes are still possible and contract permanence is not guaranteed. The dashboard mirrors runtime version metadata via docs/version.json and remains in lockstep with runtime releases. Licensing posture is Proprietary / All Rights Reserved under Brainstream Media Group."
+          }
+        }
+      ]
+    },
     {
       "id": "runtime-writes",
       "order": 4,
