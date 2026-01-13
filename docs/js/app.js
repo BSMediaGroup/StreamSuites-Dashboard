@@ -1,13 +1,26 @@
-window.__STREAMSUITES_SAFE_MODE__ = true;
-console.warn("[SAFE MODE] Render loops disabled");
+// ==========================================================
+// StreamSuites SAFE MODE (Crash Containment Layer)
+// ==========================================================
 
+window.__STREAMSUITES_SAFE_MODE__ = true;
+console.warn("[SAFE MODE] Render loops restricted");
+
+// ----------------------------------------------------------
+// requestAnimationFrame — HARD BLOCKED
+// Prevents render-loop starvation
+// ----------------------------------------------------------
 if (window.__STREAMSUITES_SAFE_MODE__) {
   const _raf = window.requestAnimationFrame;
   window.requestAnimationFrame = function () {
+    console.warn("[SAFE MODE] requestAnimationFrame blocked");
     return 0;
   };
 }
 
+// ----------------------------------------------------------
+// ResizeObserver — HARD BLOCKED
+// Prevents layout-triggered recursion
+// ----------------------------------------------------------
 if (window.__STREAMSUITES_SAFE_MODE__) {
   window.ResizeObserver = class {
     observe() {}
@@ -16,6 +29,10 @@ if (window.__STREAMSUITES_SAFE_MODE__) {
   };
 }
 
+// ----------------------------------------------------------
+// MutationObserver — HARD BLOCKED
+// Prevents DOM self-mutation loops
+// ----------------------------------------------------------
 if (window.__STREAMSUITES_SAFE_MODE__) {
   window.MutationObserver = class {
     observe() {}
@@ -26,14 +43,24 @@ if (window.__STREAMSUITES_SAFE_MODE__) {
   };
 }
 
+// ----------------------------------------------------------
+// Timers — SELECTIVELY ALLOWED
+// Blocks zero-delay recursion, allows real work
+// ----------------------------------------------------------
 if (window.__STREAMSUITES_SAFE_MODE__) {
   const _setInterval = window.setInterval;
+  const _setTimeout = window.setTimeout;
+
+  // Allow only slow intervals (polling, refresh)
   window.setInterval = function (fn, t) {
+    if (typeof t === "number" && t >= 5000) {
+      return _setInterval(fn, t);
+    }
     console.warn("[SAFE MODE] setInterval blocked", t);
     return 0;
   };
 
-  const _setTimeout = window.setTimeout;
+  // Block ONLY zero-delay recursion
   window.setTimeout = function (fn, t) {
     if (t === 0) {
       console.warn("[SAFE MODE] setTimeout(0) blocked");
@@ -46,7 +73,7 @@ if (window.__STREAMSUITES_SAFE_MODE__) {
 /* ======================================================================
    StreamSuites™ Dashboard — app.js
    Project: StreamSuites™
-   Version: v0.2.2-alpha
+   Version: v0.2.3-alpha
    Owner: Daniel Clancy
    Copyright: © 2026 Brainstream Media Group
    Central bootstrap + lightweight view router + storage layer
