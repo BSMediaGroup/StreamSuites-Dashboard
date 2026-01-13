@@ -15,56 +15,56 @@
     "id": "admin-dashboard",
     "order": 2,
     "title": "Administrator Dashboard UI",
-    "percent": 68,
-    "meta": "68% · ConfigState snapshots + data parity",
+    "percent": 75,
+    "meta": "75% · Export parity + observability locked",
     "status": "active",
-    "description": "The administrator dashboard provides a static, read-only observability surface for runtime exports, configuration state, and public gallery parity. It is intentionally non-interactive and designed for debugging, inspection, and system-wide visibility without issuing live commands; alpha coverage is focused on export fidelity over controls.",
+    "description": "The administrator dashboard provides a static, read-only observability surface for runtime exports, configuration state, and public gallery parity. It is intentionally non-interactive and designed for debugging, inspection, and system-wide visibility without issuing live commands; alpha coverage is focused on export fidelity, data integrity, and narrative accuracy over controls.",
     "icon": "./assets/icons/ui/uiscreen.svg",
-    "tooltip": "68% · 65–70% Locked — Static, export-driven UI aligned with runtime observability."
+    "tooltip": "75% · 70–80% Locked — Export parity, data surfaces, and About/roadmap alignment are stable; live controls intentionally absent."
   },
   {
     "id": "creator-dashboard",
     "order": 3,
     "title": "Creator Dashboard UI",
-    "percent": 60,
-    "meta": "60% · Overhauled home + draft exports",
+    "percent": 65,
+    "meta": "65% · Overhauled home + schema-aligned draft exports",
     "status": "partial",
-    "description": "Creator-facing flows expose profiles, platform toggles, triggers, overlays, and module scaffolding in a schema-aligned layout. The home surface is fully overhauled with gallery links, platform summaries, and overlay readiness callouts. Current alpha behavior is draft-only: forms mirror runtime schemas and output exports for review, but apply/write paths remain disabled and require manual import by operators.",
+    "description": "Creator-facing flows expose profiles, platform toggles, triggers, overlays, and module scaffolding in a schema-aligned layout. The home surface is fully overhauled with gallery links, platform summaries, and overlay readiness callouts. Current alpha behavior remains draft-only: forms mirror runtime schemas and output exports for review, but apply/write paths remain disabled and require manual import by operators.",
     "icon": "./assets/icons/ui/uiscreen.svg",
-    "tooltip": "60% · 60–65% Integrated — Overhauled creator surface with draft exports; live apply remains off."
+    "tooltip": "65% · 60–70% Integrated — Creator surface mature and schema-aligned; live apply/write paths intentionally disabled."
   },
   {
     "id": "creator-dashboard-parity",
     "order": 3.5,
     "title": "Creator Dashboard Parity",
-    "percent": 20,
-    "meta": "20% · Planned · Foundation",
-    "status": "planned",
+    "percent": 40,
+    "meta": "40% · Read-only parity scaffolding",
+    "status": "partial",
     "description": "Planned foundation for creator parity that keeps the dashboard read-only while mirroring admin data slices. The focus is on context-aware rendering, scoped platform visibility, and inert permissions scaffolding without enabling writes or live mutations.",
     "icon": "./assets/icons/ui/uiscreen.svg",
-    "tooltip": "Planned · Foundation — Read-only creator parity scaffolding without mutations."
+    "tooltip": "40% · 35–45% In Progress — Context-aware rendering and inert parity scaffolding in place; no mutations enabled."
   },
   {
     "id": "public-interface",
     "order": 4,
     "title": "Public Interface & Gallery Surface",
-    "percent": 58,
-    "meta": "58% · Read-only galleries + overlay docs",
+    "percent": 62,
+    "meta": "62% · Read-only galleries + overlay docs",
     "status": "active",
     "description": "The public interface exposes runtime-derived artifacts such as clips, polls, tallies, scoreboards, and replay views through static, read-only pages. All content is sourced exclusively from deterministic runtime exports, ensuring parity, safety, and zero live execution. Gallery and detail routes are live; continued work targets navigation cohesion and cross-module linking.",
     "icon": "./assets/icons/ui/globe.svg",
-    "tooltip": "58% · 55–60% Integrated — Public pages render authoritative runtime exports with no live logic and document overlay readiness."
+    "tooltip": "62% · 60–65% Integrated — Public pages render authoritative runtime exports with improving navigation cohesion."
   },
   {
     "id": "discord-client",
     "order": 5,
     "title": "Discord Client",
-    "percent": 32,
-    "meta": "32% · Presence scaffold + heartbeat plan",
+    "percent": 40,
+    "meta": "40% · Presence scaffold + lifecycle separation",
     "status": "partial",
     "description": "The Discord adapter targets bot presence, notifications, and command parity with other platforms. Foundations exist for heartbeat visibility and quota-safe connection management, but command wiring and export alignment are still structural; no dashboard-facing live controls are enabled.",
     "icon": "./assets/icons/discord-silver.svg",
-    "tooltip": "32% · 30–35% Scaffolded — Presence scaffolding exists; command parity and exports remain in progress."
+    "tooltip": "40% · 35–45% Scaffolded — Presence, lifecycle separation, and health signaling established; command parity pending."
   },
   {
     "id": "rumble-sse",
@@ -81,12 +81,12 @@
     "id": "twitch-runtime",
     "order": 7,
     "title": "Twitch Chat Runtime",
-    "percent": 38,
-    "meta": "38% · IRC ingestion path in test",
+    "percent": 45,
+    "meta": "45% · IRC ingestion + export alignment",
     "status": "partial",
     "description": "The Twitch runtime path is designed around IRC ingestion, trigger matching, and export-ready normalization. Controlled ingestion and normalization paths exist, but exports are still being mapped to dashboard/public expectations and quota enforcement parity is pending before broader use.",
     "icon": "./assets/icons/twitch-0.svg",
-    "tooltip": "38% · 35–40% Functional — Ingestion runs in test; export alignment and quotas still gating release."
+    "tooltip": "45% · 40–50% Functional — Ingestion stable in test; export parity and quotas still gating release."
   },
   {
     "id": "youtube-runtime",
@@ -103,12 +103,12 @@
     "id": "kick-foundation",
     "order": 8.5,
     "title": "Kick Platform Foundation",
-    "percent": 22,
-    "meta": "22% · Scaffolded / in-progress",
+    "percent": 30,
+    "meta": "30% · Scaffolded dashboard + hydration paths",
     "status": "partial",
     "description": "Kick now has first-class dashboard scaffolding with dedicated views and settings rows. Dashboards stay read-only and hydrate from shared/state/runtime_snapshot.json when present, falling back to bundled docs/data/runtime_snapshot.json. Runtime ingestion remains in planning while connected-mode clarity keeps controls locked.",
     "icon": "./assets/icons/kick-silver.svg",
-    "tooltip": "22% · 20–25% Scaffolded — Dashboard and settings visible; runtime ingest/export still in progress and connected-mode is read-only."
+    "tooltip": "30% · 25–35% Scaffolded — Dashboard and hydration paths established; runtime ingest still pending."
   },
   {
     "id": "pilled-ingest",
@@ -147,46 +147,46 @@
     "id": "chat-abstraction",
     "order": 11,
     "title": "Cross-Platform Chat Abstraction",
-    "percent": 32,
-    "meta": "32% · Normalization drafts + export targets",
+    "percent": 40,
+    "meta": "40% · Normalization rules + export alignment",
     "status": "partial",
     "description": "A cross-platform layer will normalize chat events across Rumble, Twitch, and YouTube so triggers, scoreboards, and moderation tools work uniformly. Draft normalization rules and export targets exist, but runtime enforcement and full parity are still structural with no live dashboard wiring yet.",
     "icon": "./assets/icons/ui/automation.svg",
-    "tooltip": "32% · 30–35% Scaffolded — Draft normalization exists; enforcement/export cadence still in build-out."
+    "tooltip": "40% · 35–45% In Progress — Normalization rules established; enforcement and cadence still expanding."
   },
   {
     "id": "telemetry-exports",
     "order": 12,
     "title": "Telemetry Export Surface",
-    "percent": 35,
-    "meta": "35% · Draft health + quota exports",
+    "percent": 45,
+    "meta": "45% · Health + quota exports in use",
     "status": "partial",
     "description": "Telemetry exports are intended to expose health, quota, and heartbeat signals the dashboard can graph without live calls. Scaffolding exists with limited alpha feeds; broader signals and automated cadences remain in development before dashboards shift from placeholder charts to live exports.",
     "icon": "./assets/icons/ui/automation.svg",
-    "tooltip": "35% · 35–40% Functional — Draft exports exist; broader health coverage and cadencing still pending."
+    "tooltip": "45% · 40–50% Functional — Health and quota exports active; cadence and depth still expanding."
   },
   {
     "id": "schema-contract",
     "order": 13,
     "title": "Dashboard ↔ Runtime Schema Contract",
-    "percent": 64,
-    "meta": "64% · Deterministic exports + replay/overlay shapes",
+    "percent": 70,
+    "meta": "70% · Deterministic exports + replay/overlay shapes",
     "status": "active",
     "description": "The schema contract defines exactly how the dashboard consumes exported JSON for creators, platforms, public galleries, overlays, and telemetry. It guarantees deterministic imports/exports for current alpha modules (clips, polls, tallies, scoreboards) and incorporates replay/overlay shapes. Coverage is expanding alongside new runtime drops to keep dashboards, public pages, and OBS browser sources in lockstep.",
     "icon": "./assets/icons/ui/options.svg",
-    "tooltip": "64% · 60–65% Integrated — Contracts enforced for current modules with replay/overlay coverage; expansion continues per drop."
+    "tooltip": "70% · 65–75% Integrated — Core contracts enforced; expansion continues with new runtime drops."
   },
-    {
-      "id": "chat-replay",
-      "order": 14,
-      "title": "Unified Live Chat Replay Module",
-      "percent": 85,
-      "meta": "85% · UI complete preview; runtime hydration not started",
-      "status": "partial",
-      "description": "Unified Chat Replay UI is UI COMPLETE / PREVIEW ONLY. Live Chat Window is UI COMPLETE / NO RUNTIME. OBS / Browser Source Overlay is UI COMPLETE / NO RUNTIME. Browser Extension (Live Chat Replay) is UI COMPLETE / RUNTIME PENDING. Multi-platform badge rendering is COMPLETE. Avatar fallback & identity handling is COMPLETE. Runtime hydration is NOT STARTED. Export streams remain draft-only and are not yet rendering live data on dashboard or public pages.",
-      "icon": "./assets/icons/ui/extension.svg",
-      "tooltip": "85% · UI complete previews — Replay/live windows, OBS/browser overlays, and browser extension mocks are UI-complete previews with badge + avatar fidelity; runtime hydration is not started."
-    },
+  {
+    "id": "chat-replay",
+    "order": 14,
+    "title": "Unified Live Chat Replay Module",
+    "percent": 85,
+    "meta": "85% · UI complete preview; runtime hydration not started",
+    "status": "partial",
+    "description": "Unified Chat Replay UI is UI COMPLETE / PREVIEW ONLY. Live Chat Window is UI COMPLETE / NO RUNTIME. OBS / Browser Source Overlay is UI COMPLETE / NO RUNTIME. Browser Extension (Live Chat Replay) is UI COMPLETE / RUNTIME PENDING. Multi-platform badge rendering is COMPLETE. Avatar fallback & identity handling is COMPLETE. Runtime hydration is NOT STARTED. Export streams remain draft-only and are not yet rendering live data on dashboard or public pages.",
+    "icon": "./assets/icons/ui/extension.svg",
+    "tooltip": "85% · UI complete previews — Replay/live windows, OBS/browser overlays, and browser extension mocks are UI-complete previews with badge + avatar fidelity; runtime hydration is not started."
+  },
   {
     "id": "admin-desktop-app",
     "order": 15,
@@ -202,12 +202,12 @@
     "id": "scoreboards",
     "order": 16,
     "title": "Scoreboards",
-    "percent": 45,
-    "meta": "45% · Aggregation shapes + public gallery",
+    "percent": 55,
+    "meta": "55% · Aggregation shapes + public gallery",
     "status": "partial",
     "description": "Scoreboards aggregate trigger outputs and interaction tallies into public-facing leaderboards. Export shapes and public gallery shells exist and render read-only data; runtime-side aggregation cadence and reset logic are limited to controlled runs and need expansion before routine automation.",
     "icon": "./assets/icons/ui/widget.svg",
-    "tooltip": "45% · 40–50% Functional — Aggregation shapes exist; cadence and resets still being widened."
+    "tooltip": "55% · 50–60% Functional — Aggregation shapes solid; cadence and resets widening."
   },
   {
     "id": "clips",
