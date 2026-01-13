@@ -1,3 +1,65 @@
-docs/assets/logos/Thumbs.db
-docs/assets/icons/ui/Thumbs.db
+# =============================
+# OS / Filesystem Artifacts
+# =============================
 
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+
+# =============================
+# Editor / IDE Noise
+# =============================
+
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =============================
+# Runtime / Temp
+# =============================
+
+*.log
+*.tmp
+*.cache
+
+# =============================
+# Python
+# =============================
+
+__pycache__/
+*.py[cod]
+.env
+.venv/
+venv/
+
+# =============================
+# Node / Tooling (if ever used)
+# =============================
+
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =============================
+# Build / Distribution
+# =============================
+
+dist/
+build/
+
+# =============================
+# Safety: never ignore docs content
+# =============================
+
+!docs/**
