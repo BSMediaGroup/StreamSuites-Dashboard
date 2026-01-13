@@ -2,25 +2,25 @@
   "version": "0.2.3-alpha",
   "lastUpdated": "2026-01-14",
   "sections": [
-	{
-	  "id": "about-design-goals",
-	  "order": 26,
-	  "title": "Design Goals of the About System",
-	  "entries": [
-		{
-		  "id": "about-goals",
-		  "order": 1,
-		  "consumer": {
-			"title": "Clear Explanations Without Technical Burden",
-			"body": "The About section should explain what StreamSuites is, how it works, and why it exists without forcing readers to understand code, infrastructure, or platform quirks."
-		  },
-		  "developer": {
-			"title": "Centralized, Accurate, Dual-Audience Documentation",
-			"body": "The About system must cover the entire project scope including the runtime, the static dashboard, and companion interface surfaces (including the LiveChat/ChatReplay Launcher); remain accurate as features evolve; support dual-audience reading; avoid duplication across public pages, dashboard pages, and docs; and be centrally managed so updates are not scattered across HTML files. It also needs to restate system guarantees such as deterministic exports, read-only dashboards, and the line between replay scaffolds and live ingestion. This disqualifies hardcoded content and justifies a single JSON source of truth."
-		  }
-		}
-	  ]
-	},
+    {
+      "id": "about-design-goals",
+      "order": 26,
+      "title": "Design Goals of the About System",
+      "entries": [
+        {
+          "id": "about-goals",
+          "order": 1,
+          "consumer": {
+            "title": "Clear Explanations Without Technical Burden",
+            "body": "The About section should explain what StreamSuites is, how it works, and why it exists without forcing readers to understand code, infrastructure, or platform quirks."
+          },
+          "developer": {
+            "title": "Centralized, Accurate, Dual-Audience Documentation",
+            "body": "The About system must cover the entire project scope including the runtime, the static dashboard, and companion interface surfaces (including the LiveChat/ChatReplay Launcher); remain accurate as features evolve; support dual-audience reading; avoid duplication across public pages, dashboard pages, and docs; and be centrally managed so updates are not scattered across HTML files. It also needs to restate system guarantees such as deterministic exports, read-only dashboards, and the line between replay scaffolds and live ingestion. This disqualifies hardcoded content and justifies a single JSON source of truth."
+          }
+        }
+      ]
+    },
     {
       "id": "about-json-driven",
       "order": 27,
