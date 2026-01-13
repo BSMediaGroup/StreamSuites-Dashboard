@@ -310,6 +310,13 @@
   }
 
   async function hydrateRuntimeState(forceReload = false) {
+    if (window.__STREAMSUITES_RUNTIME_OFFLINE__) {
+      runtimeSnapshot = null;
+      renderPlatformPolling();
+      renderRestartQueue();
+      return;
+    }
+
     try {
       runtimeSnapshot =
         (await window.ConfigState?.loadRuntimeSnapshot?.({ forceReload })) || null;
@@ -383,6 +390,11 @@
   }
 
   async function hydrateDiscordRuntimeConfig() {
+    if (window.__STREAMSUITES_RUNTIME_OFFLINE__) {
+      runtimeDiscordConfig = { guilds: {} };
+      return;
+    }
+
     const loader = window.StreamSuitesState?.loadStateJson;
     if (typeof loader !== "function") {
       runtimeDiscordConfig = { guilds: {} };

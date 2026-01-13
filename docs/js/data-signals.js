@@ -521,6 +521,10 @@
   }
 
   async function hydrateSection(configs, groupKey) {
+    if (window.__STREAMSUITES_RUNTIME_OFFLINE__) {
+      return;
+    }
+
     let total = 0;
     for (const [key, cfg] of Object.entries(configs)) {
       const data = await fetchJson(cfg.path);

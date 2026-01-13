@@ -140,6 +140,20 @@
      ------------------------------------------------------------ */
 
   async function hydrateCreators(forceReload = false) {
+    if (window.__STREAMSUITES_RUNTIME_OFFLINE__) {
+      try {
+        creators =
+          (await window.ConfigState?.loadCreators({ forceReload })) || [];
+      } catch (err) {
+        console.warn("[Creators] Failed to load creators, using empty list", err);
+        creators = [];
+      }
+
+      refreshVisibleCreators();
+      renderCreators();
+      return;
+    }
+
     try {
       creators =
         (await window.ConfigState?.loadCreators({ forceReload })) || [];
