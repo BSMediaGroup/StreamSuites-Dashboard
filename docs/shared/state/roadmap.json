@@ -119,13 +119,6 @@
       "description": "WinForms Desktop Admin now ships locally with filesystem access and runtime start/stop controls; operator tooling is moving toward becoming the primary admin surface with continued hardening in progress."
     },
     {
-      "id": "desktop-admin-inline-logs",
-      "title": "Desktop Admin inline log viewer",
-      "status": "complete",
-      "progress": 100,
-      "description": "Desktop Admin now supports managing multiple runtime processes with inline stdout/stderr log viewing. The log viewer is intentionally read-only (not a terminal emulator), with an “Open in external terminal” handoff for interactive troubleshooting."
-    },
-    {
       "id": "path-configuration-groundwork",
       "title": "Path configuration groundwork",
       "status": "active",
