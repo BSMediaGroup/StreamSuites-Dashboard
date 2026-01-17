@@ -253,8 +253,6 @@ StreamSuites-Dashboard/
 │   │   ├── about_part1_core.json
 │   │   ├── about_part2_platforms_interfaces.json
 │   │   └── about_part3_about_system_spec.json
-│   ├── about.html
-│   ├── accessibility.html
 │   ├── assets
 │   │   ├── backgrounds
 │   │   │   ├── .gitkeep
@@ -371,10 +369,8 @@ StreamSuites-Dashboard/
 │   │       ├── daniel.png
 │   │       ├── hotdog.jpg
 │   │       └── streamsuites.jpg
-│   ├── changelog.html
 │   ├── clips
 │   │   └── detail.html
-│   ├── clips.html
 │   ├── css
 │   │   ├── base.css
 │   │   ├── components.css
@@ -410,7 +406,6 @@ StreamSuites-Dashboard/
 │   │       ├── errors.json
 │   │       ├── events.json
 │   │       └── rates.json
-│   ├── favicon.ico
 │   ├── home.html
 │   ├── index.html
 │   ├── js
@@ -461,31 +456,26 @@ StreamSuites-Dashboard/
 │   │       ├── standalone-guard.js
 │   │       ├── version-stamp.js
 │   │       └── versioning.js
-│   ├── livechat/
-│   |   ├── index.html
-│   |   ├── favicon.ico
-│   |   ├── partials/
-│   |   │   ├── footer_live.html
-│   |   │   ├── footer_replay.html
-│   |   │   ├── theme_menu.html
-│   |   │   └── theme_selector.html
-│   |   └── static/
-│   |       ├── chat.css
-│   |       ├── chat_live_input.css
-│   |       └── themes/
-│   |           ├── theme-default.css
-│   |           ├── theme-midnight.css
-│   |           └── theme-slate.css
-│   ├── lander.html
+│   ├── livechat
+│   │   ├── index.html
+│   │   ├── favicon.ico
+│   │   ├── partials
+│   │   │   ├── footer_live.html
+│   │   │   ├── footer_replay.html
+│   │   │   ├── theme_menu.html
+│   │   │   └── theme_selector.html
+│   │   └── static
+│   │       ├── chat.css
+│   │       ├── chat_live_input.css
+│   │       └── themes
+│   │           ├── theme-default.css
+│   │           ├── theme-midnight.css
+│   │           └── theme-slate.css
 │   ├── polls
 │   │   ├── detail.html
 │   │   └── results.html
-│   ├── polls.html
-│   ├── postmortem.html
-│   ├── privacy.html
 │   ├── scoreboards
 │   │   └── detail.html
-│   ├── scoreboards.html
 │   ├── shared
 │   │   ├── state
 │   │   │   ├── admin
@@ -504,9 +494,9 @@ StreamSuites-Dashboard/
 │   │   │   ├── runtime_snapshot.json
 │   │   │   ├── scoreboards.json
 │   │   │   ├── tallies.json
-│   │   │   ├── telemetry
-│   │   │   │   ├── errors.json
-│   │   │   │   ├── events.json
+│   │   │   └── telemetry
+│   │   │       ├── errors.json
+│   │   │       ├── events.json
 │   │   │   │   └── rates.json
 │   │   └── suspension
 │   │       ├── suspension-banner.css
@@ -518,7 +508,6 @@ StreamSuites-Dashboard/
 │   │       └── overview.html
 │   ├── tallies
 │   │   └── detail.html
-│   ├── tallies.html
 │   ├── tools
 │   │   ├── index.html
 │   │   └── views
