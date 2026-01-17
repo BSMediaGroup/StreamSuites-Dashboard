@@ -19,8 +19,10 @@ The dashboard loads snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progre
 
 ## Version & Ownership
 
-- **Current version:** StreamSuites™ `v0.2.3-alpha` (read from `docs/version.json`).
-- **Build:** Runtime-stamped build identifier (read from `docs/version.json`).
+- **Current version:** StreamSuites™ `v0.2.3-alpha` (read from `version.json`).
+- **Build:** Runtime-stamped build identifier (read from `version.json`).
+- **Version authority:** This admin dashboard is the authoritative source for version/build metadata and publishes `version.json`.
+- **Downstream consumption:** Public and Creator dashboards fetch `https://admin.streamsuites.app/version.json` remotely; this is intentional and required.
 - **Dashboard role:** Admin-authoritative for configuration and runtime control; consumes runtime exports for operational visibility.
 - **Licensing:** Proprietary • All Rights Reserved • © 2026 Brainstream Media Group.
 - **Owner:** Daniel Clancy.
@@ -237,6 +239,7 @@ StreamSuites-Dashboard/
 ├── DASHBOARD_AUDIT_REPORT.md
 ├── LICENSE
 ├── README.md
+├── version.json
 ├── changelog
 │   └── changelog.runtime.json
 ├── dev-notes
@@ -514,7 +517,6 @@ StreamSuites-Dashboard/
 │   │       ├── automation.html
 │   │       ├── overview.html
 │   │       └── studio.html
-│   ├── version.json
 │   └── views
 │       ├── about.html
 │       ├── design.html

@@ -12,33 +12,24 @@
   const Versioning = {
     _cache: null,
 
-    resolveBasePath() {
-      try {
-        const parts = window.location.pathname.split("/").filter(Boolean);
-        if (!parts.length) return "";
-        const docsIndex = parts.indexOf("docs");
-        if (docsIndex === -1) {
-          return `/${parts[0]}`;
-        }
-
-        const rootParts = parts.slice(0, docsIndex + 1);
-        return `/${rootParts.join("/")}`;
-      } catch (err) {
-        console.warn("[Versioning] Failed to resolve base path", err);
-        return "";
-      }
-    },
-
     resolveVersionUrl() {
-      const basePath = this.resolveBasePath();
-      return `${basePath || ""}/version.json`.replace(/\/+/g, "/");
+      const meta =
+        document.querySelector('meta[name="streamsuites-version-url"]')?.content || "";
+      const globalOverride =
+        window.StreamSuitesVersionUrl || window.__STREAMSUITES_VERSION_URL__ || "";
+      const configured = (globalOverride || meta || "").trim();
+      return configured || "https://admin.streamsuites.app/version.json";
     },
 
     async loadVersion() {
       if (this._cache) return this._cache;
 
       const url = this.resolveVersionUrl();
-      this._cache = fetch(url, { cache: "no-store" })
+      this._cache = fetch(url, {
+        cache: "no-store",
+        mode: "cors",
+        credentials: "omit"
+      })
         .then((res) => {
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           return res.json();
