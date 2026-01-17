@@ -1,7 +1,6 @@
 /* ======================================================================
    StreamSuites™ Dashboard — Canonical About Data Loader
    Project: StreamSuites™
-   Version: v0.2.2-alpha
    Owner: Daniel Clancy
    Copyright: © 2026 Brainstream Media Group
    ====================================================================== */
@@ -117,10 +116,10 @@
         continue;
       }
 
-      if (!data.version || !Array.isArray(data.sections)) {
+      if (!Array.isArray(data.sections)) {
         result.errors.push({
           source,
-          message: `${source} is missing required fields (version, sections[])`
+          message: `${source} is missing required fields (sections[])`
         });
         continue;
       }

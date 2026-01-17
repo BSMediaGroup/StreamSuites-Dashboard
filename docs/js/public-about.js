@@ -3,7 +3,6 @@
 /* ======================================================================
    StreamSuites™ Public — About Page (Manifest-driven)
    Project: StreamSuites™
-   Version: v0.2.2-alpha
    Owner: Daniel Clancy
    Copyright: © 2026 Brainstream Media Group
    ====================================================================== */
@@ -264,21 +263,19 @@
     if (!window.Versioning) return;
 
     Versioning.loadVersion().then((info) => {
-      if (!info) return;
-
       const ownerEl = document.getElementById("public-about-owner-meta");
-      if (ownerEl && info.owner) {
-        ownerEl.textContent = info.owner;
+      if (ownerEl) {
+        ownerEl.textContent = info?.owner || "Unavailable";
       }
 
       const copyrightEl = document.getElementById("public-about-copyright-meta");
-      if (copyrightEl && info.copyright) {
-        copyrightEl.textContent = info.copyright;
+      if (copyrightEl) {
+        copyrightEl.textContent = info?.copyright || "Unavailable";
       }
 
       const buildEl = document.getElementById("public-about-build-meta");
       if (buildEl) {
-        buildEl.textContent = info.build || "Unknown";
+        buildEl.textContent = info?.build || "Unavailable";
       }
 
       const versionEl = document.getElementById("public-about-version-meta");
