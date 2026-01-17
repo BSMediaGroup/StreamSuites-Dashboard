@@ -99,6 +99,48 @@
     }
   }
 
+  function normalizeSessionPayload(payload) {
+    if (!payload || typeof payload !== "object") {
+      return { authenticated: false };
+    }
+
+    const email =
+      typeof payload.email === "string"
+        ? payload.email
+        : typeof payload.user?.email === "string"
+          ? payload.user.email
+          : "";
+
+    const role =
+      typeof payload.role === "string"
+        ? payload.role.trim().toLowerCase()
+        : typeof payload.user?.role === "string"
+          ? payload.user.role.trim().toLowerCase()
+          : null;
+
+    if (role !== "admin") {
+      return { authenticated: false };
+    }
+
+    return {
+      authenticated: true,
+      email: email || "Administrator",
+      role: "admin",
+      tier: payload.tier || payload.user?.tier || "OPEN"
+    };
+  }
+
+  function normalizeRole(payload) {
+    if (!payload || typeof payload !== "object") return null;
+    if (typeof payload.role === "string") {
+      return payload.role.trim().toLowerCase();
+    }
+    if (typeof payload.user?.role === "string") {
+      return payload.user.role.trim().toLowerCase();
+    }
+    return null;
+  }
+
   function markAuthorized(payload) {
     gate.status = "authorized";
     gate.shouldBlock = false;
@@ -193,18 +235,16 @@
       return { status: "unavailable", error: err };
     }
 
-    const authenticated = payload?.authenticated === true;
-    const role = payload?.role;
-
-    if (!authenticated) {
+    const normalized = normalizeSessionPayload(payload);
+    if (!normalized.authenticated) {
+      const role = normalizeRole(payload);
+      if (role && role !== AUTHORIZED_ROLE) {
+        return { status: "forbidden", payload };
+      }
       return { status: "unauthenticated", payload };
     }
 
-    if (role !== AUTHORIZED_ROLE) {
-      return { status: "forbidden", payload };
-    }
-
-    return { status: "authorized", payload };
+    return { status: "authorized", payload: normalized };
   }
 
   async function authorize({ reason = "initial" } = {}) {
