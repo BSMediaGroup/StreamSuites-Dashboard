@@ -29,6 +29,65 @@ body {
 }
 
 /* ------------------------------
+   Admin Gate (Hard Authorization)
+   ------------------------------ */
+
+html.admin-gate-pending #app,
+html.admin-gate-denied #app,
+html.admin-gate-unavailable #app {
+  display: none;
+}
+
+#admin-gate-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: var(--bg-root, #0e0f12);
+  color: var(--text-primary, #f5f5f5);
+  z-index: 2000;
+}
+
+#admin-gate-screen .admin-gate-card {
+  max-width: 520px;
+  width: 100%;
+  padding: 28px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+  background: rgba(18, 20, 24, 0.96);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+#admin-gate-screen .admin-gate-title {
+  font-size: 1.2rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+#admin-gate-screen .admin-gate-message {
+  font-size: 0.95rem;
+  opacity: 0.85;
+  line-height: 1.5;
+}
+
+#admin-gate-screen .admin-gate-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ------------------------------
    Snapshot Health Banner
    ------------------------------ */
 

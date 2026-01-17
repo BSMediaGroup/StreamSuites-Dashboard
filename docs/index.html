@@ -5,7 +5,7 @@
 <!-- Owner: Daniel Clancy                                                  -->
 <!-- Copyright: © 2026 Brainstream Media Group                             -->
 <!-- ===================================================================== -->
-<html lang="en">
+<html lang="en" class="admin-gate-pending">
 <head>
   <meta charset="UTF-8" />
   <title>StreamSuites™ Admin Dashboard</title>
@@ -412,94 +412,130 @@
 
   </div>
 
-  <!-- Core Scripts -->
-  <script src="./js/utils/standalone-guard.js"></script>
-  <script src="./js/admin-auth.js"></script>
-  <script src="./js/utils/versioning.js"></script>
-  <script src="./js/utils/version-stamp.js"></script>
-  <script src="./js/utils/about-data.js"></script>
-  <script src="./js/app.js"></script>
-  <script src="./js/auth.js"></script>
-  <script src="./js/discord-guild.js"></script>
-  <script src="./js/utils/search-pagination.js"></script>
-  <script src="./js/state.js"></script>
-  <script src="./js/telemetry.js"></script>
-  <script src="./js/platforms.js"></script>
-  <script src="./js/creators.js"></script>
-  <script src="./js/settings.js"></script>
-  <script src="./js/jobs.js"></script>
-  <script src="./js/clips.js"></script>
-  <script src="./js/data-signals.js"></script>
-
-  <script src="./js/overview.js"></script>
-  <script src="./js/about.js"></script>
-  <script src="./js/updates.js"></script>
-
-  <script src="./js/platforms/youtube.js"></script>
-  <script src="./js/platforms/twitch.js"></script>
-  <script src="./js/platforms/discord.js"></script>
-  <script src="./js/platforms/kick.js"></script>
-  <script src="./js/platforms/pilled.js"></script>
+  <!-- Core Scripts (Loaded after Admin Gate) -->
+  <script src="./js/admin-gate.js"></script>
+  <script>
+    window.StreamSuitesAdminGate?.bootstrap({
+      scripts: [
+        "./js/utils/standalone-guard.js",
+        "./js/utils/versioning.js",
+        "./js/utils/version-stamp.js",
+        "./js/utils/about-data.js",
+        "./js/app.js",
+        "./js/auth.js",
+        "./js/discord-guild.js",
+        "./js/utils/search-pagination.js",
+        "./js/state.js",
+        "./js/telemetry.js",
+        "./js/platforms.js",
+        "./js/creators.js",
+        "./js/settings.js",
+        "./js/jobs.js",
+        "./js/clips.js",
+        "./js/data-signals.js",
+        "./js/overview.js",
+        "./js/about.js",
+        "./js/updates.js",
+        "./js/platforms/youtube.js",
+        "./js/platforms/twitch.js",
+        "./js/platforms/discord.js",
+        "./js/platforms/kick.js",
+        "./js/platforms/pilled.js"
+      ]
+    });
+  </script>
 
   <!-- Minimal Status Wiring -->
   <script>
     (function () {
-      if (window.StreamSuitesDashboardGuard?.shouldBlock) return;
-      const statusEl = document.getElementById("app-status");
-      if (!statusEl) return;
+      function initStatus() {
+        const statusEl = document.getElementById("app-status");
+        if (!statusEl) return;
 
-      function setActive() {
-        statusEl.textContent = "● active";
-        statusEl.classList.remove("idle");
-        statusEl.classList.add("active");
+        function setActive() {
+          statusEl.textContent = "● active";
+          statusEl.classList.remove("idle");
+          statusEl.classList.add("active");
+        }
+
+        window.addEventListener("hashchange", setActive);
+        document.addEventListener("click", (e) => {
+          if (e.target.closest("[data-view]")) {
+            setActive();
+          }
+        });
       }
 
-      window.addEventListener("hashchange", setActive);
-      document.addEventListener("click", (e) => {
-        if (e.target.closest("[data-view]")) {
-          setActive();
-        }
-      });
+      if (window.StreamSuitesDashboardGuard?.shouldBlock) {
+        window.addEventListener(
+          "streamsuites:admin-auth",
+          (event) => {
+            if (event?.detail?.authorized) {
+              initStatus();
+            }
+          },
+          { once: true }
+        );
+        return;
+      }
+
+      initStatus();
     })();
   </script>
   <script>
     (function () {
-      if (window.StreamSuitesDashboardGuard?.shouldBlock) return;
-      const launch = document.getElementById("livechat-launch");
-      if (!launch) return;
+      function initLiveChat() {
+        const launch = document.getElementById("livechat-launch");
+        if (!launch) return;
 
-      const params = new URLSearchParams(window.location.search);
-      const paramUrl = params.get("livechatUrl");
-      const metaUrl = document
-        .querySelector('meta[name="streamsuites-livechat-url"]')
-        ?.getAttribute("content");
+        const params = new URLSearchParams(window.location.search);
+        const paramUrl = params.get("livechatUrl");
+        const metaUrl = document
+          .querySelector('meta[name="streamsuites-livechat-url"]')
+          ?.getAttribute("content");
 
-      const configured =
-        (typeof paramUrl === "string" && paramUrl.trim()) ||
-        (typeof metaUrl === "string" && metaUrl.trim());
+        const configured =
+          (typeof paramUrl === "string" && paramUrl.trim()) ||
+          (typeof metaUrl === "string" && metaUrl.trim());
 
-      if (!configured) {
-        launch.classList.add("disabled");
-        launch.setAttribute("aria-disabled", "true");
-        launch.setAttribute(
-          "title",
-          "Set ?livechatUrl= or meta streamsuites-livechat-url to enable"
+        if (!configured) {
+          launch.classList.add("disabled");
+          launch.setAttribute("aria-disabled", "true");
+          launch.setAttribute(
+            "title",
+            "Set ?livechatUrl= or meta streamsuites-livechat-url to enable"
+          );
+          launch.setAttribute("href", "#");
+          return;
+        }
+
+        let resolved = configured;
+        try {
+          resolved = new URL(configured, document.baseURI).toString();
+        } catch (err) {
+          console.warn("[Dashboard] LiveChat URL is not a valid URL", err);
+        }
+
+        launch.setAttribute("href", resolved);
+        launch.classList.remove("disabled");
+        launch.removeAttribute("aria-disabled");
+        launch.setAttribute("title", `Open LiveChat (${resolved})`);
+      }
+
+      if (window.StreamSuitesDashboardGuard?.shouldBlock) {
+        window.addEventListener(
+          "streamsuites:admin-auth",
+          (event) => {
+            if (event?.detail?.authorized) {
+              initLiveChat();
+            }
+          },
+          { once: true }
         );
-        launch.setAttribute("href", "#");
         return;
       }
 
-      let resolved = configured;
-      try {
-        resolved = new URL(configured, document.baseURI).toString();
-      } catch (err) {
-        console.warn("[Dashboard] LiveChat URL is not a valid URL", err);
-      }
-
-      launch.setAttribute("href", resolved);
-      launch.classList.remove("disabled");
-      launch.removeAttribute("aria-disabled");
-      launch.setAttribute("title", `Open LiveChat (${resolved})`);
+      initLiveChat();
     })();
   </script>
 </body>

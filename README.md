@@ -37,11 +37,13 @@ The dashboard loads snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progre
 
 ## Authentication & Authorization
 
-- **Central auth API:** Admin authentication is handled by `https://api.streamsuites.app` with cookie-based sessions.
-- **Admin-only surface:** Every dashboard session must authenticate before any admin UI renders.
-- **Supported methods:** Google OAuth, GitHub OAuth, Discord OAuth, and email magic-link (no passwords).
-- **Authorization rule:** Access is granted only when the session introspection response reports `role=admin` **and** the authenticated email exists in `STREAMSUITES_ADMIN_EMAILS` (server-enforced; client gates fail closed).
-- **Discord OAuth scope:** Discord OAuth remains required for Discord-specific views to enumerate guild access and scope per-guild configuration.
+- **Hard admin gate:** The admin dashboard is fail-closed and gated by server-side session introspection against the StreamSuites Auth API.
+- **Role enforcement:** Access is granted **only** when the Auth API session is valid and `role == "admin"`.
+- **Fail-closed behavior:** Unauthenticated users are redirected to the admin login, authenticated non-admins see a Not Authorized screen, and auth API failures render Service Unavailable.
+- **Credentials required:** All auth/session checks include credentials and never trust client-side flags.
+- **Discord OAuth2:** Discord OAuth remains for Discord-specific configuration and guild selection once admin access is granted.
+- **Scopes required:** `identify`, `guilds`.
+- **No local accounts:** StreamSuites does not create or store user accounts; Discord identity is used for Discord feature gating only.
 
 ## Guild Authorization Model
 
@@ -415,6 +417,7 @@ StreamSuites-Dashboard/
 │   ├── index.html
 │   ├── js
 │   │   ├── about.js
+│   │   ├── admin-gate.js
 │   │   ├── api.js
 │   │   ├── app.js
 │   │   ├── admin-auth.js
