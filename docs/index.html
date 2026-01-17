@@ -22,6 +22,13 @@
   <meta name="discord-client-id" content="1449280789010321420" />
   <meta name="discord-redirect-uri" content="https://admin.streamsuites.app/" />
   <meta name="discord-scopes" content="identify guilds" />
+  <meta name="streamsuites-auth-base" content="https://api.streamsuites.app" />
+  <meta name="streamsuites-auth-session" content="https://api.streamsuites.app/auth/session" />
+  <meta name="streamsuites-auth-logout" content="https://api.streamsuites.app/auth/logout" />
+  <meta name="streamsuites-auth-google" content="https://api.streamsuites.app/auth/oauth/google" />
+  <meta name="streamsuites-auth-github" content="https://api.streamsuites.app/auth/oauth/github" />
+  <meta name="streamsuites-auth-discord" content="https://api.streamsuites.app/auth/oauth/discord" />
+  <meta name="streamsuites-auth-magic-link" content="https://api.streamsuites.app/auth/magic-link" />
   <meta name="streamsuites-livechat-url" content="" />
 
   <!-- ========================================================= -->
@@ -178,6 +185,52 @@
 
 <body>
 
+  <div id="admin-auth-overlay" class="admin-auth-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="admin-auth-title">
+    <div class="admin-auth-card glass-card">
+      <button id="admin-auth-close" class="admin-auth-close" aria-label="Close admin login">×</button>
+      <h2 id="admin-auth-title">Admin Login</h2>
+      <p class="muted">
+        StreamSuites Admin access is restricted to approved administrators.
+      </p>
+      <div class="admin-auth-providers">
+        <button class="ss-btn ss-btn-primary" data-admin-auth-provider="google">Continue with Google</button>
+        <button class="ss-btn ss-btn-secondary" data-admin-auth-provider="github">Continue with GitHub</button>
+        <button class="ss-btn ss-btn-secondary" data-admin-auth-provider="discord">Continue with Discord</button>
+      </div>
+      <div class="admin-auth-divider">
+        <span>or sign in with email</span>
+      </div>
+      <form id="admin-auth-email-form" class="admin-auth-email">
+        <label for="admin-auth-email">Email</label>
+        <div class="admin-auth-email-row">
+          <input
+            id="admin-auth-email"
+            name="email"
+            type="email"
+            placeholder="admin@streamsuites.app"
+            autocomplete="email"
+            required
+          />
+          <button id="admin-auth-email-submit" class="ss-btn ss-btn-secondary" type="submit">
+            Send magic link
+          </button>
+        </div>
+      </form>
+      <div id="admin-auth-status" class="admin-auth-status" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <div id="admin-auth-blocked" class="admin-auth-blocked hidden">
+    <div class="admin-auth-blocked-card glass-card">
+      <h2 id="admin-auth-blocked-title">Admin access required</h2>
+      <p id="admin-auth-blocked-message" class="muted"></p>
+      <div id="admin-auth-blocked-actions" class="admin-auth-blocked-actions">
+        <button id="admin-auth-open" class="ss-btn ss-btn-primary">Admin Login</button>
+        <button id="admin-auth-blocked-logout" class="ss-btn ss-btn-secondary hidden">Logout</button>
+      </div>
+    </div>
+  </div>
+
   <div id="app">
 
     <!-- Header -->
@@ -213,6 +266,13 @@
           </a>
         </div>
         <div class="header-row header-auth-row">
+          <div id="admin-auth-indicator" class="admin-auth-indicator hidden">
+            <span class="admin-auth-label">Admin</span>
+            <span id="admin-auth-identity" class="admin-auth-identity">Admin</span>
+            <button id="admin-auth-logout" class="ss-btn ss-btn-secondary ss-btn-small">
+              Logout
+            </button>
+          </div>
           <div class="discord-auth">
             <button id="discord-login-button" class="ss-btn ss-btn-secondary">
               <img

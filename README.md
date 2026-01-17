@@ -168,7 +168,7 @@ This repository is a **companion project** to the StreamSuites Runtime.
 ## Hosting & Deployment Model
 
 - Static site hosting (GitHub Pages) deployed to https://admin.streamsuites.app from the `/docs` directory.
-- No backend.
+- No local backend; authentication is provided by the central StreamSuites Auth API.
 - Discord OAuth required for Discord-specific configuration views.
 - Embed/iframe friendly (e.g., Wix Studio).
 - All logic runs client-side.
@@ -420,6 +420,7 @@ StreamSuites-Dashboard/
 │   │   ├── admin-gate.js
 │   │   ├── api.js
 │   │   ├── app.js
+│   │   ├── admin-auth.js
 │   │   ├── auth.js
 │   │   ├── changelog-merge.js
 │   │   ├── charts.js

@@ -234,6 +234,28 @@ html.admin-gate-unavailable #app {
   letter-spacing: 0.08em;
 }
 
+.admin-auth-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.admin-auth-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.admin-auth-identity {
+  font-size: 12px;
+  letter-spacing: 0.03em;
+}
+
 .discord-guild-selector {
   display: inline-flex;
   flex-direction: column;
@@ -307,6 +329,117 @@ body.discord-auth-required [data-discord-nav] {
 
 body.discord-authenticated .ss-auth-lock {
   display: none;
+}
+
+body.admin-auth-required #app,
+body.admin-auth-denied #app,
+body.admin-auth-error #app {
+  display: none;
+}
+
+.admin-auth-overlay,
+.admin-auth-blocked {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(4, 6, 10, 0.82);
+}
+
+.admin-auth-card,
+.admin-auth-blocked-card {
+  width: min(520px, 100%);
+  padding: 28px;
+  position: relative;
+}
+
+.admin-auth-card h2,
+.admin-auth-blocked-card h2 {
+  margin-top: 0;
+}
+
+.admin-auth-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.admin-auth-providers {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0 20px;
+}
+
+.admin-auth-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  opacity: 0.6;
+  margin-bottom: 16px;
+}
+
+.admin-auth-divider::before,
+.admin-auth-divider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.admin-auth-email {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-auth-email-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.admin-auth-email-row input {
+  flex: 1;
+  min-width: 220px;
+}
+
+.admin-auth-status {
+  min-height: 20px;
+  margin-top: 14px;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+}
+
+.admin-auth-status[data-state=\"error\"] {
+  color: var(--status-critical, #ff6b6b);
+}
+
+.admin-auth-status[data-state=\"sent\"] {
+  color: var(--status-success, #6ee7b7);
+}
+
+.admin-auth-blocked-card {
+  text-align: center;
+}
+
+.admin-auth-blocked-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 18px;
 }
 
 /* Logo alignment: nudge down to visually align with title baseline */
