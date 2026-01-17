@@ -82,6 +82,9 @@ These settings map directly to runtime configuration; the dashboard does not exe
 - **Execution model:** Runs locally alongside the runtime with direct filesystem access.
 - **Snapshot handling:** Reads runtime snapshots directly from disk for immediate administrative visibility.
 - **Control surface:** Can launch and terminate runtime processes, manage local paths, and adjust configuration without network dependencies.
+- **Multi-runtime management:** Supervises multiple managed runtime processes with inline stdout/stderr log viewing.
+- **Log viewer (not terminal):** Inline logs are read-only and intentionally not a terminal emulator.
+- **External terminal handoff:** Provides “Open in external terminal” for interactive troubleshooting when needed.
 - **Roadmap posture:** Intended to become the primary administrative interface over time while remaining strictly local.
 
 ## Relationship to Web Dashboard
@@ -119,6 +122,7 @@ Build changes imply freshly generated artifacts, even when features are unchange
 
 - **Admin control surface:** Provides configuration exports and runtime control inputs for administrative workflows.
 - **Runtime snapshot polling:** Periodically fetches `shared/state/runtime_snapshot.json` (or bundled fallbacks) to render status, heartbeat timestamps, errors, and pause reasons.
+- **Process visibility scope:** Managed processes are viewable in Desktop Admin; web surfaces show high-level status only.
 - **Header mode badge:** `#app-mode` indicates connected/admin or static fallback.
 - **Platform APIs:** Execution remains runtime-owned; the dashboard supplies configuration/control inputs and renders outputs.
 
