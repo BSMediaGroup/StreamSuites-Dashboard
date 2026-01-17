@@ -12,12 +12,7 @@
     _cache: null,
 
     resolveVersionUrl() {
-      const cacheBust =
-        window.__STREAMSUITES_VERSION_BUILD__ ||
-        window.StreamSuitesVersionBuild ||
-        window.StreamSuitesBuild ||
-        Date.now();
-      return `/runtime/exports/version.json?v=${encodeURIComponent(cacheBust)}`;
+      return "/runtime/exports/version.json";
     },
 
     async loadVersion() {
