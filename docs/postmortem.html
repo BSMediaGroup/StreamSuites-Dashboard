@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<!-- StreamSuites™ — Runtime Post-Mortem (Static) -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project Post-Mortem • StreamSuites™</title>
+  <meta name="description" content="Formal post-mortem documenting the suspension of the StreamSuites Runtime Engine." />
+  <link rel="canonical" href="https://bsmediagroup.github.io/StreamSuites-Dashboard/postmortem.html" />
+  <meta property="og:title" content="Project Post-Mortem • StreamSuites™" />
+  <meta property="og:description" content="Formal post-mortem documenting the suspension of the StreamSuites Runtime Engine." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bsmediagroup.github.io/StreamSuites-Dashboard/postmortem.html" />
+  <meta property="og:image" content="https://bsmediagroup.github.io/StreamSuites-Dashboard/assets/backgrounds/seoshare.jpg" />
+  <link rel="icon" href="./favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="./css/theme-dark.css" />
+  <link rel="stylesheet" href="./css/components.css" />
+  <link rel="stylesheet" href="./css/public-pages.css" />
+</head>
+<body>
+  <div class="public-bg" aria-hidden="true"></div>
+  <div class="public-surface">
+    <div class="public-shell">
+      <header class="public-topbar">
+        <a class="public-brand" href="./lander.html">
+          <img src="./assets/logos/logo.png" alt="StreamSuites" />
+          <div>
+            <h1>StreamSuites™</h1>
+            <p class="brand-subtitle">Public surface</p>
+          </div>
+        </a>
+        <div class="public-nav-wrapper">
+          <input type="checkbox" id="public-nav-toggle" class="nav-toggle" aria-label="Toggle navigation" />
+          <label class="hamburger" for="public-nav-toggle">
+            <span class="sr-only">Toggle navigation</span>
+            <svg viewBox="0 0 32 32" aria-hidden="true">
+              <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"></path>
+              <path class="line" d="M7 16 27 16"></path>
+            </svg>
+          </label>
+          <div class="public-nav">
+            <span class="version-pill version-badge">Loading version…</span>
+            <a href="./about.html">About</a>
+            <a href="./tools/">Tools</a>
+            <a href="./support/">Support</a>
+            <a href="./privacy.html">Privacy</a>
+            <a href="./changelog.html">Changelog</a>
+            <a href="./accessibility.html">Accessibility</a>
+            <a href="./postmortem.html" aria-current="page">Post-Mortem</a>
+          </div>
+        </div>
+      </header>
+
+      <section class="public-hero public-glass-panel">
+        <div class="public-hero-grid">
+          <div class="public-hero-copy">
+            <div class="section-heading">
+              <h2>Project Post-Mortem </h2>
+              <span class="public-badge">Runtime status update</span>
+            </div>
+            <p class="lede">StreamSuites Runtime Engine previously entered suspension because Rumble chat ingestion could not reliably resolve <code>chat_id</code> inputs for SSE and HTTP modes. The project has resumed with Rumble held in a paused state while stabilization continues, and all other platform monitoring remains active.</p>
+          </div>
+          <div class="public-hero-meta">
+            <div class="public-glass-card">
+              <h3>Resumption</h3>
+              <p class="muted">Active monitoring has resumed. Rumble is paused for controlled revalidation; this page records the historical post-mortem.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="public-stack" aria-label="Post-mortem details">
+        <article class="public-glass-card">
+          <div class="section-heading">
+            <h2>Executive Summary</h2>
+          </div>
+          <p>StreamSuites Runtime Engine previously paused because Rumble chat ingestion could not deterministically discover or maintain <code>chat_id</code> inputs required for SSE and HTTP ingestion. After documenting the failure, the dashboard resumed with live runtime snapshot polling while keeping the Rumble ingest path paused until stabilization completes.</p>
+        </article>
+
+        <article class="public-glass-card">
+          <div class="section-heading">
+            <h2>Scope of Investigation</h2>
+          </div>
+          <p>The investigation focused on Rumble chat ingestion paths within the runtime, including browser-based collection, server-sent event (SSE) handling, and HTTP-based fallbacks. Control-plane, clipping, and other platform integrations were reviewed only to confirm they remained unaffected by the ingestion instability.</p>
+        </article>
+
+        <article class="public-glass-card">
+          <div class="section-heading">
+            <h2>Systems Involved</h2>
+          </div>
+          <ul>
+            <li>Browser client used for Rumble session management and DOM observation</li>
+            <li>Chat worker responsible for coordinating ingestion modes and publishing normalized events</li>
+            <li>SSE / HTTP ingestion endpoints that rely on resolved <code>chat_id</code> values</li>
+          </ul>
+        </article>
+
+        <article class="public-glass-card">
+          <div class="section-heading">
+            <h2>Failure Characteristics</h2>
+          </div>
+          <ul>
+            <li><code>chat_id</code> discovery instability produced inconsistent or missing identifiers across sessions.</li>
+            <li>Endpoint responses were inconsistent, with SSE and HTTP behaviors varying between attempts without deterministic triggers.</li>
+            <li>Non-deterministic ingestion prevented reliable chat capture and disrupted downstream normalization.</li>
+          </ul>
+        </article>
+
+        <article class="public-glass-card">
+          <div class="section-heading">
+            <h2>What Was Attempted</h2>
+          </div>
+          <ul>
+            <li>Multiple reconnection and header/cookie alignment strategies for SSE endpoints.</li>
+            <li>Browser-based DOM mutation ingestion fallbacks to bypass SSE silence.</li>
+            <li>Repeated session resets and configuration adjustments intended to stabilize <code>chat_id</code> resolution.</li>
+          </ul>
+        </article>
+
+        <article class="public-glass-card">
+          <div class="section-heading">
+            <h2>Why Rumble Remains Paused</h2>
+          </div>
+          <p>Deterministic chat ingestion has not been re-established for Rumble, so the runtime keeps that platform paused to protect data integrity while the dashboard surfaces exported snapshots. Active polling and observability continue for YouTube, Twitch, and Discord.</p>
+        </article>
+
+        <article class="public-glass-card">
+          <div class="section-heading">
+            <h2>Lessons Learned</h2>
+          </div>
+          <ul>
+            <li>Relying on fragile endpoint contracts without formal platform support introduces significant operational risk.</li>
+            <li>Deterministic identifier discovery is critical for long-lived ingestion pipelines; fallback modes cannot compensate for inconsistent upstream identifiers.</li>
+            <li>Browser-derived sessions and HTTP clients must be validated continuously when platform protections change.</li>
+          </ul>
+          <p><strong>No further development is planned.</strong></p>
+        </article>
+      </section>
+
+      <footer class="public-footer">
+        <div>
+          <span class="footer-version">Version</span>
+          <span class="footer-copyright">© Brainstream Media Group</span>
+        </div>
+        <nav aria-label="Public footer navigation">
+          <a href="./about.html">About</a>
+          <a href="./tools/">Tools</a>
+          <a href="./support/">Support</a>
+          <a href="./privacy.html">Privacy</a>
+          <a href="./changelog.html">Changelog</a>
+          <a href="./accessibility.html">Accessibility</a>
+          <a href="./postmortem.html" aria-current="page">Post-Mortem</a>
+        </nav>
+      </footer>
+    </div>
+  </div>
+
+  <script src="./js/utils/versioning.js"></script>
+  <script src="./js/utils/version-stamp.js"></script>
+  <script>
+    if (window.Versioning) {
+      Versioning.applyVersionToElements({ version: ".version-badge" });
+    }
+  </script>
+</body>
+</html>

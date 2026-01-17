@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<!-- StreamSuites™ — Public About Page (JSON-driven) -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About StreamSuites™</title>
+  <meta name="description" content="Canonical About content for StreamSuites, rendered directly from JSON with manifest-defined ordering." />
+  <link rel="canonical" href="https://bsmediagroup.github.io/StreamSuites-Dashboard/about.html" />
+  <meta property="og:title" content="About StreamSuites™" />
+  <meta property="og:description" content="Canonical About content for StreamSuites, rendered directly from JSON with manifest-defined ordering." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bsmediagroup.github.io/StreamSuites-Dashboard/about.html" />
+  <meta property="og:image" content="https://bsmediagroup.github.io/StreamSuites-Dashboard/assets/backgrounds/seoshare.jpg" />
+  <link rel="icon" href="./favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="./css/theme-dark.css" />
+  <link rel="stylesheet" href="./css/components.css" />
+  <link rel="stylesheet" href="./css/public-pages.css" />
+</head>
+<body>
+  <div class="public-bg" aria-hidden="true"></div>
+  <div class="public-surface">
+    <div class="public-shell">
+      <header class="public-topbar">
+        <a class="public-brand" href="./lander.html">
+          <img src="./assets/logos/logo.png" alt="StreamSuites" />
+          <div>
+            <h1>StreamSuites™</h1>
+            <p class="brand-subtitle">Public surface</p>
+          </div>
+        </a>
+        <div class="public-nav-wrapper">
+          <input type="checkbox" id="public-nav-toggle" class="nav-toggle" aria-label="Toggle navigation" />
+          <label class="hamburger" for="public-nav-toggle">
+            <span class="sr-only">Toggle navigation</span>
+            <svg viewBox="0 0 32 32" aria-hidden="true">
+              <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"></path>
+              <path class="line" d="M7 16 27 16"></path>
+            </svg>
+          </label>
+          <div class="public-nav">
+            <span class="version-pill version-badge">Loading version…</span>
+            <a href="./about.html">About</a>
+            <a href="./tools/">Tools</a>
+            <a href="./support/">Support</a>
+            <a href="./privacy.html">Privacy</a>
+            <a href="./changelog.html">Changelog</a>
+            <a href="./accessibility.html">Accessibility</a>
+          </div>
+        </div>
+      </header>
+
+      <section class="public-hero public-glass-panel">
+        <div class="section-heading">
+          <h2>About StreamSuites™</h2>
+          <span class="public-badge">JSON-driven</span>
+        </div>
+        <p>
+          This page renders the canonical About record for StreamSuites directly from
+          <code>/docs/about/about.manifest.json</code> and its referenced sources so public visitors and dashboard users see the same ordered content.
+        </p>
+        <p class="muted">
+          Consumer-friendly entries are always visible. Technical entries start collapsed with accessible toggles to reveal the developer view when needed.
+        </p>
+        <div class="ss-meta-row public-about-meta">
+          <span><strong>Version:</strong> <span id="public-about-version-meta">Loading…</span></span>
+          <span aria-hidden="true">•</span>
+          <span><strong>Build:</strong> <span id="public-about-build-meta">Loading…</span></span>
+          <span aria-hidden="true">•</span>
+          <span><strong>Last updated:</strong> <span id="public-about-updated-meta">Loading…</span></span>
+          <span aria-hidden="true">•</span>
+          <span><strong>Owner:</strong> <span id="public-about-owner-meta">Loading…</span></span>
+          <span aria-hidden="true">•</span>
+          <span><strong>Copyright:</strong> <span id="public-about-copyright-meta">Loading…</span></span>
+        </div>
+      </section>
+
+      <section class="public-about-shell" aria-label="About details">
+        <div id="public-about-errors"></div>
+        <div id="public-about-sections" class="public-about-sections"></div>
+      </section>
+
+      <footer class="public-footer">
+        <div>
+          <span class="footer-version">Version</span>
+          <span class="footer-copyright">©</span>
+        </div>
+        <nav aria-label="Public footer navigation">
+          <a href="./about.html">About</a>
+          <a href="./tools/">Tools</a>
+          <a href="./support/">Support</a>
+          <a href="./privacy.html">Privacy</a>
+          <a href="./changelog.html">Changelog</a>
+          <a href="./accessibility.html">Accessibility</a>
+        </nav>
+      </footer>
+    </div>
+  </div>
+
+  <script src="./js/utils/versioning.js"></script>
+  <script src="./js/utils/version-stamp.js"></script>
+  <script src="./js/utils/about-data.js"></script>
+  <script src="./js/public-about.js"></script>
+  <script>
+    if (window.Versioning) {
+      Versioning.applyVersionToElements({ version: ".version-badge" });
+    }
+  </script>
+</body>
+</html>

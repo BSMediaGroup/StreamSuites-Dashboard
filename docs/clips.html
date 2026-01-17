@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<!-- ===================================================================== -->
+<!-- StreamSuites™ Dashboard — Public Clips Gallery                        -->
+<!-- Version: v0.2.2-alpha                                                 -->
+<!-- Owner: Daniel Clancy                                                  -->
+<!-- Copyright: © 2026 Brainstream Media Group                             -->
+<!-- ===================================================================== -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StreamSuites Clips Gallery</title>
+  <meta name="description" content="Public-facing StreamSuites clips gallery with creator uploads across platforms." />
+  <link rel="icon" href="./favicon.ico" type="image/x-icon" />
+
+  <!-- Shared styles -->
+  <link rel="stylesheet" href="./css/theme-dark.css" />
+  <link rel="stylesheet" href="./css/public-pages.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="public-header">
+      <a href="https://bsmediagroup.github.io/StreamSuites-Dashboard/lander.html" class="brand-mark">
+        <img src="./assets/logos/logo.png" alt="StreamSuites" />
+        <div class="brand-title">
+          <h1>StreamSuites™</h1>
+          <p class="brand-subtitle">Public Clips Gallery</p>
+        </div>
+      </a>
+      <div class="public-menu-group">
+        <input type="checkbox" id="clips-menu-toggle" class="nav-toggle" aria-label="Toggle navigation" />
+        <label class="hamburger" for="clips-menu-toggle">
+          <span class="sr-only">Toggle navigation</span>
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"></path>
+            <path class="line" d="M7 16 27 16"></path>
+          </svg>
+        </label>
+        <div class="header-actions">
+          <span class="pill">public beta</span>
+          <a class="quiet-link" href="./home.html">Home</a>
+          <a class="cta-link" href="./polls.html">View polls</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="page-heading">
+      <h2>Latest Clips</h2>
+      <span class="lede">Cross-platform highlights, queued, encoding, and published in one feed.</span>
+    </section>
+
+    <p class="helper-text">
+      Clips refresh automatically when runtime exports are available. Links and thumbnails will map to live creator destinations in a future release.
+    </p>
+
+    <noscript>
+      <div class="empty-state">JavaScript is required to render the clip gallery.</div>
+    </noscript>
+
+    <div id="clips-grid" class="card-grid" aria-live="polite"></div>
+    <div id="clips-empty" class="empty-state" hidden>
+      No clips to show yet. Check back soon for channel highlights and creator uploads.
+    </div>
+
+  <footer class="public-footer">
+    <span>StreamSuites™ Media Surface • Clips</span>
+    <a href="./index.html">Creator dashboard</a>
+  </footer>
+</div>
+
+<script src="./js/utils/versioning.js"></script>
+<script src="./js/utils/version-stamp.js"></script>
+<script src="./js/public-data.js"></script>
+<script src="./js/public-clips.js"></script>
+</body>
+</html>

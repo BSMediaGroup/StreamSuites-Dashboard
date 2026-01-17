@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<!-- StreamSuites™ — Public Changelog -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Changelog • StreamSuites™</title>
+  <meta name="description" content="Roadmap progress bars and release notes for StreamSuites public surfaces." />
+  <link rel="canonical" href="https://bsmediagroup.github.io/StreamSuites-Dashboard/changelog.html" />
+  <meta property="og:title" content="Changelog • StreamSuites™" />
+  <meta property="og:description" content="Roadmap progress bars and release notes for StreamSuites public surfaces." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bsmediagroup.github.io/StreamSuites-Dashboard/changelog.html" />
+  <meta property="og:image" content="https://bsmediagroup.github.io/StreamSuites-Dashboard/assets/backgrounds/seoshare.jpg" />
+  <link rel="icon" href="./favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="./css/theme-dark.css" />
+  <link rel="stylesheet" href="./css/components.css" />
+  <link rel="stylesheet" href="./css/public-pages.css" />
+</head>
+<body>
+  <div class="public-bg" aria-hidden="true"></div>
+  <div class="public-surface">
+    <div class="public-shell">
+      <header class="public-topbar">
+        <a class="public-brand" href="./lander.html">
+          <img src="./assets/logos/logo.png" alt="StreamSuites" />
+          <div>
+            <h1>StreamSuites™</h1>
+            <p class="brand-subtitle">Public surface</p>
+          </div>
+        </a>
+        <div class="public-nav-wrapper">
+          <input type="checkbox" id="public-nav-toggle" class="nav-toggle" aria-label="Toggle navigation" />
+          <label class="hamburger" for="public-nav-toggle">
+            <span class="sr-only">Toggle navigation</span>
+            <svg viewBox="0 0 32 32" aria-hidden="true">
+              <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"></path>
+              <path class="line" d="M7 16 27 16"></path>
+            </svg>
+          </label>
+          <div class="public-nav">
+            <span class="version-pill version-badge">Loading version…</span>
+            <a href="./about.html">About</a>
+            <a href="./tools/">Tools</a>
+            <a href="./support/">Support</a>
+            <a href="./privacy.html">Privacy</a>
+            <a href="./changelog.html">Changelog</a>
+            <a href="./accessibility.html">Accessibility</a>
+          </div>
+        </div>
+      </header>
+
+      <section class="public-hero public-glass-panel">
+        <div class="public-hero-grid public-roadmap-header">
+          <div class="public-hero-copy public-roadmap-copy">
+            <div class="section-heading">
+              <h2>Roadmap </h2>
+              <span class="public-badge">Progress snapshot</span>
+            </div>
+            <p class="muted">Roadmap items mirror the dashboard exactly and retain the same expand/collapse behavior with animated progress fills.</p>
+          </div>
+        </div>
+        <div id="public-roadmap-list" class="public-roadmap-stack" aria-label="Roadmap progress bars"></div>
+      </section>
+
+      <section class="public-stack" aria-label="Changelog entries">
+        <div id="changelog-container" class="changelog-container">
+          <article class="public-glass-card changelog-loading">
+            <div class="section-heading">
+              <h3>Loading changelog…</h3>
+              <span class="lede">Fetching release notes.</span>
+            </div>
+            <p class="muted">If this takes too long, please refresh.</p>
+          </article>
+        </div>
+      </section>
+
+      <footer class="public-footer">
+        <div>
+          <span class="footer-version">Version</span>
+          <span class="footer-copyright">©</span>
+        </div>
+        <nav aria-label="Public footer navigation">
+          <a href="./about.html">About</a>
+          <a href="./tools/">Tools</a>
+          <a href="./support/">Support</a>
+          <a href="./privacy.html">Privacy</a>
+          <a href="./changelog.html">Changelog</a>
+          <a href="./accessibility.html">Accessibility</a>
+        </nav>
+      </footer>
+    </div>
+  </div>
+
+  <script src="./js/utils/versioning.js"></script>
+  <script src="./js/utils/version-stamp.js"></script>
+  <script src="./js/public-changelog.js"></script>
+  <script src="./js/public-roadmap.js"></script>
+  <script>
+    if (window.Versioning) {
+      Versioning.applyVersionToElements({ version: ".version-badge" });
+    }
+  </script>
+</body>
+</html>

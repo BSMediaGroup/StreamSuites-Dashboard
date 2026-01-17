@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<!-- ===================================================================== -->
+<!-- StreamSuites™ Dashboard — Public Lander                               -->
+<!-- Version: v0.2.2-alpha                                                 -->
+<!-- Owner: Daniel Clancy                                                  -->
+<!-- Copyright: © 2026 Brainstream Media Group                             -->
+<!-- ===================================================================== -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StreamSuites™ — Enter</title>
+  <meta name="description" content="StreamSuites first-arrival lander into the creator dashboard." />
+  <link rel="icon" href="./favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="./css/theme-dark.css" />
+
+  <style>
+    :root {
+      --lander-bg:
+        radial-gradient(circle at 20% 20%, rgba(140, 199, 54, 0.32), transparent 38%),
+        radial-gradient(circle at 80% 0%, rgba(100, 196, 255, 0.32), transparent 42%),
+        radial-gradient(circle at 60% 80%, rgba(255, 153, 0, 0.28), transparent 38%),
+        #0b0c10;
+
+      --glass-border: rgba(255, 255, 255, 0.14);
+      --text: #e6e8eb;
+      --muted: #9ca0a8;
+      --accent: #8cc736;
+      --accent-strong: #a4df4f;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "SuiGenerisRg", system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      background: #0b0c10;
+      overflow: hidden;
+    }
+
+    /* ===============================
+       BACKGROUND ANIMATION (AMPLIFIED)
+       =============================== */
+
+    .bg-animated {
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(120deg, rgba(12,14,19,0.82), rgba(18,24,32,0.88)),
+        var(--lander-bg);
+      background-size: 260% 260%;
+      animation: gradientMove 9s ease-in-out infinite;
+      overflow: hidden;
+    }
+
+    /* Lens flare glow layer */
+    .bg-animated::before {
+      content: "";
+      position: absolute;
+      inset: -30%;
+      background:
+        radial-gradient(circle at 30% 40%, rgba(164,223,79,0.18), transparent 40%),
+        radial-gradient(circle at 70% 20%, rgba(100,196,255,0.22), transparent 42%);
+      animation: flarePulse 6s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    .bg-animated::after {
+      content: "";
+      position: absolute;
+      inset: -20%;
+      background:
+        radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 2px);
+      background-size: 120px 120px;
+      opacity: 0.45;
+      animation: noiseDrift 28s linear infinite;
+      pointer-events: none;
+    }
+
+    .particles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    /* ==========================================================
+       PARTICLES -> TWINKLING STARFIELD (REPLACED, SAME STRUCTURE)
+       - gentle twinkle via opacity
+       - slow upward drift + slight scale (depth illusion)
+       - two layers (near + far) for parallax-like effect
+       ========================================================== */
+
+    .particles::before,
+    .particles::after {
+      content: "";
+      position: absolute;
+      inset: -10%;
+      background: transparent;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+
+    /* FAR STARS (smaller, dimmer, slower) */
+    .particles::before {
+      width: 2px;
+      height: 2px;
+      border-radius: 50%;
+      filter: blur(0.7px);
+      opacity: 0.55;
+
+      box-shadow:
+        4vw 10vh rgba(255,255,255,0.55),
+        8vw 12vh rgba(255,255,255,0.45),
+        10vw 64vh rgba(255,255,255,0.40),
+        12vw 32vh rgba(255,255,255,0.50),
+        14vw 78vh rgba(255,255,255,0.38),
+
+        18vw 48vh rgba(255,255,255,0.42),
+        20vw 22vh rgba(255,255,255,0.36),
+        22vw 70vh rgba(255,255,255,0.44),
+        24vw 14vh rgba(255,255,255,0.34),
+
+        28vw 58vh rgba(255,255,255,0.36),
+        30vw 38vh rgba(255,255,255,0.42),
+        32vw 28vh rgba(255,255,255,0.50),
+        34vw 80vh rgba(255,255,255,0.34),
+
+        38vw 18vh rgba(255,255,255,0.34),
+        40vw 52vh rgba(255,255,255,0.44),
+        42vw 26vh rgba(255,255,255,0.40),
+        44vw 66vh rgba(255,255,255,0.42),
+
+        46vw 62vh rgba(255,255,255,0.38),
+        48vw 34vh rgba(255,255,255,0.34),
+        50vw 74vh rgba(255,255,255,0.40),
+        52vw 16vh rgba(255,255,255,0.44),
+
+        56vw 44vh rgba(255,255,255,0.36),
+        58vw 22vh rgba(255,255,255,0.46),
+        60vw 60vh rgba(255,255,255,0.44),
+        62vw 30vh rgba(255,255,255,0.42),
+
+        66vw 18vh rgba(255,255,255,0.36),
+        68vw 74vh rgba(255,255,255,0.44),
+        70vw 40vh rgba(255,255,255,0.36),
+        72vw 24vh rgba(255,255,255,0.40),
+
+        74vw 66vh rgba(255,255,255,0.38),
+        76vw 12vh rgba(255,255,255,0.34),
+        78vw 36vh rgba(255,255,255,0.44),
+        80vw 80vh rgba(255,255,255,0.40),
+
+        82vw 26vh rgba(255,255,255,0.36),
+        84vw 54vh rgba(255,255,255,0.34),
+        86vw 18vh rgba(255,255,255,0.44),
+        88vw 58vh rgba(255,255,255,0.38),
+
+        90vw 22vh rgba(255,255,255,0.34),
+        92vw 66vh rgba(255,255,255,0.42),
+        94vw 14vh rgba(255,255,255,0.36),
+        96vw 48vh rgba(255,255,255,0.40),
+
+        /* subtle cool-tinted stars (far, rare) */
+        12vw 8vh rgba(100,196,255,0.32),
+        64vw 12vh rgba(140,199,54,0.30),
+        88vw 8vh rgba(100,196,255,0.28);
+
+      animation:
+        starDriftFar 90s linear infinite,
+        starTwinkleFar 7s ease-in-out infinite;
+    }
+
+    /* NEAR STARS (slightly bigger/brighter, faster) */
+    .particles::after {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      filter: blur(0.9px);
+      opacity: 0.75;
+
+      box-shadow:
+        6vw 18vh rgba(255,255,255,0.78),
+        16vw 28vh rgba(255,255,255,0.68),
+        26vw 12vh rgba(255,255,255,0.72),
+        36vw 44vh rgba(255,255,255,0.82),
+        46vw 20vh rgba(255,255,255,0.70),
+        56vw 66vh rgba(255,255,255,0.80),
+        66vw 30vh rgba(255,255,255,0.74),
+        76vw 54vh rgba(255,255,255,0.78),
+        86vw 14vh rgba(255,255,255,0.72),
+        92vw 72vh rgba(255,255,255,0.78),
+
+        22vw 74vh rgba(140,199,54,0.55),
+        62vw 18vh rgba(100,196,255,0.55),
+        84vw 62vh rgba(255,153,0,0.50),
+
+        /* subtle cool-tinted stars (near, rare) */
+        14vw 10vh rgba(100,196,255,0.42),
+        58vw 14vh rgba(140,199,54,0.40);
+
+      animation:
+        starDriftNear 55s linear infinite,
+        starTwinkleNear 5s ease-in-out infinite;
+    }
+
+    @keyframes starDriftFar {
+      0%   { transform: translate3d(0, 0, 0) scale(1); }
+      100% { transform: translate3d(0, -260px, 0) scale(1.08); }
+    }
+
+    @keyframes starDriftNear {
+      0%   { transform: translate3d(0, 0, 0) scale(1); }
+      100% { transform: translate3d(0, -380px, 0) scale(1.14); }
+    }
+
+    @keyframes starTwinkleFar {
+      0%, 100% { opacity: 0.35; }
+      50%      { opacity: 0.75; }
+    }
+
+    @keyframes starTwinkleNear {
+      0%, 100% { opacity: 0.45; }
+      50%      { opacity: 1; }
+    }
+
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes noiseDrift {
+      0% { transform: translate(0,0); }
+      100% { transform: translate(160px, 120px); }
+    }
+
+    @keyframes flarePulse {
+      0% { opacity: 0.6; }
+      100% { opacity: 1; }
+    }
+
+
+    /* ===============================
+       LAYOUT
+       =============================== */
+
+    .lander-shell {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px 32px;
+    }
+
+    .lander-card {
+      position: relative;
+      max-width: 960px;
+      width: 100%;
+      padding: 32px;
+      border-radius: 18px;
+      background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
+
+      /* perimeter glow variables */
+      --glow-x: 50%;
+      --glow-y: 0%;
+      --glow-alpha: 0.55;
+      --glow-on: 1;
+    }
+
+    /* localized BORDER-ONLY glow overlay (masked to border ring) */
+    .lander-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+
+      /* Border thickness for the glow ring */
+      padding: 1px;
+
+      background:
+        radial-gradient(
+          520px 520px at var(--glow-x) var(--glow-y),
+          rgba(164,223,79, calc(var(--glow-alpha) * 0.95)),
+          rgba(164,223,79, calc(var(--glow-alpha) * 0.32)) 35%,
+          rgba(255,255,255, calc(var(--glow-alpha) * 0.10)) 55%,
+          transparent 72%
+        );
+
+      /* Mask out the inside so ONLY the border ring shows */
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+
+      mix-blend-mode: screen;
+      opacity: var(--glow-on);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .brand img {
+      width: 76px;
+      border-radius: 12px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-family: "RechargeBd", sans-serif;
+      font-size: 32px;
+      letter-spacing: 0.06em;
+      text-transform: none;
+    }
+
+    .tagline {
+      margin: 4px 0 0;
+      color: var(--muted);
+    }
+
+    .hero-copy {
+      margin-bottom: 28px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+	/* ===============================
+	   SUPPORTED TOOLTIP (GLASS — FINAL)
+	   =============================== */
+
+	.supported-tooltip-container {
+	  position: relative;
+	  display: inline-flex;
+	  align-items: center;
+	}
+
+        .supported-tooltip {
+          position: absolute;
+          bottom: calc(100% + 12px);
+          left: 50%;
+          transform: translateX(-50%);
+          min-width: 380px;
+          max-width: 520px;
+          white-space: nowrap;
+
+          background: rgba(18, 22, 28, 0.88);
+          color: #e6e8eb;
+
+	  padding: 12px 16px;
+	  border-radius: 16px;
+	  border: 1px solid rgba(255, 255, 255, 0.18);
+	  backdrop-filter: blur(14px);
+
+	  font-size: 11px;
+	  line-height: 1.45;
+	  text-align: left;
+
+	  box-shadow:
+		0 10px 28px rgba(0, 0, 0, 0.55),
+		inset 0 0 10px rgba(255, 255, 255, 0.15);
+
+	  visibility: hidden;
+	  opacity: 0;
+
+	  transition:
+		opacity 0.3s ease,
+		transform 0.3s ease;
+
+	  z-index: 20;
+	}
+
+        .supported-tooltip::after {
+          content: "";
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          border-width: 8px;
+          border-style: solid;
+          border-color: rgba(255, 255, 255, 0.18) transparent transparent transparent;
+        }
+
+        .supported-tooltip-container:hover .supported-tooltip {
+          visibility: visible;
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+
+        .supported-tooltip.is-below {
+          top: 130%;
+          bottom: auto;
+        }
+
+        .supported-tooltip.is-below::after {
+          top: auto;
+          bottom: 100%;
+          border-color: transparent transparent rgba(255, 255, 255, 0.18) transparent;
+        }
+
+	.supported-tooltip h4 {
+	  margin: 0 0 6px;
+	  font-size: 10px;
+	  letter-spacing: 0.14em;
+	  text-transform: uppercase;
+	  color: #ffffff;
+	}
+
+	.supported-tooltip ul {
+	  margin: 0;
+	  padding-left: 0;
+	  list-style: none;
+	}
+
+	.supported-tooltip li {
+	  display: flex;
+	  align-items: center;
+	  gap: 6px;
+	  margin-bottom: 4px;
+	  color: #d6d9de;
+	}
+
+        .supported-tooltip li img {
+          height: 1em;
+          width: auto;
+          opacity: 0.8;
+        }
+
+        @media (max-width: 640px) {
+          .supported-tooltip {
+            min-width: 0;
+            max-width: min(360px, calc(100vw - 32px));
+            white-space: normal;
+          }
+        }
+
+
+	/* ===============================
+	   SUPPORTED PLATFORMS (INLINE META)
+	   =============================== */
+
+	.platforms {
+	  margin: 10px 0 0;
+	  padding: 0;
+	  background: none;
+	  border: 0;
+	}
+
+	.platforms-label {
+	  display: inline-block;
+	  font-size: 11px;
+	  letter-spacing: 0.22em;
+	  text-transform: uppercase;
+	  color: var(--muted);
+	  opacity: 0.7;
+	}
+
+	.platforms-row {
+	  display: inline-flex;
+	  align-items: center;
+	  gap: 14px;
+	}
+
+	.platform-item {
+	  display: inline-flex;
+	  align-items: center;
+	}
+
+	.platform-item img {
+	  height: 18px;
+	  width: auto;
+	  opacity: 0.55;
+	  filter: grayscale(1) saturate(0) brightness(1.15);
+	}
+
+
+    /* ===============================
+       CTA BUTTON — FULL WIDTH
+       =============================== */
+
+    .cta-primary {
+      display: block;
+      width: 100%;
+      margin-bottom: 22px;
+
+      border: 0.25em solid var(--accent-strong);
+      padding: 1em 3em;
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff;
+      text-transform: uppercase;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      background: rgba(16,20,14,0.95);
+      border-radius: 1em;
+
+      box-shadow:
+        0 0 18px rgba(140,199,54,0.9),
+        0 0 48px rgba(140,199,54,0.45),
+        inset 0 0 12px rgba(140,199,54,0.6);
+
+      text-shadow: 0 0 2px rgba(0,0,0,0.9);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .cta-primary:hover {
+      transform: translateY(-1px) scale(1.02);
+      box-shadow:
+        0 0 30px rgba(164,223,79,1),
+        0 0 72px rgba(164,223,79,0.6),
+        inset 0 0 18px rgba(164,223,79,0.85);
+    }
+
+    .cta-secondary-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .cta-secondary {
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      font-size: 13px;
+      text-decoration: none;
+    }
+
+
+
+    /* ===============================
+       FOOTER — SINGLE LINE, RIGHT-ALIGNED BRAND
+       =============================== */
+
+    .footer-links {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--glass-border);
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .footer-links-left {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+
+    .footer-links a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+
+    .footer-brand {
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
+      font-size: 11px;
+      opacity: 0.75;
+      gap: 10px;
+      flex-shrink: 0;
+      z-index: 2;
+    }
+
+    .footer-brand a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .footer-brand a:hover {
+      text-decoration: underline;
+      opacity: 1;
+    }
+
+    .page-copyright {
+      position: fixed;
+      left: 50%;
+      bottom: 14px;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: var(--muted) !important;
+      text-decoration: none;
+      background: none;
+      padding: 0;
+      border: 0;
+      box-shadow: none;
+      opacity: 1;
+      white-space: nowrap;
+      z-index: 8;
+    }
+
+    .page-copyright:visited,
+    .page-copyright:active,
+    .page-copyright:focus-visible,
+    .page-copyright:hover {
+      color: var(--muted) !important;
+      text-decoration: underline;
+    }
+
+    @media (max-width: 640px) {
+      .footer-links {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .footer-brand {
+        opacity: 0.7;
+      }
+      .page-copyright {
+        bottom: 10px;
+        font-size: 10px;
+      }
+    }
+
+    /* ===============================
+       LANDER CARD — INTRO ANIMATION (ADDITIVE ONLY)
+       =============================== */
+
+	.lander-card {
+	  /* initial hidden state */
+	  opacity: 0;
+	  transform: translateY(32px) scale(0.955);
+	  filter: blur(14px);
+
+	  will-change: opacity, transform, filter;
+
+	  transition:
+		opacity 1400ms cubic-bezier(0.16, 1, 0.3, 1),
+		transform 1400ms cubic-bezier(0.16, 1, 0.3, 1),
+		filter 900ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	}
+
+
+    .lander-card.is-visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+    }
+
+    /* ===============================
+       REDUCED MOTION SAFEGUARDS
+       =============================== */
+
+    @media (prefers-reduced-motion: reduce) {
+      .lander-card {
+        transition: none;
+        opacity: 1;
+        transform: none;
+        filter: none;
+      }
+      .lander-card::after {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-animated">
+    <div class="particles"></div>
+    <div class="shooting-star"></div>
+  </div>
+
+  <div class="lander-shell">
+    <div class="lander-card">
+
+      <div class="brand">
+        <img src="./assets/logos/LOG2-3D-SML.png" alt="StreamSuites" />
+        <div>
+          <h1 style="font-size:clamp(28px, 3.3vw, 35px);">
+            StreamSuites™
+          </h1>
+          <p class="tagline" style="font-size:0.9em;">
+            Automation, overlays &amp; engagement tools
+          </p>
+        </div>
+      </div>
+
+      <p class="hero-copy" style="font-size:0.8em;">
+        StreamSuites is a modular livestream automation and interaction platform built for creators who demand reliability, control, and scale. It provides real-time tools such as automated clips, live polls, scoreboards, tallies, and audience engagement systems—designed to integrate cleanly across platforms including Rumble, YouTube, Twitch, and Discord. StreamSuites separates execution from presentation, allowing a hardened runtime engine to handle automation while the dashboard offers clear, deliberate control over every surface.
+        <a
+          href="https://streamsuites.app/about.html"
+          style="color:#ffffff; text-decoration:underline; margin-left:6px;"
+        >
+          Read more
+        </a>
+      </p>
+
+      <a class="cta-primary" href="./home.html">CREATOR DASHBOARD</a>
+
+      <!-- CTA row + right-aligned platform metadata -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; flex-wrap:wrap; gap:12px;">
+
+        <div class="cta-secondary-row">
+          <a class="cta-secondary" href="./clips.html" style="color:#ffffff; text-transform:uppercase;">CLIPS</a>
+          <a class="cta-secondary" href="./polls.html" style="color:#ffffff; text-transform:uppercase;">POLLS</a>
+          <a class="cta-secondary" href="./scoreboards.html" style="color:#ffffff; text-transform:uppercase;">SCORES</a>
+          <a class="cta-secondary" href="./tallies.html" style="color:#ffffff; text-transform:uppercase;">TALLIES</a>
+        </div>
+
+        <!-- Supported platforms (RIGHT SIDE) -->
+        <div class="platforms" aria-label="Supported Platforms" style="display:flex; align-items:center;">
+
+          <span class="supported-tooltip-container">
+            <a
+              href="./tools"
+              class="platforms-label"
+              style="margin-right:10px; color:inherit; text-decoration:none;"
+            >
+              Supported
+            </a>
+
+            <div class="supported-tooltip">
+              <h4>Platforms</h4>
+              <ul>
+                <li>
+                  <img src="./assets/icons/rumble-silver.svg" alt="" />
+                  <strong>Rumble</strong> — Primary livestream automation target
+                </li>
+                <li>
+                  <img src="./assets/icons/youtube-silver.svg" alt="" />
+                  <strong>YouTube</strong> — Live interaction &amp; audience tooling
+                </li>
+                <li>
+                  <img src="./assets/icons/twitch-silver.svg" alt="" />
+                  <strong>Twitch</strong> — Chat-driven automation surfaces
+                </li>
+                <li>
+                  <img src="./assets/icons/discord-silver.svg" alt="" />
+                  <strong>Discord</strong> — Control channels &amp; event triggers
+                </li>
+              </ul>
+
+              <h4 style="margin-top:10px;">Tools</h4>
+              <ul>
+                <li>
+                  <img src="./assets/icons/obs-silver.svg" alt="" />
+                  <strong>OBS</strong> — Browser-based overlays &amp; scene inputs
+                </li>
+                <li>
+                  <img src="./assets/icons/browser-extension.svg" alt="" />
+                  <strong>Browser Extensions</strong> — Overlay &amp; control injection
+                </li>
+              </ul>
+
+              <h4 style="margin-top:10px;">Planned</h4>
+              <ul>
+                <li>
+                  <img src="./assets/icons/twitter-silver.svg" alt="" />
+                  <strong>Twitter / X</strong> — Scheduled support (API-limited)
+                </li>
+              </ul>
+            </div>
+          </span>
+
+          <span class="platforms-row">
+            <a class="platform-item" href="https://rumble.com/StreamSuites" target="_blank" rel="noopener noreferrer">
+              <img src="./assets/icons/rumble-silver.svg" alt="Rumble" />
+            </a>
+
+            <a class="platform-item" href="https://youtube.com/@StreamSuites" target="_blank" rel="noopener noreferrer">
+              <img src="./assets/icons/youtube-silver.svg" alt="YouTube" />
+            </a>
+
+            <a class="platform-item" href="https://twitch.tv/streamsuites" target="_blank" rel="noopener noreferrer">
+              <img src="./assets/icons/twitch-silver.svg" alt="Twitch" />
+            </a>
+
+            <a class="platform-item" href="https://support.streamsuites.app" target="_blank" rel="noopener noreferrer">
+              <img src="./assets/icons/discord-silver.svg" alt="Discord" />
+            </a>
+
+            <span class="platform-item">
+              <img src="./assets/icons/obs-silver.svg" alt="OBS" />
+            </span>
+
+            <!-- Plus indicator (linked + tooltip) -->
+            <span class="supported-tooltip-container">
+              <a
+                href="./tools"
+                class="platform-item"
+                style="text-decoration:none;"
+              >
+                <img
+                  src="./assets/icons/ui/plus.svg"
+                  alt="+"
+                  style="filter:invert(92%) sepia(6%) saturate(60%) hue-rotate(180deg) brightness(95%) contrast(90%);"
+                />
+              </a>
+            </span>
+          </span>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="footer-links">
+        <div class="footer-links-left">
+          <a href="./support">/support</a>
+          <a href="./changelog.html">/updates</a>
+          <a href="./privacy">/privacy</a>
+          <a href="./about">/about</a>
+        </div>
+
+        <div class="footer-brand" data-no-copyright>
+          <span class="footer-version">StreamSuites™ v0.2.2-alpha</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <a class="page-copyright" href="https://brainstream.media" target="_blank" rel="noopener noreferrer">
+    © 2026 Brainstream Media Group
+  </a>
+
+  <script>
+    (function () {
+      const containers = Array.from(document.querySelectorAll('.supported-tooltip-container'));
+
+      if (!containers.length) return;
+
+      const placeTooltip = (container, tooltip) => {
+        if (!tooltip) return;
+        tooltip.classList.remove('is-below');
+
+        const tooltipRect = tooltip.getBoundingClientRect();
+        const triggerRect = container.getBoundingClientRect();
+        const needed = tooltipRect.height + 18;
+
+        if (triggerRect.top - needed < 0) {
+          tooltip.classList.add('is-below');
+        }
+      };
+
+      const bindPlacement = (container) => {
+        const tooltip = container.querySelector('.supported-tooltip');
+        if (!tooltip) return;
+
+        const handler = () => placeTooltip(container, tooltip);
+        container.addEventListener('mouseenter', handler);
+        container.addEventListener('focusin', handler);
+        window.addEventListener('resize', handler);
+        handler();
+      };
+
+      containers.forEach(bindPlacement);
+    })();
+  </script>
+
+  <script src="./js/utils/versioning.js"></script>
+  <script src="./js/utils/version-stamp.js"></script>
+  <!-- Continuous perimeter border glow (UNCHANGED) -->
+  <script>
+    (function () {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      const card = document.querySelector('.lander-card');
+      if (!card) return;
+
+      let phase = 0;
+      const FPS = 30;
+      const STEP = 1 / (FPS * 8);
+      let timer = null;
+
+      function update() {
+        const r = card.getBoundingClientRect();
+        const rx = 18;
+        const w = r.width;
+        const h = r.height;
+
+        const straightW = w - 2 * rx;
+        const straightH = h - 2 * rx;
+        const corner = Math.PI * rx;
+        const perimeter = 2 * (straightW + straightH) + corner;
+
+        let d = phase * perimeter;
+        let x = rx, y = 0;
+
+        if (d < straightW) {
+          x = rx + d; y = 0;
+        } else if ((d -= straightW) < corner / 4) {
+          const t = d / (corner / 4);
+          x = w - rx + Math.sin(t * Math.PI / 2) * rx;
+          y = (1 - Math.cos(t * Math.PI / 2)) * rx;
+        } else if ((d -= corner / 4) < straightH) {
+          x = w; y = rx + d;
+        } else if ((d -= straightH) < corner / 4) {
+          const t = d / (corner / 4);
+          x = w - (1 - Math.cos(t * Math.PI / 2)) * rx;
+          y = h - rx + Math.sin(t * Math.PI / 2) * rx;
+        } else if ((d -= corner / 4) < straightW) {
+          x = w - rx - d; y = h;
+        } else if ((d -= straightW) < corner / 4) {
+          const t = d / (corner / 4);
+          x = rx - Math.sin(t * Math.PI / 2) * rx;
+          y = h - (1 - Math.cos(t * Math.PI / 2)) * rx;
+        } else if ((d -= corner / 4) < straightH) {
+          x = 0; y = h - rx - d;
+        } else {
+          d -= straightH;
+          const t = d / (corner / 4);
+          x = (1 - Math.cos(t * Math.PI / 2)) * rx;
+          y = rx - Math.sin(t * Math.PI / 2) * rx;
+        }
+
+        card.style.setProperty('--glow-x', (x / w * 100) + '%');
+        card.style.setProperty('--glow-y', (y / h * 100) + '%');
+
+        phase += STEP;
+        if (phase >= 1) phase -= 1;
+      }
+
+      function start() {
+        if (!timer) timer = setInterval(update, 1000 / FPS);
+      }
+      function stop() {
+        clearInterval(timer);
+        timer = null;
+      }
+
+      document.addEventListener('visibilitychange', () => {
+        document.hidden ? stop() : start();
+      });
+
+      start();
+    })();
+  </script>
+
+  <!-- Intro animation trigger (ADDITIVE, ONE-SHOT) -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const card = document.querySelector('.lander-card');
+      if (card) requestAnimationFrame(() => card.classList.add('is-visible'));
+    });
+  </script>
+</body>

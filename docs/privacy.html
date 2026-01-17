@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<!-- StreamSuites™ — Public Privacy Page -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy • StreamSuites™</title>
+  <meta name="description" content="Provisional privacy guidelines for StreamSuites public surfaces and dashboards." />
+  <link rel="canonical" href="https://bsmediagroup.github.io/StreamSuites-Dashboard/privacy.html" />
+  <meta property="og:title" content="Privacy • StreamSuites™" />
+  <meta property="og:description" content="Provisional privacy guidelines for StreamSuites public surfaces and dashboards." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bsmediagroup.github.io/StreamSuites-Dashboard/privacy.html" />
+  <meta property="og:image" content="https://bsmediagroup.github.io/StreamSuites-Dashboard/assets/backgrounds/seoshare.jpg" />
+  <link rel="icon" href="./favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="./css/theme-dark.css" />
+  <link rel="stylesheet" href="./css/components.css" />
+  <link rel="stylesheet" href="./css/public-pages.css" />
+</head>
+<body>
+  <div class="public-bg" aria-hidden="true"></div>
+  <div class="public-surface">
+    <div class="public-shell">
+      <header class="public-topbar">
+        <a class="public-brand" href="./lander.html">
+          <img src="./assets/logos/logo.png" alt="StreamSuites" />
+          <div>
+            <h1>StreamSuites™</h1>
+            <p class="brand-subtitle">Public surface</p>
+          </div>
+        </a>
+        <div class="public-nav-wrapper">
+          <input type="checkbox" id="public-nav-toggle" class="nav-toggle" aria-label="Toggle navigation" />
+          <label class="hamburger" for="public-nav-toggle">
+            <span class="sr-only">Toggle navigation</span>
+            <svg viewBox="0 0 32 32" aria-hidden="true">
+              <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"></path>
+              <path class="line" d="M7 16 27 16"></path>
+            </svg>
+          </label>
+          <div class="public-nav">
+            <span class="version-pill version-badge">Loading version…</span>
+            <a href="./about.html">About</a>
+            <a href="./tools/">Tools</a>
+            <a href="./support/">Support</a>
+            <a href="./privacy.html">Privacy</a>
+            <a href="./changelog.html">Changelog</a>
+            <a href="./accessibility.html">Accessibility</a>
+          </div>
+        </div>
+      </header>
+
+      <section class="public-hero public-glass-panel">
+        <div class="section-heading">
+          <h2>Privacy policy (provisional)</h2>
+          <span class="public-badge">Static surface</span>
+        </div>
+        <p class="muted">StreamSuites limits data collection on public pages. Creator authentication and secrets stay inside the dashboard runtime, never on these static views.</p>
+      </section>
+
+      <section class="public-stack" aria-label="Privacy statements">
+        <article class="public-glass-card">
+          <h3>Data collection</h3>
+          <p class="muted">We do not run trackers on public pages. Basic server logs and CDN metrics may capture IP, user agent, and timestamp solely for uptime and abuse detection.</p>
+          <ul class="public-list">
+            <li>Public HTML is static and cache-friendly.</li>
+            <li>No third-party analytics pixels are embedded.</li>
+            <li>Dashboard authentication happens in the protected admin area.</li>
+          </ul>
+        </article>
+
+        <article class="public-glass-card">
+          <h3>Content ownership</h3>
+          <p class="muted">Creators retain rights to uploaded clips and metadata. Public previews reference media locations without exposing private storage keys.</p>
+          <ul class="public-list">
+            <li>Links point to platform-native destinations (YouTube, Twitch, Rumble).</li>
+            <li>Temporary thumbnails and artwork respect creator ownership.</li>
+            <li>Removal requests: <a href="mailto:privacy@stream.suites">privacy@stream.suites</a></li>
+          </ul>
+        </article>
+
+        <article class="public-glass-card">
+          <h3>Retention & controls</h3>
+          <p class="muted">Logs that include personal data are purged on a rolling basis. Public caches may refresh slowly; critical removals are prioritized via manual invalidation.</p>
+          <ul class="public-list">
+            <li>Runtime keys and tokens are never shipped to the browser.</li>
+            <li>Dashboard exports stay within creator control.</li>
+            <li>Future updates will enumerate retention windows per region.</li>
+          </ul>
+        </article>
+      </section>
+
+      <footer class="public-footer">
+        <div>
+          <span class="footer-version">Version</span>
+          <span class="footer-copyright">©</span>
+        </div>
+        <nav aria-label="Public footer navigation">
+          <a href="./about.html">About</a>
+          <a href="./tools/">Tools</a>
+          <a href="./support/">Support</a>
+          <a href="./privacy.html">Privacy</a>
+          <a href="./changelog.html">Changelog</a>
+          <a href="./accessibility.html">Accessibility</a>
+        </nav>
+      </footer>
+    </div>
+  </div>
+
+  <script src="./js/utils/versioning.js"></script>
+  <script src="./js/utils/version-stamp.js"></script>
+  <script>
+    if (window.Versioning) {
+      Versioning.applyVersionToElements({ version: ".version-badge" });
+    }
+  </script>
+</body>
+</html>
