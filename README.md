@@ -37,11 +37,13 @@ The dashboard loads snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progre
 
 ## Authentication & Authorization
 
-- **Discord OAuth2:** The web dashboard uses Discord OAuth2 for authentication.
+- **Hard admin gate:** The admin dashboard is fail-closed and gated by server-side session introspection against the StreamSuites Auth API.
+- **Role enforcement:** Access is granted **only** when the Auth API session is valid and `role == "admin"`.
+- **Fail-closed behavior:** Unauthenticated users are redirected to the admin login, authenticated non-admins see a Not Authorized screen, and auth API failures render Service Unavailable.
+- **Credentials required:** All auth/session checks include credentials and never trust client-side flags.
+- **Discord OAuth2:** Discord OAuth remains for Discord-specific configuration and guild selection once admin access is granted.
 - **Scopes required:** `identify`, `guilds`.
-- **No local accounts:** StreamSuites does not create or store user accounts; Discord identity is the sole authentication mechanism.
-- **Why OAuth is required:** OAuth is used to identify the user, enumerate accessible guilds, and gate per-guild configuration access.
-- **Security & scope clarity:** Discord OAuth is required for Discord-specific views; no per-user permissions are stored by StreamSuites, and authorization is always derived from Discord.
+- **No local accounts:** StreamSuites does not create or store user accounts; Discord identity is used for Discord feature gating only.
 
 ## Guild Authorization Model
 
@@ -415,6 +417,7 @@ StreamSuites-Dashboard/
 │   ├── index.html
 │   ├── js
 │   │   ├── about.js
+│   │   ├── admin-gate.js
 │   │   ├── api.js
 │   │   ├── app.js
 │   │   ├── auth.js

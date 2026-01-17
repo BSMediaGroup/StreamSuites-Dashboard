@@ -13,9 +13,11 @@
     pathname.endsWith("/livechat/") ||
     pathname.endsWith("/livechat/index.html");
 
-  const shouldBlock = standaloneFlagDefined || isLivechatPath;
+  const existing = window.StreamSuitesDashboardGuard || {};
+  const shouldBlock = Boolean(existing.shouldBlock || standaloneFlagDefined || isLivechatPath);
 
   window.StreamSuitesDashboardGuard = {
+    ...existing,
     standaloneFlagDefined,
     isLivechatPath,
     shouldBlock
