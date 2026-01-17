@@ -363,15 +363,15 @@
     );
   }
 
-  function renderMeta(version, lastUpdated, build) {
+  function renderMeta(lastUpdated) {
     const versionEl = document.getElementById("about-version-meta");
     if (versionEl) {
-      versionEl.textContent = version || "Unavailable";
+      versionEl.textContent = "Loading…";
     }
 
     const buildEl = document.getElementById("about-build-meta");
     if (buildEl) {
-      buildEl.textContent = build || "Unknown";
+      buildEl.textContent = "Loading…";
     }
 
     const updatedEl = document.getElementById("about-updated-meta");
@@ -397,16 +397,12 @@
       }
 
       const buildEl = document.getElementById("about-build-meta");
-      if (buildEl && info.build) {
-        buildEl.textContent = info.build;
+      if (buildEl) {
+        buildEl.textContent = info.build || "Unknown";
       }
 
       const versionEl = document.getElementById("about-version-meta");
-      const currentVersionText = versionEl ? versionEl.textContent.trim() : "";
-      if (
-        versionEl &&
-        (!currentVersionText || currentVersionText === "Unavailable" || currentVersionText.includes("Loading"))
-      ) {
+      if (versionEl) {
         versionEl.textContent = Versioning.formatDisplayVersion(info);
       }
     });
@@ -519,7 +515,7 @@
 
         const scopedSections = await loadScopedSections();
 
-        renderMeta(data.version, data.lastUpdated, data.build);
+        renderMeta(data.lastUpdated);
         renderVersionMetaFromRuntime();
         renderErrors(data.errors);
         renderSections(

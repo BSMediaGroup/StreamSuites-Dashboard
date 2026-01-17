@@ -243,15 +243,15 @@
     attachDeveloperToggles();
   }
 
-  function renderMeta(version, lastUpdated, build) {
+  function renderMeta(lastUpdated) {
     const versionEl = document.getElementById("public-about-version-meta");
     if (versionEl) {
-      versionEl.textContent = version || "Unavailable";
+      versionEl.textContent = "Loading…";
     }
 
     const buildEl = document.getElementById("public-about-build-meta");
     if (buildEl) {
-      buildEl.textContent = build || "Unknown";
+      buildEl.textContent = "Loading…";
     }
 
     const updatedEl = document.getElementById("public-about-updated-meta");
@@ -277,16 +277,12 @@
       }
 
       const buildEl = document.getElementById("public-about-build-meta");
-      if (buildEl && info.build) {
-        buildEl.textContent = info.build;
+      if (buildEl) {
+        buildEl.textContent = info.build || "Unknown";
       }
 
       const versionEl = document.getElementById("public-about-version-meta");
-      const currentVersionText = versionEl ? versionEl.textContent.trim() : "";
-      if (
-        versionEl &&
-        (!currentVersionText || currentVersionText === "Unavailable" || currentVersionText.includes("Loading"))
-      ) {
+      if (versionEl) {
         versionEl.textContent = Versioning.formatDisplayVersion(info);
       }
     });
@@ -329,7 +325,7 @@
           }
         ];
 
-    renderMeta(data.version, data.lastUpdated, data.build);
+    renderMeta(data.lastUpdated);
     renderRuntimeMetaFromVersioning();
     renderErrors(data.errors);
     renderSections(scopesToRender);
