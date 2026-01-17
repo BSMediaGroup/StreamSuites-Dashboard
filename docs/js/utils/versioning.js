@@ -18,7 +18,7 @@
       const globalOverride =
         window.StreamSuitesVersionUrl || window.__STREAMSUITES_VERSION_URL__ || "";
       const configured = (globalOverride || meta || "").trim();
-      const fallback = "https://admin.streamsuites.app/docs/version.json";
+      const fallback = "/version.json";
 
       if (!configured) return fallback;
 

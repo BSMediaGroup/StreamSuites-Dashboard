@@ -1,13 +1,13 @@
 # StreamSuites Admin Dashboard — Runtime Operations & Control
 
-StreamSuites Admin Dashboard is the **authoritative admin surface** for monitoring and configuring the StreamSuites ecosystem.  
-It is deployed via **GitHub Pages** to **https://admin.streamsuites.app** and provides **Discord OAuth–gated admin access** for configuration and runtime control.
+StreamSuites Admin Dashboard is the **admin-only surface** for monitoring and configuring the StreamSuites ecosystem.  
+It is deployed via **GitHub Pages** from the `/docs` directory to **https://admin.streamsuites.app** and provides **Discord OAuth–gated admin access** for configuration and runtime control.
 
 All execution, chat ingestion, livestream control, scheduling, and command dispatch live in the **StreamSuites Runtime** repository — this dashboard supplies the configuration and control inputs for those systems.
 
 The dashboard loads snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progress), Pilled (planned ingest-only), and Discord** while also providing admin-owned configuration surfaces.
 
-- **Authority model:** Runtime exports are canonical for state snapshots; admin configuration and control inputs are authored here.
+- **Authority model:** Runtime exports are canonical for state snapshots and version/build metadata; admin configuration and control inputs are authored here.
 - **Configuration scope:** Discord and creator/platform settings are authored in this dashboard and exported for runtime use.
 - **Current stance:** Admin control + telemetry visibility.
   - **YouTube & Twitch:** Snapshot-driven heartbeat telemetry plus admin configuration surfaces.
@@ -21,9 +21,9 @@ The dashboard loads snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progre
 
 - **Current version:** StreamSuites™ `v0.2.3-alpha` (read from `version.json`).
 - **Build:** Runtime-stamped build identifier (read from `version.json`).
-- **Version authority:** This admin dashboard is the authoritative source for version/build metadata and publishes `version.json`.
-- **Canonical version metadata endpoint:** `https://admin.streamsuites.app/docs/version.json`.
-- **Downstream consumption:** Public and Creator dashboards fetch `https://admin.streamsuites.app/docs/version.json` remotely; this is intentional and required.
+- **Version authority:** The StreamSuites Runtime repository is the authoritative source for version/build metadata and publishes `version.json` into this repo via automation.
+- **Canonical version metadata endpoint:** `https://admin.streamsuites.app/version.json`.
+- **Downstream consumption:** Public and Creator dashboards fetch `https://admin.streamsuites.app/version.json` remotely; this is intentional and required.
 - **Dashboard role:** Admin-authoritative for configuration and runtime control; consumes runtime exports for operational visibility.
 - **Licensing:** Proprietary • All Rights Reserved • © 2026 Brainstream Media Group.
 - **Owner:** Daniel Clancy.
@@ -31,7 +31,7 @@ The dashboard loads snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progre
 
 ## Architecture Overview
 
-- **Authoritative runtime:** The StreamSuites Runtime repository is the source of truth for execution, state, telemetry, exports, and lifecycle control.
+- **Authoritative runtime:** The StreamSuites Runtime repository is the source of truth for execution, state, telemetry, exports, version/build metadata, and lifecycle control.
 - **State origination:** All snapshots, telemetry bundles, changelogs, and manifests originate in the runtime and are published for downstream readers.
 - **Admin authority:** This dashboard authors admin configuration and control inputs while ingesting runtime exports for visibility.
 
@@ -165,7 +165,7 @@ This repository is a **companion project** to the StreamSuites Runtime.
 
 ## Hosting & Deployment Model
 
-- Static site hosting (GitHub Pages) deployed to https://admin.streamsuites.app.
+- Static site hosting (GitHub Pages) deployed to https://admin.streamsuites.app from the `/docs` directory.
 - No backend.
 - Discord OAuth required for Discord-specific configuration views.
 - Embed/iframe friendly (e.g., Wix Studio).
@@ -177,8 +177,8 @@ This repository is a **companion project** to the StreamSuites Runtime.
 
 Runtime telemetry loads client-side with graceful fallbacks:
 
-1. **Primary:** `docs/shared/state/` — latest runtime exports copied from the runtime repo.
-2. **Secondary:** `docs/data/` — bundled sample snapshots.
+1. **Primary:** `/shared/state/` — latest runtime exports copied from the runtime repo.
+2. **Secondary:** `/data/` — bundled sample snapshots.
 3. **Local drafts:** `localStorage` via import/export tools.
 
 If shared state is missing, the UI silently falls back to bundled data.
@@ -197,7 +197,7 @@ If shared state is missing, the UI silently falls back to bundled data.
 - **Events:** Newest-first exported events.
 - **Rates:** Numeric indicators for recent windows.
 - **Errors:** Non-fatal visibility into subsystem errors.
-- **Sources:** `docs/shared/state/telemetry/*` with fallback to `docs/data/telemetry/`.
+- **Sources:** `/shared/state/telemetry/*` with fallback to `/data/telemetry/`.
 
 ## Roadmap Alignment (v0.2.2-alpha)
 
