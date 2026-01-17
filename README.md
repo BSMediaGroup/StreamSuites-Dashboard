@@ -37,11 +37,11 @@ The dashboard loads snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progre
 
 ## Authentication & Authorization
 
-- **Discord OAuth2:** The web dashboard uses Discord OAuth2 for authentication.
-- **Scopes required:** `identify`, `guilds`.
-- **No local accounts:** StreamSuites does not create or store user accounts; Discord identity is the sole authentication mechanism.
-- **Why OAuth is required:** OAuth is used to identify the user, enumerate accessible guilds, and gate per-guild configuration access.
-- **Security & scope clarity:** Discord OAuth is required for Discord-specific views; no per-user permissions are stored by StreamSuites, and authorization is always derived from Discord.
+- **Central auth API:** Admin authentication is handled by `https://api.streamsuites.app` with cookie-based sessions.
+- **Admin-only surface:** Every dashboard session must authenticate before any admin UI renders.
+- **Supported methods:** Google OAuth, GitHub OAuth, Discord OAuth, and email magic-link (no passwords).
+- **Authorization rule:** Access is granted only when the session introspection response reports `role=admin` **and** the authenticated email exists in `STREAMSUITES_ADMIN_EMAILS` (server-enforced; client gates fail closed).
+- **Discord OAuth scope:** Discord OAuth remains required for Discord-specific views to enumerate guild access and scope per-guild configuration.
 
 ## Guild Authorization Model
 
@@ -166,7 +166,7 @@ This repository is a **companion project** to the StreamSuites Runtime.
 ## Hosting & Deployment Model
 
 - Static site hosting (GitHub Pages) deployed to https://admin.streamsuites.app from the `/docs` directory.
-- No backend.
+- No local backend; authentication is provided by the central StreamSuites Auth API.
 - Discord OAuth required for Discord-specific configuration views.
 - Embed/iframe friendly (e.g., Wix Studio).
 - All logic runs client-side.
@@ -417,6 +417,7 @@ StreamSuites-Dashboard/
 │   │   ├── about.js
 │   │   ├── api.js
 │   │   ├── app.js
+│   │   ├── admin-auth.js
 │   │   ├── auth.js
 │   │   ├── changelog-merge.js
 │   │   ├── charts.js

@@ -1047,6 +1047,13 @@ async function initApp() {
   if (shouldBlockDashboardRuntime()) return;
   if (App.initialized) return;
 
+  if (window.StreamSuitesAdminAuth?.init) {
+    const authState = await window.StreamSuitesAdminAuth.init();
+    if (!authState || authState.authorized !== true) {
+      return;
+    }
+  }
+
   console.log("[BOOT:10] initApp start", performance.now());
   App.boot.deadlockTimer = setTimeout(() => {
     console.error("[BOOT:DEADLOCK] Bootstrap exceeded 2000ms. Dumping state...");
