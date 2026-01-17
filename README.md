@@ -19,11 +19,10 @@ The dashboard loads snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progre
 
 ## Version & Ownership
 
-- **Current version:** StreamSuites™ `v0.2.3-alpha` (read from `version.json`).
-- **Build:** Runtime-stamped build identifier (read from `version.json`).
-- **Version authority:** The StreamSuites Runtime repository is the authoritative source for version/build metadata and publishes `version.json` into this repo via automation.
-- **Canonical version metadata endpoint:** `https://admin.streamsuites.app/version.json`.
-- **Downstream consumption:** Public and Creator dashboards fetch `https://admin.streamsuites.app/version.json` remotely; this is intentional and required.
+- **Version/build source:** This repo does not define version/build. It consumes runtime-exported metadata only.
+- **Authoritative runtime:** The StreamSuites Runtime repository is the single source of truth for version/build metadata.
+- **Canonical version metadata endpoint:** `https://admin.streamsuites.app/runtime/exports/version.json`.
+- **Downstream consumption:** Public and Creator dashboards fetch `https://admin.streamsuites.app/runtime/exports/version.json` remotely; this is intentional and required.
 - **Dashboard role:** Admin-authoritative for configuration and runtime control; consumes runtime exports for operational visibility.
 - **Licensing:** Proprietary • All Rights Reserved • © 2026 Brainstream Media Group.
 - **Owner:** Daniel Clancy.
@@ -95,10 +94,10 @@ These settings map directly to runtime configuration; the dashboard does not exe
 
 ## Versioning Policy
 
-- **VERSION** (e.g. `v0.2.3-alpha`)
+- **VERSION**
   - Indicates semantic capability level.
   - Changes reflect feature, behavior, or contract evolution.
-- **BUILD** (e.g. `YYYY.MM.DD+NNN`)
+- **BUILD**
   - Identifies regenerated artifacts (exports, documentation, bundles).
   - Used for diagnostics and reproducibility.
 
@@ -205,7 +204,7 @@ If shared state is missing, the UI silently falls back to bundled data.
 - **Errors:** Non-fatal visibility into subsystem errors.
 - **Sources:** `/shared/state/telemetry/*` with fallback to `/data/telemetry/`.
 
-## Roadmap Alignment (v0.2.2-alpha)
+## Roadmap Alignment (Alpha)
 
 - **Unified Chat Replay UI:** UI COMPLETE / PREVIEW ONLY
 - **Live Chat Window:** UI COMPLETE / NO RUNTIME
@@ -246,7 +245,6 @@ StreamSuites-Dashboard/
 ├── DASHBOARD_AUDIT_REPORT.md
 ├── LICENSE
 ├── README.md
-├── version.json
 ├── changelog
 │   └── changelog.runtime.json
 ├── dev-notes
@@ -257,7 +255,6 @@ StreamSuites-Dashboard/
 │   ├── CONTRACTS.md
 │   ├── POST_MORTEM.md
 │   ├── TIERS.md
-│   ├── version.json
 │   ├── Thumbs.db
 │   ├── about
 │   │   ├── about.manifest.json

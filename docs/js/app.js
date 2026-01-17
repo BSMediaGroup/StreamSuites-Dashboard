@@ -79,7 +79,6 @@ if (window.__STREAMSUITES_SAFE_MODE__) {
 /* ======================================================================
    StreamSuites™ Dashboard — app.js
    Project: StreamSuites™
-   Version: v0.2.3-alpha
    Owner: Daniel Clancy
    Copyright: © 2026 Brainstream Media Group
    Central bootstrap + lightweight view router + storage layer

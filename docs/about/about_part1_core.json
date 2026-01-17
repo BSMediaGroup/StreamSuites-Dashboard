@@ -1,5 +1,4 @@
 {
-  "version": "0.2.3-alpha",
   "lastUpdated": "2026-01-14",
   "sections": [
     {
@@ -54,7 +53,7 @@
           },
           "developer": {
             "title": "Alpha Versioning and Licensing",
-            "body": "The runtime is explicitly marked v0.2.3-alpha using semantic versioning with prerelease tags. Alpha indicates that breaking changes are still possible and contract permanence is not guaranteed. The dashboard mirrors runtime version metadata via the root version.json export and remains in lockstep with runtime releases. Licensing posture is Proprietary / All Rights Reserved under Brainstream Media Group."
+            "body": "The runtime is explicitly marked using semantic versioning with prerelease tags. Alpha indicates that breaking changes are still possible and contract permanence is not guaranteed. The dashboard mirrors runtime version metadata via the /runtime/exports/version.json export and remains in lockstep with runtime releases. Licensing posture is Proprietary / All Rights Reserved under Brainstream Media Group."
           }
         }
       ]

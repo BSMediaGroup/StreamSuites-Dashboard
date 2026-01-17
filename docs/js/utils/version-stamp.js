@@ -1,7 +1,6 @@
 /* ======================================================================
    StreamSuites™ Dashboard — Version Stamp Helper
    Project: StreamSuites™
-   Version: v0.2.2-alpha
    Owner: Daniel Clancy
    Copyright: © 2026 Brainstream Media Group
    ====================================================================== */
@@ -52,7 +51,9 @@
 
     const copyrightEl = ensureElement(center, "#footer-copyright", "a", "footer-copyright");
     copyrightEl.id = "footer-copyright";
-    copyrightEl.textContent = meta.copyrightText;
+    if (meta.copyrightText) {
+      copyrightEl.textContent = meta.copyrightText;
+    }
     if (!copyrightEl.getAttribute("href")) {
       copyrightEl.href = "https://brainstream.media";
       copyrightEl.target = "_blank";
@@ -67,7 +68,9 @@
     versionEl.textContent = meta.versionText;
 
     const copyrightEl = ensureElement(footer, ".footer-copyright", "span", "footer-copyright");
-    copyrightEl.textContent = meta.copyrightText || meta.ownerText;
+    if (meta.copyrightText) {
+      copyrightEl.textContent = meta.copyrightText;
+    }
 
     if (link && link.parentElement === footer) {
       footer.insertBefore(versionEl, link);
@@ -80,7 +83,9 @@
     versionEl.textContent = meta.versionText;
 
     const copyrightEl = ensureElement(footer, ".footer-copyright", "span", "footer-copyright");
-    copyrightEl.textContent = meta.copyrightText || meta.ownerText;
+    if (meta.copyrightText) {
+      copyrightEl.textContent = meta.copyrightText;
+    }
   }
 
   function stampBrandFooter(meta) {
@@ -91,7 +96,7 @@
       if (brand.hasAttribute("data-no-copyright")) return;
 
       const copyrightAnchor = brand.querySelector("a");
-      if (copyrightAnchor) {
+      if (copyrightAnchor && meta.copyrightText) {
         copyrightAnchor.textContent = meta.copyrightText;
       } else {
         const copyrightEl = ensureElement(
@@ -100,19 +105,19 @@
           "span",
           "footer-copyright"
         );
-        copyrightEl.textContent = meta.copyrightText || meta.ownerText;
+        if (meta.copyrightText) {
+          copyrightEl.textContent = meta.copyrightText;
+        }
       }
     });
   }
 
   async function stampFooters() {
     const info = await Versioning.loadVersion();
-    if (!info) return;
 
     const meta = {
       versionText: Versioning.formatDisplayVersion(info),
-      copyrightText: info.copyright || "",
-      ownerText: info.owner || ""
+      copyrightText: ""
     };
 
     stampAppFooter(meta);

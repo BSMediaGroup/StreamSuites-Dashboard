@@ -1,7 +1,6 @@
 /* ======================================================================
    StreamSuites™ Dashboard — Versioning Utilities
    Project: StreamSuites™
-   Version: v0.2.2-alpha
    Owner: Daniel Clancy
    Copyright: © 2026 Brainstream Media Group
    ====================================================================== */
@@ -18,7 +17,7 @@
         window.StreamSuitesVersionBuild ||
         window.StreamSuitesBuild ||
         Date.now();
-      return `/version.json?v=${encodeURIComponent(cacheBust)}`;
+      return `/runtime/exports/version.json?v=${encodeURIComponent(cacheBust)}`;
     },
 
     async loadVersion() {
@@ -37,19 +36,18 @@
         })
         .then((data) => {
           const info = {
-            name: data.name || "StreamSuites™",
-            version: data.version || "",
-            build: data.build || "",
-            owner: data.owner || "",
-            copyright: data.copyright || "",
-            license: data.license || ""
+            project: data?.project || "",
+            version: data?.version || "",
+            build: data?.build || "",
+            generated_at: data?.generated_at || "",
+            source: data?.source || ""
           };
 
           window.StreamSuitesVersion = info;
           return info;
         })
         .catch((err) => {
-          console.warn("[Versioning] Failed to load version.json", err);
+          console.warn("[Versioning] Failed to load runtime version metadata", err);
           this._cache = null;
           return null;
         });
@@ -58,20 +56,19 @@
     },
 
     formatDisplayVersion(info) {
-      if (!info) return "";
-      const name = info.name || "StreamSuites™";
-      const version = info.version ? ` v${info.version}` : "";
+      if (!info || !info.version) return "Version unavailable";
+      const name = info.project || "StreamSuites";
+      const versionLabel = info.version.startsWith("v")
+        ? info.version
+        : `v${info.version}`;
       const build = info.build ? ` (build ${info.build})` : "";
-      return `${name}${version}${build}`;
+      return `${name} ${versionLabel}${build}`.trim();
     },
 
     async applyVersionToElements(selectors = {}) {
       const info = await this.loadVersion();
-      if (!info) return null;
-
       const versionText = this.formatDisplayVersion(info);
-      const copyrightText = info.copyright || "";
-      const ownerText = info.owner || "";
+      const ownerText = "";
 
       const applyText = (targets, text) => {
         if (!text || !targets) return;
@@ -85,7 +82,6 @@
       };
 
       applyText(selectors.version, versionText);
-      applyText(selectors.copyright, copyrightText);
       applyText(selectors.owner, ownerText);
 
       return info;
