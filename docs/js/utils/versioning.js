@@ -13,21 +13,12 @@
     _cache: null,
 
     resolveVersionUrl() {
-      const meta =
-        document.querySelector('meta[name="streamsuites-version-url"]')?.content || "";
-      const globalOverride =
-        window.StreamSuitesVersionUrl || window.__STREAMSUITES_VERSION_URL__ || "";
-      const configured = (globalOverride || meta || "").trim();
-      const fallback = "/version.json";
-
-      if (!configured) return fallback;
-
-      try {
-        return new URL(configured, window.location.href).toString();
-      } catch (err) {
-        console.warn("[Versioning] Invalid version URL override, using fallback.", err);
-        return fallback;
-      }
+      const cacheBust =
+        window.__STREAMSUITES_VERSION_BUILD__ ||
+        window.StreamSuitesVersionBuild ||
+        window.StreamSuitesBuild ||
+        Date.now();
+      return `/version.json?v=${encodeURIComponent(cacheBust)}`;
     },
 
     async loadVersion() {
