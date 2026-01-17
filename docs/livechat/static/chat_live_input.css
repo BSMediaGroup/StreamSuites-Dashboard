@@ -118,7 +118,7 @@
 }
 
 #emoji-button {
-  background: #1c2331 url("../../../docs/assets/icons/ui/emoji.svg") center/18px 18px no-repeat;
+  background: #1c2331 url("/assets/icons/ui/emoji.svg") center/18px 18px no-repeat;
   color: transparent;
 }
 
