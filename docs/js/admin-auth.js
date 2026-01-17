@@ -1,0 +1,465 @@
+/* ======================================================================
+   StreamSuites™ Dashboard — Admin Auth Gate
+   - Central StreamSuites Auth API (cookie-based sessions)
+   - Admin-only access enforced client-side (fail-closed)
+   ====================================================================== */
+
+(function () {
+  const pathname = window.location?.pathname || "";
+  if (pathname.includes("/livechat/")) return;
+
+  function shouldBlockDashboardRuntime() {
+    const guard = window.StreamSuitesDashboardGuard;
+    if (guard && typeof guard.shouldBlock === "boolean") {
+      return guard.shouldBlock;
+    }
+
+    const currentPath = (window.location?.pathname || "").toLowerCase();
+    const standaloneFlagDefined = typeof window.__STREAMSUITES_STANDALONE__ !== "undefined";
+    const isLivechatPath =
+      currentPath.startsWith("/streamsuites-dashboard/livechat") ||
+      currentPath.endsWith("/livechat/") ||
+      currentPath.endsWith("/livechat/index.html");
+
+    return standaloneFlagDefined || isLivechatPath;
+  }
+
+  if (shouldBlockDashboardRuntime()) return;
+
+  const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/i;
+
+  function getMetaContent(name) {
+    const value = document.querySelector(`meta[name="${name}"]`)?.getAttribute("content");
+    return typeof value === "string" ? value.trim() : "";
+  }
+
+  function normalizeEmail(value) {
+    return typeof value === "string" ? value.trim().toLowerCase() : "";
+  }
+
+  function normalizeEmailList(list) {
+    if (!Array.isArray(list)) return [];
+    return list.map((entry) => normalizeEmail(entry)).filter(Boolean);
+  }
+
+  function coerceText(value) {
+    if (typeof value === "string") return value;
+    if (typeof value === "number") return String(value);
+    return "";
+  }
+
+  const AdminAuth = {
+    state: {
+      authenticated: false,
+      authorized: false,
+      role: "",
+      email: "",
+      error: ""
+    },
+    initialized: false,
+    config: {
+      baseUrl: "",
+      endpoints: {
+        session: "",
+        logout: "",
+        magicLink: "",
+        providers: {
+          google: "",
+          github: "",
+          discord: ""
+        }
+      }
+    },
+    elements: {
+      overlay: null,
+      blocked: null,
+      blockedTitle: null,
+      blockedMessage: null,
+      blockedActions: null,
+      blockedOpen: null,
+      blockedLogout: null,
+      modalClose: null,
+      status: null,
+      emailForm: null,
+      emailInput: null,
+      emailButton: null,
+      oauthButtons: [],
+      headerWrap: null,
+      headerIdentity: null,
+      headerLogout: null
+    },
+
+    async init() {
+      if (this.initialized) return this.state;
+      this.initialized = true;
+      this.cacheElements();
+      this.loadConfig();
+      this.bindEvents();
+      await this.refreshSession();
+      return this.state;
+    },
+
+    cacheElements() {
+      this.elements.overlay = document.getElementById("admin-auth-overlay");
+      this.elements.blocked = document.getElementById("admin-auth-blocked");
+      this.elements.blockedTitle = document.getElementById("admin-auth-blocked-title");
+      this.elements.blockedMessage = document.getElementById("admin-auth-blocked-message");
+      this.elements.blockedActions = document.getElementById("admin-auth-blocked-actions");
+      this.elements.blockedOpen = document.getElementById("admin-auth-open");
+      this.elements.blockedLogout = document.getElementById("admin-auth-blocked-logout");
+      this.elements.modalClose = document.getElementById("admin-auth-close");
+      this.elements.status = document.getElementById("admin-auth-status");
+      this.elements.emailForm = document.getElementById("admin-auth-email-form");
+      this.elements.emailInput = document.getElementById("admin-auth-email");
+      this.elements.emailButton = document.getElementById("admin-auth-email-submit");
+      this.elements.oauthButtons = Array.from(
+        document.querySelectorAll("[data-admin-auth-provider]")
+      );
+      this.elements.headerWrap = document.getElementById("admin-auth-indicator");
+      this.elements.headerIdentity = document.getElementById("admin-auth-identity");
+      this.elements.headerLogout = document.getElementById("admin-auth-logout");
+    },
+
+    loadConfig() {
+      const baseUrl = getMetaContent("streamsuites-auth-base");
+      this.config.baseUrl = baseUrl;
+      this.config.endpoints.session = getMetaContent("streamsuites-auth-session");
+      this.config.endpoints.logout = getMetaContent("streamsuites-auth-logout");
+      this.config.endpoints.magicLink = getMetaContent("streamsuites-auth-magic-link");
+      this.config.endpoints.providers.google = getMetaContent("streamsuites-auth-google");
+      this.config.endpoints.providers.github = getMetaContent("streamsuites-auth-github");
+      this.config.endpoints.providers.discord = getMetaContent("streamsuites-auth-discord");
+    },
+
+    bindEvents() {
+      if (this.elements.modalClose) {
+        this.elements.modalClose.addEventListener("click", () => this.closeOverlay());
+      }
+
+      if (this.elements.overlay) {
+        this.elements.overlay.addEventListener("click", (event) => {
+          if (event.target === this.elements.overlay) {
+            this.closeOverlay();
+          }
+        });
+      }
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && this.isOverlayOpen()) {
+          this.closeOverlay();
+        }
+      });
+
+      if (this.elements.blockedOpen) {
+        this.elements.blockedOpen.addEventListener("click", () => this.openOverlay());
+      }
+
+      if (this.elements.blockedLogout) {
+        this.elements.blockedLogout.addEventListener("click", () => this.logout());
+      }
+
+      if (this.elements.headerLogout) {
+        this.elements.headerLogout.addEventListener("click", () => this.logout());
+      }
+
+      if (this.elements.emailForm) {
+        this.elements.emailForm.addEventListener("submit", (event) => {
+          event.preventDefault();
+          void this.submitMagicLink();
+        });
+      }
+
+      this.elements.oauthButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const provider = button.getAttribute("data-admin-auth-provider");
+          if (provider) {
+            this.startOAuth(provider);
+          }
+        });
+      });
+    },
+
+    isOverlayOpen() {
+      return Boolean(this.elements.overlay && !this.elements.overlay.classList.contains("hidden"));
+    },
+
+    openOverlay() {
+      if (this.elements.overlay) {
+        this.elements.overlay.classList.remove("hidden");
+      }
+      if (this.elements.blocked) {
+        this.elements.blocked.classList.add("hidden");
+      }
+    },
+
+    closeOverlay() {
+      if (this.elements.overlay) {
+        this.elements.overlay.classList.add("hidden");
+      }
+      if (this.elements.blocked) {
+        this.elements.blocked.classList.remove("hidden");
+      }
+    },
+
+    setStatus(state, message) {
+      if (!this.elements.status) return;
+      this.elements.status.dataset.state = state;
+      this.elements.status.textContent = message || "";
+    },
+
+    setLoading(isLoading) {
+      document.body.classList.toggle("admin-auth-loading", isLoading);
+      const controls = [
+        ...this.elements.oauthButtons,
+        this.elements.emailInput,
+        this.elements.emailButton
+      ].filter(Boolean);
+      controls.forEach((control) => {
+        control.disabled = isLoading;
+      });
+    },
+
+    setHeaderIdentity(email) {
+      if (!this.elements.headerWrap || !this.elements.headerIdentity) return;
+      const label = email || "Admin";
+      this.elements.headerIdentity.textContent = label;
+      this.elements.headerWrap.classList.toggle("hidden", !this.state.authorized);
+    },
+
+    setBlockedState({ title, message, showLogin, showLogout }) {
+      if (this.elements.blockedTitle) {
+        this.elements.blockedTitle.textContent = title;
+      }
+      if (this.elements.blockedMessage) {
+        this.elements.blockedMessage.textContent = message;
+      }
+      if (this.elements.blockedOpen) {
+        this.elements.blockedOpen.classList.toggle("hidden", !showLogin);
+      }
+      if (this.elements.blockedLogout) {
+        this.elements.blockedLogout.classList.toggle("hidden", !showLogout);
+      }
+    },
+
+    applyState() {
+      document.body.classList.toggle("admin-authenticated", this.state.authorized);
+      document.body.classList.toggle("admin-auth-required", !this.state.authenticated);
+      document.body.classList.toggle(
+        "admin-auth-denied",
+        this.state.authenticated && !this.state.authorized
+      );
+      document.body.classList.toggle("admin-auth-error", Boolean(this.state.error));
+
+      if (this.state.authorized) {
+        if (this.elements.overlay) this.elements.overlay.classList.add("hidden");
+        if (this.elements.blocked) this.elements.blocked.classList.add("hidden");
+        this.setHeaderIdentity(this.state.email);
+        return;
+      }
+
+      if (!this.state.authenticated) {
+        this.setBlockedState({
+          title: "Admin access required",
+          message: "Sign in with an approved admin account to continue.",
+          showLogin: true,
+          showLogout: false
+        });
+        this.openOverlay();
+        this.setHeaderIdentity("");
+        return;
+      }
+
+      this.setBlockedState({
+        title: "Not authorized",
+        message: "Your account is authenticated but not authorized for this admin dashboard.",
+        showLogin: false,
+        showLogout: true
+      });
+      this.closeOverlay();
+      this.setHeaderIdentity(this.state.email);
+    },
+
+    validateConfig() {
+      const { session } = this.config.endpoints;
+      if (!session) {
+        this.state.error = "Auth configuration missing: session endpoint not configured.";
+        return false;
+      }
+      return true;
+    },
+
+    async refreshSession() {
+      this.state.error = "";
+      if (!this.validateConfig()) {
+        this.setStatus("error", this.state.error);
+        this.applyState();
+        return;
+      }
+
+      this.setLoading(true);
+      this.setStatus("loading", "Checking admin session…");
+
+      try {
+        const response = await fetch(this.config.endpoints.session, {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            Accept: "application/json"
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`Auth session error (${response.status})`);
+        }
+
+        const payload = await response.json();
+        const normalized = this.normalizeSession(payload);
+        this.state = { ...this.state, ...normalized, error: "" };
+        this.setStatus("idle", "");
+      } catch (err) {
+        console.warn("[Admin Auth] Session introspection failed:", err);
+        this.state = {
+          authenticated: false,
+          authorized: false,
+          role: "",
+          email: "",
+          error: "Auth service unavailable. Please try again."
+        };
+        this.setStatus("error", this.state.error);
+      } finally {
+        this.setLoading(false);
+        this.applyState();
+      }
+    },
+
+    normalizeSession(payload) {
+      const authenticated = Boolean(
+        payload?.authenticated ??
+          payload?.isAuthenticated ??
+          payload?.session?.authenticated ??
+          payload?.session?.isAuthenticated
+      );
+
+      const email = coerceText(
+        payload?.email ?? payload?.session?.email ?? payload?.user?.email ?? ""
+      );
+
+      const role = coerceText(payload?.role ?? payload?.session?.role ?? payload?.user?.role ?? "");
+
+      const adminEmails = normalizeEmailList(
+        payload?.admin_emails ??
+          payload?.adminEmails ??
+          payload?.allowed_emails ??
+          payload?.allowedEmails ??
+          payload?.session?.adminEmails
+      );
+
+      const serverAuthorized = Boolean(
+        payload?.authorized ??
+          payload?.is_authorized ??
+          payload?.isAuthorized ??
+          payload?.is_admin ??
+          payload?.isAdmin
+      );
+
+      const normalizedEmail = normalizeEmail(email);
+      const emailAllowed = adminEmails.length
+        ? adminEmails.includes(normalizedEmail)
+        : serverAuthorized;
+
+      const authorized = authenticated && role === "admin" && emailAllowed;
+
+      return {
+        authenticated,
+        authorized,
+        role,
+        email: normalizedEmail,
+        error: ""
+      };
+    },
+
+    startOAuth(provider) {
+      const endpoint = this.config.endpoints.providers[provider];
+      if (!endpoint) {
+        this.setStatus("error", `Auth provider not configured: ${provider}.`);
+        return;
+      }
+      this.setStatus("loading", `Redirecting to ${provider}…`);
+      window.location.assign(endpoint);
+    },
+
+    async submitMagicLink() {
+      const endpoint = this.config.endpoints.magicLink;
+      if (!endpoint) {
+        this.setStatus("error", "Magic-link endpoint not configured.");
+        return;
+      }
+
+      const emailValue = this.elements.emailInput?.value || "";
+      const email = normalizeEmail(emailValue);
+      if (!EMAIL_PATTERN.test(email)) {
+        this.setStatus("error", "Enter a valid email address.");
+        return;
+      }
+
+      this.setLoading(true);
+      this.setStatus("loading", "Requesting magic link…");
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json"
+          },
+          body: JSON.stringify({ email })
+        });
+
+        if (!response.ok) {
+          const message = `Magic-link request failed (${response.status}).`;
+          throw new Error(message);
+        }
+
+        this.setStatus("sent", "Check your email for the magic link.");
+        if (this.elements.emailInput) {
+          this.elements.emailInput.value = "";
+        }
+      } catch (err) {
+        console.warn("[Admin Auth] Magic-link request failed:", err);
+        this.setStatus("error", "Unable to send magic link. Try again shortly.");
+      } finally {
+        this.setLoading(false);
+      }
+    },
+
+    async logout() {
+      const endpoint = this.config.endpoints.logout;
+      if (endpoint) {
+        try {
+          await fetch(endpoint, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              Accept: "application/json"
+            }
+          });
+        } catch (err) {
+          console.warn("[Admin Auth] Logout request failed:", err);
+        }
+      }
+
+      this.state = {
+        authenticated: false,
+        authorized: false,
+        role: "",
+        email: "",
+        error: ""
+      };
+      this.applyState();
+      window.location.assign("/index.html");
+    }
+  };
+
+  window.StreamSuitesAdminAuth = AdminAuth;
+})();
