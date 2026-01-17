@@ -1,36 +1,36 @@
-# StreamSuites Dashboard — Static, Read-Only Runtime Monitor
+# StreamSuites Admin Dashboard — Runtime Operations & Control
 
-StreamSuites Dashboard is a **static, client-side observability surface** for monitoring the StreamSuites ecosystem.  
-It is intentionally **GitHub Pages–safe** (no backend, no server execution) and exists to **visualize runtime-exported state** while providing **Discord OAuth–gated configuration** for eligible guilds.
+StreamSuites Admin Dashboard is the **authoritative admin surface** for monitoring and configuring the StreamSuites ecosystem.  
+It is deployed via **GitHub Pages** to **https://admin.streamsuites.app** and provides **Discord OAuth–gated admin access** for configuration and runtime control.
 
-All execution, chat ingestion, livestream control, scheduling, and command dispatch live in the **StreamSuites Runtime** repository — never here.
+All execution, chat ingestion, livestream control, scheduling, and command dispatch live in the **StreamSuites Runtime** repository — this dashboard supplies the configuration and control inputs for those systems.
 
-The dashboard loads snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progress), Pilled (planned ingest-only), and Discord** and renders them as a read-only preview surface.
+The dashboard loads snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progress), Pilled (planned ingest-only), and Discord** while also providing admin-owned configuration surfaces.
 
-- **Preview / scaffold only:** The dashboard is intentionally static and read-only for telemetry. Bundled snapshots demonstrate layout, schema alignment, and UI behavior. Runtime hydration for live chat, overlays, or replay feeds has **not started**.
-- **Authority model:** Runtime exports are canonical. This dashboard only reads exported artifacts and refreshes them on a timer.
-- **Write safety:** No runtime control plane. Configuration edits are scoped to Discord guild settings only; all other views remain read-only.
-- **Current stance:** Static previews only.
-  - **YouTube & Twitch:** Snapshot-driven heartbeat telemetry (read-only).
-  - **Rumble:** PAUSED at runtime level; visible with read-only telemetry and red roadmap treatment.
-  - **Kick:** Scaffolded / in-progress; hydrates runtime snapshots when present but remains read-only.
-  - **Pilled:** Planned / ingest-only; locked to placeholders and read-only.
+- **Authority model:** Runtime exports are canonical for state snapshots; admin configuration and control inputs are authored here.
+- **Configuration scope:** Discord and creator/platform settings are authored in this dashboard and exported for runtime use.
+- **Current stance:** Admin control + telemetry visibility.
+  - **YouTube & Twitch:** Snapshot-driven heartbeat telemetry plus admin configuration surfaces.
+  - **Rumble:** PAUSED at runtime level; visible with telemetry and roadmap treatment.
+  - **Kick:** Scaffolded / in-progress; hydrates runtime snapshots when present.
+  - **Pilled:** Planned / ingest-only; locked to placeholders.
 - **Audit context:** Refer to the attached audit report for historical and architectural context. **Do not regenerate it.**
+- **Surface separation:** Public and Creator dashboards live in separate repositories/domains. Cross-surface navigation uses absolute URLs only.
 
 ## Version & Ownership
 
 - **Current version:** StreamSuites™ `v0.2.3-alpha` (read from `docs/version.json`).
 - **Build:** Runtime-stamped build identifier (read from `docs/version.json`).
-- **Dashboard role:** Non-authoritative. Static, read-only consumer of runtime exports and local drafts.
+- **Dashboard role:** Admin-authoritative for configuration and runtime control; consumes runtime exports for operational visibility.
 - **Licensing:** Proprietary • All Rights Reserved • © 2026 Brainstream Media Group.
 - **Owner:** Daniel Clancy.
 - **Alpha disclaimer:** Active alpha surface. Schemas, exports, and visualizations may evolve as runtime contracts stabilize.
 
 ## Architecture Overview
 
-- **Authoritative runtime:** The StreamSuites Runtime repository is the single source of truth for execution, state, telemetry, exports, and lifecycle control.
+- **Authoritative runtime:** The StreamSuites Runtime repository is the source of truth for execution, state, telemetry, exports, and lifecycle control.
 - **State origination:** All snapshots, telemetry bundles, changelogs, and manifests originate in the runtime and are published for downstream readers.
-- **Downstream consumers:** This dashboard and other visualization surfaces ingest exported JSON only. They never author, mutate, or control runtime state.
+- **Admin authority:** This dashboard authors admin configuration and control inputs while ingesting runtime exports for visibility.
 
 ## Authentication & Authorization
 
@@ -81,10 +81,9 @@ These settings map directly to runtime configuration; the dashboard does not exe
 
 ## Relationship to Web Dashboard
 
-- **Separate repository:** The web dashboard lives in its own repository.
-- **Read-only inputs:** Consumes runtime-exported JSON only and never defines its own versioning.
-- **No control plane:** No process control, no filesystem authority, no execution rights.
-- **Design constraint:** Downstream consumer by design — visualization only.
+- **Separate surfaces:** Public and Creator dashboards live in separate repositories/domains.
+- **Admin authority:** This repository hosts the admin dashboard and is authoritative for admin configuration and runtime control.
+- **Cross-surface links:** Navigation to Public and Creator surfaces uses absolute URLs only.
 
 ## Versioning Policy
 
@@ -113,22 +112,21 @@ Build changes imply freshly generated artifacts, even when features are unchange
 
 ## Operational Boundary
 
-- **Static control surface:** Cannot mutate runtimes or issue commands.
+- **Admin control surface:** Provides configuration exports and runtime control inputs for administrative workflows.
 - **Runtime snapshot polling:** Periodically fetches `shared/state/runtime_snapshot.json` (or bundled fallbacks) to render status, heartbeat timestamps, errors, and pause reasons.
-- **Header mode badge:** `#app-mode` indicates connected/read-only or static fallback.
-- **No platform APIs:** No sockets or control-plane calls.
-- **Visual-only philosophy:** Dashboards illuminate runtime exports; execution remains runtime-owned.
+- **Header mode badge:** `#app-mode` indicates connected/admin or static fallback.
+- **Platform APIs:** Execution remains runtime-owned; the dashboard supplies configuration/control inputs and renders outputs.
 
 ## Relationship to StreamSuites (Main Repo)
 
 This repository is a **companion project** to the StreamSuites Runtime.
 
 - **Runtime-owned execution:** Chat ingest, overlays, livestream control, and command dispatch live in the runtime.
-- **Dashboard posture:** Static, read-only, preview-only until runtime hydration is explicitly enabled.
+- **Dashboard posture:** Static client-side surface with admin configuration and telemetry visibility.
 - **Roadmap source:** Dashboard roadmap is driven by `docs/data/roadmap.json`; changes propagate directly to the UI.
 
 ```
-[StreamSuites Runtime] <— consumes schemas — [StreamSuites-Dashboard (static, read-only)]
+[StreamSuites Runtime] <— consumes schemas — [StreamSuites Admin Dashboard (static, admin-controlled)]
          |                                              |
          |                                              +— planned status surface (no heartbeat yet)
          |
@@ -148,27 +146,29 @@ This repository is a **companion project** to the StreamSuites Runtime.
   - Posts to platforms
   - Exports deterministic state (`runtime_snapshot.json`, `quotas.json`, telemetry)
   - Rumble ingest currently paused pending stabilization
-- **Dashboard (read-only):**
+- **Dashboard (admin control + monitoring):**
   - Polls runtime snapshots for status, heartbeat, errors, pause reasons
-  - Renders creator/platform drafts from local storage
-  - Presents public galleries with no write paths
+  - Authors creator/platform configuration drafts and exports
+  - Provides admin control inputs alongside telemetry visibility
 - **Discord control-plane:** Lives entirely in the runtime; dashboard displays visibility only.
 
 ## Beta Pathway
 
 - **Active monitoring:** YouTube and Twitch poll runtime snapshots for status badges and counters.
-- **Scaffolded platform:** Kick mirrors YouTube/Twitch scaffolding in read-only mode.
+- **Scaffolded platform:** Kick mirrors YouTube/Twitch scaffolding during expansion.
 - **Paused platform:** Rumble remains visible with red roadmap treatment.
-- **Planned ingest-only:** Pilled is locked and read-only.
+- **Planned ingest-only:** Pilled is locked to placeholders.
 - **Static hosting:** All pages remain GitHub Pages–safe.
 
 ## Hosting & Deployment Model
 
-- Static site hosting (GitHub Pages).
+- Static site hosting (GitHub Pages) deployed to https://admin.streamsuites.app.
 - No backend.
 - Discord OAuth required for Discord-specific configuration views.
 - Embed/iframe friendly (e.g., Wix Studio).
 - All logic runs client-side.
+- Public and Creator dashboards are hosted in separate repos/domains.
+- Cross-surface navigation uses absolute URLs only.
 
 ## Data Sources & Fallbacks
 
@@ -180,16 +180,16 @@ Runtime telemetry loads client-side with graceful fallbacks:
 
 If shared state is missing, the UI silently falls back to bundled data.
 
-## Platform Runtime Previews (Read-Only)
+## Platform Runtime Previews
 
 - **YouTube:** Snapshot polling for status, errors, counters.
 - **Twitch:** Same pattern as YouTube.
-- **Kick:** Scaffolded view; read-only snapshot hydration.
-- **Rumble:** Deferred/Disabled; read-only snapshot display.
+- **Kick:** Scaffolded view; snapshot hydration.
+- **Rumble:** Deferred/Disabled; snapshot display.
 - **Pilled:** Planned ingest-only; placeholders only.
 - **Discord/Twitter:** Static visibility scaffolds.
 
-## Runtime Telemetry Panels (Read-Only)
+## Runtime Telemetry Panels
 
 - **Events:** Newest-first exported events.
 - **Rates:** Numeric indicators for recent windows.
@@ -581,11 +581,11 @@ StreamSuites-Dashboard/
 
 ## Runtime Export Consumption
 - **Snapshots:** Dashboard polls `shared/state/runtime_snapshot.json` (platform status) and `shared/state/quotas.json` (API quotas), falling back to `docs/data/*.json` when missing.
-- **Telemetry:** Read-only telemetry panels hydrate from `shared/state/telemetry/{events,rates,errors}.json`, falling back to `docs/data/telemetry/` if absent or stale.
+- **Telemetry:** Telemetry panels hydrate from `shared/state/telemetry/{events,rates,errors}.json`, falling back to `docs/data/telemetry/` if absent or stale.
 - **Changelogs/Roadmaps:** Public pages read `docs/data/changelog.*.json` and `docs/data/roadmap.json` only.
 - **Config drafts:** Creators/platforms configs are edited locally and exported as JSON; they do **not** push to runtimes.
 
 ## Status
-- **Stage:** Alpha revival (read-only, no backend commands).
+- **Stage:** Alpha revival (admin control + telemetry visibility, no backend services).
 - **Owner:** Brainstream Media Group / Daniel Clancy.
 - **License:** Proprietary • All Rights Reserved.
