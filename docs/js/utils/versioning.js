@@ -18,7 +18,16 @@
       const globalOverride =
         window.StreamSuitesVersionUrl || window.__STREAMSUITES_VERSION_URL__ || "";
       const configured = (globalOverride || meta || "").trim();
-      return configured || "https://admin.streamsuites.app/version.json";
+      const fallback = "https://admin.streamsuites.app/docs/version.json";
+
+      if (!configured) return fallback;
+
+      try {
+        return new URL(configured, window.location.href).toString();
+      } catch (err) {
+        console.warn("[Versioning] Invalid version URL override, using fallback.", err);
+        return fallback;
+      }
     },
 
     async loadVersion() {
@@ -28,7 +37,8 @@
       this._cache = fetch(url, {
         cache: "no-store",
         mode: "cors",
-        credentials: "omit"
+        credentials: "omit",
+        referrerPolicy: "no-referrer"
       })
         .then((res) => {
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
