@@ -16,7 +16,7 @@
       return `/${rootParts.join("/")}`;
     })();
 
-  const dataPath = `${basePath || ""}/data/roadmap.json`.replace(/\/+/g, "/");
+  const dataPath = "/runtime/exports/roadmap.json";
   const fillGradient = "linear-gradient(90deg, #57b9ff, #63ffa2)";
   const pausedGradient = "linear-gradient(90deg, #ff5f6d, #ffc371)";
   const animationDuration = 1200;
@@ -114,7 +114,9 @@
       const response = await fetch(dataPath, { cache: "no-store" });
       if (!response.ok) throw new Error("Failed to load roadmap data");
       const payload = await response.json();
-      return Array.isArray(payload) ? payload : [];
+      if (Array.isArray(payload)) return payload;
+      if (Array.isArray(payload?.entries)) return payload.entries;
+      return [];
     } catch (err) {
       console.warn("Unable to load roadmap", err);
       return [];

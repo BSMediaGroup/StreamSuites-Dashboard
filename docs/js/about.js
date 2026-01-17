@@ -56,11 +56,7 @@
     })();
 
   function resolveRoadmapPath() {
-    if (window.AboutData && typeof window.AboutData.buildUrl === "function") {
-      return window.AboutData.buildUrl("data/roadmap.json");
-    }
-
-    return `${basePath || ""}/data/roadmap.json`.replace(/\\+/g, "/");
+    return "/runtime/exports/roadmap.json";
   }
 
   function resolveAssetPath(asset) {

@@ -163,10 +163,23 @@ function preferValue(primary, fallback) {
 }
 
 function mergeEntry(existing, incoming) {
-  const baseDate = parseDateSafe(existing?.date, existing?.id || existing?.title || "");
-  const incomingDate = parseDateSafe(incoming?.date, incoming?.id || incoming?.title || "");
-  const primary = incomingDate > baseDate ? incoming : existing;
-  const secondary = primary === existing ? incoming : existing;
+  const existingScope = existing?.scope;
+  const incomingScope = incoming?.scope;
+  let primary = existing;
+  let secondary = incoming;
+
+  if (existingScope === "runtime" && incomingScope !== "runtime") {
+    primary = existing;
+    secondary = incoming;
+  } else if (incomingScope === "runtime" && existingScope !== "runtime") {
+    primary = incoming;
+    secondary = existing;
+  } else {
+    const baseDate = parseDateSafe(existing?.date, existing?.id || existing?.title || "");
+    const incomingDate = parseDateSafe(incoming?.date, incoming?.id || incoming?.title || "");
+    primary = incomingDate > baseDate ? incoming : existing;
+    secondary = primary === existing ? incoming : existing;
+  }
 
   return {
     ...secondary,
@@ -237,15 +250,15 @@ function mergeEntries(...entrySets) {
 export async function loadMergedChangelog() {
   const basePath = resolveBasePath();
   const dashboardPath = normalizePath(basePath, "data/changelog.dashboard.json");
-  const runtimePath = normalizePath(basePath, "data/changelog.runtime.json");
+  const runtimePath = "/runtime/exports/changelog.json";
 
-  const dashboardEntries = (await fetchChangelog(dashboardPath))
-    .map((entry) => normalizeEntry(entry, "dashboard"))
-    .filter(Boolean);
-
-  const runtimeEntries = (await fetchChangelog(runtimePath, { silent: true }))
+  const runtimeEntries = (await fetchChangelog(runtimePath))
     .map((entry) => normalizeEntry(entry, "runtime"))
     .filter(Boolean);
 
-  return mergeEntries(dashboardEntries, runtimeEntries);
+  const dashboardEntries = (await fetchChangelog(dashboardPath, { silent: true }))
+    .map((entry) => normalizeEntry(entry, "dashboard"))
+    .filter(Boolean);
+
+  return mergeEntries(runtimeEntries, dashboardEntries);
 }
