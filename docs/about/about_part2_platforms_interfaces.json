@@ -145,11 +145,11 @@
           "order": 1,
           "consumer": {
             "title": "Local, Authoritative Admin UI",
-            "body": "A Windows-first desktop Admin application is actively being built to provide a local, authoritative control surface for StreamSuites operators. It mirrors the dashboard’s admin views while remaining safe, explicit, and offline-capable."
+            "body": "A Windows-first desktop Admin application is actively being built to provide a local, authoritative control surface for StreamSuites operators. It mirrors the dashboard’s admin views while remaining safe, explicit, and offline-capable, and adds inline log viewing for multiple managed runtimes."
           },
           "developer": {
             "title": "Active Development and Parity Targets",
-            "body": "The Desktop Admin EXE (Visual Studio 2026 target) is under active development. It reads runtime state directly from disk, writes validated configuration locally, and triggers controlled runtime reloads without bypassing safety gates. Windows is the initial target, with parity goals for macOS and Linux. No remote bindings or network control paths are assumed."
+            "body": "The Desktop Admin EXE (Visual Studio 2026 target) is under active development. It reads runtime state directly from disk, writes validated configuration locally, and triggers controlled runtime reloads without bypassing safety gates. The inline log viewer is read-only (not a terminal emulator), with an “Open in external terminal” action for interactive troubleshooting. Windows is the initial target, with parity goals for macOS and Linux. No remote bindings or network control paths are assumed."
           }
         }
       ]
