@@ -51,6 +51,16 @@
   <meta name="twitter:image:src" content="https://admin.streamsuites.app/assets/logos/seodash.jpg" />
 
   <!-- ============================= -->
+  <!-- Base Path -->
+  <!-- ============================= -->
+  <script>
+    const ADMIN_BASE_PATH = window.location.pathname.startsWith("/docs")
+      ? "/docs"
+      : "";
+    window.ADMIN_BASE_PATH = ADMIN_BASE_PATH;
+  </script>
+
+  <!-- ============================= -->
   <!-- Favicon -->
   <!-- ============================= -->
   <link rel="icon" href="./favicon.ico" type="image/x-icon" />
@@ -428,30 +438,31 @@
   <script>
     window.StreamSuitesAdminGate?.bootstrap({
       scripts: [
-        "./js/utils/standalone-guard.js",
-        "./js/utils/versioning.js",
-        "./js/utils/version-stamp.js",
-        "./js/utils/about-data.js",
-        "./js/app.js",
-        "./js/auth.js",
-        "./js/discord-guild.js",
-        "./js/utils/search-pagination.js",
-        "./js/state.js",
-        "./js/telemetry.js",
-        "./js/platforms.js",
-        "./js/creators.js",
-        "./js/settings.js",
-        "./js/jobs.js",
-        "./js/clips.js",
-        "./js/data-signals.js",
-        "./js/overview.js",
-        "./js/about.js",
-        "./js/updates.js",
-        "./js/platforms/youtube.js",
-        "./js/platforms/twitch.js",
-        "./js/platforms/discord.js",
-        "./js/platforms/kick.js",
-        "./js/platforms/pilled.js"
+        `${ADMIN_BASE_PATH}/js/app.js`,
+        `${ADMIN_BASE_PATH}/js/view-loader.js`,
+        `${ADMIN_BASE_PATH}/js/utils/versioning.js`,
+        `${ADMIN_BASE_PATH}/js/utils/version-stamp.js`,
+        `${ADMIN_BASE_PATH}/js/utils/standalone-guard.js`,
+        `${ADMIN_BASE_PATH}/js/utils/about-data.js`,
+        `${ADMIN_BASE_PATH}/js/auth.js`,
+        `${ADMIN_BASE_PATH}/js/discord-guild.js`,
+        `${ADMIN_BASE_PATH}/js/utils/search-pagination.js`,
+        `${ADMIN_BASE_PATH}/js/state.js`,
+        `${ADMIN_BASE_PATH}/js/telemetry.js`,
+        `${ADMIN_BASE_PATH}/js/platforms.js`,
+        `${ADMIN_BASE_PATH}/js/creators.js`,
+        `${ADMIN_BASE_PATH}/js/settings.js`,
+        `${ADMIN_BASE_PATH}/js/jobs.js`,
+        `${ADMIN_BASE_PATH}/js/clips.js`,
+        `${ADMIN_BASE_PATH}/js/data-signals.js`,
+        `${ADMIN_BASE_PATH}/js/overview.js`,
+        `${ADMIN_BASE_PATH}/js/about.js`,
+        `${ADMIN_BASE_PATH}/js/updates.js`,
+        `${ADMIN_BASE_PATH}/js/platforms/youtube.js`,
+        `${ADMIN_BASE_PATH}/js/platforms/twitch.js`,
+        `${ADMIN_BASE_PATH}/js/platforms/discord.js`,
+        `${ADMIN_BASE_PATH}/js/platforms/kick.js`,
+        `${ADMIN_BASE_PATH}/js/platforms/pilled.js`
       ]
     });
   </script>

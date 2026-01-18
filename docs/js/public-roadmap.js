@@ -4,19 +4,10 @@
   const basePath =
     (window.Versioning && window.Versioning.resolveBasePath &&
       window.Versioning.resolveBasePath()) ||
-    (() => {
-      const parts = window.location.pathname.split("/").filter(Boolean);
-      if (!parts.length) return "";
-      const docsIndex = parts.indexOf("docs");
-      if (docsIndex === -1) {
-        return `/${parts[0]}`;
-      }
+    window.ADMIN_BASE_PATH ||
+    (window.location.pathname.startsWith("/docs") ? "/docs" : "");
 
-      const rootParts = parts.slice(0, docsIndex + 1);
-      return `/${rootParts.join("/")}`;
-    })();
-
-  const dataPath = "https://api.streamsuites.app/runtime/exports/roadmap.json";
+  const dataPath = `${basePath}/runtime/exports/roadmap.json`;
   const fillGradient = "linear-gradient(90deg, #57b9ff, #63ffa2)";
   const pausedGradient = "linear-gradient(90deg, #ff5f6d, #ffc371)";
   const animationDuration = 1200;

@@ -4,7 +4,10 @@
 
 (() => {
   const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/i;
-  const BASE_PATH = window.location.pathname.includes("/docs/") ? "/docs" : "";
+  const ADMIN_BASE_PATH =
+    window.ADMIN_BASE_PATH ??
+    (window.location.pathname.startsWith("/docs") ? "/docs" : "");
+  window.ADMIN_BASE_PATH = ADMIN_BASE_PATH;
   const ADMIN_ORIGIN = window.location.origin;
 
   function getMetaContent(name) {
@@ -37,7 +40,7 @@
   const params = new URLSearchParams(window.location.search);
   const redirectParam = params.get("redirect");
   const redirectTarget = new URL(
-    redirectParam || `${BASE_PATH}/index.html`,
+    redirectParam || `${ADMIN_BASE_PATH}/index.html`,
     ADMIN_ORIGIN
   ).toString();
   const reason = params.get("reason");

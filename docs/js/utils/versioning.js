@@ -8,16 +8,25 @@
 (() => {
   "use strict";
 
+  const ADMIN_BASE_PATH =
+    window.ADMIN_BASE_PATH ??
+    (window.location.pathname.startsWith("/docs") ? "/docs" : "");
+  window.ADMIN_BASE_PATH = ADMIN_BASE_PATH;
+
   const Versioning = {
     _cache: null,
 
     resolveMetaUrl() {
-      return "https://api.streamsuites.app/runtime/exports/meta.json";
+      return `${ADMIN_BASE_PATH}/runtime/exports/meta.json`;
+    },
+
+    resolveBasePath() {
+      return ADMIN_BASE_PATH;
     },
 
     resolveRuntimeUrl(file) {
       const normalized = String(file || "").replace(/^\/+/, "");
-      return `https://api.streamsuites.app/runtime/exports/${normalized}`;
+      return `${ADMIN_BASE_PATH}/runtime/exports/${normalized}`;
     },
 
     async loadVersion() {
@@ -25,16 +34,17 @@
 
       const url = this.resolveMetaUrl();
       this._cache = fetch(url, {
-        cache: "no-store",
-        mode: "cors",
-        credentials: "omit",
-        referrerPolicy: "no-referrer"
+        cache: "no-store"
       })
         .then((res) => {
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          if (!res.ok) {
+            console.warn("[Versioning] Meta export unavailable", res.status);
+            return null;
+          }
           return res.json();
         })
         .then(async (data) => {
+          if (!data) return null;
           const metaVersion =
             data?.version ||
             data?.meta?.version ||
@@ -65,12 +75,15 @@
 
           const versionUrl = this.resolveRuntimeUrl(versionExport.file);
           const versionResponse = await fetch(versionUrl, {
-            cache: "no-store",
-            mode: "cors",
-            credentials: "omit",
-            referrerPolicy: "no-referrer"
+            cache: "no-store"
           });
-          if (!versionResponse.ok) throw new Error(`HTTP ${versionResponse.status}`);
+          if (!versionResponse.ok) {
+            console.warn(
+              "[Versioning] Version export unavailable",
+              versionResponse.status
+            );
+            return null;
+          }
           const versionData = await versionResponse.json();
 
           const info = {

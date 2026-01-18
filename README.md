@@ -1,7 +1,8 @@
 # StreamSuites Admin Dashboard — Runtime Operations & Control
 
 StreamSuites Admin Dashboard is the **admin-only surface** for monitoring and configuring the StreamSuites ecosystem.  
-It is deployed via **GitHub Pages** from the `/docs` directory to **https://admin.streamsuites.app** and provides **Auth API–enforced admin access** for configuration and runtime control.
+It is deployed via **GitHub Pages** from the `/docs` directory to **https://admin.streamsuites.app** and provides **Auth API–enforced admin access** for configuration and runtime control.  
+Admin views live under `/docs/views`, and runtime exports are read locally from `/docs/runtime/exports` (no runtime exports are fetched from the Auth API).
 
 All execution, chat ingestion, livestream control, scheduling, and command dispatch live in the **StreamSuites Runtime** repository — this dashboard supplies the configuration and control inputs for those systems.
 
@@ -21,8 +22,8 @@ The dashboard loads snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progre
 
 - **Version/build source:** This repo does not define version/build. It consumes runtime-exported metadata only.
 - **Authoritative runtime:** The StreamSuites Runtime repository is the single source of truth for version/build metadata.
-- **Canonical version metadata endpoint:** `https://api.streamsuites.app/runtime/exports/meta.json` (with `version.json` fallback when referenced by the export manifest).
-- **Downstream consumption:** Public and Creator dashboards fetch the runtime exports from `https://api.streamsuites.app/runtime/exports/` remotely; this is intentional and required.
+- **Canonical version metadata endpoint:** `/docs/runtime/exports/meta.json` (with `version.json` fallback when referenced by the export manifest).
+- **Runtime export source:** Admin dashboard reads runtime exports locally from `/docs/runtime/exports` and never fetches them from the Auth API.
 - **Dashboard role:** Admin-authoritative for configuration and runtime control; consumes runtime exports for operational visibility.
 - **Licensing:** Proprietary • All Rights Reserved • © 2026 Brainstream Media Group.
 - **Owner:** Daniel Clancy.
@@ -177,6 +178,21 @@ This repository is a **companion project** to the StreamSuites Runtime.
 - All logic runs client-side.
 - Public and Creator dashboards are hosted in separate repos/domains.
 - Cross-surface navigation uses absolute URLs only.
+
+## Repo Tree (partial)
+
+```
+docs/
+  index.html
+  auth/login.html
+  views/
+  js/
+    app.js
+    view-loader.js
+    utils/
+      versioning.js
+      version-stamp.js
+```
 
 ## Data Sources & Fallbacks
 

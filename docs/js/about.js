@@ -43,20 +43,11 @@
   const basePath =
     (window.Versioning && window.Versioning.resolveBasePath &&
       window.Versioning.resolveBasePath()) ||
-    (() => {
-      const parts = window.location.pathname.split("/").filter(Boolean);
-      if (!parts.length) return "";
-      const docsIndex = parts.indexOf("docs");
-      if (docsIndex === -1) {
-        return `/${parts[0]}`;
-      }
-
-      const rootParts = parts.slice(0, docsIndex + 1);
-      return `/${rootParts.join("/")}`;
-    })();
+    window.ADMIN_BASE_PATH ||
+    (window.location.pathname.startsWith("/docs") ? "/docs" : "");
 
   function resolveRoadmapPath() {
-    return "https://api.streamsuites.app/runtime/exports/roadmap.json";
+    return `${basePath}/runtime/exports/roadmap.json`;
   }
 
   function resolveAssetPath(asset) {
