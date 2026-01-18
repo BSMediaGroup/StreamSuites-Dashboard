@@ -1168,6 +1168,17 @@ registerView("creators", {
     window.CreatorsView?.destroy?.();
   }
 });
+registerView("accounts", {
+  onLoad: () => {
+    window.AccountsView?.init?.();
+  }
+});
+registerView("audit", {
+  templatePath: "audit",
+  onLoad: () => {
+    window.AuditLogsView?.init?.();
+  }
+});
 
 registerView("triggers", {
   onLoad: () => {

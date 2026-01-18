@@ -186,8 +186,12 @@ docs/
   index.html
   auth/login.html
   views/
+    accounts.html
+    audit.html
   js/
+    accounts.js
     app.js
+    audit.js
     view-loader.js
     utils/
       versioning.js
