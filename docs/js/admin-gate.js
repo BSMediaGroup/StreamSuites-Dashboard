@@ -11,7 +11,9 @@
   if (window.StreamSuitesAdminGate) return;
 
   const AUTH_API_BASE = "https://api.streamsuites.app";
-  const ADMIN_BASE_PATH = window.ADMIN_BASE_PATH || "/docs";
+  const ADMIN_BASE_PATH =
+    window.ADMIN_BASE_PATH ??
+    (window.location.pathname.startsWith("/docs") ? "/docs" : "");
   window.ADMIN_BASE_PATH = ADMIN_BASE_PATH;
   const ADMIN_ORIGIN = window.location.origin;
   const ADMIN_INDEX_URL = `${ADMIN_ORIGIN}${ADMIN_BASE_PATH}/index.html`;

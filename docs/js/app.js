@@ -2,7 +2,9 @@
 // StreamSuites SAFE MODE (Non-blocking)
 // ==========================================================
 
-const ADMIN_BASE_PATH = window.ADMIN_BASE_PATH || "/docs";
+const ADMIN_BASE_PATH =
+  window.ADMIN_BASE_PATH ??
+  (window.location.pathname.startsWith("/docs") ? "/docs" : "");
 window.ADMIN_BASE_PATH = ADMIN_BASE_PATH;
 
 window.__STREAMSUITES_SAFE_MODE__ = true;

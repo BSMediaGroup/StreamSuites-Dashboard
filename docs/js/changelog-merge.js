@@ -33,7 +33,10 @@ function resolveBasePath() {
   ) {
     return window.Versioning.resolveBasePath();
   }
-  return window.ADMIN_BASE_PATH || "/docs";
+  return (
+    window.ADMIN_BASE_PATH ??
+    (window.location.pathname.startsWith("/docs") ? "/docs" : "")
+  );
 }
 
 function normalizePath(basePath, relative) {

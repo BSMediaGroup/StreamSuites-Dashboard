@@ -54,7 +54,9 @@
   <!-- Base Path -->
   <!-- ============================= -->
   <script>
-    const ADMIN_BASE_PATH = "/docs";
+    const ADMIN_BASE_PATH = window.location.pathname.startsWith("/docs")
+      ? "/docs"
+      : "";
     window.ADMIN_BASE_PATH = ADMIN_BASE_PATH;
   </script>
 
@@ -440,8 +442,8 @@
         `${ADMIN_BASE_PATH}/js/view-loader.js`,
         `${ADMIN_BASE_PATH}/js/utils/versioning.js`,
         `${ADMIN_BASE_PATH}/js/utils/version-stamp.js`,
-        `${ADMIN_BASE_PATH}/js/utils/about-data.js`,
         `${ADMIN_BASE_PATH}/js/utils/standalone-guard.js`,
+        `${ADMIN_BASE_PATH}/js/utils/about-data.js`,
         `${ADMIN_BASE_PATH}/js/auth.js`,
         `${ADMIN_BASE_PATH}/js/discord-guild.js`,
         `${ADMIN_BASE_PATH}/js/utils/search-pagination.js`,
