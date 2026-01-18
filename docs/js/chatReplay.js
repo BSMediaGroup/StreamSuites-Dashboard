@@ -1,8 +1,10 @@
 // Lightweight wiring for the Chat Replay preview surface.
 // The dashboard remains read-only; this module only swaps local preview targets.
 
+const BASE_PATH = window.location.origin;
+
 const buildPreviewUrl = (page, theme, mode) => {
-  const url = new URL(page, window.location.href);
+  const url = new URL(page, BASE_PATH);
   url.searchParams.set('theme', theme || 'default');
   url.searchParams.set('mode', mode || 'replay');
   return url.toString();
@@ -61,16 +63,15 @@ function initChatReplayPreview() {
   const themeCard = document.getElementById('theme-card');
   const modeButtons = Array.from(document.querySelectorAll('.ss-mode-button'));
   const popoutButton = document.getElementById('popout-button');
-  const basePath = window.location.pathname.includes('/views/') ? '../' : './';
   const frames = {
     window: {
       el: document.getElementById('window-preview'),
       pages: {
-        replay: `${basePath}views/chat_replay_window.html`,
-        live: `${basePath}views/chat_window.html`,
+        replay: '/views/chat_replay_window.html',
+        live: '/views/chat_window.html',
       }
     },
-    overlay: { el: document.getElementById('overlay-preview'), page: `${basePath}views/chat_overlay_obs.html` },
+    overlay: { el: document.getElementById('overlay-preview'), page: '/views/chat_overlay_obs.html' },
   };
 
   const activeTheme = themeCard?.querySelector('.element.active')?.dataset.theme || 'default';
@@ -109,7 +110,7 @@ function initChatReplayPreview() {
 
   popoutButton?.addEventListener('click', () => {
     const targetPage = state.mode === 'live' ? 'chat_window.html' : 'chat_replay_window.html';
-    const url = buildPreviewUrl(`${basePath}views/${targetPage}`, state.theme, state.mode);
+    const url = buildPreviewUrl(`/views/${targetPage}`, state.theme, state.mode);
     window.open(url, '_blank', 'noopener');
   });
 

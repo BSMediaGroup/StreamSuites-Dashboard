@@ -75,6 +75,12 @@ if (window.__STREAMSUITES_SAFE_MODE__) {
   };
 }
 
+const BASE_PATH = window.location.origin;
+
+function resolveBasePath() {
+  return BASE_PATH;
+}
+
 
 /* ======================================================================
    StreamSuites™ Dashboard — app.js
@@ -816,16 +822,8 @@ async function loadView(name) {
     return;
   }
 
-  const viewPath = `views/${view.templatePath}.html`;
-  const docsRoot = (() => {
-    const path = window.location.pathname || "/";
-    const marker = "/docs/";
-    if (path.includes(marker)) {
-      return `${path.split(marker)[0]}${marker}`;
-    }
-    return "/docs/";
-  })();
-  const viewUrl = new URL(viewPath, `${window.location.origin}${docsRoot}`);
+  const viewPath = `/views/${view.templatePath}.html`;
+  const viewUrl = new URL(viewPath, resolveBasePath());
   const viewPathLower = viewUrl.pathname.toLowerCase();
   if (
     viewPathLower.includes("/livechat/") ||
