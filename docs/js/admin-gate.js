@@ -264,6 +264,13 @@
         }
       })
     );
+    window.dispatchEvent(
+      new CustomEvent("streamsuites:admin-authorized", {
+        detail: {
+          authorized: true
+        }
+      })
+    );
   }
 
   function markDenied(reason, message) {

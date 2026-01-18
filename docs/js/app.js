@@ -121,6 +121,22 @@ function shouldBlockDashboardRuntime() {
   return standaloneFlagDefined || isLivechatPath;
 }
 
+window.addEventListener("streamsuites:admin-authorized", () => {
+  if (App.initialized) return;
+
+  if (!shouldBlockDashboardRuntime()) {
+    App.initialized = true;
+
+    if (typeof App.boot === "function") {
+      App.boot();
+    }
+
+    if (typeof App.mountInitialView === "function") {
+      App.mountInitialView();
+    }
+  }
+});
+
 function isRuntimeAvailable() {
   return window.__RUNTIME_AVAILABLE__ === true;
 }
