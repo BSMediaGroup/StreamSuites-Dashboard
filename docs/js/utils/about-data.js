@@ -9,20 +9,7 @@
   "use strict";
 
   function resolveBasePath() {
-    try {
-      const parts = window.location.pathname.split("/").filter(Boolean);
-      if (!parts.length) return "";
-      const docsIndex = parts.indexOf("docs");
-      if (docsIndex === -1) {
-        return `/${parts[0]}`;
-      }
-
-      const rootParts = parts.slice(0, docsIndex + 1);
-      return `/${rootParts.join("/")}`;
-    } catch (err) {
-      console.warn("[AboutData] Failed to resolve base path", err);
-      return "";
-    }
+    return window.ADMIN_BASE_PATH || "/docs";
   }
 
   function buildUrl(path) {

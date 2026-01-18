@@ -1,84 +1,43 @@
 // ==========================================================
-// StreamSuites SAFE MODE (Hydration-Safe)
+// StreamSuites SAFE MODE (Non-blocking)
 // ==========================================================
 
+const ADMIN_BASE_PATH = window.ADMIN_BASE_PATH || "/docs";
+window.ADMIN_BASE_PATH = ADMIN_BASE_PATH;
+
 window.__STREAMSUITES_SAFE_MODE__ = true;
-console.warn("[SAFE MODE] Render loops restricted");
+console.warn("[SAFE MODE] Soft guard enabled (non-blocking).");
 
 // ----------------------------------------------------------
-// Internal guards
-// ----------------------------------------------------------
-const __SAFE_TIMEOUT_ZERO_LIMIT__ = 100;
-let __safeTimeoutZeroCount__ = 0;
-
-// ----------------------------------------------------------
-// requestAnimationFrame — HARD BLOCKED
-// ----------------------------------------------------------
-if (window.__STREAMSUITES_SAFE_MODE__) {
-  window.requestAnimationFrame = function () {
-    console.warn("[SAFE MODE] requestAnimationFrame blocked");
-    return 0;
-  };
-}
-
-// ----------------------------------------------------------
-// ResizeObserver — HARD BLOCKED
-// ----------------------------------------------------------
-if (window.__STREAMSUITES_SAFE_MODE__) {
-  window.ResizeObserver = class {
-    observe() {}
-    unobserve() {}
-    disconnect() {}
-  };
-}
-
-// ----------------------------------------------------------
-// MutationObserver — HARD BLOCKED
-// ----------------------------------------------------------
-if (window.__STREAMSUITES_SAFE_MODE__) {
-  window.MutationObserver = class {
-    observe() {}
-    disconnect() {}
-    takeRecords() {
-      return [];
-    }
-  };
-}
-
-// ----------------------------------------------------------
-// Timers — HYDRATION SAFE
+// Timers — LOG ONLY (NO BLOCKING)
 // ----------------------------------------------------------
 if (window.__STREAMSUITES_SAFE_MODE__) {
   const _setInterval = window.setInterval;
   const _setTimeout = window.setTimeout;
+  const _requestAnimationFrame = window.requestAnimationFrame?.bind(window);
 
-  // Allow slow polling only
   window.setInterval = function (fn, t) {
-    if (typeof t === "number" && t >= 5000) {
-      return _setInterval(fn, t);
+    if (typeof t === "number" && t < 5000) {
+      console.warn("[SAFE MODE] setInterval requested under 5000ms", t);
     }
-    console.warn("[SAFE MODE] setInterval blocked", t);
-    return 0;
+    return _setInterval(fn, t);
   };
 
-  // Allow LIMITED zero-delay timeouts (for hydration)
   window.setTimeout = function (fn, t) {
     if (t === 0) {
-      if (__safeTimeoutZeroCount__ < __SAFE_TIMEOUT_ZERO_LIMIT__) {
-        __safeTimeoutZeroCount__++;
-        return _setTimeout(fn, 0);
-      }
-      console.warn("[SAFE MODE] setTimeout(0) blocked (limit reached)");
-      return 0;
+      console.warn("[SAFE MODE] setTimeout(0) invoked");
     }
     return _setTimeout(fn, t);
   };
-}
 
-const BASE_PATH = window.location.pathname.includes("/docs/") ? "/docs" : "";
-
-function resolveBasePath() {
-  return `${window.location.origin}${BASE_PATH}`;
+  if (_requestAnimationFrame) {
+    window.requestAnimationFrame = function (callback) {
+      if (typeof callback === "function") {
+        console.warn("[SAFE MODE] requestAnimationFrame invoked");
+      }
+      return _requestAnimationFrame(callback);
+    };
+  }
 }
 
 
@@ -822,7 +781,7 @@ async function loadView(name) {
     return;
   }
 
-  const viewPath = `${BASE_PATH}/views/${view.templatePath}.html`;
+  const viewPath = `${ADMIN_BASE_PATH}/views/${view.templatePath}.html`;
   const viewUrl = new URL(viewPath, window.location.origin);
   const viewPathLower = viewUrl.pathname.toLowerCase();
   if (
@@ -1204,6 +1163,7 @@ registerView("clips", {
 registerView("polls", {});
 registerView("tallies", {});
 registerView("scoreboards", {});
+registerView("scoreboard-management", {});
 registerView("data-signals", {
   templatePath: "data-signals",
   onLoad: () => {
