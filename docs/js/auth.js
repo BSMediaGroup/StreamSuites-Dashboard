@@ -146,7 +146,9 @@
       const container = document.getElementById("view-container");
       if (container) {
         const observer = new MutationObserver(() => {
+          this.cacheElements();
           this.applyLockState();
+          this.updateUI();
         });
         observer.observe(container, { childList: true, subtree: true });
       }
@@ -271,6 +273,7 @@
     },
 
     applyLockState() {
+      this.cacheElements();
       const locked = !this.session;
       document.body.classList.toggle("discord-auth-required", locked);
       document.body.classList.toggle("discord-authenticated", !locked);
@@ -286,6 +289,7 @@
     },
 
     updateUI() {
+      this.cacheElements();
       const loggedIn = Boolean(this.session && this.session.user);
       const canLogin = this.canStartLogin();
       if (this.elements.loginButton) {

@@ -12,7 +12,6 @@
 
   const AUTH_API_BASE = "https://api.streamsuites.app";
   const SESSION_ENDPOINT = `${AUTH_API_BASE}/auth/session`;
-  const LOGIN_ENDPOINT = `${AUTH_API_BASE}/auth/login`;
   const LOGOUT_ENDPOINT = `${AUTH_API_BASE}/auth/logout`;
   const AUTHORIZED_ROLE = "admin";
 
@@ -31,9 +30,13 @@
     scriptsLoaded: false,
     scriptQueue: [],
     overlay: null,
+    overlayAction: null,
     refreshTimer: null,
+    loggedOut: false,
     bootstrapStarted: false,
-    fetch: originalFetch
+    fetch: originalFetch,
+    routeHandler: null,
+    visibilityHandler: null
   };
 
   window.StreamSuitesAdminGate = gate;
@@ -62,9 +65,15 @@
         <div class="admin-gate-title">Authorizing</div>
         <div class="admin-gate-message">Checking administrator session.</div>
         <div class="admin-gate-status">Pending</div>
+        <div class="admin-gate-actions">
+          <button id="admin-gate-login" class="ss-btn ss-btn-primary hidden">
+            Log in as Administrator
+          </button>
+        </div>
       </div>
     `;
     gate.overlay = overlay;
+    gate.overlayAction = overlay.querySelector("#admin-gate-login");
     if (document.body) {
       document.body.appendChild(overlay);
     } else {
@@ -77,7 +86,7 @@
     return overlay;
   }
 
-  function setOverlayContent({ title, message, status }) {
+  function setOverlayContent({ title, message, status, showAction = false, actionLabel = "" }) {
     const overlay = ensureOverlay();
     const titleEl = overlay.querySelector(".admin-gate-title");
     const messageEl = overlay.querySelector(".admin-gate-message");
@@ -85,6 +94,10 @@
     if (titleEl) titleEl.textContent = title;
     if (messageEl) messageEl.textContent = message;
     if (statusEl) statusEl.textContent = status;
+    if (gate.overlayAction) {
+      gate.overlayAction.textContent = actionLabel || "Log in as Administrator";
+      gate.overlayAction.classList.toggle("hidden", !showAction);
+    }
   }
 
   function setHtmlState(stateClass) {
@@ -188,7 +201,9 @@
     setOverlayContent({
       title: reason === "forbidden" ? "Not Authorized" : "Service Unavailable",
       message,
-      status: reason === "forbidden" ? "Denied" : "Unavailable"
+      status: reason === "forbidden" ? "Denied" : "Unavailable",
+      showAction: reason === "forbidden",
+      actionLabel: "Log in as Administrator"
     });
     window.dispatchEvent(
       new CustomEvent("streamsuites:admin-auth", {
@@ -200,8 +215,14 @@
     );
   }
 
-  function redirectToLogin() {
-    const url = new URL(LOGIN_ENDPOINT);
+  function redirectToLogin({ reason = "", surface = "admin" } = {}) {
+    const url = new URL("/auth/login.html", window.location.origin);
+    if (surface) {
+      url.searchParams.set("surface", surface);
+    }
+    if (reason) {
+      url.searchParams.set("reason", reason);
+    }
     url.searchParams.set("redirect", window.location.href);
     window.location.assign(url.toString());
   }
@@ -248,6 +269,7 @@
   }
 
   async function authorize({ reason = "initial" } = {}) {
+    if (gate.loggedOut) return null;
     if (gate.inFlight) {
       gate.queued = true;
       return gate.inFlight;
@@ -282,7 +304,9 @@
         setOverlayContent({
           title: "Redirecting",
           message: "Admin login required. Redirecting to login…",
-          status: "Login"
+          status: "Login",
+          showAction: true,
+          actionLabel: "Log in as Administrator"
         });
         window.dispatchEvent(
           new CustomEvent("streamsuites:admin-auth", {
@@ -292,7 +316,7 @@
             }
           })
         );
-        redirectToLogin();
+        redirectToLogin({ surface: "admin" });
       } else if (result.status === "forbidden") {
         markDenied(
           "forbidden",
@@ -366,6 +390,7 @@
   };
 
   gate.logout = async () => {
+    gate.stopPolling();
     gate.shouldBlock = true;
     updateDashboardGuard({ shouldBlock: true, adminGateStatus: "logging-out" });
     setHtmlState("admin-gate-pending");
@@ -385,16 +410,7 @@
     } catch (err) {
       console.warn("[Admin Gate] Logout request failed", err);
     }
-
-    if (window.StreamSuitesAuth?.logout) {
-      try {
-        window.StreamSuitesAuth.logout();
-      } catch (err) {
-        console.warn("[Admin Gate] Discord logout failed", err);
-      }
-    }
-
-    redirectToLogin();
+    redirectToLogin({ reason: "logout", surface: "admin" });
   };
 
   if (originalFetch) {
@@ -406,25 +422,50 @@
     };
   }
 
+  gate.stopPolling = () => {
+    gate.loggedOut = true;
+    gate.inFlight = null;
+    gate.queued = false;
+    gate.admin = null;
+    window.StreamSuitesAdminSession = null;
+    if (gate.refreshTimer) {
+      clearInterval(gate.refreshTimer);
+      gate.refreshTimer = null;
+    }
+    if (gate.routeHandler) {
+      window.removeEventListener("hashchange", gate.routeHandler);
+      window.removeEventListener("popstate", gate.routeHandler);
+    }
+    if (gate.visibilityHandler) {
+      window.removeEventListener("visibilitychange", gate.visibilityHandler);
+    }
+    if (gate.overlayAction) {
+      gate.overlayAction.classList.add("hidden");
+    }
+  };
+
   document.addEventListener(
     "click",
     (event) => {
-      const logoutButton = event.target.closest("#discord-logout-button");
-      if (!logoutButton) return;
+      const action = event.target.closest("#admin-gate-login");
+      if (!action) return;
       event.preventDefault();
       event.stopPropagation();
-      gate.logout();
+      redirectToLogin({ surface: "admin" });
     },
     true
   );
 
-  window.addEventListener("hashchange", () => authorize({ reason: "route-change" }));
-  window.addEventListener("popstate", () => authorize({ reason: "route-change" }));
-  window.addEventListener("visibilitychange", () => {
+  gate.routeHandler = () => authorize({ reason: "route-change" });
+  gate.visibilityHandler = () => {
     if (!document.hidden) {
       authorize({ reason: "visibility" });
     }
-  });
+  };
+
+  window.addEventListener("hashchange", gate.routeHandler);
+  window.addEventListener("popstate", gate.routeHandler);
+  window.addEventListener("visibilitychange", gate.visibilityHandler);
 
   gate.refreshTimer = window.setInterval(() => {
     authorize({ reason: "interval" });

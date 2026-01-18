@@ -817,8 +817,15 @@ async function loadView(name) {
   }
 
   const viewPath = `views/${view.templatePath}.html`;
-  const basePath = window.location.pathname.replace(/docs\/[^/]*$/, "");
-  const viewUrl = new URL(viewPath, `${window.location.origin}${basePath}`);
+  const docsRoot = (() => {
+    const path = window.location.pathname || "/";
+    const marker = "/docs/";
+    if (path.includes(marker)) {
+      return `${path.split(marker)[0]}${marker}`;
+    }
+    return "/docs/";
+  })();
+  const viewUrl = new URL(viewPath, `${window.location.origin}${docsRoot}`);
   const viewPathLower = viewUrl.pathname.toLowerCase();
   if (
     viewPathLower.includes("/livechat/") ||
@@ -867,7 +874,12 @@ async function loadView(name) {
     container.innerHTML = `
       <div class="panel">
         <h3>${name}</h3>
-        <p class="text-muted">This module is not yet implemented.</p>
+        <div class="ss-alert ss-alert-danger">
+          Failed to load this view. Please refresh and try again.
+        </div>
+        <p class="text-muted" style="margin-top: 0.5rem;">
+          Expected partial: ${viewUrl.pathname}
+        </p>
       </div>
     `;
     markFirstViewMounted(name);

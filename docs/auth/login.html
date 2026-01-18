@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="streamsuites-auth-base" content="https://api.streamsuites.app" />
+  <meta name="streamsuites-auth-session" content="https://api.streamsuites.app/auth/session" />
+  <meta name="streamsuites-auth-logout" content="https://api.streamsuites.app/auth/logout" />
+  <meta name="streamsuites-auth-login" content="https://api.streamsuites.app/auth/login" />
+  <meta name="streamsuites-auth-google" content="https://api.streamsuites.app/auth/oauth/google" />
+  <meta name="streamsuites-auth-github" content="https://api.streamsuites.app/auth/oauth/github" />
+
+  <title>StreamSuites Admin Login</title>
+  <link rel="icon" href="../favicon.ico" />
+
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/theme-dark.css" />
+  <link rel="stylesheet" href="../css/layout.css" />
+  <link rel="stylesheet" href="../css/components.css" />
+</head>
+<body>
+  <main style="min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 32px;">
+    <div class="admin-auth-card glass-card">
+      <h2>Administrator Login</h2>
+      <p class="muted">Use your StreamSuites account to access the admin dashboard.</p>
+      <p id="admin-login-reason" class="muted"></p>
+
+      <div class="admin-auth-providers">
+        <button class="ss-btn ss-btn-primary" data-admin-auth-provider="google">Continue with Google</button>
+        <button class="ss-btn ss-btn-secondary" data-admin-auth-provider="github">Continue with GitHub</button>
+      </div>
+
+      <div class="admin-auth-divider">
+        <span>Emergency Admin Access</span>
+      </div>
+
+      <form id="admin-login-form" class="admin-auth-email">
+        <label for="admin-login-email">Admin Email</label>
+        <div class="admin-auth-email-row">
+          <input
+            id="admin-login-email"
+            name="email"
+            type="email"
+            placeholder="admin@streamsuites.app"
+            autocomplete="email"
+            required
+          />
+          <input
+            id="admin-login-password"
+            name="password"
+            type="password"
+            placeholder="Password"
+            autocomplete="current-password"
+            required
+          />
+          <button class="ss-btn ss-btn-secondary" type="submit">Sign in</button>
+        </div>
+        <p class="muted admin-auth-note">
+          Emergency access is an offline fallback. If the Auth API is unavailable, manual login will
+          not complete.
+        </p>
+      </form>
+
+      <div id="admin-login-status" class="admin-auth-status" role="status" aria-live="polite"></div>
+    </div>
+  </main>
+
+  <script src="../js/admin-login.js"></script>
+</body>
+</html>
