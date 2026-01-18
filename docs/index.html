@@ -231,13 +231,20 @@
     </div>
   </div>
 
-  <div id="admin-auth-blocked" class="admin-auth-blocked hidden">
+      <div id="admin-auth-blocked" class="admin-auth-blocked hidden">
     <div class="admin-auth-blocked-card glass-card">
       <h2 id="admin-auth-blocked-title">Admin access required</h2>
       <p id="admin-auth-blocked-message" class="muted"></p>
       <div id="admin-auth-blocked-actions" class="admin-auth-blocked-actions">
-        <button id="admin-auth-open" class="ss-btn ss-btn-primary">Log in as Administrator</button>
+        <button id="admin-auth-open" class="ss-btn ss-btn-primary">Login as Administrator</button>
         <button id="admin-auth-blocked-logout" class="ss-btn ss-btn-secondary hidden">Logout</button>
+        <a
+          id="admin-auth-creator"
+          class="ss-btn ss-btn-secondary hidden"
+          href="https://creator.streamsuites.app"
+        >
+          Go to Creator Dashboard
+        </a>
       </div>
     </div>
   </div>
@@ -291,6 +298,7 @@
               <span id="admin-auth-identity" class="streamsuites-auth-identity">admin@streamsuites.app</span>
             </div>
             <span id="admin-auth-role" class="streamsuites-auth-role">ADMIN</span>
+            <span id="admin-auth-tier" class="streamsuites-auth-tier">OPEN</span>
             <button id="admin-auth-logout" class="ss-btn ss-btn-secondary ss-btn-small">
               Logout
             </button>
@@ -401,7 +409,7 @@
           © 2026 Brainstream Media Group
         </a>
         <span class="footer-sep">•</span>
-        <a href="./home.html">Public Home</a>
+        <a href="https://streamsuites.app/home.html">Public Home</a>
       </div>
 
       <!-- Right -->

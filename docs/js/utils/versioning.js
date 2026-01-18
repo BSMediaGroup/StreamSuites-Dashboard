@@ -11,14 +11,19 @@
   const Versioning = {
     _cache: null,
 
-    resolveVersionUrl() {
-      return `${window.location.origin}/runtime/exports/version.json`;
+    resolveMetaUrl() {
+      return "https://api.streamsuites.app/runtime/exports/meta.json";
+    },
+
+    resolveRuntimeUrl(file) {
+      const normalized = String(file || "").replace(/^\/+/, "");
+      return `https://api.streamsuites.app/runtime/exports/${normalized}`;
     },
 
     async loadVersion() {
       if (this._cache) return this._cache;
 
-      const url = this.resolveVersionUrl();
+      const url = this.resolveMetaUrl();
       this._cache = fetch(url, {
         cache: "no-store",
         mode: "cors",
@@ -29,13 +34,51 @@
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           return res.json();
         })
-        .then((data) => {
+        .then(async (data) => {
+          const metaVersion =
+            data?.version ||
+            data?.meta?.version ||
+            data?.runtime?.version ||
+            data?.meta?.runtime_version ||
+            "";
+
+          if (metaVersion) {
+            const info = {
+              project: data?.project || data?.meta?.project || "StreamSuites",
+              version: metaVersion,
+              build: data?.build || data?.meta?.build || "",
+              generated_at: data?.meta?.generated_at || data?.generated_at || "",
+              source: data?.meta?.source || data?.source || ""
+            };
+            window.StreamSuitesVersion = info;
+            return info;
+          }
+
+          const exportsList = Array.isArray(data?.exports) ? data.exports : [];
+          const versionExport = exportsList.find((entry) =>
+            typeof entry?.file === "string"
+              ? entry.file.endsWith("version.json")
+              : false
+          );
+
+          if (!versionExport) return null;
+
+          const versionUrl = this.resolveRuntimeUrl(versionExport.file);
+          const versionResponse = await fetch(versionUrl, {
+            cache: "no-store",
+            mode: "cors",
+            credentials: "omit",
+            referrerPolicy: "no-referrer"
+          });
+          if (!versionResponse.ok) throw new Error(`HTTP ${versionResponse.status}`);
+          const versionData = await versionResponse.json();
+
           const info = {
-            project: data?.project || "",
-            version: data?.version || "",
-            build: data?.build || "",
-            generated_at: data?.generated_at || "",
-            source: data?.source || ""
+            project: versionData?.project || "",
+            version: versionData?.version || "",
+            build: versionData?.build || "",
+            generated_at: versionData?.generated_at || "",
+            source: versionData?.source || ""
           };
 
           window.StreamSuitesVersion = info;

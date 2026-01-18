@@ -4,7 +4,8 @@
 
 (() => {
   const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/i;
-  const ADMIN_ORIGIN = "https://admin.streamsuites.app";
+  const BASE_PATH = window.location.pathname.includes("/docs/") ? "/docs" : "";
+  const ADMIN_ORIGIN = window.location.origin;
 
   function getMetaContent(name) {
     const value = document.querySelector(`meta[name="${name}"]`)?.getAttribute("content");
@@ -35,7 +36,10 @@
 
   const params = new URLSearchParams(window.location.search);
   const redirectParam = params.get("redirect");
-  const redirectTarget = new URL(redirectParam || "/index.html", ADMIN_ORIGIN).toString();
+  const redirectTarget = new URL(
+    redirectParam || `${BASE_PATH}/index.html`,
+    ADMIN_ORIGIN
+  ).toString();
   const reason = params.get("reason");
 
   if (elements.reason && reason) {

@@ -75,10 +75,10 @@ if (window.__STREAMSUITES_SAFE_MODE__) {
   };
 }
 
-const BASE_PATH = window.location.origin;
+const BASE_PATH = window.location.pathname.includes("/docs/") ? "/docs" : "";
 
 function resolveBasePath() {
-  return BASE_PATH;
+  return `${window.location.origin}${BASE_PATH}`;
 }
 
 
@@ -822,8 +822,8 @@ async function loadView(name) {
     return;
   }
 
-  const viewPath = `/views/${view.templatePath}.html`;
-  const viewUrl = new URL(viewPath, resolveBasePath());
+  const viewPath = `${BASE_PATH}/views/${view.templatePath}.html`;
+  const viewUrl = new URL(viewPath, window.location.origin);
   const viewPathLower = viewUrl.pathname.toLowerCase();
   if (
     viewPathLower.includes("/livechat/") ||
