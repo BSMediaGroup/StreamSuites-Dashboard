@@ -2,8 +2,10 @@
 // StreamSuites SAFE MODE (Non-blocking)
 // ==========================================================
 
-const ADMIN_BASE_PATH = window.ADMIN_BASE_PATH ?? "";
-window.ADMIN_BASE_PATH = ADMIN_BASE_PATH;
+if (!window.ADMIN_BASE_PATH) {
+  window.ADMIN_BASE_PATH = "/docs";
+}
+const ADMIN_BASE_PATH = window.ADMIN_BASE_PATH;
 
 let streamsuitesCoreStylesLogged = false;
 const checkCoreStylesLoaded = () => {

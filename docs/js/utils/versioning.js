@@ -8,23 +8,20 @@
 (() => {
   "use strict";
 
-  const ADMIN_BASE_PATH = window.ADMIN_BASE_PATH ?? "";
-  window.ADMIN_BASE_PATH = ADMIN_BASE_PATH;
-
   const Versioning = {
     _cache: null,
 
     resolveMetaUrl() {
-      return `${ADMIN_BASE_PATH}/runtime/exports/version.json`;
+      return `${window.ADMIN_BASE_PATH}/runtime/exports/version.json`;
     },
 
     resolveBasePath() {
-      return ADMIN_BASE_PATH;
+      return window.ADMIN_BASE_PATH;
     },
 
     resolveRuntimeUrl(file) {
       const normalized = String(file || "").replace(/^\/+/, "");
-      return `${ADMIN_BASE_PATH}/runtime/exports/${normalized}`;
+      return `${window.ADMIN_BASE_PATH}/runtime/exports/${normalized}`;
     },
 
     async loadVersion() {

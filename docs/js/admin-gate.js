@@ -11,15 +11,13 @@
   if (window.StreamSuitesAdminGate) return;
 
   const AUTH_API_BASE = "https://api.streamsuites.app";
-  const ADMIN_BASE_PATH = window.ADMIN_BASE_PATH ?? "";
-  window.ADMIN_BASE_PATH = ADMIN_BASE_PATH;
   const ADMIN_ORIGIN = window.location.origin;
-  const ADMIN_INDEX_URL = `${ADMIN_ORIGIN}${ADMIN_BASE_PATH}/index.html`;
+  const ADMIN_INDEX_URL = `${ADMIN_ORIGIN}${window.ADMIN_BASE_PATH}/index.html`;
   const ADMIN_LOGOUT_REDIRECT = new URL(
-    `${ADMIN_BASE_PATH}/auth/login.html?reason=logout`,
+    `${window.ADMIN_BASE_PATH}/auth/login.html?reason=logout`,
     ADMIN_ORIGIN
   ).toString();
-  const ADMIN_LOGIN_URL = new URL(`${ADMIN_BASE_PATH}/auth/login.html`, ADMIN_ORIGIN);
+  const ADMIN_LOGIN_URL = new URL(`${window.ADMIN_BASE_PATH}/auth/login.html`, ADMIN_ORIGIN);
   const SESSION_ENDPOINT = `${AUTH_API_BASE}/auth/session`;
   const LOGOUT_ENDPOINT = `${AUTH_API_BASE}/auth/logout`;
   const ADMIN_LOGIN_GOOGLE_URL = `${AUTH_API_BASE}/auth/login/google?surface=admin`;
@@ -200,7 +198,7 @@
     const headerIdentity = document.getElementById("admin-auth-identity");
     const headerRole = document.getElementById("admin-auth-role");
     const headerTier = document.getElementById("admin-auth-tier");
-    const fallbackAvatar = `${ADMIN_BASE_PATH}/assets/icons/ui/profile.svg`;
+    const fallbackAvatar = `${window.ADMIN_BASE_PATH}/assets/icons/ui/profile.svg`;
 
     if (!headerWrap) return;
 
