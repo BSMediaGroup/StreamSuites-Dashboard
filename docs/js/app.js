@@ -2,10 +2,24 @@
 // StreamSuites SAFE MODE (Non-blocking)
 // ==========================================================
 
-const ADMIN_BASE_PATH =
-  window.ADMIN_BASE_PATH ??
-  (window.location.pathname.startsWith("/docs") ? "/docs" : "");
+const ADMIN_BASE_PATH = window.ADMIN_BASE_PATH ?? "";
 window.ADMIN_BASE_PATH = ADMIN_BASE_PATH;
+
+let streamsuitesCoreStylesLogged = false;
+const checkCoreStylesLoaded = () => {
+  if (streamsuitesCoreStylesLogged) return;
+  if (!document?.documentElement) return;
+
+  const rootStyle = window.getComputedStyle(document.documentElement);
+  const bgRoot = rootStyle.getPropertyValue("--bg-root").trim();
+
+  if (!bgRoot) {
+    streamsuitesCoreStylesLogged = true;
+    console.warn("[Dashboard] Core CSS appears missing (theme variables not set).");
+  }
+};
+
+window.addEventListener("load", checkCoreStylesLoaded, { once: true });
 
 window.__STREAMSUITES_SAFE_MODE__ = true;
 console.warn("[SAFE MODE] Soft guard enabled (non-blocking).");

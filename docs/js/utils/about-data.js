@@ -9,10 +9,7 @@
   "use strict";
 
   function resolveBasePath() {
-    return (
-      window.ADMIN_BASE_PATH ??
-      (window.location.pathname.startsWith("/docs") ? "/docs" : "")
-    );
+    return window.ADMIN_BASE_PATH ?? "";
   }
 
   function buildUrl(path) {

@@ -40,7 +40,7 @@
   <meta property="og:description" content="Administer StreamSuites creators, chat triggers, jobs, and platform settings from the StreamSuites admin dashboard." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://admin.streamsuites.app/" />
-  <meta property="og:image" content="https://admin.streamsuites.app/docs/assets/logos/seodash.jpg" />
+  <meta property="og:image" content="https://admin.streamsuites.app/assets/logos/seodash.jpg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
 
@@ -48,22 +48,20 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="StreamSuites™ Admin Dashboard" />
   <meta name="twitter:description" content="Administer StreamSuites creators, chat triggers, jobs, and platform settings from the StreamSuites admin dashboard." />
-  <meta name="twitter:image:src" content="https://admin.streamsuites.app/docs/assets/logos/seodash.jpg" />
+  <meta name="twitter:image:src" content="https://admin.streamsuites.app/assets/logos/seodash.jpg" />
 
   <!-- ============================= -->
   <!-- Base Path -->
   <!-- ============================= -->
   <script>
-    const ADMIN_BASE_PATH = window.location.pathname.startsWith("/docs")
-      ? "/docs"
-      : "";
+    const ADMIN_BASE_PATH = "";
     window.ADMIN_BASE_PATH = ADMIN_BASE_PATH;
   </script>
 
   <!-- ============================= -->
   <!-- Favicon -->
   <!-- ============================= -->
-  <link rel="icon" href="/docs/favicon.ico" type="image/x-icon" />
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 
   <!-- ============================= -->
   <!-- Fonts (Authoritative) -->
@@ -186,11 +184,11 @@
   <!-- ============================= -->
   <!-- Core Styles -->
   <!-- ============================= -->
-  <link rel="stylesheet" href="/docs/css/base.css" />
-  <link rel="stylesheet" href="/docs/css/theme-dark.css" />
-  <link rel="stylesheet" href="/docs/css/layout.css" />
-  <link rel="stylesheet" href="/docs/css/components.css" />
-  <link rel="stylesheet" href="/docs/css/updates.css" />
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/theme-dark.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+  <link rel="stylesheet" href="/css/updates.css" />
 </head>
 
 <body>
@@ -265,7 +263,7 @@
     <header id="app-header">
       <div class="header-left">
         <a href="https://streamsuites.app">
-          <img src="/docs/assets/logos/LOG2-3D-SML.png" alt="StreamSuites Logo" />
+          <img src="/assets/logos/LOG2-3D-SML.png" alt="StreamSuites Logo" />
           <h1 class="app-title">StreamSuites</h1>
           <span class="dashboard-badge" id="dashboard-mode">
             ADMIN DASHBOARD
@@ -298,8 +296,8 @@
             <div class="streamsuites-auth-avatar">
               <img
                 id="admin-auth-avatar"
-                src="/docs/assets/icons/ui/profile.svg"
-                data-fallback="/docs/assets/icons/ui/profile.svg"
+                src="/assets/icons/ui/profile.svg"
+                data-fallback="/assets/icons/ui/profile.svg"
                 alt="StreamSuites account avatar"
               />
             </div>
@@ -402,7 +400,7 @@
       <!-- Left -->
       <div class="footer-left">
         <img
-          src="/docs/assets/icons/discord-silver.svg"
+          src="/assets/icons/discord-silver.svg"
           alt="Discord"
           class="discord-icon"
         />
@@ -434,7 +432,7 @@
   </div>
 
   <!-- Core Scripts (Loaded after Admin Gate) -->
-  <script src="/docs/js/admin-gate.js"></script>
+  <script src="/js/admin-gate.js"></script>
   <script>
     window.StreamSuitesAdminGate?.bootstrap({
       scripts: [

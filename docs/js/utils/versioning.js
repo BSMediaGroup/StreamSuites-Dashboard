@@ -8,16 +8,14 @@
 (() => {
   "use strict";
 
-  const ADMIN_BASE_PATH =
-    window.ADMIN_BASE_PATH ??
-    (window.location.pathname.startsWith("/docs") ? "/docs" : "");
+  const ADMIN_BASE_PATH = window.ADMIN_BASE_PATH ?? "";
   window.ADMIN_BASE_PATH = ADMIN_BASE_PATH;
 
   const Versioning = {
     _cache: null,
 
     resolveMetaUrl() {
-      return `${ADMIN_BASE_PATH}/runtime/exports/meta.json`;
+      return `${ADMIN_BASE_PATH}/runtime/exports/version.json`;
     },
 
     resolveBasePath() {
@@ -42,54 +40,16 @@
           }
           const data = await res.json();
           if (!data) return null;
-          const metaVersion =
-            data?.version ||
-            data?.meta?.version ||
-            data?.runtime?.version ||
-            data?.meta?.runtime_version ||
-            "";
-
-          if (metaVersion) {
-            const info = {
-              project: data?.project || data?.meta?.project || "StreamSuites",
-              version: metaVersion,
-              build: data?.build || data?.meta?.build || "",
-              generated_at: data?.meta?.generated_at || data?.generated_at || "",
-              source: data?.meta?.source || data?.source || ""
-            };
-            window.StreamSuitesVersion = info;
-            return info;
-          }
-
-          const exportsList = Array.isArray(data?.exports) ? data.exports : [];
-          const versionExport = exportsList.find((entry) =>
-            typeof entry?.file === "string"
-              ? entry.file.endsWith("version.json")
-              : false
-          );
-
-          if (!versionExport) return null;
-
-          const versionUrl = this.resolveRuntimeUrl(versionExport.file);
-          const versionResponse = await fetch(versionUrl, {
-            cache: "no-store"
-          });
-          if (!versionResponse.ok) {
-            console.warn(
-              "[Versioning] Version export unavailable",
-              versionResponse.status
-            );
-            return null;
-          }
-          const versionData = await versionResponse.json();
 
           const info = {
-            project: versionData?.project || "",
-            version: versionData?.version || "",
-            build: versionData?.build || "",
-            generated_at: versionData?.generated_at || "",
-            source: versionData?.source || ""
+            project: data?.project || data?.meta?.project || "StreamSuites",
+            version: data?.version || data?.meta?.version || "",
+            build: data?.build || data?.meta?.build || "",
+            generated_at: data?.generated_at || data?.meta?.generated_at || "",
+            source: data?.source || data?.meta?.source || ""
           };
+
+          if (!info.version) return null;
 
           window.StreamSuitesVersion = info;
           return info;

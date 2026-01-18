@@ -4,9 +4,7 @@
 
 (() => {
   const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/i;
-  const ADMIN_BASE_PATH =
-    window.ADMIN_BASE_PATH ??
-    (window.location.pathname.startsWith("/docs") ? "/docs" : "");
+  const ADMIN_BASE_PATH = window.ADMIN_BASE_PATH ?? "";
   window.ADMIN_BASE_PATH = ADMIN_BASE_PATH;
   const ADMIN_ORIGIN = window.location.origin;
 
