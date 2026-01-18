@@ -89,7 +89,7 @@
   function buildClipCard(clip) {
     const link = document.createElement("a");
     link.className = "card-link";
-    link.href = `/clips/detail.html?id=${encodeURIComponent(clip.id)}`;
+    link.href = `https://streamsuites.app/clips/detail.html?id=${encodeURIComponent(clip.id)}`;
 
     const card = document.createElement("article");
     card.className = "card";

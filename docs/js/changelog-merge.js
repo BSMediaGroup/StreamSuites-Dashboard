@@ -250,7 +250,7 @@ function mergeEntries(...entrySets) {
 export async function loadMergedChangelog() {
   const basePath = resolveBasePath();
   const dashboardPath = normalizePath(basePath, "data/changelog.dashboard.json");
-  const runtimePath = "/runtime/exports/changelog.json";
+  const runtimePath = "https://api.streamsuites.app/runtime/exports/changelog.json";
 
   const runtimeEntries = (await fetchChangelog(runtimePath))
     .map((entry) => normalizeEntry(entry, "runtime"))

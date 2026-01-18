@@ -56,7 +56,7 @@
     })();
 
   function resolveRoadmapPath() {
-    return "/runtime/exports/roadmap.json";
+    return "https://api.streamsuites.app/runtime/exports/roadmap.json";
   }
 
   function resolveAssetPath(asset) {

@@ -80,7 +80,7 @@
   function buildPollCard(poll) {
     const link = document.createElement("a");
     link.className = "card-link";
-    link.href = `/polls/detail.html?id=${encodeURIComponent(poll.id)}`;
+    link.href = `https://streamsuites.app/polls/detail.html?id=${encodeURIComponent(poll.id)}`;
 
     const card = document.createElement("article");
     card.className = "card";
