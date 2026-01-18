@@ -5,7 +5,7 @@
     (window.Versioning && window.Versioning.resolveBasePath &&
       window.Versioning.resolveBasePath()) ||
     window.ADMIN_BASE_PATH ||
-    (window.location.pathname.startsWith("/docs") ? "/docs" : "");
+    "";
 
   const dataPath = `${basePath}/runtime/exports/roadmap.json`;
   const fillGradient = "linear-gradient(90deg, #57b9ff, #63ffa2)";

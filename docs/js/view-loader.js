@@ -6,9 +6,7 @@
 (() => {
   "use strict";
 
-  const ADMIN_BASE_PATH =
-    window.ADMIN_BASE_PATH ??
-    (window.location.pathname.startsWith("/docs") ? "/docs" : "");
+  const ADMIN_BASE_PATH = window.ADMIN_BASE_PATH ?? "";
   window.ADMIN_BASE_PATH = ADMIN_BASE_PATH;
 
   window.StreamSuitesViewLoader = window.StreamSuitesViewLoader || {

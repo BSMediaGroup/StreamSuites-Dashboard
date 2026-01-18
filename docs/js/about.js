@@ -44,7 +44,7 @@
     (window.Versioning && window.Versioning.resolveBasePath &&
       window.Versioning.resolveBasePath()) ||
     window.ADMIN_BASE_PATH ||
-    (window.location.pathname.startsWith("/docs") ? "/docs" : "");
+    "";
 
   function resolveRoadmapPath() {
     return `${basePath}/runtime/exports/roadmap.json`;
