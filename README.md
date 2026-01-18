@@ -414,11 +414,15 @@ StreamSuites-Dashboard/
 │   │       ├── errors.json
 │   │       ├── events.json
 │   │       └── rates.json
+│   ├── auth
+│   │   ├── login.html
+│   │   └── success.html
 │   ├── home.html
 │   ├── index.html
 │   ├── js
 │   │   ├── about.js
 │   │   ├── admin-gate.js
+│   │   ├── admin-login.js
 │   │   ├── api.js
 │   │   ├── app.js
 │   │   ├── admin-auth.js
@@ -484,6 +488,9 @@ StreamSuites-Dashboard/
 │   ├── polls
 │   │   ├── detail.html
 │   │   └── results.html
+│   ├── runtime
+│   │   └── exports
+│   │       └── version.json
 │   ├── scoreboards
 │   │   └── detail.html
 │   ├── shared
@@ -557,7 +564,8 @@ StreamSuites-Dashboard/
 ├── runtime
 │   ├── exports
 │   │   ├── changelog.json
-│   │   └── changelog.runtime.json
+│   │   ├── changelog.runtime.json
+│   │   └── version.json
 │   └── version.py
 └── schemas
     ├── chat_behaviour.schema.json

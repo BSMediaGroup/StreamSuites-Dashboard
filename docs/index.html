@@ -24,6 +24,7 @@
   <meta name="streamsuites-auth-base" content="https://api.streamsuites.app" />
   <meta name="streamsuites-auth-session" content="https://api.streamsuites.app/auth/session" />
   <meta name="streamsuites-auth-logout" content="https://api.streamsuites.app/auth/logout" />
+  <meta name="streamsuites-auth-login" content="https://api.streamsuites.app/auth/login" />
   <meta name="streamsuites-auth-google" content="https://api.streamsuites.app/auth/oauth/google" />
   <meta name="streamsuites-auth-github" content="https://api.streamsuites.app/auth/oauth/github" />
   <meta name="streamsuites-auth-discord" content="https://api.streamsuites.app/auth/oauth/discord" />
@@ -194,13 +195,12 @@
       <div class="admin-auth-providers">
         <button class="ss-btn ss-btn-primary" data-admin-auth-provider="google">Continue with Google</button>
         <button class="ss-btn ss-btn-secondary" data-admin-auth-provider="github">Continue with GitHub</button>
-        <button class="ss-btn ss-btn-secondary" data-admin-auth-provider="discord">Continue with Discord</button>
       </div>
       <div class="admin-auth-divider">
-        <span>or sign in with email</span>
+        <span>Emergency Admin Access</span>
       </div>
       <form id="admin-auth-email-form" class="admin-auth-email">
-        <label for="admin-auth-email">Email</label>
+        <label for="admin-auth-email">Admin Email</label>
         <div class="admin-auth-email-row">
           <input
             id="admin-auth-email"
@@ -210,10 +210,22 @@
             autocomplete="email"
             required
           />
+          <input
+            id="admin-auth-password"
+            name="password"
+            type="password"
+            placeholder="Password"
+            autocomplete="current-password"
+            required
+          />
           <button id="admin-auth-email-submit" class="ss-btn ss-btn-secondary" type="submit">
-            Send magic link
+            Sign in
           </button>
         </div>
+        <p class="muted admin-auth-note">
+          This manual sign-in is an emergency fallback. If the auth API is offline, it will remain
+          read-only.
+        </p>
       </form>
       <div id="admin-auth-status" class="admin-auth-status" role="status" aria-live="polite"></div>
     </div>
@@ -224,7 +236,7 @@
       <h2 id="admin-auth-blocked-title">Admin access required</h2>
       <p id="admin-auth-blocked-message" class="muted"></p>
       <div id="admin-auth-blocked-actions" class="admin-auth-blocked-actions">
-        <button id="admin-auth-open" class="ss-btn ss-btn-primary">Admin Login</button>
+        <button id="admin-auth-open" class="ss-btn ss-btn-primary">Log in as Administrator</button>
         <button id="admin-auth-blocked-logout" class="ss-btn ss-btn-secondary hidden">Logout</button>
       </div>
     </div>
@@ -265,31 +277,23 @@
           </a>
         </div>
         <div class="header-row header-auth-row">
-          <div id="admin-auth-indicator" class="admin-auth-indicator hidden">
-            <span class="admin-auth-label">Admin</span>
-            <span id="admin-auth-identity" class="admin-auth-identity">Admin</span>
+          <div id="admin-auth-indicator" class="streamsuites-auth hidden">
+            <div class="streamsuites-auth-avatar">
+              <img
+                id="admin-auth-avatar"
+                src="./assets/icons/ui/profile.svg"
+                data-fallback="./assets/icons/ui/profile.svg"
+                alt="StreamSuites account avatar"
+              />
+            </div>
+            <div class="streamsuites-auth-meta">
+              <span id="admin-auth-name" class="streamsuites-auth-name">Administrator</span>
+              <span id="admin-auth-identity" class="streamsuites-auth-identity">admin@streamsuites.app</span>
+            </div>
+            <span id="admin-auth-role" class="streamsuites-auth-role">ADMIN</span>
             <button id="admin-auth-logout" class="ss-btn ss-btn-secondary ss-btn-small">
               Logout
             </button>
-          </div>
-          <div class="discord-auth">
-            <button id="discord-login-button" class="ss-btn ss-btn-secondary">
-              <img
-                src="./assets/icons/discord-white.svg"
-                alt=""
-                aria-hidden="true"
-                class="discord-login-icon"
-              />
-              Login with Discord
-            </button>
-            <div id="discord-user" class="discord-user hidden">
-              <img id="discord-avatar" class="discord-avatar" alt="Discord avatar" />
-              <span id="discord-username" class="discord-username"></span>
-              <button id="discord-logout-button" class="ss-btn ss-btn-secondary ss-btn-small">
-                Logout
-              </button>
-            </div>
-            <span id="discord-auth-status" class="discord-auth-status">Discord login required</span>
           </div>
         </div>
       </div>

@@ -35,6 +35,36 @@
     </div>
   </div>
 
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Discord Account</h2>
+    </header>
+    <div class="ss-panel-body">
+      <div class="discord-auth">
+        <button id="discord-login-button" class="ss-btn ss-btn-secondary">
+          <img
+            src="./assets/icons/discord-white.svg"
+            alt=""
+            aria-hidden="true"
+            class="discord-login-icon"
+          />
+          Login with Discord
+        </button>
+        <div id="discord-user" class="discord-user hidden">
+          <img id="discord-avatar" class="discord-avatar" alt="Discord avatar" />
+          <span id="discord-username" class="discord-username"></span>
+          <button id="discord-logout-button" class="ss-btn ss-btn-secondary ss-btn-small">
+            Logout
+          </button>
+        </div>
+        <span id="discord-auth-status" class="discord-auth-status">Discord login required</span>
+      </div>
+      <p class="muted" style="margin-top: 0.5rem;">
+        Discord OAuth is required to select and authorize guilds for this control surface.
+      </p>
+    </div>
+  </section>
+
   <div class="ss-alert ss-alert-warning discord-guild-message" data-state="missing">
     Select a Discord guild to manage settings.
   </div>

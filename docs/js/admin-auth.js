@@ -54,6 +54,8 @@
       authorized: false,
       role: "",
       email: "",
+      displayName: "",
+      avatarUrl: "",
       error: ""
     },
     initialized: false,
@@ -62,7 +64,7 @@
       endpoints: {
         session: "",
         logout: "",
-        magicLink: "",
+        login: "",
         providers: {
           google: "",
           github: "",
@@ -82,10 +84,14 @@
       status: null,
       emailForm: null,
       emailInput: null,
+      passwordInput: null,
       emailButton: null,
       oauthButtons: [],
       headerWrap: null,
+      headerAvatar: null,
+      headerName: null,
       headerIdentity: null,
+      headerRole: null,
       headerLogout: null
     },
 
@@ -111,12 +117,16 @@
       this.elements.status = document.getElementById("admin-auth-status");
       this.elements.emailForm = document.getElementById("admin-auth-email-form");
       this.elements.emailInput = document.getElementById("admin-auth-email");
+      this.elements.passwordInput = document.getElementById("admin-auth-password");
       this.elements.emailButton = document.getElementById("admin-auth-email-submit");
       this.elements.oauthButtons = Array.from(
         document.querySelectorAll("[data-admin-auth-provider]")
       );
       this.elements.headerWrap = document.getElementById("admin-auth-indicator");
+      this.elements.headerAvatar = document.getElementById("admin-auth-avatar");
+      this.elements.headerName = document.getElementById("admin-auth-name");
       this.elements.headerIdentity = document.getElementById("admin-auth-identity");
+      this.elements.headerRole = document.getElementById("admin-auth-role");
       this.elements.headerLogout = document.getElementById("admin-auth-logout");
     },
 
@@ -125,7 +135,9 @@
       this.config.baseUrl = baseUrl;
       this.config.endpoints.session = getMetaContent("streamsuites-auth-session");
       this.config.endpoints.logout = getMetaContent("streamsuites-auth-logout");
-      this.config.endpoints.magicLink = getMetaContent("streamsuites-auth-magic-link");
+      this.config.endpoints.login =
+        getMetaContent("streamsuites-auth-login") ||
+        (baseUrl ? `${baseUrl.replace(/\/$/, "")}/auth/login` : "");
       this.config.endpoints.providers.google = getMetaContent("streamsuites-auth-google");
       this.config.endpoints.providers.github = getMetaContent("streamsuites-auth-github");
       this.config.endpoints.providers.discord = getMetaContent("streamsuites-auth-discord");
@@ -151,7 +163,13 @@
       });
 
       if (this.elements.blockedOpen) {
-        this.elements.blockedOpen.addEventListener("click", () => this.openOverlay());
+        this.elements.blockedOpen.addEventListener("click", () => {
+          if (this.state.authenticated && !this.state.authorized) {
+            window.location.assign(this.getAdminLoginUrl({ surface: "admin" }));
+            return;
+          }
+          this.openOverlay();
+        });
       }
 
       if (this.elements.blockedLogout) {
@@ -165,7 +183,7 @@
       if (this.elements.emailForm) {
         this.elements.emailForm.addEventListener("submit", (event) => {
           event.preventDefault();
-          void this.submitMagicLink();
+          void this.submitEmergencyLogin();
         });
       }
 
@@ -212,6 +230,7 @@
       const controls = [
         ...this.elements.oauthButtons,
         this.elements.emailInput,
+        this.elements.passwordInput,
         this.elements.emailButton
       ].filter(Boolean);
       controls.forEach((control) => {
@@ -219,10 +238,21 @@
       });
     },
 
-    setHeaderIdentity(email) {
-      if (!this.elements.headerWrap || !this.elements.headerIdentity) return;
-      const label = email || "Admin";
-      this.elements.headerIdentity.textContent = label;
+    setHeaderIdentity({ name, email, role, avatarUrl }) {
+      if (!this.elements.headerWrap) return;
+      if (this.elements.headerName) {
+        this.elements.headerName.textContent = name || email || "Administrator";
+      }
+      if (this.elements.headerIdentity) {
+        this.elements.headerIdentity.textContent = email || "admin@streamsuites.app";
+      }
+      if (this.elements.headerRole) {
+        this.elements.headerRole.textContent = role ? role.toUpperCase() : "ADMIN";
+      }
+      if (this.elements.headerAvatar) {
+        this.elements.headerAvatar.src =
+          avatarUrl || this.elements.headerAvatar.getAttribute("data-fallback") || "";
+      }
       this.elements.headerWrap.classList.toggle("hidden", !this.state.authorized);
     },
 
@@ -253,7 +283,12 @@
       if (this.state.authorized) {
         if (this.elements.overlay) this.elements.overlay.classList.add("hidden");
         if (this.elements.blocked) this.elements.blocked.classList.add("hidden");
-        this.setHeaderIdentity(this.state.email);
+        this.setHeaderIdentity({
+          name: this.state.displayName,
+          email: this.state.email,
+          role: this.state.role,
+          avatarUrl: this.state.avatarUrl
+        });
         return;
       }
 
@@ -265,18 +300,23 @@
           showLogout: false
         });
         this.openOverlay();
-        this.setHeaderIdentity("");
+        this.setHeaderIdentity({ name: "", email: "", role: "" });
         return;
       }
 
       this.setBlockedState({
         title: "Not authorized",
         message: "Your account is authenticated but not authorized for this admin dashboard.",
-        showLogin: false,
+        showLogin: true,
         showLogout: true
       });
       this.closeOverlay();
-      this.setHeaderIdentity(this.state.email);
+      this.setHeaderIdentity({
+        name: this.state.displayName,
+        email: this.state.email,
+        role: this.state.role,
+        avatarUrl: this.state.avatarUrl
+      });
     },
 
     validateConfig() {
@@ -323,6 +363,8 @@
           authorized: false,
           role: "",
           email: "",
+          displayName: "",
+          avatarUrl: "",
           error: "Auth service unavailable. Please try again."
         };
         this.setStatus("error", this.state.error);
@@ -345,6 +387,25 @@
       );
 
       const role = coerceText(payload?.role ?? payload?.session?.role ?? payload?.user?.role ?? "");
+
+      const displayName = coerceText(
+        payload?.display_name ??
+          payload?.displayName ??
+          payload?.session?.display_name ??
+          payload?.session?.displayName ??
+          payload?.user?.display_name ??
+          payload?.user?.displayName ??
+          payload?.user?.name ??
+          ""
+      );
+
+      const avatarUrl = coerceText(
+        payload?.avatar_url ??
+          payload?.avatarUrl ??
+          payload?.user?.avatar_url ??
+          payload?.user?.avatarUrl ??
+          ""
+      );
 
       const adminEmails = normalizeEmailList(
         payload?.admin_emails ??
@@ -374,6 +435,8 @@
         authorized,
         role,
         email: normalizedEmail,
+        displayName,
+        avatarUrl,
         error: ""
       };
     },
@@ -388,10 +451,13 @@
       window.location.assign(endpoint);
     },
 
-    async submitMagicLink() {
-      const endpoint = this.config.endpoints.magicLink;
+    async submitEmergencyLogin() {
+      const endpoint = this.config.endpoints.login;
       if (!endpoint) {
-        this.setStatus("error", "Magic-link endpoint not configured.");
+        this.setStatus(
+          "offline",
+          "Emergency access is offline. Auth login endpoint is not configured."
+        );
         return;
       }
 
@@ -402,8 +468,14 @@
         return;
       }
 
+      const password = this.elements.passwordInput?.value || "";
+      if (!password) {
+        this.setStatus("error", "Enter your admin password.");
+        return;
+      }
+
       this.setLoading(true);
-      this.setStatus("loading", "Requesting magic link…");
+      this.setStatus("loading", "Submitting emergency admin access…");
 
       try {
         const response = await fetch(endpoint, {
@@ -413,21 +485,32 @@
             "Content-Type": "application/json",
             Accept: "application/json"
           },
-          body: JSON.stringify({ email })
+          body: JSON.stringify({ email, password })
         });
 
         if (!response.ok) {
-          const message = `Magic-link request failed (${response.status}).`;
+          if (response.status === 404) {
+            this.setStatus(
+              "offline",
+              "Emergency access is offline. The auth service did not accept manual login."
+            );
+            return;
+          }
+          const message = `Manual login failed (${response.status}).`;
           throw new Error(message);
         }
 
-        this.setStatus("sent", "Check your email for the magic link.");
+        this.setStatus("sent", "Manual login submitted. Redirecting to the dashboard…");
         if (this.elements.emailInput) {
           this.elements.emailInput.value = "";
         }
+        if (this.elements.passwordInput) {
+          this.elements.passwordInput.value = "";
+        }
+        window.location.assign("/index.html");
       } catch (err) {
-        console.warn("[Admin Auth] Magic-link request failed:", err);
-        this.setStatus("error", "Unable to send magic link. Try again shortly.");
+        console.warn("[Admin Auth] Emergency login request failed:", err);
+        this.setStatus("error", "Unable to submit manual login. Try again shortly.");
       } finally {
         this.setLoading(false);
       }
@@ -454,10 +537,23 @@
         authorized: false,
         role: "",
         email: "",
+        displayName: "",
+        avatarUrl: "",
         error: ""
       };
       this.applyState();
-      window.location.assign("/index.html");
+      if (window.StreamSuitesAdminGate?.stopPolling) {
+        window.StreamSuitesAdminGate.stopPolling();
+      }
+      window.location.assign("/auth/login.html?reason=logout");
+    },
+
+    getAdminLoginUrl({ surface = "admin" } = {}) {
+      const url = new URL("/auth/login.html", window.location.origin);
+      if (surface) {
+        url.searchParams.set("surface", surface);
+      }
+      return url.toString();
     }
   };
 

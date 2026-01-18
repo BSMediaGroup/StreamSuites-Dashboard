@@ -87,6 +87,13 @@ html.admin-gate-unavailable #app {
   text-transform: uppercase;
 }
 
+#admin-gate-screen .admin-gate-actions {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
 /* ------------------------------
    Snapshot Health Banner
    ------------------------------ */
@@ -234,7 +241,7 @@ html.admin-gate-unavailable #app {
   letter-spacing: 0.08em;
 }
 
-.admin-auth-indicator {
+.streamsuites-auth {
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -244,16 +251,46 @@ html.admin-gate-unavailable #app {
   background: rgba(255, 255, 255, 0.04);
 }
 
-.admin-auth-label {
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  opacity: 0.7;
+.streamsuites-auth-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.admin-auth-identity {
+.streamsuites-auth-avatar img {
+  width: 18px;
+  height: 18px;
+  filter: brightness(0) invert(0.9);
+}
+
+.streamsuites-auth-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 140px;
+}
+
+.streamsuites-auth-name {
   font-size: 12px;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
+}
+
+.streamsuites-auth-identity {
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+.streamsuites-auth-role {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .discord-guild-selector {
@@ -416,6 +453,12 @@ body.admin-auth-error #app {
   min-width: 220px;
 }
 
+.admin-auth-note {
+  margin-top: 6px;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
 .admin-auth-status {
   min-height: 20px;
   margin-top: 14px;
@@ -429,6 +472,10 @@ body.admin-auth-error #app {
 
 .admin-auth-status[data-state=\"sent\"] {
   color: var(--status-success, #6ee7b7);
+}
+
+.admin-auth-status[data-state=\"offline\"] {
+  color: var(--status-warning, #facc15);
 }
 
 .admin-auth-blocked-card {
