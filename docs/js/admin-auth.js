@@ -165,6 +165,27 @@
       this.config.endpoints.providers.google = getMetaContent("streamsuites-auth-google");
       this.config.endpoints.providers.github = getMetaContent("streamsuites-auth-github");
       this.config.endpoints.providers.discord = getMetaContent("streamsuites-auth-discord");
+
+      const base = baseUrl ? baseUrl.replace(/\/$/, "") : "";
+      const normalizeOAuthEndpoint = (endpoint, provider) => {
+        if (base && (!endpoint || endpoint.includes("/auth/oauth/"))) {
+          return `${base}/auth/login/${provider}?surface=admin`;
+        }
+        return endpoint;
+      };
+
+      this.config.endpoints.providers.google = normalizeOAuthEndpoint(
+        this.config.endpoints.providers.google,
+        "google"
+      );
+      this.config.endpoints.providers.github = normalizeOAuthEndpoint(
+        this.config.endpoints.providers.github,
+        "github"
+      );
+      this.config.endpoints.providers.discord = normalizeOAuthEndpoint(
+        this.config.endpoints.providers.discord,
+        "discord"
+      );
     },
 
     bindEvents() {

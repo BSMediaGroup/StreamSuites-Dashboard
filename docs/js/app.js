@@ -121,19 +121,23 @@ function shouldBlockDashboardRuntime() {
   return standaloneFlagDefined || isLivechatPath;
 }
 
+let adminAuthorizedBootstrapInFlight = false;
+
 window.addEventListener("streamsuites:admin-authorized", () => {
-  if (App.initialized) return;
+  if (App.initialized || adminAuthorizedBootstrapInFlight) return;
 
   if (!shouldBlockDashboardRuntime()) {
-    App.initialized = true;
-
-    if (typeof App.boot === "function") {
-      App.boot();
-    }
-
-    if (typeof App.mountInitialView === "function") {
-      App.mountInitialView();
-    }
+    adminAuthorizedBootstrapInFlight = true;
+    Promise.resolve()
+      .then(() => initApp())
+      .catch((err) => {
+        console.error("[Dashboard] Admin-authorized bootstrap failed", err);
+      })
+      .finally(() => {
+        if (!App.initialized) {
+          adminAuthorizedBootstrapInFlight = false;
+        }
+      });
   }
 });
 
@@ -1295,6 +1299,9 @@ registerView("about", {
    ---------------------------------------------------------------------- */
 
 document.addEventListener("DOMContentLoaded", initApp);
+if (document.readyState !== "loading") {
+  initApp();
+}
 
 /* ======================================================================
    ADDITIVE: RUNTIME EXPORT (DO NOT REMOVE OR INLINE)

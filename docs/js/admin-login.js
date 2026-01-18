@@ -40,13 +40,23 @@
   };
 
   const baseUrl = getMetaContent("streamsuites-auth-base");
+  const base = baseUrl ? baseUrl.replace(/\/$/, "") : "";
   const endpoints = {
     login:
       getMetaContent("streamsuites-auth-login") ||
-      (baseUrl ? `${baseUrl.replace(/\/$/, "")}/auth/login` : ""),
+      (base ? `${base}/auth/login` : ""),
     google: getMetaContent("streamsuites-auth-google"),
     github: getMetaContent("streamsuites-auth-github")
   };
+  const normalizeOAuthEndpoint = (endpoint, provider) => {
+    if (base && (!endpoint || endpoint.includes("/auth/oauth/"))) {
+      return `${base}/auth/login/${provider}?surface=admin`;
+    }
+    return endpoint;
+  };
+
+  endpoints.google = normalizeOAuthEndpoint(endpoints.google, "google");
+  endpoints.github = normalizeOAuthEndpoint(endpoints.github, "github");
 
   const params = new URLSearchParams(window.location.search);
   const redirectParam = params.get("redirect");
