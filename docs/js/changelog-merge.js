@@ -33,16 +33,7 @@ function resolveBasePath() {
   ) {
     return window.Versioning.resolveBasePath();
   }
-
-  const parts = window.location.pathname.split("/").filter(Boolean);
-  if (!parts.length) return "";
-  const docsIndex = parts.indexOf("docs");
-  if (docsIndex === -1) {
-    return `/${parts[0]}`;
-  }
-
-  const rootParts = parts.slice(0, docsIndex + 1);
-  return `/${rootParts.join("/")}`;
+  return window.ADMIN_BASE_PATH || "/docs";
 }
 
 function normalizePath(basePath, relative) {
@@ -250,7 +241,7 @@ function mergeEntries(...entrySets) {
 export async function loadMergedChangelog() {
   const basePath = resolveBasePath();
   const dashboardPath = normalizePath(basePath, "data/changelog.dashboard.json");
-  const runtimePath = "https://api.streamsuites.app/runtime/exports/changelog.json";
+  const runtimePath = normalizePath(basePath, "runtime/exports/changelog.runtime.json");
 
   const runtimeEntries = (await fetchChangelog(runtimePath))
     .map((entry) => normalizeEntry(entry, "runtime"))
