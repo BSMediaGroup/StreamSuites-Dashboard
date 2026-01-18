@@ -12,7 +12,7 @@
     _cache: null,
 
     resolveVersionUrl() {
-      return "/runtime/exports/version.json";
+      return `${window.location.origin}/runtime/exports/version.json`;
     },
 
     async loadVersion() {

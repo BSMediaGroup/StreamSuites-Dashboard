@@ -5,6 +5,12 @@
    ====================================================================== */
 
 (function () {
+  const ADMIN_ORIGIN = "https://admin.streamsuites.app";
+  const ADMIN_INDEX_URL = `${ADMIN_ORIGIN}/index.html`;
+  const ADMIN_LOGOUT_REDIRECT = `${ADMIN_ORIGIN}/auth/login.html?reason=logout`;
+  const ADMIN_LOGIN_URL = `https://api.streamsuites.app/auth/login?surface=admin&redirect=${encodeURIComponent(
+    ADMIN_INDEX_URL
+  )}`;
   const pathname = window.location?.pathname || "";
   if (pathname.includes("/livechat/")) return;
 
@@ -507,7 +513,7 @@
         if (this.elements.passwordInput) {
           this.elements.passwordInput.value = "";
         }
-        window.location.assign("/index.html");
+        window.location.assign(ADMIN_INDEX_URL);
       } catch (err) {
         console.warn("[Admin Auth] Emergency login request failed:", err);
         this.setStatus("error", "Unable to submit manual login. Try again shortly.");
@@ -545,14 +551,16 @@
       if (window.StreamSuitesAdminGate?.stopPolling) {
         window.StreamSuitesAdminGate.stopPolling();
       }
-      window.location.assign("/auth/login.html?reason=logout");
+      window.StreamSuitesAdminSession = null;
+      window.location.assign(ADMIN_LOGOUT_REDIRECT);
     },
 
     getAdminLoginUrl({ surface = "admin" } = {}) {
-      const url = new URL("/auth/login.html", window.location.origin);
-      if (surface) {
-        url.searchParams.set("surface", surface);
+      if (!surface) {
+        return ADMIN_LOGIN_URL;
       }
+      const url = new URL(ADMIN_LOGIN_URL);
+      url.searchParams.set("surface", surface);
       return url.toString();
     }
   };

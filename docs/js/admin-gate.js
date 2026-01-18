@@ -11,6 +11,12 @@
   if (window.StreamSuitesAdminGate) return;
 
   const AUTH_API_BASE = "https://api.streamsuites.app";
+  const ADMIN_ORIGIN = "https://admin.streamsuites.app";
+  const ADMIN_INDEX_URL = `${ADMIN_ORIGIN}/index.html`;
+  const ADMIN_LOGOUT_REDIRECT = `${ADMIN_ORIGIN}/auth/login.html?reason=logout`;
+  const ADMIN_LOGIN_URL = `https://api.streamsuites.app/auth/login?surface=admin&redirect=${encodeURIComponent(
+    ADMIN_INDEX_URL
+  )}`;
   const SESSION_ENDPOINT = `${AUTH_API_BASE}/auth/session`;
   const LOGOUT_ENDPOINT = `${AUTH_API_BASE}/auth/logout`;
   const AUTHORIZED_ROLE = "admin";
@@ -215,15 +221,13 @@
     );
   }
 
-  function redirectToLogin({ reason = "", surface = "admin" } = {}) {
-    const url = new URL("/auth/login.html", window.location.origin);
-    if (surface) {
-      url.searchParams.set("surface", surface);
+  function redirectToLogin({ surface = "admin" } = {}) {
+    if (!surface) {
+      window.location.assign(ADMIN_LOGIN_URL);
+      return;
     }
-    if (reason) {
-      url.searchParams.set("reason", reason);
-    }
-    url.searchParams.set("redirect", window.location.href);
+    const url = new URL(ADMIN_LOGIN_URL);
+    url.searchParams.set("surface", surface);
     window.location.assign(url.toString());
   }
 
@@ -410,7 +414,8 @@
     } catch (err) {
       console.warn("[Admin Gate] Logout request failed", err);
     }
-    redirectToLogin({ reason: "logout", surface: "admin" });
+    window.StreamSuitesAdminSession = null;
+    window.location.assign(ADMIN_LOGOUT_REDIRECT);
   };
 
   if (originalFetch) {
