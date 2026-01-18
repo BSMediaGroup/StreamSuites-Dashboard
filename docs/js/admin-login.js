@@ -5,6 +5,21 @@
 (() => {
   const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/i;
   const ADMIN_ORIGIN = window.location.origin;
+  const resolvedBasePath = (() => {
+    const configured =
+      typeof window.ADMIN_BASE_PATH === "string" ? window.ADMIN_BASE_PATH.trim() : "";
+    const normalized = configured.replace(/\/+$/, "");
+    if (!normalized) return "";
+    const pathname = window.location?.pathname || "";
+    if (pathname === normalized || pathname.startsWith(`${normalized}/`)) {
+      return normalized;
+    }
+    return "";
+  })();
+
+  if (resolvedBasePath !== window.ADMIN_BASE_PATH) {
+    window.ADMIN_BASE_PATH = resolvedBasePath;
+  }
 
   function getMetaContent(name) {
     const value = document.querySelector(`meta[name="${name}"]`)?.getAttribute("content");

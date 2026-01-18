@@ -10,6 +10,22 @@
 
   if (window.StreamSuitesAdminGate) return;
 
+  const resolvedBasePath = (() => {
+    const configured =
+      typeof window.ADMIN_BASE_PATH === "string" ? window.ADMIN_BASE_PATH.trim() : "";
+    const normalized = configured.replace(/\/+$/, "");
+    if (!normalized) return "";
+    const pathname = window.location?.pathname || "";
+    if (pathname === normalized || pathname.startsWith(`${normalized}/`)) {
+      return normalized;
+    }
+    return "";
+  })();
+
+  if (resolvedBasePath !== window.ADMIN_BASE_PATH) {
+    window.ADMIN_BASE_PATH = resolvedBasePath;
+  }
+
   const AUTH_API_BASE = "https://api.streamsuites.app";
   const ADMIN_ORIGIN = window.location.origin;
   const ADMIN_INDEX_URL = `${ADMIN_ORIGIN}${window.ADMIN_BASE_PATH}/index.html`;
