@@ -427,11 +427,19 @@
     );
   }
 
+  function normalizeScriptPath(src) {
+    if (typeof src !== "string") return src;
+    if (/^[a-z]+:\/\//i.test(src)) return src;
+    if (src.startsWith("/docs/")) return src.slice(6);
+    if (src.startsWith("/")) return src.slice(1);
+    return src;
+  }
+
   async function loadScript(src) {
     await ensureBodyReady();
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = src;
+      script.src = normalizeScriptPath(src);
       script.async = false;
       script.onload = () => resolve();
       script.onerror = () => reject(new Error(`Failed to load ${src}`));
@@ -462,7 +470,7 @@
   gate.bootstrap = async ({ scripts = [] } = {}) => {
     if (gate.bootstrapStarted) return;
     gate.bootstrapStarted = true;
-    gate.scriptQueue = scripts;
+    gate.scriptQueue = scripts.map(normalizeScriptPath);
     ensureOverlay();
     await authorize({ reason: "initial" });
     if (!gate.shouldBlock) {
