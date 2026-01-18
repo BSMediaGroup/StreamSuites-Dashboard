@@ -33,17 +33,14 @@
       if (this._cache) return this._cache;
 
       const url = this.resolveMetaUrl();
-      this._cache = fetch(url, {
-        cache: "no-store"
-      })
-        .then((res) => {
+      this._cache = (async () => {
+        try {
+          const res = await fetch(url, { cache: "no-store" });
           if (!res.ok) {
             console.warn("[Versioning] Meta export unavailable", res.status);
             return null;
           }
-          return res.json();
-        })
-        .then(async (data) => {
+          const data = await res.json();
           if (!data) return null;
           const metaVersion =
             data?.version ||
@@ -96,18 +93,18 @@
 
           window.StreamSuitesVersion = info;
           return info;
-        })
-        .catch((err) => {
+        } catch (err) {
           console.warn("[Versioning] Failed to load runtime version metadata", err);
           this._cache = null;
           return null;
-        });
+        }
+      })();
 
       return this._cache;
     },
 
     formatDisplayVersion(info) {
-      if (!info || !info.version) return "Version unavailable";
+      if (!info || !info.version) return "Unavailable";
       const name = info.project || "StreamSuites";
       const versionLabel = info.version.startsWith("v")
         ? info.version
