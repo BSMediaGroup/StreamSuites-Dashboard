@@ -1,0 +1,92 @@
+<!-- ========================================================= -->
+<!-- StreamSuites — Accounts (VIEW PARTIAL) -->
+<!-- ========================================================= -->
+
+<header class="ss-header">
+  <div class="ss-header-left">
+    <h1 class="ss-title">StreamSuites</h1>
+    <span class="ss-subtitle">Accounts</span>
+  </div>
+</header>
+
+<main class="ss-main">
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Accounts</h2>
+        <p class="muted" style="margin:6px 0 0;">
+          Read-only account visibility sourced from runtime admin APIs with snapshot fallback.
+        </p>
+      </div>
+      <div class="ss-panel-header-actions">
+        <button id="accounts-export-json" class="ss-btn ss-btn-secondary">
+          Export Users (JSON)
+        </button>
+        <button id="accounts-export-csv" class="ss-btn ss-btn-secondary">
+          Export Users (CSV)
+        </button>
+      </div>
+    </header>
+
+    <div class="ss-panel-body">
+      <div id="accounts-snapshot-banner" class="ss-alert hidden"></div>
+
+      <div class="ss-toolbar">
+        <div class="ss-toolbar-left">
+          <input
+            type="search"
+            id="accounts-search"
+            class="ss-input"
+            placeholder="Search by user code, email, or name"
+          />
+          <select id="accounts-role-filter" class="ss-input">
+            <option value="">All roles</option>
+          </select>
+          <select id="accounts-tier-filter" class="ss-input">
+            <option value="">All tiers</option>
+          </select>
+          <select id="accounts-provider-filter" class="ss-input">
+            <option value="">All providers</option>
+          </select>
+        </div>
+        <div class="ss-toolbar-right">
+          <label class="muted">
+            <input type="checkbox" id="accounts-id-toggle" checked />
+            Show internal IDs
+          </label>
+          <span id="accounts-status" class="muted">Loading…</span>
+        </div>
+      </div>
+
+      <div class="ss-meta-row">
+        <div><strong>Total users:</strong> <span id="accounts-count">—</span></div>
+        <div><strong>Source:</strong> <span id="accounts-source">—</span></div>
+        <div><strong>Export status:</strong> <span id="accounts-export-status">Idle</span></div>
+      </div>
+
+      <table class="ss-table ss-table-compact" id="accounts-table">
+        <thead>
+          <tr>
+            <th class="accounts-id-column" data-sort="id">Internal UUID</th>
+            <th data-sort="userCode">User Code</th>
+            <th data-sort="email">Email</th>
+            <th data-sort="displayName">Display Name</th>
+            <th data-sort="role">Role</th>
+            <th data-sort="tier">Tier</th>
+            <th data-sort="providersLabel">Providers</th>
+            <th data-sort="createdAt">Created Date</th>
+            <th data-sort="lastLogin">Last Login</th>
+          </tr>
+        </thead>
+        <tbody id="accounts-body"></tbody>
+      </table>
+
+      <div id="accounts-empty" class="ss-empty hidden">No users available.</div>
+      <div class="pager" id="accounts-pagination"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="ss-footer">
+  <span class="muted">Account data is read-only and mirrors runtime exports.</span>
+</footer>
