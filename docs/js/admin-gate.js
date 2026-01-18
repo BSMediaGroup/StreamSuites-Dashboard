@@ -21,6 +21,8 @@
   const ADMIN_LOGIN_URL = new URL(`${BASE_PATH}/auth/login.html`, ADMIN_ORIGIN);
   const SESSION_ENDPOINT = `${AUTH_API_BASE}/auth/session`;
   const LOGOUT_ENDPOINT = `${AUTH_API_BASE}/auth/logout`;
+  const ADMIN_LOGIN_GOOGLE_URL = `${AUTH_API_BASE}/auth/login/google?surface=admin`;
+  const ADMIN_LOGIN_GITHUB_URL = `${AUTH_API_BASE}/auth/login/github?surface=admin`;
   const AUTHORIZED_ROLE = "admin";
 
   const docEl = document.documentElement;
@@ -38,10 +40,12 @@
     scriptsLoaded: false,
     scriptQueue: [],
     overlay: null,
-    overlayAction: null,
-    overlaySecondary: null,
+    overlayLoginGoogle: null,
+    overlayLoginGithub: null,
+    overlayLogout: null,
     refreshTimer: null,
     loggedOut: false,
+    redirectedToLogin: false,
     bootstrapStarted: false,
     fetch: originalFetch,
     routeHandler: null,
@@ -75,22 +79,22 @@
         <div class="admin-gate-message">Checking administrator session.</div>
         <div class="admin-gate-status">Pending</div>
         <div class="admin-gate-actions">
-          <button id="admin-gate-login" class="ss-btn ss-btn-primary hidden">
+          <button id="admin-gate-login-google" class="ss-btn ss-btn-primary hidden">
             Login as Administrator
           </button>
-          <a
-            id="admin-gate-creator"
-            class="ss-btn ss-btn-secondary hidden"
-            href="https://creator.streamsuites.app"
-          >
-            Go to Creator Dashboard
-          </a>
+          <button id="admin-gate-login-github" class="ss-btn ss-btn-secondary hidden">
+            Login with GitHub
+          </button>
+          <button id="admin-gate-logout" class="ss-btn ss-btn-secondary hidden">
+            Sign out
+          </button>
         </div>
       </div>
     `;
     gate.overlay = overlay;
-    gate.overlayAction = overlay.querySelector("#admin-gate-login");
-    gate.overlaySecondary = overlay.querySelector("#admin-gate-creator");
+    gate.overlayLoginGoogle = overlay.querySelector("#admin-gate-login-google");
+    gate.overlayLoginGithub = overlay.querySelector("#admin-gate-login-github");
+    gate.overlayLogout = overlay.querySelector("#admin-gate-logout");
     if (document.body) {
       document.body.appendChild(overlay);
     } else {
@@ -107,10 +111,9 @@
     title,
     message,
     status,
-    showAction = false,
-    actionLabel = "",
-    showSecondary = false,
-    secondaryLabel = ""
+    showGoogle = false,
+    showGithub = false,
+    showLogout = false
   }) {
     const overlay = ensureOverlay();
     const titleEl = overlay.querySelector(".admin-gate-title");
@@ -119,13 +122,14 @@
     if (titleEl) titleEl.textContent = title;
     if (messageEl) messageEl.textContent = message;
     if (statusEl) statusEl.textContent = status;
-    if (gate.overlayAction) {
-      gate.overlayAction.textContent = actionLabel || "Login as Administrator";
-      gate.overlayAction.classList.toggle("hidden", !showAction);
+    if (gate.overlayLoginGoogle) {
+      gate.overlayLoginGoogle.classList.toggle("hidden", !showGoogle);
     }
-    if (gate.overlaySecondary) {
-      gate.overlaySecondary.textContent = secondaryLabel || "Go to Creator Dashboard";
-      gate.overlaySecondary.classList.toggle("hidden", !showSecondary);
+    if (gate.overlayLoginGithub) {
+      gate.overlayLoginGithub.classList.toggle("hidden", !showGithub);
+    }
+    if (gate.overlayLogout) {
+      gate.overlayLogout.classList.toggle("hidden", !showLogout);
     }
   }
 
@@ -146,29 +150,19 @@
       return { authenticated: false };
     }
 
-    const email =
-      typeof payload.email === "string"
-        ? payload.email
-        : typeof payload.user?.email === "string"
-          ? payload.user.email
-          : "";
-
-    const role =
-      typeof payload.role === "string"
-        ? payload.role.trim().toLowerCase()
-        : typeof payload.user?.role === "string"
-          ? payload.user.role.trim().toLowerCase()
-          : null;
-
-    if (role !== "admin") {
-      return { authenticated: false };
-    }
+    const email = coerceText(payload.email || payload.session?.email || payload.user?.email);
+    const name = coerceText(
+      payload.name || payload.display_name || payload.user?.name || payload.user?.display_name
+    );
+    const role = normalizeRole(payload);
 
     return {
-      authenticated: true,
+      authenticated: Boolean(role),
       email: email || "Administrator",
-      role: "admin",
-      tier: payload.tier || payload.user?.tier || "OPEN"
+      name,
+      role: role || "",
+      tier: coerceText(payload.tier || payload.session?.tier || payload.user?.tier || payload.plan),
+      avatarUrl: coerceText(payload.avatar_url || payload.avatarUrl || payload.user?.avatar_url)
     };
   }
 
@@ -183,6 +177,58 @@
     return null;
   }
 
+  function isAuthenticatedSession(payload) {
+    return Boolean(
+      payload?.authenticated ??
+        payload?.isAuthenticated ??
+        payload?.session?.authenticated ??
+        payload?.session?.isAuthenticated
+    );
+  }
+
+  function coerceText(value) {
+    if (typeof value === "string") return value.trim();
+    if (typeof value === "number") return String(value);
+    return "";
+  }
+
+  function updateHeaderIdentity(admin) {
+    const headerWrap = document.getElementById("admin-auth-indicator");
+    const headerAvatar = document.getElementById("admin-auth-avatar");
+    const headerName = document.getElementById("admin-auth-name");
+    const headerIdentity = document.getElementById("admin-auth-identity");
+    const headerRole = document.getElementById("admin-auth-role");
+    const headerTier = document.getElementById("admin-auth-tier");
+    const fallbackAvatar = `${BASE_PATH}/assets/icons/ui/profile.svg`;
+
+    if (!headerWrap) return;
+
+    if (!admin) {
+      headerWrap.classList.add("hidden");
+      return;
+    }
+
+    if (headerName) {
+      headerName.textContent = admin.name || admin.email || "Administrator";
+    }
+    if (headerIdentity) {
+      headerIdentity.textContent = admin.email || "admin@streamsuites.app";
+    }
+    if (headerRole) {
+      headerRole.textContent = "Admin";
+    }
+    if (headerTier) {
+      headerTier.textContent = admin.tier ? admin.tier.toUpperCase() : "OPEN";
+    }
+    if (headerAvatar) {
+      const resolvedAvatar = admin.avatarUrl || fallbackAvatar;
+      headerAvatar.src = resolvedAvatar;
+      headerAvatar.classList.toggle("is-avatar", Boolean(admin.avatarUrl));
+    }
+
+    headerWrap.classList.remove("hidden");
+  }
+
   function markAuthorized(payload) {
     gate.status = "authorized";
     gate.shouldBlock = false;
@@ -190,7 +236,10 @@
     gate.admin = {
       authenticated: true,
       email: payload?.email || "",
-      role: payload?.role || ""
+      name: payload?.name || "",
+      role: payload?.role || "",
+      tier: payload?.tier || "",
+      avatarUrl: payload?.avatarUrl || ""
     };
     updateDashboardGuard({
       shouldBlock: false,
@@ -203,6 +252,7 @@
       gate.overlay.remove();
       gate.overlay = null;
     }
+    updateHeaderIdentity(gate.admin);
     window.StreamSuitesAdminSession = {
       ...gate.admin,
       checkedAt: gate.lastCheckedAt
@@ -222,6 +272,7 @@
     gate.shouldBlock = true;
     gate.admin = null;
     gate.lastCheckedAt = Date.now();
+    updateHeaderIdentity(null);
     updateDashboardGuard({
       shouldBlock: true,
       adminGateStatus: reason
@@ -231,10 +282,9 @@
       title: reason === "forbidden" ? "Not Authorized" : "Service Unavailable",
       message,
       status: reason === "forbidden" ? "Denied" : "Unavailable",
-      showAction: reason === "forbidden",
-      actionLabel: "Login as Administrator",
-      showSecondary: reason === "forbidden",
-      secondaryLabel: "Go to Creator Dashboard"
+      showGoogle: reason === "forbidden",
+      showGithub: reason === "forbidden",
+      showLogout: reason === "forbidden"
     });
     window.dispatchEvent(
       new CustomEvent("streamsuites:admin-auth", {
@@ -284,19 +334,22 @@
     }
 
     const normalized = normalizeSessionPayload(payload);
-    if (!normalized.authenticated) {
-      const role = normalizeRole(payload);
-      if (role && role !== AUTHORIZED_ROLE) {
-        return { status: "forbidden", payload };
-      }
-      return { status: "unauthenticated", payload };
+    const role = normalizeRole(payload);
+    const authenticated = isAuthenticatedSession(payload) || Boolean(role);
+
+    if (role === AUTHORIZED_ROLE) {
+      return { status: "authorized", payload: { ...normalized, role: AUTHORIZED_ROLE } };
     }
 
-    return { status: "authorized", payload: normalized };
+    if (authenticated) {
+      return { status: "forbidden", payload };
+    }
+
+    return { status: "unauthenticated", payload };
   }
 
   async function authorize({ reason = "initial" } = {}) {
-    if (gate.loggedOut) return null;
+    if (gate.loggedOut || gate.redirectedToLogin) return null;
     if (gate.inFlight) {
       gate.queued = true;
       return gate.inFlight;
@@ -332,8 +385,8 @@
           title: "Redirecting",
           message: "Admin login required. Redirecting to login…",
           status: "Login",
-          showAction: true,
-          actionLabel: "Login as Administrator"
+          showGoogle: true,
+          showGithub: true
         });
         window.dispatchEvent(
           new CustomEvent("streamsuites:admin-auth", {
@@ -343,11 +396,13 @@
             }
           })
         );
+        gate.redirectedToLogin = true;
+        gate.stopPolling({ hideActions: false, markLoggedOut: true });
         redirectToLogin({ surface: "admin" });
       } else if (result.status === "forbidden") {
         markDenied(
           "forbidden",
-          "You are not authorized for the Admin Dashboard."
+          "This area requires administrator access."
         );
       } else {
         markDenied(
@@ -438,6 +493,7 @@
       console.warn("[Admin Gate] Logout request failed", err);
     }
     window.StreamSuitesAdminSession = null;
+    updateHeaderIdentity(null);
     window.location.assign(ADMIN_LOGOUT_REDIRECT);
   };
 
@@ -450,8 +506,10 @@
     };
   }
 
-  gate.stopPolling = () => {
-    gate.loggedOut = true;
+  gate.stopPolling = ({ hideActions = true, markLoggedOut = true } = {}) => {
+    if (markLoggedOut) {
+      gate.loggedOut = true;
+    }
     gate.inFlight = null;
     gate.queued = false;
     gate.admin = null;
@@ -467,22 +525,49 @@
     if (gate.visibilityHandler) {
       window.removeEventListener("visibilitychange", gate.visibilityHandler);
     }
-    if (gate.overlayAction) {
-      gate.overlayAction.classList.add("hidden");
-    }
-    if (gate.overlaySecondary) {
-      gate.overlaySecondary.classList.add("hidden");
+    if (hideActions) {
+      if (gate.overlayLoginGoogle) {
+        gate.overlayLoginGoogle.classList.add("hidden");
+      }
+      if (gate.overlayLoginGithub) {
+        gate.overlayLoginGithub.classList.add("hidden");
+      }
+      if (gate.overlayLogout) {
+        gate.overlayLogout.classList.add("hidden");
+      }
     }
   };
 
   document.addEventListener(
     "click",
     (event) => {
-      const action = event.target.closest("#admin-gate-login");
-      if (!action) return;
-      event.preventDefault();
-      event.stopPropagation();
-      redirectToLogin({ surface: "admin" });
+      const loginGoogle = event.target.closest("#admin-gate-login-google");
+      if (loginGoogle) {
+        event.preventDefault();
+        event.stopPropagation();
+        window.location.assign(ADMIN_LOGIN_GOOGLE_URL);
+        return;
+      }
+      const loginGithub = event.target.closest("#admin-gate-login-github");
+      if (loginGithub) {
+        event.preventDefault();
+        event.stopPropagation();
+        window.location.assign(ADMIN_LOGIN_GITHUB_URL);
+        return;
+      }
+      const signOut = event.target.closest("#admin-gate-logout");
+      if (signOut) {
+        event.preventDefault();
+        event.stopPropagation();
+        gate.logout();
+        return;
+      }
+      const headerLogout = event.target.closest("#admin-auth-logout");
+      if (headerLogout) {
+        event.preventDefault();
+        event.stopPropagation();
+        gate.logout();
+      }
     },
     true
   );

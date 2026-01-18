@@ -16,7 +16,7 @@
       return `/${rootParts.join("/")}`;
     })();
 
-  const dataPath = "/runtime/exports/roadmap.json";
+  const dataPath = "https://api.streamsuites.app/runtime/exports/roadmap.json";
   const fillGradient = "linear-gradient(90deg, #57b9ff, #63ffa2)";
   const pausedGradient = "linear-gradient(90deg, #ff5f6d, #ffc371)";
   const animationDuration = 1200;

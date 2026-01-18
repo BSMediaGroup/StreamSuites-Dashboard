@@ -40,6 +40,7 @@
       redirectUri: null,
       scopes: DEFAULT_SCOPES
     },
+    surfaceActive: false,
     elements: {
       loginButton: null,
       logoutButton: null,
@@ -78,6 +79,12 @@
       this.elements.userName = document.getElementById("discord-username");
       this.elements.userAvatar = document.getElementById("discord-avatar");
       this.elements.loginStatus = document.getElementById("discord-auth-status");
+    },
+
+    isDiscordSurfaceActive() {
+      return Boolean(
+        document.querySelector(".discord-auth, [data-discord-locked], [data-discord-guild-locked]")
+      );
     },
 
     loadConfig() {
@@ -147,6 +154,7 @@
       if (container) {
         const observer = new MutationObserver(() => {
           this.cacheElements();
+          this.surfaceActive = this.isDiscordSurfaceActive();
           this.applyLockState();
           this.updateUI();
         });
@@ -159,6 +167,7 @@
       if (!handled) {
         await this.restoreSession();
       }
+      this.surfaceActive = this.isDiscordSurfaceActive();
       this.applyLockState();
       this.updateUI();
     },
@@ -274,6 +283,11 @@
 
     applyLockState() {
       this.cacheElements();
+      this.surfaceActive = this.isDiscordSurfaceActive();
+      if (!this.surfaceActive) {
+        document.body.classList.remove("discord-auth-required", "discord-authenticated");
+        return;
+      }
       const locked = !this.session;
       document.body.classList.toggle("discord-auth-required", locked);
       document.body.classList.toggle("discord-authenticated", !locked);
@@ -290,6 +304,9 @@
 
     updateUI() {
       this.cacheElements();
+      if (!this.isDiscordSurfaceActive()) {
+        return;
+      }
       const loggedIn = Boolean(this.session && this.session.user);
       const canLogin = this.canStartLogin();
       if (this.elements.loginButton) {

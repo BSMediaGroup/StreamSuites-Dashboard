@@ -1,7 +1,7 @@
 # StreamSuites Admin Dashboard — Runtime Operations & Control
 
 StreamSuites Admin Dashboard is the **admin-only surface** for monitoring and configuring the StreamSuites ecosystem.  
-It is deployed via **GitHub Pages** from the `/docs` directory to **https://admin.streamsuites.app** and provides **Discord OAuth–gated admin access** for configuration and runtime control.
+It is deployed via **GitHub Pages** from the `/docs` directory to **https://admin.streamsuites.app** and provides **Auth API–enforced admin access** for configuration and runtime control.
 
 All execution, chat ingestion, livestream control, scheduling, and command dispatch live in the **StreamSuites Runtime** repository — this dashboard supplies the configuration and control inputs for those systems.
 
@@ -21,8 +21,8 @@ The dashboard loads snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progre
 
 - **Version/build source:** This repo does not define version/build. It consumes runtime-exported metadata only.
 - **Authoritative runtime:** The StreamSuites Runtime repository is the single source of truth for version/build metadata.
-- **Canonical version metadata endpoint:** `https://admin.streamsuites.app/runtime/exports/version.json`.
-- **Downstream consumption:** Public and Creator dashboards fetch `https://admin.streamsuites.app/runtime/exports/version.json` remotely; this is intentional and required.
+- **Canonical version metadata endpoint:** `https://api.streamsuites.app/runtime/exports/meta.json` (with `version.json` fallback when referenced by the export manifest).
+- **Downstream consumption:** Public and Creator dashboards fetch the runtime exports from `https://api.streamsuites.app/runtime/exports/` remotely; this is intentional and required.
 - **Dashboard role:** Admin-authoritative for configuration and runtime control; consumes runtime exports for operational visibility.
 - **Licensing:** Proprietary • All Rights Reserved • © 2026 Brainstream Media Group.
 - **Owner:** Daniel Clancy.
@@ -36,11 +36,11 @@ The dashboard loads snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progre
 
 ## Authentication & Authorization
 
-- **Hard admin gate:** The admin dashboard is fail-closed and gated by server-side session introspection against the StreamSuites Auth API.
-- **Role enforcement:** Access is granted **only** when the Auth API session is valid and `role == "admin"`.
+- **Hard admin gate:** The admin dashboard is fail-closed and gated by server-side session introspection against the StreamSuites Auth API (`/auth/session` only).
+- **Role enforcement:** Access is granted **only** when the Auth API session is valid and `session.role == "admin"`.
 - **Fail-closed behavior:** Unauthenticated users are redirected to the admin login, authenticated non-admins see a Not Authorized screen, and auth API failures render Service Unavailable.
 - **Credentials required:** All auth/session checks include credentials and never trust client-side flags.
-- **Discord OAuth2:** Discord OAuth remains for Discord-specific configuration and guild selection once admin access is granted.
+- **Discord OAuth2:** Discord OAuth remains for Discord-specific configuration and guild selection once admin access is granted (Discord auth UI is scoped to Discord control-plane views only).
 - **Scopes required:** `identify`, `guilds`.
 - **No local accounts:** StreamSuites does not create or store user accounts; Discord identity is used for Discord feature gating only.
 
@@ -170,7 +170,7 @@ This repository is a **companion project** to the StreamSuites Runtime.
 
 ## Hosting & Deployment Model
 
-- Static site hosting (GitHub Pages) deployed to https://admin.streamsuites.app from the `/docs` directory.
+- Static site hosting (GitHub Pages) deployed to https://admin.streamsuites.app from the `/docs` directory (Pages root).
 - No local backend; authentication is provided by the central StreamSuites Auth API.
 - Discord OAuth required for Discord-specific configuration views.
 - Embed/iframe friendly (e.g., Wix Studio).

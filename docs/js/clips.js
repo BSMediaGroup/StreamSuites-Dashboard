@@ -163,7 +163,7 @@
         const clipId = clip?.clip_id || clip?.id || null;
         if (clipId) {
           const link = document.createElement("a");
-          link.href = `/clips/detail.html?id=${encodeURIComponent(clipId)}`;
+          link.href = `https://streamsuites.app/clips/detail.html?id=${encodeURIComponent(clipId)}`;
           link.target = "_blank";
           link.rel = "noopener";
           link.textContent = clipId;
