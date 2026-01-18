@@ -48,15 +48,13 @@
     google: getMetaContent("streamsuites-auth-google"),
     github: getMetaContent("streamsuites-auth-github")
   };
-  const normalizeOAuthEndpoint = (endpoint, provider) => {
-    if (base && (!endpoint || endpoint.includes("/auth/oauth/"))) {
-      return `${base}/auth/login/${provider}?surface=admin`;
-    }
-    return endpoint;
+  const normalizeOAuthEndpoint = (provider) => {
+    if (!base) return "";
+    return `${base}/auth/login/${provider}?surface=admin`;
   };
 
-  endpoints.google = normalizeOAuthEndpoint(endpoints.google, "google");
-  endpoints.github = normalizeOAuthEndpoint(endpoints.github, "github");
+  endpoints.google = normalizeOAuthEndpoint("google");
+  endpoints.github = normalizeOAuthEndpoint("github");
 
   const params = new URLSearchParams(window.location.search);
   const redirectParam = params.get("redirect");
