@@ -6,10 +6,7 @@
 (() => {
   "use strict";
 
-  const ADMIN_BASE_PATH = window.ADMIN_BASE_PATH ?? "";
-  window.ADMIN_BASE_PATH = ADMIN_BASE_PATH;
-
   window.StreamSuitesViewLoader = window.StreamSuitesViewLoader || {
-    basePath: ADMIN_BASE_PATH
+    basePath: window.ADMIN_BASE_PATH
   };
 })();

@@ -1,9 +1,7 @@
 // Lightweight wiring for the Chat Replay preview surface.
 // The dashboard remains read-only; this module only swaps local preview targets.
 
-const ADMIN_BASE_PATH = window.ADMIN_BASE_PATH ?? "";
-window.ADMIN_BASE_PATH = ADMIN_BASE_PATH;
-const BASE_ORIGIN = `${window.location.origin}${ADMIN_BASE_PATH}`;
+const BASE_ORIGIN = `${window.location.origin}${window.ADMIN_BASE_PATH}`;
 
 const buildPreviewUrl = (page, theme, mode) => {
   const url = new URL(page, BASE_ORIGIN);
@@ -69,13 +67,13 @@ function initChatReplayPreview() {
     window: {
       el: document.getElementById('window-preview'),
       pages: {
-        replay: `${ADMIN_BASE_PATH}/views/chat_replay_window.html`,
-        live: `${ADMIN_BASE_PATH}/views/chat_window.html`,
+        replay: `${window.ADMIN_BASE_PATH}/views/chat_replay_window.html`,
+        live: `${window.ADMIN_BASE_PATH}/views/chat_window.html`,
       }
     },
     overlay: {
       el: document.getElementById('overlay-preview'),
-      page: `${ADMIN_BASE_PATH}/views/chat_overlay_obs.html`
+      page: `${window.ADMIN_BASE_PATH}/views/chat_overlay_obs.html`
     },
   };
 
@@ -115,7 +113,7 @@ function initChatReplayPreview() {
 
   popoutButton?.addEventListener('click', () => {
     const targetPage = state.mode === 'live' ? 'chat_window.html' : 'chat_replay_window.html';
-    const url = buildPreviewUrl(`${ADMIN_BASE_PATH}/views/${targetPage}`, state.theme, state.mode);
+    const url = buildPreviewUrl(`${window.ADMIN_BASE_PATH}/views/${targetPage}`, state.theme, state.mode);
     window.open(url, '_blank', 'noopener');
   });
 

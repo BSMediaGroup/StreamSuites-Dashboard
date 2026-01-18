@@ -5,15 +5,13 @@
    ====================================================================== */
 
 (function () {
-  const ADMIN_BASE_PATH = window.ADMIN_BASE_PATH ?? "";
-  window.ADMIN_BASE_PATH = ADMIN_BASE_PATH;
   const ADMIN_ORIGIN = window.location.origin;
-  const ADMIN_INDEX_URL = `${ADMIN_ORIGIN}${ADMIN_BASE_PATH}/index.html`;
+  const ADMIN_INDEX_URL = `${ADMIN_ORIGIN}${window.ADMIN_BASE_PATH}/index.html`;
   const ADMIN_LOGOUT_REDIRECT = new URL(
-    `${ADMIN_BASE_PATH}/auth/login.html?reason=logout`,
+    `${window.ADMIN_BASE_PATH}/auth/login.html?reason=logout`,
     ADMIN_ORIGIN
   ).toString();
-  const ADMIN_LOGIN_URL = new URL(`${ADMIN_BASE_PATH}/auth/login.html`, ADMIN_ORIGIN);
+  const ADMIN_LOGIN_URL = new URL(`${window.ADMIN_BASE_PATH}/auth/login.html`, ADMIN_ORIGIN);
   const pathname = window.location?.pathname || "";
   if (pathname.includes("/livechat/")) return;
 
@@ -59,7 +57,7 @@
 
   function resolveBaseAssetPath(path) {
     const normalized = path.startsWith("/") ? path : `/${path}`;
-    return `${ADMIN_BASE_PATH}${normalized}`;
+    return `${window.ADMIN_BASE_PATH}${normalized}`;
   }
 
   const AdminAuth = {
