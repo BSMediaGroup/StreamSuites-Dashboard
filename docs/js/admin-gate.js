@@ -11,12 +11,14 @@
   if (window.StreamSuitesAdminGate) return;
 
   const AUTH_API_BASE = "https://api.streamsuites.app";
-  const ADMIN_ORIGIN = "https://admin.streamsuites.app";
-  const ADMIN_INDEX_URL = `${ADMIN_ORIGIN}/index.html`;
-  const ADMIN_LOGOUT_REDIRECT = `${ADMIN_ORIGIN}/auth/login.html?reason=logout`;
-  const ADMIN_LOGIN_URL = `https://api.streamsuites.app/auth/login?surface=admin&redirect=${encodeURIComponent(
-    ADMIN_INDEX_URL
-  )}`;
+  const BASE_PATH = window.location.pathname.includes("/docs/") ? "/docs" : "";
+  const ADMIN_ORIGIN = window.location.origin;
+  const ADMIN_INDEX_URL = `${ADMIN_ORIGIN}${BASE_PATH}/index.html`;
+  const ADMIN_LOGOUT_REDIRECT = new URL(
+    `${BASE_PATH}/auth/login.html?reason=logout`,
+    ADMIN_ORIGIN
+  ).toString();
+  const ADMIN_LOGIN_URL = new URL(`${BASE_PATH}/auth/login.html`, ADMIN_ORIGIN);
   const SESSION_ENDPOINT = `${AUTH_API_BASE}/auth/session`;
   const LOGOUT_ENDPOINT = `${AUTH_API_BASE}/auth/logout`;
   const AUTHORIZED_ROLE = "admin";
@@ -37,6 +39,7 @@
     scriptQueue: [],
     overlay: null,
     overlayAction: null,
+    overlaySecondary: null,
     refreshTimer: null,
     loggedOut: false,
     bootstrapStarted: false,
@@ -73,13 +76,21 @@
         <div class="admin-gate-status">Pending</div>
         <div class="admin-gate-actions">
           <button id="admin-gate-login" class="ss-btn ss-btn-primary hidden">
-            Log in as Administrator
+            Login as Administrator
           </button>
+          <a
+            id="admin-gate-creator"
+            class="ss-btn ss-btn-secondary hidden"
+            href="https://creator.streamsuites.app"
+          >
+            Go to Creator Dashboard
+          </a>
         </div>
       </div>
     `;
     gate.overlay = overlay;
     gate.overlayAction = overlay.querySelector("#admin-gate-login");
+    gate.overlaySecondary = overlay.querySelector("#admin-gate-creator");
     if (document.body) {
       document.body.appendChild(overlay);
     } else {
@@ -92,7 +103,15 @@
     return overlay;
   }
 
-  function setOverlayContent({ title, message, status, showAction = false, actionLabel = "" }) {
+  function setOverlayContent({
+    title,
+    message,
+    status,
+    showAction = false,
+    actionLabel = "",
+    showSecondary = false,
+    secondaryLabel = ""
+  }) {
     const overlay = ensureOverlay();
     const titleEl = overlay.querySelector(".admin-gate-title");
     const messageEl = overlay.querySelector(".admin-gate-message");
@@ -101,8 +120,12 @@
     if (messageEl) messageEl.textContent = message;
     if (statusEl) statusEl.textContent = status;
     if (gate.overlayAction) {
-      gate.overlayAction.textContent = actionLabel || "Log in as Administrator";
+      gate.overlayAction.textContent = actionLabel || "Login as Administrator";
       gate.overlayAction.classList.toggle("hidden", !showAction);
+    }
+    if (gate.overlaySecondary) {
+      gate.overlaySecondary.textContent = secondaryLabel || "Go to Creator Dashboard";
+      gate.overlaySecondary.classList.toggle("hidden", !showSecondary);
     }
   }
 
@@ -209,7 +232,9 @@
       message,
       status: reason === "forbidden" ? "Denied" : "Unavailable",
       showAction: reason === "forbidden",
-      actionLabel: "Log in as Administrator"
+      actionLabel: "Login as Administrator",
+      showSecondary: reason === "forbidden",
+      secondaryLabel: "Go to Creator Dashboard"
     });
     window.dispatchEvent(
       new CustomEvent("streamsuites:admin-auth", {
@@ -222,12 +247,10 @@
   }
 
   function redirectToLogin({ surface = "admin" } = {}) {
-    if (!surface) {
-      window.location.assign(ADMIN_LOGIN_URL);
-      return;
+    const url = new URL(ADMIN_LOGIN_URL.toString());
+    if (surface) {
+      url.searchParams.set("surface", surface);
     }
-    const url = new URL(ADMIN_LOGIN_URL);
-    url.searchParams.set("surface", surface);
     window.location.assign(url.toString());
   }
 
@@ -310,7 +333,7 @@
           message: "Admin login required. Redirecting to login…",
           status: "Login",
           showAction: true,
-          actionLabel: "Log in as Administrator"
+          actionLabel: "Login as Administrator"
         });
         window.dispatchEvent(
           new CustomEvent("streamsuites:admin-auth", {
@@ -324,7 +347,7 @@
       } else if (result.status === "forbidden") {
         markDenied(
           "forbidden",
-          "Your account is authenticated but does not have administrator access."
+          "You are not authorized for the Admin Dashboard."
         );
       } else {
         markDenied(
@@ -446,6 +469,9 @@
     }
     if (gate.overlayAction) {
       gate.overlayAction.classList.add("hidden");
+    }
+    if (gate.overlaySecondary) {
+      gate.overlaySecondary.classList.add("hidden");
     }
   };
 

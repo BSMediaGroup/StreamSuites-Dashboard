@@ -5,12 +5,14 @@
    ====================================================================== */
 
 (function () {
-  const ADMIN_ORIGIN = "https://admin.streamsuites.app";
-  const ADMIN_INDEX_URL = `${ADMIN_ORIGIN}/index.html`;
-  const ADMIN_LOGOUT_REDIRECT = `${ADMIN_ORIGIN}/auth/login.html?reason=logout`;
-  const ADMIN_LOGIN_URL = `https://api.streamsuites.app/auth/login?surface=admin&redirect=${encodeURIComponent(
-    ADMIN_INDEX_URL
-  )}`;
+  const BASE_PATH = window.location.pathname.includes("/docs/") ? "/docs" : "";
+  const ADMIN_ORIGIN = window.location.origin;
+  const ADMIN_INDEX_URL = `${ADMIN_ORIGIN}${BASE_PATH}/index.html`;
+  const ADMIN_LOGOUT_REDIRECT = new URL(
+    `${BASE_PATH}/auth/login.html?reason=logout`,
+    ADMIN_ORIGIN
+  ).toString();
+  const ADMIN_LOGIN_URL = new URL(`${BASE_PATH}/auth/login.html`, ADMIN_ORIGIN);
   const pathname = window.location?.pathname || "";
   if (pathname.includes("/livechat/")) return;
 
@@ -54,6 +56,11 @@
     return "";
   }
 
+  function resolveBaseAssetPath(path) {
+    const normalized = path.startsWith("/") ? path : `/${path}`;
+    return `${BASE_PATH}${normalized}`;
+  }
+
   const AdminAuth = {
     state: {
       authenticated: false,
@@ -62,6 +69,7 @@
       email: "",
       displayName: "",
       avatarUrl: "",
+      tier: "",
       error: ""
     },
     initialized: false,
@@ -86,6 +94,7 @@
       blockedActions: null,
       blockedOpen: null,
       blockedLogout: null,
+      blockedCreator: null,
       modalClose: null,
       status: null,
       emailForm: null,
@@ -98,6 +107,7 @@
       headerName: null,
       headerIdentity: null,
       headerRole: null,
+      headerTier: null,
       headerLogout: null
     },
 
@@ -119,6 +129,7 @@
       this.elements.blockedActions = document.getElementById("admin-auth-blocked-actions");
       this.elements.blockedOpen = document.getElementById("admin-auth-open");
       this.elements.blockedLogout = document.getElementById("admin-auth-blocked-logout");
+      this.elements.blockedCreator = document.getElementById("admin-auth-creator");
       this.elements.modalClose = document.getElementById("admin-auth-close");
       this.elements.status = document.getElementById("admin-auth-status");
       this.elements.emailForm = document.getElementById("admin-auth-email-form");
@@ -133,7 +144,15 @@
       this.elements.headerName = document.getElementById("admin-auth-name");
       this.elements.headerIdentity = document.getElementById("admin-auth-identity");
       this.elements.headerRole = document.getElementById("admin-auth-role");
+      this.elements.headerTier = document.getElementById("admin-auth-tier");
       this.elements.headerLogout = document.getElementById("admin-auth-logout");
+
+      if (this.elements.headerAvatar) {
+        this.elements.headerAvatar.setAttribute(
+          "data-fallback",
+          resolveBaseAssetPath("/assets/icons/ui/profile.svg")
+        );
+      }
     },
 
     loadConfig() {
@@ -244,8 +263,11 @@
       });
     },
 
-    setHeaderIdentity({ name, email, role, avatarUrl }) {
+    setHeaderIdentity({ name, email, role, avatarUrl, tier }) {
       if (!this.elements.headerWrap) return;
+      const fallbackAvatar =
+        this.elements.headerAvatar?.getAttribute("data-fallback") ||
+        resolveBaseAssetPath("/assets/icons/ui/profile.svg");
       if (this.elements.headerName) {
         this.elements.headerName.textContent = name || email || "Administrator";
       }
@@ -255,14 +277,18 @@
       if (this.elements.headerRole) {
         this.elements.headerRole.textContent = role ? role.toUpperCase() : "ADMIN";
       }
+      if (this.elements.headerTier) {
+        this.elements.headerTier.textContent = tier ? tier.toUpperCase() : "OPEN";
+      }
       if (this.elements.headerAvatar) {
-        this.elements.headerAvatar.src =
-          avatarUrl || this.elements.headerAvatar.getAttribute("data-fallback") || "";
+        const resolvedAvatar = avatarUrl || fallbackAvatar;
+        this.elements.headerAvatar.src = resolvedAvatar;
+        this.elements.headerAvatar.classList.toggle("is-avatar", Boolean(avatarUrl));
       }
       this.elements.headerWrap.classList.toggle("hidden", !this.state.authorized);
     },
 
-    setBlockedState({ title, message, showLogin, showLogout }) {
+    setBlockedState({ title, message, showLogin, showLogout, showCreator }) {
       if (this.elements.blockedTitle) {
         this.elements.blockedTitle.textContent = title;
       }
@@ -274,6 +300,9 @@
       }
       if (this.elements.blockedLogout) {
         this.elements.blockedLogout.classList.toggle("hidden", !showLogout);
+      }
+      if (this.elements.blockedCreator) {
+        this.elements.blockedCreator.classList.toggle("hidden", !showCreator);
       }
     },
 
@@ -293,7 +322,8 @@
           name: this.state.displayName,
           email: this.state.email,
           role: this.state.role,
-          avatarUrl: this.state.avatarUrl
+          avatarUrl: this.state.avatarUrl,
+          tier: this.state.tier
         });
         return;
       }
@@ -303,25 +333,28 @@
           title: "Admin access required",
           message: "Sign in with an approved admin account to continue.",
           showLogin: true,
-          showLogout: false
+          showLogout: false,
+          showCreator: false
         });
         this.openOverlay();
-        this.setHeaderIdentity({ name: "", email: "", role: "" });
+        this.setHeaderIdentity({ name: "", email: "", role: "", tier: "" });
         return;
       }
 
       this.setBlockedState({
         title: "Not authorized",
-        message: "Your account is authenticated but not authorized for this admin dashboard.",
+        message: "You are not authorized for the Admin Dashboard.",
         showLogin: true,
-        showLogout: true
+        showLogout: true,
+        showCreator: true
       });
       this.closeOverlay();
       this.setHeaderIdentity({
         name: this.state.displayName,
         email: this.state.email,
         role: this.state.role,
-        avatarUrl: this.state.avatarUrl
+        avatarUrl: this.state.avatarUrl,
+        tier: this.state.tier
       });
     },
 
@@ -371,6 +404,7 @@
           email: "",
           displayName: "",
           avatarUrl: "",
+          tier: "",
           error: "Auth service unavailable. Please try again."
         };
         this.setStatus("error", this.state.error);
@@ -413,6 +447,14 @@
           ""
       );
 
+      const tier = coerceText(
+        payload?.tier ??
+          payload?.session?.tier ??
+          payload?.user?.tier ??
+          payload?.plan ??
+          ""
+      );
+
       const adminEmails = normalizeEmailList(
         payload?.admin_emails ??
           payload?.adminEmails ??
@@ -443,6 +485,7 @@
         email: normalizedEmail,
         displayName,
         avatarUrl,
+        tier,
         error: ""
       };
     },
@@ -545,6 +588,7 @@
         email: "",
         displayName: "",
         avatarUrl: "",
+        tier: "",
         error: ""
       };
       this.applyState();
@@ -556,11 +600,10 @@
     },
 
     getAdminLoginUrl({ surface = "admin" } = {}) {
-      if (!surface) {
-        return ADMIN_LOGIN_URL;
+      const url = new URL(ADMIN_LOGIN_URL.toString());
+      if (surface) {
+        url.searchParams.set("surface", surface);
       }
-      const url = new URL(ADMIN_LOGIN_URL);
-      url.searchParams.set("surface", surface);
       return url.toString();
     }
   };

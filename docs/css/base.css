@@ -267,6 +267,10 @@ html.admin-gate-unavailable #app {
   filter: brightness(0) invert(0.9);
 }
 
+.streamsuites-auth-avatar img.is-avatar {
+  filter: none;
+}
+
 .streamsuites-auth-meta {
   display: flex;
   flex-direction: column;
@@ -291,6 +295,16 @@ html.admin-gate-unavailable #app {
   padding: 2px 8px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.12);
+}
+
+.streamsuites-auth-tier {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(0, 153, 255, 0.2);
+  color: #d6ecff;
 }
 
 .discord-guild-selector {
