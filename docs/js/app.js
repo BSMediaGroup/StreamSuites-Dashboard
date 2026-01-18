@@ -2,10 +2,7 @@
 // StreamSuites SAFE MODE (Non-blocking)
 // ==========================================================
 
-if (!window.ADMIN_BASE_PATH) {
-  window.ADMIN_BASE_PATH = "/docs";
-}
-const ADMIN_BASE_PATH = window.ADMIN_BASE_PATH;
+window.ADMIN_BASE_PATH = "/docs";
 
 let streamsuitesCoreStylesLogged = false;
 const checkCoreStylesLoaded = () => {
@@ -799,7 +796,7 @@ async function loadView(name) {
     return;
   }
 
-  const viewPath = `${ADMIN_BASE_PATH}/views/${view.templatePath}.html`;
+  const viewPath = `${window.ADMIN_BASE_PATH}/views/${view.templatePath}.html`;
   const viewUrl = new URL(viewPath, window.location.origin);
   const viewPathLower = viewUrl.pathname.toLowerCase();
   if (
