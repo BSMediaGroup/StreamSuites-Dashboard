@@ -413,6 +413,18 @@ body.admin-auth-error #app {
   margin-top: 0;
 }
 
+.admin-auth-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-auth-title-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
 .admin-auth-close {
   position: absolute;
   top: 12px;
@@ -428,6 +440,18 @@ body.admin-auth-error #app {
   display: grid;
   gap: 10px;
   margin: 16px 0 20px;
+}
+
+.admin-auth-providers .ss-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-auth-provider-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
 }
 
 .admin-auth-divider {
@@ -466,6 +490,10 @@ body.admin-auth-error #app {
 .admin-auth-email-row input {
   flex: 1;
   min-width: 220px;
+}
+
+.admin-auth-card .ss-btn-primary {
+  font-family: "RechargeBd", sans-serif;
 }
 
 .admin-auth-note {
