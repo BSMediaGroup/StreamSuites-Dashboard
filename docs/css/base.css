@@ -496,6 +496,11 @@ body.admin-auth-error #app {
   font-family: "RechargeBd", sans-serif;
 }
 
+.admin-auth-toggle {
+  font-family: "SuiGenerisRg", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 400;
+}
+
 .admin-auth-note {
   margin-top: 6px;
   font-size: 11px;
@@ -507,6 +512,15 @@ body.admin-auth-error #app {
   margin-top: 14px;
   font-size: 12px;
   letter-spacing: 0.03em;
+}
+
+.admin-auth-toggle-row {
+  margin-top: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
 .admin-auth-status[data-state=\"error\"] {
