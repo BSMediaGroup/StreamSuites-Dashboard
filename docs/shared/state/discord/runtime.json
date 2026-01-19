@@ -1,7 +1,7 @@
 {
   "running": true,
   "connected": true,
-  "last_heartbeat_ts": "2026-01-17T18:12:54.988391+00:00",
+  "last_heartbeat_ts": "2026-01-19T03:45:59.913214+00:00",
   "task_count": 2,
   "tasks": 2,
   "guild_count": 5,
@@ -48,7 +48,7 @@
       "authorization_reason": "none",
       "logging": {
         "enabled": true,
-        "channel_id": "1449303976058028139"
+        "channel_id": "1460517443020521536"
       },
       "notifications": {
         "enabled": true,
@@ -84,8 +84,8 @@
     "status_emoji": null
   },
   "heartbeat": {
-    "started_at": "2026-01-17T18:06:24.317796+00:00",
-    "last_tick_at": "2026-01-17T18:12:54.988391+00:00",
+    "started_at": "2026-01-18T08:12:58.523752+00:00",
+    "last_tick_at": "2026-01-19T03:45:59.913214+00:00",
     "connected": true,
     "metadata": {}
   }
