@@ -1,0 +1,104 @@
+{
+  "schema_version": "v1",
+  "exported_at": "2026-01-19T08:06:48.695573Z",
+  "runtime": {
+    "project": "StreamSuites\u2122 Runtime",
+    "version": "0.2.3-alpha",
+    "build": "2026.01.19+008"
+  },
+  "users": [
+    {
+      "id": "2b20d3e9-feee-4b8b-a78d-566912b68e8d",
+      "user_code": "fowTR0T",
+      "email": "thirdmailify@gmail.com",
+      "email_verified": false,
+      "display_name": "Third Railify",
+      "avatar_url": null,
+      "role": "creator",
+      "tier": "OPEN",
+      "onboarding_status": "required",
+      "status": "active",
+      "providers": [
+        {
+          "provider": "google",
+          "provider_user_id": "101320705208713098218",
+          "linked_at": "2026-01-18T16:16:35Z"
+        }
+      ],
+      "created_at": "2026-01-18T13:18:51Z",
+      "last_login_at": null,
+      "updated_at": "2026-01-18T16:16:35Z"
+    },
+    {
+      "id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "user_code": "7XaVoy7",
+      "email": "mail@danielclancy.net",
+      "email_verified": false,
+      "display_name": "Daniel Clancy",
+      "avatar_url": null,
+      "role": "admin",
+      "tier": "OPEN",
+      "onboarding_status": "required",
+      "status": "active",
+      "providers": [
+        {
+          "provider": "google",
+          "provider_user_id": "113339271907856592551",
+          "linked_at": "2026-01-18T16:14:25Z"
+        }
+      ],
+      "created_at": "2026-01-17T17:33:34Z",
+      "last_login_at": null,
+      "updated_at": "2026-01-18T16:14:25Z"
+    },
+    {
+      "id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "user_code": "4TiOlvS",
+      "email": "daniel@brainstream.media",
+      "email_verified": true,
+      "display_name": "Daniel Clancy",
+      "avatar_url": "https://avatars.githubusercontent.com/u/144799251?v=4",
+      "role": "admin",
+      "tier": "OPEN",
+      "onboarding_status": "required",
+      "status": "active",
+      "providers": [
+        {
+          "provider": "discord",
+          "provider_user_id": "1130875539373170688",
+          "linked_at": "2026-01-17T17:32:56Z"
+        },
+        {
+          "provider": "github",
+          "provider_user_id": "144799251",
+          "linked_at": "2026-01-18T16:17:50Z"
+        }
+      ],
+      "created_at": "2026-01-17T17:32:32Z",
+      "last_login_at": "2026-01-19T06:26:36Z",
+      "updated_at": "2026-01-19T06:26:36Z"
+    },
+    {
+      "id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "user_code": "VIvXsPS",
+      "email": "realredmandolin@gmail.com",
+      "email_verified": true,
+      "display_name": "Red Mandolin",
+      "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocLDAkGaW_BwRfetxqRiq4-te8LJAw9HeDIIiKJZRb_iJAx-2Q=s96-c",
+      "role": "creator",
+      "tier": "OPEN",
+      "onboarding_status": "required",
+      "status": "active",
+      "providers": [
+        {
+          "provider": "google",
+          "provider_user_id": "101332040061907274215",
+          "linked_at": "2026-01-18T12:16:52Z"
+        }
+      ],
+      "created_at": "2026-01-17T16:46:15Z",
+      "last_login_at": "2026-01-19T07:45:49Z",
+      "updated_at": "2026-01-19T07:45:49Z"
+    }
+  ]
+}

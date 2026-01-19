@@ -1,0 +1,50 @@
+{
+  "schema_version": "v1",
+  "exported_at": "2026-01-19T08:06:48.695573Z",
+  "runtime": {
+    "project": "StreamSuites\u2122 Runtime",
+    "version": "0.2.3-alpha",
+    "build": "2026.01.19+008"
+  },
+  "audit": [
+    {
+      "id": "a497e64f-d009-4e18-b5d6-3d2efcf59422",
+      "ts": "2026-01-19T07:45:49Z",
+      "actor_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "actor_user_code": "VIvXsPS",
+      "actor_role": "creator",
+      "target_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "target_user_code": "VIvXsPS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "d982219e-6352-446e-bae4-4348755136ac",
+      "ts": "2026-01-19T07:08:24Z",
+      "actor_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "actor_user_code": "VIvXsPS",
+      "actor_role": "creator",
+      "target_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "target_user_code": "VIvXsPS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "92e9b09d-03a8-491f-a916-ae9cfc7f27c4",
+      "ts": "2026-01-19T06:26:36Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    }
+  ]
+}

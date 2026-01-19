@@ -1,11 +1,11 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-01-13T00:25:13.489605Z",
-  "heartbeat": "2026-01-13T00:25:13.489605Z",
+  "generated_at": "2026-01-19T08:06:48.679815Z",
+  "heartbeat": "2026-01-19T08:06:48.679815Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
-    "version": "0.3.0-alpha",
-    "build": "2026.01.12+024"
+    "version": "0.2.3-alpha",
+    "build": "2026.01.19+008"
   },
   "system": {
     "platform_polling_enabled": {
@@ -129,7 +129,7 @@
       "state": "paused",
       "status": "paused",
       "paused_reason": "Rumble dependencies unavailable: No module named 'playwright'",
-      "last_heartbeat": "2026-01-13T00:25:11.279047Z",
+      "last_heartbeat": "2026-01-19T08:06:42.348054Z",
       "last_success_ts": null,
       "last_event_ts": null,
       "error": null,
@@ -222,7 +222,7 @@
         "twitter": true,
         "discord": true
       },
-      "last_heartbeat": "2026-01-13T00:25:11.279047Z",
+      "last_heartbeat": "2026-01-19T08:06:42.348054Z",
       "error": null
     }
   ],
