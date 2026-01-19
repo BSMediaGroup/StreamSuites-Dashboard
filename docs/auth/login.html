@@ -25,13 +25,36 @@
 <body>
   <main style="min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 32px;">
     <div class="admin-auth-card glass-card">
-      <h2>Administrator Login</h2>
+      <h2 class="admin-auth-title">
+        <img
+          src="/docs/assets/logos/logocircle.png"
+          alt="StreamSuites"
+          class="admin-auth-title-logo"
+        />
+        <span>Administrator Login</span>
+      </h2>
       <p class="muted">Use your StreamSuites account to access the admin dashboard.</p>
       <p id="admin-login-reason" class="muted"></p>
 
       <div class="admin-auth-providers">
-        <button class="ss-btn ss-btn-primary" data-admin-auth-provider="google">Continue with Google</button>
-        <button class="ss-btn ss-btn-secondary" data-admin-auth-provider="github">Continue with GitHub</button>
+        <button class="ss-btn ss-btn-primary" data-admin-auth-provider="google">
+          <img
+            class="admin-auth-provider-icon"
+            src="/docs/assets/icons/google.svg"
+            alt=""
+            aria-hidden="true"
+          />
+          <span>Continue with Google</span>
+        </button>
+        <button class="ss-btn ss-btn-secondary" data-admin-auth-provider="github">
+          <img
+            class="admin-auth-provider-icon"
+            src="/docs/assets/icons/github.svg"
+            alt=""
+            aria-hidden="true"
+          />
+          <span>Continue with GitHub</span>
+        </button>
       </div>
 
       <div class="admin-auth-divider">

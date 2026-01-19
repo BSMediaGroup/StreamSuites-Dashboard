@@ -191,13 +191,36 @@
   <div id="admin-auth-overlay" class="admin-auth-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="admin-auth-title">
     <div class="admin-auth-card glass-card">
       <button id="admin-auth-close" class="admin-auth-close" aria-label="Close admin login">×</button>
-      <h2 id="admin-auth-title">Admin Login</h2>
+      <h2 id="admin-auth-title" class="admin-auth-title">
+        <img
+          src="/docs/assets/logos/logocircle.png"
+          alt="StreamSuites"
+          class="admin-auth-title-logo"
+        />
+        <span>Admin Login</span>
+      </h2>
       <p class="muted">
         StreamSuites Admin access is restricted to approved administrators.
       </p>
       <div class="admin-auth-providers">
-        <button class="ss-btn ss-btn-primary" data-admin-auth-provider="google">Continue with Google</button>
-        <button class="ss-btn ss-btn-secondary" data-admin-auth-provider="github">Continue with GitHub</button>
+        <button class="ss-btn ss-btn-primary" data-admin-auth-provider="google">
+          <img
+            class="admin-auth-provider-icon"
+            src="/docs/assets/icons/google.svg"
+            alt=""
+            aria-hidden="true"
+          />
+          <span>Continue with Google</span>
+        </button>
+        <button class="ss-btn ss-btn-secondary" data-admin-auth-provider="github">
+          <img
+            class="admin-auth-provider-icon"
+            src="/docs/assets/icons/github.svg"
+            alt=""
+            aria-hidden="true"
+          />
+          <span>Continue with GitHub</span>
+        </button>
       </div>
       <div class="admin-auth-divider">
         <span>Emergency Admin Access</span>
