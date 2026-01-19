@@ -1,10 +1,10 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-01-19T08:06:48.695573Z",
+  "exported_at": "2026-01-19T09:41:39.626826Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.2.3-alpha",
-    "build": "2026.01.19+008"
+    "build": "2026.01.19+010"
   },
   "users": [
     {
@@ -33,9 +33,9 @@
       "id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
       "user_code": "7XaVoy7",
       "email": "mail@danielclancy.net",
-      "email_verified": false,
+      "email_verified": true,
       "display_name": "Daniel Clancy",
-      "avatar_url": null,
+      "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocIQ64fH_3kqKvnPXboTWo7wUsd767qTs6sSBNAGLH6Jwkh-zV2H=s96-c",
       "role": "admin",
       "tier": "OPEN",
       "onboarding_status": "required",
@@ -48,8 +48,8 @@
         }
       ],
       "created_at": "2026-01-17T17:33:34Z",
-      "last_login_at": null,
-      "updated_at": "2026-01-18T16:14:25Z"
+      "last_login_at": "2026-01-19T09:36:58Z",
+      "updated_at": "2026-01-19T09:36:58Z"
     },
     {
       "id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
@@ -75,8 +75,8 @@
         }
       ],
       "created_at": "2026-01-17T17:32:32Z",
-      "last_login_at": "2026-01-19T06:26:36Z",
-      "updated_at": "2026-01-19T06:26:36Z"
+      "last_login_at": "2026-01-19T09:34:39Z",
+      "updated_at": "2026-01-19T09:34:39Z"
     },
     {
       "id": "064370cb-161a-438d-b657-d57a54aa1712",
