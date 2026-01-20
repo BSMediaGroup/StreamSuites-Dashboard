@@ -1,12 +1,77 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-01-20T02:41:32.463453Z",
+  "exported_at": "2026-01-20T05:18:19.939517Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.2.3-alpha",
-    "build": "2026.01.20+002"
+    "build": "2026.01.20+003"
   },
   "audit": [
+    {
+      "id": "1d3e610c-5eda-4cee-96ea-901f2ed1c129",
+      "ts": "2026-01-20T04:28:14Z",
+      "actor_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "actor_user_code": "hVRt8Qp",
+      "actor_role": "creator",
+      "target_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "target_user_code": "hVRt8Qp",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "09018cee-abc6-461f-9689-37e27a73de85",
+      "ts": "2026-01-20T03:55:05Z",
+      "actor_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "actor_user_code": "hVRt8Qp",
+      "actor_role": "creator",
+      "target_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "target_user_code": "hVRt8Qp",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "f2e1449b-771a-4cc6-80b5-7abe31b94716",
+      "ts": "2026-01-20T03:54:02Z",
+      "actor_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "actor_user_code": "hVRt8Qp",
+      "actor_role": "creator",
+      "target_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "target_user_code": "hVRt8Qp",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "f82da777-785d-4fd6-98c6-ae0c849baf3d",
+      "ts": "2026-01-20T03:00:15Z",
+      "actor_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "actor_user_code": "hVRt8Qp",
+      "actor_role": "creator",
+      "target_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "target_user_code": "hVRt8Qp",
+      "action": "account_created",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "782ff1ca-3a68-41aa-875e-28beaecb4ea2",
+      "ts": "2026-01-20T03:00:15Z",
+      "actor_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "actor_user_code": "hVRt8Qp",
+      "actor_role": "creator",
+      "target_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "target_user_code": "hVRt8Qp",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
     {
       "id": "a29b505e-bb77-4839-ab99-5c2c92ddbc72",
       "ts": "2026-01-19T09:36:58Z",
