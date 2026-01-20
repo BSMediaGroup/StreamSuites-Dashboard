@@ -1,11 +1,11 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-01-19T09:41:39.529014Z",
-  "heartbeat": "2026-01-19T09:41:39.529014Z",
+  "generated_at": "2026-01-20T00:26:40.641892Z",
+  "heartbeat": "2026-01-20T00:26:40.641892Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.2.3-alpha",
-    "build": "2026.01.19+010"
+    "build": "2026.01.19+012"
   },
   "system": {
     "platform_polling_enabled": {
@@ -129,7 +129,7 @@
       "state": "paused",
       "status": "paused",
       "paused_reason": "Rumble dependencies unavailable: No module named 'playwright'",
-      "last_heartbeat": "2026-01-19T09:41:38.302472Z",
+      "last_heartbeat": "2026-01-20T00:26:40.126082Z",
       "last_success_ts": null,
       "last_event_ts": null,
       "error": null,
@@ -193,12 +193,12 @@
       "paused": false,
       "telemetry_enabled": true,
       "state": "active",
-      "status": "inactive",
+      "status": "error",
       "paused_reason": null,
       "last_heartbeat": null,
       "last_success_ts": null,
       "last_event_ts": null,
-      "error": null,
+      "error": "YouTube enabled but YOUTUBE_API_KEY_DANIEL is missing",
       "counters": {
         "messages": 0,
         "triggers": 0,
@@ -222,8 +222,8 @@
         "twitter": true,
         "discord": true
       },
-      "last_heartbeat": "2026-01-19T09:41:38.302472Z",
-      "error": null
+      "last_heartbeat": "2026-01-20T00:26:40.126082Z",
+      "error": "YouTube enabled but YOUTUBE_API_KEY_DANIEL is missing"
     }
   ],
   "triggers": {

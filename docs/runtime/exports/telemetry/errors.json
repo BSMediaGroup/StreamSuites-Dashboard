@@ -1,5 +1,13 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-01-19T09:41:39.586621Z",
-  "errors": []
+  "generated_at": "2026-01-20T00:26:40.658306Z",
+  "errors": [
+    {
+      "timestamp": "2026-01-20T00:24:50.027833Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "YouTube enabled but YOUTUBE_API_KEY_DANIEL is missing",
+      "source": "youtube"
+    }
+  ]
 }
