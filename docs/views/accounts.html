@@ -15,7 +15,7 @@
       <div class="ss-panel-header-main">
         <h2>Accounts</h2>
         <p class="muted" style="margin:6px 0 0;">
-          Read-only account visibility sourced from runtime admin APIs with snapshot fallback.
+          Account visibility and admin actions sourced from runtime APIs with snapshot fallback.
         </p>
       </div>
       <div class="ss-panel-header-actions">
@@ -73,9 +73,12 @@
             <th data-sort="displayName">Display Name</th>
             <th data-sort="role">Role</th>
             <th data-sort="tier">Tier</th>
+            <th data-sort="accountStatus">Account Status</th>
+            <th data-sort="onboardingStatus">Onboarding</th>
             <th data-sort="providersLabel">Providers</th>
             <th data-sort="createdAt">Created Date</th>
             <th data-sort="lastLogin">Last Login</th>
+            <th class="align-right">Actions</th>
           </tr>
         </thead>
         <tbody id="accounts-body"></tbody>
@@ -88,5 +91,5 @@
 </main>
 
 <footer class="ss-footer">
-  <span class="muted">Account data is read-only and mirrors runtime exports.</span>
+  <span class="muted">Account data mirrors runtime exports; actions require the live runtime.</span>
 </footer>
