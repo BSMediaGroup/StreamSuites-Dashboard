@@ -1,12 +1,75 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-01-20T15:26:25.187191Z",
+  "exported_at": "2026-01-20T16:40:18.260354Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.2.3-alpha",
-    "build": "2026.01.20+016"
+    "build": "2026.01.20+018"
   },
   "audit": [
+    {
+      "id": "e3b5bcb0-4f55-4824-98cf-f06720bc697f",
+      "ts": "2026-01-20T16:35:18Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "f8e89a2a-c608-447a-b003-2f39f3fc1b25",
+      "ts": "2026-01-20T16:08:36Z",
+      "actor_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "actor_user_code": "VIvXsPS",
+      "actor_role": "creator",
+      "target_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "target_user_code": "VIvXsPS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "f50179eb-7a97-4d49-824f-8d64315238a7",
+      "ts": "2026-01-20T16:07:43Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "target_user_code": "VIvXsPS",
+      "action": "onboarding_reset",
+      "metadata": {
+        "after": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "open"
+        },
+        "before": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "open"
+        },
+        "previous_status": "required",
+        "sessions_invalidated": 2
+      }
+    },
+    {
+      "id": "2031b971-bce7-49f6-8c2d-e954e8616f9d",
+      "ts": "2026-01-20T16:05:49Z",
+      "actor_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "actor_user_code": "VIvXsPS",
+      "actor_role": "creator",
+      "target_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "target_user_code": "VIvXsPS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
     {
       "id": "e62dee84-5c9e-48d1-bc6b-c13e992843b0",
       "ts": "2026-01-20T13:56:18Z",
