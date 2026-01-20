@@ -1,15 +1,15 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-01-20T05:18:19.886989Z",
+  "generated_at": "2026-01-20T06:57:01.503157Z",
   "events": [
     {
-      "timestamp": "2026-01-20T04:27:49.804849Z",
+      "timestamp": "2026-01-20T06:50:43.866969Z",
       "source": "system",
       "severity": "info",
       "message": "Runtime boot sequence started"
     },
     {
-      "timestamp": "2026-01-20T04:27:49.986031Z",
+      "timestamp": "2026-01-20T06:50:44.103198Z",
       "source": "rumble",
       "severity": "warning",
       "message": "Rumble dependencies unavailable: No module named 'playwright'"
