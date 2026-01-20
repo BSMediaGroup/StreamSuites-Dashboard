@@ -6,7 +6,6 @@
   "use strict";
 
   const RUNTIME_ENDPOINT = "/admin/audit";
-  const SNAPSHOT_PATH = `${window.ADMIN_BASE_PATH}/exports/admin/audit/audit.json`;
 
   const state = {
     raw: [],
@@ -44,6 +43,21 @@
       .replace(/>/g, "&gt;")
       .replace(/\"/g, "&quot;")
       .replace(/'/g, "&#39;");
+  }
+
+  function resolveApiBase() {
+    const base =
+      window.StreamSuitesAdminAuth?.config?.baseUrl ||
+      document.querySelector('meta[name="streamsuites-auth-base"]')?.getAttribute("content") ||
+      "";
+    return base ? base.replace(/\/$/, "") : "";
+  }
+
+  function buildApiUrl(path) {
+    const base = resolveApiBase();
+    if (!base) return path;
+    const normalized = path.startsWith("/") ? path : `/${path}`;
+    return `${base}${normalized}`;
   }
 
   function formatTimestamp(value) {
@@ -199,48 +213,37 @@
     }
   }
 
+  
   async function loadAuditLogs() {
-    setStatus("Loading runtime audit logs…");
+    setStatus("Loading live audit logs...");
     setBanner("", false);
 
-    let payload = null;
-    let source = "runtime";
-
     try {
-      const res = await fetchJson(RUNTIME_ENDPOINT);
-      if (!res.ok) throw new Error(`Runtime error ${res.status}`);
-      payload = await res.json();
-      source = "runtime";
-    } catch (err) {
-      try {
-        const snapshotRes = await fetchJson(SNAPSHOT_PATH, { credentials: "omit" });
-        if (!snapshotRes.ok) throw new Error(`Snapshot error ${snapshotRes.status}`);
-        payload = await snapshotRes.json();
-        source = "snapshot";
-      } catch (snapshotErr) {
-        console.warn("[Audit] Failed to load runtime or snapshot", err, snapshotErr);
-        setStatus("Offline (no snapshot available)");
-        setSource("Unavailable");
+      const res = await fetchJson(buildApiUrl(RUNTIME_ENDPOINT));
+      if (res.status === 401 || res.status === 403) {
+        setStatus("Admin session required. Sign in to view audit logs.");
+        setSource("Unauthorized");
         state.raw = [];
         state.manager?.setData([]);
-        setBanner("Runtime offline and no snapshot available.", true);
+        setBanner("Your admin session is missing or expired. Sign in to continue.", true);
         return;
       }
-    }
-
-    const normalized = extractEntries(payload).map(normalizeEntry);
-    state.raw = normalized;
-    updateActionFilter(normalized);
-    applyFilters();
-
-    if (source === "snapshot") {
-      setBanner("Viewing last exported snapshot (runtime offline)", true);
-      setStatus("Snapshot mode");
-      setSource("Snapshot export");
-    } else {
+      if (!res.ok) throw new Error(`Runtime error ${res.status}`);
+      const payload = await res.json();
+      const normalized = extractEntries(payload).map(normalizeEntry);
+      state.raw = normalized;
+      updateActionFilter(normalized);
+      applyFilters();
       setBanner("", false);
       setStatus("Live runtime data");
       setSource("Runtime API");
+    } catch (err) {
+      console.warn("[Audit] Failed to load runtime audit logs", err);
+      setStatus("Runtime API unavailable. Retry or contact an admin.");
+      setSource("Unavailable");
+      state.raw = [];
+      state.manager?.setData([]);
+      setBanner("Runtime API unavailable. Retry or check runtime connectivity.", true);
     }
   }
 
@@ -262,12 +265,13 @@
     URL.revokeObjectURL(url);
   }
 
+  
   async function triggerExport(format) {
-    setExportStatus("Exporting…");
+    setExportStatus("Exporting...");
 
     try {
-      const res = await fetch(`/admin/export/audit?format=${format}`, {
-        method: "POST",
+      const res = await fetch(buildApiUrl(`/admin/export/audit.${format}`), {
+        method: "GET",
         credentials: "include",
         headers: {
           Accept: "application/json, text/csv, application/octet-stream"
@@ -275,18 +279,11 @@
       });
 
       if (!res.ok) {
-        throw new Error(`Export failed (${res.status})`);
-      }
-
-      const contentType = res.headers.get("content-type") || "";
-      if (contentType.includes("application/json")) {
-        const payload = await res.json();
-        const redirectUrl = payload?.url || payload?.downloadUrl || payload?.download_url;
-        if (redirectUrl) {
-          window.location.assign(redirectUrl);
+        if (res.status === 401 || res.status === 403) {
+          setExportStatus("Admin session required to export.");
+          return;
         }
-        setExportStatus("Export triggered");
-        return;
+        throw new Error(`Export failed (${res.status})`);
       }
 
       const blob = await res.blob();

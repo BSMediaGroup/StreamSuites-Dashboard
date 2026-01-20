@@ -15,7 +15,7 @@
       <div class="ss-panel-header-main">
         <h2>Accounts</h2>
         <p class="muted" style="margin:6px 0 0;">
-          Account visibility and admin actions sourced from runtime APIs with snapshot fallback.
+          Account visibility and admin actions sourced from live runtime APIs.
         </p>
       </div>
       <div class="ss-panel-header-actions">
@@ -84,12 +84,12 @@
         <tbody id="accounts-body"></tbody>
       </table>
 
-      <div id="accounts-empty" class="ss-empty hidden">No accounts available yet. Check runtime exports or adjust filters.</div>
+      <div id="accounts-empty" class="ss-empty hidden">No accounts available yet. Check runtime connectivity or adjust filters.</div>
       <div class="pager" id="accounts-pagination"></div>
     </div>
   </section>
 </main>
 
 <footer class="ss-footer">
-  <span class="muted">Account data mirrors runtime exports; actions require the live runtime.</span>
+  <span class="muted">Account data mirrors live runtime state; actions require an active admin session.</span>
 </footer>

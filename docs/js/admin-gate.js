@@ -26,7 +26,14 @@
     window.ADMIN_BASE_PATH = resolvedBasePath;
   }
 
-  const AUTH_API_BASE = "https://api.streamsuites.app";
+  function getMetaContent(name) {
+    const value = document.querySelector(`meta[name="${name}"]`)?.getAttribute("content");
+    return typeof value === "string" ? value.trim() : "";
+  }
+
+  const AUTH_API_BASE =
+    getMetaContent("streamsuites-auth-base") || "https://api.streamsuites.app";
+  const AUTH_API_BASE_NORMALIZED = AUTH_API_BASE.replace(/\/+$/, "");
   const ADMIN_ORIGIN = window.location.origin;
   const ADMIN_INDEX_URL = `${ADMIN_ORIGIN}${window.ADMIN_BASE_PATH}/index.html`;
   const ADMIN_LOGOUT_REDIRECT = new URL(
@@ -34,10 +41,10 @@
     ADMIN_ORIGIN
   ).toString();
   const ADMIN_LOGIN_URL = new URL(`${window.ADMIN_BASE_PATH}/auth/login.html`, ADMIN_ORIGIN);
-  const SESSION_ENDPOINT = `${AUTH_API_BASE}/auth/session`;
-  const LOGOUT_ENDPOINT = `${AUTH_API_BASE}/auth/logout`;
-  const ADMIN_LOGIN_GOOGLE_URL = `${AUTH_API_BASE}/auth/login/google?surface=admin`;
-  const ADMIN_LOGIN_GITHUB_URL = `${AUTH_API_BASE}/auth/login/github?surface=admin`;
+  const SESSION_ENDPOINT = `${AUTH_API_BASE_NORMALIZED}/auth/session`;
+  const LOGOUT_ENDPOINT = `${AUTH_API_BASE_NORMALIZED}/auth/logout`;
+  const ADMIN_LOGIN_GOOGLE_URL = `${AUTH_API_BASE_NORMALIZED}/auth/login/google?surface=admin`;
+  const ADMIN_LOGIN_GITHUB_URL = `${AUTH_API_BASE_NORMALIZED}/auth/login/github?surface=admin`;
   const AUTHORIZED_ROLE = "admin";
 
   const docEl = document.documentElement;

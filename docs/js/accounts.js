@@ -5,8 +5,7 @@
 (() => {
   "use strict";
 
-  const RUNTIME_ENDPOINT = "/admin/users";
-  const SNAPSHOT_PATH = `${window.ADMIN_BASE_PATH}/exports/admin/users/users.json`;
+  const RUNTIME_ENDPOINT = "/admin/accounts";
   const SEARCH_FIELDS = [
     "userCode",
     "email",
@@ -166,6 +165,21 @@
       document.querySelector('meta[name="streamsuites-auth-session"]')?.getAttribute("content") ||
       ""
     );
+  }
+
+  function resolveApiBase() {
+    const base =
+      window.StreamSuitesAdminAuth?.config?.baseUrl ||
+      document.querySelector('meta[name="streamsuites-auth-base"]')?.getAttribute("content") ||
+      "";
+    return base ? base.replace(/\/$/, "") : "";
+  }
+
+  function buildApiUrl(path) {
+    const base = resolveApiBase();
+    if (!base) return path;
+    const normalized = path.startsWith("/") ? path : `/${path}`;
+    return `${base}${normalized}`;
   }
 
   async function loadAdminIdentity() {
@@ -343,9 +357,7 @@
       Boolean(el.search?.value);
     if (state.raw.length === 0) {
       el.empty.textContent =
-        state.sourceMode === "snapshot"
-          ? "No accounts in the latest snapshot. Check runtime exports and try again."
-          : "No accounts available yet. Confirm the runtime is connected, then refresh.";
+        "No accounts available yet. Confirm the runtime is connected, then refresh.";
       return;
     }
     if (filteredCount === 0 && hasFilters) {
@@ -463,52 +475,45 @@
     }
   }
 
+  
   async function loadUsers() {
-    setStatus("Loading runtime users…");
+    setStatus("Loading live accounts...");
     setBanner("", false);
 
-    let payload = null;
-    let source = "runtime";
-
     try {
-      const res = await fetchJson(RUNTIME_ENDPOINT);
-      if (!res.ok) throw new Error(`Runtime error ${res.status}`);
-      payload = await res.json();
-      source = "runtime";
-    } catch (err) {
-      try {
-        const snapshotRes = await fetchJson(SNAPSHOT_PATH, { credentials: "omit" });
-        if (!snapshotRes.ok) throw new Error(`Snapshot error ${snapshotRes.status}`);
-        payload = await snapshotRes.json();
-        source = "snapshot";
-      } catch (snapshotErr) {
-        console.warn("[Accounts] Failed to load runtime or snapshot", err, snapshotErr);
-        setStatus("Runtime offline. Retry or contact an admin for runtime access.");
-        setSource("Unavailable");
+      const res = await fetchJson(buildApiUrl(RUNTIME_ENDPOINT));
+      if (res.status === 401 || res.status === 403) {
+        setStatus("Admin session required. Sign in to view accounts.");
+        setSource("Unauthorized");
         state.raw = [];
-        state.sourceMode = "unavailable";
+        state.canManage = false;
+        state.sourceMode = "unauthorized";
         state.manager?.setData([]);
         updateEmptyStateMessage(0);
-        setBanner("Runtime offline and no snapshot available. Retry or check runtime exports.", true);
+        setBanner("Your admin session is missing or expired. Sign in to continue.", true);
         return;
       }
-    }
-
-    const normalized = extractUsers(payload).map(normalizeUser);
-    state.raw = normalized;
-    state.canManage = source !== "snapshot";
-    state.sourceMode = source;
-    updateFilterOptions(normalized);
-    applyFilters();
-
-    if (source === "snapshot") {
-      setBanner("Viewing last exported snapshot (runtime offline). Actions are disabled.", true);
-      setStatus("Snapshot mode");
-      setSource("Snapshot export");
-    } else {
+      if (!res.ok) throw new Error(`Runtime error ${res.status}`);
+      const payload = await res.json();
+      const normalized = extractUsers(payload).map(normalizeUser);
+      state.raw = normalized;
+      state.canManage = true;
+      state.sourceMode = "runtime";
+      updateFilterOptions(normalized);
+      applyFilters();
       setBanner("", false);
       setStatus("Live runtime data");
       setSource("Runtime API");
+    } catch (err) {
+      console.warn("[Accounts] Failed to load runtime accounts", err);
+      setStatus("Runtime API unavailable. Retry or contact an admin.");
+      setSource("Unavailable");
+      state.raw = [];
+      state.canManage = false;
+      state.sourceMode = "unavailable";
+      state.manager?.setData([]);
+      updateEmptyStateMessage(0);
+      setBanner("Runtime API unavailable. Retry or check runtime connectivity.", true);
     }
   }
 
@@ -576,6 +581,7 @@
     });
   }
 
+  
   async function handleAccountAction(user, action, row, button) {
     if (!user || !action) return;
     if (!state.canManage) return;
@@ -585,12 +591,21 @@
       if (message && !window.confirm(message)) return;
     }
 
-    const endpoint = `/admin/accounts/${encodeURIComponent(user.id)}/${action}`;
+    const base = "/admin/accounts";
+    const endpoint =
+      action === "delete"
+        ? `${base}/${encodeURIComponent(user.id)}`
+        : `${base}/${encodeURIComponent(user.id)}/${action}`;
     setStatus(`Applying ${action.replace("-", " ")}...`);
     setRowActionLoading(row, button, true);
     try {
-      const res = await fetchJson(endpoint, { method: "POST" });
+      const method = action === "delete" ? "DELETE" : "POST";
+      const res = await fetchJson(buildApiUrl(endpoint), { method });
       if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          setStatus("Admin session expired. Sign in again to continue.");
+          return;
+        }
         const message = await res.text();
         console.warn("[Accounts] Action failed", action, message);
         setStatus("Action failed. Retry or refresh your admin session.");
@@ -631,15 +646,16 @@
     URL.revokeObjectURL(url);
   }
 
+  
   async function triggerExport(format) {
     if (!el.exportStatus) return;
-    const endpoint = `/admin/export/users?format=${format}`;
+    const endpoint = `/admin/export/users.${format}`;
     setExportStatus("Exporting...");
     setExportButtonsLoading(true);
 
     try {
-      const res = await fetch(endpoint, {
-        method: "POST",
+      const res = await fetch(buildApiUrl(endpoint), {
+        method: "GET",
         credentials: "include",
         headers: {
           Accept: "application/json, text/csv, application/octet-stream"
@@ -647,18 +663,11 @@
       });
 
       if (!res.ok) {
-        throw new Error(`Export failed (${res.status})`);
-      }
-
-      const contentType = res.headers.get("content-type") || "";
-      if (contentType.includes("application/json")) {
-        const payload = await res.json();
-        const redirectUrl = payload?.url || payload?.downloadUrl || payload?.download_url;
-        if (redirectUrl) {
-          window.location.assign(redirectUrl);
+        if (res.status === 401 || res.status === 403) {
+          setExportStatus("Admin session required to export.");
+          return;
         }
-        setExportStatus("Export triggered. Download will start shortly.");
-        return;
+        throw new Error(`Export failed (${res.status})`);
       }
 
       const blob = await res.blob();
