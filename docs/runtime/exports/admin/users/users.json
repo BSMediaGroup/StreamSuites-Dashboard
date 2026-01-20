@@ -1,12 +1,34 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-01-20T02:41:32.463453Z",
+  "exported_at": "2026-01-20T05:18:19.937087Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.2.3-alpha",
-    "build": "2026.01.20+002"
+    "build": "2026.01.20+003"
   },
   "users": [
+    {
+      "id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "user_code": "hVRt8Qp",
+      "email": "hurryupandpaymerumble@gmail.com",
+      "email_verified": true,
+      "display_name": "Daniel Clancy",
+      "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocJbRYdZPbWG5Lc5L_K74Ie3aanvXwzpi1sHQIPZpl33J0bM=s96-c",
+      "role": "creator",
+      "tier": "OPEN",
+      "onboarding_status": "required",
+      "status": "active",
+      "providers": [
+        {
+          "provider": "google",
+          "provider_user_id": "115486676870244157899",
+          "linked_at": "2026-01-20T03:00:15Z"
+        }
+      ],
+      "created_at": "2026-01-20T03:00:15Z",
+      "last_login_at": "2026-01-20T04:28:14Z",
+      "updated_at": "2026-01-20T04:28:14Z"
+    },
     {
       "id": "2b20d3e9-feee-4b8b-a78d-566912b68e8d",
       "user_code": "fowTR0T",
