@@ -99,3 +99,21 @@
 .creator-footer .footer-divider {
   opacity: 0.6;
 }
+
+/* Admin auth creator switch link */
+.admin-auth-creator-link {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.admin-auth-creator-anchor {
+  color: rgba(140, 199, 54, 0.7);
+  text-decoration: none;
+}
+
+.admin-auth-creator-anchor:hover {
+  color: rgba(140, 199, 54, 0.9);
+  text-decoration: underline;
+}

@@ -7,6 +7,15 @@
 
   const RUNTIME_ENDPOINT = "/admin/users";
   const SNAPSHOT_PATH = `${window.ADMIN_BASE_PATH}/exports/admin/users/users.json`;
+  const SEARCH_FIELDS = [
+    "userCode",
+    "email",
+    "displayName",
+    "role",
+    "tier",
+    "accountStatus",
+    "onboardingStatus"
+  ];
 
   const state = {
     raw: [],
@@ -14,7 +23,9 @@
     sourceLabel: "—",
     selfId: "",
     selfEmail: "",
-    canManage: false
+    canManage: false,
+    sourceMode: "runtime",
+    exportLoading: false
   };
 
   const el = {
@@ -304,6 +315,46 @@
     el.exportStatus.textContent = message;
   }
 
+  function setExportButtonsLoading(isLoading) {
+    state.exportLoading = isLoading;
+    [el.exportJson, el.exportCsv].forEach((button) => {
+      if (!button) return;
+      if (isLoading) {
+        button.dataset.originalLabel = button.textContent || "";
+        button.disabled = true;
+        button.textContent = "Exporting...";
+      } else {
+        const original = button.dataset.originalLabel;
+        if (original !== undefined) {
+          button.textContent = original;
+          delete button.dataset.originalLabel;
+        }
+        button.disabled = false;
+      }
+    });
+  }
+
+  function updateEmptyStateMessage(filteredCount) {
+    if (!el.empty) return;
+    const hasFilters =
+      Boolean(el.roleFilter?.value) ||
+      Boolean(el.tierFilter?.value) ||
+      Boolean(el.providerFilter?.value) ||
+      Boolean(el.search?.value);
+    if (state.raw.length === 0) {
+      el.empty.textContent =
+        state.sourceMode === "snapshot"
+          ? "No accounts in the latest snapshot. Check runtime exports and try again."
+          : "No accounts available yet. Confirm the runtime is connected, then refresh.";
+      return;
+    }
+    if (filteredCount === 0 && hasFilters) {
+      el.empty.textContent = "No accounts match these filters. Clear filters or search to see all accounts.";
+      return;
+    }
+    el.empty.textContent = "No accounts to display right now.";
+  }
+
   function updateFilterOptions(items) {
     const roles = new Set();
     const tiers = new Set();
@@ -337,12 +388,12 @@
     selectEl.value = current || "";
   }
 
-  function applyFilters() {
+  function getFilteredData() {
     const role = el.roleFilter?.value || "";
     const tier = el.tierFilter?.value || "";
     const provider = el.providerFilter?.value || "";
 
-    const filtered = state.raw.filter((item) => {
+    return state.raw.filter((item) => {
       if (role && String(item.role).toLowerCase() !== role.toLowerCase()) {
         return false;
       }
@@ -357,8 +408,20 @@
       }
       return true;
     });
+  }
 
+  function getSearchFilteredCount(baseItems) {
+    const term = el.search?.value || "";
+    if (window.SearchPagination?.filterData) {
+      return window.SearchPagination.filterData(baseItems, term, SEARCH_FIELDS).length;
+    }
+    return baseItems.length;
+  }
+
+  function applyFilters() {
+    const filtered = getFilteredData();
     state.manager?.setData(filtered);
+    updateEmptyStateMessage(getSearchFilteredCount(filtered));
   }
 
   function toggleIdColumn(show) {
@@ -420,11 +483,13 @@
         source = "snapshot";
       } catch (snapshotErr) {
         console.warn("[Accounts] Failed to load runtime or snapshot", err, snapshotErr);
-        setStatus("Offline (no snapshot available)");
+        setStatus("Runtime offline. Retry or contact an admin for runtime access.");
         setSource("Unavailable");
         state.raw = [];
+        state.sourceMode = "unavailable";
         state.manager?.setData([]);
-        setBanner("Runtime offline and no snapshot available.", true);
+        updateEmptyStateMessage(0);
+        setBanner("Runtime offline and no snapshot available. Retry or check runtime exports.", true);
         return;
       }
     }
@@ -432,11 +497,12 @@
     const normalized = extractUsers(payload).map(normalizeUser);
     state.raw = normalized;
     state.canManage = source !== "snapshot";
+    state.sourceMode = source;
     updateFilterOptions(normalized);
     applyFilters();
 
     if (source === "snapshot") {
-      setBanner("Viewing last exported snapshot (runtime offline)", true);
+      setBanner("Viewing last exported snapshot (runtime offline). Actions are disabled.", true);
       setStatus("Snapshot mode");
       setSource("Snapshot export");
     } else {
@@ -486,7 +552,31 @@
     state.raw[index] = next;
   }
 
-  async function handleAccountAction(user, action) {
+  function setRowActionLoading(row, activeButton, isLoading) {
+    if (!row) return;
+    const buttons = row.querySelectorAll("[data-account-action]");
+    buttons.forEach((button) => {
+      if (!(button instanceof HTMLButtonElement)) return;
+      if (isLoading) {
+        button.dataset.originalDisabled = button.disabled ? "true" : "false";
+        button.disabled = true;
+        if (button === activeButton) {
+          button.dataset.originalLabel = button.textContent || "";
+          button.textContent = "Working...";
+        }
+      } else {
+        const wasDisabled = button.dataset.originalDisabled === "true";
+        button.disabled = wasDisabled;
+        delete button.dataset.originalDisabled;
+        if (button.dataset.originalLabel !== undefined) {
+          button.textContent = button.dataset.originalLabel;
+          delete button.dataset.originalLabel;
+        }
+      }
+    });
+  }
+
+  async function handleAccountAction(user, action, row, button) {
     if (!user || !action) return;
     if (!state.canManage) return;
 
@@ -496,11 +586,14 @@
     }
 
     const endpoint = `/admin/accounts/${encodeURIComponent(user.id)}/${action}`;
+    setStatus(`Applying ${action.replace("-", " ")}...`);
+    setRowActionLoading(row, button, true);
     try {
       const res = await fetchJson(endpoint, { method: "POST" });
       if (!res.ok) {
         const message = await res.text();
         console.warn("[Accounts] Action failed", action, message);
+        setStatus("Action failed. Retry or refresh your admin session.");
         return;
       }
       let payload = null;
@@ -511,8 +604,12 @@
       }
       updateUserAfterAction(user.id, action, payload);
       applyFilters();
+      setStatus("Action complete.");
     } catch (err) {
       console.warn("[Accounts] Action error", action, err);
+      setStatus("Action failed. Retry or contact an admin if it persists.");
+    } finally {
+      setRowActionLoading(row, button, false);
     }
   }
 
@@ -537,7 +634,8 @@
   async function triggerExport(format) {
     if (!el.exportStatus) return;
     const endpoint = `/admin/export/users?format=${format}`;
-    setExportStatus("Exporting…");
+    setExportStatus("Exporting...");
+    setExportButtonsLoading(true);
 
     try {
       const res = await fetch(endpoint, {
@@ -559,7 +657,7 @@
         if (redirectUrl) {
           window.location.assign(redirectUrl);
         }
-        setExportStatus("Export triggered");
+        setExportStatus("Export triggered. Download will start shortly.");
         return;
       }
 
@@ -569,7 +667,9 @@
       setExportStatus("Export ready");
     } catch (err) {
       console.warn("[Accounts] Export failed", err);
-      setExportStatus("Export failed");
+      setExportStatus("Export failed. Retry or contact an admin.");
+    } finally {
+      setExportButtonsLoading(false);
     }
   }
 
@@ -577,6 +677,10 @@
     el.roleFilter?.addEventListener("change", applyFilters);
     el.tierFilter?.addEventListener("change", applyFilters);
     el.providerFilter?.addEventListener("change", applyFilters);
+    el.search?.addEventListener("input", () => {
+      const filtered = getFilteredData();
+      updateEmptyStateMessage(getSearchFilteredCount(filtered));
+    });
     el.idToggle?.addEventListener("change", (event) => {
       toggleIdColumn(event.target.checked);
     });
@@ -585,6 +689,7 @@
     el.body?.addEventListener("click", (event) => {
       const button = event.target.closest("[data-account-action]");
       if (!button) return;
+      if (button.disabled) return;
       const action = button.getAttribute("data-account-action") || "";
       const row = button.closest("tr");
       if (!row) return;
@@ -592,7 +697,7 @@
       const accountId = idCell?.textContent?.trim() || "";
       const user = state.raw.find((entry) => entry.id === accountId);
       if (!user || !action) return;
-      void handleAccountAction(user, action);
+      void handleAccountAction(user, action, row, button);
     });
   }
 
@@ -600,15 +705,7 @@
     if (!window.SearchPagination) return;
     state.manager = window.SearchPagination.createTableManager({
       data: [],
-      searchFields: [
-        "userCode",
-        "email",
-        "displayName",
-        "role",
-        "tier",
-        "accountStatus",
-        "onboardingStatus"
-      ],
+      searchFields: SEARCH_FIELDS,
       defaultSortField: "createdAt",
       defaultSortDirection: "desc",
       pageSize: 10,

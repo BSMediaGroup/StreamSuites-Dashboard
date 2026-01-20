@@ -482,6 +482,7 @@
 
   function renderRuntimeDisconnected() {
     const placeholder = "Runtime not connected";
+    const emptyMessage = "Runtime not connected. Start the runtime service and refresh.";
 
     setText(el.dashboardState, "static mode");
 
@@ -505,27 +506,27 @@
 
     if (el.adminActivityBody) el.adminActivityBody.innerHTML = "";
     if (el.adminActivityEmpty) {
-      el.adminActivityEmpty.textContent = placeholder;
+      el.adminActivityEmpty.textContent = emptyMessage;
       toggleEmptyState(el.adminActivityEmpty, true);
     }
 
     if (el.telemetryEmpty) {
-      el.telemetryEmpty.textContent = placeholder;
+      el.telemetryEmpty.textContent = emptyMessage;
       toggleEmptyState(el.telemetryEmpty, true);
     }
     if (el.telemetryEventsBody) el.telemetryEventsBody.innerHTML = "";
     if (el.telemetryEventsEmpty) {
-      el.telemetryEventsEmpty.textContent = placeholder;
+      el.telemetryEventsEmpty.textContent = emptyMessage;
       toggleEmptyState(el.telemetryEventsEmpty, true);
     }
     if (el.telemetryRatesGrid) el.telemetryRatesGrid.innerHTML = "";
     if (el.telemetryRatesEmpty) {
-      el.telemetryRatesEmpty.textContent = placeholder;
+      el.telemetryRatesEmpty.textContent = emptyMessage;
       toggleEmptyState(el.telemetryRatesEmpty, true);
     }
     if (el.telemetryErrorsBody) el.telemetryErrorsBody.innerHTML = "";
     if (el.telemetryErrorsEmpty) {
-      el.telemetryErrorsEmpty.textContent = placeholder;
+      el.telemetryErrorsEmpty.textContent = emptyMessage;
       toggleEmptyState(el.telemetryErrorsEmpty, true);
     }
   }
@@ -584,7 +585,11 @@
     const hasData = snapshot && snapshot.platforms;
 
     if (!hasData) {
-      el.telemetryEmpty?.classList.remove("hidden");
+      if (el.telemetryEmpty) {
+        el.telemetryEmpty.textContent =
+          "Telemetry snapshot unavailable. Check runtime exports or retry.";
+        el.telemetryEmpty.classList.remove("hidden");
+      }
       setTelemetryRows("unknown", "—", "No runtime snapshot available");
       return;
     }
@@ -654,9 +659,9 @@
     }
 
     const messages = {
-      missing: missingMessage || "Telemetry snapshot missing — updates pending.",
-      stale: "Telemetry snapshot is stale — values may be outdated.",
-      invalid: "Telemetry snapshot invalid — unable to trust telemetry data."
+      missing: missingMessage || "Telemetry snapshot missing. Check runtime exports or retry.",
+      stale: "Telemetry snapshot is stale. Refresh or verify the runtime pipeline.",
+      invalid: "Telemetry snapshot invalid. Check exports or contact an admin."
     };
 
     target.textContent = messages[health.status] || missingMessage || "Telemetry unavailable.";
@@ -748,6 +753,10 @@
     grid.innerHTML = "";
 
     if (!metrics.length) {
+      if (el.telemetryRatesEmpty) {
+        el.telemetryRatesEmpty.textContent =
+          "Metrics unavailable. Wait for telemetry export or check runtime status.";
+      }
       toggleEmptyState(el.telemetryRatesEmpty, true);
       return;
     }
