@@ -1,24 +1,18 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-01-20T00:26:40.658306Z",
+  "generated_at": "2026-01-20T02:41:32.448200Z",
   "events": [
     {
-      "timestamp": "2026-01-20T00:24:49.936347Z",
+      "timestamp": "2026-01-20T02:40:20.554026Z",
       "source": "system",
       "severity": "info",
       "message": "Runtime boot sequence started"
     },
     {
-      "timestamp": "2026-01-20T00:24:50.027833Z",
+      "timestamp": "2026-01-20T02:40:20.653209Z",
       "source": "rumble",
       "severity": "warning",
       "message": "Rumble dependencies unavailable: No module named 'playwright'"
-    },
-    {
-      "timestamp": "2026-01-20T00:24:50.027833Z",
-      "source": "youtube",
-      "severity": "error",
-      "message": "YouTube enabled but YOUTUBE_API_KEY_DANIEL is missing"
     }
   ]
 }
