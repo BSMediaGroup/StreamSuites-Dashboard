@@ -270,7 +270,7 @@
     setExportStatus("Exporting...");
 
     try {
-      const res = await fetch(buildApiUrl(`/admin/export/audit.${format}`), {
+      const res = await fetch(buildApiUrl(`/admin/audit/export.${format}`), {
         method: "GET",
         credentials: "include",
         headers: {

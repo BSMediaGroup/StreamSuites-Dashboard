@@ -135,10 +135,12 @@
     return [];
   }
 
-  function normalizeUser(raw = {}) {
+function normalizeUser(raw = {}) {
     const providers = resolveProviders(raw.providers || raw.authProviders || raw.auth_providers);
+    const internalId =
+      raw.internal_id || raw.internalId || raw.id || raw.uuid || raw.user_id || raw.userId || "—";
     return {
-      id: raw.id || raw.uuid || raw.user_id || raw.userId || "—",
+      id: internalId,
       userCode: raw.user_code || raw.userCode || raw.code || raw.handle || "—",
       email: raw.email || raw.email_address || raw.username || "—",
       displayName: raw.display_name || raw.displayName || raw.name || "—",
@@ -155,7 +157,13 @@
         })
         .join(", ") || "—",
       createdAt: raw.created_at || raw.createdAt || raw.created || null,
-      lastLogin: raw.last_login || raw.lastLogin || raw.last_seen || null
+      lastLogin:
+        raw.last_login_at ||
+        raw.lastLoginAt ||
+        raw.last_login ||
+        raw.lastLogin ||
+        raw.last_seen ||
+        null
     };
   }
 
@@ -232,6 +240,8 @@
     const isActive = status === "active";
     const isSelf = isSelfAccount(user);
     const manageDisabled = !state.canManage;
+    const tiers = ["OPEN", "GOLD", "PRO"];
+    const currentTier = String(user.tier || "OPEN").toUpperCase();
 
     const actions = [];
     if (isActive) {
@@ -294,7 +304,19 @@
     );
 
     return `
-      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center;">
+        <select class="ss-input" data-account-tier ${manageDisabled || isDeleted ? "disabled" : ""}>
+          ${tiers
+            .map((tier) => `<option value="${tier}"${tier === currentTier ? " selected" : ""}>${tier}</option>`)
+            .join("")}
+        </select>
+        ${renderActionButton({
+          label: "Update Tier",
+          action: "tier",
+          tone: "ss-btn-primary",
+          disabled: manageDisabled || isDeleted,
+          title: isDeleted ? "Cannot change tier on deleted accounts." : ""
+        })}
         ${actions.join("")}
       </div>
     `;
@@ -552,6 +574,8 @@
       next.accountStatus = payload?.account_status || "deleted";
     } else if (action === "reset-onboarding") {
       next.onboardingStatus = payload?.onboarding_status || "required";
+    } else if (action === "tier") {
+      next.tier = payload?.tier || next.tier;
     }
 
     state.raw[index] = next;
@@ -560,6 +584,7 @@
   function setRowActionLoading(row, activeButton, isLoading) {
     if (!row) return;
     const buttons = row.querySelectorAll("[data-account-action]");
+    const tierSelect = row.querySelector("[data-account-tier]");
     buttons.forEach((button) => {
       if (!(button instanceof HTMLButtonElement)) return;
       if (isLoading) {
@@ -579,6 +604,15 @@
         }
       }
     });
+    if (tierSelect instanceof HTMLSelectElement) {
+      if (isLoading) {
+        tierSelect.dataset.originalDisabled = tierSelect.disabled ? "true" : "false";
+        tierSelect.disabled = true;
+      } else {
+        tierSelect.disabled = tierSelect.dataset.originalDisabled === "true";
+        delete tierSelect.dataset.originalDisabled;
+      }
+    }
   }
 
   
@@ -596,11 +630,28 @@
       action === "delete"
         ? `${base}/${encodeURIComponent(user.id)}`
         : `${base}/${encodeURIComponent(user.id)}/${action}`;
-    setStatus(`Applying ${action.replace("-", " ")}...`);
-    setRowActionLoading(row, button, true);
     try {
-      const method = action === "delete" ? "DELETE" : "POST";
-      const res = await fetchJson(buildApiUrl(endpoint), { method });
+      let method = "POST";
+      let body = null;
+      if (action === "delete") {
+        method = "DELETE";
+      } else if (action === "tier") {
+        const tierSelect = row?.querySelector("[data-account-tier]");
+        const selectedTier = tierSelect?.value || "";
+        if (!selectedTier) {
+          setStatus("Select a tier before updating.");
+          return;
+        }
+        method = "PATCH";
+        body = JSON.stringify({ tier: selectedTier });
+      }
+      setStatus(`Applying ${action.replace("-", " ")}...`);
+      setRowActionLoading(row, button, true);
+      const res = await fetchJson(buildApiUrl(endpoint), {
+        method,
+        body,
+        headers: body ? { "Content-Type": "application/json" } : undefined
+      });
       if (!res.ok) {
         if (res.status === 401 || res.status === 403) {
           setStatus("Admin session expired. Sign in again to continue.");
@@ -619,7 +670,8 @@
       }
       updateUserAfterAction(user.id, action, payload);
       applyFilters();
-      setStatus("Action complete.");
+      setStatus("Action complete. Refreshing...");
+      await loadUsers();
     } catch (err) {
       console.warn("[Accounts] Action error", action, err);
       setStatus("Action failed. Retry or contact an admin if it persists.");
@@ -649,7 +701,7 @@
   
   async function triggerExport(format) {
     if (!el.exportStatus) return;
-    const endpoint = `/admin/export/users.${format}`;
+    const endpoint = `/admin/accounts/export.${format}`;
     setExportStatus("Exporting...");
     setExportButtonsLoading(true);
 

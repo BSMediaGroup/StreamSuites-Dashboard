@@ -1179,6 +1179,15 @@ registerView("audit", {
     window.AuditLogsView?.init?.();
   }
 });
+registerView("api-usage", {
+  templatePath: "api-usage",
+  onLoad: () => {
+    window.ApiUsageView?.init?.();
+  },
+  onUnload: () => {
+    window.ApiUsageView?.destroy?.();
+  }
+});
 
 registerView("triggers", {
   onLoad: () => {
