@@ -11,7 +11,8 @@
   const state = {
     timer: null,
     data: null,
-    online: false
+    online: false,
+    resizeObserver: null
   };
 
   const el = {
@@ -20,6 +21,7 @@
     rpm: null,
     errorRate: null,
     window: null,
+    panel: null,
     canvas: null,
     empty: null
   };
@@ -91,7 +93,7 @@
     const dpr = window.devicePixelRatio || 1;
     el.canvas.width = containerWidth * dpr;
     el.canvas.height = containerHeight * dpr;
-    ctx.scale(dpr, dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     ctx.clearRect(0, 0, containerWidth, containerHeight);
 
@@ -143,13 +145,33 @@
       ctx.stroke();
     }
 
-    drawSeries(requests, "#4dd0e1");
-    drawSeries(errors, "#ff8f66");
+    const seriesColors = {
+      requests: "#4dd0e1",
+      errors: "#ff8f66"
+    };
+
+    drawSeries(requests, seriesColors.requests);
+    drawSeries(errors, seriesColors.errors);
 
     ctx.fillStyle = "rgba(255,255,255,0.65)";
     ctx.font = "12px system-ui, -apple-system, sans-serif";
-    ctx.fillText("Requests/sec", padding.left, padding.top - 8);
-    ctx.fillText("Errors/sec", padding.left + 110, padding.top - 8);
+    const legendY = padding.top - 8;
+    const legendItems = [
+      { label: "Requests/sec", color: seriesColors.requests },
+      { label: "Errors/sec", color: seriesColors.errors }
+    ];
+    let legendX = padding.left;
+    legendItems.forEach((item) => {
+      ctx.strokeStyle = item.color;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(legendX, legendY - 4);
+      ctx.lineTo(legendX + 18, legendY - 4);
+      ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,0.65)";
+      ctx.fillText(item.label, legendX + 24, legendY);
+      legendX += 24 + ctx.measureText(item.label).width + 20;
+    });
   }
 
   function renderEmptyState(show) {
@@ -211,9 +233,16 @@
     el.rpm = $("api-usage-rpm");
     el.errorRate = $("api-usage-error-rate");
     el.window = $("api-usage-window");
+    el.panel = $("api-usage-chart-panel");
     el.canvas = $("api-usage-chart");
     el.empty = $("api-usage-empty");
     window.addEventListener("resize", handleResize);
+    if (el.panel && "ResizeObserver" in window) {
+      state.resizeObserver = new ResizeObserver(() => {
+        drawChart(state.data);
+      });
+      state.resizeObserver.observe(el.panel);
+    }
     fetchMetrics();
   }
 
@@ -221,6 +250,10 @@
     if (state.timer) clearTimeout(state.timer);
     state.timer = null;
     window.removeEventListener("resize", handleResize);
+    if (state.resizeObserver) {
+      state.resizeObserver.disconnect();
+      state.resizeObserver = null;
+    }
   }
 
   window.ApiUsageView = {
