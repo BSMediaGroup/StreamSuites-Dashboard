@@ -19,7 +19,8 @@
   const TELEMETRY_PATHS = {
     events: "telemetry/events.json",
     rates: "telemetry/rates.json",
-    errors: "telemetry/errors.json"
+    errors: "telemetry/errors.json",
+    authEvents: "telemetry/auth_events.json"
   };
 
   const TELEMETRY_CACHE = new Map();
@@ -90,6 +91,31 @@
     return { generated_at, events: normalizedEvents };
   }
 
+  function normalizeAuthEventSnapshot(raw) {
+    const generated_at = pickTimestamp(raw);
+    const eventsArray = Array.isArray(raw?.events)
+      ? raw.events
+      : Array.isArray(raw)
+        ? raw
+        : [];
+
+    const normalizedEvents = eventsArray
+      .filter((evt) => evt && typeof evt === "object")
+      .map((evt) => ({
+        timestamp_utc: evt.timestamp_utc || evt.timestamp || evt.at || evt.time || evt.t,
+        event_type: evt.event_type || evt.type || "unknown",
+        event_name: evt.event_name || evt.email_type || evt.name || "",
+        result: evt.result || evt.status || "",
+        email_redacted: evt.email_redacted || evt.email || ""
+      }))
+      .sort((a, b) => {
+        const tsA = new Date(a.timestamp_utc || 0).getTime();
+        const tsB = new Date(b.timestamp_utc || 0).getTime();
+        return tsB - tsA;
+      });
+
+    return { generated_at, events: normalizedEvents };
+  }
   function normalizeRatesSnapshot(raw) {
     const generated_at = pickTimestamp(raw);
     const windowLabel = raw?.window || raw?.window_label || raw?.interval || "Recent window";
@@ -204,6 +230,11 @@
     return normalizeErrorsSnapshot(raw || {});
   }
 
+  async function loadAuthEvents(options = {}) {
+    const raw = await loadTelemetryFile(TELEMETRY_PATHS.authEvents, options.forceReload);
+    return normalizeAuthEventSnapshot(raw || {});
+  }
+
   async function loadSnapshot(forceReload = false) {
     if (snapshotCache && !forceReload) return clone(snapshotCache);
 
@@ -262,6 +293,7 @@
     loadEvents,
     loadRates,
     loadErrors,
+    loadAuthEvents,
     evaluateSnapshotHealth,
     describePlatform,
     formatTimestamp,

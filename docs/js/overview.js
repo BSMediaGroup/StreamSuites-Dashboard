@@ -4,6 +4,7 @@
   const REFRESH_INTERVAL_MS = 15000;
   const TELEMETRY_REFRESH_MS = 15000;
   const TELEMETRY_MAX_EVENTS = 10;
+  const TELEMETRY_MAX_AUTH_EVENTS = 10;
   const TELEMETRY_MAX_ERRORS = 8;
   const TELEMETRY_MAX_METRICS = 6;
   const ADMIN_ACTIVITY_MAX = 8;
@@ -118,6 +119,12 @@
     el.telemetryErrorsEmpty = document.getElementById("telemetry-errors-empty");
     el.telemetryErrorsWarning = document.getElementById(
       "telemetry-errors-warning"
+    );
+
+    el.telemetryAuthEventsBody = document.getElementById("telemetry-auth-events-body");
+    el.telemetryAuthEventsEmpty = document.getElementById("telemetry-auth-events-empty");
+    el.telemetryAuthEventsWarning = document.getElementById(
+      "telemetry-auth-events-warning"
     );
 
     /* Admin activity */
@@ -529,6 +536,12 @@
       el.telemetryErrorsEmpty.textContent = emptyMessage;
       toggleEmptyState(el.telemetryErrorsEmpty, true);
     }
+
+    if (el.telemetryAuthEventsBody) el.telemetryAuthEventsBody.innerHTML = "";
+    if (el.telemetryAuthEventsEmpty) {
+      el.telemetryAuthEventsEmpty.textContent = emptyMessage;
+      toggleEmptyState(el.telemetryAuthEventsEmpty, true);
+    }
   }
 
   function bindBadgeClicks() {
@@ -837,34 +850,86 @@
     });
   }
 
+  function renderTelemetryAuthEvents(snapshot, health) {
+    const body = el.telemetryAuthEventsBody;
+    if (!body) return;
+
+    renderTelemetryWarning(
+      el.telemetryAuthEventsWarning,
+      health,
+      "No auth events exported yet."
+    );
+
+    const events = Array.isArray(snapshot?.events) ? snapshot.events : [];
+    body.innerHTML = "";
+
+    if (!events.length) {
+      toggleEmptyState(el.telemetryAuthEventsEmpty, true);
+      return;
+    }
+
+    toggleEmptyState(el.telemetryAuthEventsEmpty, false);
+
+    events.slice(0, TELEMETRY_MAX_AUTH_EVENTS).forEach((evt) => {
+      const row = document.createElement("tr");
+
+      const tsCell = document.createElement("td");
+      tsCell.className = "align-right";
+      tsCell.textContent = formatTime(evt.timestamp_utc || evt.timestamp);
+      row.appendChild(tsCell);
+
+      const typeCell = document.createElement("td");
+      typeCell.textContent = evt.event_type || "unknown";
+      row.appendChild(typeCell);
+
+      const nameCell = document.createElement("td");
+      nameCell.textContent = evt.event_name || "—";
+      row.appendChild(nameCell);
+
+      const resultCell = document.createElement("td");
+      resultCell.textContent = evt.result || "—";
+      row.appendChild(resultCell);
+
+      const emailCell = document.createElement("td");
+      emailCell.textContent = evt.email_redacted || "—";
+      row.appendChild(emailCell);
+
+      body.appendChild(row);
+    });
+  }
+
   async function refreshTelemetry() {
     if (window.__RUNTIME_AVAILABLE__ !== true) {
       return;
     }
     try {
-      const [snapshot, events, rates, errors] = await Promise.all([
+      const [snapshot, events, rates, errors, authEvents] = await Promise.all([
         window.Telemetry?.loadSnapshot?.(true),
         window.Telemetry?.loadEvents?.({ forceReload: true }),
         window.Telemetry?.loadRates?.({ forceReload: true }),
-        window.Telemetry?.loadErrors?.({ forceReload: true })
+        window.Telemetry?.loadErrors?.({ forceReload: true }),
+        window.Telemetry?.loadAuthEvents?.({ forceReload: true })
       ]);
 
-      const [eventsHealth, ratesHealth, errorsHealth] = await Promise.all([
+      const [eventsHealth, ratesHealth, errorsHealth, authHealth] = await Promise.all([
         window.Telemetry?.evaluateSnapshotHealth?.(events),
         window.Telemetry?.evaluateSnapshotHealth?.(rates),
-        window.Telemetry?.evaluateSnapshotHealth?.(errors)
+        window.Telemetry?.evaluateSnapshotHealth?.(errors),
+        window.Telemetry?.evaluateSnapshotHealth?.(authEvents)
       ]);
 
       renderTelemetry(snapshot);
       renderTelemetryEvents(events, eventsHealth);
       renderTelemetryRates(rates, ratesHealth);
       renderTelemetryErrors(errors, errorsHealth);
+      renderTelemetryAuthEvents(authEvents, authHealth);
     } catch (err) {
       console.warn("[Overview] Telemetry refresh failed", err);
       renderTelemetry(null);
       renderTelemetryEvents(null, null);
       renderTelemetryRates(null, null);
       renderTelemetryErrors(null, null);
+      renderTelemetryAuthEvents(null, null);
     }
   }
 

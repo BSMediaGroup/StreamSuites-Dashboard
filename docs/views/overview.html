@@ -192,6 +192,46 @@
   </section>
 
   <!-- --------------------------------------------------------- -->
+  <!-- AUTH EVENTS -->
+  <!-- --------------------------------------------------------- -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Auth + Email Events (Read-Only)</h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <p class="muted">
+        Recent authentication and email delivery events exported by the runtime.
+      </p>
+
+      <div
+        id="telemetry-auth-events-warning"
+        class="ss-alert ss-alert-danger hidden"
+        aria-live="polite"
+      ></div>
+
+      <table class="ss-table ss-table-compact" id="telemetry-auth-events-table">
+        <thead>
+          <tr>
+            <th class="align-right">Timestamp</th>
+            <th>Type</th>
+            <th>Name</th>
+            <th>Result</th>
+            <th>Email (Redacted)</th>
+          </tr>
+        </thead>
+        <tbody id="telemetry-auth-events-body">
+          <tr>
+            <td colspan="5" class="muted">Awaiting telemetry...</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div id="telemetry-auth-events-empty" class="ss-empty hidden">No data yet.</div>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------------- -->
   <!-- TELEMETRY RATES -->
   <!-- --------------------------------------------------------- -->
   <section class="ss-panel">
