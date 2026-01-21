@@ -883,12 +883,17 @@
       row.appendChild(typeCell);
 
       const nameCell = document.createElement("td");
-      nameCell.textContent = evt.event_name || "—";
+      nameCell.textContent = evt.action || evt.event_name || "—";
       row.appendChild(nameCell);
 
       const resultCell = document.createElement("td");
       resultCell.textContent = evt.result || "—";
       row.appendChild(resultCell);
+
+      const accountCell = document.createElement("td");
+      accountCell.textContent =
+        evt.account_id || evt.user_identifier || "—";
+      row.appendChild(accountCell);
 
       const emailCell = document.createElement("td");
       emailCell.textContent = evt.email_redacted || "—";

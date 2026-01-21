@@ -105,7 +105,10 @@
         timestamp_utc: evt.timestamp_utc || evt.timestamp || evt.at || evt.time || evt.t,
         event_type: evt.event_type || evt.type || "unknown",
         event_name: evt.event_name || evt.email_type || evt.name || "",
+        action: evt.action || evt.email_type || evt.event_name || evt.name || "",
         result: evt.result || evt.status || "",
+        account_id: evt.account_id || "",
+        user_identifier: evt.user_identifier || "",
         email_redacted: evt.email_redacted || evt.email || ""
       }))
       .sort((a, b) => {
