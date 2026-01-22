@@ -265,6 +265,8 @@ function normalizeUser(raw = {}) {
     const isActive = status === "active";
     const isSelf = isSelfAccount(user);
     const manageDisabled = !state.canManage;
+    const isEmailVerified = user.emailVerified === true;
+    const hasEmail = Boolean(user.email && user.email !== "â€”");
     const tiers = ["OPEN", "GOLD", "PRO"];
     const currentTier = String(user.tier || "OPEN").toUpperCase();
 
@@ -306,6 +308,26 @@ function normalizeUser(raw = {}) {
         tone: "ss-btn-secondary",
         disabled: manageDisabled || isDeleted,
         title: isDeleted ? "Cannot reset a deleted account." : ""
+      })
+    );
+
+    actions.push(
+      renderActionButton({
+        label: "Force Email Reverify",
+        action: "force-email-reverify",
+        tone: "ss-btn-secondary",
+        disabled: manageDisabled || isDeleted || !hasEmail,
+        title: !hasEmail ? "No email on file." : ""
+      })
+    );
+
+    actions.push(
+      renderActionButton({
+        label: "Mark Email Verified",
+        action: "mark-email-verified",
+        tone: "ss-btn-secondary",
+        disabled: manageDisabled || isDeleted || !hasEmail || isEmailVerified,
+        title: isEmailVerified ? "Email already verified." : !hasEmail ? "No email on file." : ""
       })
     );
 
@@ -576,6 +598,12 @@ function normalizeUser(raw = {}) {
     if (action === "reset-onboarding") {
       return `Reset onboarding for ${name}? This forces the user to complete onboarding again.`;
     }
+    if (action === "force-email-reverify") {
+      return `Force email re-verification for ${name}? This logs them out and sends a verification email.`;
+    }
+    if (action === "mark-email-verified") {
+      return `Mark ${name} as email verified?`;
+    }
     if (action === "delete") {
       return `Delete ${name}? This is a destructive action and will soft-delete the account.`;
     }
@@ -583,7 +611,14 @@ function normalizeUser(raw = {}) {
   }
 
   function shouldConfirmAction(action) {
-    return ["suspend", "unsuspend", "reset-onboarding", "delete"].includes(action);
+    return [
+      "suspend",
+      "unsuspend",
+      "reset-onboarding",
+      "force-email-reverify",
+      "mark-email-verified",
+      "delete"
+    ].includes(action);
   }
 
   function updateUserAfterAction(userId, action, payload) {
@@ -600,6 +635,12 @@ function normalizeUser(raw = {}) {
       next.accountStatus = payload?.account_status || "deleted";
     } else if (action === "reset-onboarding") {
       next.onboardingStatus = payload?.onboarding_status || "required";
+    } else if (action === "force-email-reverify") {
+      next.emailVerified = false;
+      next.emailVerifiedLabel = resolveEmailVerifiedLabel(false);
+    } else if (action === "mark-email-verified") {
+      next.emailVerified = true;
+      next.emailVerifiedLabel = resolveEmailVerifiedLabel(true);
     } else if (action === "tier") {
       next.tier = payload?.tier || next.tier;
     }
