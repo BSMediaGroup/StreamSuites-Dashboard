@@ -34,6 +34,7 @@
   let runtimeSnapshot = null;
   let systemConfig = null;
   let runtimeDiscordConfig = null;
+  let authControls = null;
   let wired = false;
   let runtimeListener = null;
   let visibilityListener = null;
@@ -57,6 +58,7 @@
         await hydratePlatforms();
         await hydrateRuntimeState();
         await hydrateSystemSettings();
+        await hydrateAuthControls();
         await hydrateDiscordRuntimeConfig();
         await renderDashboardState();
         bindRuntimeListeners();
@@ -211,6 +213,9 @@
     el.discordBotEmptySubtitle = document.getElementById("discord-bot-empty-subtitle");
     el.discordBotGuilds = document.getElementById("discord-bot-guilds");
     el.discordBotTemplate = document.getElementById("discord-bot-guild-template");
+    el.authFlagSignups = document.getElementById("auth-flag-signups");
+    el.authFlagVerification = document.getElementById("auth-flag-verification");
+    el.authFlagResend = document.getElementById("auth-flag-resend");
 
     el.restartRequiredFlag = document.getElementById("restart-required-flag");
     el.restartPendingSystem = document.getElementById("restart-pending-system");
@@ -341,6 +346,73 @@
     renderPlatformPolling();
     renderRestartQueue();
     renderDiscordBotSettings();
+  }
+
+  function resolveAuthApiBase() {
+    const base =
+      window.StreamSuitesAdminAuth?.config?.baseUrl ||
+      document.querySelector('meta[name="streamsuites-auth-base"]')?.getAttribute("content") ||
+      "";
+    return base ? base.replace(/\/$/, "") : "";
+  }
+
+  function buildAuthApiUrl(path) {
+    const base = resolveAuthApiBase();
+    if (!base) return path;
+    const normalized = path.startsWith("/") ? path : `/${path}`;
+    return `${base}${normalized}`;
+  }
+
+  function formatAuthFlag(value) {
+    if (value === true) return "Disabled (kill switch)";
+    if (value === false) return "Enabled";
+    return "Unknown";
+  }
+
+  function renderAuthControls() {
+    if (authControls?.status === "locked") {
+      if (el.authFlagSignups) el.authFlagSignups.textContent = "Sign in required";
+      if (el.authFlagVerification) el.authFlagVerification.textContent = "Sign in required";
+      if (el.authFlagResend) el.authFlagResend.textContent = "Sign in required";
+      return;
+    }
+    const flags = authControls?.flags || {};
+    if (el.authFlagSignups) el.authFlagSignups.textContent = formatAuthFlag(flags.disable_new_signups);
+    if (el.authFlagVerification)
+      el.authFlagVerification.textContent = formatAuthFlag(flags.disable_email_verification);
+    if (el.authFlagResend)
+      el.authFlagResend.textContent = formatAuthFlag(flags.disable_resend_verification);
+  }
+
+  async function hydrateAuthControls(forceReload = false) {
+    if (window.__STREAMSUITES_RUNTIME_OFFLINE__) {
+      authControls = null;
+      renderAuthControls();
+      return;
+    }
+
+    try {
+      const res = await fetch(buildAuthApiUrl("/admin/auth/controls"), {
+        credentials: "include",
+        cache: forceReload ? "no-store" : "default"
+      });
+      if (res.status === 401 || res.status === 403) {
+        authControls = { status: "locked" };
+        renderAuthControls();
+        return;
+      }
+      if (!res.ok) {
+        authControls = null;
+        renderAuthControls();
+        return;
+      }
+      authControls = await res.json();
+    } catch (err) {
+      console.warn("[Settings] Unable to load auth controls", err);
+      authControls = null;
+    }
+
+    renderAuthControls();
   }
 
   function normalizeRuntimeDiscordConfig(raw) {
@@ -962,6 +1034,7 @@
     wired = false;
     runtimeSnapshot = null;
     systemConfig = null;
+    authControls = null;
     if (runtimeListener) {
       window.removeEventListener("streamsuites:runtimeSnapshot", runtimeListener);
       runtimeListener = null;

@@ -117,6 +117,36 @@
   </section>
 
   <!-- --------------------------------------------------------- -->
+  <!-- AUTH CONTROLS -->
+  <!-- --------------------------------------------------------- -->
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <h2>Auth Controls</h2>
+    </header>
+
+    <div class="ss-panel-body">
+      <p class="muted">
+        Runtime auth kill switches (read-only).
+      </p>
+
+      <div class="ss-inline-status-row">
+        <div class="ss-inline-status-block">
+          <div class="label">New signups</div>
+          <div class="value" id="auth-flag-signups">Loading…</div>
+        </div>
+        <div class="ss-inline-status-block">
+          <div class="label">Email verification</div>
+          <div class="value" id="auth-flag-verification">Loading…</div>
+        </div>
+        <div class="ss-inline-status-block">
+          <div class="label">Resend verification</div>
+          <div class="value" id="auth-flag-resend">Loading…</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------------- -->
   <!-- PLATFORM POLLING CONTROL -->
   <!-- --------------------------------------------------------- -->
   <section class="ss-panel">
