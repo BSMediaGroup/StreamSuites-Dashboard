@@ -1,12 +1,37 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-01-20T16:40:18.257355Z",
+  "exported_at": "2026-01-22T08:02:32.324082Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.2.3-alpha",
-    "build": "2026.01.20+018"
+    "build": "2026.01.22+005"
   },
   "users": [
+    {
+      "id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "internal_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "user_code": "JqhcS2m",
+      "email": "kanefort89@gmail.com",
+      "email_verified": false,
+      "display_name": "kanefort89",
+      "avatar_url": null,
+      "role": "creator",
+      "tier": "open",
+      "onboarding_status": "required",
+      "onboarding_complete": false,
+      "account_status": "active",
+      "status": "active",
+      "providers": [
+        {
+          "provider": "email",
+          "provider_user_id": "kanefort89@gmail.com",
+          "linked_at": "2026-01-22T05:45:05Z"
+        }
+      ],
+      "created_at": "2026-01-22T05:45:05Z",
+      "last_login_at": null,
+      "updated_at": "2026-01-22T05:47:41Z"
+    },
     {
       "id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
       "internal_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
@@ -55,7 +80,7 @@
       ],
       "created_at": "2026-01-18T13:18:51Z",
       "last_login_at": null,
-      "updated_at": "2026-01-18T16:16:35Z"
+      "updated_at": "2026-01-22T05:47:24Z"
     },
     {
       "id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
@@ -109,8 +134,8 @@
         }
       ],
       "created_at": "2026-01-17T17:32:32Z",
-      "last_login_at": "2026-01-20T16:35:18Z",
-      "updated_at": "2026-01-20T16:35:18Z"
+      "last_login_at": "2026-01-22T05:46:07Z",
+      "updated_at": "2026-01-22T05:46:07Z"
     },
     {
       "id": "064370cb-161a-438d-b657-d57a54aa1712",

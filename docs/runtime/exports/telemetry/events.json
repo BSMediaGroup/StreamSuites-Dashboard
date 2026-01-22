@@ -1,15 +1,114 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-01-20T16:40:18.200819Z",
+  "generated_at": "2026-01-22T08:02:32.311608Z",
   "events": [
     {
-      "timestamp": "2026-01-20T16:02:50.320885Z",
+      "timestamp": "2026-01-22T05:45:05Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=signup_email user=email:ka***@gmail.com result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "signup_email",
+      "user_identifier": "email:ka***@gmail.com",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-01-22T05:45:06Z",
+      "source": "auth",
+      "severity": "error",
+      "message": "Auth event: email_sent email=verification user=email:ka***@gmail.com result=failed",
+      "event_type": "email_sent",
+      "email_type": "verification",
+      "user_identifier": "email:ka***@gmail.com",
+      "provider_message_id": null,
+      "result": "failed"
+    },
+    {
+      "timestamp": "2026-01-22T05:47:24Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:fowTR0T result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:fowTR0T",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-01-22T05:47:24Z",
+      "source": "auth",
+      "severity": "error",
+      "message": "Auth event: email_sent email=verification user=email:th***@gmail.com result=failed",
+      "event_type": "email_sent",
+      "email_type": "verification",
+      "user_identifier": "email:th***@gmail.com",
+      "provider_message_id": null,
+      "result": "failed"
+    },
+    {
+      "timestamp": "2026-01-22T05:47:41Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:JqhcS2m result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:JqhcS2m",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-01-22T05:47:41Z",
+      "source": "auth",
+      "severity": "error",
+      "message": "Auth event: email_sent email=verification user=email:ka***@gmail.com result=failed",
+      "event_type": "email_sent",
+      "email_type": "verification",
+      "user_identifier": "email:ka***@gmail.com",
+      "provider_message_id": null,
+      "result": "failed"
+    },
+    {
+      "timestamp": "2026-01-22T05:53:46Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:hVRt8Qp result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:hVRt8Qp",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-01-22T05:54:23Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:ka***@gmail.com result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:ka***@gmail.com",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-01-22T05:54:53Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:ka***@gmail.com result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:ka***@gmail.com",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-01-22T05:58:08.486830Z",
       "source": "system",
       "severity": "info",
       "message": "Runtime boot sequence started"
     },
     {
-      "timestamp": "2026-01-20T16:03:03.306214Z",
+      "timestamp": "2026-01-22T05:58:08.539916Z",
       "source": "rumble",
       "severity": "warning",
       "message": "Rumble dependencies unavailable: No module named 'playwright'"
