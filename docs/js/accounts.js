@@ -13,7 +13,8 @@
     "role",
     "tier",
     "accountStatus",
-    "onboardingStatus"
+    "onboardingStatus",
+    "emailVerifiedLabel"
   ];
 
   const state = {
@@ -93,6 +94,18 @@
     return `<span class="${classes}">${escapeHtml(formatBadgeLabel(value))}</span>`;
   }
 
+  function resolveEmailVerifiedLabel(value) {
+    if (value === true) return "Verified";
+    if (value === false) return "Not Verified";
+    return "Unknown";
+  }
+
+  function renderEmailVerified(value) {
+    if (value === true) return renderBadge("Verified", "ss-badge-success");
+    if (value === false) return renderBadge("Not Verified", "ss-badge-warning");
+    return renderBadge("Unknown", "");
+  }
+
   function formatTimestamp(value) {
     if (typeof window.StreamSuitesState?.formatTimestamp === "function") {
       return window.StreamSuitesState.formatTimestamp(value) || "—";
@@ -139,10 +152,22 @@ function normalizeUser(raw = {}) {
     const providers = resolveProviders(raw.providers || raw.authProviders || raw.auth_providers);
     const internalId =
       raw.internal_id || raw.internalId || raw.id || raw.uuid || raw.user_id || raw.userId || "—";
+    const emailVerifiedRaw =
+      typeof raw.email_verified === "boolean"
+        ? raw.email_verified
+        : typeof raw.emailVerified === "boolean"
+        ? raw.emailVerified
+        : typeof raw.email_verified === "number"
+        ? raw.email_verified === 1
+        : typeof raw.emailVerified === "number"
+        ? raw.emailVerified === 1
+        : null;
     return {
       id: internalId,
       userCode: raw.user_code || raw.userCode || raw.code || raw.handle || "—",
       email: raw.email || raw.email_address || raw.username || "—",
+      emailVerified: emailVerifiedRaw,
+      emailVerifiedLabel: resolveEmailVerifiedLabel(emailVerifiedRaw),
       displayName: raw.display_name || raw.displayName || raw.name || "—",
       role: raw.role || raw.account_role || "—",
       tier: raw.tier || raw.account_tier || raw.plan || "OPEN",
@@ -469,6 +494,7 @@ function normalizeUser(raw = {}) {
       <td class="accounts-id-column">${escapeHtml(user.id)}</td>
       <td>${escapeHtml(user.userCode)}</td>
       <td>${escapeHtml(user.email)}</td>
+      <td>${renderEmailVerified(user.emailVerified)}</td>
       <td>${escapeHtml(user.displayName)}</td>
       <td>${renderBadge(user.role)}</td>
       <td>${renderBadge(user.tier)}</td>
