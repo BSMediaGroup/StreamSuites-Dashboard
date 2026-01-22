@@ -1,12 +1,38 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-01-22T08:22:59.590806Z",
+  "exported_at": "2026-01-22T18:28:50.390545Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.2.3-alpha",
-    "build": "2026.01.22+014"
+    "build": "2026.01.22+036"
   },
   "audit": [
+    {
+      "id": "0d35404d-a95b-4c96-80e8-520ae7c7e138",
+      "ts": "2026-01-22T16:38:28Z",
+      "actor_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "actor_user_code": "VIvXsPS",
+      "actor_role": "creator",
+      "target_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "target_user_code": "VIvXsPS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "0ff6a60b-bd72-4d92-a78c-81fdd51c8087",
+      "ts": "2026-01-22T08:26:42Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
     {
       "id": "631dd725-646b-480a-bdb0-11b4dd98e97c",
       "ts": "2026-01-22T08:20:33Z",

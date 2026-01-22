@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-01-22T08:22:59.347787Z",
+  "generated_at": "2026-01-22T18:28:50.369266Z",
   "events": [
     {
       "timestamp_utc": "2026-01-22T05:45:05Z",
@@ -180,6 +180,48 @@
       "user_identifier": "email:ka***@gmail.com",
       "email_redacted": "ka***@gmail.com",
       "result": "login_backoff",
+      "resend_message_id": null,
+      "ip": "83.171.250.195",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp_utc": "2026-01-22T08:24:47Z",
+      "event_type": "token_invalidated",
+      "event_name": "token_invalidated",
+      "action": null,
+      "email_type": null,
+      "account_id": "VIvXsPS",
+      "user_identifier": "user_code:VIvXsPS",
+      "email_redacted": null,
+      "result": "sent",
+      "resend_message_id": null,
+      "ip": "83.171.250.195",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp_utc": "2026-01-22T08:24:47Z",
+      "event_type": "email_sent",
+      "event_name": "verification",
+      "action": "verification",
+      "email_type": "verification",
+      "account_id": null,
+      "user_identifier": "email:re***@gmail.com",
+      "email_redacted": "re***@gmail.com",
+      "result": "failed",
+      "resend_message_id": null,
+      "ip": "83.171.250.195",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp_utc": "2026-01-22T08:26:34Z",
+      "event_type": "token_invalidated",
+      "event_name": "token_invalidated",
+      "action": null,
+      "email_type": null,
+      "account_id": "4TiOlvS",
+      "user_identifier": "user_code:4TiOlvS",
+      "email_redacted": null,
+      "result": "sent",
       "resend_message_id": null,
       "ip": "83.171.250.195",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"

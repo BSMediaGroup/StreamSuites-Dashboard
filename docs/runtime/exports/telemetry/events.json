@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-01-22T08:22:59.347787Z",
+  "generated_at": "2026-01-22T18:28:50.369266Z",
   "events": [
     {
       "timestamp": "2026-01-22T05:45:05Z",
@@ -102,12 +102,6 @@
       "result": "allowed"
     },
     {
-      "timestamp": "2026-01-22T08:10:36.982036Z",
-      "source": "system",
-      "severity": "info",
-      "message": "Runtime boot sequence started"
-    },
-    {
       "timestamp": "2026-01-22T08:18:06Z",
       "source": "auth",
       "severity": "info",
@@ -150,6 +144,45 @@
       "user_identifier": "email:ka***@gmail.com",
       "provider_message_id": null,
       "result": "login_backoff"
+    },
+    {
+      "timestamp": "2026-01-22T08:24:47Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:VIvXsPS result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:VIvXsPS",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-01-22T08:24:47Z",
+      "source": "auth",
+      "severity": "error",
+      "message": "Auth event: email_sent email=verification user=email:re***@gmail.com result=failed",
+      "event_type": "email_sent",
+      "email_type": "verification",
+      "user_identifier": "email:re***@gmail.com",
+      "provider_message_id": null,
+      "result": "failed"
+    },
+    {
+      "timestamp": "2026-01-22T08:26:34Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:4TiOlvS result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-01-22T18:11:54.694623Z",
+      "source": "system",
+      "severity": "info",
+      "message": "Runtime boot sequence started"
     }
   ]
 }
