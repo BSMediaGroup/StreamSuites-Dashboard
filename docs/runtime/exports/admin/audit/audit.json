@@ -1,12 +1,41 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-01-22T08:02:32.324586Z",
+  "exported_at": "2026-01-22T08:22:59.590806Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.2.3-alpha",
-    "build": "2026.01.22+005"
+    "build": "2026.01.22+014"
   },
   "audit": [
+    {
+      "id": "631dd725-646b-480a-bdb0-11b4dd98e97c",
+      "ts": "2026-01-22T08:20:33Z",
+      "actor_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "actor_user_code": "VIvXsPS",
+      "actor_role": "creator",
+      "target_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "target_user_code": "VIvXsPS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "33987926-5618-44aa-9a1d-ab6d0507a3b8",
+      "ts": "2026-01-22T08:19:17Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "target_user_code": "JqhcS2m",
+      "action": "rate_limit_blocked",
+      "metadata": {
+        "email_redacted": "ka***@gmail.com",
+        "ip": "83.171.250.195",
+        "reason": "login_backoff",
+        "retry_after": 5
+      }
+    },
     {
       "id": "4f0584ff-1842-4013-9c86-c85b6b24108a",
       "ts": "2026-01-22T05:46:07Z",

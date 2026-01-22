@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-01-22T08:02:32.311608Z",
+  "generated_at": "2026-01-22T08:22:59.347787Z",
   "events": [
     {
       "timestamp": "2026-01-22T05:45:05Z",
@@ -102,16 +102,54 @@
       "result": "allowed"
     },
     {
-      "timestamp": "2026-01-22T05:58:08.486830Z",
+      "timestamp": "2026-01-22T08:10:36.982036Z",
       "source": "system",
       "severity": "info",
       "message": "Runtime boot sequence started"
     },
     {
-      "timestamp": "2026-01-22T05:58:08.539916Z",
-      "source": "rumble",
-      "severity": "warning",
-      "message": "Rumble dependencies unavailable: No module named 'playwright'"
+      "timestamp": "2026-01-22T08:18:06Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:ka***@gmail.com result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:ka***@gmail.com",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-01-22T08:19:03Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:ka***@gmail.com result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:ka***@gmail.com",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-01-22T08:19:17Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:ka***@gmail.com result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:ka***@gmail.com",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-01-22T08:19:17Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit_blocked email=login_email user=email:ka***@gmail.com result=login_backoff",
+      "event_type": "rate_limit_blocked",
+      "email_type": "login_email",
+      "user_identifier": "email:ka***@gmail.com",
+      "provider_message_id": null,
+      "result": "login_backoff"
     }
   ]
 }

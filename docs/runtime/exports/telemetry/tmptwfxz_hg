@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-01-22T08:22:59.347787Z",
+  "generated_at": "2026-01-22T08:15:36.264019Z",
   "events": [
     {
       "timestamp_utc": "2026-01-22T05:45:05Z",
@@ -127,62 +127,6 @@
       "resend_message_id": null,
       "ip": "83.171.250.195",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
-    },
-    {
-      "timestamp_utc": "2026-01-22T08:18:06Z",
-      "event_type": "rate_limit",
-      "event_name": "login_email",
-      "action": "login_email",
-      "email_type": "login_email",
-      "account_id": null,
-      "user_identifier": "email:ka***@gmail.com",
-      "email_redacted": "ka***@gmail.com",
-      "result": "allowed",
-      "resend_message_id": null,
-      "ip": "83.171.250.195",
-      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
-    },
-    {
-      "timestamp_utc": "2026-01-22T08:19:03Z",
-      "event_type": "rate_limit",
-      "event_name": "login_email",
-      "action": "login_email",
-      "email_type": "login_email",
-      "account_id": null,
-      "user_identifier": "email:ka***@gmail.com",
-      "email_redacted": "ka***@gmail.com",
-      "result": "allowed",
-      "resend_message_id": null,
-      "ip": "83.171.250.195",
-      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
-    },
-    {
-      "timestamp_utc": "2026-01-22T08:19:17Z",
-      "event_type": "rate_limit",
-      "event_name": "login_email",
-      "action": "login_email",
-      "email_type": "login_email",
-      "account_id": null,
-      "user_identifier": "email:ka***@gmail.com",
-      "email_redacted": "ka***@gmail.com",
-      "result": "allowed",
-      "resend_message_id": null,
-      "ip": "83.171.250.195",
-      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
-    },
-    {
-      "timestamp_utc": "2026-01-22T08:19:17Z",
-      "event_type": "rate_limit_blocked",
-      "event_name": "login_email",
-      "action": "login_email",
-      "email_type": "login_email",
-      "account_id": null,
-      "user_identifier": "email:ka***@gmail.com",
-      "email_redacted": "ka***@gmail.com",
-      "result": "login_backoff",
-      "resend_message_id": null,
-      "ip": "83.171.250.195",
-      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
     }
   ]
 }
