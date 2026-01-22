@@ -6,6 +6,7 @@
   "use strict";
 
   const RUNTIME_ENDPOINT = "/admin/accounts";
+  const DONATIONS_EXPORT_PATH = "runtime/exports/admin/donations/donations.json";
   const SEARCH_FIELDS = [
     "userCode",
     "email",
@@ -14,7 +15,8 @@
     "tier",
     "accountStatus",
     "onboardingStatus",
-    "emailVerifiedLabel"
+    "emailVerifiedLabel",
+    "supporterLabel"
   ];
 
   const state = {
@@ -25,7 +27,9 @@
     selfEmail: "",
     canManage: false,
     sourceMode: "runtime",
-    exportLoading: false
+    exportLoading: false,
+    donationStats: new Map(),
+    donationsLoaded: false
   };
 
   const el = {
@@ -98,6 +102,19 @@
     if (value === true) return "Verified";
     if (value === false) return "Not Verified";
     return "Unknown";
+  }
+
+  function resolveBasePath() {
+    return (
+      (window.Versioning && window.Versioning.resolveBasePath && window.Versioning.resolveBasePath()) ||
+      window.ADMIN_BASE_PATH ||
+      ""
+    );
+  }
+
+  function resolveDonationsPath() {
+    const basePath = resolveBasePath();
+    return `${basePath}/${DONATIONS_EXPORT_PATH}`.replace(/\\+/g, "/");
   }
 
   function renderEmailVerified(value) {
@@ -188,7 +205,10 @@ function normalizeUser(raw = {}) {
         raw.last_login ||
         raw.lastLogin ||
         raw.last_seen ||
-        null
+        null,
+      donationCount: 0,
+      donationTotal: 0,
+      supporterLabel: "No"
     };
   }
 
@@ -553,6 +573,7 @@ function normalizeUser(raw = {}) {
       <td>${escapeHtml(user.displayName)}</td>
       <td>${renderBadge(user.role)}</td>
       <td>${renderBadge(user.tier)}</td>
+      <td>${renderBadge(user.supporterLabel, user.supporterLabel === "Yes" ? "ss-badge-success" : "")}</td>
       <td>${renderBadge(user.accountStatus, badgeToneForStatus(user.accountStatus))}</td>
       <td>${renderBadge(user.onboardingStatus, badgeToneForStatus(user.onboardingStatus))}</td>
       <td>${escapeHtml(user.providersLabel)}</td>
@@ -605,6 +626,7 @@ function normalizeUser(raw = {}) {
       state.raw = normalized;
       state.canManage = true;
       state.sourceMode = "runtime";
+      applyDonationStats();
       updateFilterOptions(normalized);
       applyFilters();
       setBanner("", false);
@@ -620,6 +642,150 @@ function normalizeUser(raw = {}) {
       state.manager?.setData([]);
       updateEmptyStateMessage(0);
       setBanner("Runtime API unavailable. Retry or check runtime connectivity.", true);
+    }
+  }
+
+  function coerceNumber(value) {
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value !== "string") return null;
+    const cleaned = value.replace(/[^0-9.-]/g, "");
+    if (!cleaned) return null;
+    const parsed = Number(cleaned);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  function resolveDonationAmountCents(entry) {
+    if (!entry || typeof entry !== "object") return 0;
+    const explicitCents = coerceNumber(
+      entry.amount_total ?? entry.amountTotal ?? entry.amount_cents ?? entry.amountCents
+    );
+    if (explicitCents !== null) return Math.round(explicitCents);
+    const amount = coerceNumber(entry.amount ?? entry.total_amount ?? entry.totalAmount);
+    if (amount === null) return 0;
+    if (amount >= 1000) return Math.round(amount);
+    return Math.round(amount * 100);
+  }
+
+  function collectDonationKeys(entry) {
+    const keys = [];
+    if (!entry || typeof entry !== "object") return keys;
+    const metadata = entry.metadata && typeof entry.metadata === "object" ? entry.metadata : {};
+    [
+      entry.customer_email,
+      entry.customerEmail,
+      entry.email,
+      entry.email_address,
+      metadata.email,
+      metadata.customer_email,
+      entry.account_id,
+      entry.accountId,
+      entry.user_id,
+      entry.userId,
+      entry.internal_id,
+      entry.internalId,
+      metadata.account_id,
+      metadata.user_id,
+      entry.user_code,
+      entry.userCode,
+      metadata.user_code,
+      metadata.userCode
+    ].forEach((value) => {
+      if (!value) return;
+      const normalized = String(value).trim().toLowerCase();
+      if (normalized) keys.push(normalized);
+    });
+    return keys;
+  }
+
+  function buildDonationStats(entries) {
+    const stats = new Map();
+    if (!Array.isArray(entries)) return stats;
+    entries.forEach((entry) => {
+      if (!entry || typeof entry !== "object") return;
+      const amountCents = resolveDonationAmountCents(entry);
+      const keys = collectDonationKeys(entry);
+      if (keys.length === 0) return;
+      const uniqueKeys = new Set(keys);
+      uniqueKeys.forEach((key) => {
+        const current = stats.get(key) || { donationCount: 0, donationTotalCents: 0 };
+        current.donationCount += 1;
+        current.donationTotalCents += amountCents;
+        stats.set(key, current);
+      });
+    });
+    return stats;
+  }
+
+  function resolveDonationStatsForUser(user) {
+    if (!user) return null;
+    const emailKey = String(user.email || "").trim().toLowerCase();
+    if (emailKey && state.donationStats.has(emailKey)) {
+      return state.donationStats.get(emailKey);
+    }
+    const idKey = String(user.id || "").trim().toLowerCase();
+    if (idKey && state.donationStats.has(idKey)) {
+      return state.donationStats.get(idKey);
+    }
+    const codeKey = String(user.userCode || "").trim().toLowerCase();
+    if (codeKey && state.donationStats.has(codeKey)) {
+      return state.donationStats.get(codeKey);
+    }
+    return null;
+  }
+
+  function applyDonationStats() {
+    if (!Array.isArray(state.raw) || state.raw.length === 0) return;
+    state.raw = state.raw.map((user) => {
+      const stats = resolveDonationStatsForUser(user);
+      const donationCount = stats?.donationCount || 0;
+      const donationTotalCents = stats?.donationTotalCents || 0;
+      const donationTotal = donationTotalCents / 100;
+      return {
+        ...user,
+        donationCount,
+        donationTotal,
+        supporterLabel: donationCount > 0 ? "Yes" : "No"
+      };
+    });
+  }
+
+  async function loadDonations() {
+    const path = resolveDonationsPath();
+    try {
+      const res = await fetch(path, { cache: "no-store" });
+      if (!res.ok) throw new Error(`Donations export unavailable (${res.status})`);
+      const payload = await res.json();
+      state.donationStats = buildDonationStats(payload);
+      state.donationsLoaded = true;
+      applyDonationStats();
+      applyFilters();
+    } catch (err) {
+      console.warn("[Accounts] Failed to load donation export", err);
+      state.donationStats = new Map();
+      state.donationsLoaded = false;
+      applyDonationStats();
+      applyFilters();
+    }
+  }
+
+  function ensureSupporterColumn() {
+    if (!el.table) return;
+    const headerRow = el.table.querySelector("thead tr");
+    if (!headerRow || headerRow.querySelector("[data-supporter-column]")) return;
+    const th = document.createElement("th");
+    th.textContent = "Supporter";
+    th.setAttribute("data-sort", "supporterLabel");
+    th.setAttribute("data-supporter-column", "true");
+    const statusHeader = headerRow.querySelector('th[data-sort="accountStatus"]');
+    if (statusHeader) {
+      headerRow.insertBefore(th, statusHeader);
+    } else {
+      const actionHeader = headerRow.querySelector("th.align-right");
+      if (actionHeader) {
+        headerRow.insertBefore(th, actionHeader);
+      } else {
+        headerRow.appendChild(th);
+      }
     }
   }
 
@@ -908,9 +1074,10 @@ function normalizeUser(raw = {}) {
     el.exportStatus = $("accounts-export-status");
 
     initTable();
+    ensureSupporterColumn();
     bindEvents();
     toggleIdColumn(true);
-    await Promise.all([loadAdminIdentity(), loadUsers()]);
+    await Promise.all([loadAdminIdentity(), loadUsers(), loadDonations()]);
   }
 
   window.AccountsView = {
