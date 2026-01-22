@@ -208,11 +208,44 @@ function normalizeUser(raw = {}) {
     return base ? base.replace(/\/$/, "") : "";
   }
 
-  function buildApiUrl(path) {
-    const base = resolveApiBase();
+  function buildApiUrl(path, baseOverride) {
+    const base = typeof baseOverride === "string" ? baseOverride.replace(/\/$/, "") : resolveApiBase();
     if (!base) return path;
     const normalized = path.startsWith("/") ? path : `/${path}`;
     return `${base}${normalized}`;
+  }
+
+  function promptAdminReauth() {
+    if (typeof window.StreamSuitesAdminGate?.logout === "function") {
+      window.StreamSuitesAdminGate.logout();
+      return true;
+    }
+    if (typeof window.StreamSuitesAdminAuth?.logout === "function") {
+      window.StreamSuitesAdminAuth.logout();
+      return true;
+    }
+    return false;
+  }
+
+  function setInlineError(message) {
+    setStatus(message);
+    setBanner(message, true);
+  }
+
+  async function readErrorMessage(res) {
+    if (!res) return "";
+    const contentType = res.headers?.get("content-type") || "";
+    try {
+      if (contentType.includes("application/json")) {
+        const payload = await res.json();
+        if (typeof payload?.message === "string") return payload.message;
+        if (typeof payload?.error === "string") return payload.error;
+      }
+      const text = await res.text();
+      return text.trim();
+    } catch (err) {
+      return "";
+    }
   }
 
   async function loadAdminIdentity() {
@@ -539,6 +572,9 @@ function normalizeUser(raw = {}) {
         ...options,
         signal: controller.signal
       });
+      if (res.status === 401 || res.status === 403) {
+        promptAdminReauth();
+      }
       return res;
     } finally {
       clearTimeout(timer);
@@ -697,6 +733,10 @@ function normalizeUser(raw = {}) {
       action === "delete"
         ? `${base}/${encodeURIComponent(user.id)}`
         : `${base}/${encodeURIComponent(user.id)}/${action}`;
+    const forceApiBase =
+      action === "force-email-reverify" || action === "mark-email-verified"
+        ? "https://api.streamsuites.app"
+        : null;
     try {
       let method = "POST";
       let body = null;
@@ -713,20 +753,22 @@ function normalizeUser(raw = {}) {
         body = JSON.stringify({ tier: selectedTier });
       }
       setStatus(`Applying ${action.replace("-", " ")}...`);
+      setBanner("", false);
       setRowActionLoading(row, button, true);
-      const res = await fetchJson(buildApiUrl(endpoint), {
+      const res = await fetchJson(buildApiUrl(endpoint, forceApiBase), {
         method,
         body,
         headers: body ? { "Content-Type": "application/json" } : undefined
       });
       if (!res.ok) {
         if (res.status === 401 || res.status === 403) {
-          setStatus("Admin session expired. Sign in again to continue.");
+          setInlineError("Admin session expired. Sign in again to continue.");
           return;
         }
-        const message = await res.text();
-        console.warn("[Accounts] Action failed", action, message);
-        setStatus("Action failed. Retry or refresh your admin session.");
+        const message = await readErrorMessage(res);
+        console.warn("[Accounts] Action failed", action, message || res.status);
+        const detail = message ? ` (${message})` : "";
+        setInlineError(`Action failed${detail}. Retry or refresh your admin session.`);
         return;
       }
       let payload = null;
@@ -741,7 +783,7 @@ function normalizeUser(raw = {}) {
       await loadUsers();
     } catch (err) {
       console.warn("[Accounts] Action error", action, err);
-      setStatus("Action failed. Retry or contact an admin if it persists.");
+      setInlineError("Action failed. Retry or contact an admin if it persists.");
     } finally {
       setRowActionLoading(row, button, false);
     }
