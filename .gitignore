@@ -64,3 +64,4 @@ build/
 
 !docs/**
 docs/assets/logos/Thumbs.db
+/docs/shared/state
