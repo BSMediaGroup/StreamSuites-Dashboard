@@ -1,12 +1,37 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-01-22T18:31:31.033620Z",
+  "exported_at": "2026-01-24T15:25:22.420376Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.2.3-alpha",
-    "build": "2026.01.22+036"
+    "build": "2026.01.22+037"
   },
   "users": [
+    {
+      "id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "internal_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "user_code": "7lPBEiA",
+      "email": "jarredpluschke@gmail.com",
+      "email_verified": true,
+      "display_name": "Jarred Pluschke",
+      "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocLTWBX4tFfeH8ZdnNJDtxCgGfQrSOND9gUIjO2QFkd1IGQLWQ=s96-c",
+      "role": "creator",
+      "tier": "open",
+      "onboarding_status": "required",
+      "onboarding_complete": false,
+      "account_status": "active",
+      "status": "active",
+      "providers": [
+        {
+          "provider": "google",
+          "provider_user_id": "118380123389002878308",
+          "linked_at": "2026-01-23T21:44:36Z"
+        }
+      ],
+      "created_at": "2026-01-23T21:44:36Z",
+      "last_login_at": "2026-01-23T21:44:36Z",
+      "updated_at": "2026-01-23T21:44:36Z"
+    },
     {
       "id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
       "internal_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
