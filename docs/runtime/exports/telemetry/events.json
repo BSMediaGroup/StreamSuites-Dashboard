@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-01-22T18:31:31.016109Z",
+  "generated_at": "2026-01-24T15:25:22.391341Z",
   "events": [
     {
       "timestamp": "2026-01-22T05:45:05Z",
@@ -179,10 +179,32 @@
       "result": "sent"
     },
     {
-      "timestamp": "2026-01-22T18:11:54.694623Z",
+      "timestamp": "2026-01-22T18:37:42.479436Z",
       "source": "system",
       "severity": "info",
       "message": "Runtime boot sequence started"
+    },
+    {
+      "timestamp": "2026-01-23T00:46:14Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:VIvXsPS result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:VIvXsPS",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-01-23T21:44:21Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:ka***@gmail.com result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:ka***@gmail.com",
+      "provider_message_id": null,
+      "result": "allowed"
     }
   ]
 }
