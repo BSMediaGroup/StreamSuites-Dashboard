@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-01-24T15:25:22.391341Z",
+  "generated_at": "2026-01-27T06:00:20.914367Z",
   "events": [
     {
       "timestamp": "2026-01-22T05:45:05Z",
@@ -179,12 +179,6 @@
       "result": "sent"
     },
     {
-      "timestamp": "2026-01-22T18:37:42.479436Z",
-      "source": "system",
-      "severity": "info",
-      "message": "Runtime boot sequence started"
-    },
-    {
       "timestamp": "2026-01-23T00:46:14Z",
       "source": "auth",
       "severity": "info",
@@ -205,6 +199,23 @@
       "user_identifier": "email:ka***@gmail.com",
       "provider_message_id": null,
       "result": "allowed"
+    },
+    {
+      "timestamp": "2026-01-25T09:34:45Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:4TiOlvS result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-01-27T06:00:09.926555Z",
+      "source": "system",
+      "severity": "info",
+      "message": "Runtime boot sequence started"
     }
   ]
 }
