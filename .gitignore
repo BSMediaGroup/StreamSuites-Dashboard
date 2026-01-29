@@ -66,3 +66,7 @@ build/
 docs/assets/logos/Thumbs.db
 /docs/shared/state
 docs/Thumbs.db
+docs/shared/state/clips.json
+docs/shared/state/discord/runtime.json
+docs/shared/state/quotas.json
+docs/shared/state/runtime_snapshot.json
