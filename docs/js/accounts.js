@@ -187,7 +187,7 @@ function normalizeUser(raw = {}) {
       emailVerifiedLabel: resolveEmailVerifiedLabel(emailVerifiedRaw),
       displayName: raw.display_name || raw.displayName || raw.name || "—",
       role: raw.role || raw.account_role || "—",
-      tier: raw.tier || raw.account_tier || raw.plan || "OPEN",
+      tier: raw.tier || raw.account_tier || raw.plan || "CORE",
       accountStatus: raw.account_status || raw.accountStatus || raw.status || "—",
       onboardingStatus: raw.onboarding_status || raw.onboardingStatus || raw.onboarding || "—",
       providers,
@@ -320,8 +320,8 @@ function normalizeUser(raw = {}) {
     const manageDisabled = !state.canManage;
     const isEmailVerified = user.emailVerified === true;
     const hasEmail = Boolean(user.email && user.email !== "â€”");
-    const tiers = ["OPEN", "GOLD", "PRO"];
-    const currentTier = String(user.tier || "OPEN").toUpperCase();
+    const tiers = ["CORE", "GOLD", "PRO"];
+    const currentTier = String(user.tier || "CORE").toUpperCase();
 
     const actions = [];
     if (isActive) {

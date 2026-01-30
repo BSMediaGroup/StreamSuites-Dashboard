@@ -287,7 +287,7 @@
         this.elements.headerRole.textContent = role ? role.toUpperCase() : "ADMIN";
       }
       if (this.elements.headerTier) {
-        this.elements.headerTier.textContent = tier ? tier.toUpperCase() : "OPEN";
+        this.elements.headerTier.textContent = tier ? tier.toUpperCase() : "CORE";
       }
       if (this.elements.headerAvatar) {
         const resolvedAvatar = avatarUrl || fallbackAvatar;
