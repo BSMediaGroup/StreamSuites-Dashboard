@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-01-29T16:03:57.580095Z",
+  "generated_at": "2026-01-31T18:59:12.771077Z",
   "events": [
     {
       "timestamp": "2026-01-22T05:45:05Z",
@@ -212,7 +212,29 @@
       "result": "sent"
     },
     {
-      "timestamp": "2026-01-29T15:55:12.125844Z",
+      "timestamp": "2026-01-29T16:27:26Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:7XaVoy7 result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:7XaVoy7",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-01-30T17:09:04Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:hVRt8Qp result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:hVRt8Qp",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-01-31T06:22:33.508679Z",
       "source": "system",
       "severity": "info",
       "message": "Runtime boot sequence started"

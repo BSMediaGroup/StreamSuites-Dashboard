@@ -1,12 +1,129 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-01-29T16:03:57.615610Z",
+  "exported_at": "2026-01-31T18:59:12.785077Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.2.3-alpha",
-    "build": "2026.01.29+005"
+    "build": "2026.01.30+003"
   },
   "audit": [
+    {
+      "id": "7b3d9b3c-c06c-4696-9217-04c0a4cd4e37",
+      "ts": "2026-01-31T15:29:51Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "d731db3a-a7a8-4e2e-be02-12cef96cb5be",
+      "ts": "2026-01-31T15:06:08Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "8a516eb7-c913-4f68-bc73-bf9eebe01c1f",
+      "ts": "2026-01-31T15:01:06Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "56ad2aa8-3a49-4238-b832-13187834a8ea",
+      "ts": "2026-01-30T17:10:59Z",
+      "actor_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "actor_user_code": "JqhcS2m",
+      "actor_role": "creator",
+      "target_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "target_user_code": "JqhcS2m",
+      "action": "provider_linked",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "b81fd35f-4b41-4bd3-8196-865a70404f1e",
+      "ts": "2026-01-30T17:10:59Z",
+      "actor_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "actor_user_code": "JqhcS2m",
+      "actor_role": "creator",
+      "target_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "target_user_code": "JqhcS2m",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "20ee8f7e-f0b8-437e-a42b-91cb985d4854",
+      "ts": "2026-01-30T14:53:27Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "60c723f4-a6d1-4ff5-85e9-3d0f79108fc0",
+      "ts": "2026-01-30T14:45:46Z",
+      "actor_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "actor_user_code": "hVRt8Qp",
+      "actor_role": "creator",
+      "target_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "target_user_code": "hVRt8Qp",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "46b43cad-47c8-4dd5-9091-b124b0f9deb3",
+      "ts": "2026-01-30T12:48:39Z",
+      "actor_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "actor_user_code": "7XaVoy7",
+      "actor_role": "admin",
+      "target_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "target_user_code": "7XaVoy7",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "6d94aabd-2a65-47f9-86d8-73179edd71d4",
+      "ts": "2026-01-29T16:27:37Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
     {
       "id": "b3f24122-0aa0-4cf0-b3e8-2161a8d6410e",
       "ts": "2026-01-29T15:56:30Z",

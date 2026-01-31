@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-01-29T16:03:57.580095Z",
+  "generated_at": "2026-01-31T18:59:12.771077Z",
   "events": [
     {
       "timestamp_utc": "2026-01-22T05:45:05Z",
@@ -266,6 +266,34 @@
       "result": "sent",
       "resend_message_id": null,
       "ip": "91.196.220.233",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp_utc": "2026-01-29T16:27:26Z",
+      "event_type": "token_invalidated",
+      "event_name": "token_invalidated",
+      "action": null,
+      "email_type": null,
+      "account_id": "7XaVoy7",
+      "user_identifier": "user_code:7XaVoy7",
+      "email_redacted": null,
+      "result": "sent",
+      "resend_message_id": null,
+      "ip": "194.146.14.28",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp_utc": "2026-01-30T17:09:04Z",
+      "event_type": "token_invalidated",
+      "event_name": "token_invalidated",
+      "action": null,
+      "email_type": null,
+      "account_id": "hVRt8Qp",
+      "user_identifier": "user_code:hVRt8Qp",
+      "email_redacted": null,
+      "result": "sent",
+      "resend_message_id": null,
+      "ip": "109.104.115.92",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
     }
   ]
