@@ -78,6 +78,15 @@
       .join(" ");
   }
 
+  function normalizeTierLabel(value) {
+    if (value === undefined || value === null) return "";
+    const text = String(value).trim();
+    if (!text) return "";
+    const normalized = text.toLowerCase();
+    if (normalized === "open") return "Core";
+    return text;
+  }
+
   function badgeToneForStatus(value) {
     const normalized = String(value || "").trim().toLowerCase();
     if (!normalized || normalized === "-" || normalized === "—") return "";
@@ -187,7 +196,7 @@ function normalizeUser(raw = {}) {
       emailVerifiedLabel: resolveEmailVerifiedLabel(emailVerifiedRaw),
       displayName: raw.display_name || raw.displayName || raw.name || "—",
       role: raw.role || raw.account_role || "—",
-      tier: raw.tier || raw.account_tier || raw.plan || "CORE",
+      tier: normalizeTierLabel(raw.tier || raw.account_tier || raw.plan || "Core"),
       accountStatus: raw.account_status || raw.accountStatus || raw.status || "—",
       onboardingStatus: raw.onboarding_status || raw.onboardingStatus || raw.onboarding || "—",
       providers,
@@ -844,7 +853,7 @@ function normalizeUser(raw = {}) {
       next.emailVerified = true;
       next.emailVerifiedLabel = resolveEmailVerifiedLabel(true);
     } else if (action === "tier") {
-      next.tier = payload?.tier || next.tier;
+      next.tier = normalizeTierLabel(payload?.tier || next.tier);
     }
 
     state.raw[index] = next;

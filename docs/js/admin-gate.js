@@ -214,6 +214,15 @@
     return "";
   }
 
+  function resolveTierLabel(value) {
+    if (value === undefined || value === null) return "";
+    const text = String(value).trim();
+    if (!text) return "";
+    const normalized = text.toLowerCase();
+    if (normalized === "open") return "Core";
+    return text;
+  }
+
   function updateHeaderIdentity(admin) {
     const headerWrap = document.getElementById("admin-auth-indicator");
     const headerAvatar = document.getElementById("admin-auth-avatar");
@@ -240,7 +249,9 @@
       headerRole.textContent = "Admin";
     }
     if (headerTier) {
-      headerTier.textContent = admin.tier ? admin.tier.toUpperCase() : "CORE";
+      headerTier.textContent = admin.tier
+        ? resolveTierLabel(admin.tier).toUpperCase()
+        : "CORE";
     }
     if (headerAvatar) {
       const resolvedAvatar = admin.avatarUrl || fallbackAvatar;

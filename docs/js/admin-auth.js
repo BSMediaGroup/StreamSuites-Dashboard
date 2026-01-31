@@ -55,6 +55,15 @@
     return "";
   }
 
+  function resolveTierLabel(value) {
+    if (value === undefined || value === null) return "";
+    const text = String(value).trim();
+    if (!text) return "";
+    const normalized = text.toLowerCase();
+    if (normalized === "open") return "Core";
+    return text;
+  }
+
   function resolveBaseAssetPath(path) {
     const normalized = path.startsWith("/") ? path : `/${path}`;
     return `${window.ADMIN_BASE_PATH}${normalized}`;
@@ -287,7 +296,9 @@
         this.elements.headerRole.textContent = role ? role.toUpperCase() : "ADMIN";
       }
       if (this.elements.headerTier) {
-        this.elements.headerTier.textContent = tier ? tier.toUpperCase() : "CORE";
+        this.elements.headerTier.textContent = tier
+          ? resolveTierLabel(tier).toUpperCase()
+          : "CORE";
       }
       if (this.elements.headerAvatar) {
         const resolvedAvatar = avatarUrl || fallbackAvatar;
