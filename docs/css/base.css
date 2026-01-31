@@ -148,6 +148,35 @@ html.admin-gate-unavailable #app {
   border-bottom: 1px solid transparent;
 }
 
+:root {
+  --app-header-height: 72px;
+}
+
+#app {
+  padding-top: var(--app-header-height);
+  transition: padding-top 0.2s ease;
+}
+
+#app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1300;
+  background: var(--bg-root, #0e0f12);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+body.header-hidden #app {
+  padding-top: 0;
+}
+
+body.header-hidden #app-header {
+  transform: translateY(calc(var(--app-header-height) * -1));
+  opacity: 0;
+  pointer-events: none;
+}
+
 .header-left a {
   display: inline-flex;
   align-items: baseline;
@@ -567,6 +596,11 @@ body.admin-auth-error #app {
   font-size: 12px;
   letter-spacing: 0.3px;
   user-select: none;
+}
+
+#app-footer .footer-status {
+  font-size: 11px;
+  letter-spacing: 0.2px;
 }
 
 /* ------------------------------
