@@ -594,11 +594,18 @@
 
       function onScroll() {
         const current = scrollEl.scrollTop || 0;
+        const maxScroll = Math.max(0, scrollEl.scrollHeight - scrollEl.clientHeight);
+        const nearBottom = current >= maxScroll - 2;
         const delta = current - lastScrollTop;
 
         if (current <= 0) {
           setHidden(false);
           lastScrollTop = 0;
+          return;
+        }
+
+        if (nearBottom) {
+          lastScrollTop = current;
           return;
         }
 
