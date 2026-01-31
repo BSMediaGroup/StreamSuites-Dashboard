@@ -71,7 +71,9 @@
     bootstrapStarted: false,
     fetch: originalFetch,
     routeHandler: null,
-    visibilityHandler: null
+    visibilityHandler: null,
+    silentFailureCount: 0,
+    silentFailureNotified: false
   };
 
   window.StreamSuitesAdminGate = gate;
@@ -266,6 +268,9 @@
     gate.status = "authorized";
     gate.shouldBlock = false;
     gate.lastCheckedAt = Date.now();
+    gate.silentFailureCount = 0;
+    gate.silentFailureNotified = false;
+    setSessionBanner("", false);
     gate.admin = {
       authenticated: true,
       email: payload?.email || "",
@@ -336,6 +341,42 @@
     );
   }
 
+  function setSessionBanner(message, visible, variant = "warning") {
+    let banner = document.getElementById("admin-session-banner");
+    if (!banner) {
+      banner = document.createElement("div");
+      banner.id = "admin-session-banner";
+      banner.className = "ss-alert ss-alert-warning hidden";
+      banner.setAttribute("role", "status");
+      if (document.body) {
+        document.body.prepend(banner);
+      } else {
+        document.addEventListener(
+          "DOMContentLoaded",
+          () => document.body.prepend(banner),
+          { once: true }
+        );
+      }
+    }
+    if (message) {
+      banner.textContent = message;
+    }
+    banner.classList.toggle("hidden", !visible);
+    banner.classList.toggle("ss-alert-warning", variant === "warning");
+    banner.classList.toggle("ss-alert-danger", variant === "danger");
+    banner.classList.toggle("ss-alert-success", variant === "success");
+  }
+
+  function notifySessionInvalid(message) {
+    setSessionBanner(message, true, "danger");
+  }
+
+  function resolveCheckMode(requested) {
+    if (requested === "blocking") return "blocking";
+    if (gate.shouldBlock || gate.status !== "authorized") return "blocking";
+    return "silent";
+  }
+
   function redirectToLogin({ surface = "admin" } = {}) {
     const url = new URL(ADMIN_LOGIN_URL.toString());
     if (surface) {
@@ -388,7 +429,7 @@
     return { status: "unauthenticated", payload };
   }
 
-  async function authorize({ reason = "initial" } = {}) {
+  async function authorize({ reason = "initial", mode } = {}) {
     if (gate.loggedOut || gate.redirectedToLogin) return null;
     if (gate.inFlight) {
       gate.queued = true;
@@ -396,13 +437,17 @@
     }
 
     gate.inFlight = (async () => {
-      setHtmlState("admin-gate-pending");
-      updateDashboardGuard({ shouldBlock: true, adminGateStatus: "pending" });
-      setOverlayContent({
-        title: "Authorizing",
-        message: "Checking administrator session.",
-        status: "Pending"
-      });
+      const resolvedMode = resolveCheckMode(mode || (reason === "initial" ? "blocking" : "silent"));
+      const isBlocking = resolvedMode === "blocking";
+      if (isBlocking) {
+        setHtmlState("admin-gate-pending");
+        updateDashboardGuard({ shouldBlock: true, adminGateStatus: "pending" });
+        setOverlayContent({
+          title: "Authorizing",
+          message: "Checking administrator session.",
+          status: "Pending"
+        });
+      }
 
       let result = null;
       try {
@@ -414,20 +459,26 @@
       if (result.status === "authorized") {
         markAuthorized(result.payload);
       } else if (result.status === "unauthenticated") {
+        gate.silentFailureCount = 0;
+        gate.silentFailureNotified = false;
         gate.status = "unauthenticated";
         gate.shouldBlock = true;
         updateDashboardGuard({
           shouldBlock: true,
           adminGateStatus: "unauthenticated"
         });
-        setHtmlState("admin-gate-pending");
-        setOverlayContent({
-          title: "Redirecting",
-          message: "Admin login required. Redirecting to login…",
-          status: "Login",
-          showGoogle: true,
-          showGithub: true
-        });
+        if (isBlocking) {
+          setHtmlState("admin-gate-pending");
+          setOverlayContent({
+            title: "Redirecting",
+            message: "Admin login required. Redirecting to login...",
+            status: "Login",
+            showGoogle: true,
+            showGithub: true
+          });
+        } else {
+          notifySessionInvalid("Admin session expired. Redirecting to login.");
+        }
         window.dispatchEvent(
           new CustomEvent("streamsuites:admin-auth", {
             detail: {
@@ -438,17 +489,41 @@
         );
         gate.redirectedToLogin = true;
         gate.stopPolling({ hideActions: false, markLoggedOut: true });
-        redirectToLogin({ surface: "admin" });
+        window.setTimeout(() => redirectToLogin({ surface: "admin" }), isBlocking ? 0 : 1200);
       } else if (result.status === "forbidden") {
-        markDenied(
-          "forbidden",
-          "This area requires administrator access."
-        );
+        gate.silentFailureCount = 0;
+        gate.silentFailureNotified = false;
+        if (isBlocking) {
+          markDenied("forbidden", "This area requires administrator access.");
+        } else {
+          gate.status = "forbidden";
+          gate.shouldBlock = true;
+          updateDashboardGuard({
+            shouldBlock: true,
+            adminGateStatus: "forbidden"
+          });
+          notifySessionInvalid("Admin access revoked. Redirecting to login.");
+          gate.redirectedToLogin = true;
+          gate.stopPolling({ hideActions: false, markLoggedOut: true });
+          window.setTimeout(() => redirectToLogin({ surface: "admin" }), 1200);
+        }
       } else {
-        markDenied(
-          "unavailable",
-          "Authorization service is unavailable. Please try again later."
-        );
+        if (isBlocking) {
+          markDenied(
+            "unavailable",
+            "Authorization service is unavailable. Please try again later."
+          );
+        } else {
+          gate.silentFailureCount += 1;
+          if (gate.silentFailureCount >= 3 && !gate.silentFailureNotified) {
+            gate.silentFailureNotified = true;
+            setSessionBanner(
+              "Authorization service is unavailable. We will keep trying in the background.",
+              true,
+              "warning"
+            );
+          }
+        }
       }
 
       gate.inFlight = null;
@@ -620,10 +695,10 @@
     true
   );
 
-  gate.routeHandler = () => authorize({ reason: "route-change" });
+  gate.routeHandler = () => authorize({ reason: "route-change", mode: "silent" });
   gate.visibilityHandler = () => {
     if (!document.hidden) {
-      authorize({ reason: "visibility" });
+      authorize({ reason: "visibility", mode: "silent" });
     }
   };
 
@@ -632,6 +707,6 @@
   window.addEventListener("visibilitychange", gate.visibilityHandler);
 
   gate.refreshTimer = window.setInterval(() => {
-    authorize({ reason: "interval" });
+    authorize({ reason: "interval", mode: "silent" });
   }, 60000);
 })();
