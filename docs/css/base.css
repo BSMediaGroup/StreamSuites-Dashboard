@@ -334,8 +334,30 @@ body.header-hidden #app-header {
   text-transform: uppercase;
   padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(0, 153, 255, 0.2);
-  color: #d6ecff;
+  background: linear-gradient(135deg, rgba(92, 176, 188, 0.24), rgba(62, 130, 150, 0.14));
+  color: #d7f3f4;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+.streamsuites-auth-tier[data-tier="CORE"] {
+  background: linear-gradient(135deg, rgba(92, 176, 188, 0.24), rgba(62, 130, 150, 0.14));
+  color: #d7f3f4;
+}
+
+.streamsuites-auth-tier[data-tier="GOLD"] {
+  background: linear-gradient(135deg, rgba(255, 198, 84, 0.42), rgba(255, 232, 164, 0.12));
+  color: #fff3c9;
+}
+
+.streamsuites-auth-tier[data-tier="PRO"] {
+  background: linear-gradient(
+    130deg,
+    rgba(255, 88, 204, 0.45),
+    rgba(132, 102, 255, 0.24) 55%,
+    rgba(80, 160, 255, 0.24)
+  );
+  color: #ffe1ff;
 }
 
 .discord-guild-selector {
