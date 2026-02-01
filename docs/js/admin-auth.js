@@ -335,9 +335,9 @@
         this.elements.headerRole.textContent = role ? role.toUpperCase() : "ADMIN";
       }
       if (this.elements.headerTier) {
-        this.elements.headerTier.textContent = tier
-          ? resolveTierLabel(tier).toUpperCase()
-          : "CORE";
+        const resolvedTier = tier ? resolveTierLabel(tier).toUpperCase() : "CORE";
+        this.elements.headerTier.textContent = resolvedTier;
+        this.elements.headerTier.dataset.tier = resolvedTier;
       }
       if (this.elements.headerAvatar) {
         const resolvedAvatar = avatarUrl || fallbackAvatar;

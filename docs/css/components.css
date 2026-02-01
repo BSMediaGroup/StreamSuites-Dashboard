@@ -869,6 +869,29 @@
   vertical-align: middle;
 }
 
+.ss-badge[data-tier="CORE"] {
+  background: linear-gradient(135deg, rgba(92, 176, 188, 0.24), rgba(62, 130, 150, 0.14));
+  color: #d7f3f4;
+  border-color: transparent;
+}
+
+.ss-badge[data-tier="GOLD"] {
+  background: linear-gradient(135deg, rgba(255, 198, 84, 0.42), rgba(255, 232, 164, 0.12));
+  color: #fff3c9;
+  border-color: transparent;
+}
+
+.ss-badge[data-tier="PRO"] {
+  background: linear-gradient(
+    130deg,
+    rgba(255, 88, 204, 0.45),
+    rgba(132, 102, 255, 0.24) 55%,
+    rgba(80, 160, 255, 0.24)
+  );
+  color: #ffe1ff;
+  border-color: transparent;
+}
+
 .ss-badge-warning {
   background: rgba(244, 180, 0, 0.12);
   color: #ffd89c;

@@ -87,6 +87,16 @@
     return text;
   }
 
+  function resolveTierData(value) {
+    if (value === undefined || value === null) return "";
+    const text = String(value).trim().toLowerCase();
+    if (!text) return "";
+    if (text === "open" || text === "core") return "CORE";
+    if (text === "gold") return "GOLD";
+    if (text === "pro") return "PRO";
+    return "";
+  }
+
   function badgeToneForStatus(value) {
     const normalized = String(value || "").trim().toLowerCase();
     if (!normalized || normalized === "-" || normalized === "—") return "";
@@ -104,7 +114,9 @@
 
   function renderBadge(value, tone) {
     const classes = ["ss-badge", tone].filter(Boolean).join(" ");
-    return `<span class="${classes}">${escapeHtml(formatBadgeLabel(value))}</span>`;
+    const tier = resolveTierData(value);
+    const tierAttr = tier ? ` data-tier="${tier}"` : "";
+    return `<span class="${classes}"${tierAttr}>${escapeHtml(formatBadgeLabel(value))}</span>`;
   }
 
   function resolveEmailVerifiedLabel(value) {

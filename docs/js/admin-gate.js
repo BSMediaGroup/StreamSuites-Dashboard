@@ -325,9 +325,9 @@
       headerRole.textContent = "Admin";
     }
     if (headerTier) {
-      headerTier.textContent = admin.tier
-        ? resolveTierLabel(admin.tier).toUpperCase()
-        : "CORE";
+      const resolvedTier = admin.tier ? resolveTierLabel(admin.tier).toUpperCase() : "CORE";
+      headerTier.textContent = resolvedTier;
+      headerTier.dataset.tier = resolvedTier;
     }
     if (headerAvatar) {
       const resolvedAvatar = admin.avatarUrl || fallbackAvatar;
