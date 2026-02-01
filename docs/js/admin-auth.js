@@ -34,6 +34,12 @@
   if (shouldBlockDashboardRuntime()) return;
 
   const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/i;
+  const SESSION_IDLE_REASON = "cookie_missing";
+  const AUTH_REASON_HEADERS = [
+    "x-auth-reason",
+    "x-streamsuites-auth-reason",
+    "x-auth-status"
+  ];
 
   function getMetaContent(name) {
     const value = document.querySelector(`meta[name="${name}"]`)?.getAttribute("content");
@@ -53,6 +59,39 @@
     if (typeof value === "string") return value;
     if (typeof value === "number") return String(value);
     return "";
+  }
+
+  function normalizeAuthReason(value) {
+    if (typeof value !== "string") return "";
+    const trimmed = value.trim().toLowerCase();
+    if (!trimmed) return "";
+    if (trimmed.includes(SESSION_IDLE_REASON)) return SESSION_IDLE_REASON;
+    return trimmed;
+  }
+
+  function resolveAuthReason(payload, response) {
+    if (!payload || typeof payload !== "object") {
+      const headerReason =
+        response?.headers &&
+        AUTH_REASON_HEADERS.map((header) => response.headers.get(header)).find(Boolean);
+      return normalizeAuthReason(headerReason);
+    }
+
+    const candidate =
+      payload.reason ||
+      payload.error?.reason ||
+      payload.status ||
+      payload.error ||
+      payload.message;
+
+    if (candidate) {
+      return normalizeAuthReason(candidate);
+    }
+
+    const headerReason =
+      response?.headers &&
+      AUTH_REASON_HEADERS.map((header) => response.headers.get(header)).find(Boolean);
+    return normalizeAuthReason(headerReason);
   }
 
   function resolveTierLabel(value) {
@@ -407,11 +446,32 @@
           }
         });
 
+        let payload = null;
+        try {
+          payload = await response.json();
+        } catch (err) {
+          payload = null;
+        }
+
         if (!response.ok) {
+          const reason = resolveAuthReason(payload, response);
+          if (response.status === 401 && reason === SESSION_IDLE_REASON) {
+            this.state = {
+              authenticated: false,
+              authorized: false,
+              role: "",
+              email: "",
+              displayName: "",
+              avatarUrl: "",
+              tier: "",
+              error: ""
+            };
+            this.setStatus("idle", "");
+            return;
+          }
           throw new Error(`Auth session error (${response.status})`);
         }
 
-        const payload = await response.json();
         const normalized = this.normalizeSession(payload);
         this.state = { ...this.state, ...normalized, error: "" };
         this.setStatus("idle", "");

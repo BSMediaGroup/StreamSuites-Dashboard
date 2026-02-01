@@ -46,6 +46,13 @@
   const ADMIN_LOGIN_GOOGLE_URL = `${AUTH_API_BASE_NORMALIZED}/auth/login/google?surface=admin`;
   const ADMIN_LOGIN_GITHUB_URL = `${AUTH_API_BASE_NORMALIZED}/auth/login/github?surface=admin`;
   const AUTHORIZED_ROLE = "admin";
+  const SESSION_IDLE_REASON = "cookie_missing";
+  const SESSION_RETRY_MIN_INTERVAL_MS = 7000;
+  const AUTH_REASON_HEADERS = [
+    "x-auth-reason",
+    "x-streamsuites-auth-reason",
+    "x-auth-status"
+  ];
 
   const docEl = document.documentElement;
   docEl.classList.add("admin-gate-pending");
@@ -73,7 +80,13 @@
     routeHandler: null,
     visibilityHandler: null,
     silentFailureCount: 0,
-    silentFailureNotified: false
+    silentFailureNotified: false,
+    sessionIdle: {
+      active: false,
+      reason: "",
+      lastAttemptAt: 0,
+      notified: false
+    }
   };
 
   window.StreamSuitesAdminGate = gate;
@@ -199,6 +212,67 @@
       return payload.user.role.trim().toLowerCase();
     }
     return null;
+  }
+
+  function normalizeAuthReason(value) {
+    if (typeof value !== "string") return "";
+    const trimmed = value.trim().toLowerCase();
+    if (!trimmed) return "";
+    if (trimmed.includes(SESSION_IDLE_REASON)) return SESSION_IDLE_REASON;
+    return trimmed;
+  }
+
+  function resolveAuthReason(payload, response) {
+    if (!payload || typeof payload !== "object") {
+      const headerReason =
+        response?.headers &&
+        AUTH_REASON_HEADERS.map((header) => response.headers.get(header)).find(Boolean);
+      return normalizeAuthReason(headerReason);
+    }
+
+    const candidate =
+      payload.reason ||
+      payload.error?.reason ||
+      payload.status ||
+      payload.error ||
+      payload.message;
+
+    if (candidate) {
+      return normalizeAuthReason(candidate);
+    }
+
+    const headerReason =
+      response?.headers &&
+      AUTH_REASON_HEADERS.map((header) => response.headers.get(header)).find(Boolean);
+
+    return normalizeAuthReason(headerReason);
+  }
+
+  async function readAuthReasonFromResponse(response) {
+    if (!response) return "";
+    let payload = null;
+    try {
+      const text = await response.clone().text();
+      if (text) {
+        payload = JSON.parse(text);
+      }
+    } catch (err) {
+      payload = null;
+    }
+    return resolveAuthReason(payload, response);
+  }
+
+  async function ensureIdleBackoff() {
+    if (!gate.sessionIdle.active || !gate.sessionIdle.lastAttemptAt) {
+      gate.sessionIdle.lastAttemptAt = Date.now();
+      return;
+    }
+    const now = Date.now();
+    const nextAllowedAt = gate.sessionIdle.lastAttemptAt + SESSION_RETRY_MIN_INTERVAL_MS;
+    if (now < nextAllowedAt) {
+      await new Promise((resolve) => setTimeout(resolve, nextAllowedAt - now));
+    }
+    gate.sessionIdle.lastAttemptAt = Date.now();
   }
 
   function isAuthenticatedSession(payload) {
@@ -400,7 +474,9 @@
     });
 
     if (response.status === 401 || response.status === 403) {
-      return { status: "unauthenticated" };
+      const reason =
+        response.status === 401 ? await readAuthReasonFromResponse(response) : "";
+      return { status: "unauthenticated", reason };
     }
 
     if (!response.ok) {
@@ -429,14 +505,18 @@
     return { status: "unauthenticated", payload };
   }
 
-  async function authorize({ reason = "initial", mode } = {}) {
+  async function authorize({ reason = "initial", mode, force = false } = {}) {
     if (gate.loggedOut || gate.redirectedToLogin) return null;
+    if (gate.sessionIdle.active && !force) return null;
     if (gate.inFlight) {
       gate.queued = true;
       return gate.inFlight;
     }
 
     gate.inFlight = (async () => {
+      if (gate.sessionIdle.active && force) {
+        await ensureIdleBackoff();
+      }
       const resolvedMode = resolveCheckMode(mode || (reason === "initial" ? "blocking" : "silent"));
       const isBlocking = resolvedMode === "blocking";
       if (isBlocking) {
@@ -457,8 +537,21 @@
       }
 
       if (result.status === "authorized") {
+        gate.sessionIdle.active = false;
+        gate.sessionIdle.reason = "";
+        gate.sessionIdle.notified = false;
         markAuthorized(result.payload);
       } else if (result.status === "unauthenticated") {
+        const isIdle = result.reason === SESSION_IDLE_REASON;
+        gate.sessionIdle.active = isIdle;
+        gate.sessionIdle.reason = isIdle ? result.reason : "";
+        if (isIdle) {
+          gate.sessionIdle.lastAttemptAt = Date.now();
+        }
+        if (isIdle && !gate.sessionIdle.notified) {
+          console.info("[Admin Gate] Session idle (cookie missing).");
+          gate.sessionIdle.notified = true;
+        }
         gate.silentFailureCount = 0;
         gate.silentFailureNotified = false;
         gate.status = "unauthenticated";
@@ -491,6 +584,9 @@
         gate.stopPolling({ hideActions: false, markLoggedOut: true });
         window.setTimeout(() => redirectToLogin({ surface: "admin" }), isBlocking ? 0 : 1200);
       } else if (result.status === "forbidden") {
+        gate.sessionIdle.active = false;
+        gate.sessionIdle.reason = "";
+        gate.sessionIdle.notified = false;
         gate.silentFailureCount = 0;
         gate.silentFailureNotified = false;
         if (isBlocking) {
@@ -508,6 +604,9 @@
           window.setTimeout(() => redirectToLogin({ surface: "admin" }), 1200);
         }
       } else {
+        gate.sessionIdle.active = false;
+        gate.sessionIdle.reason = "";
+        gate.sessionIdle.notified = false;
         if (isBlocking) {
           markDenied(
             "unavailable",
