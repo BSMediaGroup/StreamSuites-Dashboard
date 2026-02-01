@@ -310,8 +310,22 @@ body.header-hidden #app-header {
 }
 
 .streamsuites-auth-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
   letter-spacing: 0.02em;
+}
+
+.streamsuites-auth-name-text {
+  display: inline-block;
+}
+
+.streamsuites-auth-tier-badge {
+  height: 12px;
+  width: auto;
+  display: block;
+  flex: 0 0 auto;
 }
 
 .streamsuites-auth-identity {

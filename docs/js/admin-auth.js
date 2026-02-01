@@ -325,8 +325,19 @@
       const fallbackAvatar =
         this.elements.headerAvatar?.getAttribute("data-fallback") ||
         resolveBaseAssetPath("/assets/icons/ui/profile.svg");
+      const headerNameText = this.elements.headerName?.querySelector(
+        ".streamsuites-auth-name-text"
+      );
+      const headerTierBadge = this.elements.headerName?.querySelector(
+        ".streamsuites-auth-tier-badge"
+      );
       if (this.elements.headerName) {
-        this.elements.headerName.textContent = name || email || "Administrator";
+        const displayName = name || email || "Administrator";
+        if (headerNameText) {
+          headerNameText.textContent = displayName;
+        } else {
+          this.elements.headerName.textContent = displayName;
+        }
       }
       if (this.elements.headerIdentity) {
         this.elements.headerIdentity.textContent = email || "admin@streamsuites.app";
@@ -338,6 +349,11 @@
         const resolvedTier = tier ? resolveTierLabel(tier).toUpperCase() : "CORE";
         this.elements.headerTier.textContent = resolvedTier;
         this.elements.headerTier.dataset.tier = resolvedTier;
+        if (headerTierBadge) {
+          const badgeTier = resolvedTier.toLowerCase();
+          headerTierBadge.src = resolveBaseAssetPath(`/assets/icons/tierbadge-${badgeTier}.svg`);
+          headerTierBadge.dataset.tier = resolvedTier;
+        }
       }
       if (this.elements.headerAvatar) {
         const resolvedAvatar = avatarUrl || fallbackAvatar;

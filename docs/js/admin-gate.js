@@ -306,6 +306,8 @@
     const headerIdentity = document.getElementById("admin-auth-identity");
     const headerRole = document.getElementById("admin-auth-role");
     const headerTier = document.getElementById("admin-auth-tier");
+    const headerNameText = headerName?.querySelector(".streamsuites-auth-name-text");
+    const headerTierBadge = headerName?.querySelector(".streamsuites-auth-tier-badge");
     const fallbackAvatar = `${window.ADMIN_BASE_PATH}/assets/icons/ui/profile.svg`;
 
     if (!headerWrap) return;
@@ -316,7 +318,12 @@
     }
 
     if (headerName) {
-      headerName.textContent = admin.name || admin.email || "Administrator";
+      const displayName = admin.name || admin.email || "Administrator";
+      if (headerNameText) {
+        headerNameText.textContent = displayName;
+      } else {
+        headerName.textContent = displayName;
+      }
     }
     if (headerIdentity) {
       headerIdentity.textContent = admin.email || "admin@streamsuites.app";
@@ -328,6 +335,11 @@
       const resolvedTier = admin.tier ? resolveTierLabel(admin.tier).toUpperCase() : "CORE";
       headerTier.textContent = resolvedTier;
       headerTier.dataset.tier = resolvedTier;
+      if (headerTierBadge) {
+        const badgeTier = resolvedTier.toLowerCase();
+        headerTierBadge.src = `${window.ADMIN_BASE_PATH}/assets/icons/tierbadge-${badgeTier}.svg`;
+        headerTierBadge.dataset.tier = resolvedTier;
+      }
     }
     if (headerAvatar) {
       const resolvedAvatar = admin.avatarUrl || fallbackAvatar;
