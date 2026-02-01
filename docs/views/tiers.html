@@ -15,7 +15,7 @@
       <div class="ss-panel-header-main">
         <h2>Tier Catalog</h2>
         <p class="muted" style="margin:6px 0 0;">
-          Read-only policy surfaced directly from the runtime authority layer.
+          Runtime-owned policy sourced from the Auth API. Edits apply immediately after save.
         </p>
       </div>
       <div class="ss-panel-header-actions">
@@ -31,6 +31,30 @@
         <div><strong>Generated:</strong> <span id="tiers-generated">--</span></div>
         <div><strong>Source:</strong> <span id="tiers-source">--</span></div>
       </div>
+
+      <div class="tiers-bypass">
+        <div>
+          <strong>Admin bypass</strong>
+          <p class="muted" style="margin:4px 0 0;">
+            Allow admin surface access to tier configuration even without admin role.
+          </p>
+        </div>
+        <div class="tiers-bypass-actions">
+          <label class="switch-button" aria-label="Admin bypass toggle">
+            <div class="switch-scale">
+              <div class="switch-outer">
+                <input type="checkbox" id="tiers-bypass-toggle" />
+                <div class="ss-switch-inner">
+                  <span class="ss-switch-toggle"></span>
+                  <span class="ss-switch-indicator"></span>
+                </div>
+              </div>
+            </div>
+          </label>
+          <button id="tiers-bypass-save" class="ss-btn ss-btn-ghost" disabled>Update bypass</button>
+        </div>
+      </div>
+      <div id="tiers-bypass-status" class="muted"></div>
     </div>
   </section>
 
@@ -39,8 +63,13 @@
       <div class="ss-panel-header-main">
         <h2>Tier Definitions</h2>
         <p class="muted" style="margin:6px 0 0;">
-          Tier IDs, visibility, rank, and feature limits are shown below. Editing is disabled in this phase.
+          Edit one tier at a time. Visibility and feature availability are editable, limits are read-only.
         </p>
+      </div>
+      <div class="ss-panel-header-actions">
+        <span id="tiers-edit-status" class="muted">No pending changes</span>
+        <button id="tiers-edit-cancel" class="ss-btn ss-btn-ghost" disabled>Discard changes</button>
+        <button id="tiers-save" class="ss-btn" disabled>Save changes</button>
       </div>
     </header>
 
@@ -52,5 +81,5 @@
 </main>
 
 <footer class="ss-footer">
-  <span class="muted">Tier configuration is runtime-owned and read-only in the dashboard.</span>
+  <span class="muted">Tier configuration is runtime-owned and audited. Edits apply immediately.</span>
 </footer>

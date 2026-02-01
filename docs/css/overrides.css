@@ -158,3 +158,40 @@
   font-weight: 600;
   color: rgba(226, 233, 242, 0.9);
 }
+
+.tier-card.is-editing {
+  border: 1px solid rgba(140, 199, 54, 0.35);
+  box-shadow: 0 0 0 1px rgba(140, 199, 54, 0.2);
+}
+
+.tiers-bypass {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(12, 17, 26, 0.6);
+}
+
+.tiers-bypass-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tiers-edit-note {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.tiers-field {
+  min-width: 140px;
+}
+
+.tiers-input {
+  min-width: 160px;
+}
