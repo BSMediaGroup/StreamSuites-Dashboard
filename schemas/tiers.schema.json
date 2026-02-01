@@ -27,9 +27,14 @@
     "tier": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["label", "description", "features"],
+      "required": ["id", "label", "description", "features"],
 
       "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+
         "label": {
           "type": "string",
           "minLength": 1
@@ -38,6 +43,16 @@
         "description": {
           "type": "string",
           "minLength": 1
+        },
+
+        "visibility": {
+          "type": "string",
+          "enum": ["public", "soft_locked", "hidden"]
+        },
+
+        "rank": {
+          "type": "integer",
+          "minimum": 0
         },
 
         "features": {

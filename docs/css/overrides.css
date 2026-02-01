@@ -117,3 +117,44 @@
   color: rgba(140, 199, 54, 0.9);
   text-decoration: underline;
 }
+
+/* Tier configuration view */
+.tiers-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.tier-card .ss-panel-header {
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.tier-card .ss-panel-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tier-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.tier-feature-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.tier-feature-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tier-feature-title {
+  font-weight: 600;
+  color: rgba(226, 233, 242, 0.9);
+}

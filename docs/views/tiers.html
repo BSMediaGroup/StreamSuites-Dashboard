@@ -1,0 +1,56 @@
+<!-- ========================================================= -->
+<!-- StreamSuites - Tier Configuration (VIEW PARTIAL) -->
+<!-- ========================================================= -->
+
+<header class="ss-header">
+  <div class="ss-header-left">
+    <h1 class="ss-title">StreamSuites</h1>
+    <span class="ss-subtitle">Tier Configuration</span>
+  </div>
+</header>
+
+<main class="ss-main">
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Tier Catalog</h2>
+        <p class="muted" style="margin:6px 0 0;">
+          Read-only policy surfaced directly from the runtime authority layer.
+        </p>
+      </div>
+      <div class="ss-panel-header-actions">
+        <span id="tiers-status" class="muted">Loading...</span>
+      </div>
+    </header>
+
+    <div class="ss-panel-body">
+      <div id="tiers-banner" class="ss-alert hidden"></div>
+
+      <div class="ss-meta-row">
+        <div><strong>Version:</strong> <span id="tiers-version">--</span></div>
+        <div><strong>Generated:</strong> <span id="tiers-generated">--</span></div>
+        <div><strong>Source:</strong> <span id="tiers-source">--</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Tier Definitions</h2>
+        <p class="muted" style="margin:6px 0 0;">
+          Tier IDs, visibility, rank, and feature limits are shown below. Editing is disabled in this phase.
+        </p>
+      </div>
+    </header>
+
+    <div class="ss-panel-body">
+      <div id="tiers-list" class="tiers-grid"></div>
+      <div id="tiers-empty" class="ss-empty hidden">No tier data available.</div>
+    </div>
+  </section>
+</main>
+
+<footer class="ss-footer">
+  <span class="muted">Tier configuration is runtime-owned and read-only in the dashboard.</span>
+</footer>

@@ -527,6 +527,7 @@ StreamSuites-Dashboard/
 │   │   ├── state.js
 │   │   ├── tally-detail.js
 │   │   ├── telemetry.js
+│   │   ├── tiers.js
 │   │   ├── triggers.js
 │   │   ├── updates.js
 │   │   └── view-loader.js
@@ -650,6 +651,7 @@ StreamSuites-Dashboard/
 │   │   ├── settings.html
 │   │   ├── support.html
 │   │   ├── tallies.html
+│   │   ├── tiers.html
 │   │   ├── triggers.html
 │   │   └── updates.html
 │   ├── about.html
