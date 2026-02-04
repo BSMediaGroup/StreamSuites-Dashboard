@@ -211,11 +211,13 @@
     setStatus("Loading live metrics...");
     setBanner("", false);
 
+    const pollingTimestamp = new Date().toISOString();
     const windowSeconds = Number(state.windowSeconds);
     let apiUrl = buildApiUrl(RUNTIME_ENDPOINT);
     if (Number.isFinite(windowSeconds) && windowSeconds > 0) {
       apiUrl += `?window=${encodeURIComponent(windowSeconds)}`;
     }
+    console.log(`[API Usage][${pollingTimestamp}] Polling ${apiUrl}`);
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 2000);
@@ -236,7 +238,30 @@
       } else if (!res.ok) {
         throw new Error(`Runtime error ${res.status}`);
       } else {
-        state.data = await res.json();
+        const payloadText = await res.text();
+        const payloadBytes = new TextEncoder().encode(payloadText).length;
+        console.log(
+          `[API Usage][${pollingTimestamp}] Raw payload (${payloadBytes} bytes) from ${apiUrl}:`,
+          payloadText
+        );
+        state.data = JSON.parse(payloadText);
+        const requestsSeries = Array.isArray(state.data?.requests_per_sec)
+          ? state.data.requests_per_sec
+          : [];
+        const errorsSeries = Array.isArray(state.data?.errors_per_sec)
+          ? state.data.errors_per_sec
+          : [];
+        const requestsFirst = requestsSeries.length ? requestsSeries[0]?.ts : null;
+        const requestsLast = requestsSeries.length
+          ? requestsSeries[requestsSeries.length - 1]?.ts
+          : null;
+        const errorsFirst = errorsSeries.length ? errorsSeries[0]?.ts : null;
+        const errorsLast = errorsSeries.length ? errorsSeries[errorsSeries.length - 1]?.ts : null;
+        console.log(
+          `[API Usage][${pollingTimestamp}] Parsed series from ${apiUrl}: ` +
+            `requests_per_sec=${requestsSeries.length} (first_ts=${requestsFirst}, last_ts=${requestsLast}), ` +
+            `errors_per_sec=${errorsSeries.length} (first_ts=${errorsFirst}, last_ts=${errorsLast})`
+        );
         state.online = true;
         setSummary(state.data);
         setStatus("Live runtime metrics");
