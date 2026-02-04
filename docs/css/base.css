@@ -293,8 +293,8 @@ body.header-hidden #app-header {
 }
 
 .streamsuites-auth-avatar img {
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   filter: brightness(0) invert(0.9);
 }
 
