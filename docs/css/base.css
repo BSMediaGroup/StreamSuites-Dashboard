@@ -322,7 +322,7 @@ body.header-hidden #app-header {
 }
 
 .streamsuites-auth-tier-badge {
-  height: 12px;
+  height: 16px;
   width: auto;
   display: block;
   flex: 0 0 auto;
