@@ -7,12 +7,14 @@
 
   const RUNTIME_ENDPOINT = "/admin/metrics/api-usage";
   const POLL_INTERVAL_MS = 5000;
+  const DEFAULT_WINDOW_SECONDS = 300;
 
   const state = {
     timer: null,
     data: null,
     online: false,
-    resizeObserver: null
+    resizeObserver: null,
+    windowSeconds: DEFAULT_WINDOW_SECONDS
   };
 
   const el = {
@@ -21,6 +23,7 @@
     rpm: null,
     errorRate: null,
     window: null,
+    windowSelect: null,
     panel: null,
     canvas: null,
     empty: null
@@ -60,6 +63,7 @@
       if (el.rpm) el.rpm.textContent = "--";
       if (el.errorRate) el.errorRate.textContent = "--";
       if (el.window) el.window.textContent = "--";
+      updateWindowLabelFromSelection();
       return;
     }
     const rpm = metrics.summary?.rpm ?? "--";
@@ -71,6 +75,29 @@
         typeof errorRate === "number" ? `${(errorRate * 100).toFixed(2)}%` : "--";
     }
     if (el.window) el.window.textContent = `${windowSeconds}s`;
+    updateWindowLabelFromSelection();
+  }
+
+  function updateWindowLabelFromSelection() {
+    if (!el.window || !el.windowSelect) return;
+    const label = el.windowSelect.selectedOptions?.[0]?.textContent;
+    if (label) el.window.textContent = label;
+  }
+
+  function syncWindowSelection() {
+    if (!el.windowSelect) return;
+    const value = Number(el.windowSelect.value);
+    if (Number.isFinite(value) && value > 0) {
+      state.windowSeconds = value;
+    } else {
+      state.windowSeconds = DEFAULT_WINDOW_SECONDS;
+    }
+    updateWindowLabelFromSelection();
+  }
+
+  function handleWindowChange() {
+    syncWindowSelection();
+    fetchMetrics();
   }
 
   function normalizeSeries(series) {
@@ -184,10 +211,16 @@
     setStatus("Loading live metrics...");
     setBanner("", false);
 
+    const windowSeconds = Number(state.windowSeconds);
+    let apiUrl = buildApiUrl(RUNTIME_ENDPOINT);
+    if (Number.isFinite(windowSeconds) && windowSeconds > 0) {
+      apiUrl += `?window=${encodeURIComponent(windowSeconds)}`;
+    }
+
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 2000);
     try {
-      const res = await fetch(buildApiUrl(RUNTIME_ENDPOINT), {
+      const res = await fetch(apiUrl, {
         method: "GET",
         cache: "no-store",
         credentials: "include",
@@ -233,6 +266,7 @@
     el.rpm = $("api-usage-rpm");
     el.errorRate = $("api-usage-error-rate");
     el.window = $("api-usage-window");
+    el.windowSelect = $("api-usage-window-select");
     el.panel = $("api-usage-chart-panel");
     el.canvas = $("api-usage-chart");
     el.empty = $("api-usage-empty");
@@ -243,6 +277,10 @@
       });
       state.resizeObserver.observe(el.panel);
     }
+    if (el.windowSelect) {
+      syncWindowSelection();
+      el.windowSelect.addEventListener("change", handleWindowChange);
+    }
     fetchMetrics();
   }
 
@@ -250,6 +288,9 @@
     if (state.timer) clearTimeout(state.timer);
     state.timer = null;
     window.removeEventListener("resize", handleResize);
+    if (el.windowSelect) {
+      el.windowSelect.removeEventListener("change", handleWindowChange);
+    }
     if (state.resizeObserver) {
       state.resizeObserver.disconnect();
       state.resizeObserver = null;
