@@ -1,5 +1,5 @@
 /* ============================================================
-   StreamSuites Dashboard - Bots view (debug, read-only)
+   StreamSuites Dashboard - Bots view (admin/debug)
    ============================================================ */
 
 (() => {
@@ -7,13 +7,16 @@
 
   const POLL_INTERVAL_MS = 5000;
   const PRIMARY_RUNTIME_PATH = "/runtime/exports/bots/status.json";
+  const MANUAL_DEPLOY_ENDPOINT = "/api/admin/runtime/manual-deploy";
 
   const state = {
     pollHandle: null,
     tickHandle: null,
     lastPayload: null,
     lastReceivedAt: null,
-    sourceUrl: null
+    sourceUrl: null,
+    rowUi: Object.create(null),
+    onBodyClick: null
   };
 
   const el = {
@@ -38,6 +41,18 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;");
+  }
+
+  function encodeData(value) {
+    return encodeURIComponent(String(value || ""));
+  }
+
+  function decodeData(value) {
+    try {
+      return decodeURIComponent(String(value || ""));
+    } catch (err) {
+      return String(value || "");
+    }
   }
 
   function formatTimestamp(value) {
@@ -81,6 +96,21 @@
       window.ADMIN_BASE_PATH ||
       ""
     );
+  }
+
+  function resolveApiBase() {
+    const base =
+      window.StreamSuitesAdminAuth?.config?.baseUrl ||
+      document.querySelector('meta[name="streamsuites-auth-base"]')?.getAttribute("content") ||
+      "";
+    return base ? base.replace(/\/$/, "") : "";
+  }
+
+  function buildApiUrl(path) {
+    const base = resolveApiBase();
+    if (!base) return path;
+    const normalized = path.startsWith("/") ? path : `/${path}`;
+    return `${base}${normalized}`;
   }
 
   function buildCandidateUrls() {
@@ -129,6 +159,77 @@
     return `<span class="${classes}">${escapeHtml(statusLabel(status))}</span>`;
   }
 
+  function rowKey(creatorId, platform) {
+    return `${String(creatorId || "")}::${String(platform || "").toLowerCase()}`;
+  }
+
+  function getRowUi(creatorId, platform) {
+    const key = rowKey(creatorId, platform);
+    if (!state.rowUi[key]) {
+      state.rowUi[key] = { pending: false, pendingAction: "", error: "" };
+    }
+    return state.rowUi[key];
+  }
+
+  function isBotAttached(bot) {
+    const status = String(bot?.status || "").trim().toLowerCase();
+    const activeTarget = String(bot?.active_target || "").trim();
+    const hasActiveTarget = Boolean(activeTarget && activeTarget !== "-");
+    return status === "online" || status === "connecting" || hasActiveTarget;
+  }
+
+  function canAttach(bot) {
+    return !isBotAttached(bot);
+  }
+
+  function canDetach(bot) {
+    const status = String(bot?.status || "").trim().toLowerCase();
+    if (status === "offline") return false;
+    return isBotAttached(bot);
+  }
+
+  function renderManualOverride(value) {
+    if (value === true) {
+      return '<span class="ss-badge ss-badge-warning">Manual ON</span>';
+    }
+    return '<span class="ss-badge">Manual OFF</span>';
+  }
+
+  function renderActionCell(bot) {
+    const creatorId = String(bot?.creator_id || "");
+    const platform = String(bot?.platform || "");
+    const ui = getRowUi(creatorId, platform);
+    const attachDisabled = ui.pending || !canAttach(bot);
+    const detachDisabled = ui.pending || !canDetach(bot);
+    const attachLabel = ui.pending && ui.pendingAction === "attach" ? "Attaching..." : "Attach";
+    const detachLabel = ui.pending && ui.pendingAction === "detach" ? "Detaching..." : "Detach";
+    const rowError = String(ui.error || "");
+
+    return `
+      <div class="ss-bot-actions">
+        <div class="ss-bot-actions-row">
+          <button
+            class="ss-btn ss-btn-small ss-btn-primary"
+            data-bot-action="attach"
+            data-creator-id="${encodeData(creatorId)}"
+            data-platform="${encodeData(platform)}"
+            ${attachDisabled ? "disabled" : ""}
+          >${attachLabel}</button>
+          <button
+            class="ss-btn ss-btn-small ss-btn-danger"
+            data-bot-action="detach"
+            data-creator-id="${encodeData(creatorId)}"
+            data-platform="${encodeData(platform)}"
+            ${detachDisabled ? "disabled" : ""}
+          >${detachLabel}</button>
+        </div>
+        <div class="ss-bot-row-error ${rowError ? "has-error" : ""}">${escapeHtml(
+          rowError || "-"
+        )}</div>
+      </div>
+    `;
+  }
+
   function getDisplayUptimeSeconds(bot, payloadGeneratedAt, receivedAt) {
     const base = asFiniteNumber(bot?.uptime_seconds);
     if (base === null) return null;
@@ -163,10 +264,11 @@
           <td>${escapeHtml(bot?.platform)}</td>
           <td>${renderStatus(bot?.status)}</td>
           <td>${escapeHtml(bot?.active_target)}</td>
-          <td>${bot?.manual_override === true ? "Yes" : "No"}</td>
+          <td>${renderManualOverride(bot?.manual_override === true)}</td>
           <td>${escapeHtml(formatTimestamp(bot?.connected_at))}</td>
           <td>${escapeHtml(uptimeLabel)}</td>
           <td class="${errorClass}">${escapeHtml(hasError ? lastError : "-")}</td>
+          <td>${renderActionCell(bot)}</td>
         </tr>
       `;
     });
@@ -280,6 +382,112 @@
     updateMeta(state.lastPayload, state.lastReceivedAt);
   }
 
+  async function readJsonSafe(response) {
+    try {
+      return await response.json();
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async function applyManualAction(action, creatorId, platform) {
+    if (!state.lastPayload || !Array.isArray(state.lastPayload.bots)) return;
+
+    const bot = state.lastPayload.bots.find(
+      (entry) =>
+        String(entry?.creator_id || "") === creatorId &&
+        String(entry?.platform || "").toLowerCase() === platform.toLowerCase()
+    );
+    if (!bot) return;
+
+    const ui = getRowUi(creatorId, platform);
+    if (ui.pending) return;
+
+    let targetIdentifier = null;
+    if (action === "attach") {
+      const currentTarget = String(bot?.active_target || "").trim();
+      const promptDefault = currentTarget && currentTarget !== "-" ? currentTarget : "";
+      const prompted = window.prompt(
+        `Manual attach target for ${creatorId} (${platform}):\nEnter channel name or stream reference.`,
+        promptDefault
+      );
+      if (prompted === null) return;
+      const trimmed = String(prompted || "").trim();
+      if (!trimmed) {
+        ui.error = "Target identifier is required for manual attach.";
+        if (el.body) {
+          el.body.innerHTML = renderRows(state.lastPayload, Date.now());
+        }
+        return;
+      }
+      targetIdentifier = trimmed;
+    } else if (action === "detach") {
+      const currentTarget = String(bot?.active_target || "").trim();
+      targetIdentifier = currentTarget && currentTarget !== "-" ? currentTarget : null;
+    }
+
+    ui.pending = true;
+    ui.pendingAction = action;
+    ui.error = "";
+    if (el.body) {
+      el.body.innerHTML = renderRows(state.lastPayload, Date.now());
+    }
+
+    try {
+      const payload = {
+        action,
+        platform,
+        creator_id: creatorId,
+        target_identifier: targetIdentifier
+      };
+
+      const response = await fetch(buildApiUrl(MANUAL_DEPLOY_ENDPOINT), {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorPayload = await readJsonSafe(response);
+        const detail =
+          errorPayload?.error ||
+          errorPayload?.message ||
+          `Manual ${action} failed (HTTP ${response.status}).`;
+        ui.error = String(detail);
+        return;
+      }
+
+      ui.error = "";
+      await refresh();
+    } catch (err) {
+      ui.error = err?.message ? String(err.message) : `Manual ${action} failed.`;
+    } finally {
+      ui.pending = false;
+      ui.pendingAction = "";
+      if (state.lastPayload && el.body) {
+        el.body.innerHTML = renderRows(state.lastPayload, Date.now());
+      }
+    }
+  }
+
+  function onBodyClick(event) {
+    const button = event.target.closest("[data-bot-action]");
+    if (!(button instanceof HTMLButtonElement) || button.disabled) return;
+
+    const action = String(button.dataset.botAction || "").trim().toLowerCase();
+    if (action !== "attach" && action !== "detach") return;
+
+    const creatorId = decodeData(button.dataset.creatorId || "");
+    const platform = decodeData(button.dataset.platform || "");
+    if (!creatorId || !platform) return;
+
+    void applyManualAction(action, creatorId, platform);
+  }
+
   function startPolling() {
     stopPolling();
     refresh();
@@ -307,14 +515,22 @@
     el.body = $("bots-table-body");
     el.empty = $("bots-empty");
 
+    state.onBodyClick = onBodyClick;
+    el.body?.addEventListener("click", state.onBodyClick);
+
     startPolling();
   }
 
   function destroy() {
     stopPolling();
+    if (state.onBodyClick && el.body) {
+      el.body.removeEventListener("click", state.onBodyClick);
+    }
+    state.onBodyClick = null;
     state.lastPayload = null;
     state.lastReceivedAt = null;
     state.sourceUrl = null;
+    state.rowUi = Object.create(null);
   }
 
   window.BotsView = {

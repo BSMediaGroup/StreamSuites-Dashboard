@@ -970,6 +970,31 @@
   font-weight: 600;
 }
 
+.ss-bot-actions {
+  display: grid;
+  gap: 6px;
+  min-width: 220px;
+}
+
+.ss-bot-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ss-bot-row-error {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--text-secondary);
+  min-height: 16px;
+  word-break: break-word;
+}
+
+.ss-bot-row-error.has-error {
+  color: #ffb3b0;
+}
+
 .ss-pending-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
