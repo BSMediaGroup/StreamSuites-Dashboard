@@ -25,7 +25,16 @@
     lastReceivedAt: null,
     sourceUrl: null,
     rowUi: Object.create(null),
-    onBodyClick: null
+    onBodyClick: null,
+    onManualToggleClick: null,
+    onManualCancelClick: null,
+    onManualFormSubmit: null,
+    onManualFormChange: null,
+    manualFormOpen: false,
+    manualDeploy: {
+      pending: false,
+      error: ""
+    }
   };
 
   const el = {
@@ -36,6 +45,16 @@
     error: null,
     platformsStatus: null,
     platformsGrid: null,
+    manualToggle: null,
+    manualForm: null,
+    manualCreator: null,
+    manualCreatorList: null,
+    manualPlatform: null,
+    manualTarget: null,
+    manualSubmit: null,
+    manualCancel: null,
+    manualNote: null,
+    manualError: null,
     body: null,
     empty: null
   };
@@ -504,6 +523,170 @@
     el.error.classList.remove("hidden");
   }
 
+  function setManualError(message) {
+    const text = String(message || "").trim();
+    state.manualDeploy.error = text;
+    if (!el.manualError) return;
+    if (!text) {
+      el.manualError.textContent = "";
+      el.manualError.classList.add("hidden");
+      return;
+    }
+    el.manualError.textContent = text;
+    el.manualError.classList.remove("hidden");
+  }
+
+  function manualFormValues() {
+    return {
+      creatorId: String(el.manualCreator?.value || "").trim(),
+      platform: normalizePlatformKey(el.manualPlatform?.value),
+      targetIdentifier: String(el.manualTarget?.value || "").trim()
+    };
+  }
+
+  function getPausedPlatformMessage(platform) {
+    if (!platform) return "";
+    const platformState = state.platformSummary?.[platform] || null;
+    if (!platformState || platformState.paused !== true) return "";
+    const reason = String(platformState.pausedReason || "").trim();
+    if (reason) {
+      return `Platform is paused: ${reason}`;
+    }
+    return "Platform is paused by runtime control.";
+  }
+
+  function getManualDeployBlockedReason(platform) {
+    if (!isRuntimeAvailable()) return "Runtime is offline.";
+    return getPausedPlatformMessage(platform);
+  }
+
+  function updateManualCreatorSuggestions() {
+    if (!el.manualCreatorList) return;
+    const creatorIds = sortPlatformKeys(
+      (state.lastPayload?.bots || [])
+        .map((bot) => String(bot?.creator_id || "").trim())
+        .filter(Boolean)
+    );
+    el.manualCreatorList.innerHTML = creatorIds
+      .map((creatorId) => `<option value="${escapeHtml(creatorId)}"></option>`)
+      .join("");
+  }
+
+  function updateManualDeployUi() {
+    if (!el.manualToggle || !el.manualForm) return;
+
+    const formOpen = state.manualFormOpen === true;
+    el.manualForm.classList.toggle("hidden", !formOpen);
+    el.manualToggle.textContent = formOpen ? "Hide Manual Deploy" : "Manual Deploy Bot";
+
+    const values = manualFormValues();
+    const blockedReason = getManualDeployBlockedReason(values.platform);
+    const hasRequiredFields = Boolean(
+      values.creatorId && values.platform && values.targetIdentifier
+    );
+    const submitDisabled = state.manualDeploy.pending || Boolean(blockedReason) || !hasRequiredFields;
+
+    if (el.manualSubmit) {
+      el.manualSubmit.disabled = submitDisabled;
+      el.manualSubmit.textContent = state.manualDeploy.pending ? "Deploying..." : "Deploy Bot";
+    }
+
+    if (el.manualCreator) {
+      el.manualCreator.disabled = state.manualDeploy.pending;
+    }
+    if (el.manualPlatform) {
+      el.manualPlatform.disabled = state.manualDeploy.pending;
+    }
+    if (el.manualTarget) {
+      el.manualTarget.disabled = state.manualDeploy.pending;
+    }
+    if (el.manualCancel) {
+      el.manualCancel.disabled = state.manualDeploy.pending;
+    }
+
+    if (el.manualNote) {
+      const note =
+        blockedReason ||
+        (values.platform
+          ? "Manual deploy will create bot instance if needed."
+          : "Choose creator, platform, and target.");
+      el.manualNote.textContent = note;
+    }
+  }
+
+  function toggleManualForm(forceOpen) {
+    if (!el.manualForm) return;
+    if (typeof forceOpen === "boolean") {
+      state.manualFormOpen = forceOpen;
+    } else {
+      state.manualFormOpen = !state.manualFormOpen;
+    }
+    updateManualDeployUi();
+  }
+
+  async function submitManualDeploy(event) {
+    event.preventDefault();
+
+    const values = manualFormValues();
+    const blockedReason = getManualDeployBlockedReason(values.platform);
+    if (blockedReason) {
+      setManualError(blockedReason);
+      updateManualDeployUi();
+      return;
+    }
+
+    if (!values.creatorId || !values.platform || !values.targetIdentifier) {
+      setManualError("Creator, platform, and target identifier are required.");
+      updateManualDeployUi();
+      return;
+    }
+
+    state.manualDeploy.pending = true;
+    setManualError("");
+    updateManualDeployUi();
+
+    try {
+      const payload = {
+        action: "attach",
+        creator_id: values.creatorId,
+        platform: values.platform,
+        target_identifier: values.targetIdentifier
+      };
+
+      const response = await fetch(buildApiUrl(MANUAL_DEPLOY_ENDPOINT), {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorPayload = await readJsonSafe(response);
+        const detail =
+          errorPayload?.error ||
+          errorPayload?.message ||
+          `Manual deploy failed (HTTP ${response.status}).`;
+        setManualError(String(detail));
+        return;
+      }
+
+      setManualError("");
+      if (el.manualTarget) {
+        el.manualTarget.value = "";
+      }
+      await refresh();
+    } catch (err) {
+      const detail = err?.message ? String(err.message) : "Manual deploy failed.";
+      setManualError(detail);
+    } finally {
+      state.manualDeploy.pending = false;
+      updateManualDeployUi();
+    }
+  }
+
   function updateMeta(normalized, receivedAt) {
     if (el.count) {
       const rowCount = Array.isArray(normalized?.bots) ? normalized.bots.length : 0;
@@ -575,6 +758,8 @@
     updateMeta(normalized, now);
 
     renderPlatformSummary(state.platformSummary);
+    updateManualCreatorSuggestions();
+    updateManualDeployUi();
 
     const hasRows = normalized && Array.isArray(normalized.bots) && normalized.bots.length > 0;
 
@@ -601,6 +786,10 @@
       setError("");
       render(normalized, runtimeSnapshot, platformConfig);
     } catch (err) {
+      state.lastPayload = { bots: [], supportedPlatforms: [], generatedAt: null };
+      state.lastRuntimeSnapshot = null;
+      state.platformSummary = buildPlatformSummary({ bots: [] }, null, null);
+      state.lastReceivedAt = Date.now();
       if (el.status) {
         el.status.textContent = "Unable to load runtime bot status.";
       }
@@ -613,10 +802,12 @@
       if (el.body) {
         el.body.innerHTML = "";
       }
-      renderPlatformSummary(buildPlatformSummary({ bots: [] }, null, null));
+      renderPlatformSummary(state.platformSummary);
       if (el.empty) {
         el.empty.classList.remove("hidden");
       }
+      updateManualCreatorSuggestions();
+      updateManualDeployUi();
       const detail = err?.message ? ` (${err.message})` : "";
       setError(`Unable to load bot status from runtime API${detail}`);
     }
@@ -624,8 +815,12 @@
 
   function renderRuntimeOffline() {
     stopPolling();
+    state.lastPayload = { bots: [], supportedPlatforms: [], generatedAt: null };
+    state.lastRuntimeSnapshot = null;
+    state.platformSummary = buildPlatformSummary({ bots: [] }, null, null);
+    state.lastReceivedAt = Date.now();
     if (el.status) {
-      el.status.textContent = "Runtime offline — bot status unavailable";
+      el.status.textContent = "Runtime offline - bot status unavailable";
     }
     if (el.count) {
       el.count.textContent = "-- rows";
@@ -639,10 +834,12 @@
     if (el.body) {
       el.body.innerHTML = "";
     }
-    renderPlatformSummary(buildPlatformSummary({ bots: [] }, null, null));
+    renderPlatformSummary(state.platformSummary);
     if (el.empty) {
       el.empty.classList.remove("hidden");
     }
+    updateManualCreatorSuggestions();
+    updateManualDeployUi();
     setError("");
   }
 
@@ -772,6 +969,22 @@
     void applyManualAction(action, creatorId, platform);
   }
 
+  function onManualToggleClick() {
+    toggleManualForm();
+  }
+
+  function onManualCancelClick() {
+    setManualError("");
+    toggleManualForm(false);
+  }
+
+  function onManualFormChange() {
+    if (state.manualDeploy.error) {
+      setManualError("");
+    }
+    updateManualDeployUi();
+  }
+
   function startPolling() {
     stopPolling();
     if (!isRuntimeAvailable()) {
@@ -802,11 +1015,34 @@
     el.error = $("bots-error");
     el.platformsStatus = $("bots-platforms-status");
     el.platformsGrid = $("bots-platforms-grid");
+    el.manualToggle = $("bots-manual-toggle");
+    el.manualForm = $("bots-manual-form");
+    el.manualCreator = $("bots-manual-creator");
+    el.manualCreatorList = $("bots-manual-creator-list");
+    el.manualPlatform = $("bots-manual-platform");
+    el.manualTarget = $("bots-manual-target");
+    el.manualSubmit = $("bots-manual-submit");
+    el.manualCancel = $("bots-manual-cancel");
+    el.manualNote = $("bots-manual-note");
+    el.manualError = $("bots-manual-error");
     el.body = $("bots-table-body");
     el.empty = $("bots-empty");
 
     state.onBodyClick = onBodyClick;
     el.body?.addEventListener("click", state.onBodyClick);
+    state.onManualToggleClick = onManualToggleClick;
+    state.onManualCancelClick = onManualCancelClick;
+    state.onManualFormSubmit = submitManualDeploy;
+    state.onManualFormChange = onManualFormChange;
+    el.manualToggle?.addEventListener("click", state.onManualToggleClick);
+    el.manualCancel?.addEventListener("click", state.onManualCancelClick);
+    el.manualForm?.addEventListener("submit", state.onManualFormSubmit);
+    el.manualForm?.addEventListener("input", state.onManualFormChange);
+    el.manualForm?.addEventListener("change", state.onManualFormChange);
+    state.manualFormOpen = false;
+    setManualError("");
+    updateManualCreatorSuggestions();
+    updateManualDeployUi();
 
     startPolling();
   }
@@ -816,7 +1052,26 @@
     if (state.onBodyClick && el.body) {
       el.body.removeEventListener("click", state.onBodyClick);
     }
+    if (state.onManualToggleClick && el.manualToggle) {
+      el.manualToggle.removeEventListener("click", state.onManualToggleClick);
+    }
+    if (state.onManualCancelClick && el.manualCancel) {
+      el.manualCancel.removeEventListener("click", state.onManualCancelClick);
+    }
+    if (state.onManualFormSubmit && el.manualForm) {
+      el.manualForm.removeEventListener("submit", state.onManualFormSubmit);
+    }
+    if (state.onManualFormChange && el.manualForm) {
+      el.manualForm.removeEventListener("input", state.onManualFormChange);
+      el.manualForm.removeEventListener("change", state.onManualFormChange);
+    }
     state.onBodyClick = null;
+    state.onManualToggleClick = null;
+    state.onManualCancelClick = null;
+    state.onManualFormSubmit = null;
+    state.onManualFormChange = null;
+    state.manualFormOpen = false;
+    state.manualDeploy = { pending: false, error: "" };
     state.lastPayload = null;
     state.lastRuntimeSnapshot = null;
     state.platformSummary = Object.create(null);

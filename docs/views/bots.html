@@ -46,6 +46,69 @@
 
       <div id="bots-error" class="ss-alert ss-alert-danger hidden"></div>
 
+      <section class="ss-bots-manual-panel" aria-labelledby="bots-manual-title">
+        <div class="ss-bots-manual-head">
+          <div>
+            <h3 id="bots-manual-title">Manual Bot Deploy</h3>
+            <p class="muted">
+              Admin/debug control to create and deploy bot instances directly from runtime.
+            </p>
+          </div>
+          <button id="bots-manual-toggle" class="ss-btn ss-btn-primary ss-btn-small" type="button">
+            Manual Deploy Bot
+          </button>
+        </div>
+        <form id="bots-manual-form" class="hidden" novalidate>
+          <div class="ss-bots-manual-grid">
+            <div class="ss-form-row">
+              <label for="bots-manual-creator">Creator</label>
+              <input
+                id="bots-manual-creator"
+                name="creator"
+                type="text"
+                list="bots-manual-creator-list"
+                autocomplete="off"
+                placeholder="Creator ID"
+                required
+              />
+              <datalist id="bots-manual-creator-list"></datalist>
+            </div>
+            <div class="ss-form-row">
+              <label for="bots-manual-platform">Platform</label>
+              <select id="bots-manual-platform" name="platform" required>
+                <option value="">Select platform</option>
+                <option value="twitch">Twitch</option>
+                <option value="kick">Kick</option>
+                <option value="youtube">YouTube</option>
+                <option value="rumble">Rumble</option>
+                <option value="pilled">Pilled</option>
+              </select>
+            </div>
+            <div class="ss-form-row">
+              <label for="bots-manual-target">Target identifier</label>
+              <input
+                id="bots-manual-target"
+                name="target_identifier"
+                type="text"
+                autocomplete="off"
+                placeholder="Channel name or stream reference"
+                required
+              />
+            </div>
+          </div>
+          <div id="bots-manual-error" class="ss-alert ss-alert-danger hidden"></div>
+          <div class="ss-bots-manual-actions">
+            <button id="bots-manual-submit" class="ss-btn ss-btn-primary" type="submit">
+              Deploy Bot
+            </button>
+            <button id="bots-manual-cancel" class="ss-btn ss-btn-secondary" type="button">
+              Cancel
+            </button>
+            <span id="bots-manual-note" class="muted">Choose creator, platform, and target.</span>
+          </div>
+        </form>
+      </section>
+
       <div class="ss-bots-table-wrap">
         <table class="ss-table ss-table-compact" id="bots-table">
           <thead>
