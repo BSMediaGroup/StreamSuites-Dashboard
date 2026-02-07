@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-01-31T18:59:12.771077Z",
+  "generated_at": "2026-02-07T04:37:33.218659Z",
   "events": [
     {
       "timestamp_utc": "2026-01-22T05:45:05Z",
@@ -294,6 +294,76 @@
       "result": "sent",
       "resend_message_id": null,
       "ip": "109.104.115.92",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp_utc": "2026-02-01T06:42:16Z",
+      "event_type": "token_invalidated",
+      "event_name": "token_invalidated",
+      "action": null,
+      "email_type": null,
+      "account_id": "JqhcS2m",
+      "user_identifier": "user_code:JqhcS2m",
+      "email_redacted": null,
+      "result": "sent",
+      "resend_message_id": null,
+      "ip": "45.132.159.133",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp_utc": "2026-02-01T07:55:47Z",
+      "event_type": "token_invalidated",
+      "event_name": "token_invalidated",
+      "action": null,
+      "email_type": null,
+      "account_id": "4TiOlvS",
+      "user_identifier": "user_code:4TiOlvS",
+      "email_redacted": null,
+      "result": "sent",
+      "resend_message_id": null,
+      "ip": "45.132.159.133",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp_utc": "2026-02-01T09:24:28Z",
+      "event_type": "token_invalidated",
+      "event_name": "token_invalidated",
+      "action": null,
+      "email_type": null,
+      "account_id": "4TiOlvS",
+      "user_identifier": "user_code:4TiOlvS",
+      "email_redacted": null,
+      "result": "sent",
+      "resend_message_id": null,
+      "ip": "45.132.159.246",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+    },
+    {
+      "timestamp_utc": "2026-02-04T04:37:14Z",
+      "event_type": "token_invalidated",
+      "event_name": "token_invalidated",
+      "action": null,
+      "email_type": null,
+      "account_id": "4TiOlvS",
+      "user_identifier": "user_code:4TiOlvS",
+      "email_redacted": null,
+      "result": "sent",
+      "resend_message_id": null,
+      "ip": "5.182.16.236",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp_utc": "2026-02-04T15:14:14Z",
+      "event_type": "token_invalidated",
+      "event_name": "token_invalidated",
+      "action": null,
+      "email_type": null,
+      "account_id": "7lPBEiA",
+      "user_identifier": "user_code:7lPBEiA",
+      "email_redacted": null,
+      "result": "sent",
+      "resend_message_id": null,
+      "ip": "5.182.16.236",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
     }
   ]

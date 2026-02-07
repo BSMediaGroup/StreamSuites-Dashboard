@@ -1,12 +1,545 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-01-31T18:59:12.785077Z",
+  "exported_at": "2026-02-07T04:37:33.241701Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.2.3-alpha",
-    "build": "2026.01.30+003"
+    "build": "2026.02.04+012"
   },
   "audit": [
+    {
+      "id": "1bf9bed8-6d2d-47a4-af38-f6634fc281c6",
+      "ts": "2026-02-05T15:55:54Z",
+      "actor_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "actor_user_code": "7lPBEiA",
+      "actor_role": "creator",
+      "target_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "target_user_code": "7lPBEiA",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "9d66a41b-4502-43aa-8c7d-63c267b8132f",
+      "ts": "2026-02-04T15:14:40Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "e86c708e-ac64-4e14-87e9-a0c124a0fa4e",
+      "ts": "2026-02-04T15:00:50Z",
+      "actor_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "actor_user_code": "7lPBEiA",
+      "actor_role": "creator",
+      "target_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "target_user_code": "7lPBEiA",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "0b8c29cd-4b81-4a08-9730-24d254b3e7d4",
+      "ts": "2026-02-04T12:12:22Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "fe08bd60-3710-487e-8ff8-97eac46c55d5",
+      "ts": "2026-02-03T12:57:41Z",
+      "actor_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "actor_user_code": "7XaVoy7",
+      "actor_role": "admin",
+      "target_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "target_user_code": "7XaVoy7",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "77fdbdfd-5e6d-48e3-b91e-cc8b4e4f712a",
+      "ts": "2026-02-02T23:53:32Z",
+      "actor_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "actor_user_code": "7lPBEiA",
+      "actor_role": "creator",
+      "target_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "target_user_code": "7lPBEiA",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "6aca770f-77c2-4b00-8d5e-43f0534526b7",
+      "ts": "2026-02-02T05:22:58Z",
+      "actor_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "actor_user_code": "7lPBEiA",
+      "actor_role": "creator",
+      "target_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "target_user_code": "7lPBEiA",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "d60f3768-e680-4ae6-bd9d-056e3d84e517",
+      "ts": "2026-02-01T17:28:17Z",
+      "actor_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "actor_user_code": "JqhcS2m",
+      "actor_role": "creator",
+      "target_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "target_user_code": "JqhcS2m",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "af43e1a8-d009-45d6-aed4-5449138e4a03",
+      "ts": "2026-02-01T17:00:10Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "target_user_code": "JqhcS2m",
+      "action": "tier_changed",
+      "metadata": {
+        "after": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "pro"
+        },
+        "before": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "core"
+        },
+        "previous_tier": "core",
+        "tier": "pro"
+      }
+    },
+    {
+      "id": "14c1ffc1-145a-4e73-8fd4-3d526f0e8979",
+      "ts": "2026-02-01T16:48:33Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "target_user_code": "JqhcS2m",
+      "action": "tier_changed",
+      "metadata": {
+        "after": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "core"
+        },
+        "before": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "gold"
+        },
+        "previous_tier": "gold",
+        "tier": "core"
+      }
+    },
+    {
+      "id": "096dd7bb-0052-4c14-90ef-9e886dc1dc0e",
+      "ts": "2026-02-01T16:46:26Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "target_user_code": "JqhcS2m",
+      "action": "tier_changed",
+      "metadata": {
+        "after": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "gold"
+        },
+        "before": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "pro"
+        },
+        "previous_tier": "pro",
+        "tier": "gold"
+      }
+    },
+    {
+      "id": "00062e19-227c-45b5-a2dc-366482ac6697",
+      "ts": "2026-02-01T11:56:29Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "target_user_code": "7lPBEiA",
+      "action": "tier_changed",
+      "metadata": {
+        "after": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "gold"
+        },
+        "before": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "core"
+        },
+        "previous_tier": "core",
+        "tier": "gold"
+      }
+    },
+    {
+      "id": "d99bf2b7-60a9-44de-a991-f136bbe2164f",
+      "ts": "2026-02-01T11:55:19Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "tier_changed",
+      "metadata": {
+        "after": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "pro"
+        },
+        "before": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "gold"
+        },
+        "previous_tier": "gold",
+        "tier": "pro"
+      }
+    },
+    {
+      "id": "8f09eb5c-4fe6-46b9-97e2-eae40274827d",
+      "ts": "2026-02-01T11:40:51Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "tier_changed",
+      "metadata": {
+        "after": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "gold"
+        },
+        "before": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "pro"
+        },
+        "previous_tier": "pro",
+        "tier": "gold"
+      }
+    },
+    {
+      "id": "a51d2116-6e2e-45d7-9077-8524f8c55c3e",
+      "ts": "2026-02-01T10:18:07Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "target_user_code": "JqhcS2m",
+      "action": "tier_changed",
+      "metadata": {
+        "after": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "pro"
+        },
+        "before": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "core"
+        },
+        "previous_tier": "core",
+        "tier": "pro"
+      }
+    },
+    {
+      "id": "b72263eb-a245-438d-a7c7-5b870b784d87",
+      "ts": "2026-02-01T10:11:34Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "target_user_code": "JqhcS2m",
+      "action": "tier_changed",
+      "metadata": {
+        "after": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "core"
+        },
+        "before": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "pro"
+        },
+        "previous_tier": "pro",
+        "tier": "core"
+      }
+    },
+    {
+      "id": "9d23e7df-b662-4b89-b5ac-03227837ff49",
+      "ts": "2026-02-01T10:10:10Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "target_user_code": "JqhcS2m",
+      "action": "tier_changed",
+      "metadata": {
+        "after": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "pro"
+        },
+        "before": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "gold"
+        },
+        "previous_tier": "gold",
+        "tier": "pro"
+      }
+    },
+    {
+      "id": "8824a07c-f30e-4381-95a1-98720c6c25ac",
+      "ts": "2026-02-01T09:47:22Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "target_user_code": "JqhcS2m",
+      "action": "tier_changed",
+      "metadata": {
+        "after": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "gold"
+        },
+        "before": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "pro"
+        },
+        "previous_tier": "pro",
+        "tier": "gold"
+      }
+    },
+    {
+      "id": "edf299c8-de8f-44c9-abb3-8b04ece76ae8",
+      "ts": "2026-02-01T09:26:08Z",
+      "actor_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "actor_user_code": "JqhcS2m",
+      "actor_role": "creator",
+      "target_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "target_user_code": "JqhcS2m",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "2c3795a5-4061-47df-b9de-eaa51429f893",
+      "ts": "2026-02-01T07:56:46Z",
+      "actor_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "actor_user_code": "JqhcS2m",
+      "actor_role": "creator",
+      "target_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "target_user_code": "JqhcS2m",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "6be929e5-40d6-4e01-a62d-553aa46e37cc",
+      "ts": "2026-02-01T07:56:21Z",
+      "actor_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "actor_user_code": "JqhcS2m",
+      "actor_role": "creator",
+      "target_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "target_user_code": "JqhcS2m",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "df54eaed-599e-4a31-8070-bf8042d13310",
+      "ts": "2026-02-01T06:42:54Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "ab942946-8cff-4ded-8f80-07b073559c63",
+      "ts": "2026-02-01T06:34:02Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "fd6060d4-b006-44ee-bc62-3cc1700557b0",
+      "ts": "2026-02-01T05:59:51Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "target_user_code": "JqhcS2m",
+      "action": "tier_changed",
+      "metadata": {
+        "after": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "pro"
+        },
+        "before": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "core"
+        },
+        "previous_tier": "core",
+        "tier": "pro"
+      }
+    },
+    {
+      "id": "5fb35bba-bc42-4817-b290-bb9e4e98d6ec",
+      "ts": "2026-02-01T05:57:39Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "tier_changed",
+      "metadata": {
+        "after": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "pro"
+        },
+        "before": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "core"
+        },
+        "previous_tier": "core",
+        "tier": "pro"
+      }
+    },
+    {
+      "id": "61019bc7-7a26-43e9-b588-5e2bc97228d5",
+      "ts": "2026-02-01T05:57:12Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "target_user_code": "7XaVoy7",
+      "action": "tier_changed",
+      "metadata": {
+        "after": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "pro"
+        },
+        "before": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "core"
+        },
+        "previous_tier": "core",
+        "tier": "pro"
+      }
+    },
+    {
+      "id": "2f6a357d-37c7-43e7-9483-b1b3e0ffbe04",
+      "ts": "2026-02-01T05:13:56Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "1ac5e162-cef2-4aba-8f10-ab8de6d977d1",
+      "ts": "2026-01-31T21:53:40Z",
+      "actor_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "actor_user_code": "JqhcS2m",
+      "actor_role": "creator",
+      "target_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "target_user_code": "JqhcS2m",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "5ed94411-4982-4e1d-ac1d-166674891c26",
+      "ts": "2026-01-31T20:31:07Z",
+      "actor_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "actor_user_code": "7lPBEiA",
+      "actor_role": "creator",
+      "target_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "target_user_code": "7lPBEiA",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "3aafad63-ae31-438e-9dea-f09c1cbd5801",
+      "ts": "2026-01-31T20:08:39Z",
+      "actor_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "actor_user_code": "7lPBEiA",
+      "actor_role": "creator",
+      "target_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "target_user_code": "7lPBEiA",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
     {
       "id": "7b3d9b3c-c06c-4696-9217-04c0a4cd4e37",
       "ts": "2026-01-31T15:29:51Z",
