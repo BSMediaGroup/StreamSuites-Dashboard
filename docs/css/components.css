@@ -915,6 +915,73 @@
   overflow-x: auto;
 }
 
+.ss-bots-platforms {
+  margin: 14px 0 16px;
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-panel-alt);
+}
+
+.ss-bots-platforms-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.ss-bots-platforms-head h3 {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ss-bots-platforms-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.ss-bots-platform-chip {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ss-bots-platform-name {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ss-bots-platform-chip.is-active {
+  border-color: rgba(0, 200, 120, 0.45);
+  background: rgba(0, 200, 120, 0.08);
+}
+
+.ss-bots-platform-chip.is-paused {
+  border-color: rgba(244, 180, 0, 0.45);
+  background: rgba(244, 180, 0, 0.08);
+}
+
+.ss-bots-platform-chip.is-unavailable {
+  border-color: rgba(148, 163, 184, 0.45);
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.ss-bot-platform-note {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.25;
+}
+
 .ss-bot-status {
   display: inline-flex;
   align-items: center;
@@ -981,6 +1048,11 @@
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.ss-bot-actions-row-note {
+  font-size: 11px;
+  color: #ffd89c;
 }
 
 .ss-bot-row-error {

@@ -8,11 +8,20 @@
   const POLL_INTERVAL_MS = 5000;
   const PRIMARY_RUNTIME_PATH = "/runtime/exports/bots/status.json";
   const MANUAL_DEPLOY_ENDPOINT = "/api/admin/runtime/manual-deploy";
+  const PLATFORM_DISPLAY = {
+    twitch: "Twitch",
+    kick: "Kick",
+    youtube: "YouTube",
+    rumble: "Rumble",
+    pilled: "Pilled"
+  };
 
   const state = {
     pollHandle: null,
     tickHandle: null,
     lastPayload: null,
+    lastRuntimeSnapshot: null,
+    platformSummary: Object.create(null),
     lastReceivedAt: null,
     sourceUrl: null,
     rowUi: Object.create(null),
@@ -25,6 +34,8 @@
     generatedAt: null,
     source: null,
     error: null,
+    platformsStatus: null,
+    platformsGrid: null,
     body: null,
     empty: null
   };
@@ -53,6 +64,35 @@
     } catch (err) {
       return String(value || "");
     }
+  }
+
+  function normalizePlatformKey(value) {
+    return String(value || "").trim().toLowerCase();
+  }
+
+  function platformDisplayName(platform) {
+    const key = normalizePlatformKey(platform);
+    return PLATFORM_DISPLAY[key] || key || "-";
+  }
+
+  function listPlatformsFromConfig(config) {
+    if (!config || typeof config !== "object") return [];
+    const platforms = config.platforms;
+    if (!platforms || typeof platforms !== "object") return [];
+    return Object.keys(platforms)
+      .map((platform) => normalizePlatformKey(platform))
+      .filter(Boolean);
+  }
+
+  function sortPlatformKeys(keys) {
+    return Array.from(new Set(keys.filter(Boolean))).sort((a, b) =>
+      a.localeCompare(b)
+    );
+  }
+
+  function parseBoolean(value) {
+    if (value === true || value === false) return value;
+    return null;
   }
 
   function formatTimestamp(value) {
@@ -124,6 +164,17 @@
   }
 
   function normalizePayload(payload) {
+    const supportedPlatformsRaw =
+      payload?.supported_platforms ||
+      payload?.supportedPlatforms ||
+      payload?.platforms_supported ||
+      payload?.platformsSupported ||
+      null;
+    const supportedPlatforms = Array.isArray(supportedPlatformsRaw)
+      ? supportedPlatformsRaw
+      : supportedPlatformsRaw && typeof supportedPlatformsRaw === "object"
+        ? Object.keys(supportedPlatformsRaw)
+        : [];
     const bots = Array.isArray(payload?.bots) ? payload.bots.slice() : [];
     bots.sort((a, b) => {
       const creatorCompare = String(a?.creator_id || "").localeCompare(String(b?.creator_id || ""));
@@ -135,14 +186,21 @@
       schemaVersion: payload?.schema_version || null,
       generatedAt: payload?.generated_at || null,
       count: typeof payload?.count === "number" ? payload.count : bots.length,
+      supportedPlatforms: sortPlatformKeys(
+        supportedPlatforms.map((platform) => normalizePlatformKey(platform))
+      ),
       bots
     };
   }
 
   function statusTone(status) {
     const normalized = String(status || "").trim().toLowerCase();
-    if (normalized === "online") return "ss-bot-status-online";
-    if (normalized === "offline") return "ss-bot-status-offline";
+    if (normalized === "online" || normalized === "running" || normalized === "active") {
+      return "ss-bot-status-online";
+    }
+    if (normalized === "offline" || normalized === "disabled" || normalized === "unavailable") {
+      return "ss-bot-status-offline";
+    }
     if (normalized === "error") return "ss-bot-status-error";
     if (normalized === "paused") return "ss-bot-status-paused";
     return "";
@@ -195,15 +253,176 @@
     return '<span class="ss-badge">Manual OFF</span>';
   }
 
-  function renderActionCell(bot) {
+  function normalizeRuntimePlatforms(snapshot) {
+    const normalized = Object.create(null);
+    const source = snapshot?.platforms;
+    const entries = Array.isArray(source)
+      ? source
+      : source && typeof source === "object"
+        ? Object.keys(source).map((platform) => ({
+          platform,
+          ...(source[platform] || {})
+        }))
+        : [];
+
+    entries.forEach((entry) => {
+      const platform = normalizePlatformKey(entry?.platform || entry?.id || entry?.name);
+      if (!platform) return;
+
+      const status = String(
+        entry?.status || entry?.state || entry?.connection_status || "unknown"
+      )
+        .trim()
+        .toLowerCase();
+      const pausedReason =
+        entry?.pausedReason ||
+        entry?.paused_reason ||
+        entry?.pause_reason ||
+        null;
+      const paused = entry?.paused === true || status === "paused" || Boolean(pausedReason);
+      const enabled = parseBoolean(entry?.enabled);
+      const active =
+        paused !== true &&
+        (status === "online" ||
+          status === "running" ||
+          status === "active" ||
+          status === "connecting");
+      const availability = paused
+        ? "paused"
+        : active || enabled === true
+          ? "active"
+          : "unavailable";
+      const label =
+        String(entry?.name || "").trim() || platformDisplayName(platform);
+
+      normalized[platform] = {
+        platform,
+        label,
+        status,
+        availability,
+        paused,
+        pausedReason:
+          typeof pausedReason === "string" && pausedReason.trim()
+            ? pausedReason.trim()
+            : "",
+        error:
+          typeof entry?.error === "string" && entry.error.trim()
+            ? entry.error.trim()
+            : typeof entry?.last_error === "string" && entry.last_error.trim()
+              ? entry.last_error.trim()
+              : ""
+      };
+    });
+
+    return normalized;
+  }
+
+  function buildPlatformSummary(normalizedPayload, runtimeSnapshot, platformConfig) {
+    const runtimePlatforms = normalizeRuntimePlatforms(runtimeSnapshot);
+    const payloadSupported = Array.isArray(normalizedPayload?.supportedPlatforms)
+      ? normalizedPayload.supportedPlatforms
+      : [];
+    const keys = new Set(
+      payloadSupported.map((platform) => normalizePlatformKey(platform)).filter(Boolean)
+    );
+    const lockToRuntimeSupported = keys.size > 0;
+    if (!lockToRuntimeSupported) {
+      listPlatformsFromConfig(platformConfig).forEach((platform) => keys.add(platform));
+      Object.keys(runtimePlatforms).forEach((platform) => keys.add(platform));
+      (normalizedPayload?.bots || []).forEach((bot) => {
+        const platform = normalizePlatformKey(bot?.platform);
+        if (platform) keys.add(platform);
+      });
+    }
+
+    const summary = Object.create(null);
+    sortPlatformKeys(Array.from(keys)).forEach((platform) => {
+      const runtime = runtimePlatforms[platform] || null;
+      const availability = runtime?.availability || "unavailable";
+      const reason =
+        runtime?.paused
+          ? runtime.pausedReason || "Paused by runtime control."
+          : availability === "unavailable"
+            ? "No active runtime availability reported."
+            : "Runtime available.";
+
+      summary[platform] = {
+        platform,
+        label: runtime?.label || platformDisplayName(platform),
+        availability,
+        status: runtime?.status || "unknown",
+        paused: runtime?.paused === true,
+        pausedReason: runtime?.pausedReason || "",
+        reason
+      };
+    });
+
+    return summary;
+  }
+
+  function renderPlatformSummary(platformSummary) {
+    if (!el.platformsGrid) return;
+
+    const entries = sortPlatformKeys(Object.keys(platformSummary || {})).map((platform) => (
+      platformSummary[platform] || {
+        platform,
+        label: platformDisplayName(platform),
+        availability: "unavailable",
+        status: "unknown",
+        paused: false,
+        pausedReason: "",
+        reason: "No runtime availability reported."
+      }
+    ));
+
+    el.platformsGrid.innerHTML = entries
+      .map((entry) => {
+        const availability = String(entry.availability || "unavailable").toLowerCase();
+        const stateClass =
+          availability === "paused"
+            ? "is-paused"
+            : availability === "active"
+              ? "is-active"
+              : "is-unavailable";
+        const badgeLabel =
+          availability === "paused"
+            ? "Paused"
+            : availability === "active"
+              ? "Active"
+              : "Unavailable";
+        return `
+          <article class="ss-bots-platform-chip ${stateClass}">
+            <div class="ss-bots-platform-name">${escapeHtml(entry.label)}</div>
+            <div>${renderStatus(badgeLabel)}</div>
+            <div class="ss-bot-platform-note">${escapeHtml(entry.reason)}</div>
+          </article>
+        `;
+      })
+      .join("");
+
+    if (el.platformsStatus) {
+      const pausedCount = entries.filter((entry) => entry.availability === "paused").length;
+      const activeCount = entries.filter((entry) => entry.availability === "active").length;
+      const unavailableCount = entries.filter(
+        (entry) => entry.availability === "unavailable"
+      ).length;
+      el.platformsStatus.textContent = `Active ${activeCount} | Paused ${pausedCount} | Unavailable ${unavailableCount}`;
+    }
+  }
+
+  function renderActionCell(bot, platformState) {
     const creatorId = String(bot?.creator_id || "");
     const platform = String(bot?.platform || "");
     const ui = getRowUi(creatorId, platform);
-    const attachDisabled = ui.pending || !canAttach(bot);
-    const detachDisabled = ui.pending || !canDetach(bot);
+    const runtimePaused = platformState?.paused === true;
+    const attachDisabled = ui.pending || runtimePaused || !canAttach(bot);
+    const detachDisabled = ui.pending || runtimePaused || !canDetach(bot);
     const attachLabel = ui.pending && ui.pendingAction === "attach" ? "Attaching..." : "Attach";
     const detachLabel = ui.pending && ui.pendingAction === "detach" ? "Detaching..." : "Detach";
     const rowError = String(ui.error || "");
+    const pausedMessage = runtimePaused
+      ? platformState?.pausedReason || "Paused by runtime control."
+      : "";
 
     return `
       <div class="ss-bot-actions">
@@ -223,6 +442,9 @@
             ${detachDisabled ? "disabled" : ""}
           >${detachLabel}</button>
         </div>
+        ${runtimePaused
+          ? `<div class="ss-bot-actions-row-note">${escapeHtml(`Paused: ${pausedMessage}`)}</div>`
+          : ""}
         <div class="ss-bot-row-error ${rowError ? "has-error" : ""}">${escapeHtml(
           rowError || "-"
         )}</div>
@@ -247,10 +469,13 @@
     return Math.max(0, Math.floor(base + elapsed));
   }
 
-  function renderRows(normalized, receivedAt) {
+  function renderRows(normalized, receivedAt, platformSummary) {
     const rows = normalized.bots.map((bot) => {
       const status = String(bot?.status || "").trim().toLowerCase();
-      const isPaused = status === "paused";
+      const platformKey = normalizePlatformKey(bot?.platform);
+      const platformState = platformSummary?.[platformKey] || null;
+      const isPaused = status === "paused" || platformState?.paused === true;
+      const effectiveStatus = isPaused ? "paused" : bot?.status;
       const lastError = bot?.last_error;
       const hasError = typeof lastError === "string" && lastError.trim() !== "";
       const uptimeSeconds = getDisplayUptimeSeconds(bot, normalized.generatedAt, receivedAt);
@@ -261,14 +486,14 @@
       return `
         <tr class="${rowClass}">
           <td>${escapeHtml(bot?.creator_id)}</td>
-          <td>${escapeHtml(bot?.platform)}</td>
-          <td>${renderStatus(bot?.status)}</td>
+          <td>${escapeHtml(platformDisplayName(bot?.platform))}</td>
+          <td>${renderStatus(effectiveStatus)}</td>
           <td>${escapeHtml(bot?.active_target)}</td>
           <td>${renderManualOverride(bot?.manual_override === true)}</td>
           <td>${escapeHtml(formatTimestamp(bot?.connected_at))}</td>
           <td>${escapeHtml(uptimeLabel)}</td>
           <td class="${errorClass}">${escapeHtml(hasError ? lastError : "-")}</td>
-          <td>${renderActionCell(bot)}</td>
+          <td>${renderActionCell(bot, platformState)}</td>
         </tr>
       `;
     });
@@ -327,9 +552,40 @@
     throw lastError || new Error("Bots status export not found.");
   }
 
-  function render(normalized) {
+  async function fetchRuntimeSnapshot() {
+    try {
+      if (window.ConfigState?.loadRuntimeSnapshot) {
+        return (await window.ConfigState.loadRuntimeSnapshot({ forceReload: true })) || null;
+      }
+      if (window.Telemetry?.loadSnapshot) {
+        return (await window.Telemetry.loadSnapshot(true)) || null;
+      }
+    } catch (err) {
+      return null;
+    }
+    return null;
+  }
+
+  async function fetchPlatformConfig() {
+    try {
+      if (window.ConfigState?.loadPlatforms) {
+        return (await window.ConfigState.loadPlatforms()) || null;
+      }
+    } catch (err) {
+      return null;
+    }
+    return null;
+  }
+
+  function render(normalized, runtimeSnapshot, platformConfig) {
     const now = Date.now();
     state.lastPayload = normalized;
+    state.lastRuntimeSnapshot = runtimeSnapshot || null;
+    state.platformSummary = buildPlatformSummary(
+      normalized,
+      runtimeSnapshot || null,
+      platformConfig || null
+    );
     state.lastReceivedAt = now;
 
     if (el.source) {
@@ -338,10 +594,12 @@
 
     updateMeta(normalized, now);
 
+    renderPlatformSummary(state.platformSummary);
+
     const hasRows = normalized && Array.isArray(normalized.bots) && normalized.bots.length > 0;
 
     if (el.body) {
-      el.body.innerHTML = hasRows ? renderRows(normalized, now) : "";
+      el.body.innerHTML = hasRows ? renderRows(normalized, now, state.platformSummary) : "";
     }
     if (el.empty) {
       el.empty.classList.toggle("hidden", hasRows);
@@ -350,9 +608,13 @@
 
   async function refresh() {
     try {
-      const normalized = await fetchPayload();
+      const [normalized, runtimeSnapshot, platformConfig] = await Promise.all([
+        fetchPayload(),
+        fetchRuntimeSnapshot(),
+        fetchPlatformConfig()
+      ]);
       setError("");
-      render(normalized);
+      render(normalized, runtimeSnapshot, platformConfig);
     } catch (err) {
       if (el.status) {
         el.status.textContent = "Runtime export unavailable.";
@@ -366,6 +628,7 @@
       if (el.body) {
         el.body.innerHTML = "";
       }
+      renderPlatformSummary(buildPlatformSummary({ bots: [] }, null, null));
       if (el.empty) {
         el.empty.classList.remove("hidden");
       }
@@ -377,7 +640,11 @@
   function tick() {
     if (!state.lastPayload || !state.lastReceivedAt) return;
     if (el.body) {
-      el.body.innerHTML = renderRows(state.lastPayload, Date.now());
+      el.body.innerHTML = renderRows(
+        state.lastPayload,
+        Date.now(),
+        state.platformSummary
+      );
     }
     updateMeta(state.lastPayload, state.lastReceivedAt);
   }
@@ -402,6 +669,14 @@
 
     const ui = getRowUi(creatorId, platform);
     if (ui.pending) return;
+    const platformState = state.platformSummary?.[normalizePlatformKey(platform)] || null;
+    if (platformState?.paused) {
+      ui.error = platformState.pausedReason || "Platform is paused by runtime control.";
+      if (el.body) {
+        el.body.innerHTML = renderRows(state.lastPayload, Date.now(), state.platformSummary);
+      }
+      return;
+    }
 
     let targetIdentifier = null;
     if (action === "attach") {
@@ -416,7 +691,7 @@
       if (!trimmed) {
         ui.error = "Target identifier is required for manual attach.";
         if (el.body) {
-          el.body.innerHTML = renderRows(state.lastPayload, Date.now());
+          el.body.innerHTML = renderRows(state.lastPayload, Date.now(), state.platformSummary);
         }
         return;
       }
@@ -430,7 +705,7 @@
     ui.pendingAction = action;
     ui.error = "";
     if (el.body) {
-      el.body.innerHTML = renderRows(state.lastPayload, Date.now());
+      el.body.innerHTML = renderRows(state.lastPayload, Date.now(), state.platformSummary);
     }
 
     try {
@@ -469,7 +744,7 @@
       ui.pending = false;
       ui.pendingAction = "";
       if (state.lastPayload && el.body) {
-        el.body.innerHTML = renderRows(state.lastPayload, Date.now());
+        el.body.innerHTML = renderRows(state.lastPayload, Date.now(), state.platformSummary);
       }
     }
   }
@@ -512,6 +787,8 @@
     el.generatedAt = $("bots-generated-at");
     el.source = $("bots-source");
     el.error = $("bots-error");
+    el.platformsStatus = $("bots-platforms-status");
+    el.platformsGrid = $("bots-platforms-grid");
     el.body = $("bots-table-body");
     el.empty = $("bots-empty");
 
@@ -528,6 +805,8 @@
     }
     state.onBodyClick = null;
     state.lastPayload = null;
+    state.lastRuntimeSnapshot = null;
+    state.platformSummary = Object.create(null);
     state.lastReceivedAt = null;
     state.sourceUrl = null;
     state.rowUi = Object.create(null);
