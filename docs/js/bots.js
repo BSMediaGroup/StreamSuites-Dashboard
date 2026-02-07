@@ -6,7 +6,7 @@
   "use strict";
 
   const POLL_INTERVAL_MS = 5000;
-  const PRIMARY_RUNTIME_PATH = "/runtime/exports/bots/status.json";
+  const BOTS_STATUS_ENDPOINT = "/api/admin/bots/status";
   const MANUAL_DEPLOY_ENDPOINT = "/api/admin/runtime/manual-deploy";
   const PLATFORM_DISPLAY = {
     twitch: "Twitch",
@@ -128,16 +128,6 @@
     return `${secs}s`;
   }
 
-  function resolveBasePath() {
-    return (
-      (window.Versioning &&
-        typeof window.Versioning.resolveBasePath === "function" &&
-        window.Versioning.resolveBasePath()) ||
-      window.ADMIN_BASE_PATH ||
-      ""
-    );
-  }
-
   function resolveApiBase() {
     const base =
       window.StreamSuitesAdminAuth?.config?.baseUrl ||
@@ -153,14 +143,8 @@
     return `${base}${normalized}`;
   }
 
-  function buildCandidateUrls() {
-    const urls = [PRIMARY_RUNTIME_PATH];
-    const basePath = resolveBasePath().replace(/\/$/, "");
-    if (basePath) {
-      urls.push(`${basePath}/runtime/exports/bots/status.json`);
-    }
-    urls.push("runtime/exports/bots/status.json");
-    return Array.from(new Set(urls));
+  function isRuntimeAvailable() {
+    return window.__RUNTIME_AVAILABLE__ === true;
   }
 
   function normalizePayload(payload) {
@@ -527,29 +511,17 @@
   }
 
   async function fetchPayload() {
-    const candidates = buildCandidateUrls();
-    let lastError = null;
-
-    for (const candidate of candidates) {
-      try {
-        const res = await fetch(candidate, {
-          cache: "no-store",
-          credentials: "include"
-        });
-        if (!res.ok) {
-          lastError = new Error(`HTTP ${res.status}`);
-          continue;
-        }
-
-        const payload = await res.json();
-        state.sourceUrl = candidate;
-        return normalizePayload(payload);
-      } catch (err) {
-        lastError = err;
-      }
+    const endpoint = buildApiUrl(BOTS_STATUS_ENDPOINT);
+    const res = await fetch(endpoint, {
+      cache: "no-store",
+      credentials: "include"
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
     }
-
-    throw lastError || new Error("Bots status export not found.");
+    const payload = await res.json();
+    state.sourceUrl = endpoint;
+    return normalizePayload(payload);
   }
 
   async function fetchRuntimeSnapshot() {
@@ -589,7 +561,7 @@
     state.lastReceivedAt = now;
 
     if (el.source) {
-      el.source.textContent = `Source: ${state.sourceUrl || PRIMARY_RUNTIME_PATH}`;
+      el.source.textContent = `Source: ${state.sourceUrl || buildApiUrl(BOTS_STATUS_ENDPOINT)}`;
     }
 
     updateMeta(normalized, now);
@@ -607,6 +579,11 @@
   }
 
   async function refresh() {
+    if (!isRuntimeAvailable()) {
+      renderRuntimeOffline();
+      return;
+    }
+
     try {
       const [normalized, runtimeSnapshot, platformConfig] = await Promise.all([
         fetchPayload(),
@@ -617,7 +594,7 @@
       render(normalized, runtimeSnapshot, platformConfig);
     } catch (err) {
       if (el.status) {
-        el.status.textContent = "Runtime export unavailable.";
+        el.status.textContent = "Unable to load runtime bot status.";
       }
       if (el.count) {
         el.count.textContent = "-- rows";
@@ -633,8 +610,32 @@
         el.empty.classList.remove("hidden");
       }
       const detail = err?.message ? ` (${err.message})` : "";
-      setError(`Unable to load bots status from runtime export${detail}`);
+      setError(`Unable to load bot status from runtime API${detail}`);
     }
+  }
+
+  function renderRuntimeOffline() {
+    stopPolling();
+    if (el.status) {
+      el.status.textContent = "Runtime offline — bot status unavailable";
+    }
+    if (el.count) {
+      el.count.textContent = "-- rows";
+    }
+    if (el.generatedAt) {
+      el.generatedAt.textContent = "Generated: --";
+    }
+    if (el.source) {
+      el.source.textContent = `Source: ${buildApiUrl(BOTS_STATUS_ENDPOINT)}`;
+    }
+    if (el.body) {
+      el.body.innerHTML = "";
+    }
+    renderPlatformSummary(buildPlatformSummary({ bots: [] }, null, null));
+    if (el.empty) {
+      el.empty.classList.remove("hidden");
+    }
+    setError("");
   }
 
   function tick() {
@@ -765,6 +766,10 @@
 
   function startPolling() {
     stopPolling();
+    if (!isRuntimeAvailable()) {
+      renderRuntimeOffline();
+      return;
+    }
     refresh();
     state.pollHandle = setInterval(refresh, POLL_INTERVAL_MS);
     state.tickHandle = setInterval(tick, 1000);
