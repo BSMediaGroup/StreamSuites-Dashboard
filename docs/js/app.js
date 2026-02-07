@@ -1231,6 +1231,14 @@ registerView("data-signals", {
     window.DataSignalsView?.destroy?.();
   }
 });
+registerView("bots", {
+  onLoad: () => {
+    window.BotsView?.init?.();
+  },
+  onUnload: () => {
+    window.BotsView?.destroy?.();
+  }
+});
 registerView("rumble", { templatePath: "platforms/rumble" });
 registerView("youtube", {
   templatePath: "platforms/youtube",

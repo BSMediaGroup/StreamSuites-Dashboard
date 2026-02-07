@@ -501,6 +501,7 @@ StreamSuites-Dashboard/
 │   │   ├── app.js
 │   │   ├── audit.js
 │   │   ├── auth.js
+│   │   ├── bots.js
 │   │   ├── changelog-merge.js
 │   │   ├── charts.js
 │   │   ├── chatReplay.js
@@ -634,6 +635,7 @@ StreamSuites-Dashboard/
 │   │   ├── accounts.html
 │   │   ├── api-usage.html
 │   │   ├── audit.html
+│   │   ├── bots.html
 │   │   ├── chat-replay.html
 │   │   ├── chat_overlay_obs.html
 │   │   ├── chat_replay_window.html

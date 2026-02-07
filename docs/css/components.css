@@ -910,6 +910,66 @@
   border-color: rgba(0, 200, 120, 0.45);
 }
 
+.ss-bots-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.ss-bot-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.ss-bot-status-online {
+  background: rgba(0, 200, 120, 0.16);
+  color: #b6f6c8;
+  border-color: rgba(0, 200, 120, 0.45);
+}
+
+.ss-bot-status-offline {
+  background: rgba(148, 163, 184, 0.18);
+  color: #d8e0ea;
+  border-color: rgba(148, 163, 184, 0.45);
+}
+
+.ss-bot-status-error {
+  background: rgba(255, 78, 78, 0.16);
+  color: #ffc5c5;
+  border-color: rgba(255, 78, 78, 0.55);
+}
+
+.ss-bot-status-paused {
+  background: rgba(244, 180, 0, 0.16);
+  color: #ffd89c;
+  border-color: rgba(244, 180, 0, 0.45);
+}
+
+.ss-bots-row-paused td {
+  background: rgba(244, 180, 0, 0.04);
+}
+
+.ss-bots-last-error {
+  color: var(--text-secondary);
+  max-width: 360px;
+  word-break: break-word;
+}
+
+.ss-bots-last-error.has-error {
+  color: #ffb3b0;
+  font-weight: 600;
+}
+
 .ss-pending-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

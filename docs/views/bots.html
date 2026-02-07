@@ -1,0 +1,64 @@
+<!-- ========================================================= -->
+<!-- StreamSuites - Bots (Debug) -->
+<!-- Runtime chatbot status visibility (read-only) -->
+<!-- ========================================================= -->
+
+<header class="ss-header">
+  <div class="ss-header-left">
+    <h1 class="ss-title">StreamSuites</h1>
+    <span class="ss-subtitle">Debug / Bots</span>
+  </div>
+  <div class="ss-header-right">
+    <span class="ss-chip">Read-only</span>
+    <span class="ss-chip">Runtime export</span>
+  </div>
+</header>
+
+<main class="ss-main">
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Bots</h2>
+        <p class="muted">
+          Live creator x platform bot runtime states from <code>/runtime/exports/bots/status.json</code>.
+        </p>
+      </div>
+      <div class="ss-panel-header-actions">
+        <span class="muted" id="bots-source">Source: --</span>
+      </div>
+    </header>
+    <div class="ss-panel-body">
+      <div class="table-toolbar">
+        <div class="muted" id="bots-status">Loading runtime status...</div>
+        <div class="muted" id="bots-count">-- rows</div>
+      </div>
+      <div class="table-toolbar">
+        <div class="muted" id="bots-generated-at">Generated: --</div>
+      </div>
+
+      <div id="bots-error" class="ss-alert ss-alert-danger hidden"></div>
+
+      <div class="ss-bots-table-wrap">
+        <table class="ss-table ss-table-compact" id="bots-table">
+          <thead>
+            <tr>
+              <th>Creator ID</th>
+              <th>Platform</th>
+              <th>Status</th>
+              <th>Active target</th>
+              <th>Manual override</th>
+              <th>Connected at</th>
+              <th>Uptime</th>
+              <th>Last error</th>
+            </tr>
+          </thead>
+          <tbody id="bots-table-body"></tbody>
+        </table>
+      </div>
+
+      <div class="muted hidden" id="bots-empty">
+        No bot instances exported yet.
+      </div>
+    </div>
+  </section>
+</main>
