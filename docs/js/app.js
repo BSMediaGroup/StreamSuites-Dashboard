@@ -87,6 +87,8 @@ if (typeof window.__RUNTIME_AVAILABLE__ === "undefined") {
   window.__RUNTIME_AVAILABLE__ = false;
 }
 
+const RUNTIME_PROBE_ENDPOINT = "/api/admin/bots/status";
+
 if (!window.StreamSuitesAppMode) {
   window.StreamSuitesAppMode = {
     get() {
@@ -151,6 +153,43 @@ function markRuntimeUnavailable() {
 
 function markRuntimeAvailable() {
   window.__RUNTIME_AVAILABLE__ = true;
+}
+
+function resolveAdminApiBase() {
+  const base =
+    window.StreamSuitesAdminAuth?.config?.baseUrl ||
+    document.querySelector('meta[name="streamsuites-auth-base"]')?.getAttribute("content") ||
+    "";
+  return base ? String(base).replace(/\/+$/, "") : "";
+}
+
+function buildAdminApiUrl(path) {
+  const base = resolveAdminApiBase();
+  if (!base) return path;
+  const normalized = path.startsWith("/") ? path : `/${path}`;
+  return `${base}${normalized}`;
+}
+
+async function probeRuntimeAvailability() {
+  const endpoint = buildAdminApiUrl(RUNTIME_PROBE_ENDPOINT);
+  try {
+    const response = await fetch(endpoint, {
+      method: "GET",
+      cache: "no-store",
+      credentials: "include",
+      headers: {
+        Accept: "application/json"
+      }
+    });
+    if (response.ok) {
+      markRuntimeAvailable();
+      return true;
+    }
+  } catch (err) {
+    // Probe failure keeps runtime gated offline.
+  }
+  markRuntimeUnavailable();
+  return false;
 }
 
 const App = {
@@ -1102,6 +1141,8 @@ async function initApp() {
     } catch (err) {
       console.warn("[Dashboard] Creator context load skipped", err);
     }
+
+    await probeRuntimeAvailability();
 
     await detectConnectedMode();
 

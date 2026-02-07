@@ -166,6 +166,29 @@
     return window.__RUNTIME_AVAILABLE__ === true;
   }
 
+  function setRuntimeAvailable(value) {
+    window.__RUNTIME_AVAILABLE__ = value === true;
+  }
+
+  async function probeRuntimeAvailability() {
+    try {
+      const response = await fetch(buildApiUrl(BOTS_STATUS_ENDPOINT), {
+        method: "GET",
+        cache: "no-store",
+        credentials: "include",
+        headers: {
+          Accept: "application/json"
+        }
+      });
+      const available = response.ok;
+      setRuntimeAvailable(available);
+      return available;
+    } catch (err) {
+      setRuntimeAvailable(false);
+      return false;
+    }
+  }
+
   function normalizePayload(payload) {
     const supportedPlatformsRaw =
       payload?.supported_platforms ||
@@ -772,7 +795,7 @@
   }
 
   async function refresh() {
-    if (!isRuntimeAvailable()) {
+    if (!(await probeRuntimeAvailability())) {
       renderRuntimeOffline();
       return;
     }
@@ -786,6 +809,7 @@
       setError("");
       render(normalized, runtimeSnapshot, platformConfig);
     } catch (err) {
+      setRuntimeAvailable(false);
       state.lastPayload = { bots: [], supportedPlatforms: [], generatedAt: null };
       state.lastRuntimeSnapshot = null;
       state.platformSummary = buildPlatformSummary({ bots: [] }, null, null);
@@ -986,12 +1010,16 @@
   }
 
   function startPolling() {
+    void startPollingAsync();
+  }
+
+  async function startPollingAsync() {
     stopPolling();
-    if (!isRuntimeAvailable()) {
+    if (!(await probeRuntimeAvailability())) {
       renderRuntimeOffline();
       return;
     }
-    refresh();
+    await refresh();
     state.pollHandle = setInterval(refresh, POLL_INTERVAL_MS);
     state.tickHandle = setInterval(tick, 1000);
   }
