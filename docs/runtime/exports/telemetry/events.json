@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-01-31T18:59:12.771077Z",
+  "generated_at": "2026-02-07T04:37:33.218659Z",
   "events": [
     {
       "timestamp": "2026-01-22T05:45:05Z",
@@ -234,7 +234,62 @@
       "result": "sent"
     },
     {
-      "timestamp": "2026-01-31T06:22:33.508679Z",
+      "timestamp": "2026-02-01T06:42:16Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:JqhcS2m result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:JqhcS2m",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-02-01T07:55:47Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:4TiOlvS result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-02-01T09:24:28Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:4TiOlvS result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-02-04T04:37:14Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:4TiOlvS result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-02-04T15:14:14Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:7lPBEiA result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:7lPBEiA",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-02-04T15:55:35.359099Z",
       "source": "system",
       "severity": "info",
       "message": "Runtime boot sequence started"
