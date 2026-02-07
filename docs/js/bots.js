@@ -398,14 +398,19 @@
     const creatorId = String(bot?.creator_id || "");
     const platform = String(bot?.platform || "");
     const ui = getRowUi(creatorId, platform);
+    const runtimeOffline = !isRuntimeAvailable();
     const runtimePaused = platformState?.paused === true;
-    const attachDisabled = ui.pending || runtimePaused || !canAttach(bot);
-    const detachDisabled = ui.pending || runtimePaused || !canDetach(bot);
-    const attachLabel = ui.pending && ui.pendingAction === "attach" ? "Attaching..." : "Attach";
+    const attachDisabled = ui.pending || runtimeOffline || runtimePaused || !canAttach(bot);
+    const detachDisabled = ui.pending || runtimeOffline || !canDetach(bot);
+    const attachLabel =
+      ui.pending && ui.pendingAction === "attach" ? "Deploying..." : "Manual Deploy";
     const detachLabel = ui.pending && ui.pendingAction === "detach" ? "Detaching..." : "Detach";
     const rowError = String(ui.error || "");
     const pausedMessage = runtimePaused
       ? platformState?.pausedReason || "Paused by runtime control."
+      : "";
+    const runtimeOfflineMessage = runtimeOffline
+      ? "Runtime is offline."
       : "";
 
     return `
@@ -426,6 +431,9 @@
             ${detachDisabled ? "disabled" : ""}
           >${detachLabel}</button>
         </div>
+        ${runtimeOffline
+          ? `<div class="ss-bot-actions-row-note">${escapeHtml(runtimeOfflineMessage)}</div>`
+          : ""}
         ${runtimePaused
           ? `<div class="ss-bot-actions-row-note">${escapeHtml(`Paused: ${pausedMessage}`)}</div>`
           : ""}
@@ -684,13 +692,13 @@
       const currentTarget = String(bot?.active_target || "").trim();
       const promptDefault = currentTarget && currentTarget !== "-" ? currentTarget : "";
       const prompted = window.prompt(
-        `Manual attach target for ${creatorId} (${platform}):\nEnter channel name or stream reference.`,
+        `Manual deploy target for ${creatorId} (${platform}):\nEnter channel name or stream identifier.`,
         promptDefault
       );
       if (prompted === null) return;
       const trimmed = String(prompted || "").trim();
       if (!trimmed) {
-        ui.error = "Target identifier is required for manual attach.";
+        ui.error = "Target identifier is required for manual deploy.";
         if (el.body) {
           el.body.innerHTML = renderRows(state.lastPayload, Date.now(), state.platformSummary);
         }
