@@ -1,11 +1,11 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-01-27T06:01:31.222182Z",
-  "heartbeat": "2026-01-27T06:01:31.222182Z",
+  "generated_at": "2026-02-07T04:37:33.190631Z",
+  "heartbeat": "2026-02-07T04:37:33.190631Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.2.3-alpha",
-    "build": "2026.01.24+001"
+    "build": "2026.02.04+012"
   },
   "system": {
     "platform_polling_enabled": {
@@ -129,7 +129,7 @@
       "state": "paused",
       "status": "paused",
       "paused_reason": "Platform ingestion paused",
-      "last_heartbeat": "2026-01-27T06:01:30.328835Z",
+      "last_heartbeat": "2026-02-07T04:37:25.417188Z",
       "last_success_ts": null,
       "last_event_ts": null,
       "error": null,
@@ -222,7 +222,7 @@
         "twitter": true,
         "discord": true
       },
-      "last_heartbeat": "2026-01-27T06:01:30.327834Z",
+      "last_heartbeat": "2026-02-07T04:37:25.417188Z",
       "error": null
     }
   ],
