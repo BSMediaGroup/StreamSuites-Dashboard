@@ -651,11 +651,6 @@
       if (isBlocking) {
         setHtmlState("admin-gate-pending");
         updateDashboardGuard({ shouldBlock: true, adminGateStatus: "pending" });
-        setOverlayContent({
-          title: "Authorizing",
-          message: "Checking administrator session.",
-          status: "Pending"
-        });
       }
 
       let result = null;
@@ -690,6 +685,21 @@
           shouldBlock: true,
           adminGateStatus: "unauthenticated"
         });
+        if (isIdle) {
+          window.dispatchEvent(
+            new CustomEvent("streamsuites:admin-auth", {
+              detail: {
+                authorized: false,
+                reason: "unauthenticated"
+              }
+            })
+          );
+          gate.redirectedToLogin = true;
+          gate.stopPolling({ hideActions: true, markLoggedOut: true });
+          gate.inFlight = null;
+          window.location.replace("/auth/login.html");
+          return;
+        }
         if (isBlocking) {
           setHtmlState("admin-gate-pending");
           setOverlayContent({
@@ -818,7 +828,6 @@
     if (gate.bootstrapStarted) return;
     gate.bootstrapStarted = true;
     gate.scriptQueue = scripts.map(normalizeScriptPath);
-    ensureOverlay();
     await authorize({ reason: "initial" });
     if (!gate.shouldBlock) {
       await bootstrapScripts();

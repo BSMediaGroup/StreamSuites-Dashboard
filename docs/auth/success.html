@@ -50,7 +50,7 @@
     </p>
     <div id="auth-success-status" class="admin-auth-status" role="status" aria-live="polite"></div>
     <div class="admin-auth-actions">
-      <a id="auth-success-login" class="ss-btn ss-btn-secondary hidden" href="/docs/auth/login.html">
+      <a id="auth-success-login" class="ss-btn ss-btn-secondary hidden" href="/auth/login.html">
         Return to login
       </a>
     </div>
@@ -58,20 +58,6 @@
 
   <script>
     (() => {
-      const ADMIN_ORIGIN = window.location.origin;
-      let basePath =
-        typeof window.ADMIN_BASE_PATH === "string" ? window.ADMIN_BASE_PATH.trim() : "";
-      basePath = basePath.replace(/\/+$/, "");
-      if (basePath) {
-        const pathname = window.location?.pathname || "";
-        if (!(pathname === basePath || pathname.startsWith(`${basePath}/`))) {
-          basePath = "";
-        }
-      }
-      if (basePath !== window.ADMIN_BASE_PATH) {
-        window.ADMIN_BASE_PATH = basePath;
-      }
-
       const messageEl = document.getElementById("auth-success-message");
       const statusEl = document.getElementById("auth-success-status");
       const loginLink = document.getElementById("auth-success-login");
@@ -84,7 +70,7 @@
       })();
 
       const sessionEndpoint = runtimeBase ? `${runtimeBase}/auth/session` : "";
-      const redirectTarget = new URL(`${basePath || ""}/`, ADMIN_ORIGIN).toString();
+      const redirectTarget = "https://admin.streamsuites.app/";
 
       function setStatus(state, message) {
         if (statusEl) {
@@ -110,6 +96,58 @@
         return "";
       }
 
+      function normalizeReason(value) {
+        if (typeof value !== "string") return "";
+        const trimmed = value.trim().toLowerCase();
+        if (!trimmed) return "";
+        if (trimmed.includes("cookie_missing")) return "cookie_missing";
+        return trimmed;
+      }
+
+      function resolveReason(payload, response) {
+        if (payload && typeof payload === "object") {
+          const candidate =
+            payload.reason ||
+            payload.error?.reason ||
+            payload.status ||
+            payload.error ||
+            payload.message;
+          const normalized = normalizeReason(candidate);
+          if (normalized) return normalized;
+        }
+        const headerReason =
+          response?.headers &&
+          ["x-auth-reason", "x-streamsuites-auth-reason", "x-auth-status"]
+            .map((header) => response.headers.get(header))
+            .find(Boolean);
+        return normalizeReason(headerReason);
+      }
+
+      function resolveReasonEnum(payload, response) {
+        if (payload && typeof payload === "object") {
+          const candidate = payload.reason_enum || payload.error?.reason_enum;
+          if (typeof candidate === "string" && candidate.trim()) {
+            return candidate.trim().toUpperCase();
+          }
+        }
+        const headerReasonEnum =
+          response?.headers &&
+          ["x-auth-reason-enum", "x-streamsuites-auth-reason-enum"]
+            .map((header) => response.headers.get(header))
+            .find(Boolean);
+        if (typeof headerReasonEnum === "string" && headerReasonEnum.trim()) {
+          return headerReasonEnum.trim().toUpperCase();
+        }
+        return "";
+      }
+
+      function isCookieMissing(response, payload) {
+        if (!response || response.status !== 401) return false;
+        const reasonEnum = resolveReasonEnum(payload, response);
+        if (reasonEnum === "COOKIE_MISSING") return true;
+        return resolveReason(payload, response) === "cookie_missing";
+      }
+
       async function confirmSession() {
         if (!sessionEndpoint) {
           showError("Session endpoint is not configured. Please sign in again.");
@@ -128,16 +166,20 @@
             cache: "no-store"
           });
 
-          if (!response.ok) {
-            showError("Session check failed. Please sign in again.");
-            return;
-          }
-
           let payload = null;
           try {
             payload = await response.json();
           } catch (err) {
-            showError("Session response was not readable. Please sign in again.");
+            payload = null;
+          }
+
+          if (isCookieMissing(response, payload)) {
+            window.location.replace("/auth/login.html");
+            return;
+          }
+
+          if (!response.ok) {
+            showError("Session check failed. Please sign in again.");
             return;
           }
 
@@ -148,7 +190,7 @@
             payload?.session_valid === true;
           if (sessionValid && role === "admin") {
             setStatus("success", "Session confirmed. Redirecting to the dashboard.");
-            window.location.assign(redirectTarget);
+            window.location.replace(redirectTarget);
             return;
           }
 

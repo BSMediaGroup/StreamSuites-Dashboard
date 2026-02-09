@@ -452,6 +452,7 @@
 
       this.setLoading(true);
       this.setStatus("loading", "Checking admin session…");
+      let redirectedToLogin = false;
 
       try {
         const response = await fetch(this.config.endpoints.session, {
@@ -472,17 +473,8 @@
         if (!response.ok) {
           const reason = resolveAuthReason(payload, response);
           if (response.status === 401 && reason === SESSION_IDLE_REASON) {
-            this.state = {
-              authenticated: false,
-              authorized: false,
-              role: "",
-              email: "",
-              displayName: "",
-              avatarUrl: "",
-              tier: "",
-              error: ""
-            };
-            this.setStatus("idle", "");
+            redirectedToLogin = true;
+            window.location.replace("/auth/login.html");
             return;
           }
           throw new Error(`Auth session error (${response.status})`);
@@ -506,6 +498,9 @@
         this.setStatus("error", this.state.error);
       } finally {
         this.setLoading(false);
+        if (redirectedToLogin) {
+          return;
+        }
         this.applyState();
       }
     },
