@@ -5,8 +5,12 @@
    ====================================================================== */
 
 (function () {
-  const ADMIN_ORIGIN = window.location.origin;
-  const ADMIN_INDEX_URL = `${ADMIN_ORIGIN}${window.ADMIN_BASE_PATH}/index.html`;
+  const ADMIN_ORIGIN = "https://admin.streamsuites.app";
+  const ADMIN_SUCCESS = `${ADMIN_ORIGIN}/auth/success.html`;
+  const ADMIN_DASH = `${ADMIN_ORIGIN}/`;
+  const ADMIN_HOSTNAME = "admin.streamsuites.app";
+  const PUBLIC_HOSTNAMES = new Set(["streamsuites.app", "www.streamsuites.app"]);
+  const ADMIN_INDEX_URL = ADMIN_DASH;
   const ADMIN_LOGOUT_REDIRECT = new URL(
     `${window.ADMIN_BASE_PATH}/auth/login.html?reason=logout`,
     ADMIN_ORIGIN
@@ -67,6 +71,66 @@
     if (!trimmed) return "";
     if (trimmed.includes(SESSION_IDLE_REASON)) return SESSION_IDLE_REASON;
     return trimmed;
+  }
+
+  function parseUrl(value, base = ADMIN_ORIGIN) {
+    if (typeof value !== "string" || !value.trim()) return null;
+    try {
+      return new URL(value, base);
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function isPublicHost(value) {
+    const parsed = parseUrl(value);
+    if (!parsed) return false;
+    return PUBLIC_HOSTNAMES.has(parsed.hostname.toLowerCase());
+  }
+
+  function normalizeAdminSuccess(value) {
+    const parsed = parseUrl(value);
+    if (!parsed) return ADMIN_SUCCESS;
+    if (PUBLIC_HOSTNAMES.has(parsed.hostname.toLowerCase())) return ADMIN_SUCCESS;
+    if (parsed.hostname.toLowerCase() !== ADMIN_HOSTNAME) return ADMIN_SUCCESS;
+    return ADMIN_SUCCESS;
+  }
+
+  function normalizeAdminDash(value) {
+    const parsed = parseUrl(value);
+    if (!parsed) return ADMIN_DASH;
+    if (PUBLIC_HOSTNAMES.has(parsed.hostname.toLowerCase())) return ADMIN_DASH;
+    if (parsed.hostname.toLowerCase() !== ADMIN_HOSTNAME) return ADMIN_DASH;
+    return `${parsed.origin}/`;
+  }
+
+  function buildAdminOAuthEndpoint(provider, endpointValue) {
+    const endpoint = parseUrl(endpointValue, ADMIN_ORIGIN);
+    if (!endpoint) return "";
+
+    endpoint.searchParams.set("surface", "admin");
+
+    const successParamNames = ["redirect", "success_url", "return_to", "callback_url"];
+    successParamNames.forEach((paramName) => {
+      const currentValue = endpoint.searchParams.get(paramName);
+      if (currentValue && isPublicHost(currentValue)) {
+        endpoint.searchParams.set(paramName, ADMIN_SUCCESS);
+        return;
+      }
+      endpoint.searchParams.set(paramName, normalizeAdminSuccess(currentValue));
+    });
+
+    const dashParamNames = ["redirect_to", "post_login_redirect", "next"];
+    dashParamNames.forEach((paramName) => {
+      const currentValue = endpoint.searchParams.get(paramName);
+      endpoint.searchParams.set(paramName, normalizeAdminDash(currentValue));
+    });
+
+    if (provider === "x") {
+      endpoint.searchParams.set("surface", "admin");
+    }
+
+    return endpoint.toString();
   }
 
   function resolveAuthReason(payload, response) {
@@ -215,14 +279,23 @@
       this.config.endpoints.providers.discord = getMetaContent("streamsuites-auth-discord");
 
       const base = baseUrl ? baseUrl.replace(/\/$/, "") : "";
-      const normalizeOAuthEndpoint = (provider) => {
+      const defaultOAuthEndpoint = (provider) => {
         if (!base) return "";
-        return `${base}/auth/login/${provider}?surface=admin`;
+        return `${base}/auth/login/${provider}`;
       };
 
-      this.config.endpoints.providers.google = normalizeOAuthEndpoint("google");
-      this.config.endpoints.providers.github = normalizeOAuthEndpoint("github");
-      this.config.endpoints.providers.discord = normalizeOAuthEndpoint("discord");
+      this.config.endpoints.providers.google = buildAdminOAuthEndpoint(
+        "google",
+        defaultOAuthEndpoint("google") || this.config.endpoints.providers.google
+      );
+      this.config.endpoints.providers.github = buildAdminOAuthEndpoint(
+        "github",
+        defaultOAuthEndpoint("github") || this.config.endpoints.providers.github
+      );
+      this.config.endpoints.providers.discord = buildAdminOAuthEndpoint(
+        "discord",
+        defaultOAuthEndpoint("discord") || this.config.endpoints.providers.discord
+      );
     },
 
     bindEvents() {

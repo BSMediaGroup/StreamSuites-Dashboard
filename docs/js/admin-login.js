@@ -5,7 +5,11 @@
 (() => {
   const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/i;
   const LAST_OAUTH_PROVIDER_KEY = "streamsuites.admin.lastOauthProvider";
-  const ADMIN_ORIGIN = window.location.origin;
+  const ADMIN_ORIGIN = "https://admin.streamsuites.app";
+  const ADMIN_SUCCESS = `${ADMIN_ORIGIN}/auth/success.html`;
+  const ADMIN_DASH = `${ADMIN_ORIGIN}/`;
+  const ADMIN_HOSTNAME = "admin.streamsuites.app";
+  const PUBLIC_HOSTNAMES = new Set(["streamsuites.app", "www.streamsuites.app"]);
   const resolvedBasePath = (() => {
     const configured =
       typeof window.ADMIN_BASE_PATH === "string" ? window.ADMIN_BASE_PATH.trim() : "";
@@ -48,6 +52,66 @@
     }
   }
 
+  function parseUrl(value, base = ADMIN_ORIGIN) {
+    if (typeof value !== "string" || !value.trim()) return null;
+    try {
+      return new URL(value, base);
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function isPublicHost(value) {
+    const parsed = parseUrl(value);
+    if (!parsed) return false;
+    return PUBLIC_HOSTNAMES.has(parsed.hostname.toLowerCase());
+  }
+
+  function normalizeAdminSuccess(value) {
+    const parsed = parseUrl(value);
+    if (!parsed) return ADMIN_SUCCESS;
+    if (PUBLIC_HOSTNAMES.has(parsed.hostname.toLowerCase())) return ADMIN_SUCCESS;
+    if (parsed.hostname.toLowerCase() !== ADMIN_HOSTNAME) return ADMIN_SUCCESS;
+    return ADMIN_SUCCESS;
+  }
+
+  function normalizeAdminDash(value) {
+    const parsed = parseUrl(value);
+    if (!parsed) return ADMIN_DASH;
+    if (PUBLIC_HOSTNAMES.has(parsed.hostname.toLowerCase())) return ADMIN_DASH;
+    if (parsed.hostname.toLowerCase() !== ADMIN_HOSTNAME) return ADMIN_DASH;
+    return `${parsed.origin}/`;
+  }
+
+  function buildAdminOAuthEndpoint(provider, endpointValue) {
+    const endpoint = parseUrl(endpointValue, ADMIN_ORIGIN);
+    if (!endpoint) return "";
+
+    endpoint.searchParams.set("surface", "admin");
+
+    const successParamNames = ["redirect", "success_url", "return_to", "callback_url"];
+    successParamNames.forEach((paramName) => {
+      const currentValue = endpoint.searchParams.get(paramName);
+      if (currentValue && isPublicHost(currentValue)) {
+        endpoint.searchParams.set(paramName, ADMIN_SUCCESS);
+        return;
+      }
+      endpoint.searchParams.set(paramName, normalizeAdminSuccess(currentValue));
+    });
+
+    const dashParamNames = ["redirect_to", "post_login_redirect", "next"];
+    dashParamNames.forEach((paramName) => {
+      const currentValue = endpoint.searchParams.get(paramName);
+      endpoint.searchParams.set(paramName, normalizeAdminDash(currentValue));
+    });
+
+    if (provider === "x") {
+      endpoint.searchParams.set("surface", "admin");
+    }
+
+    return endpoint.toString();
+  }
+
   const elements = {
     reason: document.getElementById("admin-login-reason"),
     status: document.getElementById("admin-login-status"),
@@ -71,22 +135,32 @@
     x: getMetaContent("streamsuites-auth-x"),
     twitch: getMetaContent("streamsuites-auth-twitch")
   };
-  const normalizeOAuthEndpoint = (provider) => {
+  const defaultOAuthEndpoint = (provider) => {
     if (!base) return "";
-    return `${base}/auth/login/${provider}?surface=admin`;
+    return `${base}/auth/login/${provider}`;
   };
 
-  endpoints.google = normalizeOAuthEndpoint("google");
-  endpoints.github = normalizeOAuthEndpoint("github");
-  endpoints.discord = normalizeOAuthEndpoint("discord");
-  endpoints.x = endpoints.x || (base ? `${base}/auth/x/start?surface=admin` : "");
+  endpoints.google = buildAdminOAuthEndpoint(
+    "google",
+    defaultOAuthEndpoint("google") || endpoints.google
+  );
+  endpoints.github = buildAdminOAuthEndpoint(
+    "github",
+    defaultOAuthEndpoint("github") || endpoints.github
+  );
+  endpoints.discord = buildAdminOAuthEndpoint(
+    "discord",
+    defaultOAuthEndpoint("discord") || endpoints.discord
+  );
+  endpoints.x = buildAdminOAuthEndpoint("x", endpoints.x || (base ? `${base}/auth/x/start` : ""));
+  endpoints.twitch = buildAdminOAuthEndpoint(
+    "twitch",
+    defaultOAuthEndpoint("twitch") || endpoints.twitch
+  );
 
   const params = new URLSearchParams(window.location.search);
   const redirectParam = params.get("redirect");
-  const redirectTarget = new URL(
-    redirectParam || `${window.ADMIN_BASE_PATH}/index.html`,
-    ADMIN_ORIGIN
-  ).toString();
+  const redirectTarget = normalizeAdminDash(redirectParam || ADMIN_DASH);
   const reason = params.get("reason");
 
   if (elements.reason && reason) {

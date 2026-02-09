@@ -34,8 +34,12 @@
   const AUTH_API_BASE =
     getMetaContent("streamsuites-auth-base") || "https://api.streamsuites.app";
   const AUTH_API_BASE_NORMALIZED = AUTH_API_BASE.replace(/\/+$/, "");
-  const ADMIN_ORIGIN = window.location.origin;
-  const ADMIN_INDEX_URL = `${ADMIN_ORIGIN}${window.ADMIN_BASE_PATH}/index.html`;
+  const ADMIN_ORIGIN = "https://admin.streamsuites.app";
+  const ADMIN_SUCCESS = `${ADMIN_ORIGIN}/auth/success.html`;
+  const ADMIN_DASH = `${ADMIN_ORIGIN}/`;
+  const ADMIN_HOSTNAME = "admin.streamsuites.app";
+  const PUBLIC_HOSTNAMES = new Set(["streamsuites.app", "www.streamsuites.app"]);
+  const ADMIN_INDEX_URL = ADMIN_DASH;
   const ADMIN_LOGOUT_REDIRECT = new URL(
     `${window.ADMIN_BASE_PATH}/auth/login.html?reason=logout`,
     ADMIN_ORIGIN
@@ -45,8 +49,12 @@
   const LOGOUT_ENDPOINT = `${AUTH_API_BASE_NORMALIZED}/auth/logout`;
   const LAST_OAUTH_PROVIDER_KEY = "streamsuites.admin.lastOauthProvider";
   const X_EMAIL_BANNER_DISMISSED_KEY = "streamsuites.admin.banner.xMissingEmail.dismissed";
-  const ADMIN_LOGIN_GOOGLE_URL = `${AUTH_API_BASE_NORMALIZED}/auth/login/google?surface=admin`;
-  const ADMIN_LOGIN_GITHUB_URL = `${AUTH_API_BASE_NORMALIZED}/auth/login/github?surface=admin`;
+  const ADMIN_LOGIN_GOOGLE_URL = buildAdminOAuthEndpoint(
+    `${AUTH_API_BASE_NORMALIZED}/auth/login/google`
+  );
+  const ADMIN_LOGIN_GITHUB_URL = buildAdminOAuthEndpoint(
+    `${AUTH_API_BASE_NORMALIZED}/auth/login/github`
+  );
   const AUTHORIZED_ROLE = "admin";
   const SESSION_IDLE_REASON = "cookie_missing";
   const SESSION_RETRY_MIN_INTERVAL_MS = 7000;
@@ -55,6 +63,57 @@
     "x-streamsuites-auth-reason",
     "x-auth-status"
   ];
+
+  function parseUrl(value, base = ADMIN_ORIGIN) {
+    if (typeof value !== "string" || !value.trim()) return null;
+    try {
+      return new URL(value, base);
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function isPublicHost(value) {
+    const parsed = parseUrl(value);
+    if (!parsed) return false;
+    return PUBLIC_HOSTNAMES.has(parsed.hostname.toLowerCase());
+  }
+
+  function normalizeAdminSuccess(value) {
+    const parsed = parseUrl(value);
+    if (!parsed) return ADMIN_SUCCESS;
+    if (PUBLIC_HOSTNAMES.has(parsed.hostname.toLowerCase())) return ADMIN_SUCCESS;
+    if (parsed.hostname.toLowerCase() !== ADMIN_HOSTNAME) return ADMIN_SUCCESS;
+    return ADMIN_SUCCESS;
+  }
+
+  function normalizeAdminDash(value) {
+    const parsed = parseUrl(value);
+    if (!parsed) return ADMIN_DASH;
+    if (PUBLIC_HOSTNAMES.has(parsed.hostname.toLowerCase())) return ADMIN_DASH;
+    if (parsed.hostname.toLowerCase() !== ADMIN_HOSTNAME) return ADMIN_DASH;
+    return `${parsed.origin}/`;
+  }
+
+  function buildAdminOAuthEndpoint(endpointValue) {
+    const endpoint = parseUrl(endpointValue, ADMIN_ORIGIN);
+    if (!endpoint) return "";
+
+    endpoint.searchParams.set("surface", "admin");
+    ["redirect", "success_url", "return_to", "callback_url"].forEach((paramName) => {
+      const currentValue = endpoint.searchParams.get(paramName);
+      if (currentValue && isPublicHost(currentValue)) {
+        endpoint.searchParams.set(paramName, ADMIN_SUCCESS);
+        return;
+      }
+      endpoint.searchParams.set(paramName, normalizeAdminSuccess(currentValue));
+    });
+    ["redirect_to", "post_login_redirect", "next"].forEach((paramName) => {
+      const currentValue = endpoint.searchParams.get(paramName);
+      endpoint.searchParams.set(paramName, normalizeAdminDash(currentValue));
+    });
+    return endpoint.toString();
+  }
 
   const docEl = document.documentElement;
   docEl.classList.add("admin-gate-pending");
