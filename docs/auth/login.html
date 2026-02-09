@@ -13,6 +13,8 @@
   <meta name="streamsuites-auth-login" content="https://api.streamsuites.app/auth/login?surface=admin&amp;redirect=https://admin.streamsuites.app/index.html" />
   <meta name="streamsuites-auth-google" content="https://api.streamsuites.app/auth/oauth/google" />
   <meta name="streamsuites-auth-github" content="https://api.streamsuites.app/auth/oauth/github" />
+  <meta name="streamsuites-auth-discord" content="https://api.streamsuites.app/auth/oauth/discord" />
+  <meta name="streamsuites-auth-x" content="https://api.streamsuites.app/auth/x/start?surface=admin" />
 
   <title>StreamSuites Admin Login</title>
   <link rel="icon" href="/favicon.ico" />
@@ -57,38 +59,78 @@
           />
           <span>Continue with GitHub</span>
         </button>
+        <button class="ss-btn ss-btn-secondary" data-admin-auth-provider="discord">
+          <img
+            class="admin-auth-provider-icon"
+            src="../assets/icons/discord.svg"
+            alt=""
+            aria-hidden="true"
+          />
+          <span>Continue with Discord</span>
+        </button>
+        <button class="ss-btn ss-btn-secondary" data-admin-auth-provider="x">
+          <img
+            class="admin-auth-provider-icon"
+            src="../assets/icons/x.svg"
+            alt=""
+            aria-hidden="true"
+          />
+          <span>Continue with X</span>
+        </button>
+        <button class="ss-btn ss-btn-secondary" data-admin-auth-provider="twitch">
+          <img
+            class="admin-auth-provider-icon"
+            src="../assets/icons/twitch.svg"
+            alt=""
+            aria-hidden="true"
+          />
+          <span>Continue with Twitch</span>
+        </button>
       </div>
 
       <div class="admin-auth-divider">
-        <span>Emergency Admin Access</span>
+        <span>Manual email/password</span>
       </div>
 
-      <form id="admin-login-form" class="admin-auth-email">
-        <label for="admin-login-email">Admin Email</label>
-        <div class="admin-auth-email-row">
-          <input
-            id="admin-login-email"
-            name="email"
-            type="email"
-            placeholder="admin@streamsuites.app"
-            autocomplete="email"
-            required
-          />
-          <input
-            id="admin-login-password"
-            name="password"
-            type="password"
-            placeholder="Password"
-            autocomplete="current-password"
-            required
-          />
-          <button class="ss-btn ss-btn-secondary" type="submit">Sign in</button>
+      <div class="admin-auth-manual">
+        <button
+          id="admin-login-manual-toggle"
+          class="ss-btn ss-btn-secondary admin-auth-manual-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="admin-login-manual-panel"
+        >
+          Use manual email/password
+        </button>
+        <div id="admin-login-manual-panel" class="admin-auth-manual-panel" hidden>
+          <form id="admin-login-form" class="admin-auth-email">
+            <label for="admin-login-email">Admin Email</label>
+            <div class="admin-auth-email-row">
+              <input
+                id="admin-login-email"
+                name="email"
+                type="email"
+                placeholder="admin@streamsuites.app"
+                autocomplete="email"
+                required
+              />
+              <input
+                id="admin-login-password"
+                name="password"
+                type="password"
+                placeholder="Password"
+                autocomplete="current-password"
+                required
+              />
+              <button class="ss-btn ss-btn-secondary" type="submit">Sign in</button>
+            </div>
+            <p class="muted admin-auth-note">
+              Emergency access is an offline fallback. If the Auth API is unavailable, manual login will
+              not complete.
+            </p>
+          </form>
         </div>
-        <p class="muted admin-auth-note">
-          Emergency access is an offline fallback. If the Auth API is unavailable, manual login will
-          not complete.
-        </p>
-      </form>
+      </div>
 
       <div id="admin-login-status" class="admin-auth-status" role="status" aria-live="polite"></div>
       <div class="admin-auth-creator-link">

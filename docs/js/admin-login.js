@@ -4,6 +4,7 @@
 
 (() => {
   const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/i;
+  const LAST_OAUTH_PROVIDER_KEY = "streamsuites.admin.lastOauthProvider";
   const ADMIN_ORIGIN = window.location.origin;
   const resolvedBasePath = (() => {
     const configured =
@@ -30,12 +31,31 @@
     return typeof value === "string" ? value.trim().toLowerCase() : "";
   }
 
+  function normalizeProvider(value) {
+    const normalized = typeof value === "string" ? value.trim().toLowerCase() : "";
+    if (!normalized) return "";
+    if (normalized === "twitter") return "x";
+    return normalized;
+  }
+
+  function persistLastOauthProvider(provider) {
+    const normalized = normalizeProvider(provider);
+    if (!normalized) return;
+    try {
+      localStorage.setItem(LAST_OAUTH_PROVIDER_KEY, normalized);
+    } catch (err) {
+      // Ignore storage write errors.
+    }
+  }
+
   const elements = {
     reason: document.getElementById("admin-login-reason"),
     status: document.getElementById("admin-login-status"),
     form: document.getElementById("admin-login-form"),
     email: document.getElementById("admin-login-email"),
     password: document.getElementById("admin-login-password"),
+    manualToggle: document.getElementById("admin-login-manual-toggle"),
+    manualPanel: document.getElementById("admin-login-manual-panel"),
     oauthButtons: Array.from(document.querySelectorAll("[data-admin-auth-provider]"))
   };
 
@@ -46,7 +66,10 @@
       getMetaContent("streamsuites-auth-login") ||
       (base ? `${base}/auth/login` : ""),
     google: getMetaContent("streamsuites-auth-google"),
-    github: getMetaContent("streamsuites-auth-github")
+    github: getMetaContent("streamsuites-auth-github"),
+    discord: getMetaContent("streamsuites-auth-discord"),
+    x: getMetaContent("streamsuites-auth-x"),
+    twitch: getMetaContent("streamsuites-auth-twitch")
   };
   const normalizeOAuthEndpoint = (provider) => {
     if (!base) return "";
@@ -55,6 +78,8 @@
 
   endpoints.google = normalizeOAuthEndpoint("google");
   endpoints.github = normalizeOAuthEndpoint("github");
+  endpoints.discord = normalizeOAuthEndpoint("discord");
+  endpoints.x = endpoints.x || (base ? `${base}/auth/x/start?surface=admin` : "");
 
   const params = new URLSearchParams(window.location.search);
   const redirectParam = params.get("redirect");
@@ -94,6 +119,7 @@
       setStatus("error", `Auth provider not configured: ${provider}.`);
       return;
     }
+    persistLastOauthProvider(provider);
     setStatus("loading", `Redirecting to ${provider}…`);
     window.location.assign(endpoint);
   }
@@ -159,6 +185,16 @@
       if (provider) startOAuth(provider);
     });
   });
+
+  if (elements.manualToggle && elements.manualPanel) {
+    elements.manualPanel.hidden = true;
+    elements.manualToggle.setAttribute("aria-expanded", "false");
+    elements.manualToggle.addEventListener("click", () => {
+      const shouldOpen = elements.manualPanel.hidden;
+      elements.manualPanel.hidden = !shouldOpen;
+      elements.manualToggle.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+    });
+  }
 
   if (elements.form) {
     elements.form.addEventListener("submit", submitEmergencyLogin);

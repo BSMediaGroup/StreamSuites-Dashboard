@@ -50,7 +50,7 @@
     </p>
     <div id="auth-success-status" class="admin-auth-status" role="status" aria-live="polite"></div>
     <div class="admin-auth-actions">
-      <a id="auth-success-login" class="ss-btn ss-btn-secondary hidden" href="/auth/login.html">
+      <a id="auth-success-login" class="ss-btn ss-btn-secondary hidden" href="/docs/auth/login.html">
         Return to login
       </a>
     </div>
@@ -84,7 +84,7 @@
       })();
 
       const sessionEndpoint = runtimeBase ? `${runtimeBase}/auth/session` : "";
-      const redirectTarget = new URL(`${basePath}/index.html`, ADMIN_ORIGIN).toString();
+      const redirectTarget = new URL(`${basePath || ""}/`, ADMIN_ORIGIN).toString();
 
       function setStatus(state, message) {
         if (statusEl) {
@@ -142,7 +142,11 @@
           }
 
           const role = normalizeRole(payload);
-          if (payload?.ok === true && role === "admin") {
+          const sessionValid =
+            payload?.ok === true ||
+            payload?.authenticated === true ||
+            payload?.session_valid === true;
+          if (sessionValid && role === "admin") {
             setStatus("success", "Session confirmed. Redirecting to the dashboard.");
             window.location.assign(redirectTarget);
             return;

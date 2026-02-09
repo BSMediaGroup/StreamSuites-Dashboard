@@ -546,6 +546,21 @@ body.admin-auth-error #app {
   gap: 8px;
 }
 
+.admin-auth-manual {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-auth-manual-toggle {
+  width: 100%;
+  justify-content: center;
+}
+
+.admin-auth-manual-panel[hidden] {
+  display: none !important;
+}
+
 .admin-auth-email-row {
   display: flex;
   flex-wrap: wrap;
@@ -599,6 +614,35 @@ body.admin-auth-error #app {
 
 .admin-auth-status[data-state=\"offline\"] {
   color: var(--status-warning, #facc15);
+}
+
+.admin-x-email-banner {
+  margin: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-x-email-banner-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-x-email-banner-dismiss {
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.admin-x-email-banner-dismiss:hover {
+  color: var(--text-primary);
+  border-color: var(--border-strong);
 }
 
 .admin-auth-blocked-card {

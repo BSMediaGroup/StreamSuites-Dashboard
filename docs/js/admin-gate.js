@@ -43,6 +43,8 @@
   const ADMIN_LOGIN_URL = new URL(`${window.ADMIN_BASE_PATH}/auth/login.html`, ADMIN_ORIGIN);
   const SESSION_ENDPOINT = `${AUTH_API_BASE_NORMALIZED}/auth/session`;
   const LOGOUT_ENDPOINT = `${AUTH_API_BASE_NORMALIZED}/auth/logout`;
+  const LAST_OAUTH_PROVIDER_KEY = "streamsuites.admin.lastOauthProvider";
+  const X_EMAIL_BANNER_DISMISSED_KEY = "streamsuites.admin.banner.xMissingEmail.dismissed";
   const ADMIN_LOGIN_GOOGLE_URL = `${AUTH_API_BASE_NORMALIZED}/auth/login/google?surface=admin`;
   const ADMIN_LOGIN_GITHUB_URL = `${AUTH_API_BASE_NORMALIZED}/auth/login/github?surface=admin`;
   const AUTHORIZED_ROLE = "admin";
@@ -191,13 +193,22 @@
     const name = coerceText(
       payload.name || payload.display_name || payload.user?.name || payload.user?.display_name
     );
+    const provider = normalizeProvider(
+      payload.provider ||
+        payload.auth_provider ||
+        payload.session?.provider ||
+        payload.session?.auth_provider ||
+        payload.user?.provider ||
+        payload.user?.auth_provider
+    );
     const role = normalizeRole(payload);
 
     return {
       authenticated: Boolean(role),
-      email: email || "Administrator",
+      email,
       name,
       role: role || "",
+      provider: provider || getLastOauthProvider(),
       tier: coerceText(payload.tier || payload.session?.tier || payload.user?.tier || payload.plan),
       avatarUrl: coerceText(payload.avatar_url || payload.avatarUrl || payload.user?.avatar_url)
     };
@@ -212,6 +223,39 @@
       return payload.user.role.trim().toLowerCase();
     }
     return null;
+  }
+
+  function normalizeProvider(value) {
+    const normalized = coerceText(value).toLowerCase();
+    if (!normalized) return "";
+    if (normalized === "twitter") return "x";
+    return normalized;
+  }
+
+  function readLocalStorageValue(key) {
+    try {
+      return localStorage.getItem(key) || "";
+    } catch (err) {
+      return "";
+    }
+  }
+
+  function writeLocalStorageValue(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch (err) {
+      // Ignore storage write errors.
+    }
+  }
+
+  function getLastOauthProvider() {
+    return normalizeProvider(readLocalStorageValue(LAST_OAUTH_PROVIDER_KEY));
+  }
+
+  function persistLastOauthProvider(provider) {
+    const normalized = normalizeProvider(provider);
+    if (!normalized) return;
+    writeLocalStorageValue(LAST_OAUTH_PROVIDER_KEY, normalized);
   }
 
   function normalizeAuthReason(value) {
@@ -362,9 +406,13 @@
       email: payload?.email || "",
       name: payload?.name || "",
       role: payload?.role || "",
+      provider: payload?.provider || "",
       tier: payload?.tier || "",
       avatarUrl: payload?.avatarUrl || ""
     };
+    if (gate.admin.provider) {
+      persistLastOauthProvider(gate.admin.provider);
+    }
     updateDashboardGuard({
       shouldBlock: false,
       adminGateStatus: "authorized",
@@ -376,6 +424,7 @@
       gate.overlay.remove();
       gate.overlay = null;
     }
+    updateXEmailBanner(gate.admin);
     updateHeaderIdentity(gate.admin);
     window.StreamSuitesAdminSession = {
       ...gate.admin,
@@ -402,6 +451,7 @@
     gate.status = reason;
     gate.shouldBlock = true;
     gate.admin = null;
+    removeXEmailBanner();
     gate.lastCheckedAt = Date.now();
     updateHeaderIdentity(null);
     updateDashboardGuard({
@@ -451,6 +501,73 @@
     banner.classList.toggle("ss-alert-warning", variant === "warning");
     banner.classList.toggle("ss-alert-danger", variant === "danger");
     banner.classList.toggle("ss-alert-success", variant === "success");
+  }
+
+  function removeXEmailBanner() {
+    const banner = document.getElementById("admin-x-email-banner");
+    if (!banner) return;
+    banner.remove();
+  }
+
+  function buildXEmailBanner() {
+    const banner = document.createElement("div");
+    banner.id = "admin-x-email-banner";
+    banner.className = "ss-alert admin-x-email-banner";
+    banner.setAttribute("role", "status");
+    banner.setAttribute("aria-live", "polite");
+
+    const message = document.createElement("span");
+    message.textContent =
+      "Your X account is connected without an email. You can add one later from account settings.";
+
+    const actions = document.createElement("div");
+    actions.className = "admin-x-email-banner-actions";
+
+    const dismiss = document.createElement("button");
+    dismiss.type = "button";
+    dismiss.className = "admin-x-email-banner-dismiss";
+    dismiss.textContent = "Dismiss";
+    dismiss.addEventListener("click", () => {
+      writeLocalStorageValue(X_EMAIL_BANNER_DISMISSED_KEY, "1");
+      banner.hidden = true;
+    });
+
+    actions.appendChild(dismiss);
+    banner.append(message, actions);
+    return banner;
+  }
+
+  function ensureXEmailBanner() {
+    let banner = document.getElementById("admin-x-email-banner");
+    if (!banner) {
+      banner = buildXEmailBanner();
+      if (document.body) {
+        document.body.prepend(banner);
+      } else {
+        document.addEventListener("DOMContentLoaded", () => document.body.prepend(banner), {
+          once: true
+        });
+      }
+    }
+    return banner;
+  }
+
+  function shouldShowXEmailBanner(admin) {
+    if (!admin || admin.authenticated !== true) return false;
+    if (normalizeRole({ role: admin.role }) !== AUTHORIZED_ROLE) return false;
+    const provider = normalizeProvider(admin.provider || getLastOauthProvider());
+    if (provider !== "x") return false;
+    if (coerceText(admin.email)) return false;
+    return readLocalStorageValue(X_EMAIL_BANNER_DISMISSED_KEY) !== "1";
+  }
+
+  function updateXEmailBanner(admin) {
+    if (!shouldShowXEmailBanner(admin)) {
+      removeXEmailBanner();
+      return;
+    }
+    const banner = ensureXEmailBanner();
+    banner.hidden = false;
   }
 
   function notifySessionInvalid(message) {
@@ -568,6 +685,7 @@
         gate.silentFailureNotified = false;
         gate.status = "unauthenticated";
         gate.shouldBlock = true;
+        removeXEmailBanner();
         updateDashboardGuard({
           shouldBlock: true,
           adminGateStatus: "unauthenticated"
@@ -606,6 +724,7 @@
         } else {
           gate.status = "forbidden";
           gate.shouldBlock = true;
+          removeXEmailBanner();
           updateDashboardGuard({
             shouldBlock: true,
             adminGateStatus: "forbidden"
@@ -619,6 +738,7 @@
         gate.sessionIdle.active = false;
         gate.sessionIdle.reason = "";
         gate.sessionIdle.notified = false;
+        removeXEmailBanner();
         if (isBlocking) {
           markDenied(
             "unavailable",
@@ -708,6 +828,7 @@
   gate.logout = async () => {
     gate.stopPolling();
     gate.shouldBlock = true;
+    removeXEmailBanner();
     updateDashboardGuard({ shouldBlock: true, adminGateStatus: "logging-out" });
     setHtmlState("admin-gate-pending");
     setOverlayContent({
@@ -747,6 +868,7 @@
     gate.inFlight = null;
     gate.queued = false;
     gate.admin = null;
+    removeXEmailBanner();
     window.StreamSuitesAdminSession = null;
     if (gate.refreshTimer) {
       clearInterval(gate.refreshTimer);
