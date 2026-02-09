@@ -1,0 +1,89 @@
+<!-- ========================================================= -->
+<!-- StreamSuites — Approvals (VIEW PARTIAL) -->
+<!-- ========================================================= -->
+
+<header class="ss-header">
+  <div class="ss-header-left">
+    <h1 class="ss-title">StreamSuites</h1>
+    <span class="ss-subtitle">Approvals</span>
+  </div>
+</header>
+
+<main class="ss-main">
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Pending Requests</h2>
+        <p class="muted" style="margin:6px 0 0;">
+          Review creator-submitted feature requests and approve or deny with optional moderation notes.
+        </p>
+      </div>
+      <div class="ss-panel-header-actions">
+        <button id="approvals-refresh-pending" class="ss-btn ss-btn-secondary" type="button">
+          Refresh Pending
+        </button>
+      </div>
+    </header>
+
+    <div class="ss-panel-body">
+      <div id="approvals-admin-error" class="ss-alert ss-alert-danger hidden">
+        Admin access required.
+      </div>
+
+      <div class="ss-toolbar">
+        <div class="ss-toolbar-left">
+          <span id="approvals-pending-status" class="muted">Loading pending requests...</span>
+        </div>
+        <div class="ss-toolbar-right">
+          <span class="muted">Moderation API</span>
+        </div>
+      </div>
+
+      <div class="ss-meta-row">
+        <div><strong>Pending count:</strong> <span id="approvals-pending-count">—</span></div>
+      </div>
+
+      <div id="approvals-pending-list" class="ss-approvals-list"></div>
+      <div id="approvals-pending-empty" class="ss-empty hidden">
+        No pending feature requests.
+      </div>
+    </div>
+  </section>
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Approved Requests</h2>
+        <p class="muted" style="margin:6px 0 0;">
+          Toggle implementation state for approved creator requests.
+        </p>
+      </div>
+      <div class="ss-panel-header-actions">
+        <button id="approvals-refresh-approved" class="ss-btn ss-btn-secondary" type="button">
+          Refresh Approved
+        </button>
+      </div>
+    </header>
+
+    <div class="ss-panel-body">
+      <div class="ss-toolbar">
+        <div class="ss-toolbar-left">
+          <span id="approvals-approved-status" class="muted">Loading approved requests...</span>
+        </div>
+      </div>
+
+      <div class="ss-meta-row">
+        <div><strong>Approved count:</strong> <span id="approvals-approved-count">—</span></div>
+      </div>
+
+      <div id="approvals-approved-list" class="ss-approvals-list"></div>
+      <div id="approvals-approved-empty" class="ss-empty hidden">
+        No approved requests available.
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="ss-footer">
+  <span class="muted">Approvals are runtime-owned; this dashboard only issues authenticated admin API actions.</span>
+</footer>

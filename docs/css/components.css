@@ -1131,6 +1131,82 @@
   margin-bottom: 6px;
 }
 
+.ss-approvals-list {
+  display: grid;
+  gap: 12px;
+}
+
+.ss-approvals-request {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel-alt);
+}
+
+.ss-approvals-request-approved {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.ss-approvals-request-head {
+  display: grid;
+  gap: 6px;
+}
+
+.ss-approvals-request-head h3 {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: 0.03em;
+}
+
+.ss-approvals-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.ss-approvals-body {
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.14);
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  line-height: 1.45;
+  max-height: 190px;
+  overflow: auto;
+}
+
+.ss-approvals-notes-row {
+  margin-bottom: 0;
+}
+
+.ss-approvals-notes {
+  width: 100%;
+  min-height: 78px;
+  resize: vertical;
+}
+
+.ss-approvals-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ss-approvals-inline {
+  min-height: 16px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.ss-approvals-inline-error {
+  color: #ffb3b0;
+}
+
 /* ----------------------------------------------------------------------
    Chat window (live/replay) reference styles
    Mirrors docs/views/chat_window.html for design showcase

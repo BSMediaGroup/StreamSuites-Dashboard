@@ -1225,6 +1225,15 @@ registerView("creators", {
     window.AuditLogsView?.init?.();
   }
 });
+registerView("approvals", {
+  templatePath: "approvals",
+  onLoad: () => {
+    window.ApprovalsView?.init?.();
+  },
+  onUnload: () => {
+    window.ApprovalsView?.destroy?.();
+  }
+});
 registerView("api-usage", {
   templatePath: "api-usage",
   onLoad: () => {

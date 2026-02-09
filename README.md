@@ -499,6 +499,7 @@ StreamSuites-Dashboard/
 │   │   ├── api-usage.js
 │   │   ├── api.js
 │   │   ├── app.js
+│   │   ├── approvals.js
 │   │   ├── audit.js
 │   │   ├── auth.js
 │   │   ├── bots.js
@@ -634,6 +635,7 @@ StreamSuites-Dashboard/
 │   │   ├── about.html
 │   │   ├── accounts.html
 │   │   ├── api-usage.html
+│   │   ├── approvals.html
 │   │   ├── audit.html
 │   │   ├── bots.html
 │   │   ├── chat-replay.html
