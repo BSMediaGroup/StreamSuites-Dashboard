@@ -35,7 +35,8 @@
     getMetaContent("streamsuites-auth-base") || "https://api.streamsuites.app";
   const AUTH_API_BASE_NORMALIZED = AUTH_API_BASE.replace(/\/+$/, "");
   const ADMIN_ORIGIN = "https://admin.streamsuites.app";
-  const ADMIN_SUCCESS = `${ADMIN_ORIGIN}/auth/success.html`;
+  const ADMIN_SUCCESS = ADMIN_ORIGIN + "/auth/success.html";
+  const ADMIN_SURFACE = "admin";
   const ADMIN_DASH = `${ADMIN_ORIGIN}/`;
   const ADMIN_HOSTNAME = "admin.streamsuites.app";
   const PUBLIC_HOSTNAMES = new Set(["streamsuites.app", "www.streamsuites.app"]);
@@ -95,12 +96,17 @@
     return `${parsed.origin}/`;
   }
 
-  function buildAdminOAuthEndpoint(endpointValue) {
-    const endpoint = parseUrl(endpointValue, ADMIN_ORIGIN);
-    if (!endpoint) return "";
+  function applyAdminOAuthSafety(endpoint) {
+    endpoint.searchParams.set("surface", ADMIN_SURFACE);
 
-    endpoint.searchParams.set("surface", "admin");
-    ["redirect", "success_url", "return_to", "callback_url"].forEach((paramName) => {
+    const currentReturnTo = endpoint.searchParams.get("return_to");
+    if (!currentReturnTo || isPublicHost(currentReturnTo)) {
+      endpoint.searchParams.set("return_to", ADMIN_SUCCESS);
+    } else {
+      endpoint.searchParams.set("return_to", normalizeAdminSuccess(currentReturnTo));
+    }
+
+    ["redirect", "success_url", "callback_url"].forEach((paramName) => {
       const currentValue = endpoint.searchParams.get(paramName);
       if (currentValue && isPublicHost(currentValue)) {
         endpoint.searchParams.set(paramName, ADMIN_SUCCESS);
@@ -108,10 +114,27 @@
       }
       endpoint.searchParams.set(paramName, normalizeAdminSuccess(currentValue));
     });
+
     ["redirect_to", "post_login_redirect", "next"].forEach((paramName) => {
       const currentValue = endpoint.searchParams.get(paramName);
       endpoint.searchParams.set(paramName, normalizeAdminDash(currentValue));
     });
+
+    return endpoint;
+  }
+
+  function buildAdminOAuthEndpoint(endpointValue) {
+    const endpoint = parseUrl(endpointValue, ADMIN_ORIGIN);
+    if (!endpoint) return "";
+
+    applyAdminOAuthSafety(endpoint);
+    return endpoint.toString();
+  }
+
+  function enforceAdminOAuthEndpoint(endpointValue) {
+    const endpoint = parseUrl(endpointValue, ADMIN_ORIGIN);
+    if (!endpoint) return "";
+    applyAdminOAuthSafety(endpoint);
     return endpoint.toString();
   }
 
@@ -969,14 +992,20 @@
       if (loginGoogle) {
         event.preventDefault();
         event.stopPropagation();
-        window.location.assign(ADMIN_LOGIN_GOOGLE_URL);
+        const hardenedGoogleUrl = enforceAdminOAuthEndpoint(ADMIN_LOGIN_GOOGLE_URL);
+        if (hardenedGoogleUrl) {
+          window.location.assign(hardenedGoogleUrl);
+        }
         return;
       }
       const loginGithub = event.target.closest("#admin-gate-login-github");
       if (loginGithub) {
         event.preventDefault();
         event.stopPropagation();
-        window.location.assign(ADMIN_LOGIN_GITHUB_URL);
+        const hardenedGithubUrl = enforceAdminOAuthEndpoint(ADMIN_LOGIN_GITHUB_URL);
+        if (hardenedGithubUrl) {
+          window.location.assign(hardenedGithubUrl);
+        }
         return;
       }
       const signOut = event.target.closest("#admin-gate-logout");

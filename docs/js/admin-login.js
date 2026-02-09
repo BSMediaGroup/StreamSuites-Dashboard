@@ -6,7 +6,8 @@
   const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/i;
   const LAST_OAUTH_PROVIDER_KEY = "streamsuites.admin.lastOauthProvider";
   const ADMIN_ORIGIN = "https://admin.streamsuites.app";
-  const ADMIN_SUCCESS = `${ADMIN_ORIGIN}/auth/success.html`;
+  const ADMIN_SUCCESS = ADMIN_ORIGIN + "/auth/success.html";
+  const ADMIN_SURFACE = "admin";
   const ADMIN_DASH = `${ADMIN_ORIGIN}/`;
   const ADMIN_HOSTNAME = "admin.streamsuites.app";
   const PUBLIC_HOSTNAMES = new Set(["streamsuites.app", "www.streamsuites.app"]);
@@ -83,14 +84,17 @@
     return `${parsed.origin}/`;
   }
 
-  function buildAdminOAuthEndpoint(provider, endpointValue) {
-    const endpoint = parseUrl(endpointValue, ADMIN_ORIGIN);
-    if (!endpoint) return "";
+  function applyAdminOAuthSafety(endpoint) {
+    endpoint.searchParams.set("surface", ADMIN_SURFACE);
 
-    endpoint.searchParams.set("surface", "admin");
+    const currentReturnTo = endpoint.searchParams.get("return_to");
+    if (!currentReturnTo || isPublicHost(currentReturnTo)) {
+      endpoint.searchParams.set("return_to", ADMIN_SUCCESS);
+    } else {
+      endpoint.searchParams.set("return_to", normalizeAdminSuccess(currentReturnTo));
+    }
 
-    const successParamNames = ["redirect", "success_url", "return_to", "callback_url"];
-    successParamNames.forEach((paramName) => {
+    ["redirect", "success_url", "callback_url"].forEach((paramName) => {
       const currentValue = endpoint.searchParams.get(paramName);
       if (currentValue && isPublicHost(currentValue)) {
         endpoint.searchParams.set(paramName, ADMIN_SUCCESS);
@@ -99,16 +103,26 @@
       endpoint.searchParams.set(paramName, normalizeAdminSuccess(currentValue));
     });
 
-    const dashParamNames = ["redirect_to", "post_login_redirect", "next"];
-    dashParamNames.forEach((paramName) => {
+    ["redirect_to", "post_login_redirect", "next"].forEach((paramName) => {
       const currentValue = endpoint.searchParams.get(paramName);
       endpoint.searchParams.set(paramName, normalizeAdminDash(currentValue));
     });
 
-    if (provider === "x") {
-      endpoint.searchParams.set("surface", "admin");
-    }
+    return endpoint;
+  }
 
+  function buildAdminOAuthEndpoint(endpointValue) {
+    const endpoint = parseUrl(endpointValue, ADMIN_ORIGIN);
+    if (!endpoint) return "";
+
+    applyAdminOAuthSafety(endpoint);
+    return endpoint.toString();
+  }
+
+  function enforceAdminOAuthEndpoint(endpointValue) {
+    const endpoint = parseUrl(endpointValue, ADMIN_ORIGIN);
+    if (!endpoint) return "";
+    applyAdminOAuthSafety(endpoint);
     return endpoint.toString();
   }
 
@@ -140,23 +154,11 @@
     return `${base}/auth/login/${provider}`;
   };
 
-  endpoints.google = buildAdminOAuthEndpoint(
-    "google",
-    defaultOAuthEndpoint("google") || endpoints.google
-  );
-  endpoints.github = buildAdminOAuthEndpoint(
-    "github",
-    defaultOAuthEndpoint("github") || endpoints.github
-  );
-  endpoints.discord = buildAdminOAuthEndpoint(
-    "discord",
-    defaultOAuthEndpoint("discord") || endpoints.discord
-  );
-  endpoints.x = buildAdminOAuthEndpoint("x", endpoints.x || (base ? `${base}/auth/x/start` : ""));
-  endpoints.twitch = buildAdminOAuthEndpoint(
-    "twitch",
-    defaultOAuthEndpoint("twitch") || endpoints.twitch
-  );
+  endpoints.google = buildAdminOAuthEndpoint(defaultOAuthEndpoint("google") || endpoints.google);
+  endpoints.github = buildAdminOAuthEndpoint(defaultOAuthEndpoint("github") || endpoints.github);
+  endpoints.discord = buildAdminOAuthEndpoint(defaultOAuthEndpoint("discord") || endpoints.discord);
+  endpoints.x = buildAdminOAuthEndpoint(endpoints.x || (base ? `${base}/auth/x/start` : ""));
+  endpoints.twitch = buildAdminOAuthEndpoint(defaultOAuthEndpoint("twitch") || endpoints.twitch);
 
   const params = new URLSearchParams(window.location.search);
   const redirectParam = params.get("redirect");
@@ -193,9 +195,16 @@
       setStatus("error", `Auth provider not configured: ${provider}.`);
       return;
     }
+
+    const hardenedEndpoint = enforceAdminOAuthEndpoint(endpoint);
+    if (!hardenedEndpoint) {
+      setStatus("error", `Auth provider endpoint invalid: ${provider}.`);
+      return;
+    }
+
     persistLastOauthProvider(provider);
     setStatus("loading", `Redirecting to ${provider}…`);
-    window.location.assign(endpoint);
+    window.location.assign(hardenedEndpoint);
   }
 
   async function submitEmergencyLogin(event) {

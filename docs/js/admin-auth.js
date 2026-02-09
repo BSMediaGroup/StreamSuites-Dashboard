@@ -6,7 +6,8 @@
 
 (function () {
   const ADMIN_ORIGIN = "https://admin.streamsuites.app";
-  const ADMIN_SUCCESS = `${ADMIN_ORIGIN}/auth/success.html`;
+  const ADMIN_SUCCESS = ADMIN_ORIGIN + "/auth/success.html";
+  const ADMIN_SURFACE = "admin";
   const ADMIN_DASH = `${ADMIN_ORIGIN}/`;
   const ADMIN_HOSTNAME = "admin.streamsuites.app";
   const PUBLIC_HOSTNAMES = new Set(["streamsuites.app", "www.streamsuites.app"]);
@@ -104,14 +105,17 @@
     return `${parsed.origin}/`;
   }
 
-  function buildAdminOAuthEndpoint(provider, endpointValue) {
-    const endpoint = parseUrl(endpointValue, ADMIN_ORIGIN);
-    if (!endpoint) return "";
+  function applyAdminOAuthSafety(endpoint) {
+    endpoint.searchParams.set("surface", ADMIN_SURFACE);
 
-    endpoint.searchParams.set("surface", "admin");
+    const currentReturnTo = endpoint.searchParams.get("return_to");
+    if (!currentReturnTo || isPublicHost(currentReturnTo)) {
+      endpoint.searchParams.set("return_to", ADMIN_SUCCESS);
+    } else {
+      endpoint.searchParams.set("return_to", normalizeAdminSuccess(currentReturnTo));
+    }
 
-    const successParamNames = ["redirect", "success_url", "return_to", "callback_url"];
-    successParamNames.forEach((paramName) => {
+    ["redirect", "success_url", "callback_url"].forEach((paramName) => {
       const currentValue = endpoint.searchParams.get(paramName);
       if (currentValue && isPublicHost(currentValue)) {
         endpoint.searchParams.set(paramName, ADMIN_SUCCESS);
@@ -120,16 +124,26 @@
       endpoint.searchParams.set(paramName, normalizeAdminSuccess(currentValue));
     });
 
-    const dashParamNames = ["redirect_to", "post_login_redirect", "next"];
-    dashParamNames.forEach((paramName) => {
+    ["redirect_to", "post_login_redirect", "next"].forEach((paramName) => {
       const currentValue = endpoint.searchParams.get(paramName);
       endpoint.searchParams.set(paramName, normalizeAdminDash(currentValue));
     });
 
-    if (provider === "x") {
-      endpoint.searchParams.set("surface", "admin");
-    }
+    return endpoint;
+  }
 
+  function buildAdminOAuthEndpoint(endpointValue) {
+    const endpoint = parseUrl(endpointValue, ADMIN_ORIGIN);
+    if (!endpoint) return "";
+
+    applyAdminOAuthSafety(endpoint);
+    return endpoint.toString();
+  }
+
+  function enforceAdminOAuthEndpoint(endpointValue) {
+    const endpoint = parseUrl(endpointValue, ADMIN_ORIGIN);
+    if (!endpoint) return "";
+    applyAdminOAuthSafety(endpoint);
     return endpoint.toString();
   }
 
@@ -285,15 +299,12 @@
       };
 
       this.config.endpoints.providers.google = buildAdminOAuthEndpoint(
-        "google",
         defaultOAuthEndpoint("google") || this.config.endpoints.providers.google
       );
       this.config.endpoints.providers.github = buildAdminOAuthEndpoint(
-        "github",
         defaultOAuthEndpoint("github") || this.config.endpoints.providers.github
       );
       this.config.endpoints.providers.discord = buildAdminOAuthEndpoint(
-        "discord",
         defaultOAuthEndpoint("discord") || this.config.endpoints.providers.discord
       );
     },
@@ -660,8 +671,13 @@
         this.setStatus("error", `Auth provider not configured: ${provider}.`);
         return;
       }
+      const hardenedEndpoint = enforceAdminOAuthEndpoint(endpoint);
+      if (!hardenedEndpoint) {
+        this.setStatus("error", `Auth provider endpoint invalid: ${provider}.`);
+        return;
+      }
       this.setStatus("loading", `Redirecting to ${provider}…`);
-      window.location.assign(endpoint);
+      window.location.assign(hardenedEndpoint);
     },
 
     async submitEmergencyLogin() {
