@@ -1,12 +1,38 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-02-10T14:32:13.432750Z",
+  "exported_at": "2026-02-10T15:55:21.275943Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.4.0-alpha",
-    "build": "2026.02.10+003"
+    "build": "2026.02.10+006"
   },
   "audit": [
+    {
+      "id": "436ce7b3-93bb-47e9-b6bf-bf82db2dc461",
+      "ts": "2026-02-10T14:42:26Z",
+      "actor_user_id": "338edf81-9e24-4730-977a-c9972aecba4d",
+      "actor_user_code": "rDbzSZQ",
+      "actor_role": "creator",
+      "target_user_id": "338edf81-9e24-4730-977a-c9972aecba4d",
+      "target_user_code": "rDbzSZQ",
+      "action": "account_created",
+      "metadata": {
+        "provider": "twitch"
+      }
+    },
+    {
+      "id": "5fd3af6c-c8b1-4b2d-89b7-1021d200b80d",
+      "ts": "2026-02-10T14:42:26Z",
+      "actor_user_id": "338edf81-9e24-4730-977a-c9972aecba4d",
+      "actor_user_code": "rDbzSZQ",
+      "actor_role": "creator",
+      "target_user_id": "338edf81-9e24-4730-977a-c9972aecba4d",
+      "target_user_code": "rDbzSZQ",
+      "action": "login_success",
+      "metadata": {
+        "provider": "twitch"
+      }
+    },
     {
       "id": "59bad468-add0-4ea4-bcab-00c60a16947c",
       "ts": "2026-02-09T23:46:26Z",

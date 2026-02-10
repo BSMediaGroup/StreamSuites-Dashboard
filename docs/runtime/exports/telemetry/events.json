@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-02-10T14:32:13.416137Z",
+  "generated_at": "2026-02-10T15:55:21.259655Z",
   "events": [
     {
       "timestamp": "2026-01-22T05:45:05Z",
@@ -487,7 +487,18 @@
       "result": "sent"
     },
     {
-      "timestamp": "2026-02-10T14:31:52.261328Z",
+      "timestamp": "2026-02-10T14:48:17Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=feature_request_vote user=token:8008c342... result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "feature_request_vote",
+      "user_identifier": "token:8008c342...",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-02-10T15:55:00.075642Z",
       "source": "system",
       "severity": "info",
       "message": "Runtime boot sequence started"

@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-02-10T14:32:13.416137Z",
+  "generated_at": "2026-02-10T15:55:21.259655Z",
   "events": [
     {
       "timestamp_utc": "2026-01-22T05:45:05Z",
@@ -614,6 +614,20 @@
       "user_identifier": "user_code:7lPBEiA",
       "email_redacted": null,
       "result": "sent",
+      "resend_message_id": null,
+      "ip": "192.145.118.186",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp_utc": "2026-02-10T14:48:17Z",
+      "event_type": "rate_limit",
+      "event_name": "feature_request_vote",
+      "action": "feature_request_vote",
+      "email_type": "feature_request_vote",
+      "account_id": "8008c342...",
+      "user_identifier": "token:8008c342...",
+      "email_redacted": null,
+      "result": "allowed",
       "resend_message_id": null,
       "ip": "192.145.118.186",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"

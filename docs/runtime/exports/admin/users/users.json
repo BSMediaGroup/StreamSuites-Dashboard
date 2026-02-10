@@ -1,12 +1,37 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-02-10T14:32:13.431750Z",
+  "exported_at": "2026-02-10T15:55:21.275943Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.4.0-alpha",
-    "build": "2026.02.10+003"
+    "build": "2026.02.10+006"
   },
   "users": [
+    {
+      "id": "338edf81-9e24-4730-977a-c9972aecba4d",
+      "internal_id": "338edf81-9e24-4730-977a-c9972aecba4d",
+      "user_code": "rDbzSZQ",
+      "email": null,
+      "email_verified": true,
+      "display_name": "DanielClancyLive",
+      "avatar_url": "https://static-cdn.jtvnw.net/jtv_user_pictures/c1a86455-0c38-4b27-9bac-51480c8672fa-profile_image-300x300.png",
+      "role": "creator",
+      "tier": "core",
+      "onboarding_status": "required",
+      "onboarding_complete": false,
+      "account_status": "active",
+      "status": "active",
+      "providers": [
+        {
+          "provider": "twitch",
+          "provider_user_id": "985020874",
+          "linked_at": "2026-02-10T14:42:26Z"
+        }
+      ],
+      "created_at": "2026-02-10T14:42:26Z",
+      "last_login_at": "2026-02-10T14:42:26Z",
+      "updated_at": "2026-02-10T14:42:26Z"
+    },
     {
       "id": "75d556b3-dd22-40b6-9d3e-8a034af552d6",
       "internal_id": "75d556b3-dd22-40b6-9d3e-8a034af552d6",
