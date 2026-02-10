@@ -158,7 +158,7 @@
   endpoints.github = buildAdminOAuthEndpoint(defaultOAuthEndpoint("github") || endpoints.github);
   endpoints.discord = buildAdminOAuthEndpoint(defaultOAuthEndpoint("discord") || endpoints.discord);
   endpoints.x = buildAdminOAuthEndpoint(endpoints.x || (base ? `${base}/auth/x/start` : ""));
-  endpoints.twitch = buildAdminOAuthEndpoint(defaultOAuthEndpoint("twitch") || endpoints.twitch);
+  endpoints.twitch = endpoints.twitch || (base ? `${base}/oauth/twitch/start` : "");
 
   const params = new URLSearchParams(window.location.search);
   const redirectParam = params.get("redirect");
@@ -196,15 +196,16 @@
       return;
     }
 
-    const hardenedEndpoint = enforceAdminOAuthEndpoint(endpoint);
-    if (!hardenedEndpoint) {
+    const destination =
+      provider === "twitch" ? endpoint : enforceAdminOAuthEndpoint(endpoint);
+    if (!destination) {
       setStatus("error", `Auth provider endpoint invalid: ${provider}.`);
       return;
     }
 
     persistLastOauthProvider(provider);
     setStatus("loading", `Redirecting to ${provider}…`);
-    window.location.assign(hardenedEndpoint);
+    window.location.assign(destination);
   }
 
   async function submitEmergencyLogin(event) {

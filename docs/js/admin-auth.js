@@ -207,7 +207,9 @@
         providers: {
           google: "",
           github: "",
-          discord: ""
+          discord: "",
+          x: "",
+          twitch: ""
         }
       }
     },
@@ -291,6 +293,8 @@
       this.config.endpoints.providers.google = getMetaContent("streamsuites-auth-google");
       this.config.endpoints.providers.github = getMetaContent("streamsuites-auth-github");
       this.config.endpoints.providers.discord = getMetaContent("streamsuites-auth-discord");
+      this.config.endpoints.providers.x = getMetaContent("streamsuites-auth-x");
+      this.config.endpoints.providers.twitch = getMetaContent("streamsuites-auth-twitch");
 
       const base = baseUrl ? baseUrl.replace(/\/$/, "") : "";
       const defaultOAuthEndpoint = (provider) => {
@@ -307,6 +311,11 @@
       this.config.endpoints.providers.discord = buildAdminOAuthEndpoint(
         defaultOAuthEndpoint("discord") || this.config.endpoints.providers.discord
       );
+      this.config.endpoints.providers.x = buildAdminOAuthEndpoint(
+        this.config.endpoints.providers.x || (base ? `${base}/auth/x/start` : "")
+      );
+      this.config.endpoints.providers.twitch =
+        this.config.endpoints.providers.twitch || (base ? `${base}/oauth/twitch/start` : "");
     },
 
     bindEvents() {
@@ -671,13 +680,14 @@
         this.setStatus("error", `Auth provider not configured: ${provider}.`);
         return;
       }
-      const hardenedEndpoint = enforceAdminOAuthEndpoint(endpoint);
-      if (!hardenedEndpoint) {
+      const destination =
+        provider === "twitch" ? endpoint : enforceAdminOAuthEndpoint(endpoint);
+      if (!destination) {
         this.setStatus("error", `Auth provider endpoint invalid: ${provider}.`);
         return;
       }
       this.setStatus("loading", `Redirecting to ${provider}…`);
-      window.location.assign(hardenedEndpoint);
+      window.location.assign(destination);
     },
 
     async submitEmergencyLogin() {
