@@ -3,7 +3,7 @@
   "exported_at": "2026-01-20T14:09:19.140874Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
-    "version": "0.3.5-alpha",
+    "version": "0.2.3-alpha",
     "build": "2026.01.20+016"
   },
   "audit": [
