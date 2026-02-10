@@ -1,12 +1,194 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-02-09T18:13:00.532180Z",
+  "exported_at": "2026-02-10T14:12:31.867224Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.3.5-alpha",
-    "build": "2026.02.09+008"
+    "build": "2026.02.10+001"
   },
   "audit": [
+    {
+      "id": "59bad468-add0-4ea4-bcab-00c60a16947c",
+      "ts": "2026-02-09T23:46:26Z",
+      "actor_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "actor_user_code": "7lPBEiA",
+      "actor_role": "creator",
+      "target_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "target_user_code": "7lPBEiA",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "6825edcc-e223-4a48-8c57-258b5823d359",
+      "ts": "2026-02-09T23:09:45Z",
+      "actor_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "actor_user_code": "7lPBEiA",
+      "actor_role": "creator",
+      "target_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "target_user_code": "7lPBEiA",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "caf903c6-291f-40d7-8064-435008f14ed1",
+      "ts": "2026-02-09T22:51:25Z",
+      "actor_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "actor_user_code": "7lPBEiA",
+      "actor_role": "creator",
+      "target_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "target_user_code": "7lPBEiA",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "c3ac1799-f16f-467f-8285-70bcbc523d1c",
+      "ts": "2026-02-09T21:12:08Z",
+      "actor_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "actor_user_code": "7lPBEiA",
+      "actor_role": "creator",
+      "target_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "target_user_code": "7lPBEiA",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "e1e47d51-0ee4-4124-8c05-4c796fc2d662",
+      "ts": "2026-02-09T21:11:08Z",
+      "actor_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "actor_user_code": "7lPBEiA",
+      "actor_role": "creator",
+      "target_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "target_user_code": "7lPBEiA",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "4d802187-1949-400a-a6b5-b83c93548d0e",
+      "ts": "2026-02-09T21:10:16Z",
+      "actor_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "actor_user_code": "7lPBEiA",
+      "actor_role": "creator",
+      "target_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "target_user_code": "7lPBEiA",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "7a97dd6f-8127-4568-8830-5ad8b719fb76",
+      "ts": "2026-02-09T20:43:31Z",
+      "actor_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "actor_user_code": "7XaVoy7",
+      "actor_role": "admin",
+      "target_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "target_user_code": "7XaVoy7",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "b902bd83-d7bd-4de2-8cd2-76d017bab6d5",
+      "ts": "2026-02-09T20:37:43Z",
+      "actor_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "actor_user_code": "JqhcS2m",
+      "actor_role": "creator",
+      "target_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "target_user_code": "JqhcS2m",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "dfd4cd7c-29ba-4b08-9963-1aed7102116b",
+      "ts": "2026-02-09T20:34:31Z",
+      "actor_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "actor_user_code": "7lPBEiA",
+      "actor_role": "creator",
+      "target_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "target_user_code": "7lPBEiA",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "9c90d614-4516-4954-905e-2a29e0827514",
+      "ts": "2026-02-09T20:33:28Z",
+      "actor_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "actor_user_code": "7lPBEiA",
+      "actor_role": "creator",
+      "target_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "target_user_code": "7lPBEiA",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "c55996ff-df78-4dcd-ab8b-bfcfa2546df4",
+      "ts": "2026-02-09T20:27:58Z",
+      "actor_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "actor_user_code": "JqhcS2m",
+      "actor_role": "creator",
+      "target_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "target_user_code": "JqhcS2m",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "e603a003-341d-452c-8ca7-a6b53c712545",
+      "ts": "2026-02-09T20:20:36Z",
+      "actor_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "actor_user_code": "7lPBEiA",
+      "actor_role": "creator",
+      "target_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "target_user_code": "7lPBEiA",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "e61f26d9-0356-4463-a754-450be0adcf3a",
+      "ts": "2026-02-09T20:07:35Z",
+      "actor_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "actor_user_code": "7lPBEiA",
+      "actor_role": "creator",
+      "target_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "target_user_code": "7lPBEiA",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "5625850f-c446-4d6b-a099-cb1fb8e5a9c5",
+      "ts": "2026-02-09T19:34:59Z",
+      "actor_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "actor_user_code": "7lPBEiA",
+      "actor_role": "creator",
+      "target_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "target_user_code": "7lPBEiA",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
     {
       "id": "7b2ab1e0-929b-4a82-8c67-053026470e1f",
       "ts": "2026-02-09T13:13:26Z",
