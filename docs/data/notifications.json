@@ -1,0 +1,66 @@
+{
+  "schema": "streamsuites.notifications.v1",
+  "generated_at": "2026-02-10T22:45:00Z",
+  "notifications": [
+    {
+      "id": "notif-runtime-degraded-20260210",
+      "type": "runtime",
+      "severity": "warning",
+      "created_at": "2026-02-10T22:40:00Z",
+      "title": "Runtime latency elevated",
+      "message": "Platform polling exceeded the target window for 3 cycles. Review recent telemetry and restart if needed.",
+      "link": "#overview",
+      "source": "system monitor"
+    },
+    {
+      "id": "notif-rumble-clips-20260210",
+      "type": "clips",
+      "severity": "info",
+      "created_at": "2026-02-10T19:16:00Z",
+      "title": "Rumble clips export completed",
+      "message": "The latest clips bundle has been generated and staged for publishing.",
+      "link": "#clips",
+      "source": "clips worker"
+    },
+    {
+      "id": "notif-access-review-20260210",
+      "type": "security",
+      "severity": "critical",
+      "created_at": "2026-02-10T17:05:00Z",
+      "title": "Admin access review required",
+      "message": "A privileged account sign-in from a new network was detected. Confirm authorized access and rotate keys if needed.",
+      "link": "#audit",
+      "source": "auth service"
+    },
+    {
+      "id": "notif-queue-backlog-20260209",
+      "type": "jobs",
+      "severity": "warning",
+      "created_at": "2026-02-09T23:48:00Z",
+      "title": "Jobs queue backlog detected",
+      "message": "Two ingestion jobs are pending past SLA. Open Jobs to inspect blocked retries.",
+      "link": "#jobs",
+      "source": "scheduler"
+    },
+    {
+      "id": "notif-config-published-20260209",
+      "type": "config",
+      "severity": "info",
+      "created_at": "2026-02-09T20:12:00Z",
+      "title": "Platform configuration updated",
+      "message": "Discord and Kick platform settings were published to the latest config snapshot.",
+      "link": "#settings",
+      "source": "config service"
+    },
+    {
+      "id": "notif-sync-ready-20260208",
+      "type": "sync",
+      "severity": "info",
+      "created_at": "2026-02-08T14:03:00Z",
+      "title": "Dashboard sync complete",
+      "message": "State files synchronized successfully from runtime exports.",
+      "link": "#data-signals",
+      "source": "state sync"
+    }
+  ]
+}

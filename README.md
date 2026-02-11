@@ -466,6 +466,7 @@ StreamSuites-Dashboard/
 │   │   ├── dashboard_state.json
 │   │   ├── integrations.json
 │   │   ├── jobs.json
+│   │   ├── notifications.json
 │   │   ├── permissions.json
 │   │   ├── platforms.json
 │   │   ├── poll_votes.json
@@ -512,6 +513,7 @@ StreamSuites-Dashboard/
 │   │   ├── data-signals.js
 │   │   ├── discord-guild.js
 │   │   ├── jobs.js
+│   │   ├── notifications.js
 │   │   ├── overview.js
 │   │   ├── permissions.js
 │   │   ├── platforms.js
@@ -647,6 +649,7 @@ StreamSuites-Dashboard/
 │   │   ├── data-signals.html
 │   │   ├── design.html
 │   │   ├── jobs.html
+│   │   ├── notifications.html
 │   │   ├── overview.html
 │   │   ├── polls.html
 │   │   ├── ratelimits.html

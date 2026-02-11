@@ -1584,6 +1584,7 @@ registerView("updates", {
     window.UpdatesView?.destroy?.();
   }
 });
+registerView("notifications", {});
 
 /* ----------------------------------------------------------------------
    Boot
