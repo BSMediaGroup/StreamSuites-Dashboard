@@ -919,6 +919,188 @@ async function loadView(name) {
    Navigation Handling
    ---------------------------------------------------------------------- */
 
+const SIDEBAR_COLLAPSE_STORAGE_KEY = "ss_admin_sidebar_collapsed";
+const SIDEBAR_MOBILE_BREAKPOINT = 980;
+const SIDEBAR_COLLAPSED_CLASS = "ss-sidebar-collapsed";
+const SIDEBAR_ICON_FALLBACK = "/assets/icons/ui/cog.svg";
+
+const SIDEBAR_VIEW_ICON_MAP = Object.freeze({
+  overview: "/assets/icons/ui/dashboard.svg",
+  creators: "/assets/icons/ui/profile.svg",
+  accounts: "/assets/icons/ui/identity.svg",
+  tiers: "/assets/icons/ui/cards.svg",
+  audit: "/assets/icons/ui/admin.svg",
+  approvals: "/assets/icons/ui/switch.svg",
+  "api-usage": "/assets/icons/ui/api.svg",
+  triggers: "/assets/icons/ui/tune.svg",
+  jobs: "/assets/icons/ui/automation.svg",
+  clips: "/assets/icons/ui/widget.svg",
+  polls: "/assets/icons/ui/clickpoint.svg",
+  tallies: "/assets/icons/ui/storage.svg",
+  scoreboards: "/assets/icons/ui/dashboard.svg",
+  "data-signals": "/assets/icons/ui/devices.svg",
+  bots: "/assets/icons/ui/bot.svg",
+  ratelimits: "/assets/icons/ui/memory.svg",
+  settings: "/assets/icons/ui/cog.svg",
+  "chat-replay": "/assets/icons/ui/uiscreen.svg",
+  rumble: "/assets/icons/ui/globe.svg",
+  youtube: "/assets/icons/ui/globe.svg",
+  twitch: "/assets/icons/ui/globe.svg",
+  kick: "/assets/icons/ui/globe.svg",
+  pilled: "/assets/icons/ui/globe.svg",
+  twitter: "/assets/icons/ui/globe.svg",
+  discord: "/assets/icons/ui/globe.svg",
+  updates: "/assets/icons/ui/package.svg",
+  design: "/assets/icons/ui/ui.svg"
+});
+
+const sidebarShell = {
+  hasStoredPreference: false,
+  resizeBound: false
+};
+
+function readSidebarCollapsedPreference() {
+  try {
+    const stored = window.localStorage.getItem(SIDEBAR_COLLAPSE_STORAGE_KEY);
+    if (stored === "1") return true;
+    if (stored === "0") return false;
+  } catch (err) {
+    // Local storage can fail in private/restricted contexts.
+  }
+  return null;
+}
+
+function getSidebarIconForView(viewName) {
+  return SIDEBAR_VIEW_ICON_MAP[viewName] || SIDEBAR_ICON_FALLBACK;
+}
+
+function ensureSidebarNavDecorated() {
+  const navItems = $all("#app-nav-list li[data-view]");
+  navItems.forEach((item) => {
+    const viewName = item.dataset.view || "";
+    const iconPath = item.dataset.navIcon || getSidebarIconForView(viewName);
+    const existingLabel = item.querySelector(".nav-label");
+    if (!item.dataset.navBaseTitle && item.hasAttribute("title")) {
+      item.dataset.navBaseTitle = item.getAttribute("title") || "";
+    }
+
+    if (!existingLabel) {
+      const labelText = (item.dataset.navLabel || item.textContent || "").trim();
+      item.dataset.navLabel = labelText;
+      item.textContent = "";
+
+      const icon = document.createElement("span");
+      icon.className = "nav-icon";
+      icon.setAttribute("aria-hidden", "true");
+
+      const label = document.createElement("span");
+      label.className = "nav-label";
+      label.textContent = labelText;
+
+      item.append(icon, label);
+    } else if (!item.dataset.navLabel) {
+      item.dataset.navLabel = (existingLabel.textContent || "").trim();
+    }
+
+    item.style.setProperty("--nav-icon", `url("${iconPath}")`);
+    if (!item.hasAttribute("tabindex")) {
+      item.setAttribute("tabindex", "0");
+    }
+    if (!item.hasAttribute("role")) {
+      item.setAttribute("role", "button");
+    }
+  });
+}
+
+function isSidebarCollapsed() {
+  return document.documentElement.classList.contains(SIDEBAR_COLLAPSED_CLASS);
+}
+
+function updateSidebarNavTitles() {
+  const collapsed = isSidebarCollapsed();
+  $all("#app-nav-list li[data-view]").forEach((item) => {
+    const label = (item.dataset.navLabel || "").trim();
+    const baseTitle = (item.dataset.navBaseTitle || "").trim();
+    if (!label) return;
+    if (collapsed) {
+      item.setAttribute("title", label);
+    } else if (baseTitle) {
+      item.setAttribute("title", baseTitle);
+    } else {
+      item.removeAttribute("title");
+    }
+  });
+}
+
+function updateSidebarToggleState() {
+  const toggle = $("#sidebar-collapse-toggle");
+  if (!toggle) return;
+  const collapsed = isSidebarCollapsed();
+  const actionLabel = collapsed ? "Expand sidebar" : "Collapse sidebar";
+  toggle.setAttribute("aria-expanded", String(!collapsed));
+  toggle.setAttribute("aria-label", actionLabel);
+  toggle.setAttribute("title", actionLabel);
+}
+
+function setSidebarCollapsed(collapsed, options = {}) {
+  const persist = options.persist !== false;
+  document.documentElement.classList.toggle(SIDEBAR_COLLAPSED_CLASS, collapsed);
+  document.body?.classList.toggle(SIDEBAR_COLLAPSED_CLASS, collapsed);
+  updateSidebarNavTitles();
+  updateSidebarToggleState();
+
+  if (!persist) return;
+  try {
+    window.localStorage.setItem(
+      SIDEBAR_COLLAPSE_STORAGE_KEY,
+      collapsed ? "1" : "0"
+    );
+    sidebarShell.hasStoredPreference = true;
+  } catch (err) {
+    // Local storage can fail in private/restricted contexts.
+  }
+}
+
+function applyAutoSidebarCollapse() {
+  if (sidebarShell.hasStoredPreference) return;
+  const shouldCollapse = window.innerWidth <= SIDEBAR_MOBILE_BREAKPOINT;
+  setSidebarCollapsed(shouldCollapse, { persist: false });
+}
+
+function bindSidebarToggle() {
+  const toggle = $("#sidebar-collapse-toggle");
+  if (!toggle) return;
+  if (toggle.dataset.sidebarBound === "1") return;
+  toggle.dataset.sidebarBound = "1";
+  toggle.addEventListener("click", () => {
+    setSidebarCollapsed(!isSidebarCollapsed(), { persist: true });
+  });
+}
+
+function initSidebarShell() {
+  ensureSidebarNavDecorated();
+  const storedPreference = readSidebarCollapsedPreference();
+  sidebarShell.hasStoredPreference = storedPreference !== null;
+  const initialCollapsed =
+    storedPreference !== null
+      ? storedPreference
+      : window.innerWidth <= SIDEBAR_MOBILE_BREAKPOINT;
+
+  setSidebarCollapsed(initialCollapsed, { persist: false });
+  bindSidebarToggle();
+
+  if (!sidebarShell.resizeBound) {
+    sidebarShell.resizeBound = true;
+    window.addEventListener(
+      "resize",
+      () => {
+        applyAutoSidebarCollapse();
+      },
+      { passive: true }
+    );
+  }
+}
+
 const navOverflow = {
   list: null,
   toggle: null,
@@ -1013,6 +1195,12 @@ function updateNavActiveState(viewName) {
 function bindNavigation() {
   $all("[data-view]").forEach((el) => {
     el.addEventListener("click", () => {
+      const view = el.dataset.view;
+      if (view) loadView(view);
+    });
+    el.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
       const view = el.dataset.view;
       if (view) loadView(view);
     });
@@ -1136,6 +1324,7 @@ async function initApp() {
     setModeDataset(document.getElementById("app"));
     setModeDataset(document.getElementById("view-container"));
 
+    initSidebarShell();
     bindNavigation();
     bindNavOverflow();
     bindDelegatedNavigation();

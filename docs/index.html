@@ -9,6 +9,30 @@
   <script>
     window.ADMIN_BASE_PATH = "/docs";
   </script>
+  <script>
+    (function () {
+      const key = "ss_admin_sidebar_collapsed";
+      const mobileBreakpoint = 980;
+      let collapsed = false;
+
+      try {
+        const stored = window.localStorage.getItem(key);
+        if (stored === "1") {
+          collapsed = true;
+        } else if (stored === "0") {
+          collapsed = false;
+        } else {
+          collapsed = window.innerWidth <= mobileBreakpoint;
+        }
+      } catch (err) {
+        collapsed = window.innerWidth <= mobileBreakpoint;
+      }
+
+      if (collapsed) {
+        document.documentElement.classList.add("ss-sidebar-collapsed");
+      }
+    })();
+  </script>
   <meta charset="UTF-8" />
   <title>StreamSuites™ Admin Dashboard</title>
 
@@ -380,6 +404,18 @@
     <div class="ss-main">
       <header id="app-header" class="ss-topbar">
         <div class="ss-topbar-left">
+          <button
+            type="button"
+            id="sidebar-collapse-toggle"
+            class="sidebar-collapse-toggle"
+            aria-controls="app-nav"
+            aria-expanded="true"
+            aria-label="Collapse sidebar"
+            title="Collapse sidebar"
+          >
+            <span class="sidebar-collapse-toggle-icon" aria-hidden="true"></span>
+            <span class="sr-only">Toggle sidebar</span>
+          </button>
           <span class="ss-topbar-title">Admin Control</span>
         </div>
         <div class="ss-topbar-right">
@@ -442,9 +478,9 @@
         </div>
       </main>
 
-      <footer id="app-footer">
+    </div>
 
-      <!-- Left -->
+    <footer id="app-footer">
       <div class="footer-left">
         <img
           src="/assets/icons/discord-silver.svg"
@@ -456,7 +492,6 @@
         </a>
       </div>
 
-      <!-- Center -->
       <div class="footer-center">
         <span id="footer-version" class="footer-version">Version unavailable</span>
         <span class="footer-sep">•</span>
@@ -467,7 +502,6 @@
         <a href="https://streamsuites.app/home.html">Public Home</a>
       </div>
 
-      <!-- Right -->
       <div class="footer-right">
         <span id="app-status" class="status-indicator idle footer-status">
           ● idle
@@ -476,9 +510,7 @@
           admin@streamsuites.app
         </a>
       </div>
-
-      </footer>
-    </div>
+    </footer>
 
   </div>
 
