@@ -1224,7 +1224,6 @@ function updateNavActiveState(viewName) {
     }
   });
   syncNavOverflowActiveIndicator();
-  ensureActiveNavVisibility();
 }
 
 function bindNavigation() {
