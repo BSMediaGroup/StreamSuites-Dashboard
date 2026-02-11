@@ -940,6 +940,7 @@ const SIDEBAR_VIEW_ICON_MAP = Object.freeze({
   scoreboards: "/assets/icons/ui/dashboard.svg",
   "data-signals": "/assets/icons/ui/devices.svg",
   bots: "/assets/icons/ui/bot.svg",
+  notifications: "/assets/icons/ui/portal.svg",
   ratelimits: "/assets/icons/ui/memory.svg",
   settings: "/assets/icons/ui/cog.svg",
   "chat-replay": "/assets/icons/ui/uiscreen.svg",
@@ -1584,7 +1585,14 @@ registerView("updates", {
     window.UpdatesView?.destroy?.();
   }
 });
-registerView("notifications", {});
+registerView("notifications", {
+  onLoad: () => {
+    window.StreamSuitesNotifications?.initCenter?.();
+  },
+  onUnload: () => {
+    window.StreamSuitesNotifications?.destroyCenter?.();
+  }
+});
 
 /* ----------------------------------------------------------------------
    Boot

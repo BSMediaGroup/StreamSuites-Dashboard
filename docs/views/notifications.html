@@ -1,29 +1,92 @@
 <!-- ========================================================= -->
-<!-- StreamSuites — Notifications (Scaffold) -->
+<!-- StreamSuites - Notifications Center -->
 <!-- ========================================================= -->
 
 <header class="ss-header">
   <div class="ss-header-left">
-    <h1 class="ss-title">StreamSuites</h1>
-    <span class="ss-subtitle">Notifications</span>
+    <h1 class="ss-title">Notifications Center</h1>
+    <span class="ss-subtitle">Review alerts, filter signal noise, and control local mute preferences.</span>
   </div>
   <div class="ss-header-right">
-    <span class="muted">Preview route scaffold</span>
+    <span id="notifications-center-count" class="ss-chip">0 total</span>
+    <span id="notifications-center-unread" class="ss-chip">0 unread</span>
   </div>
 </header>
 
-<main class="ss-main">
-  <section class="ss-panel">
+<main class="ss-main ss-notifications-center-main" id="notifications-center-root">
+  <section class="ss-panel ss-notifications-center-panel">
     <header class="ss-panel-header">
-      <h2>Notifications Center</h2>
+      <div class="ss-panel-header-main">
+        <h2>Inbox</h2>
+        <p class="muted">Feed is read-only and sourced from exported notifications data.</p>
+      </div>
+      <div class="ss-notifications-center-actions">
+        <button type="button" id="notifications-center-mark-all" class="ss-btn ss-btn-secondary">Mark all as read</button>
+        <button type="button" id="notifications-center-toggle-read" class="ss-btn ss-btn-secondary">Hide read</button>
+      </div>
     </header>
     <div class="ss-panel-body">
-      <p style="margin-top: 0;">
-        The full notifications center is not implemented yet.
-      </p>
-      <p class="muted" style="margin-bottom: 0;">
-        Use the topbar bell dropdown to preview recent notifications and mark items as read.
-      </p>
+      <div class="ss-notifications-filters" role="group" aria-label="Notification filters">
+        <label class="ss-notifications-filter-field">
+          <span>Status</span>
+          <select id="notifications-filter-status" class="ss-input">
+            <option value="all">All</option>
+            <option value="unread">Unread</option>
+            <option value="read">Read</option>
+          </select>
+        </label>
+        <label class="ss-notifications-filter-field">
+          <span>Severity</span>
+          <select id="notifications-filter-severity" class="ss-input">
+            <option value="all">All severities</option>
+          </select>
+        </label>
+        <label class="ss-notifications-filter-field">
+          <span>Type</span>
+          <select id="notifications-filter-type" class="ss-input">
+            <option value="all">All types</option>
+          </select>
+        </label>
+        <label class="ss-notifications-filter-field ss-notifications-filter-search">
+          <span>Search</span>
+          <input id="notifications-filter-search" class="ss-input" type="search" placeholder="Search title or message" autocomplete="off" />
+        </label>
+      </div>
+
+      <div id="notifications-center-list" class="ss-notifications-center-list" aria-live="polite"></div>
+      <div id="notifications-center-empty" class="ss-notifications-center-empty hidden">
+        <h3>No notifications found</h3>
+        <p class="muted">Adjust filters or show muted notifications to broaden results.</p>
+      </div>
     </div>
   </section>
+
+  <aside class="ss-panel ss-notifications-settings" aria-labelledby="notifications-settings-title">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2 id="notifications-settings-title">Notification settings</h2>
+        <p class="muted">Local preferences only (stored in this browser).</p>
+      </div>
+    </header>
+    <div class="ss-panel-body">
+      <label class="ss-notifications-setting-toggle">
+        <input type="checkbox" id="notifications-mute-all" />
+        <span>Mute all</span>
+      </label>
+      <label class="ss-notifications-setting-toggle">
+        <input type="checkbox" id="notifications-show-muted" />
+        <span>Show muted in list</span>
+      </label>
+
+      <section class="ss-notifications-setting-group" aria-labelledby="notifications-mute-types-title">
+        <h3 id="notifications-mute-types-title">Mute by type</h3>
+        <div id="notifications-mute-types" class="ss-notifications-checkbox-list"></div>
+      </section>
+
+      <section class="ss-notifications-setting-group" aria-labelledby="notifications-mute-severity-title">
+        <h3 id="notifications-mute-severity-title">Mute by severity</h3>
+        <div id="notifications-mute-severities" class="ss-notifications-checkbox-list"></div>
+      </section>
+    </div>
+  </aside>
 </main>
