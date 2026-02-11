@@ -1008,6 +1008,13 @@ function ensurePlatformNavItems() {
   });
 }
 
+function disableLegacyNavOverflowUi() {
+  const overflowContainer = $("#app-nav-overflow");
+  if (overflowContainer) {
+    overflowContainer.remove();
+  }
+}
+
 function ensureSidebarNavDecorated() {
   const navItems = $all("#app-nav-list li[data-view]");
   navItems.forEach((item) => {
@@ -1112,6 +1119,7 @@ function bindSidebarToggle() {
 }
 
 function initSidebarShell() {
+  disableLegacyNavOverflowUi();
   ensurePlatformNavItems();
   ensureSidebarNavDecorated();
   const storedPreference = readSidebarCollapsedPreference();
@@ -1360,7 +1368,6 @@ async function initApp() {
 
     initSidebarShell();
     bindNavigation();
-    bindNavOverflow();
     bindDelegatedNavigation();
     bindHashChange();
 

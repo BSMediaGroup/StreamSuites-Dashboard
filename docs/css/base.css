@@ -1291,6 +1291,12 @@ body.header-hidden #app-header {
 }
 
 #app-nav #app-nav-list {
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  max-width: 100% !important;
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
@@ -1299,6 +1305,21 @@ body.header-hidden #app-header {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
   padding-bottom: 10px;
+}
+
+#app-nav #app-nav-list > li {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+#app-nav #app-nav-overflow,
+#app-nav #app-nav-overflow-menu {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  overflow: hidden !important;
 }
 
 #app-nav #app-nav-list::-webkit-scrollbar {
