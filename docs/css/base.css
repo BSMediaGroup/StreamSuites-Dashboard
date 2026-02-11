@@ -1007,3 +1007,250 @@ button {
   text-align: center;
   z-index: 9999;
 }
+
+/* ------------------------------
+   Admin Shell (Phase 1 Sidebar)
+   ------------------------------ */
+
+:root {
+  --app-sidebar-width: 286px;
+}
+
+#app {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100vh;
+  min-height: 100vh;
+  padding-top: 0;
+}
+
+body.header-hidden #app {
+  padding-top: 0;
+}
+
+#app-nav {
+  width: var(--app-sidebar-width);
+  min-width: var(--app-sidebar-width);
+  max-width: var(--app-sidebar-width);
+  height: 100vh;
+  min-height: 0;
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid transparent;
+  border-bottom: none;
+}
+
+.ss-sidebar-brand {
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.ss-sidebar-brand .dashboard-badge {
+  display: inline-flex;
+  margin-left: 0;
+  margin-top: 8px;
+}
+
+#app-nav .nav-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 12px 10px 12px 12px;
+  border-radius: 0;
+  border: 0;
+  overflow: hidden;
+}
+
+#app-nav ul {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  width: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;
+}
+
+#app-nav li {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+#app-nav li.nav-section {
+  cursor: default;
+  user-select: none;
+  padding: 12px 8px 6px;
+  border-radius: 0;
+  font-family: "RechargeBd", sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#app-nav .nav-overflow {
+  display: none !important;
+}
+
+.ss-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#app-header {
+  position: sticky;
+  top: 0;
+  left: auto;
+  right: auto;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 20px;
+  min-height: 60px;
+  border-bottom: 1px solid transparent;
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+body.header-hidden #app-header {
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ss-topbar-left,
+.ss-topbar-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ss-topbar-right {
+  margin-left: auto;
+  min-width: 0;
+}
+
+.ss-topbar-title {
+  font-family: "RechargeBd", sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ss-topbar-slot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 6px 10px;
+  border: 1px dashed var(--border-subtle);
+  border-radius: 999px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.72;
+  white-space: nowrap;
+}
+
+#app-header .header-right {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+#app-header .header-row {
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+}
+
+#app-main {
+  overflow: auto;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+#view-container {
+  padding: 20px;
+  min-height: 100%;
+}
+
+#app-footer {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 1200px) {
+  :root {
+    --app-sidebar-width: 252px;
+  }
+}
+
+@media (max-width: 980px) {
+  #app {
+    flex-direction: column;
+  }
+
+  #app-nav {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    height: auto;
+    max-height: 42vh;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    border-right: 0;
+    border-bottom: 1px solid transparent;
+  }
+
+  .ss-sidebar-brand {
+    padding: 12px 14px 8px;
+  }
+
+  #app-nav .nav-shell {
+    padding: 10px 10px 10px 12px;
+    max-height: calc(42vh - 52px);
+  }
+
+  .ss-main {
+    min-height: 0;
+  }
+
+  #app-header {
+    padding: 10px 14px;
+    flex-wrap: wrap;
+  }
+
+  .ss-topbar-right {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  #app-header .header-row {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  #view-container {
+    padding: 16px;
+  }
+}

@@ -85,19 +85,22 @@
     /* ---------------------------------------------------------- */
     /* Header alignment + dashboard badge (PHASE 0 SAFE) */
     /* ---------------------------------------------------------- */
-    #app-header .header-left {
+    #app-header .header-left,
+    .ss-sidebar-brand .header-left {
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
-    #app-header .header-left img {
+    #app-header .header-left img,
+    .ss-sidebar-brand .header-left img {
       height: 32px;
       width: auto;
       display: block;
     }
 
-    #app-header .header-left a {
+    #app-header .header-left a,
+    .ss-sidebar-brand .header-left a {
       display: flex;
       align-items: center;
       gap: 10px;
@@ -105,7 +108,8 @@
       text-decoration: none;
     }
 
-    #app-header .header-left a:hover {
+    #app-header .header-left a:hover,
+    .ss-sidebar-brand .header-left a:hover {
       text-decoration: none;
     }
 
@@ -310,70 +314,27 @@
 
   <div id="app">
 
-    <!-- Header -->
-    <header id="app-header">
-      <div class="header-left">
-        <a href="https://streamsuites.app">
-          <img src="/assets/logos/ssblueshield.webp" alt="StreamSuites Logo" />
-          <h1 class="app-title">StreamSuites</h1>
-          <span class="dashboard-badge" id="dashboard-mode">
-            ADMIN DASHBOARD
-          </span>
-        </a>
-      </div>
-
-      <div class="header-right">
-        <div class="header-row header-auth-row">
-          <div id="admin-auth-indicator" class="streamsuites-auth hidden">
-            <div class="streamsuites-auth-avatar">
-              <img
-                id="admin-auth-avatar"
-                src="/assets/icons/ui/profile.svg"
-                data-fallback="/assets/icons/ui/profile.svg"
-                alt="StreamSuites account avatar"
-              />
-            </div>
-            <div class="streamsuites-auth-meta">
-              <span id="admin-auth-name" class="streamsuites-auth-name">
-                <span class="streamsuites-auth-name-text">Administrator</span>
-                <img
-                  id="admin-auth-tier-badge"
-                  class="streamsuites-auth-tier-badge"
-                  src="/assets/icons/tierbadge-core.svg"
-                  alt=""
-                  aria-hidden="true"
-                />
-              </span>
-              <span id="admin-auth-identity" class="streamsuites-auth-identity">admin@streamsuites.app</span>
-            </div>
-            <span id="admin-auth-role" class="streamsuites-auth-role">Admin</span>
-            <span id="admin-auth-tier" class="streamsuites-auth-tier">CORE</span>
-            <button id="admin-auth-logout" class="ss-btn ss-btn-secondary ss-btn-small">
-              Logout
-            </button>
-          </div>
+    <aside id="app-nav" class="ss-sidebar">
+      <div class="ss-sidebar-brand">
+        <div class="header-left">
+          <a href="https://streamsuites.app">
+            <img src="/assets/logos/ssblueshield.webp" alt="StreamSuites Logo" />
+            <h1 class="app-title">StreamSuites</h1>
+          </a>
         </div>
+        <span class="dashboard-badge" id="dashboard-mode">
+          ADMIN DASHBOARD
+        </span>
       </div>
-    </header>
-
-    <!-- Navigation -->
-    <nav id="app-nav">
       <div class="nav-shell">
-        <input type="checkbox" id="admin-nav-toggle" class="nav-toggle" aria-label="Toggle navigation" />
-        <label class="hamburger nav-toggle-trigger" for="admin-nav-toggle">
-          <span class="sr-only">Toggle navigation</span>
-          <svg viewBox="0 0 32 32" aria-hidden="true">
-            <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"></path>
-            <path class="line" d="M7 16 27 16"></path>
-          </svg>
-        </label>
         <ul id="app-nav-list">
-            <li data-view="overview">Overview</li>
-            <li data-view="creators">Creators</li>
-            <li data-view="accounts">Accounts</li>
-            <li data-view="tiers">Tiers</li>
-            <li data-view="audit">Audit Logs</li>
-            <li data-view="approvals">Approvals</li>
+          <li class="nav-section" aria-hidden="true">Workspace</li>
+          <li data-view="overview">Overview</li>
+          <li data-view="creators">Creators</li>
+          <li data-view="accounts">Accounts</li>
+          <li data-view="tiers">Tiers</li>
+          <li data-view="audit">Audit Logs</li>
+          <li data-view="approvals">Approvals</li>
           <li data-view="api-usage">API Usage</li>
           <li data-view="triggers">Chat Triggers</li>
           <li data-view="jobs">Jobs</li>
@@ -402,11 +363,10 @@
           <li data-view="pilled">Pilled</li>
           <li data-view="twitter">Twitter</li>
           <li data-view="discord" data-discord-nav data-discord-locked>Discord</li>
-          <li data-view="support">Support</li>
 
+          <li class="nav-section" aria-hidden="true">System</li>
           <li data-view="updates">Updates</li>
           <li data-view="design">Design</li>
-          <li data-view="about">About</li>
         </ul>
         <div class="nav-overflow" id="app-nav-overflow" aria-hidden="true">
           <button type="button" class="nav-more-toggle" id="app-nav-overflow-toggle" aria-expanded="false">
@@ -415,34 +375,75 @@
           <ul class="nav-overflow-menu" id="app-nav-overflow-menu"></ul>
         </div>
       </div>
-    </nav>
+    </aside>
 
-    <!-- Main -->
-    <main id="app-main">
-      <div
-        id="restart-required-banner"
-        class="ss-restart-banner hidden"
-        role="status"
-        aria-live="polite"
-      >
-        <div class="ss-restart-banner-text">
-          Pending changes detected — restart required to apply
+    <div class="ss-main">
+      <header id="app-header" class="ss-topbar">
+        <div class="ss-topbar-left">
+          <span class="ss-topbar-title">Admin Control</span>
         </div>
-        <div class="ss-restart-banner-subtext">
-          Changes will take effect when StreamSuites is restarted.
+        <div class="ss-topbar-right">
+          <span class="ss-topbar-slot" aria-hidden="true">Notifications</span>
+          <span class="ss-topbar-slot" aria-hidden="true">User Widget</span>
+          <div class="header-right">
+            <div class="header-row header-auth-row">
+              <div id="admin-auth-indicator" class="streamsuites-auth hidden">
+                <div class="streamsuites-auth-avatar">
+                  <img
+                    id="admin-auth-avatar"
+                    src="/assets/icons/ui/profile.svg"
+                    data-fallback="/assets/icons/ui/profile.svg"
+                    alt="StreamSuites account avatar"
+                  />
+                </div>
+                <div class="streamsuites-auth-meta">
+                  <span id="admin-auth-name" class="streamsuites-auth-name">
+                    <span class="streamsuites-auth-name-text">Administrator</span>
+                    <img
+                      id="admin-auth-tier-badge"
+                      class="streamsuites-auth-tier-badge"
+                      src="/assets/icons/tierbadge-core.svg"
+                      alt=""
+                      aria-hidden="true"
+                    />
+                  </span>
+                  <span id="admin-auth-identity" class="streamsuites-auth-identity">admin@streamsuites.app</span>
+                </div>
+                <span id="admin-auth-role" class="streamsuites-auth-role">Admin</span>
+                <span id="admin-auth-tier" class="streamsuites-auth-tier">CORE</span>
+                <button id="admin-auth-logout" class="ss-btn ss-btn-secondary ss-btn-small">
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div id="view-container">
-        <noscript>
-          <p style="padding:20px;color:#f66;">
-            This dashboard requires JavaScript to run.
-          </p>
-        </noscript>
-      </div>
-    </main>
+      </header>
 
-    <!-- Footer -->
-    <footer id="app-footer">
+      <main id="app-main">
+        <div
+          id="restart-required-banner"
+          class="ss-restart-banner hidden"
+          role="status"
+          aria-live="polite"
+        >
+          <div class="ss-restart-banner-text">
+            Pending changes detected — restart required to apply
+          </div>
+          <div class="ss-restart-banner-subtext">
+            Changes will take effect when StreamSuites is restarted.
+          </div>
+        </div>
+        <div id="view-container">
+          <noscript>
+            <p style="padding:20px;color:#f66;">
+              This dashboard requires JavaScript to run.
+            </p>
+          </noscript>
+        </div>
+      </main>
+
+      <footer id="app-footer">
 
       <!-- Left -->
       <div class="footer-left">
@@ -477,7 +478,8 @@
         </a>
       </div>
 
-    </footer>
+      </footer>
+    </div>
 
   </div>
 
@@ -510,7 +512,6 @@
         "js/data-signals.js",
         "js/bots.js",
         "js/overview.js",
-        "js/about.js",
         "js/updates.js",
         "js/platforms/youtube.js",
         "js/platforms/twitch.js",

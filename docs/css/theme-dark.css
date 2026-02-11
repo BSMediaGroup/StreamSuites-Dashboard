@@ -401,3 +401,84 @@ tr:hover td {
   text-align: center;
   padding: 12px;
 }
+
+/* ----------------------------------------------------------------------
+   Admin Shell (Phase 1 Sidebar)
+   ---------------------------------------------------------------------- */
+
+#app-nav {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.025),
+      rgba(255, 255, 255, 0)
+    ),
+    rgba(9, 11, 16, 0.94);
+  border-right-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 14px 0 34px rgba(0, 0, 0, 0.32);
+}
+
+.ss-sidebar-brand {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.04),
+      rgba(255, 255, 255, 0)
+    );
+}
+
+#app-nav .nav-shell {
+  background: transparent;
+  box-shadow: none;
+}
+
+#app-nav li {
+  color: var(--text-secondary);
+}
+
+#app-nav li.nav-section {
+  color: rgba(255, 255, 255, 0.52);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+#app-nav li:hover {
+  color: var(--link-accent);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+#app-nav li.active {
+  color: var(--link-accent);
+  background: rgba(255, 255, 255, 0.065);
+  box-shadow: inset 2px 0 0 var(--link-accent);
+}
+
+#app-header {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(20, 24, 32, 0.92),
+      rgba(20, 24, 32, 0.78)
+    );
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.ss-topbar-title {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.ss-topbar-slot {
+  color: rgba(255, 255, 255, 0.7);
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+#app-main {
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(91, 130, 222, 0.08),
+      rgba(14, 16, 21, 0)
+    );
+}

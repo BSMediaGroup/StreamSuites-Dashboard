@@ -1050,12 +1050,6 @@ function bindDelegatedNavigation() {
 function resolveInitialView() {
   const hash = window.location.hash.replace("#", "");
 
-  // ✅ ADDITIVE: anchor alias
-  if (hash === "roadmap") {
-    App.pendingAnchor = "roadmap";
-    return "about";
-  }
-
   if (hash && App.views[hash]) {
     return hash;
   }
@@ -1065,13 +1059,6 @@ function resolveInitialView() {
 function bindHashChange() {
   window.addEventListener("hashchange", () => {
     const hash = window.location.hash.replace("#", "");
-
-    // ✅ ADDITIVE: anchor alias
-    if (hash === "roadmap") {
-      App.pendingAnchor = "roadmap";
-      loadView("about");
-      return;
-    }
 
     if (App.views[hash]) {
       loadView(hash);
@@ -1342,7 +1329,6 @@ registerView("discord", {
     window.DiscordView?.destroy?.();
   }
 });
-registerView("support", { templatePath: "support" });
 
 registerView("ratelimits", {
   onLoad: () => {
@@ -1366,14 +1352,6 @@ registerView("updates", {
   },
   onUnload: () => {
     window.UpdatesView?.destroy?.();
-  }
-});
-registerView("about", {
-  onLoad: () => {
-    window.AboutView?.init?.();
-  },
-  onUnload: () => {
-    window.AboutView?.destroy?.();
   }
 });
 
