@@ -959,6 +959,16 @@ const sidebarShell = {
   resizeBound: false
 };
 
+const PLATFORM_NAV_ITEMS = Object.freeze([
+  { view: "rumble", label: "Rumble" },
+  { view: "youtube", label: "YouTube" },
+  { view: "twitch", label: "Twitch" },
+  { view: "kick", label: "Kick" },
+  { view: "pilled", label: "Pilled" },
+  { view: "twitter", label: "Twitter" },
+  { view: "discord", label: "Discord", discordLocked: true }
+]);
+
 function readSidebarCollapsedPreference() {
   try {
     const stored = window.localStorage.getItem(SIDEBAR_COLLAPSE_STORAGE_KEY);
@@ -972,6 +982,30 @@ function readSidebarCollapsedPreference() {
 
 function getSidebarIconForView(viewName) {
   return SIDEBAR_VIEW_ICON_MAP[viewName] || SIDEBAR_ICON_FALLBACK;
+}
+
+function ensurePlatformNavItems() {
+  const navList = $("#app-nav-list");
+  if (!navList) return;
+
+  const systemSection = navList.querySelector("li.nav-section:last-of-type");
+  PLATFORM_NAV_ITEMS.forEach((item) => {
+    if (navList.querySelector(`li[data-view="${item.view}"]`)) return;
+
+    const li = document.createElement("li");
+    li.dataset.view = item.view;
+    li.textContent = item.label;
+    if (item.discordLocked) {
+      li.setAttribute("data-discord-nav", "");
+      li.setAttribute("data-discord-locked", "");
+    }
+
+    if (systemSection) {
+      navList.insertBefore(li, systemSection);
+    } else {
+      navList.appendChild(li);
+    }
+  });
 }
 
 function ensureSidebarNavDecorated() {
@@ -1078,6 +1112,7 @@ function bindSidebarToggle() {
 }
 
 function initSidebarShell() {
+  ensurePlatformNavItems();
   ensureSidebarNavDecorated();
   const storedPreference = readSidebarCollapsedPreference();
   sidebarShell.hasStoredPreference = storedPreference !== null;
