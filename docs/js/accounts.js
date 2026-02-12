@@ -7,7 +7,7 @@
 
   const RUNTIME_ENDPOINT = "/admin/accounts";
   const DONATIONS_EXPORT_PATH = "runtime/exports/admin/donations/donations.json";
-  const COLUMN_WIDTH_STORAGE_KEY = "ss_admin_accounts_colwidths_v1";
+  const COLUMN_WIDTH_STORAGE_KEY = "ss_admin_accounts_colwidths_v2";
   const PROFILE_HOVER_DELAY_MS = 2000;
   const PROFILE_CLICK_DELAY_MS = 240;
   const SEARCH_FIELDS = [
@@ -37,6 +37,7 @@
     columnResize: null,
     escapeBound: false,
     profileHoverTimer: null,
+    profileHoverAccountId: "",
     profileClickTimer: null,
     profileCardAccountId: "",
     profileCardPinned: false,
@@ -202,8 +203,20 @@
 
 function normalizeUser(raw = {}) {
     const providers = resolveProviders(raw.providers || raw.authProviders || raw.auth_providers);
-    const internalId =
-      raw.internal_id || raw.internalId || raw.id || raw.uuid || raw.user_id || raw.userId || "—";
+    let internalId =
+      raw.internal_id || raw.internalId || raw.id || raw.uuid || raw.user_id || raw.userId || "";
+    if (!String(internalId || "").trim() || String(internalId).trim() === "—") {
+      internalId =
+        raw.user_code ||
+        raw.userCode ||
+        raw.email ||
+        raw.email_address ||
+        raw.username ||
+        "";
+    }
+    if (!String(internalId || "").trim()) {
+      internalId = "—";
+    }
     const emailVerifiedRaw =
       typeof raw.email_verified === "boolean"
         ? raw.email_verified
@@ -339,6 +352,11 @@ function normalizeUser(raw = {}) {
       .replace(/^-+|-+$/g, "");
   }
 
+  function normalizeAccountId(value) {
+    if (value === undefined || value === null) return "";
+    return String(value).trim();
+  }
+
   function getDrawerDomId(accountId) {
     return `accounts-actions-${toDomId(accountId) || "row"}`;
   }
@@ -371,7 +389,7 @@ function normalizeUser(raw = {}) {
     const hasEmail = Boolean(user.email && user.email !== "—");
     const tiers = ["CORE", "GOLD", "PRO"];
     const currentTier = String(user.tier || "CORE").toUpperCase();
-    const accountId = user.id;
+    const accountId = normalizeAccountId(user.id);
 
     const actions = [];
     if (isActive) {
@@ -642,7 +660,7 @@ function normalizeUser(raw = {}) {
   }
 
   function renderActionsToggle(user) {
-    const accountId = String(user.id || "");
+    const accountId = normalizeAccountId(user.id);
     return `
       <button
         type="button"
@@ -658,9 +676,10 @@ function normalizeUser(raw = {}) {
   }
 
   function renderRow(user) {
+    const accountId = normalizeAccountId(user.id);
     return `
-      <td class="accounts-id-column" data-account-id="${escapeHtml(user.id)}">${renderTextValue(
-        user.id
+      <td class="accounts-id-column" data-account-id="${escapeHtml(accountId)}">${renderTextValue(
+        accountId || "—"
       )}</td>
       <td>${renderTextValue(user.userCode)}</td>
       <td>${renderTextValue(user.email)}</td>
@@ -674,7 +693,7 @@ function normalizeUser(raw = {}) {
       <td>${renderTextValue(user.providersLabel)}</td>
       <td>${renderTextValue(formatTimestamp(user.createdAt))}</td>
       <td>${renderTextValue(formatTimestamp(user.lastLogin))}</td>
-      <td class="align-right accounts-actions-cell">${renderActionsToggle(user)}</td>
+      <td class="align-right accounts-actions-cell">${renderActionsToggle({ ...user, id: accountId })}</td>
     `;
   }
 
@@ -683,20 +702,23 @@ function normalizeUser(raw = {}) {
   }
 
   function getUserById(accountId) {
-    return state.raw.find((entry) => entry.id === accountId) || null;
+    const id = normalizeAccountId(accountId);
+    if (!id) return null;
+    return state.raw.find((entry) => normalizeAccountId(entry?.id) === id) || null;
   }
 
   function getBaseRowByAccountId(accountId) {
-    if (!el.body || !accountId) return null;
+    const id = normalizeAccountId(accountId);
+    if (!el.body || !id) return null;
     const rows = el.body.querySelectorAll('tr[data-row-type="account"][data-account-id]');
     for (const row of rows) {
-      if (row.getAttribute("data-account-id") === accountId) {
+      if (normalizeAccountId(row.getAttribute("data-account-id")) === id) {
         return row;
       }
     }
     const triggers = el.body.querySelectorAll("[data-account-open-actions]");
     for (const trigger of triggers) {
-      if (trigger.getAttribute("data-account-id") !== accountId) continue;
+      if (normalizeAccountId(trigger.getAttribute("data-account-id")) !== id) continue;
       return trigger.closest("tr");
     }
     return null;
@@ -732,9 +754,10 @@ function normalizeUser(raw = {}) {
   }
 
   function openDrawer(accountId) {
-    if (!accountId || !el.body) return;
-    const baseRow = getBaseRowByAccountId(accountId);
-    const user = getUserById(accountId);
+    const id = normalizeAccountId(accountId);
+    if (!id || !el.body) return;
+    const baseRow = getBaseRowByAccountId(id);
+    const user = getUserById(id);
     if (!baseRow || !user) {
       state.openDrawerId = "";
       return;
@@ -745,13 +768,13 @@ function normalizeUser(raw = {}) {
     const drawerRow = document.createElement("tr");
     drawerRow.className = "accounts-row-drawer-row";
     drawerRow.setAttribute("data-row-type", "drawer");
-    drawerRow.setAttribute("data-drawer-account-id", accountId);
+    drawerRow.setAttribute("data-drawer-account-id", id);
 
     const drawerCell = document.createElement("td");
     drawerCell.className = "accounts-row-drawer-cell";
     drawerCell.colSpan = getDrawerColumnCount();
     drawerCell.innerHTML = `
-      <div class="accounts-row-drawer-panel glass-card" id="${escapeHtml(getDrawerDomId(accountId))}">
+      <div class="accounts-row-drawer-panel glass-card" id="${escapeHtml(getDrawerDomId(id))}">
         <div class="accounts-row-drawer-head">
           <div class="accounts-row-drawer-title-wrap">
             <strong class="accounts-row-drawer-title">Actions for ${escapeHtml(
@@ -763,7 +786,7 @@ function normalizeUser(raw = {}) {
             type="button"
             class="ss-btn ss-btn-small ss-btn-secondary"
             data-account-close-actions
-            data-account-id="${escapeHtml(accountId)}"
+            data-account-id="${escapeHtml(id)}"
           >
             Close
           </button>
@@ -776,7 +799,7 @@ function normalizeUser(raw = {}) {
     baseRow.classList.add("accounts-row-expanded");
     setDrawerToggleState(baseRow, true);
     baseRow.insertAdjacentElement("afterend", drawerRow);
-    state.openDrawerId = accountId;
+    state.openDrawerId = id;
   }
 
   function restoreOpenDrawer() {
@@ -788,12 +811,13 @@ function normalizeUser(raw = {}) {
   }
 
   function toggleDrawer(accountId) {
-    if (!accountId) return;
-    if (state.openDrawerId === accountId) {
+    const id = normalizeAccountId(accountId);
+    if (!id) return;
+    if (state.openDrawerId === id) {
       closeOpenDrawer();
       return;
     }
-    openDrawer(accountId);
+    openDrawer(id);
   }
 
   function isBaseAccountRow(row) {
@@ -808,16 +832,17 @@ function normalizeUser(raw = {}) {
   function getAccountIdFromBaseRow(row) {
     if (!isBaseAccountRow(row)) return "";
     const rowAccountId = row.getAttribute("data-account-id");
-    if (rowAccountId) return rowAccountId;
+    if (rowAccountId) return normalizeAccountId(rowAccountId);
     const idCell = row.querySelector(".accounts-id-column[data-account-id]");
     if (!(idCell instanceof HTMLElement)) return "";
-    return idCell.getAttribute("data-account-id") || "";
+    return normalizeAccountId(idCell.getAttribute("data-account-id"));
   }
 
   function clearProfileHoverTimer() {
     if (!state.profileHoverTimer) return;
     clearTimeout(state.profileHoverTimer);
     state.profileHoverTimer = null;
+    state.profileHoverAccountId = "";
   }
 
   function clearProfileClickTimer() {
@@ -943,6 +968,10 @@ function normalizeUser(raw = {}) {
     if (!el.profileCard) return;
     if (!force && state.profileCardPinned) return;
     el.profileCard.classList.add("hidden");
+    el.profileCard.style.display = "none";
+    el.profileCard.style.visibility = "hidden";
+    el.profileCard.style.opacity = "0";
+    el.profileCard.style.pointerEvents = "none";
     el.profileCard.classList.remove("is-pinned");
     el.profileCard.removeAttribute("data-account-id");
     state.profileCardAccountId = "";
@@ -950,18 +979,23 @@ function normalizeUser(raw = {}) {
   }
 
   function showProfileCard(accountId, row, options = {}) {
-    if (!accountId) return;
+    const id = normalizeAccountId(accountId);
+    if (!id) return;
     ensureProfileCard();
     if (!el.profileCard) return;
 
-    const user = getUserById(accountId);
+    const user = getUserById(id);
     if (!user) return;
 
     el.profileCard.innerHTML = renderProfileCard(user);
     el.profileCard.classList.remove("hidden");
+    el.profileCard.style.display = "block";
+    el.profileCard.style.visibility = "visible";
+    el.profileCard.style.opacity = "1";
+    el.profileCard.style.pointerEvents = "auto";
     el.profileCard.classList.toggle("is-pinned", options.pinned === true);
-    el.profileCard.setAttribute("data-account-id", accountId);
-    state.profileCardAccountId = accountId;
+    el.profileCard.setAttribute("data-account-id", id);
+    state.profileCardAccountId = id;
     state.profileCardPinned = options.pinned === true;
     positionProfileCardForRow(row);
   }
@@ -977,20 +1011,26 @@ function normalizeUser(raw = {}) {
   }
 
   function scheduleProfileHover(row, accountId) {
-    clearProfileHoverTimer();
     if (state.profileCardPinned) return;
-    if (!row || !accountId) return;
+    const id = normalizeAccountId(accountId);
+    if (!row || !id) return;
+    if (state.profileHoverAccountId === id && state.profileHoverTimer) return;
+    clearProfileHoverTimer();
+    state.profileHoverAccountId = id;
     state.profileHoverTimer = setTimeout(() => {
       if (state.profileCardPinned) {
         state.profileHoverTimer = null;
+        state.profileHoverAccountId = "";
         return;
       }
       if (!document.body.contains(row)) {
         state.profileHoverTimer = null;
+        state.profileHoverAccountId = "";
         return;
       }
-      showProfileCard(accountId, row, { pinned: false });
+      showProfileCard(id, row, { pinned: false });
       state.profileHoverTimer = null;
+      state.profileHoverAccountId = "";
     }, PROFILE_HOVER_DELAY_MS);
   }
 
@@ -1001,6 +1041,10 @@ function normalizeUser(raw = {}) {
         "button, a, input, select, textarea, label, [data-account-action], [data-account-open-actions], [data-account-close-actions], [data-account-tier]"
       )
     );
+  }
+
+  function getEventTargetElement(event) {
+    return event?.target instanceof Element ? event.target : null;
   }
 
   async function fetchJson(url, options = {}) {
@@ -1457,17 +1501,34 @@ function normalizeUser(raw = {}) {
     }
 
     el.body?.addEventListener("mouseover", (event) => {
-      const row = event.target.closest("tr");
+      const target = getEventTargetElement(event);
+      if (!target) return;
+      const row = target.closest("tr");
       if (!isBaseAccountRow(row)) return;
       const related = event.relatedTarget;
       if (related instanceof Node && row.contains(related)) return;
-      if (isInteractiveRowTarget(event.target)) return;
+      if (isInteractiveRowTarget(target)) return;
+      const accountId = getAccountIdFromBaseRow(row);
+      scheduleProfileHover(row, accountId);
+    });
+
+    el.body?.addEventListener("mousemove", (event) => {
+      const target = getEventTargetElement(event);
+      if (!target) return;
+      if (isInteractiveRowTarget(target)) {
+        clearProfileHoverTimer();
+        return;
+      }
+      const row = target.closest("tr");
+      if (!isBaseAccountRow(row)) return;
       const accountId = getAccountIdFromBaseRow(row);
       scheduleProfileHover(row, accountId);
     });
 
     el.body?.addEventListener("mouseout", (event) => {
-      const row = event.target.closest("tr");
+      const target = getEventTargetElement(event);
+      if (!target) return;
+      const row = target.closest("tr");
       if (!isBaseAccountRow(row)) return;
       const related = event.relatedTarget;
       if (related instanceof Node && row.contains(related)) return;
@@ -1481,9 +1542,18 @@ function normalizeUser(raw = {}) {
       }
     });
 
+    el.body?.addEventListener("mouseleave", () => {
+      clearProfileHoverTimer();
+      if (!state.profileCardPinned) {
+        hideProfileCard(true);
+      }
+    });
+
     el.body?.addEventListener("dblclick", (event) => {
-      if (isInteractiveRowTarget(event.target)) return;
-      const row = event.target.closest("tr");
+      const target = getEventTargetElement(event);
+      if (!target) return;
+      if (isInteractiveRowTarget(target)) return;
+      const row = target.closest("tr");
       if (!isBaseAccountRow(row)) return;
       const accountId = getAccountIdFromBaseRow(row);
       if (!accountId) return;
@@ -1493,7 +1563,9 @@ function normalizeUser(raw = {}) {
     });
 
     el.body?.addEventListener("click", (event) => {
-      const closeButton = event.target.closest("[data-account-close-actions]");
+      const target = getEventTargetElement(event);
+      if (!target) return;
+      const closeButton = target.closest("[data-account-close-actions]");
       if (closeButton) {
         event.preventDefault();
         clearProfileClickTimer();
@@ -1501,20 +1573,20 @@ function normalizeUser(raw = {}) {
         return;
       }
 
-      const drawerToggle = event.target.closest("[data-account-open-actions]");
+      const drawerToggle = target.closest("[data-account-open-actions]");
       if (drawerToggle) {
         event.preventDefault();
         clearProfileClickTimer();
-        const accountId = drawerToggle.getAttribute("data-account-id") || "";
+        const accountId = normalizeAccountId(drawerToggle.getAttribute("data-account-id"));
         toggleDrawer(accountId);
         return;
       }
 
-      const button = event.target.closest("[data-account-action]");
+      const button = target.closest("[data-account-action]");
       if (!button) return;
       if (button.disabled) return;
       const action = button.getAttribute("data-account-action") || "";
-      const accountId = button.getAttribute("data-account-id") || "";
+      const accountId = normalizeAccountId(button.getAttribute("data-account-id"));
       const row = button.closest("tr");
       const user = getUserById(accountId);
       if (!user || !action) return;
@@ -1524,8 +1596,10 @@ function normalizeUser(raw = {}) {
     });
 
     el.body?.addEventListener("click", (event) => {
-      if (isInteractiveRowTarget(event.target)) return;
-      const row = event.target.closest("tr");
+      const target = getEventTargetElement(event);
+      if (!target) return;
+      if (isInteractiveRowTarget(target)) return;
+      const row = target.closest("tr");
       if (!isBaseAccountRow(row)) return;
       const accountId = getAccountIdFromBaseRow(row);
       if (!accountId) return;
@@ -1546,8 +1620,8 @@ function normalizeUser(raw = {}) {
       document.addEventListener("click", (event) => {
         if (!isProfileCardVisible()) return;
         if (state.profileCardPinned) return;
-        const target = event.target;
-        if (!(target instanceof Element)) return;
+        const target = getEventTargetElement(event);
+        if (!target) return;
         const inCard = Boolean(el.profileCard?.contains(target));
         const inAccountRow = Boolean(target.closest('tr[data-row-type="account"]'));
         if (inCard || inAccountRow) return;
@@ -1581,7 +1655,7 @@ function normalizeUser(raw = {}) {
         return;
       }
       const item = renderedItems[index];
-      const accountId = item?.id || getAccountIdFromBaseRow(row);
+      const accountId = normalizeAccountId(item?.id) || getAccountIdFromBaseRow(row);
       row.setAttribute("data-row-type", "account");
       if (accountId) {
         row.setAttribute("data-account-id", accountId);
@@ -1650,6 +1724,7 @@ function normalizeUser(raw = {}) {
     state.openDrawerId = "";
     state.profileCardPinned = false;
     state.profileCardAccountId = "";
+    state.profileHoverAccountId = "";
     clearProfileHoverTimer();
     clearProfileClickTimer();
     ensureProfileCard();

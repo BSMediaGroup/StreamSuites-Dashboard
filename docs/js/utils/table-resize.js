@@ -148,6 +148,39 @@
     let storedWidths = loadStoredWidths(storageKey);
     let dragSession = null;
 
+    function resolveColumnRenderedWidth(column) {
+      if (!column?.th) return 0;
+      const colWidth = toFiniteNumber(column.col?.style?.width?.replace("px", ""));
+      if (colWidth && colWidth > 0) return colWidth;
+      const thWidth = Math.round(column.th.getBoundingClientRect().width);
+      return thWidth > 0 ? thWidth : 0;
+    }
+
+    function syncTableWidth() {
+      const total = columns.reduce((sum, column) => {
+        return sum + resolveColumnRenderedWidth(column);
+      }, 0);
+      if (total > 0) {
+        table.style.width = `${Math.ceil(total)}px`;
+      } else {
+        table.style.width = "";
+      }
+      table.style.minWidth = "100%";
+    }
+
+    function applyBaselineWidths() {
+      columns.forEach((column) => {
+        const hasExplicitWidth =
+          Boolean(column.col?.style?.width) ||
+          Boolean(column.th.style.width);
+        if (hasExplicitWidth) return;
+        const current = Math.round(column.th.getBoundingClientRect().width);
+        if (!Number.isFinite(current) || current <= 0) return;
+        setColumnWidth(column, current, { persist: false, sync: false });
+      });
+      syncTableWidth();
+    }
+
     function resolveHeaders() {
       return Array.from(table.querySelectorAll("thead th"));
     }
@@ -220,6 +253,7 @@
     function setColumnWidth(column, rawWidth, options = {}) {
       if (!column || !column.th) return;
       const persist = options.persist === true;
+      const sync = options.sync !== false;
       const columnMin = toFiniteNumber(column.minWidth) || minWidth;
       const width = Math.round(clamp(rawWidth, columnMin, maxWidth));
       const widthPx = `${width}px`;
@@ -233,6 +267,10 @@
       column.th.style.width = widthPx;
       column.th.style.minWidth = widthPx;
       column.th.style.maxWidth = widthPx;
+
+      if (sync) {
+        syncTableWidth();
+      }
 
       if (persist) {
         persistCurrentWidths();
@@ -343,7 +381,9 @@
     function refresh() {
       if (disposed) return;
       buildColumnState();
+      applyBaselineWidths();
       applyStoredWidths();
+      syncTableWidth();
       renderHandles();
     }
 

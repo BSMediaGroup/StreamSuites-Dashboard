@@ -452,7 +452,7 @@
 }
 
 #accounts-table {
-  width: max-content;
+  width: 100%;
   min-width: 100%;
   table-layout: fixed;
 }
@@ -461,6 +461,7 @@
 #accounts-table td {
   white-space: nowrap;
   overflow: hidden;
+  min-width: 0;
 }
 
 #accounts-table th {
@@ -469,6 +470,8 @@
 
 #accounts-table .accounts-cell-ellipsis {
   display: block;
+  width: 100%;
+  min-width: 0;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -632,7 +635,7 @@ body.ss-col-resizing-active {
   width: min(320px, calc(100vw - 24px));
   max-height: min(68vh, 520px);
   overflow: auto;
-  z-index: 2200;
+  z-index: 2147483646;
   padding: 12px;
   border: 1px solid var(--border-subtle);
   background: linear-gradient(165deg, rgba(24, 29, 40, 0.96), rgba(14, 17, 24, 0.98));
