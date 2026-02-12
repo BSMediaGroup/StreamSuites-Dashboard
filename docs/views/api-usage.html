@@ -29,11 +29,10 @@
       <div class="ss-panel-header-actions">
         <label class="muted" for="api-usage-window-select" style="margin-right:6px;">Window</label>
         <select id="api-usage-window-select" class="ss-select" style="margin-right:12px;">
-          <option value="60">Last 1m</option>
-          <option value="300" selected>Last 5m</option>
-          <option value="900">Last 15m</option>
-          <option value="3600">Last 1h</option>
-          <option value="86400">Last 24h</option>
+          <option value="5m" selected>Last 5m</option>
+          <option value="15m">Last 15m</option>
+          <option value="1h">Last 1h</option>
+          <option value="24h">Last 24h</option>
         </select>
         <span id="api-usage-status" class="muted">Loading...</span>
       </div>
@@ -46,6 +45,7 @@
         <div><strong>RPM:</strong> <span id="api-usage-rpm">--</span></div>
         <div><strong>Error rate:</strong> <span id="api-usage-error-rate">--</span></div>
         <div><strong>Window:</strong> <span id="api-usage-window">--</span></div>
+        <div><strong>Generated:</strong> <span id="api-usage-generated-at">--</span></div>
       </div>
 
       <div id="api-usage-chart-panel" class="ss-panel api-usage-chart-panel" style="padding:16px;">
@@ -67,9 +67,7 @@
       </div>
     </header>
     <div class="ss-panel-body">
-      <div class="ss-empty">
-        Awaiting telemetry ingestion. Endpoint health data will appear here.
-      </div>
+      <div id="api-usage-endpoint-health"></div>
     </div>
   </section>
 
@@ -83,9 +81,7 @@
       </div>
     </header>
     <div class="ss-panel-body">
-      <div class="ss-empty">
-        No data available yet. Auth and access signals will populate once collected.
-      </div>
+      <div id="api-usage-auth-signals"></div>
     </div>
   </section>
 
@@ -99,9 +95,7 @@
       </div>
     </header>
     <div class="ss-panel-body">
-      <div class="ss-empty">
-        Awaiting telemetry ingestion. Tier and surface usage will appear here.
-      </div>
+      <div id="api-usage-tier-surface"></div>
     </div>
   </section>
 
@@ -115,9 +109,7 @@
       </div>
     </header>
     <div class="ss-panel-body">
-      <div class="ss-empty">
-        No data available yet. Version regression monitoring will appear here.
-      </div>
+      <div id="api-usage-version-regression"></div>
     </div>
   </section>
 </main>
