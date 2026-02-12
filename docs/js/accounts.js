@@ -8,6 +8,8 @@
   const RUNTIME_ENDPOINT = "/admin/accounts";
   const DONATIONS_EXPORT_PATH = "runtime/exports/admin/donations/donations.json";
   const COLUMN_WIDTH_STORAGE_KEY = "ss_admin_accounts_colwidths_v1";
+  const PROFILE_HOVER_DELAY_MS = 2000;
+  const PROFILE_CLICK_DELAY_MS = 240;
   const SEARCH_FIELDS = [
     "userCode",
     "email",
@@ -35,6 +37,7 @@
     columnResize: null,
     escapeBound: false,
     profileHoverTimer: null,
+    profileClickTimer: null,
     profileCardAccountId: "",
     profileCardPinned: false,
     profileBound: false
@@ -685,6 +688,12 @@ function normalizeUser(raw = {}) {
 
   function getBaseRowByAccountId(accountId) {
     if (!el.body || !accountId) return null;
+    const rows = el.body.querySelectorAll('tr[data-row-type="account"][data-account-id]');
+    for (const row of rows) {
+      if (row.getAttribute("data-account-id") === accountId) {
+        return row;
+      }
+    }
     const triggers = el.body.querySelectorAll("[data-account-open-actions]");
     for (const trigger of triggers) {
       if (trigger.getAttribute("data-account-id") !== accountId) continue;
@@ -735,6 +744,7 @@ function normalizeUser(raw = {}) {
 
     const drawerRow = document.createElement("tr");
     drawerRow.className = "accounts-row-drawer-row";
+    drawerRow.setAttribute("data-row-type", "drawer");
     drawerRow.setAttribute("data-drawer-account-id", accountId);
 
     const drawerCell = document.createElement("td");
@@ -787,15 +797,18 @@ function normalizeUser(raw = {}) {
   }
 
   function isBaseAccountRow(row) {
-    return Boolean(
-      row &&
-        row instanceof HTMLTableRowElement &&
-        !row.classList.contains("accounts-row-drawer-row")
-    );
+    if (!(row instanceof HTMLTableRowElement)) return false;
+    const rowType = row.getAttribute("data-row-type");
+    if (rowType) {
+      return rowType === "account";
+    }
+    return !row.classList.contains("accounts-row-drawer-row");
   }
 
   function getAccountIdFromBaseRow(row) {
     if (!isBaseAccountRow(row)) return "";
+    const rowAccountId = row.getAttribute("data-account-id");
+    if (rowAccountId) return rowAccountId;
     const idCell = row.querySelector(".accounts-id-column[data-account-id]");
     if (!(idCell instanceof HTMLElement)) return "";
     return idCell.getAttribute("data-account-id") || "";
@@ -805,6 +818,16 @@ function normalizeUser(raw = {}) {
     if (!state.profileHoverTimer) return;
     clearTimeout(state.profileHoverTimer);
     state.profileHoverTimer = null;
+  }
+
+  function clearProfileClickTimer() {
+    if (!state.profileClickTimer) return;
+    clearTimeout(state.profileClickTimer);
+    state.profileClickTimer = null;
+  }
+
+  function isProfileCardVisible() {
+    return Boolean(el.profileCard && !el.profileCard.classList.contains("hidden"));
   }
 
   function ensureProfileCard() {
@@ -823,6 +846,15 @@ function normalizeUser(raw = {}) {
           }
         });
       }
+      if (el.profileCard.dataset.closeBound !== "1") {
+        el.profileCard.dataset.closeBound = "1";
+        el.profileCard.addEventListener("click", (event) => {
+          const closeBtn = event.target.closest("[data-profile-card-close]");
+          if (!closeBtn) return;
+          event.preventDefault();
+          hideProfileCard(true);
+        });
+      }
       return;
     }
 
@@ -832,34 +864,55 @@ function normalizeUser(raw = {}) {
     card.setAttribute("role", "dialog");
     card.setAttribute("aria-live", "polite");
     card.dataset.bound = "1";
+    card.dataset.closeBound = "1";
     card.addEventListener("mouseenter", () => clearProfileHoverTimer());
     card.addEventListener("mouseleave", () => {
       if (!state.profileCardPinned) {
         hideProfileCard(true);
       }
     });
+    card.addEventListener("click", (event) => {
+      const closeBtn = event.target.closest("[data-profile-card-close]");
+      if (!closeBtn) return;
+      event.preventDefault();
+      hideProfileCard(true);
+    });
     document.body.appendChild(card);
     el.profileCard = card;
   }
 
   function renderProfileCard(user) {
+    const title = user.displayName || user.userCode || user.email || "Account";
+    const subtext = user.userCode || user.email || "—";
     return `
       <div class="accounts-profile-card-head">
-        <strong>${escapeHtml(user.displayName || user.userCode || "Account")}</strong>
-        <span class="muted">${escapeHtml(user.email || "—")}</span>
+        <div class="accounts-profile-card-title-wrap">
+          <strong>${escapeHtml(title)}</strong>
+          <span class="muted">${escapeHtml(subtext)}</span>
+        </div>
+        <button type="button" class="accounts-profile-card-close ss-btn ss-btn-small ss-btn-secondary" data-profile-card-close aria-label="Close profile card">X</button>
       </div>
       <div class="accounts-profile-card-grid">
         <div><span class="label">User Code</span><span class="value">${escapeHtml(user.userCode || "—")}</span></div>
+        <div><span class="label">Email</span><span class="value">${escapeHtml(user.email || "—")}</span></div>
         <div><span class="label">Role</span><span class="value">${escapeHtml(user.role || "—")}</span></div>
         <div><span class="label">Tier</span><span class="value">${escapeHtml(user.tier || "—")}</span></div>
         <div><span class="label">Status</span><span class="value">${escapeHtml(user.accountStatus || "—")}</span></div>
+        <div><span class="label">Onboarding</span><span class="value">${escapeHtml(user.onboardingStatus || "—")}</span></div>
         <div><span class="label">Created</span><span class="value">${escapeHtml(formatTimestamp(user.createdAt))}</span></div>
         <div><span class="label">Last Login</span><span class="value">${escapeHtml(formatTimestamp(user.lastLogin))}</span></div>
       </div>
       <div class="accounts-profile-card-section">
-        <div class="accounts-profile-card-placeholder">Security Score: —</div>
-        <div class="accounts-profile-card-placeholder">Risk Flags: —</div>
-        <div class="accounts-profile-card-placeholder">Admin Notes: Placeholder</div>
+        <div class="accounts-profile-card-section-title">Admin Notes</div>
+        <div class="accounts-profile-card-placeholder">No admin notes yet.</div>
+      </div>
+      <div class="accounts-profile-card-section">
+        <div class="accounts-profile-card-section-title">Platform Links</div>
+        <div class="accounts-profile-card-placeholder">No linked platforms recorded.</div>
+      </div>
+      <div class="accounts-profile-card-section">
+        <div class="accounts-profile-card-section-title">Recent Activity</div>
+        <div class="accounts-profile-card-placeholder">No recent activity snapshot available.</div>
       </div>
     `;
   }
@@ -890,6 +943,8 @@ function normalizeUser(raw = {}) {
     if (!el.profileCard) return;
     if (!force && state.profileCardPinned) return;
     el.profileCard.classList.add("hidden");
+    el.profileCard.classList.remove("is-pinned");
+    el.profileCard.removeAttribute("data-account-id");
     state.profileCardAccountId = "";
     state.profileCardPinned = false;
   }
@@ -904,13 +959,15 @@ function normalizeUser(raw = {}) {
 
     el.profileCard.innerHTML = renderProfileCard(user);
     el.profileCard.classList.remove("hidden");
+    el.profileCard.classList.toggle("is-pinned", options.pinned === true);
+    el.profileCard.setAttribute("data-account-id", accountId);
     state.profileCardAccountId = accountId;
     state.profileCardPinned = options.pinned === true;
     positionProfileCardForRow(row);
   }
 
   function refreshProfileCardAnchor() {
-    if (!el.profileCard || !state.profileCardAccountId) return;
+    if (!isProfileCardVisible() || !state.profileCardAccountId) return;
     const row = getBaseRowByAccountId(state.profileCardAccountId);
     if (!row) {
       hideProfileCard(true);
@@ -921,15 +978,20 @@ function normalizeUser(raw = {}) {
 
   function scheduleProfileHover(row, accountId) {
     clearProfileHoverTimer();
+    if (state.profileCardPinned) return;
     if (!row || !accountId) return;
     state.profileHoverTimer = setTimeout(() => {
+      if (state.profileCardPinned) {
+        state.profileHoverTimer = null;
+        return;
+      }
       if (!document.body.contains(row)) {
         state.profileHoverTimer = null;
         return;
       }
       showProfileCard(accountId, row, { pinned: false });
       state.profileHoverTimer = null;
-    }, 2000);
+    }, PROFILE_HOVER_DELAY_MS);
   }
 
   function isInteractiveRowTarget(target) {
@@ -1386,6 +1448,7 @@ function normalizeUser(raw = {}) {
       state.escapeBound = true;
       document.addEventListener("keydown", (event) => {
         if (event.key !== "Escape") return;
+        clearProfileClickTimer();
         if (state.openDrawerId) {
           closeOpenDrawer();
         }
@@ -1425,14 +1488,15 @@ function normalizeUser(raw = {}) {
       const accountId = getAccountIdFromBaseRow(row);
       if (!accountId) return;
       clearProfileHoverTimer();
-      hideProfileCard(true);
-      openDrawer(accountId);
+      clearProfileClickTimer();
+      toggleDrawer(accountId);
     });
 
     el.body?.addEventListener("click", (event) => {
       const closeButton = event.target.closest("[data-account-close-actions]");
       if (closeButton) {
         event.preventDefault();
+        clearProfileClickTimer();
         closeOpenDrawer();
         return;
       }
@@ -1440,6 +1504,7 @@ function normalizeUser(raw = {}) {
       const drawerToggle = event.target.closest("[data-account-open-actions]");
       if (drawerToggle) {
         event.preventDefault();
+        clearProfileClickTimer();
         const accountId = drawerToggle.getAttribute("data-account-id") || "";
         toggleDrawer(accountId);
         return;
@@ -1453,6 +1518,7 @@ function normalizeUser(raw = {}) {
       const row = button.closest("tr");
       const user = getUserById(accountId);
       if (!user || !action) return;
+      clearProfileClickTimer();
       void handleAccountAction(user, action, row, button);
       return;
     });
@@ -1464,18 +1530,27 @@ function normalizeUser(raw = {}) {
       const accountId = getAccountIdFromBaseRow(row);
       if (!accountId) return;
       clearProfileHoverTimer();
-      showProfileCard(accountId, row, { pinned: true });
+      clearProfileClickTimer();
+      state.profileClickTimer = setTimeout(() => {
+        state.profileClickTimer = null;
+        if (state.profileCardPinned && state.profileCardAccountId === accountId) {
+          hideProfileCard(true);
+          return;
+        }
+        showProfileCard(accountId, row, { pinned: true });
+      }, PROFILE_CLICK_DELAY_MS);
     });
 
     if (!state.profileBound) {
       state.profileBound = true;
       document.addEventListener("click", (event) => {
-        if (!state.profileCardPinned) return;
+        if (!isProfileCardVisible()) return;
+        if (state.profileCardPinned) return;
         const target = event.target;
         if (!(target instanceof Element)) return;
         const inCard = Boolean(el.profileCard?.contains(target));
-        const inAccountsTable = Boolean(target.closest("#accounts-table"));
-        if (inCard || inAccountsTable) return;
+        const inAccountRow = Boolean(target.closest('tr[data-row-type="account"]'));
+        if (inCard || inAccountRow) return;
         hideProfileCard(true);
       });
 
@@ -1486,21 +1561,36 @@ function normalizeUser(raw = {}) {
         },
         { passive: true }
       );
-      el.appMain?.addEventListener(
+      document.addEventListener(
         "scroll",
         () => {
-          if (state.profileCardPinned) {
-            refreshProfileCardAnchor();
-          } else {
-            hideProfileCard(true);
-          }
+          refreshProfileCardAnchor();
         },
-        { passive: true }
+        { passive: true, capture: true }
       );
     }
   }
 
-  function handleTableRender() {
+  function markRenderedAccountRows(renderedItems = []) {
+    if (!el.body) return;
+    const rows = Array.from(el.body.querySelectorAll("tr"));
+    rows.forEach((row, index) => {
+      if (!(row instanceof HTMLTableRowElement)) return;
+      if (row.classList.contains("accounts-row-drawer-row")) {
+        row.setAttribute("data-row-type", "drawer");
+        return;
+      }
+      const item = renderedItems[index];
+      const accountId = item?.id || getAccountIdFromBaseRow(row);
+      row.setAttribute("data-row-type", "account");
+      if (accountId) {
+        row.setAttribute("data-account-id", accountId);
+      }
+    });
+  }
+
+  function handleTableRender(renderedItems = []) {
+    markRenderedAccountRows(renderedItems);
     restoreOpenDrawer();
     toggleIdColumn(el.idToggle?.checked !== false);
     refreshProfileCardAnchor();
@@ -1511,9 +1601,10 @@ function normalizeUser(raw = {}) {
     state.columnResize = window.TableResize.initResizableTable({
       table: el.table,
       storageKey: COLUMN_WIDTH_STORAGE_KEY,
-      minWidth: 36,
+      minWidth: 0,
       maxWidth: 980,
-      skipLastHandle: true,
+      skipLastHandle: false,
+      excludedColumnKeys: ["actions"],
       ignoreBodyRowSelector: ".accounts-row-drawer-row"
     });
   }
@@ -1560,6 +1651,7 @@ function normalizeUser(raw = {}) {
     state.profileCardPinned = false;
     state.profileCardAccountId = "";
     clearProfileHoverTimer();
+    clearProfileClickTimer();
     ensureProfileCard();
     hideProfileCard(true);
 

@@ -8,10 +8,9 @@
 (function () {
   "use strict";
 
-  const DEFAULT_MIN_WIDTH = 80;
+  const DEFAULT_MIN_WIDTH = 24;
   const DEFAULT_MAX_WIDTH = 960;
-  const WIDTH_PADDING_PX = 24;
-  let textMeasureCanvas = null;
+  const WIDTH_PADDING_PX = 8;
 
   function toFiniteNumber(value) {
     const parsed = Number(value);
@@ -20,13 +19,6 @@
 
   function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
-  }
-
-  function getTextMeasureContext() {
-    if (!textMeasureCanvas) {
-      textMeasureCanvas = document.createElement("canvas");
-    }
-    return textMeasureCanvas.getContext("2d");
   }
 
   function extractHeaderText(th) {
@@ -44,28 +36,69 @@
     return text.replace(/\s+/g, " ").trim();
   }
 
+  function measureTextWidth(text, node) {
+    if (!(node instanceof HTMLElement)) return 0;
+    const probe = document.createElement("span");
+    const style = window.getComputedStyle(node);
+    probe.textContent = text || " ";
+    probe.style.position = "fixed";
+    probe.style.visibility = "hidden";
+    probe.style.pointerEvents = "none";
+    probe.style.whiteSpace = "nowrap";
+    probe.style.fontStyle = style.fontStyle || "normal";
+    probe.style.fontVariant = style.fontVariant || "normal";
+    probe.style.fontWeight = style.fontWeight || "400";
+    probe.style.fontSize = style.fontSize || "13px";
+    probe.style.fontFamily = style.fontFamily || "sans-serif";
+    probe.style.letterSpacing = style.letterSpacing || "normal";
+    document.body.appendChild(probe);
+    const width = Math.ceil(probe.getBoundingClientRect().width);
+    probe.remove();
+    return width;
+  }
+
+  function measureCellContentWidth(cell) {
+    if (!(cell instanceof HTMLElement)) return 0;
+    const cellStyle = window.getComputedStyle(cell);
+    const paddingLeft = parseFloat(cellStyle.paddingLeft) || 0;
+    const paddingRight = parseFloat(cellStyle.paddingRight) || 0;
+    const textNode = cell.querySelector(".accounts-cell-ellipsis");
+
+    if (textNode instanceof HTMLElement) {
+      const text = textNode.textContent || "";
+      const textWidth = measureTextWidth(text, textNode);
+      return Math.ceil(textWidth + paddingLeft + paddingRight + WIDTH_PADDING_PX);
+    }
+
+    const childWidths = Array.from(cell.children)
+      .filter((child) => child instanceof HTMLElement)
+      .map((child) => Math.ceil(child.getBoundingClientRect().width));
+    const base = childWidths.length ? Math.max(...childWidths) : Math.ceil(cell.scrollWidth);
+    return Math.ceil(base + paddingLeft + paddingRight + 2);
+  }
+
+  function isRowVisible(row) {
+    if (!(row instanceof HTMLTableRowElement)) return false;
+    if (row.hidden) return false;
+    const style = window.getComputedStyle(row);
+    if (style.display === "none" || style.visibility === "hidden") return false;
+    return true;
+  }
+
   function computeHeaderMinWidth(th, options = {}) {
     if (!(th instanceof HTMLElement)) return DEFAULT_MIN_WIDTH;
-    const floor = toFiniteNumber(options.floor) || DEFAULT_MIN_WIDTH;
-    const ceiling = toFiniteNumber(options.ceiling) || DEFAULT_MAX_WIDTH;
+    const floorRaw = toFiniteNumber(options.floor);
+    const ceilingRaw = toFiniteNumber(options.ceiling);
+    const floor = floorRaw === null ? DEFAULT_MIN_WIDTH : floorRaw;
+    const ceiling = ceilingRaw === null ? DEFAULT_MAX_WIDTH : ceilingRaw;
     const resizable = options.resizable === true;
     const text = extractHeaderText(th) || " ";
     const style = window.getComputedStyle(th);
-    const ctx = getTextMeasureContext();
-    if (!ctx) return floor;
-
-    const fontStyle = style.fontStyle || "normal";
-    const fontVariant = style.fontVariant || "normal";
-    const fontWeight = style.fontWeight || "400";
-    const fontSize = style.fontSize || "13px";
-    const fontFamily = style.fontFamily || "sans-serif";
-    ctx.font = `${fontStyle} ${fontVariant} ${fontWeight} ${fontSize} ${fontFamily}`;
-
-    const textWidth = Math.ceil(ctx.measureText(text).width);
+    const textWidth = measureTextWidth(text, th);
     const paddingLeft = parseFloat(style.paddingLeft) || 0;
     const paddingRight = parseFloat(style.paddingRight) || 0;
     const sortAllowance = th.hasAttribute("data-sort") ? 14 : 0;
-    const handleAllowance = resizable ? 16 : 8;
+    const handleAllowance = resizable ? 14 : 0;
     const next = textWidth + paddingLeft + paddingRight + sortAllowance + handleAllowance;
     return clamp(Math.ceil(next), floor, ceiling);
   }
@@ -96,10 +129,19 @@
     if (!(table instanceof HTMLTableElement)) return null;
 
     const storageKey = String(config.storageKey || "").trim();
-    const minWidth = toFiniteNumber(config.minWidth) || DEFAULT_MIN_WIDTH;
-    const maxWidth = toFiniteNumber(config.maxWidth) || DEFAULT_MAX_WIDTH;
+    const configuredMin = toFiniteNumber(config.minWidth);
+    const configuredMax = toFiniteNumber(config.maxWidth);
+    const minWidth = configuredMin === null ? DEFAULT_MIN_WIDTH : configuredMin;
+    const maxWidth = configuredMax === null ? DEFAULT_MAX_WIDTH : configuredMax;
     const skipLastHandle = config.skipLastHandle !== false;
     const ignoreBodyRowSelector = String(config.ignoreBodyRowSelector || "").trim();
+    const excludedColumnKeys = new Set(
+      Array.isArray(config.excludedColumnKeys)
+        ? config.excludedColumnKeys
+            .map((value) => String(value || "").trim().toLowerCase())
+            .filter(Boolean)
+        : []
+    );
 
     let columns = [];
     let disposed = false;
@@ -135,8 +177,12 @@
       columns = headers.map((th, index) => {
         const key =
           (th.getAttribute("data-col-key") || th.getAttribute("data-sort") || `col_${index}`).trim();
-        const canResize = !(skipLastHandle && index === headers.length - 1);
+        const isExcluded =
+          th.getAttribute("data-resize-disabled") === "true" ||
+          excludedColumnKeys.has(key.toLowerCase());
+        const canResize = !isExcluded && !(skipLastHandle && index === headers.length - 1);
         th.setAttribute("data-col-key", key);
+        th.setAttribute("data-resize-disabled", isExcluded ? "true" : "false");
         const col = colgroup.children[index];
         if (col) {
           col.setAttribute("data-col-key", key);
@@ -147,6 +193,7 @@
           col,
           index,
           canResize,
+          persistable: !isExcluded,
           minWidth: computeHeaderMinWidth(th, { floor: minWidth, ceiling: maxWidth, resizable: canResize })
         };
       });
@@ -155,6 +202,7 @@
     function collectCurrentWidths() {
       const next = {};
       columns.forEach((column) => {
+        if (!column.persistable) return;
         const width = Math.round(column.th.getBoundingClientRect().width);
         if (Number.isFinite(width) && width > 0) {
           next[column.key] = width;
@@ -193,6 +241,7 @@
 
     function applyStoredWidths() {
       columns.forEach((column) => {
+        if (!column.persistable) return;
         const saved = toFiniteNumber(storedWidths[column.key]);
         if (!saved || saved <= 0) return;
         setColumnWidth(column, saved, { persist: false });
@@ -200,18 +249,18 @@
     }
 
     function autoFitColumn(column) {
-      if (!column || !column.th) return;
+      if (!column || !column.th || !column.canResize) return;
 
-      let bestWidth = Math.ceil(column.th.scrollWidth) + WIDTH_PADDING_PX;
+      let bestWidth = Math.max(column.minWidth, 0);
       const bodyRows = table.tBodies[0] ? Array.from(table.tBodies[0].rows) : [];
 
       bodyRows.forEach((row) => {
-        if (!(row instanceof HTMLTableRowElement)) return;
+        if (!isRowVisible(row)) return;
         if (ignoreBodyRowSelector && row.matches(ignoreBodyRowSelector)) return;
 
         const cell = row.cells[column.index];
         if (!cell) return;
-        bestWidth = Math.max(bestWidth, Math.ceil(cell.scrollWidth) + WIDTH_PADDING_PX);
+        bestWidth = Math.max(bestWidth, measureCellContentWidth(cell));
       });
 
       setColumnWidth(column, bestWidth, { persist: true });
@@ -228,7 +277,7 @@
     }
 
     function bindHandle(column, isLastColumn) {
-      if (!column?.th || (skipLastHandle && isLastColumn)) return;
+      if (!column?.th || !column.canResize || (skipLastHandle && isLastColumn)) return;
 
       const handle = document.createElement("button");
       handle.type = "button";

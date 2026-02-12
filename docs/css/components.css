@@ -454,11 +454,13 @@
 #accounts-table {
   width: max-content;
   min-width: 100%;
+  table-layout: fixed;
 }
 
 #accounts-table th,
 #accounts-table td {
   white-space: nowrap;
+  overflow: hidden;
 }
 
 #accounts-table th {
@@ -475,6 +477,7 @@
 
 #accounts-table .accounts-row-drawer-cell {
   white-space: normal;
+  overflow: visible;
 }
 
 #accounts-table tr.accounts-row-expanded > td {
@@ -525,27 +528,40 @@ body.ss-col-resizing-active {
 }
 
 #accounts-table .accounts-actions-cell {
-  min-width: 96px;
+  min-width: 112px;
 }
 
 #accounts-table th[data-col-key="actions"] {
   position: sticky;
   right: 0;
-  z-index: 8;
+  z-index: 12;
   background: var(--bg-panel);
-  box-shadow: -1px 0 0 var(--border-subtle);
+  background-clip: padding-box;
+  box-shadow: none;
 }
 
 #accounts-table td.accounts-actions-cell {
   position: sticky;
   right: 0;
-  z-index: 6;
+  z-index: 10;
   background: var(--bg-panel);
-  box-shadow: -1px 0 0 var(--border-subtle);
+  background-clip: padding-box;
+  box-shadow: none;
+}
+
+#accounts-table th[data-col-key="actions"]::before,
+#accounts-table td.accounts-actions-cell::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border-subtle);
 }
 
 #accounts-table tr:hover td.accounts-actions-cell {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-panel);
 }
 
 .accounts-actions-toggle.is-open {
@@ -614,17 +630,47 @@ body.ss-col-resizing-active {
 .accounts-profile-card {
   position: fixed;
   width: min(320px, calc(100vw - 24px));
-  z-index: 120;
+  max-height: min(68vh, 520px);
+  overflow: auto;
+  z-index: 2200;
   padding: 12px;
   border: 1px solid var(--border-subtle);
-  background: linear-gradient(165deg, rgba(26, 31, 42, 0.72), rgba(16, 19, 27, 0.82));
-  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(165deg, rgba(24, 29, 40, 0.96), rgba(14, 17, 24, 0.98));
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.42);
+  pointer-events: auto;
+}
+
+.accounts-profile-card.is-pinned {
+  border-color: var(--border-strong);
 }
 
 .accounts-profile-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.accounts-profile-card-title-wrap {
   display: grid;
   gap: 4px;
-  margin-bottom: 10px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.accounts-profile-card-close {
+  display: none;
+  min-width: 30px;
+  padding-left: 0;
+  padding-right: 0;
+  flex: 0 0 auto;
+}
+
+.accounts-profile-card.is-pinned .accounts-profile-card-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .accounts-profile-card-grid {
@@ -657,6 +703,13 @@ body.ss-col-resizing-active {
   padding-top: 8px;
   display: grid;
   gap: 4px;
+}
+
+.accounts-profile-card-section-title {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
 }
 
 .accounts-profile-card-placeholder {
