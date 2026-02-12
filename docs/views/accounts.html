@@ -105,3 +105,43 @@
 <footer class="ss-footer">
   <span class="muted">Account data mirrors live runtime state; actions require an active admin session.</span>
 </footer>
+
+<div id="accounts-details-backdrop" class="accounts-details-backdrop hidden" aria-hidden="true"></div>
+
+<aside
+  id="accounts-details-drawer"
+  class="accounts-details-drawer hidden"
+  role="dialog"
+  aria-modal="true"
+  aria-hidden="true"
+  aria-labelledby="accounts-details-title"
+  tabindex="-1"
+>
+  <header class="accounts-details-header">
+    <div class="accounts-details-header-text">
+      <h3 id="accounts-details-title">Account Details</h3>
+      <p id="accounts-details-subtitle" class="muted">Select an account to inspect details and actions.</p>
+    </div>
+    <button
+      type="button"
+      id="accounts-details-close"
+      class="ss-btn ss-btn-small ss-btn-secondary"
+      data-account-close-details
+      aria-label="Close account details"
+    >
+      Close
+    </button>
+  </header>
+
+  <div id="accounts-details-content" class="accounts-details-content">
+    <section id="accounts-details-profile-section" class="accounts-details-section" aria-label="Profile summary">
+      <h4 class="accounts-details-section-title">Profile</h4>
+      <div id="accounts-details-profile"></div>
+    </section>
+
+    <section id="accounts-details-actions-section" class="accounts-details-section" aria-label="Account actions">
+      <h4 id="accounts-details-actions-heading" class="accounts-details-section-title" tabindex="-1">Actions</h4>
+      <div id="accounts-details-actions"></div>
+    </section>
+  </div>
+</aside>

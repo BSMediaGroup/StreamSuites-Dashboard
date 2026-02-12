@@ -478,15 +478,6 @@
   white-space: nowrap;
 }
 
-#accounts-table .accounts-row-drawer-cell {
-  white-space: normal;
-  overflow: visible;
-}
-
-#accounts-table tr.accounts-row-expanded > td {
-  background: rgba(255, 255, 255, 0.035);
-}
-
 #accounts-table .ss-col-resizable {
   padding-right: 20px;
 }
@@ -569,43 +560,231 @@ body.ss-col-resizing-active {
   background: var(--bg-panel);
 }
 
+.accounts-row-selected > td {
+  background: rgba(120, 195, 255, 0.08);
+}
+
+#accounts-table tr.accounts-row-selected td.accounts-actions-cell {
+  background: rgba(21, 27, 38, 0.96);
+}
+
+#accounts-table tr.accounts-row-selected td.accounts-actions-cell::before {
+  background: rgba(120, 195, 255, 0.42);
+}
+
 .accounts-actions-toggle.is-open {
   border-color: var(--border-strong);
   background: rgba(255, 255, 255, 0.08);
 }
 
-.accounts-row-drawer-cell {
-  padding: 10px;
-  border-bottom: 1px solid var(--border-subtle);
+.accounts-details-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  background: rgba(6, 9, 14, 0.16);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
 }
 
-.accounts-row-drawer-panel {
-  width: 100%;
-  display: grid;
-  gap: 10px;
-  background: linear-gradient(165deg, rgba(30, 35, 46, 0.58), rgba(17, 20, 27, 0.72));
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 12px;
+.accounts-details-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
 }
 
-.accounts-row-drawer-head {
+.accounts-details-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: clamp(420px, 36vw, 520px);
+  max-width: 100vw;
+  height: 100dvh;
+  z-index: 1401;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border-subtle);
+  background: linear-gradient(180deg, rgba(22, 27, 37, 0.98), rgba(14, 18, 25, 0.98));
+  box-shadow: -22px 0 44px rgba(0, 0, 0, 0.4);
+  transform: translateX(104%);
+  transition: transform 0.22s ease;
+}
+
+.accounts-details-drawer.is-open {
+  transform: translateX(0);
+}
+
+.accounts-details-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
 }
 
-.accounts-row-drawer-title-wrap {
+.accounts-details-header-text {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.accounts-details-header h3 {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.accounts-details-header p {
+  margin: 0;
+}
+
+.accounts-details-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px;
+  display: grid;
+  gap: 14px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 162, 184, 0.52) rgba(7, 10, 16, 0.75);
+}
+
+.accounts-details-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.accounts-details-content::-webkit-scrollbar-track {
+  background: rgba(7, 10, 16, 0.75);
+}
+
+.accounts-details-content::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(148, 162, 184, 0.5);
+}
+
+.accounts-details-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 162, 184, 0.68);
+}
+
+.accounts-details-section {
+  display: grid;
+  gap: 10px;
+}
+
+.accounts-details-section-title {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.accounts-details-profile-card {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015));
+}
+
+.accounts-details-profile-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.accounts-details-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-family: "RechargeBd", sans-serif;
+  font-size: 13px;
+  color: #e8f3ff;
+  border: 1px solid rgba(120, 195, 255, 0.45);
+  background: radial-gradient(circle at 25% 25%, rgba(120, 195, 255, 0.46), rgba(65, 95, 150, 0.36));
+  box-shadow: 0 0 16px rgba(120, 195, 255, 0.22);
+  flex: 0 0 auto;
+}
+
+.accounts-details-identity {
+  min-width: 0;
   display: grid;
   gap: 4px;
 }
 
-.accounts-row-drawer-title {
+.accounts-details-name {
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.accounts-details-user-code {
+  color: var(--text-secondary);
   font-size: 12px;
-  letter-spacing: 0.06em;
+}
+
+.accounts-details-role-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.accounts-details-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.accounts-details-meta-grid .label {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 10px;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.accounts-details-meta-grid .value {
+  display: block;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.accounts-details-meta-grid .value .ss-badge {
+  max-width: 100%;
+}
+
+.accounts-details-placeholder-group {
+  display: grid;
+  gap: 8px;
+}
+
+.accounts-details-placeholder-block {
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-sm);
+  padding: 9px 10px;
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.accounts-details-placeholder-title {
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 3px;
+}
+
+.accounts-details-placeholder-value {
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 
 .accounts-row-actions-grid {
@@ -632,94 +811,25 @@ body.ss-col-resizing-active {
   flex-wrap: wrap;
 }
 
-.accounts-profile-card {
-  position: fixed;
-  width: min(320px, calc(100vw - 24px));
-  max-height: min(68vh, 520px);
-  overflow: auto;
-  z-index: 2147483646;
-  padding: 12px;
-  border: 1px solid var(--border-subtle);
-  background: linear-gradient(165deg, rgba(24, 29, 40, 0.96), rgba(14, 17, 24, 0.98));
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.42);
-  pointer-events: auto;
+@media (max-width: 1024px) {
+  .accounts-details-drawer {
+    width: min(92vw, 520px);
+  }
 }
 
-.accounts-profile-card.is-pinned {
-  border-color: var(--border-strong);
-}
+@media (max-width: 720px) {
+  .accounts-details-backdrop {
+    background: rgba(6, 9, 14, 0.3);
+  }
 
-.accounts-profile-card-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 10px;
-}
+  .accounts-details-drawer {
+    width: 100vw;
+    border-left: 0;
+  }
 
-.accounts-profile-card-title-wrap {
-  display: grid;
-  gap: 4px;
-  min-width: 0;
-  flex: 1 1 auto;
-}
-
-.accounts-profile-card-close {
-  display: none;
-  min-width: 30px;
-  padding-left: 0;
-  padding-right: 0;
-  flex: 0 0 auto;
-}
-
-.accounts-profile-card.is-pinned .accounts-profile-card-close {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.accounts-profile-card-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.accounts-profile-card-grid .label {
-  display: block;
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  margin-bottom: 2px;
-}
-
-.accounts-profile-card-grid .value {
-  display: block;
-  font-size: 12px;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.accounts-profile-card-section {
-  margin-top: 10px;
-  border-top: 1px solid var(--border-subtle);
-  padding-top: 8px;
-  display: grid;
-  gap: 4px;
-}
-
-.accounts-profile-card-section-title {
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-}
-
-.accounts-profile-card-placeholder {
-  font-size: 12px;
-  color: var(--text-secondary);
+  .accounts-details-meta-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ----------------------------------------------------------------------
