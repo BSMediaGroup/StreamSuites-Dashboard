@@ -175,6 +175,14 @@
       });
 
       renderSortState();
+
+      if (typeof config.onRender === "function") {
+        try {
+          config.onRender(pageState.items, pageState);
+        } catch (err) {
+          console.warn("[SearchPagination] onRender hook failed", err);
+        }
+      }
     }
 
     function handleSearch(event) {

@@ -7,6 +7,7 @@
 
   const RUNTIME_ENDPOINT = "/admin/accounts";
   const DONATIONS_EXPORT_PATH = "runtime/exports/admin/donations/donations.json";
+  const COLUMN_WIDTH_STORAGE_KEY = "ss_admin_accounts_colwidths_v1";
   const SEARCH_FIELDS = [
     "userCode",
     "email",
@@ -29,7 +30,10 @@
     sourceMode: "runtime",
     exportLoading: false,
     donationStats: new Map(),
-    donationsLoaded: false
+    donationsLoaded: false,
+    openDrawerId: "",
+    columnResize: null,
+    escapeBound: false
   };
 
   const el = {
@@ -39,6 +43,7 @@
     count: null,
     body: null,
     table: null,
+    tableScroll: null,
     pagination: null,
     empty: null,
     search: null,
@@ -318,14 +323,28 @@ function normalizeUser(raw = {}) {
     return false;
   }
 
-  function renderActionButton({ label, action, tone, disabled, title }) {
+  function toDomId(value) {
+    return String(value || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }
+
+  function getDrawerDomId(accountId) {
+    return `accounts-actions-${toDomId(accountId) || "row"}`;
+  }
+
+  function renderActionButton({ label, action, tone, disabled, title, accountId }) {
     const classes = ["ss-btn", "ss-btn-small", tone].filter(Boolean).join(" ");
     const disabledAttr = disabled ? " disabled" : "";
     const titleAttr = title ? ` title="${escapeHtml(title)}"` : "";
+    const accountAttr = accountId ? ` data-account-id="${escapeHtml(accountId)}"` : "";
     return `
       <button
+        type="button"
         class="${classes}"
         data-account-action="${action}"
+       ${accountAttr}
        ${disabledAttr}
        ${titleAttr}
       >${escapeHtml(label)}</button>
@@ -340,9 +359,10 @@ function normalizeUser(raw = {}) {
     const isSelf = isSelfAccount(user);
     const manageDisabled = !state.canManage;
     const isEmailVerified = user.emailVerified === true;
-    const hasEmail = Boolean(user.email && user.email !== "â€”");
+    const hasEmail = Boolean(user.email && user.email !== "—");
     const tiers = ["CORE", "GOLD", "PRO"];
     const currentTier = String(user.tier || "CORE").toUpperCase();
+    const accountId = user.id;
 
     const actions = [];
     if (isActive) {
@@ -351,7 +371,8 @@ function normalizeUser(raw = {}) {
           label: "Suspend",
           action: "suspend",
           tone: "ss-btn-secondary",
-          disabled: manageDisabled || isDeleted
+          disabled: manageDisabled || isDeleted,
+          accountId
         })
       );
     } else if (isSuspended) {
@@ -360,7 +381,8 @@ function normalizeUser(raw = {}) {
           label: "Unsuspend",
           action: "unsuspend",
           tone: "ss-btn-secondary",
-          disabled: manageDisabled || isDeleted
+          disabled: manageDisabled || isDeleted,
+          accountId
         })
       );
     } else {
@@ -370,7 +392,8 @@ function normalizeUser(raw = {}) {
           action: "suspend",
           tone: "ss-btn-secondary",
           disabled: true,
-          title: "Suspend only available for active accounts."
+          title: "Suspend only available for active accounts.",
+          accountId
         })
       );
     }
@@ -381,7 +404,8 @@ function normalizeUser(raw = {}) {
         action: "reset-onboarding",
         tone: "ss-btn-secondary",
         disabled: manageDisabled || isDeleted,
-        title: isDeleted ? "Cannot reset a deleted account." : ""
+        title: isDeleted ? "Cannot reset a deleted account." : "",
+        accountId
       })
     );
 
@@ -391,7 +415,8 @@ function normalizeUser(raw = {}) {
         action: "force-email-reverify",
         tone: "ss-btn-secondary",
         disabled: manageDisabled || isDeleted || !hasEmail,
-        title: !hasEmail ? "No email on file." : ""
+        title: !hasEmail ? "No email on file." : "",
+        accountId
       })
     );
 
@@ -401,7 +426,8 @@ function normalizeUser(raw = {}) {
         action: "mark-email-verified",
         tone: "ss-btn-secondary",
         disabled: manageDisabled || isDeleted || !hasEmail || isEmailVerified,
-        title: isEmailVerified ? "Email already verified." : !hasEmail ? "No email on file." : ""
+        title: isEmailVerified ? "Email already verified." : !hasEmail ? "No email on file." : "",
+        accountId
       })
     );
 
@@ -410,7 +436,8 @@ function normalizeUser(raw = {}) {
         label: "Force Logout",
         action: "invalidate-sessions",
         tone: "ss-btn-secondary",
-        disabled: manageDisabled
+        disabled: manageDisabled,
+        accountId
       })
     );
 
@@ -420,25 +447,31 @@ function normalizeUser(raw = {}) {
         action: "delete",
         tone: "ss-btn-danger",
         disabled: manageDisabled || isDeleted || isSelf,
-        title: isSelf ? "Cannot delete your own account." : isDeleted ? "Account already deleted." : ""
+        title: isSelf ? "Cannot delete your own account." : isDeleted ? "Account already deleted." : "",
+        accountId
       })
     );
 
     return `
-      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center;">
-        <select class="ss-input" data-account-tier ${manageDisabled || isDeleted ? "disabled" : ""}>
+      <div class="accounts-row-actions-grid">
+        <div class="accounts-row-actions-tier">
+          <select class="ss-input" data-account-tier data-account-id="${escapeHtml(accountId)}" ${manageDisabled || isDeleted ? "disabled" : ""}>
           ${tiers
             .map((tier) => `<option value="${tier}"${tier === currentTier ? " selected" : ""}>${tier}</option>`)
             .join("")}
-        </select>
+          </select>
         ${renderActionButton({
           label: "Update Tier",
           action: "tier",
           tone: "ss-btn-primary",
           disabled: manageDisabled || isDeleted,
-          title: isDeleted ? "Cannot change tier on deleted accounts." : ""
+          title: isDeleted ? "Cannot change tier on deleted accounts." : "",
+          accountId
         })}
+        </div>
+        <div class="accounts-row-actions-buttons">
         ${actions.join("")}
+        </div>
       </div>
     `;
   }
@@ -583,11 +616,31 @@ function normalizeUser(raw = {}) {
     if (!el.table) return;
     const columns = el.table.querySelectorAll(".accounts-id-column");
     columns.forEach((col) => col.classList.toggle("hidden", !show));
+    const idCol = el.table.querySelector('col[data-col-key="internalId"]');
+    if (idCol) {
+      idCol.classList.toggle("hidden", !show);
+    }
+  }
+
+  function renderActionsToggle(user) {
+    const accountId = String(user.id || "");
+    return `
+      <button
+        type="button"
+        class="ss-btn ss-btn-small ss-btn-secondary accounts-actions-toggle"
+        data-account-open-actions
+        data-account-id="${escapeHtml(accountId)}"
+        aria-expanded="false"
+        aria-controls="${escapeHtml(getDrawerDomId(accountId))}"
+      >
+        Actions
+      </button>
+    `;
   }
 
   function renderRow(user) {
     return `
-      <td class="accounts-id-column">${escapeHtml(user.id)}</td>
+      <td class="accounts-id-column" data-account-id="${escapeHtml(user.id)}">${escapeHtml(user.id)}</td>
       <td>${escapeHtml(user.userCode)}</td>
       <td>${escapeHtml(user.email)}</td>
       <td>${renderEmailVerified(user.emailVerified)}</td>
@@ -600,8 +653,119 @@ function normalizeUser(raw = {}) {
       <td>${escapeHtml(user.providersLabel)}</td>
       <td>${escapeHtml(formatTimestamp(user.createdAt))}</td>
       <td>${escapeHtml(formatTimestamp(user.lastLogin))}</td>
-      <td class="align-right">${renderActions(user)}</td>
+      <td class="align-right accounts-actions-cell">${renderActionsToggle(user)}</td>
     `;
+  }
+
+  function getDrawerColumnCount() {
+    return el.table?.querySelectorAll("thead th").length || 1;
+  }
+
+  function getUserById(accountId) {
+    return state.raw.find((entry) => entry.id === accountId) || null;
+  }
+
+  function getBaseRowByAccountId(accountId) {
+    if (!el.body || !accountId) return null;
+    const triggers = el.body.querySelectorAll("[data-account-open-actions]");
+    for (const trigger of triggers) {
+      if (trigger.getAttribute("data-account-id") !== accountId) continue;
+      return trigger.closest("tr");
+    }
+    return null;
+  }
+
+  function setDrawerToggleState(row, isOpen) {
+    if (!row) return;
+    const trigger = row.querySelector("[data-account-open-actions]");
+    if (!(trigger instanceof HTMLButtonElement)) return;
+    trigger.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    trigger.classList.toggle("is-open", isOpen);
+  }
+
+  function clearOpenDrawerDom() {
+    if (!el.body) return;
+    const openRow = el.body.querySelector(".accounts-row-expanded");
+    if (openRow) {
+      openRow.classList.remove("accounts-row-expanded");
+      setDrawerToggleState(openRow, false);
+    }
+    const drawerRow = el.body.querySelector(".accounts-row-drawer-row");
+    if (drawerRow) {
+      drawerRow.remove();
+    }
+  }
+
+  function closeOpenDrawer(options = {}) {
+    const keepState = options.keepState === true;
+    clearOpenDrawerDom();
+    if (!keepState) {
+      state.openDrawerId = "";
+    }
+  }
+
+  function openDrawer(accountId) {
+    if (!accountId || !el.body) return;
+    const baseRow = getBaseRowByAccountId(accountId);
+    const user = getUserById(accountId);
+    if (!baseRow || !user) {
+      state.openDrawerId = "";
+      return;
+    }
+
+    closeOpenDrawer({ keepState: true });
+
+    const drawerRow = document.createElement("tr");
+    drawerRow.className = "accounts-row-drawer-row";
+    drawerRow.setAttribute("data-drawer-account-id", accountId);
+
+    const drawerCell = document.createElement("td");
+    drawerCell.className = "accounts-row-drawer-cell";
+    drawerCell.colSpan = getDrawerColumnCount();
+    drawerCell.innerHTML = `
+      <div class="accounts-row-drawer-panel glass-card" id="${escapeHtml(getDrawerDomId(accountId))}">
+        <div class="accounts-row-drawer-head">
+          <div class="accounts-row-drawer-title-wrap">
+            <strong class="accounts-row-drawer-title">Actions for ${escapeHtml(
+              user.displayName || user.userCode || user.email || "Account"
+            )}</strong>
+            <span class="muted">${escapeHtml(user.email || user.userCode || "—")}</span>
+          </div>
+          <button
+            type="button"
+            class="ss-btn ss-btn-small ss-btn-secondary"
+            data-account-close-actions
+            data-account-id="${escapeHtml(accountId)}"
+          >
+            Close
+          </button>
+        </div>
+        ${renderActions(user)}
+      </div>
+    `;
+    drawerRow.appendChild(drawerCell);
+
+    baseRow.classList.add("accounts-row-expanded");
+    setDrawerToggleState(baseRow, true);
+    baseRow.insertAdjacentElement("afterend", drawerRow);
+    state.openDrawerId = accountId;
+  }
+
+  function restoreOpenDrawer() {
+    if (!state.openDrawerId) {
+      closeOpenDrawer({ keepState: true });
+      return;
+    }
+    openDrawer(state.openDrawerId);
+  }
+
+  function toggleDrawer(accountId) {
+    if (!accountId) return;
+    if (state.openDrawerId === accountId) {
+      closeOpenDrawer();
+      return;
+    }
+    openDrawer(accountId);
   }
 
   async function fetchJson(url, options = {}) {
@@ -796,6 +960,7 @@ function normalizeUser(raw = {}) {
     const th = document.createElement("th");
     th.textContent = "Supporter";
     th.setAttribute("data-sort", "supporterLabel");
+    th.setAttribute("data-col-key", "supporter");
     th.setAttribute("data-supporter-column", "true");
     const statusHeader = headerRow.querySelector('th[data-sort="accountStatus"]');
     if (statusHeader) {
@@ -1043,18 +1208,58 @@ function normalizeUser(raw = {}) {
     });
     el.exportJson?.addEventListener("click", () => triggerExport("json"));
     el.exportCsv?.addEventListener("click", () => triggerExport("csv"));
+
+    if (!state.escapeBound) {
+      state.escapeBound = true;
+      document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") return;
+        if (!state.openDrawerId) return;
+        closeOpenDrawer();
+      });
+    }
+
     el.body?.addEventListener("click", (event) => {
+      const closeButton = event.target.closest("[data-account-close-actions]");
+      if (closeButton) {
+        event.preventDefault();
+        closeOpenDrawer();
+        return;
+      }
+
+      const drawerToggle = event.target.closest("[data-account-open-actions]");
+      if (drawerToggle) {
+        event.preventDefault();
+        const accountId = drawerToggle.getAttribute("data-account-id") || "";
+        toggleDrawer(accountId);
+        return;
+      }
+
       const button = event.target.closest("[data-account-action]");
       if (!button) return;
       if (button.disabled) return;
       const action = button.getAttribute("data-account-action") || "";
+      const accountId = button.getAttribute("data-account-id") || "";
       const row = button.closest("tr");
-      if (!row) return;
-      const idCell = row.querySelector(".accounts-id-column");
-      const accountId = idCell?.textContent?.trim() || "";
-      const user = state.raw.find((entry) => entry.id === accountId);
+      const user = getUserById(accountId);
       if (!user || !action) return;
       void handleAccountAction(user, action, row, button);
+    });
+  }
+
+  function handleTableRender() {
+    restoreOpenDrawer();
+    toggleIdColumn(el.idToggle?.checked !== false);
+  }
+
+  function initColumnResize() {
+    if (!el.table || !window.TableResize?.initResizableTable) return;
+    state.columnResize = window.TableResize.initResizableTable({
+      table: el.table,
+      storageKey: COLUMN_WIDTH_STORAGE_KEY,
+      minWidth: 88,
+      maxWidth: 980,
+      skipLastHandle: true,
+      ignoreBodyRowSelector: ".accounts-row-drawer-row"
     });
   }
 
@@ -1072,7 +1277,8 @@ function normalizeUser(raw = {}) {
       countLabel: el.count,
       paginationContainer: el.pagination,
       searchInput: el.search,
-      renderRow
+      renderRow,
+      onRender: handleTableRender
     });
   }
 
@@ -1083,6 +1289,7 @@ function normalizeUser(raw = {}) {
     el.count = $("accounts-count");
     el.body = $("accounts-body");
     el.table = $("accounts-table");
+    el.tableScroll = $("accounts-table-scroll");
     el.pagination = $("accounts-pagination");
     el.empty = $("accounts-empty");
     el.search = $("accounts-search");
@@ -1093,9 +1300,15 @@ function normalizeUser(raw = {}) {
     el.exportJson = $("accounts-export-json");
     el.exportCsv = $("accounts-export-csv");
     el.exportStatus = $("accounts-export-status");
+    state.openDrawerId = "";
 
-    initTable();
     ensureSupporterColumn();
+    initTable();
+    if (state.columnResize?.destroy) {
+      state.columnResize.destroy();
+    }
+    state.columnResize = null;
+    initColumnResize();
     bindEvents();
     toggleIdColumn(true);
     if (window.StreamSuitesGlobalLoader?.trackAsync) {

@@ -72,26 +72,29 @@
         <div><strong>Export status:</strong> <span id="accounts-export-status">Idle</span></div>
       </div>
 
-      <table class="ss-table ss-table-compact" id="accounts-table">
-        <thead>
-          <tr>
-            <th class="accounts-id-column" data-sort="id">Internal UUID</th>
-            <th data-sort="userCode">User Code</th>
-            <th data-sort="email">Email</th>
-            <th data-sort="emailVerifiedLabel">Email Verified</th>
-            <th data-sort="displayName">Display Name</th>
-            <th data-sort="role">Role</th>
-            <th data-sort="tier">Tier</th>
-            <th data-sort="accountStatus">Account Status</th>
-            <th data-sort="onboardingStatus">Onboarding</th>
-            <th data-sort="providersLabel">Providers</th>
-            <th data-sort="createdAt">Created Date</th>
-            <th data-sort="lastLogin">Last Login</th>
-            <th class="align-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="accounts-body"></tbody>
-      </table>
+      <div class="ss-table-scroll ss-accounts-table-scroll" id="accounts-table-scroll">
+        <table class="ss-table ss-table-compact" id="accounts-table">
+          <thead>
+            <tr>
+              <th class="accounts-id-column" data-sort="id" data-col-key="internalId">Internal UUID</th>
+              <th data-sort="userCode" data-col-key="userCode">User Code</th>
+              <th data-sort="email" data-col-key="email">Email</th>
+              <th data-sort="emailVerifiedLabel" data-col-key="emailVerified">Email Verified</th>
+              <th data-sort="displayName" data-col-key="displayName">Display Name</th>
+              <th data-sort="role" data-col-key="role">Role</th>
+              <th data-sort="tier" data-col-key="tier">Tier</th>
+              <th data-sort="supporterLabel" data-col-key="supporter" data-supporter-column="true">Supporter</th>
+              <th data-sort="accountStatus" data-col-key="accountStatus">Account Status</th>
+              <th data-sort="onboardingStatus" data-col-key="onboardingStatus">Onboarding</th>
+              <th data-sort="providersLabel" data-col-key="providers">Providers</th>
+              <th data-sort="createdAt" data-col-key="createdAt">Created Date</th>
+              <th data-sort="lastLogin" data-col-key="lastLogin">Last Login</th>
+              <th class="align-right" data-col-key="actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="accounts-body"></tbody>
+        </table>
+      </div>
 
       <div id="accounts-empty" class="ss-empty hidden">No accounts available yet. Check runtime connectivity or adjust filters.</div>
       <div class="pager" id="accounts-pagination"></div>

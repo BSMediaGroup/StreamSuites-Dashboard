@@ -491,6 +491,7 @@ StreamSuites-Dashboard/
 │   │   │   ├── search-pagination.js
 │   │   │   ├── snapshot-health.js
 │   │   │   ├── standalone-guard.js
+│   │   │   ├── table-resize.js
 │   │   │   ├── version-stamp.js
 │   │   │   └── versioning.js
 │   │   ├── about.js

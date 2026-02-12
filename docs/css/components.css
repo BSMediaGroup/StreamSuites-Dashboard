@@ -421,6 +421,168 @@
   opacity: 0.9;
 }
 
+.ss-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.ss-accounts-table-scroll {
+  padding-bottom: 4px;
+  scrollbar-gutter: stable both-edges;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+}
+
+.ss-accounts-table-scroll::-webkit-scrollbar {
+  height: 7px;
+}
+
+.ss-accounts-table-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ss-accounts-table-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.ss-accounts-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.38);
+}
+
+#accounts-table {
+  width: max-content;
+  min-width: 100%;
+}
+
+#accounts-table th,
+#accounts-table td {
+  white-space: nowrap;
+}
+
+#accounts-table th {
+  position: relative;
+}
+
+#accounts-table .accounts-row-drawer-cell {
+  white-space: normal;
+}
+
+#accounts-table tr.accounts-row-expanded > td {
+  background: rgba(255, 255, 255, 0.035);
+}
+
+#accounts-table .ss-col-resizable {
+  padding-right: 20px;
+}
+
+#accounts-table .ss-col-resizer {
+  position: absolute;
+  top: 0;
+  right: -5px;
+  width: 10px;
+  height: 100%;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  cursor: col-resize;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  z-index: 3;
+}
+
+#accounts-table thead:hover .ss-col-resizer,
+#accounts-table .ss-col-resizer:hover,
+#accounts-table .ss-col-resizer:focus-visible,
+body.ss-col-resizing-active #accounts-table .ss-col-resizer {
+  opacity: 1;
+}
+
+body.ss-col-resizing-active {
+  cursor: col-resize;
+  user-select: none;
+}
+
+#accounts-table .ss-col-resizer::after {
+  content: "";
+  position: absolute;
+  top: 18%;
+  bottom: 18%;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: var(--border-strong);
+}
+
+#accounts-table .accounts-actions-cell {
+  min-width: 96px;
+}
+
+.accounts-actions-toggle.is-open {
+  border-color: var(--border-strong);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.accounts-row-drawer-cell {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.accounts-row-drawer-panel {
+  width: 100%;
+  display: grid;
+  gap: 10px;
+  background: linear-gradient(165deg, rgba(30, 35, 46, 0.58), rgba(17, 20, 27, 0.72));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px;
+}
+
+.accounts-row-drawer-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.accounts-row-drawer-title-wrap {
+  display: grid;
+  gap: 4px;
+}
+
+.accounts-row-drawer-title {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.accounts-row-actions-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.accounts-row-actions-tier {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.accounts-row-actions-tier .ss-input {
+  min-width: 96px;
+  max-width: 120px;
+}
+
+.accounts-row-actions-buttons {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 /* ----------------------------------------------------------------------
    Forms
    ---------------------------------------------------------------------- */
