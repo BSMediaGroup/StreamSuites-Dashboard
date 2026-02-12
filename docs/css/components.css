@@ -465,6 +465,14 @@
   position: relative;
 }
 
+#accounts-table .accounts-cell-ellipsis {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 #accounts-table .accounts-row-drawer-cell {
   white-space: normal;
 }
@@ -518,6 +526,26 @@ body.ss-col-resizing-active {
 
 #accounts-table .accounts-actions-cell {
   min-width: 96px;
+}
+
+#accounts-table th[data-col-key="actions"] {
+  position: sticky;
+  right: 0;
+  z-index: 8;
+  background: var(--bg-panel);
+  box-shadow: -1px 0 0 var(--border-subtle);
+}
+
+#accounts-table td.accounts-actions-cell {
+  position: sticky;
+  right: 0;
+  z-index: 6;
+  background: var(--bg-panel);
+  box-shadow: -1px 0 0 var(--border-subtle);
+}
+
+#accounts-table tr:hover td.accounts-actions-cell {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .accounts-actions-toggle.is-open {
@@ -581,6 +609,59 @@ body.ss-col-resizing-active {
   gap: 6px;
   align-items: center;
   flex-wrap: wrap;
+}
+
+.accounts-profile-card {
+  position: fixed;
+  width: min(320px, calc(100vw - 24px));
+  z-index: 120;
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+  background: linear-gradient(165deg, rgba(26, 31, 42, 0.72), rgba(16, 19, 27, 0.82));
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.35);
+}
+
+.accounts-profile-card-head {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.accounts-profile-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.accounts-profile-card-grid .label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+
+.accounts-profile-card-grid .value {
+  display: block;
+  font-size: 12px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.accounts-profile-card-section {
+  margin-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 8px;
+  display: grid;
+  gap: 4px;
+}
+
+.accounts-profile-card-placeholder {
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 
 /* ----------------------------------------------------------------------

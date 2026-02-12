@@ -11,6 +11,7 @@
   const DEFAULT_MIN_WIDTH = 80;
   const DEFAULT_MAX_WIDTH = 960;
   const WIDTH_PADDING_PX = 24;
+  let textMeasureCanvas = null;
 
   function toFiniteNumber(value) {
     const parsed = Number(value);
@@ -19,6 +20,54 @@
 
   function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
+  }
+
+  function getTextMeasureContext() {
+    if (!textMeasureCanvas) {
+      textMeasureCanvas = document.createElement("canvas");
+    }
+    return textMeasureCanvas.getContext("2d");
+  }
+
+  function extractHeaderText(th) {
+    if (!(th instanceof HTMLElement)) return "";
+    let text = "";
+    th.childNodes.forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        text += node.textContent || "";
+        return;
+      }
+      if (!(node instanceof HTMLElement)) return;
+      if (node.classList.contains("ss-col-resizer")) return;
+      text += node.textContent || "";
+    });
+    return text.replace(/\s+/g, " ").trim();
+  }
+
+  function computeHeaderMinWidth(th, options = {}) {
+    if (!(th instanceof HTMLElement)) return DEFAULT_MIN_WIDTH;
+    const floor = toFiniteNumber(options.floor) || DEFAULT_MIN_WIDTH;
+    const ceiling = toFiniteNumber(options.ceiling) || DEFAULT_MAX_WIDTH;
+    const resizable = options.resizable === true;
+    const text = extractHeaderText(th) || " ";
+    const style = window.getComputedStyle(th);
+    const ctx = getTextMeasureContext();
+    if (!ctx) return floor;
+
+    const fontStyle = style.fontStyle || "normal";
+    const fontVariant = style.fontVariant || "normal";
+    const fontWeight = style.fontWeight || "400";
+    const fontSize = style.fontSize || "13px";
+    const fontFamily = style.fontFamily || "sans-serif";
+    ctx.font = `${fontStyle} ${fontVariant} ${fontWeight} ${fontSize} ${fontFamily}`;
+
+    const textWidth = Math.ceil(ctx.measureText(text).width);
+    const paddingLeft = parseFloat(style.paddingLeft) || 0;
+    const paddingRight = parseFloat(style.paddingRight) || 0;
+    const sortAllowance = th.hasAttribute("data-sort") ? 14 : 0;
+    const handleAllowance = resizable ? 16 : 8;
+    const next = textWidth + paddingLeft + paddingRight + sortAllowance + handleAllowance;
+    return clamp(Math.ceil(next), floor, ceiling);
   }
 
   function loadStoredWidths(storageKey) {
@@ -86,12 +135,20 @@
       columns = headers.map((th, index) => {
         const key =
           (th.getAttribute("data-col-key") || th.getAttribute("data-sort") || `col_${index}`).trim();
+        const canResize = !(skipLastHandle && index === headers.length - 1);
         th.setAttribute("data-col-key", key);
         const col = colgroup.children[index];
         if (col) {
           col.setAttribute("data-col-key", key);
         }
-        return { key, th, col, index };
+        return {
+          key,
+          th,
+          col,
+          index,
+          canResize,
+          minWidth: computeHeaderMinWidth(th, { floor: minWidth, ceiling: maxWidth, resizable: canResize })
+        };
       });
     }
 
@@ -115,7 +172,8 @@
     function setColumnWidth(column, rawWidth, options = {}) {
       if (!column || !column.th) return;
       const persist = options.persist === true;
-      const width = Math.round(clamp(rawWidth, minWidth, maxWidth));
+      const columnMin = toFiniteNumber(column.minWidth) || minWidth;
+      const width = Math.round(clamp(rawWidth, columnMin, maxWidth));
       const widthPx = `${width}px`;
 
       if (column.col) {

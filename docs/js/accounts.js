@@ -33,7 +33,11 @@
     donationsLoaded: false,
     openDrawerId: "",
     columnResize: null,
-    escapeBound: false
+    escapeBound: false,
+    profileHoverTimer: null,
+    profileCardAccountId: "",
+    profileCardPinned: false,
+    profileBound: false
   };
 
   const el = {
@@ -44,6 +48,7 @@
     body: null,
     table: null,
     tableScroll: null,
+    appMain: null,
     pagination: null,
     empty: null,
     search: null,
@@ -53,7 +58,8 @@
     idToggle: null,
     exportJson: null,
     exportCsv: null,
-    exportStatus: null
+    exportStatus: null,
+    profileCard: null
   };
 
   function $(id) {
@@ -622,6 +628,16 @@ function normalizeUser(raw = {}) {
     }
   }
 
+  function renderTextValue(value, fallback = "—") {
+    const normalized =
+      value === undefined || value === null || String(value).trim() === ""
+        ? fallback
+        : String(value);
+    return `<span class="accounts-cell-ellipsis" title="${escapeHtml(normalized)}">${escapeHtml(
+      normalized
+    )}</span>`;
+  }
+
   function renderActionsToggle(user) {
     const accountId = String(user.id || "");
     return `
@@ -640,19 +656,21 @@ function normalizeUser(raw = {}) {
 
   function renderRow(user) {
     return `
-      <td class="accounts-id-column" data-account-id="${escapeHtml(user.id)}">${escapeHtml(user.id)}</td>
-      <td>${escapeHtml(user.userCode)}</td>
-      <td>${escapeHtml(user.email)}</td>
+      <td class="accounts-id-column" data-account-id="${escapeHtml(user.id)}">${renderTextValue(
+        user.id
+      )}</td>
+      <td>${renderTextValue(user.userCode)}</td>
+      <td>${renderTextValue(user.email)}</td>
       <td>${renderEmailVerified(user.emailVerified)}</td>
-      <td>${escapeHtml(user.displayName)}</td>
+      <td>${renderTextValue(user.displayName)}</td>
       <td>${renderBadge(user.role)}</td>
       <td>${renderBadge(user.tier)}</td>
       <td>${renderBadge(user.supporterLabel, user.supporterLabel === "Yes" ? "ss-badge-success" : "")}</td>
       <td>${renderBadge(user.accountStatus, badgeToneForStatus(user.accountStatus))}</td>
       <td>${renderBadge(user.onboardingStatus, badgeToneForStatus(user.onboardingStatus))}</td>
-      <td>${escapeHtml(user.providersLabel)}</td>
-      <td>${escapeHtml(formatTimestamp(user.createdAt))}</td>
-      <td>${escapeHtml(formatTimestamp(user.lastLogin))}</td>
+      <td>${renderTextValue(user.providersLabel)}</td>
+      <td>${renderTextValue(formatTimestamp(user.createdAt))}</td>
+      <td>${renderTextValue(formatTimestamp(user.lastLogin))}</td>
       <td class="align-right accounts-actions-cell">${renderActionsToggle(user)}</td>
     `;
   }
@@ -766,6 +784,161 @@ function normalizeUser(raw = {}) {
       return;
     }
     openDrawer(accountId);
+  }
+
+  function isBaseAccountRow(row) {
+    return Boolean(
+      row &&
+        row instanceof HTMLTableRowElement &&
+        !row.classList.contains("accounts-row-drawer-row")
+    );
+  }
+
+  function getAccountIdFromBaseRow(row) {
+    if (!isBaseAccountRow(row)) return "";
+    const idCell = row.querySelector(".accounts-id-column[data-account-id]");
+    if (!(idCell instanceof HTMLElement)) return "";
+    return idCell.getAttribute("data-account-id") || "";
+  }
+
+  function clearProfileHoverTimer() {
+    if (!state.profileHoverTimer) return;
+    clearTimeout(state.profileHoverTimer);
+    state.profileHoverTimer = null;
+  }
+
+  function ensureProfileCard() {
+    if (el.profileCard && document.body.contains(el.profileCard)) {
+      return;
+    }
+    const existing = document.getElementById("accounts-profile-card");
+    if (existing instanceof HTMLDivElement) {
+      el.profileCard = existing;
+      if (el.profileCard.dataset.bound !== "1") {
+        el.profileCard.dataset.bound = "1";
+        el.profileCard.addEventListener("mouseenter", () => clearProfileHoverTimer());
+        el.profileCard.addEventListener("mouseleave", () => {
+          if (!state.profileCardPinned) {
+            hideProfileCard(true);
+          }
+        });
+      }
+      return;
+    }
+
+    const card = document.createElement("div");
+    card.id = "accounts-profile-card";
+    card.className = "accounts-profile-card glass-card hidden";
+    card.setAttribute("role", "dialog");
+    card.setAttribute("aria-live", "polite");
+    card.dataset.bound = "1";
+    card.addEventListener("mouseenter", () => clearProfileHoverTimer());
+    card.addEventListener("mouseleave", () => {
+      if (!state.profileCardPinned) {
+        hideProfileCard(true);
+      }
+    });
+    document.body.appendChild(card);
+    el.profileCard = card;
+  }
+
+  function renderProfileCard(user) {
+    return `
+      <div class="accounts-profile-card-head">
+        <strong>${escapeHtml(user.displayName || user.userCode || "Account")}</strong>
+        <span class="muted">${escapeHtml(user.email || "—")}</span>
+      </div>
+      <div class="accounts-profile-card-grid">
+        <div><span class="label">User Code</span><span class="value">${escapeHtml(user.userCode || "—")}</span></div>
+        <div><span class="label">Role</span><span class="value">${escapeHtml(user.role || "—")}</span></div>
+        <div><span class="label">Tier</span><span class="value">${escapeHtml(user.tier || "—")}</span></div>
+        <div><span class="label">Status</span><span class="value">${escapeHtml(user.accountStatus || "—")}</span></div>
+        <div><span class="label">Created</span><span class="value">${escapeHtml(formatTimestamp(user.createdAt))}</span></div>
+        <div><span class="label">Last Login</span><span class="value">${escapeHtml(formatTimestamp(user.lastLogin))}</span></div>
+      </div>
+      <div class="accounts-profile-card-section">
+        <div class="accounts-profile-card-placeholder">Security Score: —</div>
+        <div class="accounts-profile-card-placeholder">Risk Flags: —</div>
+        <div class="accounts-profile-card-placeholder">Admin Notes: Placeholder</div>
+      </div>
+    `;
+  }
+
+  function positionProfileCardForRow(row) {
+    if (!el.profileCard || !isBaseAccountRow(row)) return;
+    const rowRect = row.getBoundingClientRect();
+    const cardRect = el.profileCard.getBoundingClientRect();
+    const margin = 12;
+
+    let left = rowRect.right + margin;
+    if (left + cardRect.width > window.innerWidth - margin) {
+      left = rowRect.left - cardRect.width - margin;
+    }
+    left = Math.max(margin, Math.min(left, window.innerWidth - cardRect.width - margin));
+
+    let top = rowRect.top;
+    if (top + cardRect.height > window.innerHeight - margin) {
+      top = window.innerHeight - cardRect.height - margin;
+    }
+    top = Math.max(margin, top);
+
+    el.profileCard.style.left = `${Math.round(left)}px`;
+    el.profileCard.style.top = `${Math.round(top)}px`;
+  }
+
+  function hideProfileCard(force = false) {
+    if (!el.profileCard) return;
+    if (!force && state.profileCardPinned) return;
+    el.profileCard.classList.add("hidden");
+    state.profileCardAccountId = "";
+    state.profileCardPinned = false;
+  }
+
+  function showProfileCard(accountId, row, options = {}) {
+    if (!accountId) return;
+    ensureProfileCard();
+    if (!el.profileCard) return;
+
+    const user = getUserById(accountId);
+    if (!user) return;
+
+    el.profileCard.innerHTML = renderProfileCard(user);
+    el.profileCard.classList.remove("hidden");
+    state.profileCardAccountId = accountId;
+    state.profileCardPinned = options.pinned === true;
+    positionProfileCardForRow(row);
+  }
+
+  function refreshProfileCardAnchor() {
+    if (!el.profileCard || !state.profileCardAccountId) return;
+    const row = getBaseRowByAccountId(state.profileCardAccountId);
+    if (!row) {
+      hideProfileCard(true);
+      return;
+    }
+    positionProfileCardForRow(row);
+  }
+
+  function scheduleProfileHover(row, accountId) {
+    clearProfileHoverTimer();
+    if (!row || !accountId) return;
+    state.profileHoverTimer = setTimeout(() => {
+      if (!document.body.contains(row)) {
+        state.profileHoverTimer = null;
+        return;
+      }
+      showProfileCard(accountId, row, { pinned: false });
+      state.profileHoverTimer = null;
+    }, 2000);
+  }
+
+  function isInteractiveRowTarget(target) {
+    if (!(target instanceof Element)) return false;
+    return Boolean(
+      target.closest(
+        "button, a, input, select, textarea, label, [data-account-action], [data-account-open-actions], [data-account-close-actions], [data-account-tier]"
+      )
+    );
   }
 
   async function fetchJson(url, options = {}) {
@@ -1213,10 +1386,48 @@ function normalizeUser(raw = {}) {
       state.escapeBound = true;
       document.addEventListener("keydown", (event) => {
         if (event.key !== "Escape") return;
-        if (!state.openDrawerId) return;
-        closeOpenDrawer();
+        if (state.openDrawerId) {
+          closeOpenDrawer();
+        }
+        hideProfileCard(true);
       });
     }
+
+    el.body?.addEventListener("mouseover", (event) => {
+      const row = event.target.closest("tr");
+      if (!isBaseAccountRow(row)) return;
+      const related = event.relatedTarget;
+      if (related instanceof Node && row.contains(related)) return;
+      if (isInteractiveRowTarget(event.target)) return;
+      const accountId = getAccountIdFromBaseRow(row);
+      scheduleProfileHover(row, accountId);
+    });
+
+    el.body?.addEventListener("mouseout", (event) => {
+      const row = event.target.closest("tr");
+      if (!isBaseAccountRow(row)) return;
+      const related = event.relatedTarget;
+      if (related instanceof Node && row.contains(related)) return;
+      clearProfileHoverTimer();
+
+      if (related instanceof Node && el.profileCard?.contains(related)) {
+        return;
+      }
+      if (!state.profileCardPinned) {
+        hideProfileCard(true);
+      }
+    });
+
+    el.body?.addEventListener("dblclick", (event) => {
+      if (isInteractiveRowTarget(event.target)) return;
+      const row = event.target.closest("tr");
+      if (!isBaseAccountRow(row)) return;
+      const accountId = getAccountIdFromBaseRow(row);
+      if (!accountId) return;
+      clearProfileHoverTimer();
+      hideProfileCard(true);
+      openDrawer(accountId);
+    });
 
     el.body?.addEventListener("click", (event) => {
       const closeButton = event.target.closest("[data-account-close-actions]");
@@ -1243,12 +1454,56 @@ function normalizeUser(raw = {}) {
       const user = getUserById(accountId);
       if (!user || !action) return;
       void handleAccountAction(user, action, row, button);
+      return;
     });
+
+    el.body?.addEventListener("click", (event) => {
+      if (isInteractiveRowTarget(event.target)) return;
+      const row = event.target.closest("tr");
+      if (!isBaseAccountRow(row)) return;
+      const accountId = getAccountIdFromBaseRow(row);
+      if (!accountId) return;
+      clearProfileHoverTimer();
+      showProfileCard(accountId, row, { pinned: true });
+    });
+
+    if (!state.profileBound) {
+      state.profileBound = true;
+      document.addEventListener("click", (event) => {
+        if (!state.profileCardPinned) return;
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const inCard = Boolean(el.profileCard?.contains(target));
+        const inAccountsTable = Boolean(target.closest("#accounts-table"));
+        if (inCard || inAccountsTable) return;
+        hideProfileCard(true);
+      });
+
+      window.addEventListener(
+        "resize",
+        () => {
+          refreshProfileCardAnchor();
+        },
+        { passive: true }
+      );
+      el.appMain?.addEventListener(
+        "scroll",
+        () => {
+          if (state.profileCardPinned) {
+            refreshProfileCardAnchor();
+          } else {
+            hideProfileCard(true);
+          }
+        },
+        { passive: true }
+      );
+    }
   }
 
   function handleTableRender() {
     restoreOpenDrawer();
     toggleIdColumn(el.idToggle?.checked !== false);
+    refreshProfileCardAnchor();
   }
 
   function initColumnResize() {
@@ -1256,7 +1511,7 @@ function normalizeUser(raw = {}) {
     state.columnResize = window.TableResize.initResizableTable({
       table: el.table,
       storageKey: COLUMN_WIDTH_STORAGE_KEY,
-      minWidth: 88,
+      minWidth: 36,
       maxWidth: 980,
       skipLastHandle: true,
       ignoreBodyRowSelector: ".accounts-row-drawer-row"
@@ -1290,6 +1545,7 @@ function normalizeUser(raw = {}) {
     el.body = $("accounts-body");
     el.table = $("accounts-table");
     el.tableScroll = $("accounts-table-scroll");
+    el.appMain = $("app-main");
     el.pagination = $("accounts-pagination");
     el.empty = $("accounts-empty");
     el.search = $("accounts-search");
@@ -1301,6 +1557,11 @@ function normalizeUser(raw = {}) {
     el.exportCsv = $("accounts-export-csv");
     el.exportStatus = $("accounts-export-status");
     state.openDrawerId = "";
+    state.profileCardPinned = false;
+    state.profileCardAccountId = "";
+    clearProfileHoverTimer();
+    ensureProfileCard();
+    hideProfileCard(true);
 
     ensureSupporterColumn();
     initTable();
