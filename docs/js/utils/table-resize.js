@@ -142,6 +142,20 @@
             .filter(Boolean)
         : []
     );
+    const defaultColumnWidths = (() => {
+      if (!config.defaultColumnWidths || typeof config.defaultColumnWidths !== "object") {
+        return {};
+      }
+      const entries = Object.entries(config.defaultColumnWidths);
+      const next = {};
+      entries.forEach(([key, value]) => {
+        const width = toFiniteNumber(value);
+        const normalizedKey = String(key || "").trim().toLowerCase();
+        if (!normalizedKey || !width || width <= 0) return;
+        next[normalizedKey] = width;
+      });
+      return next;
+    })();
 
     let columns = [];
     let disposed = false;
@@ -168,15 +182,48 @@
       table.style.minWidth = "100%";
     }
 
-    function applyBaselineWidths() {
+    function getVisibleBodyRows() {
+      return table.tBodies[0]
+        ? Array.from(table.tBodies[0].rows).filter((row) => {
+            if (!isRowVisible(row)) return false;
+            if (ignoreBodyRowSelector && row.matches(ignoreBodyRowSelector)) return false;
+            return true;
+          })
+        : [];
+    }
+
+    function computeColumnBestFitWidth(column) {
+      if (!column || !column.th) return minWidth;
+      let bestWidth = Math.max(column.minWidth, Math.ceil(column.th.scrollWidth) + WIDTH_PADDING_PX);
+      const bodyRows = getVisibleBodyRows();
+
+      bodyRows.forEach((row) => {
+        const cell = row.cells[column.index];
+        if (!cell) return;
+        bestWidth = Math.max(bestWidth, measureCellContentWidth(cell));
+      });
+
+      return clamp(bestWidth, column.minWidth, maxWidth);
+    }
+
+    function applyInitialWidths() {
       columns.forEach((column) => {
-        const hasExplicitWidth =
-          Boolean(column.col?.style?.width) ||
-          Boolean(column.th.style.width);
-        if (hasExplicitWidth) return;
-        const current = Math.round(column.th.getBoundingClientRect().width);
-        if (!Number.isFinite(current) || current <= 0) return;
-        setColumnWidth(column, current, { persist: false, sync: false });
+        const defaultWidth = toFiniteNumber(defaultColumnWidths[column.key.toLowerCase()]);
+        if (defaultWidth && defaultWidth > 0) {
+          setColumnWidth(column, defaultWidth, { persist: false, sync: false });
+          return;
+        }
+
+        if (column.persistable) {
+          const saved = toFiniteNumber(storedWidths[column.key]);
+          if (saved && saved > 0) {
+            setColumnWidth(column, saved, { persist: false, sync: false });
+            return;
+          }
+        }
+
+        const autoWidth = computeColumnBestFitWidth(column);
+        setColumnWidth(column, autoWidth, { persist: false, sync: false });
       });
       syncTableWidth();
     }
@@ -277,30 +324,9 @@
       }
     }
 
-    function applyStoredWidths() {
-      columns.forEach((column) => {
-        if (!column.persistable) return;
-        const saved = toFiniteNumber(storedWidths[column.key]);
-        if (!saved || saved <= 0) return;
-        setColumnWidth(column, saved, { persist: false });
-      });
-    }
-
     function autoFitColumn(column) {
       if (!column || !column.th || !column.canResize) return;
-
-      let bestWidth = Math.max(column.minWidth, 0);
-      const bodyRows = table.tBodies[0] ? Array.from(table.tBodies[0].rows) : [];
-
-      bodyRows.forEach((row) => {
-        if (!isRowVisible(row)) return;
-        if (ignoreBodyRowSelector && row.matches(ignoreBodyRowSelector)) return;
-
-        const cell = row.cells[column.index];
-        if (!cell) return;
-        bestWidth = Math.max(bestWidth, measureCellContentWidth(cell));
-      });
-
+      const bestWidth = computeColumnBestFitWidth(column);
       setColumnWidth(column, bestWidth, { persist: true });
     }
 
@@ -381,9 +407,7 @@
     function refresh() {
       if (disposed) return;
       buildColumnState();
-      applyBaselineWidths();
-      applyStoredWidths();
-      syncTableWidth();
+      applyInitialWidths();
       renderHandles();
     }
 

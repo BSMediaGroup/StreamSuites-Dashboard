@@ -35,6 +35,7 @@
     donationsLoaded: false,
     openDrawerId: "",
     columnResize: null,
+    columnResizeHydrated: false,
     escapeBound: false,
     profileHoverTimer: null,
     profileHoverAccountId: "",
@@ -1667,6 +1668,10 @@ function normalizeUser(raw = {}) {
     markRenderedAccountRows(renderedItems);
     restoreOpenDrawer();
     toggleIdColumn(el.idToggle?.checked !== false);
+    if (!state.columnResizeHydrated && renderedItems.length > 0) {
+      state.columnResizeHydrated = true;
+      state.columnResize?.refresh?.();
+    }
     refreshProfileCardAnchor();
   }
 
@@ -1679,6 +1684,9 @@ function normalizeUser(raw = {}) {
       maxWidth: 980,
       skipLastHandle: false,
       excludedColumnKeys: ["actions"],
+      defaultColumnWidths: {
+        actions: 132
+      },
       ignoreBodyRowSelector: ".accounts-row-drawer-row"
     });
   }
@@ -1722,6 +1730,7 @@ function normalizeUser(raw = {}) {
     el.exportCsv = $("accounts-export-csv");
     el.exportStatus = $("accounts-export-status");
     state.openDrawerId = "";
+    state.columnResizeHydrated = false;
     state.profileCardPinned = false;
     state.profileCardAccountId = "";
     state.profileHoverAccountId = "";

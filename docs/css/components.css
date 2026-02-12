@@ -452,7 +452,7 @@
 }
 
 #accounts-table {
-  width: 100%;
+  width: max-content;
   min-width: 100%;
   table-layout: fixed;
 }
@@ -541,6 +541,7 @@ body.ss-col-resizing-active {
   background: var(--bg-panel);
   background-clip: padding-box;
   box-shadow: none;
+  overflow: visible;
 }
 
 #accounts-table td.accounts-actions-cell {
@@ -550,6 +551,7 @@ body.ss-col-resizing-active {
   background: var(--bg-panel);
   background-clip: padding-box;
   box-shadow: none;
+  overflow: visible;
 }
 
 #accounts-table th[data-col-key="actions"]::before,
