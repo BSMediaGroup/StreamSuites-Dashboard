@@ -485,6 +485,18 @@
           </div>
         </div>
       </header>
+      <div
+        id="global-loader"
+        class="ss-global-loader"
+        role="status"
+        aria-live="polite"
+        aria-hidden="true"
+      >
+        <div class="ss-global-loader-track" aria-hidden="true">
+          <span class="ss-global-loader-bar"></span>
+        </div>
+        <span id="global-loader-text" class="ss-global-loader-text">Loading...</span>
+      </div>
 
       <main id="app-main">
         <div
@@ -550,6 +562,7 @@
   <script>
     window.StreamSuitesAdminGate?.bootstrap({
       scripts: [
+        "js/utils/global-loader.js",
         "js/app.js",
         "js/view-loader.js",
         "js/utils/versioning.js",

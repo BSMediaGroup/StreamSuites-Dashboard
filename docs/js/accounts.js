@@ -1098,6 +1098,14 @@ function normalizeUser(raw = {}) {
     ensureSupporterColumn();
     bindEvents();
     toggleIdColumn(true);
+    if (window.StreamSuitesGlobalLoader?.trackAsync) {
+      await window.StreamSuitesGlobalLoader.trackAsync(
+        () => Promise.all([loadAdminIdentity(), loadUsers(), loadDonations()]),
+        "Hydrating accounts..."
+      );
+      return;
+    }
+
     await Promise.all([loadAdminIdentity(), loadUsers(), loadDonations()]);
   }
 

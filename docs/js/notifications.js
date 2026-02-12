@@ -306,17 +306,26 @@
   }
 
   async function loadNotifications() {
-    for (const source of DATA_SOURCES) {
-      const list = await fetchNotificationsFrom(source);
-      if (Array.isArray(list)) {
-        state.items = list;
-        state.loaded = true;
-        return;
+    const loaderToken =
+      window.StreamSuitesGlobalLoader?.startLoading?.("Hydrating notifications...") || null;
+
+    try {
+      for (const source of DATA_SOURCES) {
+        const list = await fetchNotificationsFrom(source);
+        if (Array.isArray(list)) {
+          state.items = list;
+          state.loaded = true;
+          return;
+        }
+      }
+
+      state.items = [];
+      state.loaded = true;
+    } finally {
+      if (loaderToken) {
+        window.StreamSuitesGlobalLoader?.stopLoading?.(loaderToken);
       }
     }
-
-    state.items = [];
-    state.loaded = true;
   }
 
   function formatTimestamp(isoValue, millisValue) {

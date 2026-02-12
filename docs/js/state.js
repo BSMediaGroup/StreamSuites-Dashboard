@@ -28,6 +28,12 @@
   const RUNTIME_AVAILABILITY_FLAG = "__RUNTIME_AVAILABLE__";
   const RUNTIME_OFFLINE_FLAG = "__STREAMSUITES_RUNTIME_OFFLINE__";
   const STATE_FETCH_TIMEOUT_MS = 1500;
+  const LOADER_TRACKED_STATE_PATHS = new Set([
+    "runtime_snapshot.json",
+    "quotas.json",
+    "discord/runtime.json",
+    "admin_activity.json"
+  ]);
 
   /* Tracks which missing state files have already been logged this boot */
   const _missingStateLogged = new Set();
@@ -224,7 +230,31 @@
     }
   }
 
-  async function loadStateJson(relativePath) {
+  function shouldTrackLoader(relativePath, options = {}) {
+    if (options.trackLoader === false) return false;
+    if (options.trackLoader === true) return true;
+    return LOADER_TRACKED_STATE_PATHS.has(relativePath);
+  }
+
+  async function runWithLoader(task, reason, enabled) {
+    if (!enabled) {
+      return task();
+    }
+
+    if (window.StreamSuitesGlobalLoader?.trackAsync) {
+      return window.StreamSuitesGlobalLoader.trackAsync(task, reason);
+    }
+
+    return task();
+  }
+
+  async function loadStateJson(relativePath, options = {}) {
+    const loaderEnabled = shouldTrackLoader(relativePath, options);
+    const loaderReason =
+      options.loaderReason ||
+      `Hydrating ${relativePath}`;
+
+    return runWithLoader(async () => {
     if (
       window[RUNTIME_OFFLINE_FLAG] === true &&
       Object.prototype.hasOwnProperty.call(stateCache, relativePath)
@@ -280,6 +310,7 @@
       performance.now()
     );
     return undefined;
+    }, loaderReason, loaderEnabled);
   }
 
   async function fetchFallbackJson(relativePath) {
@@ -663,7 +694,9 @@
       }
     }
 
-    const sharedRaw = await loadStateJson("runtime_snapshot.json");
+    const sharedRaw = await loadStateJson("runtime_snapshot.json", {
+      loaderReason: "Hydrating runtime snapshot..."
+    });
     await reportSnapshotHealth(sharedRaw);
 
     const shared = normalizeRuntimeSnapshot(sharedRaw);
@@ -708,7 +741,11 @@
       }
     }
 
-    const shared = normalize(await loadStateJson("quotas.json"));
+    const shared = normalize(
+      await loadStateJson("quotas.json", {
+        loaderReason: "Hydrating runtime quotas..."
+      })
+    );
     if (shared) {
       markRuntimeAvailable();
       cache.quotas = shared;
@@ -764,7 +801,9 @@
   }
 
   async function loadDiscordRuntimeSnapshot() {
-    const data = await loadStateJson("discord/runtime.json");
+    const data = await loadStateJson("discord/runtime.json", {
+      loaderReason: "Hydrating Discord runtime..."
+    });
     return normalizeDiscordRuntime(data);
   }
 
@@ -824,7 +863,9 @@
     }
 
     const shared = normalizeAdminActivity(
-      await loadStateJson("admin_activity.json")
+      await loadStateJson("admin_activity.json", {
+        loaderReason: "Hydrating admin activity..."
+      })
     );
     if (shared) {
       cache.adminActivity = shared;

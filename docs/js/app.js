@@ -864,6 +864,9 @@ async function loadView(name) {
     return;
   }
 
+  const loaderToken =
+    window.StreamSuitesGlobalLoader?.startLoading?.(`Loading ${name} view...`) || null;
+
   try {
     const res = await fetchWithTimeout(viewUrl, { cache: "no-store" });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -876,7 +879,10 @@ async function loadView(name) {
     App.currentView = name;
 
     try {
-      view.onLoad(App.mode);
+      const result = view.onLoad(App.mode);
+      if (result && typeof result.then === "function") {
+        await result;
+      }
     } catch (e) {
       console.error(`[Dashboard] View load error (${name})`, e);
     }
@@ -912,6 +918,10 @@ async function loadView(name) {
       </div>
     `;
     markFirstViewMounted(name);
+  } finally {
+    if (loaderToken) {
+      window.StreamSuitesGlobalLoader?.stopLoading?.(loaderToken);
+    }
   }
 }
 

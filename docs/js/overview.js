@@ -903,39 +903,50 @@
     });
   }
 
-  async function refreshTelemetry() {
-    if (window.__RUNTIME_AVAILABLE__ !== true) {
-      return;
-    }
-    try {
-      const [snapshot, events, rates, errors, authEvents] = await Promise.all([
-        window.Telemetry?.loadSnapshot?.(true),
-        window.Telemetry?.loadEvents?.({ forceReload: true }),
-        window.Telemetry?.loadRates?.({ forceReload: true }),
-        window.Telemetry?.loadErrors?.({ forceReload: true }),
-        window.Telemetry?.loadAuthEvents?.({ forceReload: true })
-      ]);
+  async function refreshTelemetry(options = {}) {
+    const runRefresh = async () => {
+      if (window.__RUNTIME_AVAILABLE__ !== true) {
+        return;
+      }
+      try {
+        const [snapshot, events, rates, errors, authEvents] = await Promise.all([
+          window.Telemetry?.loadSnapshot?.(true),
+          window.Telemetry?.loadEvents?.({ forceReload: true }),
+          window.Telemetry?.loadRates?.({ forceReload: true }),
+          window.Telemetry?.loadErrors?.({ forceReload: true }),
+          window.Telemetry?.loadAuthEvents?.({ forceReload: true })
+        ]);
 
-      const [eventsHealth, ratesHealth, errorsHealth, authHealth] = await Promise.all([
-        window.Telemetry?.evaluateSnapshotHealth?.(events),
-        window.Telemetry?.evaluateSnapshotHealth?.(rates),
-        window.Telemetry?.evaluateSnapshotHealth?.(errors),
-        window.Telemetry?.evaluateSnapshotHealth?.(authEvents)
-      ]);
+        const [eventsHealth, ratesHealth, errorsHealth, authHealth] = await Promise.all([
+          window.Telemetry?.evaluateSnapshotHealth?.(events),
+          window.Telemetry?.evaluateSnapshotHealth?.(rates),
+          window.Telemetry?.evaluateSnapshotHealth?.(errors),
+          window.Telemetry?.evaluateSnapshotHealth?.(authEvents)
+        ]);
 
-      renderTelemetry(snapshot);
-      renderTelemetryEvents(events, eventsHealth);
-      renderTelemetryRates(rates, ratesHealth);
-      renderTelemetryErrors(errors, errorsHealth);
-      renderTelemetryAuthEvents(authEvents, authHealth);
-    } catch (err) {
-      console.warn("[Overview] Telemetry refresh failed", err);
-      renderTelemetry(null);
-      renderTelemetryEvents(null, null);
-      renderTelemetryRates(null, null);
-      renderTelemetryErrors(null, null);
-      renderTelemetryAuthEvents(null, null);
+        renderTelemetry(snapshot);
+        renderTelemetryEvents(events, eventsHealth);
+        renderTelemetryRates(rates, ratesHealth);
+        renderTelemetryErrors(errors, errorsHealth);
+        renderTelemetryAuthEvents(authEvents, authHealth);
+      } catch (err) {
+        console.warn("[Overview] Telemetry refresh failed", err);
+        renderTelemetry(null);
+        renderTelemetryEvents(null, null);
+        renderTelemetryRates(null, null);
+        renderTelemetryErrors(null, null);
+        renderTelemetryAuthEvents(null, null);
+      }
+    };
+
+    if (options.trackLoader === true && window.StreamSuitesGlobalLoader?.trackAsync) {
+      return window.StreamSuitesGlobalLoader.trackAsync(
+        runRefresh,
+        "Hydrating telemetry..."
+      );
     }
+
+    return runRefresh();
   }
 
   /* ============================================================
@@ -964,7 +975,7 @@
       void updateLocalMetrics();
       void refreshDiscord();
       void refreshAdminActivity();
-      void refreshTelemetry();
+      void refreshTelemetry({ trackLoader: true });
       updateQuotaFromRuntime();
     }, 0);
 
@@ -975,7 +986,9 @@
     refreshHandle = setInterval(refreshDiscord, REFRESH_INTERVAL_MS);
 
     if (telemetryHandle) clearInterval(telemetryHandle);
-    telemetryHandle = setInterval(refreshTelemetry, TELEMETRY_REFRESH_MS);
+    telemetryHandle = setInterval(() => {
+      void refreshTelemetry({ trackLoader: false });
+    }, TELEMETRY_REFRESH_MS);
 
     if (adminActivityHandle) clearInterval(adminActivityHandle);
     adminActivityHandle = setInterval(refreshAdminActivity, REFRESH_INTERVAL_MS);
