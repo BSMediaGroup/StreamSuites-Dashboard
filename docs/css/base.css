@@ -1168,7 +1168,7 @@ body.header-hidden #app-header {
   height: 3px;
   overflow: hidden;
   opacity: 0;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(140, 121, 255, 0.12);
   transition: opacity 0.16s ease;
 }
 
@@ -1181,13 +1181,15 @@ body.header-hidden #app-header {
   opacity: 0;
   background: linear-gradient(
     90deg,
-    rgba(140, 199, 54, 0),
-    var(--accent-primary),
-    rgba(140, 199, 54, 0)
+    rgba(140, 121, 255, 0),
+    rgba(140, 121, 255, 0.85) 24%,
+    rgba(193, 130, 255, 0.8) 50%,
+    rgba(106, 123, 255, 0.75) 76%,
+    rgba(155, 145, 255, 0)
   );
   box-shadow:
-    0 0 8px var(--glow-soft),
-    0 0 16px var(--glow-soft);
+    0 0 8px rgba(155, 145, 255, 0.42),
+    0 0 16px rgba(193, 130, 255, 0.34);
   animation: ss-global-loader-indeterminate 1.05s linear infinite;
 }
 
@@ -1206,7 +1208,7 @@ body.header-hidden #app-header {
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-secondary);
+  color: rgba(193, 130, 255, 0.92);
   opacity: 0;
   transform: translateY(-3px);
   transition: opacity 0.18s ease, transform 0.18s ease;
