@@ -1,12 +1,51 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-02-13T10:58:20.217551Z",
+  "exported_at": "2026-02-13T14:32:19.880995Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.4.0-alpha",
-    "build": "2026.02.13+004"
+    "build": "2026.02.13+006"
   },
   "audit": [
+    {
+      "id": "154e91e2-5c4d-4353-9f6f-e093cf9f79e6",
+      "ts": "2026-02-13T14:12:21Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "728c2072-e438-45ef-9dc3-f72447300949",
+      "ts": "2026-02-13T13:43:01Z",
+      "actor_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "actor_user_code": "JqhcS2m",
+      "actor_role": "creator",
+      "target_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "target_user_code": "JqhcS2m",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "70d84f0a-9f14-48cf-a260-7a54f40d039d",
+      "ts": "2026-02-13T12:33:41Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
     {
       "id": "06dd71dc-1e0b-4171-b356-c66a4d40bac9",
       "ts": "2026-02-13T10:22:13Z",

@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-02-13T10:58:20.191548Z",
+  "generated_at": "2026-02-13T14:32:19.860377Z",
   "events": [
     {
       "timestamp_utc": "2026-01-22T05:45:05Z",
@@ -645,6 +645,62 @@
       "resend_message_id": null,
       "ip": "135.196.82.7",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp_utc": "2026-02-13T12:33:24Z",
+      "event_type": "token_invalidated",
+      "event_name": "token_invalidated",
+      "action": null,
+      "email_type": null,
+      "account_id": "JqhcS2m",
+      "user_identifier": "user_code:JqhcS2m",
+      "email_redacted": null,
+      "result": "sent",
+      "resend_message_id": null,
+      "ip": "135.196.82.7",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+    },
+    {
+      "timestamp_utc": "2026-02-13T12:33:41Z",
+      "event_type": "session_issued",
+      "event_name": "github",
+      "action": "github",
+      "email_type": "github",
+      "account_id": "4TiOlvS",
+      "user_identifier": "user_code:4TiOlvS",
+      "email_redacted": null,
+      "result": "success",
+      "resend_message_id": null,
+      "ip": "135.196.82.7",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+    },
+    {
+      "timestamp_utc": "2026-02-13T13:43:01Z",
+      "event_type": "session_issued",
+      "event_name": "google",
+      "action": "google",
+      "email_type": "google",
+      "account_id": "JqhcS2m",
+      "user_identifier": "user_code:JqhcS2m",
+      "email_redacted": null,
+      "result": "success",
+      "resend_message_id": null,
+      "ip": "135.196.82.7",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0"
+    },
+    {
+      "timestamp_utc": "2026-02-13T14:12:21Z",
+      "event_type": "session_issued",
+      "event_name": "github",
+      "action": "github",
+      "email_type": "github",
+      "account_id": "4TiOlvS",
+      "user_identifier": "user_code:4TiOlvS",
+      "email_redacted": null,
+      "result": "success",
+      "resend_message_id": null,
+      "ip": "194.195.93.35",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.3 Mobile/15E148 Safari/604.1"
     }
   ]
 }

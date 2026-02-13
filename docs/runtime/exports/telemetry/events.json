@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-02-13T10:58:20.191548Z",
+  "generated_at": "2026-02-13T14:32:19.860377Z",
   "events": [
     {
       "timestamp": "2026-01-22T05:45:05Z",
@@ -509,7 +509,51 @@
       "result": "sent"
     },
     {
-      "timestamp": "2026-02-13T10:56:48.628768Z",
+      "timestamp": "2026-02-13T12:33:24Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:JqhcS2m result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:JqhcS2m",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-02-13T12:33:41Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
+      "event_type": "session_issued",
+      "email_type": "github",
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-02-13T13:43:01Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=google user=user_code:JqhcS2m result=success",
+      "event_type": "session_issued",
+      "email_type": "google",
+      "user_identifier": "user_code:JqhcS2m",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-02-13T14:12:21Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
+      "event_type": "session_issued",
+      "email_type": "github",
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-02-13T14:27:47.377512Z",
       "source": "system",
       "severity": "info",
       "message": "Runtime boot sequence started"
