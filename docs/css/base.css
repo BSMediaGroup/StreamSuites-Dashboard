@@ -1483,8 +1483,8 @@ body.header-hidden #app-header {
   mask-repeat: no-repeat;
   -webkit-mask-position: center;
   mask-position: center;
-  -webkit-mask-size: contain;
-  mask-size: contain;
+  -webkit-mask-size: 128%;
+  mask-size: 128%;
 }
 
 .ss-notifications-badge {
@@ -2280,8 +2280,8 @@ body.header-hidden #app-header {
   mask-repeat: no-repeat;
   -webkit-mask-position: center;
   mask-position: center;
-  -webkit-mask-size: contain;
-  mask-size: contain;
+  -webkit-mask-size: 124%;
+  mask-size: 124%;
   transition: transform 0.18s ease;
 }
 
