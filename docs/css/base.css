@@ -403,8 +403,8 @@ body.header-hidden #app-header {
   border: 0;
   background: transparent;
   color: inherit;
-  width: 28px;
-  height: 28px;
+  padding: 6px;
+  line-height: 0;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
