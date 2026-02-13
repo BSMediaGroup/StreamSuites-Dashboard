@@ -5,10 +5,11 @@
 (() => {
   "use strict";
 
-  const RUNTIME_ENDPOINT = "/api/admin/analytics";
   const DEFAULT_WINDOW = "5m";
   const ANALYTICS_CACHE_TTL_MS = 8000;
+  const ANALYTICS_REFRESH_INTERVAL_MS = 15000;
   const TOP_REFERRERS_LIMIT = 8;
+  const COUNTRY_CENTROIDS_PATH = "/shared/data/country_centroids.json";
 
   const DEFAULT_MAP_STYLE_URL =
     "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
@@ -22,7 +23,7 @@
     pointCore: "ss-analytics-point-core"
   };
 
-  const COUNTRY_CENTROIDS = {
+  const FALLBACK_COUNTRY_CENTROIDS = {
     US: [-98.5795, 39.8283],
     CA: [-106.3468, 56.1304],
     MX: [-102.5528, 23.6345],
@@ -86,7 +87,10 @@
     selectedWindow: DEFAULT_WINDOW,
     pendingGeoJson: emptyGeoJson(),
     destroyed: false,
-    abortController: null
+    abortController: null,
+    refreshHandle: null,
+    countryCentroids: null,
+    countryCentroidsPromise: null
   };
 
   const el = {
@@ -180,17 +184,6 @@
     return Math.round(num).toLocaleString();
   }
 
-  function formatWindowLabel(windowValue) {
-    const value = String(windowValue || "").trim().toLowerCase();
-    const map = {
-      "5m": "Last 5m",
-      "15m": "Last 15m",
-      "1h": "Last 1h",
-      "24h": "Last 24h"
-    };
-    return map[value] || "Custom window";
-  }
-
   function formatTimestamp(value) {
     if (!value) return "--";
     if (typeof window.StreamSuitesState?.formatTimestamp === "function") {
@@ -219,6 +212,50 @@
       .replace(/'/g, "&#39;");
   }
 
+  async function loadCountryCentroids() {
+    if (state.countryCentroids) return state.countryCentroids;
+    if (state.countryCentroidsPromise) return state.countryCentroidsPromise;
+
+    state.countryCentroidsPromise = fetch(COUNTRY_CENTROIDS_PATH, {
+      cache: "no-store",
+      credentials: "same-origin",
+      headers: {
+        Accept: "application/json"
+      }
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`Centroid request failed (${response.status})`);
+        }
+        const payload = await response.json();
+        const normalized = {};
+        if (payload && typeof payload === "object") {
+          Object.entries(payload).forEach(([code, coords]) => {
+            const iso2 = String(code || "").trim().toUpperCase();
+            if (!iso2 || !Array.isArray(coords) || coords.length !== 2) return;
+            const lon = Number(coords[0]);
+            const lat = Number(coords[1]);
+            if (!Number.isFinite(lon) || !Number.isFinite(lat)) return;
+            normalized[iso2] = [lon, lat];
+          });
+        }
+        state.countryCentroids = {
+          ...FALLBACK_COUNTRY_CENTROIDS,
+          ...normalized
+        };
+        return state.countryCentroids;
+      })
+      .catch(() => {
+        state.countryCentroids = FALLBACK_COUNTRY_CENTROIDS;
+        return state.countryCentroids;
+      })
+      .finally(() => {
+        state.countryCentroidsPromise = null;
+      });
+
+    return state.countryCentroidsPromise;
+  }
+
   function applyGeoJson(geojson) {
     state.pendingGeoJson = geojson;
     if (!state.map) return;
@@ -238,7 +275,10 @@
         cluster: true,
         clusterRadius: 42,
         clusterProperties: {
-          sum: ["+", ["coalesce", ["get", "count"], 0]]
+          sum: [
+            "+",
+            ["coalesce", ["get", "sessions"], ["get", "requests"], 0]
+          ]
         }
       });
     }
@@ -319,7 +359,7 @@
           "circle-radius": [
             "interpolate",
             ["linear"],
-            ["coalesce", ["get", "count"], 0],
+            ["coalesce", ["get", "sessions"], ["get", "requests"], 0],
             1, 9,
             10, 13,
             50, 18,
@@ -343,7 +383,7 @@
           "circle-radius": [
             "interpolate",
             ["linear"],
-            ["coalesce", ["get", "count"], 0],
+            ["coalesce", ["get", "sessions"], ["get", "requests"], 0],
             1, 3.2,
             10, 4.8,
             50, 7.2,
@@ -356,6 +396,43 @@
     const source = map.getSource(SOURCE_ID);
     if (source) {
       source.setData(state.pendingGeoJson || emptyGeoJson());
+    }
+
+    if (!map.__ssAnalyticsPopup) {
+      map.__ssAnalyticsPopup = new window.maplibregl.Popup({
+        closeButton: false,
+        closeOnClick: false,
+        offset: 10
+      });
+    }
+
+    if (!map.__ssAnalyticsHoverBound) {
+      map.on("mouseenter", LAYERS.pointCore, () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+      map.on("mouseleave", LAYERS.pointCore, () => {
+        map.getCanvas().style.cursor = "";
+        map.__ssAnalyticsPopup?.remove();
+      });
+      map.on("mousemove", LAYERS.pointCore, (event) => {
+        const feature = event?.features?.[0];
+        if (!feature) return;
+        const props = feature.properties || {};
+        const country = String(props.country || "--").toUpperCase();
+        const sessionsRaw = Number(props.sessions ?? 0);
+        const requestsRaw = Number(props.requests ?? 0);
+        const sessions = Number.isFinite(sessionsRaw) ? Math.max(0, Math.round(sessionsRaw)) : 0;
+        const requests = Number.isFinite(requestsRaw) ? Math.max(0, Math.round(requestsRaw)) : 0;
+        map.__ssAnalyticsPopup
+          ?.setLngLat(event.lngLat)
+          .setHTML(
+            `<strong>${escapeHtml(country)}</strong><br>Sessions: ${escapeHtml(
+              formatNumber(sessions)
+            )}<br>Requests: ${escapeHtml(formatNumber(requests))}`
+          )
+          .addTo(map);
+      });
+      map.__ssAnalyticsHoverBound = true;
     }
   }
 
@@ -415,18 +492,46 @@
     });
   }
 
-  function toMapFeature(entry) {
-    const code = String(entry?.country || "").trim().toUpperCase();
+  function normalizeCountryRows(byCountry) {
+    if (Array.isArray(byCountry)) {
+      return byCountry;
+    }
+    if (byCountry && typeof byCountry === "object") {
+      return Object.entries(byCountry).map(([country, value]) => {
+        if (value && typeof value === "object") {
+          return {
+            country,
+            requests: value.requests,
+            sessions: value.sessions,
+            count: value.count
+          };
+        }
+        return {
+          country,
+          requests: value,
+          sessions: value
+        };
+      });
+    }
+    return [];
+  }
+
+  function toMapFeature(entry, centroids) {
+    const code = String(entry?.country || entry?.code || "").trim().toUpperCase();
     if (!code || code === "ZZ") return null;
-    const centroid = COUNTRY_CENTROIDS[code];
+    const centroid = centroids?.[code];
     if (!Array.isArray(centroid) || centroid.length !== 2) return null;
-    const count = Number(entry?.count ?? 0);
-    if (!Number.isFinite(count) || count <= 0) return null;
+    const requestsRaw = Number(entry?.requests ?? entry?.count ?? 0);
+    const sessionsRaw = Number(entry?.sessions ?? entry?.count ?? requestsRaw);
+    const requests = Number.isFinite(requestsRaw) ? Math.max(0, Math.round(requestsRaw)) : 0;
+    const sessions = Number.isFinite(sessionsRaw) ? Math.max(0, Math.round(sessionsRaw)) : requests;
+    if (requests <= 0 && sessions <= 0) return null;
     return {
       type: "Feature",
       properties: {
         country: code,
-        count: Math.round(count)
+        requests,
+        sessions
       },
       geometry: {
         type: "Point",
@@ -435,9 +540,10 @@
     };
   }
 
-  function updateMap(geoRows, options = {}) {
-    const rows = Array.isArray(geoRows) ? geoRows : [];
-    const features = rows.map(toMapFeature).filter(Boolean);
+  async function updateMap(countryRows, options = {}) {
+    const rows = normalizeCountryRows(countryRows);
+    const centroids = await loadCountryCentroids();
+    const features = rows.map((entry) => toMapFeature(entry, centroids)).filter(Boolean);
     applyGeoJson({
       type: "FeatureCollection",
       features
@@ -462,7 +568,7 @@
     const rows = Array.isArray(referrers) ? referrers : [];
     return rows
       .map((entry) => {
-        const domain = String(entry?.domain || "unknown").trim() || "unknown";
+        const domain = String(entry?.host || entry?.domain || entry?.referrer || "unknown").trim() || "unknown";
         const count = Number(entry?.count ?? 0);
         return {
           domain,
@@ -550,34 +656,21 @@
       .join("");
   }
 
-  function setSummary(summary, selectedWindow, counts = {}, payload = null) {
-    const safe = summary && typeof summary === "object" ? summary : {};
-    const safeCounts = counts && typeof counts === "object" ? counts : {};
-    const totalFromCounts =
-      Number(safeCounts.admin_activity || 0) +
-      Number(safeCounts.auth_events || 0) +
-      Number(safeCounts.donations || 0);
-    const totalRequests = safe.total_requests ?? totalFromCounts;
-    const generatedAt = safe.generated_at || payload?.end_ts || payload?.start_ts || null;
-    const surfaces =
-      safe.surfaces ||
-      {
-        admin_activity: Number(safeCounts.admin_activity || 0),
-        auth_events: Number(safeCounts.auth_events || 0),
-        donations: Number(safeCounts.donations || 0)
-      };
+  function setSummary(payload) {
+    const safe = payload && typeof payload === "object" ? payload : {};
+    const totalRequests = Number(safe?.totals?.requests ?? 0);
+    const generatedAt = safe?.generated_at || null;
+    const windowLabel = String(safe?.window || state.selectedWindow || DEFAULT_WINDOW);
     if (el.totalRequests) {
       el.totalRequests.textContent = formatNumber(totalRequests);
     }
     if (el.windowLabel) {
-      el.windowLabel.textContent = String(
-        safe.window_label || payload?.window || formatWindowLabel(selectedWindow || state.selectedWindow)
-      );
+      el.windowLabel.textContent = windowLabel;
     }
     if (el.generatedAt) {
       el.generatedAt.textContent = formatTimestamp(generatedAt);
     }
-    renderSurfaces(surfaces);
+    renderSurfaces(safe?.surfaces);
   }
 
   async function runWithLoader(task, reason, withLoader) {
@@ -603,35 +696,24 @@
 
       try {
         const selectedWindow = String(state.selectedWindow || DEFAULT_WINDOW);
-        const payload = await window.StreamSuitesApi.apiFetch(
-          `${RUNTIME_ENDPOINT}?window=${encodeURIComponent(selectedWindow)}`,
-          {
-            cacheTtlMs: ANALYTICS_CACHE_TTL_MS,
-            cacheKey: `admin-analytics:${selectedWindow}`,
-            forceRefresh: options.forceRefresh === true,
-            timeoutMs: 3500,
-            signal: controller.signal
-          }
-        );
-        const data = payload?.data && typeof payload.data === "object" ? payload.data : {};
-        renderReferrers(payload?.referrers || data?.referrers);
-        setSummary(payload?.summary, selectedWindow, payload?.counts, payload);
-        updateMap(payload?.geo || data?.geo);
+        const payload = await window.StreamSuitesApi.getAdminAnalytics(selectedWindow, {
+          ttlMs: ANALYTICS_CACHE_TTL_MS,
+          forceRefresh: options.forceRefresh === true,
+          timeoutMs: 3500,
+          signal: controller.signal
+        });
+        const data = payload?.data && typeof payload.data === "object" ? payload.data : payload;
+        renderReferrers(data?.top_referrers);
+        setSummary(data);
+        await updateMap(data?.by_country);
 
-        const resolvedWindow = payload?.window || payload?.summary?.window_label || formatWindowLabel(selectedWindow);
-        if (
-          Number(payload?.counts?.admin_activity || 0) === 0 &&
-          Number(payload?.counts?.auth_events || 0) === 0 &&
-          Number(payload?.counts?.donations || 0) === 0
-        ) {
+        if (Number(data?.totals?.requests || 0) <= 0) {
           setStatus("No events in selected window.");
         } else {
-          setStatus(`Live analytics (${resolvedWindow})`);
+          setStatus(`Live analytics (${String(data?.window || selectedWindow)})`);
         }
       } catch (err) {
-        renderReferrers([]);
-        setSummary(null, state.selectedWindow, null, null);
-        updateMap([], { errorMessage: "Map data unavailable while analytics endpoint is offline." });
+        setMapFeedback("Map data unavailable while analytics endpoint is offline.", { isError: true });
         if (err?.status === 401 || err?.status === 403 || err?.isAuthError) {
           promptAdminReauth();
           setStatus("Admin session required");
@@ -686,11 +768,18 @@
       void fetchAnalytics({ withLoader: true, forceRefresh: true });
     });
 
-    setSummary(null, state.selectedWindow, null, null);
+    setSummary(null);
     renderReferrers([]);
-    updateMap([]);
+    void updateMap([]);
     initMap();
-    fetchAnalytics({ withLoader: true });
+    void fetchAnalytics({ withLoader: true });
+    if (state.refreshHandle) {
+      clearInterval(state.refreshHandle);
+    }
+    state.refreshHandle = setInterval(() => {
+      if (state.destroyed) return;
+      void fetchAnalytics({ withLoader: false, forceRefresh: true });
+    }, ANALYTICS_REFRESH_INTERVAL_MS);
   }
 
   function destroy() {
@@ -706,8 +795,14 @@
     }
 
     if (state.map) {
+      state.map.__ssAnalyticsPopup?.remove();
       state.map.remove();
       state.map = null;
+    }
+
+    if (state.refreshHandle) {
+      clearInterval(state.refreshHandle);
+      state.refreshHandle = null;
     }
 
     state.mapReady = false;
