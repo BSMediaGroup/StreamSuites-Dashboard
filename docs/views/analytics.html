@@ -30,8 +30,20 @@
         <h2>Global Sessions Map</h2>
         <p class="muted">Country-level request aggregates rendered on a 2D map.</p>
       </div>
+      <div class="ss-panel-header-actions">
+        <button
+          id="analytics-map-toggle"
+          class="ss-btn ss-btn-secondary ss-btn-small ss-analytics-map-toggle"
+          type="button"
+          aria-controls="analytics-map-panel-body"
+          aria-expanded="true"
+        >
+          <span class="ss-analytics-map-toggle-icon" aria-hidden="true">&#9660;</span>
+          <span id="analytics-map-toggle-label">Collapse</span>
+        </button>
+      </div>
     </header>
-    <div class="ss-panel-body">
+    <div id="analytics-map-panel-body" class="ss-panel-body ss-analytics-map-panel-body">
       <div class="ss-analytics-map-shell">
         <div id="analytics-world-map" class="ss-analytics-map" role="img" aria-label="Global session map"></div>
         <div id="analytics-map-feedback" class="ss-analytics-map-feedback hidden" role="status" aria-live="polite"></div>

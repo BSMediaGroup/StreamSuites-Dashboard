@@ -10,6 +10,7 @@
   const ANALYTICS_REFRESH_INTERVAL_MS = 15000;
   const TOP_REFERRERS_LIMIT = 8;
   const COUNTRY_CENTROIDS_PATH = "/shared/data/country_centroids.json";
+  const MAP_COLLAPSED_STORAGE_KEY = "ss_admin_analytics_map_collapsed";
 
   const DEFAULT_MAP_STYLE_URL =
     "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
@@ -90,11 +91,18 @@
     abortController: null,
     refreshHandle: null,
     countryCentroids: null,
-    countryCentroidsPromise: null
+    countryCentroidsPromise: null,
+    mapCollapsed: false,
+    mapResizeRaf: null,
+    mapResizeTimeout: null
   };
 
   const el = {
     map: null,
+    mapPanel: null,
+    mapPanelBody: null,
+    mapToggle: null,
+    mapToggleLabel: null,
     mapFeedback: null,
     banner: null,
     status: null,
@@ -119,6 +127,22 @@
       return override.trim();
     }
     return DEFAULT_MAP_STYLE_URL;
+  }
+
+  function readMapCollapsedPreference() {
+    try {
+      return window.localStorage?.getItem(MAP_COLLAPSED_STORAGE_KEY) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function writeMapCollapsedPreference(collapsed) {
+    try {
+      window.localStorage?.setItem(MAP_COLLAPSED_STORAGE_KEY, collapsed ? "1" : "0");
+    } catch (_) {
+      // Ignore localStorage write failures (private mode/quota/security).
+    }
   }
 
   function promptAdminReauth() {
@@ -211,6 +235,71 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;");
+  }
+
+  function scheduleMapResize() {
+    if (state.mapResizeRaf) {
+      cancelAnimationFrame(state.mapResizeRaf);
+      state.mapResizeRaf = null;
+    }
+    if (state.mapResizeTimeout) {
+      clearTimeout(state.mapResizeTimeout);
+      state.mapResizeTimeout = null;
+    }
+
+    state.mapResizeRaf = requestAnimationFrame(() => {
+      state.mapResizeRaf = null;
+      if (!state.map || state.destroyed || state.mapCollapsed) return;
+      state.map.resize();
+      state.mapResizeTimeout = setTimeout(() => {
+        state.mapResizeTimeout = null;
+        if (!state.map || state.destroyed || state.mapCollapsed) return;
+        state.map.resize();
+      }, 100);
+    });
+  }
+
+  function updateMapToggleUi() {
+    const collapsed = state.mapCollapsed === true;
+    const nextActionLabel = collapsed ? "Expand" : "Collapse";
+    if (el.mapToggleLabel) {
+      el.mapToggleLabel.textContent = nextActionLabel;
+    }
+    if (el.mapToggle) {
+      el.mapToggle.setAttribute("aria-expanded", String(!collapsed));
+      const iconEl = el.mapToggle.querySelector(".ss-analytics-map-toggle-icon");
+      if (iconEl) {
+        iconEl.innerHTML = collapsed ? "&#9654;" : "&#9660;";
+      }
+    }
+  }
+
+  function setMapCollapsed(collapsed, options = {}) {
+    const shouldCollapse = collapsed === true;
+    state.mapCollapsed = shouldCollapse;
+    el.mapPanel?.classList.toggle("is-collapsed", shouldCollapse);
+    if (el.mapPanelBody) {
+      el.mapPanelBody.hidden = shouldCollapse;
+    }
+    updateMapToggleUi();
+    if (options.persist !== false) {
+      writeMapCollapsedPreference(shouldCollapse);
+    }
+    if (!shouldCollapse) {
+      if (!state.map) {
+        initMap();
+      }
+      if (options.resize !== false) {
+        scheduleMapResize();
+      }
+    }
+  }
+
+  function handleMapToggleClick() {
+    setMapCollapsed(!state.mapCollapsed, {
+      persist: true,
+      resize: true
+    });
   }
 
   async function loadCountryCentroids() {
@@ -403,7 +492,8 @@
       map.__ssAnalyticsPopup = new window.maplibregl.Popup({
         closeButton: false,
         closeOnClick: false,
-        offset: 10
+        offset: 10,
+        className: "ss-map-popup"
       });
     }
 
@@ -427,9 +517,11 @@
         map.__ssAnalyticsPopup
           ?.setLngLat(event.lngLat)
           .setHTML(
-            `<strong>${escapeHtml(country)}</strong><br>Sessions: ${escapeHtml(
+            `<div class="ss-map-popup-inner"><strong>${escapeHtml(country)}</strong><span><span class="ss-map-popup-label">Sessions:</span> <span class="ss-map-popup-value">${escapeHtml(
               formatNumber(sessions)
-            )}<br>Requests: ${escapeHtml(formatNumber(requests))}`
+            )}</span></span><span><span class="ss-map-popup-label">Requests:</span> <span class="ss-map-popup-value">${escapeHtml(
+              formatNumber(requests)
+            )}</span></span></div>`
           )
           .addTo(map);
       });
@@ -490,6 +582,9 @@
     state.map.once("load", () => {
       state.mapReady = true;
       ensureMapLayers();
+      if (!state.mapCollapsed) {
+        scheduleMapResize();
+      }
     });
   }
 
@@ -787,6 +882,10 @@
     state.destroyed = false;
 
     el.map = $("analytics-world-map");
+    el.mapPanel = document.querySelector(".ss-analytics-map-panel");
+    el.mapPanelBody = $("analytics-map-panel-body");
+    el.mapToggle = $("analytics-map-toggle");
+    el.mapToggleLabel = $("analytics-map-toggle-label");
     el.mapFeedback = $("analytics-map-feedback");
     el.banner = $("analytics-banner");
     el.status = $("analytics-status");
@@ -798,6 +897,9 @@
     el.generatedAt = $("analytics-generated-at");
     el.surfacesList = $("analytics-surfaces-list");
     el.surfacesEmpty = $("analytics-surfaces-empty");
+    if (el.mapToggle) {
+      el.mapToggle.addEventListener("click", handleMapToggleClick);
+    }
     if (el.surfacesList && !surfacesClickBound) {
       el.surfacesList.addEventListener("click", handleSurfaceViewClick);
       surfacesClickBound = true;
@@ -817,7 +919,16 @@
     setSummary(null);
     renderReferrers([]);
     void updateMap([]);
-    initMap();
+    setMapCollapsed(readMapCollapsedPreference(), {
+      persist: false,
+      resize: false
+    });
+    if (!state.map) {
+      initMap();
+    }
+    if (!state.mapCollapsed) {
+      scheduleMapResize();
+    }
     void fetchAnalytics({ withLoader: true });
     if (state.refreshHandle) {
       clearInterval(state.refreshHandle);
@@ -840,6 +951,10 @@
       el.windowSelect.removeEventListener("change", handleWindowChange);
     }
 
+    if (el.mapToggle) {
+      el.mapToggle.removeEventListener("click", handleMapToggleClick);
+    }
+
     if (state.map) {
       state.map.__ssAnalyticsPopup?.remove();
       state.map.remove();
@@ -851,12 +966,23 @@
       state.refreshHandle = null;
     }
 
+    if (state.mapResizeRaf) {
+      cancelAnimationFrame(state.mapResizeRaf);
+      state.mapResizeRaf = null;
+    }
+
+    if (state.mapResizeTimeout) {
+      clearTimeout(state.mapResizeTimeout);
+      state.mapResizeTimeout = null;
+    }
+
     if (el.surfacesList && surfacesClickBound) {
       el.surfacesList.removeEventListener("click", handleSurfaceViewClick);
       surfacesClickBound = false;
     }
 
     state.mapReady = false;
+    state.mapCollapsed = false;
     state.pendingGeoJson = emptyGeoJson();
 
     Object.keys(el).forEach((key) => {

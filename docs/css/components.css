@@ -189,11 +189,11 @@
 
 .ss-analytics-main {
   display: grid;
-  grid-template-columns: minmax(0, 1.75fr) minmax(280px, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 1fr);
   grid-template-areas:
     "banner banner"
-    "map referrers"
-    "map sessions";
+    "map map"
+    "referrers sessions";
   gap: 14px;
   align-items: stretch;
 }
@@ -202,8 +202,29 @@
   min-width: 0;
 }
 
+.ss-analytics-main > .ss-panel {
+  margin-top: 0;
+}
+
 .ss-analytics-map-panel {
   grid-area: map;
+  width: 100%;
+}
+
+.ss-analytics-map-panel.is-collapsed .ss-analytics-map-panel-body {
+  display: none;
+}
+
+.ss-analytics-map-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ss-analytics-map-toggle-icon {
+  font-size: 12px;
+  line-height: 1;
+  color: var(--text-primary);
 }
 
 .ss-analytics-banner-wrap {
@@ -242,6 +263,58 @@
 
 .ss-analytics-map .maplibregl-ctrl-group button {
   background: transparent;
+}
+
+.ss-map-popup .maplibregl-popup-content {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  background: rgba(11, 16, 25, 0.96);
+  color: #e6efff;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.42);
+  padding: 10px 12px;
+}
+
+.ss-map-popup .ss-map-popup-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.ss-map-popup .ss-map-popup-inner strong {
+  color: #f7fbff;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+}
+
+.ss-map-popup .ss-map-popup-label {
+  color: #a7b9d9;
+}
+
+.ss-map-popup .ss-map-popup-value {
+  color: #e6efff;
+  font-family: "RechargeBd", sans-serif;
+}
+
+.ss-map-popup a {
+  color: #82d3ff;
+}
+
+.ss-map-popup[class*="maplibregl-popup-anchor-top"] .maplibregl-popup-tip {
+  border-top-color: rgba(11, 16, 25, 0.96);
+}
+
+.ss-map-popup[class*="maplibregl-popup-anchor-bottom"] .maplibregl-popup-tip {
+  border-bottom-color: rgba(11, 16, 25, 0.96);
+}
+
+.ss-map-popup[class*="maplibregl-popup-anchor-left"] .maplibregl-popup-tip {
+  border-left-color: rgba(11, 16, 25, 0.96);
+}
+
+.ss-map-popup[class*="maplibregl-popup-anchor-right"] .maplibregl-popup-tip {
+  border-right-color: rgba(11, 16, 25, 0.96);
 }
 
 .ss-analytics-map-feedback {
