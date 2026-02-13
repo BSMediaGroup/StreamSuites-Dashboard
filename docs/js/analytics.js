@@ -11,6 +11,9 @@
   const TOP_REFERRERS_LIMIT = 8;
   const COUNTRY_CENTROIDS_PATH = "/shared/data/country_centroids.json";
   const MAP_COLLAPSED_STORAGE_KEY = "ss_admin_analytics_map_collapsed";
+  const COUNTRY_DEFAULT_SORT_KEY = "sessions";
+  const COUNTRY_DEFAULT_SORT_DIRECTION = "desc";
+  const COUNTRY_FOCUS_ZOOM = 3;
 
   const DEFAULT_MAP_STYLE_URL =
     "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
@@ -92,6 +95,21 @@
     refreshHandle: null,
     countryCentroids: null,
     countryCentroidsPromise: null,
+    latestByCountry: [],
+    countryRows: [],
+    countryTotals: {
+      sessions: 0,
+      requests: 0
+    },
+    countrySort: {
+      key: COUNTRY_DEFAULT_SORT_KEY,
+      direction: COUNTRY_DEFAULT_SORT_DIRECTION
+    },
+    countryFilter: "",
+    activeCountryCode: "",
+    countryFocusToken: 0,
+    regionDisplayNames: null,
+    regionNameCache: Object.create(null),
     mapCollapsed: false,
     mapResizeRaf: null,
     mapResizeTimeout: null
@@ -113,7 +131,12 @@
     windowLabel: null,
     generatedAt: null,
     surfacesList: null,
-    surfacesEmpty: null
+    surfacesEmpty: null,
+    countriesTable: null,
+    countriesBody: null,
+    countriesEmpty: null,
+    countriesSearch: null,
+    countriesCount: null
   };
   let surfacesClickBound = false;
 
@@ -235,6 +258,109 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;");
+  }
+
+  function formatShare(value, total) {
+    const numerator = Number(value);
+    const denominator = Number(total);
+    if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator <= 0) return "--";
+    const percent = (Math.max(0, numerator) / denominator) * 100;
+    return `${percent.toLocaleString(undefined, {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1
+    })}%`;
+  }
+
+  function delay(ms) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, Math.max(0, Number(ms) || 0));
+    });
+  }
+
+  function getOrCreateMapPopup(map) {
+    if (!map || !window.maplibregl || typeof window.maplibregl.Popup !== "function") return null;
+    if (!map.__ssAnalyticsPopup) {
+      map.__ssAnalyticsPopup = new window.maplibregl.Popup({
+        closeButton: false,
+        closeOnClick: false,
+        offset: 10,
+        className: "ss-map-popup"
+      });
+    }
+    return map.__ssAnalyticsPopup;
+  }
+
+  function resolveCountryName(code) {
+    const iso2 = String(code || "").trim().toUpperCase();
+    if (!iso2) return "";
+    if (state.regionNameCache[iso2]) {
+      return state.regionNameCache[iso2];
+    }
+
+    if (state.regionDisplayNames === null) {
+      if (typeof Intl !== "undefined" && typeof Intl.DisplayNames === "function") {
+        try {
+          state.regionDisplayNames = new Intl.DisplayNames(["en"], { type: "region" });
+        } catch (_) {
+          state.regionDisplayNames = false;
+        }
+      } else {
+        state.regionDisplayNames = false;
+      }
+    }
+
+    let resolved = iso2;
+    if (state.regionDisplayNames) {
+      try {
+        const candidate = state.regionDisplayNames.of(iso2);
+        if (typeof candidate === "string" && candidate.trim()) {
+          resolved = candidate.trim();
+        }
+      } catch (_) {
+        resolved = iso2;
+      }
+    }
+    state.regionNameCache[iso2] = resolved;
+    return resolved;
+  }
+
+  function buildCountryPopupHtml(entry) {
+    const code = String(entry?.code || entry?.country || "--").trim().toUpperCase() || "--";
+    const resolvedName = String(entry?.name || resolveCountryName(code) || code).trim() || code;
+    const sessionsRaw = Number(entry?.sessions ?? 0);
+    const requestsRaw = Number(entry?.requests ?? 0);
+    const sessions = Number.isFinite(sessionsRaw) ? Math.max(0, Math.round(sessionsRaw)) : 0;
+    const requests = Number.isFinite(requestsRaw) ? Math.max(0, Math.round(requestsRaw)) : 0;
+    const title = resolvedName.toUpperCase() === code ? code : `${resolvedName} (${code})`;
+    return `<div class="ss-map-popup-inner"><strong>${escapeHtml(
+      title
+    )}</strong><span><span class="ss-map-popup-label">Sessions:</span> <span class="ss-map-popup-value">${escapeHtml(
+      formatNumber(sessions)
+    )}</span></span><span><span class="ss-map-popup-label">Requests:</span> <span class="ss-map-popup-value">${escapeHtml(
+      formatNumber(requests)
+    )}</span></span></div>`;
+  }
+
+  async function waitForMapReady(timeoutMs = 3000) {
+    if (!state.map) return false;
+    if (state.mapReady) return true;
+
+    return new Promise((resolve) => {
+      let settled = false;
+      const finish = (value) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeout);
+        resolve(value === true);
+      };
+
+      const timeout = setTimeout(() => {
+        finish(state.mapReady === true);
+      }, Math.max(1, Number(timeoutMs) || 1));
+
+      state.map.once("load", () => finish(true));
+      state.map.once("error", () => finish(false));
+    });
   }
 
   function scheduleMapResize() {
@@ -488,14 +614,7 @@
       source.setData(state.pendingGeoJson || emptyGeoJson());
     }
 
-    if (!map.__ssAnalyticsPopup) {
-      map.__ssAnalyticsPopup = new window.maplibregl.Popup({
-        closeButton: false,
-        closeOnClick: false,
-        offset: 10,
-        className: "ss-map-popup"
-      });
-    }
+    getOrCreateMapPopup(map);
 
     if (!map.__ssAnalyticsHoverBound) {
       map.on("mouseenter", LAYERS.pointCore, () => {
@@ -509,19 +628,21 @@
         const feature = event?.features?.[0];
         if (!feature) return;
         const props = feature.properties || {};
-        const country = String(props.country || "--").toUpperCase();
+        const code = String(props.country || "--").toUpperCase();
+        const name = String(props.name || resolveCountryName(code) || code);
         const sessionsRaw = Number(props.sessions ?? 0);
         const requestsRaw = Number(props.requests ?? 0);
         const sessions = Number.isFinite(sessionsRaw) ? Math.max(0, Math.round(sessionsRaw)) : 0;
         const requests = Number.isFinite(requestsRaw) ? Math.max(0, Math.round(requestsRaw)) : 0;
-        map.__ssAnalyticsPopup
+        getOrCreateMapPopup(map)
           ?.setLngLat(event.lngLat)
           .setHTML(
-            `<div class="ss-map-popup-inner"><strong>${escapeHtml(country)}</strong><span><span class="ss-map-popup-label">Sessions:</span> <span class="ss-map-popup-value">${escapeHtml(
-              formatNumber(sessions)
-            )}</span></span><span><span class="ss-map-popup-label">Requests:</span> <span class="ss-map-popup-value">${escapeHtml(
-              formatNumber(requests)
-            )}</span></span></div>`
+            buildCountryPopupHtml({
+              code,
+              name,
+              sessions,
+              requests
+            })
           )
           .addTo(map);
       });
@@ -612,22 +733,51 @@
     return [];
   }
 
-  function toMapFeature(entry, centroids) {
-    const code = String(entry?.country || entry?.code || "").trim().toUpperCase();
-    if (!code || code === "ZZ") return null;
-    const centroid = centroids?.[code];
-    if (!Array.isArray(centroid) || centroid.length !== 2) return null;
-    const requestsRaw = Number(entry?.requests ?? entry?.count ?? 0);
-    const sessionsRaw = Number(entry?.sessions ?? entry?.count ?? requestsRaw);
-    const requests = Number.isFinite(requestsRaw) ? Math.max(0, Math.round(requestsRaw)) : 0;
-    const sessions = Number.isFinite(sessionsRaw) ? Math.max(0, Math.round(sessionsRaw)) : requests;
-    if (requests <= 0 && sessions <= 0) return null;
+  function buildCountryRows(countryRows, centroids) {
+    const aggregate = new Map();
+    normalizeCountryRows(countryRows).forEach((entry) => {
+      const code = String(entry?.country || entry?.code || "").trim().toUpperCase();
+      if (!code || code === "ZZ") return;
+      const centroid = centroids?.[code];
+      if (!Array.isArray(centroid) || centroid.length !== 2) return;
+      const lon = Number(centroid[0]);
+      const lat = Number(centroid[1]);
+      if (!Number.isFinite(lon) || !Number.isFinite(lat)) return;
+      const requestsRaw = Number(entry?.requests ?? entry?.count ?? 0);
+      const sessionsRaw = Number(entry?.sessions ?? entry?.count ?? requestsRaw);
+      const requests = Number.isFinite(requestsRaw) ? Math.max(0, Math.round(requestsRaw)) : 0;
+      const sessions = Number.isFinite(sessionsRaw) ? Math.max(0, Math.round(sessionsRaw)) : requests;
+      if (requests <= 0 && sessions <= 0) return;
+      const existing = aggregate.get(code);
+      if (existing) {
+        existing.requests += requests;
+        existing.sessions += sessions;
+        return;
+      }
+      aggregate.set(code, {
+        code,
+        name: resolveCountryName(code),
+        requests,
+        sessions,
+        centroid: [lon, lat]
+      });
+    });
+    return Array.from(aggregate.values());
+  }
+
+  function toMapFeature(entry) {
+    const code = String(entry?.code || entry?.country || "").trim().toUpperCase();
+    const centroid = entry?.centroid;
+    if (!code || !Array.isArray(centroid) || centroid.length !== 2) return null;
+    const requests = Number(entry?.requests ?? 0);
+    const sessions = Number(entry?.sessions ?? 0);
     return {
       type: "Feature",
       properties: {
         country: code,
-        requests,
-        sessions
+        name: entry?.name || resolveCountryName(code),
+        requests: Number.isFinite(requests) ? requests : 0,
+        sessions: Number.isFinite(sessions) ? sessions : 0
       },
       geometry: {
         type: "Point",
@@ -636,10 +786,234 @@
     };
   }
 
+  function computeCountryTotals(rows) {
+    return rows.reduce(
+      (acc, entry) => {
+        const requests = Number(entry?.requests ?? 0);
+        const sessions = Number(entry?.sessions ?? 0);
+        if (Number.isFinite(requests)) acc.requests += Math.max(0, requests);
+        if (Number.isFinite(sessions)) acc.sessions += Math.max(0, sessions);
+        return acc;
+      },
+      {
+        sessions: 0,
+        requests: 0
+      }
+    );
+  }
+
+  function resolveCountrySortValue(entry, key, totals) {
+    if (key === "name") {
+      return `${String(entry?.name || "").toLowerCase()}|${String(entry?.code || "").toLowerCase()}`;
+    }
+    if (key === "sessionsShare") {
+      const totalSessions = Number(totals?.sessions ?? 0);
+      return totalSessions > 0 ? Number(entry?.sessions ?? 0) / totalSessions : 0;
+    }
+    if (key === "requestsShare") {
+      const totalRequests = Number(totals?.requests ?? 0);
+      return totalRequests > 0 ? Number(entry?.requests ?? 0) / totalRequests : 0;
+    }
+    return Number(entry?.[key] ?? 0);
+  }
+
+  function sortCountryRows(rows, totals) {
+    const key = String(state.countrySort?.key || COUNTRY_DEFAULT_SORT_KEY);
+    const direction = state.countrySort?.direction === "asc" ? "asc" : "desc";
+    const factor = direction === "asc" ? 1 : -1;
+
+    return [...rows].sort((left, right) => {
+      const leftValue = resolveCountrySortValue(left, key, totals);
+      const rightValue = resolveCountrySortValue(right, key, totals);
+      let compare = 0;
+      if (typeof leftValue === "number" && typeof rightValue === "number") {
+        compare = leftValue - rightValue;
+      } else {
+        compare = String(leftValue).localeCompare(String(rightValue), undefined, {
+          sensitivity: "base",
+          numeric: true
+        });
+      }
+      if (compare !== 0) return compare * factor;
+      const sessionsFallback = Number(right?.sessions ?? 0) - Number(left?.sessions ?? 0);
+      if (sessionsFallback !== 0) return sessionsFallback;
+      return String(left?.code || "").localeCompare(String(right?.code || ""), undefined, {
+        sensitivity: "base"
+      });
+    });
+  }
+
+  function updateCountrySortHeaders() {
+    if (!el.countriesTable) return;
+    const headers = el.countriesTable.querySelectorAll("th.sortable[data-sort-key]");
+    headers.forEach((header) => {
+      const sortKey = String(header.getAttribute("data-sort-key") || "");
+      const isSorted = sortKey === state.countrySort.key;
+      const isAsc = isSorted && state.countrySort.direction === "asc";
+      const isDesc = isSorted && state.countrySort.direction === "desc";
+      header.classList.toggle("sorted-asc", isAsc);
+      header.classList.toggle("sorted-desc", isDesc);
+      header.setAttribute("aria-sort", isSorted ? (isAsc ? "ascending" : "descending") : "none");
+    });
+  }
+
+  function renderCountryTable() {
+    const allRows = Array.isArray(state.countryRows) ? state.countryRows : [];
+    const filterText = String(state.countryFilter || "").trim().toLowerCase();
+    const filteredRows = filterText
+      ? allRows.filter((entry) => {
+          const code = String(entry?.code || "").toLowerCase();
+          const name = String(entry?.name || "").toLowerCase();
+          return code.includes(filterText) || name.includes(filterText);
+        })
+      : allRows;
+    const totals = state.countryTotals;
+    const sortedRows = sortCountryRows(filteredRows, totals);
+    updateCountrySortHeaders();
+
+    if (el.countriesCount) {
+      if (filterText) {
+        el.countriesCount.textContent = `${sortedRows.length.toLocaleString()} of ${allRows.length.toLocaleString()} regions`;
+      } else {
+        const label = allRows.length === 1 ? "region" : "regions";
+        el.countriesCount.textContent = `${allRows.length.toLocaleString()} ${label}`;
+      }
+    }
+
+    if (!el.countriesBody || !el.countriesEmpty) return;
+    if (!sortedRows.length) {
+      el.countriesBody.innerHTML = "";
+      el.countriesEmpty.textContent = filterText
+        ? "No regions match this filter."
+        : "No regions detected in this window.";
+      el.countriesEmpty.classList.remove("hidden");
+      return;
+    }
+
+    el.countriesEmpty.classList.add("hidden");
+    el.countriesBody.innerHTML = sortedRows
+      .map((entry) => {
+        const code = String(entry?.code || "").toUpperCase();
+        const name = String(entry?.name || code);
+        const isActive = code === state.activeCountryCode;
+        return `
+          <tr class="ss-analytics-country-row${isActive ? " is-active" : ""}" data-country-code="${escapeHtml(
+            code
+          )}" tabindex="0" role="button" aria-label="Focus map on ${escapeHtml(name)}">
+            <td>
+              <span class="ss-analytics-country-name">${escapeHtml(name)}</span>
+              <span class="ss-analytics-country-code">${escapeHtml(code)}</span>
+            </td>
+            <td class="ss-analytics-metric">${escapeHtml(formatNumber(entry.sessions))}</td>
+            <td class="ss-analytics-metric">${escapeHtml(formatNumber(entry.requests))}</td>
+            <td class="ss-analytics-metric">${escapeHtml(formatShare(entry.sessions, totals?.sessions))}</td>
+            <td class="ss-analytics-metric">${escapeHtml(formatShare(entry.requests, totals?.requests))}</td>
+          </tr>
+        `;
+      })
+      .join("");
+  }
+
+  async function focusCountryFromTable(code) {
+    const iso2 = String(code || "").trim().toUpperCase();
+    if (!iso2) return;
+    const country = state.countryRows.find((entry) => entry.code === iso2);
+    if (!country || !Array.isArray(country.centroid) || country.centroid.length !== 2) return;
+
+    state.activeCountryCode = iso2;
+    renderCountryTable();
+
+    const focusToken = ++state.countryFocusToken;
+    if (state.mapCollapsed) {
+      setMapCollapsed(false, {
+        persist: true,
+        resize: true
+      });
+      await delay(150);
+    } else {
+      scheduleMapResize();
+    }
+
+    if (!state.map) {
+      initMap();
+    }
+    const mapReady = await waitForMapReady();
+    if (!mapReady || !state.map || focusToken !== state.countryFocusToken) return;
+
+    const lon = Number(country.centroid[0]);
+    const lat = Number(country.centroid[1]);
+    if (!Number.isFinite(lon) || !Number.isFinite(lat)) return;
+    const center = [lon, lat];
+    const map = state.map;
+
+    map.resize();
+    getOrCreateMapPopup(map)?.setLngLat(center).setHTML(buildCountryPopupHtml(country)).addTo(map);
+    map.flyTo({
+      center,
+      zoom: Math.max(map.getZoom() || 1, COUNTRY_FOCUS_ZOOM),
+      duration: 900,
+      essential: true
+    });
+    map.once("moveend", () => {
+      if (!state.map || focusToken !== state.countryFocusToken) return;
+      getOrCreateMapPopup(state.map)
+        ?.setLngLat(center)
+        .setHTML(buildCountryPopupHtml(country))
+        .addTo(state.map);
+    });
+  }
+
+  function handleCountrySortClick(event) {
+    const header = event.target.closest("th.sortable[data-sort-key]");
+    if (!(header instanceof HTMLTableCellElement) || !el.countriesTable?.contains(header)) return;
+    const sortKey = String(header.getAttribute("data-sort-key") || "").trim();
+    if (!sortKey) return;
+    if (state.countrySort.key === sortKey) {
+      state.countrySort.direction = state.countrySort.direction === "asc" ? "desc" : "asc";
+    } else {
+      state.countrySort.key = sortKey;
+      state.countrySort.direction = sortKey === "name" ? "asc" : "desc";
+    }
+    renderCountryTable();
+  }
+
+  function handleCountryRowClick(event) {
+    const row = event.target.closest("tr.ss-analytics-country-row[data-country-code]");
+    if (!(row instanceof HTMLTableRowElement) || !el.countriesBody?.contains(row)) return;
+    event.preventDefault();
+    const code = row.getAttribute("data-country-code");
+    void focusCountryFromTable(code);
+  }
+
+  function handleCountryRowKeydown(event) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    const row = event.target.closest("tr.ss-analytics-country-row[data-country-code]");
+    if (!(row instanceof HTMLTableRowElement) || !el.countriesBody?.contains(row)) return;
+    event.preventDefault();
+    const code = row.getAttribute("data-country-code");
+    void focusCountryFromTable(code);
+  }
+
+  function handleCountrySearchInput(event) {
+    state.countryFilter = String(event?.target?.value || "").trim();
+    renderCountryTable();
+  }
+
   async function updateMap(countryRows, options = {}) {
     const rows = normalizeCountryRows(countryRows);
+    state.latestByCountry = [...rows];
     const centroids = await loadCountryCentroids();
-    const features = rows.map((entry) => toMapFeature(entry, centroids)).filter(Boolean);
+    state.countryRows = buildCountryRows(rows, centroids);
+    state.countryTotals = computeCountryTotals(state.countryRows);
+    if (state.activeCountryCode) {
+      const exists = state.countryRows.some((entry) => entry.code === state.activeCountryCode);
+      if (!exists) {
+        state.activeCountryCode = "";
+      }
+    }
+    renderCountryTable();
+
+    const features = state.countryRows.map((entry) => toMapFeature(entry)).filter(Boolean);
     applyGeoJson({
       type: "FeatureCollection",
       features
@@ -880,6 +1254,19 @@
 
   function init() {
     state.destroyed = false;
+    state.latestByCountry = [];
+    state.countryRows = [];
+    state.countryTotals = {
+      sessions: 0,
+      requests: 0
+    };
+    state.countrySort = {
+      key: COUNTRY_DEFAULT_SORT_KEY,
+      direction: COUNTRY_DEFAULT_SORT_DIRECTION
+    };
+    state.countryFilter = "";
+    state.activeCountryCode = "";
+    state.countryFocusToken = 0;
 
     el.map = $("analytics-world-map");
     el.mapPanel = document.querySelector(".ss-analytics-map-panel");
@@ -897,12 +1284,28 @@
     el.generatedAt = $("analytics-generated-at");
     el.surfacesList = $("analytics-surfaces-list");
     el.surfacesEmpty = $("analytics-surfaces-empty");
+    el.countriesTable = $("analytics-countries-table");
+    el.countriesBody = $("analytics-countries-body");
+    el.countriesEmpty = $("analytics-countries-empty");
+    el.countriesSearch = $("analytics-countries-search");
+    el.countriesCount = $("analytics-countries-count");
     if (el.mapToggle) {
       el.mapToggle.addEventListener("click", handleMapToggleClick);
     }
     if (el.surfacesList && !surfacesClickBound) {
       el.surfacesList.addEventListener("click", handleSurfaceViewClick);
       surfacesClickBound = true;
+    }
+    if (el.countriesTable) {
+      el.countriesTable.addEventListener("click", handleCountrySortClick);
+    }
+    if (el.countriesBody) {
+      el.countriesBody.addEventListener("click", handleCountryRowClick);
+      el.countriesBody.addEventListener("keydown", handleCountryRowKeydown);
+    }
+    if (el.countriesSearch) {
+      el.countriesSearch.value = "";
+      el.countriesSearch.addEventListener("input", handleCountrySearchInput);
     }
 
     if (el.windowSelect) {
@@ -954,6 +1357,16 @@
     if (el.mapToggle) {
       el.mapToggle.removeEventListener("click", handleMapToggleClick);
     }
+    if (el.countriesTable) {
+      el.countriesTable.removeEventListener("click", handleCountrySortClick);
+    }
+    if (el.countriesBody) {
+      el.countriesBody.removeEventListener("click", handleCountryRowClick);
+      el.countriesBody.removeEventListener("keydown", handleCountryRowKeydown);
+    }
+    if (el.countriesSearch) {
+      el.countriesSearch.removeEventListener("input", handleCountrySearchInput);
+    }
 
     if (state.map) {
       state.map.__ssAnalyticsPopup?.remove();
@@ -984,6 +1397,21 @@
     state.mapReady = false;
     state.mapCollapsed = false;
     state.pendingGeoJson = emptyGeoJson();
+    state.latestByCountry = [];
+    state.countryRows = [];
+    state.countryTotals = {
+      sessions: 0,
+      requests: 0
+    };
+    state.countrySort = {
+      key: COUNTRY_DEFAULT_SORT_KEY,
+      direction: COUNTRY_DEFAULT_SORT_DIRECTION
+    };
+    state.countryFilter = "";
+    state.activeCountryCode = "";
+    state.countryFocusToken = 0;
+    state.regionDisplayNames = null;
+    state.regionNameCache = Object.create(null);
 
     Object.keys(el).forEach((key) => {
       el[key] = null;

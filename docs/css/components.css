@@ -193,7 +193,7 @@
   grid-template-areas:
     "banner banner"
     "map map"
-    "referrers sessions";
+    "lower lower";
   gap: 14px;
   align-items: stretch;
 }
@@ -336,12 +336,114 @@
   filter: saturate(0.55);
 }
 
+.ss-analytics-lower-grid {
+  grid-area: lower;
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(280px, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.ss-analytics-side-stack {
+  display: grid;
+  gap: 14px;
+}
+
+.ss-analytics-lower-grid > .ss-panel {
+  margin-top: 0;
+}
+
+.ss-analytics-side-stack > .ss-panel {
+  margin-top: 0;
+}
+
+.ss-analytics-countries-body {
+  max-height: min(54vh, 500px);
+}
+
+.ss-analytics-countries-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.ss-analytics-countries-toolbar .ss-input {
+  width: min(100%, 340px);
+}
+
+#analytics-countries-count {
+  white-space: nowrap;
+}
+
+.ss-analytics-countries-table-wrap {
+  max-height: min(48vh, 430px);
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+}
+
+.ss-analytics-countries-table-wrap::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.ss-analytics-countries-table-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ss-analytics-countries-table-wrap::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.ss-analytics-countries-table-wrap::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.38);
+}
+
+#analytics-countries-table th.ss-analytics-num-col {
+  text-align: right;
+}
+
+#analytics-countries-table td.ss-analytics-metric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#analytics-countries-table tbody tr.ss-analytics-country-row {
+  cursor: pointer;
+}
+
+#analytics-countries-table tbody tr.ss-analytics-country-row:focus-visible {
+  outline: 2px solid rgba(130, 211, 255, 0.55);
+  outline-offset: -2px;
+}
+
+#analytics-countries-table tbody tr.ss-analytics-country-row.is-active td {
+  background: rgba(110, 214, 255, 0.14);
+}
+
+.ss-analytics-country-name {
+  display: block;
+  color: var(--text-primary);
+}
+
+.ss-analytics-country-code {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
 .ss-analytics-referrers {
-  grid-area: referrers;
+  min-width: 0;
 }
 
 .ss-analytics-sessions {
-  grid-area: sessions;
+  min-width: 0;
 }
 
 .ss-analytics-side-body {
@@ -479,8 +581,20 @@
     grid-template-areas:
       "banner"
       "map"
-      "referrers"
-      "sessions";
+      "lower";
+  }
+
+  .ss-analytics-lower-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ss-analytics-countries-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #analytics-countries-count {
+    text-align: right;
   }
 
   .ss-analytics-map-shell {
