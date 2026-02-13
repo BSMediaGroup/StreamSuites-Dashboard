@@ -7,6 +7,7 @@
 
   const RUNTIME_ENDPOINT = "/api/admin/analytics";
   const DEFAULT_WINDOW = "5m";
+  const ANALYTICS_CACHE_TTL_MS = 8000;
   const TOP_REFERRERS_LIMIT = 8;
 
   const DEFAULT_MAP_STYLE_URL =
@@ -115,19 +116,14 @@
     return DEFAULT_MAP_STYLE_URL;
   }
 
-  function resolveApiBase() {
-    const base =
-      window.StreamSuitesAdminAuth?.config?.baseUrl ||
-      document.querySelector('meta[name="streamsuites-auth-base"]')?.getAttribute("content") ||
-      "";
-    return base ? String(base).replace(/\/+$/, "") : "";
-  }
-
-  function buildApiUrl(path) {
-    const base = resolveApiBase();
-    if (!base) return path;
-    const normalized = path.startsWith("/") ? path : `/${path}`;
-    return `${base}${normalized}`;
+  function promptAdminReauth() {
+    if (typeof window.StreamSuitesAdminGate?.logout === "function") {
+      window.StreamSuitesAdminGate.logout();
+      return;
+    }
+    if (typeof window.StreamSuitesAdminAuth?.logout === "function") {
+      window.StreamSuitesAdminAuth.logout();
+    }
   }
 
   function emptyGeoJson() {
@@ -137,9 +133,23 @@
     };
   }
 
-  function setBanner(message, isVisible) {
+  function setBanner(message, isVisible, options = {}) {
     if (!el.banner) return;
-    el.banner.textContent = message;
+    el.banner.innerHTML = "";
+    if (isVisible) {
+      const text = document.createElement("span");
+      text.textContent = message;
+      el.banner.appendChild(text);
+      if (options.retryAction) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "ss-btn ss-btn-secondary ss-btn-small";
+        button.setAttribute("data-analytics-retry", options.retryAction);
+        button.textContent = "Retry";
+        el.banner.appendChild(document.createTextNode(" "));
+        el.banner.appendChild(button);
+      }
+    }
     el.banner.classList.toggle("hidden", !isVisible);
   }
 
@@ -540,18 +550,34 @@
       .join("");
   }
 
-  function setSummary(summary, selectedWindow) {
+  function setSummary(summary, selectedWindow, counts = {}, payload = null) {
     const safe = summary && typeof summary === "object" ? summary : {};
+    const safeCounts = counts && typeof counts === "object" ? counts : {};
+    const totalFromCounts =
+      Number(safeCounts.admin_activity || 0) +
+      Number(safeCounts.auth_events || 0) +
+      Number(safeCounts.donations || 0);
+    const totalRequests = safe.total_requests ?? totalFromCounts;
+    const generatedAt = safe.generated_at || payload?.end_ts || payload?.start_ts || null;
+    const surfaces =
+      safe.surfaces ||
+      {
+        admin_activity: Number(safeCounts.admin_activity || 0),
+        auth_events: Number(safeCounts.auth_events || 0),
+        donations: Number(safeCounts.donations || 0)
+      };
     if (el.totalRequests) {
-      el.totalRequests.textContent = formatNumber(safe.total_requests);
+      el.totalRequests.textContent = formatNumber(totalRequests);
     }
     if (el.windowLabel) {
-      el.windowLabel.textContent = String(safe.window_label || formatWindowLabel(selectedWindow || state.selectedWindow));
+      el.windowLabel.textContent = String(
+        safe.window_label || payload?.window || formatWindowLabel(selectedWindow || state.selectedWindow)
+      );
     }
     if (el.generatedAt) {
-      el.generatedAt.textContent = formatTimestamp(safe.generated_at);
+      el.generatedAt.textContent = formatTimestamp(generatedAt);
     }
-    renderSurfaces(safe.surfaces);
+    renderSurfaces(surfaces);
   }
 
   async function runWithLoader(task, reason, withLoader) {
@@ -577,46 +603,45 @@
 
       try {
         const selectedWindow = String(state.selectedWindow || DEFAULT_WINDOW);
-        const url = `${buildApiUrl(RUNTIME_ENDPOINT)}?window=${encodeURIComponent(selectedWindow)}`;
-        const response = await fetch(url, {
-          method: "GET",
-          cache: "no-store",
-          credentials: "include",
-          headers: {
-            Accept: "application/json"
-          },
-          signal: controller.signal
-        });
-
-        if (response.status === 401 || response.status === 403) {
-          throw new Error("Admin session required. Sign in to view analytics.");
-        }
-
-        if (!response.ok) {
-          let details = "";
-          try {
-            details = await response.text();
-          } catch (err) {
-            details = "";
+        const payload = await window.StreamSuitesApi.apiFetch(
+          `${RUNTIME_ENDPOINT}?window=${encodeURIComponent(selectedWindow)}`,
+          {
+            cacheTtlMs: ANALYTICS_CACHE_TTL_MS,
+            cacheKey: `admin-analytics:${selectedWindow}`,
+            forceRefresh: options.forceRefresh === true,
+            timeoutMs: 3500,
+            signal: controller.signal
           }
-          const suffix = details ? `: ${details.slice(0, 180)}` : "";
-          throw new Error(`Runtime error ${response.status}${suffix}`);
+        );
+        const data = payload?.data && typeof payload.data === "object" ? payload.data : {};
+        renderReferrers(payload?.referrers || data?.referrers);
+        setSummary(payload?.summary, selectedWindow, payload?.counts, payload);
+        updateMap(payload?.geo || data?.geo);
+
+        const resolvedWindow = payload?.window || payload?.summary?.window_label || formatWindowLabel(selectedWindow);
+        if (
+          Number(payload?.counts?.admin_activity || 0) === 0 &&
+          Number(payload?.counts?.auth_events || 0) === 0 &&
+          Number(payload?.counts?.donations || 0) === 0
+        ) {
+          setStatus("No events in selected window.");
+        } else {
+          setStatus(`Live analytics (${resolvedWindow})`);
         }
-
-        const payload = await response.json();
-        renderReferrers(payload?.referrers);
-        setSummary(payload?.summary, selectedWindow);
-        updateMap(payload?.geo);
-
-        const resolvedWindow =
-          payload?.summary?.window_label || formatWindowLabel(selectedWindow);
-        setStatus(`Live analytics (${resolvedWindow})`);
       } catch (err) {
         renderReferrers([]);
-        setSummary(null, state.selectedWindow);
+        setSummary(null, state.selectedWindow, null, null);
         updateMap([], { errorMessage: "Map data unavailable while analytics endpoint is offline." });
+        if (err?.status === 401 || err?.status === 403 || err?.isAuthError) {
+          promptAdminReauth();
+          setStatus("Admin session required");
+          setBanner("Admin session required. Redirecting to login...", true);
+          return;
+        }
         setStatus("Analytics unavailable");
-        setBanner(`Live analytics unavailable. ${err?.message || "Unable to reach runtime endpoint."}`, true);
+        setBanner(`Live analytics unavailable. ${err?.message || "Unable to reach API."}`, true, {
+          retryAction: "analytics"
+        });
       } finally {
         clearTimeout(timeout);
         if (state.abortController === controller) {
@@ -631,7 +656,7 @@
   function handleWindowChange() {
     const value = String(el.windowSelect?.value || "").trim();
     state.selectedWindow = value || DEFAULT_WINDOW;
-    fetchAnalytics({ withLoader: true });
+    fetchAnalytics({ withLoader: true, forceRefresh: true });
   }
 
   function init() {
@@ -655,8 +680,13 @@
       state.selectedWindow = DEFAULT_WINDOW;
       el.windowSelect.addEventListener("change", handleWindowChange);
     }
+    el.banner?.addEventListener("click", (event) => {
+      const retryButton = event.target.closest("[data-analytics-retry]");
+      if (!retryButton) return;
+      void fetchAnalytics({ withLoader: true, forceRefresh: true });
+    });
 
-    setSummary(null, state.selectedWindow);
+    setSummary(null, state.selectedWindow, null, null);
     renderReferrers([]);
     updateMap([]);
     initMap();

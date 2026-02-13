@@ -6,7 +6,9 @@
   "use strict";
 
   const RUNTIME_ENDPOINT = "/admin/accounts";
-  const DONATIONS_EXPORT_PATH = "runtime/exports/admin/donations/donations.json";
+  const ANALYTICS_ENDPOINT = "/api/admin/analytics";
+  const ANALYTICS_WINDOW = "5m";
+  const ANALYTICS_CACHE_TTL_MS = 8000;
   const COLUMN_WIDTH_STORAGE_KEY = "ss_admin_accounts_colwidths_v2";
   const ROW_CLICK_DELAY_MS = 240;
   const SEARCH_FIELDS = [
@@ -146,19 +148,6 @@
     return "Unknown";
   }
 
-  function resolveBasePath() {
-    return (
-      (window.Versioning && window.Versioning.resolveBasePath && window.Versioning.resolveBasePath()) ||
-      window.ADMIN_BASE_PATH ||
-      ""
-    );
-  }
-
-  function resolveDonationsPath() {
-    const basePath = resolveBasePath();
-    return `${basePath}/${DONATIONS_EXPORT_PATH}`.replace(/\\+/g, "/");
-  }
-
   function renderEmailVerified(value) {
     if (value === true) return renderBadge("Verified", "ss-badge-success");
     if (value === false) return renderBadge("Not Verified", "ss-badge-warning");
@@ -275,16 +264,18 @@ function normalizeUser(raw = {}) {
   }
 
   function resolveApiBase() {
-    const base =
-      window.StreamSuitesAdminAuth?.config?.baseUrl ||
-      document.querySelector('meta[name="streamsuites-auth-base"]')?.getAttribute("content") ||
-      "";
-    return base ? base.replace(/\/$/, "") : "";
+    if (window.StreamSuitesApi?.getApiBase) {
+      return window.StreamSuitesApi.getApiBase();
+    }
+    const base = window.StreamSuitesAdminAuth?.config?.baseUrl || "";
+    return base ? String(base).replace(/\/$/, "") : "";
   }
 
   function buildApiUrl(path, baseOverride) {
+    if (window.StreamSuitesApi?.buildApiUrl) {
+      return window.StreamSuitesApi.buildApiUrl(path, baseOverride || resolveApiBase());
+    }
     const base = typeof baseOverride === "string" ? baseOverride.replace(/\/$/, "") : resolveApiBase();
-    if (!base) return path;
     const normalized = path.startsWith("/") ? path : `/${path}`;
     return `${base}${normalized}`;
   }
@@ -301,9 +292,9 @@ function normalizeUser(raw = {}) {
     return false;
   }
 
-  function setInlineError(message) {
+  function setInlineError(message, options = {}) {
     setStatus(message);
-    setBanner(message, true);
+    setBanner(message, true, options);
   }
 
   async function readErrorMessage(res) {
@@ -507,9 +498,23 @@ function normalizeUser(raw = {}) {
     return [];
   }
 
-  function setBanner(message, visible) {
+  function setBanner(message, visible, options = {}) {
     if (!el.banner) return;
-    el.banner.textContent = message;
+    el.banner.innerHTML = "";
+    if (visible) {
+      const text = document.createElement("span");
+      text.textContent = message;
+      el.banner.appendChild(text);
+      if (options.retryAction) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "ss-btn ss-btn-secondary ss-btn-small";
+        button.setAttribute("data-accounts-retry", options.retryAction);
+        button.textContent = "Retry";
+        el.banner.appendChild(document.createTextNode(" "));
+        el.banner.appendChild(button);
+      }
+    }
     el.banner.classList.toggle("hidden", !visible);
   }
 
@@ -1036,11 +1041,28 @@ function normalizeUser(raw = {}) {
 
   function resolveDonationAmountCents(entry) {
     if (!entry || typeof entry !== "object") return 0;
+    const meta = entry.meta && typeof entry.meta === "object" ? entry.meta : {};
+    const metadata = entry.metadata && typeof entry.metadata === "object" ? entry.metadata : {};
     const explicitCents = coerceNumber(
-      entry.amount_total ?? entry.amountTotal ?? entry.amount_cents ?? entry.amountCents
+      entry.amount_total ??
+        entry.amountTotal ??
+        entry.amount_cents ??
+        entry.amountCents ??
+        meta.amount_total ??
+        meta.amount_cents ??
+        metadata.amount_total ??
+        metadata.amount_cents
     );
     if (explicitCents !== null) return Math.round(explicitCents);
-    const amount = coerceNumber(entry.amount ?? entry.total_amount ?? entry.totalAmount);
+    const amount = coerceNumber(
+      entry.amount ??
+        entry.total_amount ??
+        entry.totalAmount ??
+        meta.amount ??
+        meta.total_amount ??
+        metadata.amount ??
+        metadata.total_amount
+    );
     if (amount === null) return 0;
     if (amount >= 1000) return Math.round(amount);
     return Math.round(amount * 100);
@@ -1049,12 +1071,20 @@ function normalizeUser(raw = {}) {
   function collectDonationKeys(entry) {
     const keys = [];
     if (!entry || typeof entry !== "object") return keys;
+    const meta = entry.meta && typeof entry.meta === "object" ? entry.meta : {};
     const metadata = entry.metadata && typeof entry.metadata === "object" ? entry.metadata : {};
     [
       entry.customer_email,
       entry.customerEmail,
       entry.email,
       entry.email_address,
+      entry.actor,
+      meta.email,
+      meta.customer_email,
+      meta.actor,
+      meta.account_id,
+      meta.user_id,
+      meta.user_code,
       metadata.email,
       metadata.customer_email,
       entry.account_id,
@@ -1129,22 +1159,45 @@ function normalizeUser(raw = {}) {
     });
   }
 
-  async function loadDonations() {
-    const path = resolveDonationsPath();
+  async function loadDonations(options = {}) {
     try {
-      const res = await fetch(path, { cache: "no-store" });
-      if (!res.ok) throw new Error(`Donations export unavailable (${res.status})`);
-      const payload = await res.json();
-      state.donationStats = buildDonationStats(payload);
+      let payload = null;
+      if (window.StreamSuitesApi?.getAdminAnalytics) {
+        payload = await window.StreamSuitesApi.getAdminAnalytics(ANALYTICS_WINDOW, {
+          ttlMs: ANALYTICS_CACHE_TTL_MS,
+          forceRefresh: options.forceReload === true
+        });
+      } else {
+        const endpoint = `${ANALYTICS_ENDPOINT}?window=${encodeURIComponent(ANALYTICS_WINDOW)}`;
+        payload = await window.StreamSuitesApi?.apiFetch?.(endpoint, {
+          cacheTtlMs: ANALYTICS_CACHE_TTL_MS,
+          cacheKey: `admin-analytics:${ANALYTICS_WINDOW}`,
+          forceRefresh: options.forceReload === true
+        });
+      }
+      const dataset = Array.isArray(payload?.data?.donations) ? payload.data.donations : [];
+      state.donationStats = buildDonationStats(dataset);
       state.donationsLoaded = true;
       applyDonationStats();
       applyFilters();
+      setBanner("", false);
+      if (!dataset.length) {
+        setStatus("No events in selected window.");
+      }
     } catch (err) {
-      console.warn("[Accounts] Failed to load donation export", err);
+      if (err?.status === 401 || err?.status === 403 || err?.isAuthError) {
+        promptAdminReauth();
+        setInlineError("Admin session expired. Sign in again to continue.");
+        return;
+      }
+      console.warn("[Accounts] Failed to load donation analytics", err);
       state.donationStats = new Map();
       state.donationsLoaded = false;
       applyDonationStats();
       applyFilters();
+      setInlineError("Analytics API unavailable for donation stats.", {
+        retryAction: "donations"
+      });
     }
   }
 
@@ -1409,6 +1462,14 @@ function normalizeUser(raw = {}) {
     });
     el.exportJson?.addEventListener("click", () => triggerExport("json"));
     el.exportCsv?.addEventListener("click", () => triggerExport("csv"));
+    el.banner?.addEventListener("click", (event) => {
+      const retryButton = event.target.closest("[data-accounts-retry]");
+      if (!retryButton) return;
+      const action = retryButton.getAttribute("data-accounts-retry");
+      if (action === "donations") {
+        void loadDonations({ forceReload: true });
+      }
+    });
 
     if (!state.escapeBound) {
       state.escapeBound = true;

@@ -857,7 +857,7 @@
     renderTelemetryWarning(
       el.telemetryAuthEventsWarning,
       health,
-      "No auth events exported yet."
+      "No events in selected window."
     );
 
     const events = Array.isArray(snapshot?.events) ? snapshot.events : [];

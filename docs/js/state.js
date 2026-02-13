@@ -31,8 +31,7 @@
   const LOADER_TRACKED_STATE_PATHS = new Set([
     "runtime_snapshot.json",
     "quotas.json",
-    "discord/runtime.json",
-    "admin_activity.json"
+    "discord/runtime.json"
   ]);
 
   /* Tracks which missing state files have already been logged this boot */
@@ -814,6 +813,8 @@
       ? raw.events
       : Array.isArray(raw.activity)
         ? raw.activity
+        : Array.isArray(raw.data)
+          ? raw.data
         : [];
 
     const normalized = events
@@ -826,16 +827,20 @@
           event.occurred_at
         );
 
+        const meta = event.meta && typeof event.meta === "object" ? event.meta : {};
         return {
           id: pickString(event.id, event.event_id, event.key) || `event-${index}`,
           timestamp,
-          source: pickString(event.source, event.origin, event.channel),
-          user: pickString(event.user, event.actor, event.username),
+          source: pickString(event.source, event.origin, event.channel, event.type),
+          user: pickString(event.user, event.actor, event.username, meta.user, meta.actor),
           action: pickString(
             event.action,
             event.description,
             event.summary,
-            event.message
+            event.message,
+            meta.action,
+            meta.message,
+            event.type
           )
         };
       })
@@ -862,21 +867,26 @@
       return deepClone(cache.adminActivity);
     }
 
-    const shared = normalizeAdminActivity(
-      await loadStateJson("admin_activity.json", {
-        loaderReason: "Hydrating admin activity..."
-      })
-    );
-    if (shared) {
-      cache.adminActivity = shared;
-      return deepClone(shared);
+    try {
+      const selectedWindow = String(options.window || "5m").trim().toLowerCase() || "5m";
+      const payload = await window.StreamSuitesApi?.getAdminAnalytics?.(selectedWindow, {
+        ttlMs: options.ttlMs ?? 8000,
+        forceRefresh: options.forceReload === true
+      });
+      const normalized = normalizeAdminActivity({
+        updated_at: payload?.end_ts || payload?.start_ts || null,
+        events: payload?.data?.admin_activity || []
+      });
+      cache.adminActivity = normalized || null;
+      return normalized ? deepClone(normalized) : null;
+    } catch (err) {
+      if (err?.status === 401 || err?.status === 403 || err?.isAuthError) {
+        window.StreamSuitesAdminGate?.logout?.();
+      }
+      console.warn("[Dashboard][State] Admin activity API unavailable", err);
+      cache.adminActivity = null;
+      return null;
     }
-
-    const fallback = normalizeAdminActivity(
-      await fetchFallbackJson("./data/admin_activity.json")
-    );
-    cache.adminActivity = fallback || null;
-    return fallback ? deepClone(fallback) : null;
   }
 
   window.StreamSuitesState = {

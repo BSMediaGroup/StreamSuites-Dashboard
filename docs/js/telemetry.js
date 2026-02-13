@@ -19,8 +19,7 @@
   const TELEMETRY_PATHS = {
     events: "telemetry/events.json",
     rates: "telemetry/rates.json",
-    errors: "telemetry/errors.json",
-    authEvents: "telemetry/auth_events.json"
+    errors: "telemetry/errors.json"
   };
 
   const TELEMETRY_CACHE = new Map();
@@ -101,16 +100,26 @@
 
     const normalizedEvents = eventsArray
       .filter((evt) => evt && typeof evt === "object")
-      .map((evt) => ({
-        timestamp_utc: evt.timestamp_utc || evt.timestamp || evt.at || evt.time || evt.t,
-        event_type: evt.event_type || evt.type || "unknown",
-        event_name: evt.event_name || evt.email_type || evt.name || "",
-        action: evt.action || evt.email_type || evt.event_name || evt.name || "",
-        result: evt.result || evt.status || "",
-        account_id: evt.account_id || "",
-        user_identifier: evt.user_identifier || "",
-        email_redacted: evt.email_redacted || evt.email || ""
-      }))
+      .map((evt) => {
+        const meta = evt.meta && typeof evt.meta === "object" ? evt.meta : {};
+        return {
+          timestamp_utc: evt.timestamp_utc || evt.timestamp || evt.ts || evt.at || evt.time || evt.t,
+          event_type: evt.event_type || evt.type || "unknown",
+          event_name: evt.event_name || evt.email_type || evt.name || meta.event_name || "",
+          action:
+            evt.action ||
+            evt.email_type ||
+            evt.event_name ||
+            evt.name ||
+            meta.action ||
+            meta.event_name ||
+            "",
+          result: evt.result || evt.status || meta.result || "",
+          account_id: evt.account_id || meta.account_id || "",
+          user_identifier: evt.user_identifier || evt.actor || meta.user_identifier || "",
+          email_redacted: evt.email_redacted || evt.email || meta.email_redacted || meta.email || ""
+        };
+      })
       .sort((a, b) => {
         const tsA = new Date(a.timestamp_utc || 0).getTime();
         const tsB = new Date(b.timestamp_utc || 0).getTime();
@@ -234,8 +243,23 @@
   }
 
   async function loadAuthEvents(options = {}) {
-    const raw = await loadTelemetryFile(TELEMETRY_PATHS.authEvents, options.forceReload);
-    return normalizeAuthEventSnapshot(raw || {});
+    try {
+      const selectedWindow = String(options.window || "5m").trim().toLowerCase() || "5m";
+      const payload = await window.StreamSuitesApi?.getAdminAnalytics?.(selectedWindow, {
+        ttlMs: options.ttlMs ?? 8000,
+        forceRefresh: options.forceReload === true
+      });
+      return normalizeAuthEventSnapshot({
+        generated_at: payload?.end_ts || payload?.start_ts || null,
+        events: payload?.data?.auth_events || []
+      });
+    } catch (err) {
+      if (err?.status === 401 || err?.status === 403 || err?.isAuthError) {
+        window.StreamSuitesAdminGate?.logout?.();
+      }
+      console.warn("[Telemetry] Auth events API unavailable", err);
+      return normalizeAuthEventSnapshot({});
+    }
   }
 
   async function loadSnapshot(forceReload = false) {
