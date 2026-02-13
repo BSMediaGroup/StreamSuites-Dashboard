@@ -191,12 +191,89 @@
   display: block;
   width: 100%;
   min-width: 0;
+  position: relative;
 }
 
 .api-usage-chart-canvas {
   display: block;
   width: 100%;
   height: 260px;
+  cursor: crosshair;
+}
+
+.api-usage-chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.api-usage-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.api-usage-legend-swatch {
+  width: 16px;
+  height: 3px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.api-usage-legend-swatch.requests {
+  background: #59d4ff;
+}
+
+.api-usage-legend-swatch.errors {
+  background: #ff9a78;
+}
+
+.api-usage-chart-tooltip {
+  position: absolute;
+  z-index: 16;
+  min-width: 216px;
+  max-width: min(88vw, 320px);
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  background: linear-gradient(155deg, rgba(28, 35, 48, 0.94), rgba(18, 24, 35, 0.9));
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  pointer-events: none;
+}
+
+.api-usage-tooltip-time {
+  margin-bottom: 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.api-usage-tooltip-grid {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 6px 12px;
+  align-items: center;
+}
+
+.api-usage-tooltip-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.api-usage-tooltip-value {
+  text-align: right;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .api-usage-note {
@@ -297,19 +374,23 @@
 }
 
 #api-usage-endpoints-table td.api-usage-heat-1 {
-  background: rgba(88, 153, 255, 0.05);
+  background: rgba(88, 153, 255, 0.04);
 }
 
 #api-usage-endpoints-table td.api-usage-heat-2 {
-  background: rgba(88, 153, 255, 0.1);
+  background: rgba(88, 153, 255, 0.08);
 }
 
 #api-usage-endpoints-table td.api-usage-heat-3 {
-  background: rgba(88, 153, 255, 0.15);
+  background: rgba(88, 153, 255, 0.12);
 }
 
 #api-usage-endpoints-table td.api-usage-heat-4 {
-  background: rgba(88, 153, 255, 0.22);
+  background: rgba(88, 153, 255, 0.17);
+}
+
+#api-usage-endpoints-table td.api-usage-heat-5 {
+  background: rgba(88, 153, 255, 0.23);
 }
 
 .api-usage-flags {
@@ -515,6 +596,44 @@
   cursor: pointer;
   user-select: none;
   position: relative;
+}
+
+#api-usage-endpoints-table th.sortable {
+  padding-right: 26px;
+}
+
+#api-usage-endpoints-table th.sortable::after {
+  display: none;
+}
+
+#api-usage-endpoints-table .ss-sort-label {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+#api-usage-endpoints-table .ss-sort-indicator {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 6px solid rgba(201, 218, 241, 0.35);
+  transform: translateY(-50%);
+  opacity: 0.66;
+  transition: opacity 0.15s ease, transform 0.15s ease, border-top-color 0.15s ease;
+}
+
+#api-usage-endpoints-table th.sorted-asc .ss-sort-indicator {
+  border-top-color: rgba(223, 236, 255, 0.95);
+  transform: translateY(-60%) rotate(180deg);
+  opacity: 1;
+}
+
+#api-usage-endpoints-table th.sorted-desc .ss-sort-indicator {
+  border-top-color: rgba(223, 236, 255, 0.95);
+  opacity: 1;
 }
 
 .ss-table th.sortable::after {

@@ -8,6 +8,23 @@
   const RUNTIME_ENDPOINT = "/api/admin/api-usage";
   const POLL_INTERVAL_MS = 5000;
   const DEFAULT_WINDOW = "5m";
+  // Conservative health model for endpoint pills. Keep centralized for easy tuning.
+  const HEALTH_THRESHOLDS = {
+    minSampleHits: 20,
+    errorRate: {
+      healthyMax: 0.01,
+      degradedMax: 0.05
+    },
+    // Prefer p95 when available; fall back to avg latency.
+    p95LatencyMs: {
+      healthyMax: 800,
+      degradedMax: 2000
+    },
+    avgLatencyMs: {
+      healthyMax: 400,
+      degradedMax: 1000
+    }
+  };
 
   const state = {
     timer: null,
@@ -18,7 +35,9 @@
     sort: { key: "hits", direction: "desc" },
     abortController: null,
     destroyed: false,
-    lastFetchedAt: null
+    lastFetchedAt: null,
+    chartModel: null,
+    hoverIndex: null
   };
 
   const el = {
@@ -32,6 +51,8 @@
     panel: null,
     canvas: null,
     empty: null,
+    chartLegend: null,
+    chartTooltip: null,
     endpointHealth: null,
     authSignals: null,
     tierSurface: null,
@@ -84,6 +105,12 @@
     return num.toLocaleString();
   }
 
+  function formatInteger(value) {
+    const num = Number(value);
+    if (!Number.isFinite(num)) return "--";
+    return Math.round(num).toLocaleString();
+  }
+
   function formatDecimal(value, digits = 2) {
     const num = Number(value);
     if (!Number.isFinite(num)) return "--";
@@ -93,21 +120,61 @@
     });
   }
 
-  function formatPercent(value) {
+  function formatPercent(value, digits = 2) {
     const num = Number(value);
     if (!Number.isFinite(num)) return "--";
-    return `${(num * 100).toFixed(2)}%`;
+    return `${(num * 100).toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: digits
+    })}%`;
+  }
+
+  function formatLatency(valueMs) {
+    const value = Number(valueMs);
+    if (!Number.isFinite(value) || value < 0) return "--";
+    if (value < 1000) return `${Math.round(value)}ms`;
+    return `${(value / 1000).toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 1
+    })}s`;
+  }
+
+  function formatRelativeTime(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    const diffSeconds = Math.round((Date.now() - date.getTime()) / 1000);
+    const abs = Math.abs(diffSeconds);
+    const formatter = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+    if (abs < 60) return formatter.format(-diffSeconds, "second");
+    const diffMinutes = Math.round(diffSeconds / 60);
+    if (Math.abs(diffMinutes) < 60) return formatter.format(-diffMinutes, "minute");
+    const diffHours = Math.round(diffMinutes / 60);
+    if (Math.abs(diffHours) < 24) return formatter.format(-diffHours, "hour");
+    const diffDays = Math.round(diffHours / 24);
+    return formatter.format(-diffDays, "day");
   }
 
   function formatTimestamp(value) {
     if (!value) return "--";
     if (typeof window.StreamSuitesState?.formatTimestamp === "function") {
       const formatted = window.StreamSuitesState.formatTimestamp(value);
-      if (formatted) return formatted;
+      if (formatted) {
+        const rel = formatRelativeTime(value);
+        return rel ? `${formatted} (${rel})` : formatted;
+      }
     }
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return String(value);
-    return date.toISOString().replace("T", " ").replace("Z", " UTC");
+    const absolute = date.toLocaleString(undefined, {
+      hour12: false,
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+    const rel = formatRelativeTime(value);
+    return rel ? `${absolute} (${rel})` : absolute;
   }
 
   function toTitleCase(value) {
@@ -188,6 +255,104 @@
     };
   }
 
+  function ensureChartChrome() {
+    if (!el.panel) return;
+    if (!el.chartLegend) {
+      el.chartLegend = document.createElement("div");
+      el.chartLegend.id = "api-usage-chart-legend";
+      el.chartLegend.className = "api-usage-chart-legend";
+      el.chartLegend.innerHTML = `
+        <span class="api-usage-legend-item">
+          <span class="api-usage-legend-swatch requests"></span>
+          <span>Requests/sec</span>
+        </span>
+        <span class="api-usage-legend-item">
+          <span class="api-usage-legend-swatch errors"></span>
+          <span>Errors/sec</span>
+        </span>
+      `;
+      el.panel.insertBefore(el.chartLegend, el.panel.firstChild);
+    }
+
+    if (!el.chartTooltip) {
+      el.chartTooltip = document.createElement("div");
+      el.chartTooltip.id = "api-usage-chart-tooltip";
+      el.chartTooltip.className = "api-usage-chart-tooltip hidden";
+      el.panel.appendChild(el.chartTooltip);
+    }
+  }
+
+  function hideChartTooltip() {
+    state.hoverIndex = null;
+    if (el.chartTooltip) {
+      el.chartTooltip.classList.add("hidden");
+      el.chartTooltip.innerHTML = "";
+    }
+  }
+
+  function renderChartTooltip(clientX, clientY, index) {
+    if (!el.canvas || !el.chartTooltip || !state.chartModel) return;
+    const model = state.chartModel;
+    if (!Number.isFinite(index) || index < 0 || index >= model.pointCount) {
+      hideChartTooltip();
+      return;
+    }
+
+    const requestPoint = model.requests[index];
+    const errorPoint = model.errors[index];
+    const requestsPerSec = Number(requestPoint?.count ?? 0);
+    const errorsPerSec = Number(errorPoint?.count ?? 0);
+    const rpm = requestsPerSec * 60;
+    const errorRate = requestsPerSec > 0 ? errorsPerSec / requestsPerSec : 0;
+    const timestamp = requestPoint?.ts || errorPoint?.ts || null;
+
+    el.chartTooltip.innerHTML = `
+      <div class="api-usage-tooltip-time">${escapeHtml(formatTimestamp(timestamp))}</div>
+      <div class="api-usage-tooltip-grid">
+        <span class="api-usage-tooltip-label">RPM</span>
+        <span class="api-usage-tooltip-value">${escapeHtml(formatDecimal(rpm, rpm >= 10 ? 0 : 2))}</span>
+        <span class="api-usage-tooltip-label">Error Rate</span>
+        <span class="api-usage-tooltip-value">${escapeHtml(formatPercent(errorRate))}</span>
+        <span class="api-usage-tooltip-label">Errors/sec</span>
+        <span class="api-usage-tooltip-value">${escapeHtml(formatDecimal(errorsPerSec, errorsPerSec >= 10 ? 0 : 2))}</span>
+      </div>
+    `;
+    el.chartTooltip.classList.remove("hidden");
+
+    const panelRect = el.panel.getBoundingClientRect();
+    const margin = 12;
+    const x = clientX - panelRect.left + margin;
+    const y = clientY - panelRect.top - margin;
+    const tooltipWidth = el.chartTooltip.offsetWidth;
+    const tooltipHeight = el.chartTooltip.offsetHeight;
+    const maxLeft = panelRect.width - tooltipWidth - 8;
+    const maxTop = panelRect.height - tooltipHeight - 8;
+    const left = Math.max(8, Math.min(maxLeft, x));
+    const top = Math.max(8, Math.min(maxTop, y - tooltipHeight));
+    el.chartTooltip.style.left = `${left}px`;
+    el.chartTooltip.style.top = `${top}px`;
+  }
+
+  function handleChartPointerMove(event) {
+    if (!el.canvas || !state.chartModel || !state.chartModel.pointCount) {
+      hideChartTooltip();
+      return;
+    }
+    const rect = el.canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const model = state.chartModel;
+    if (x < model.padding.left || x > model.padding.left + model.width) {
+      hideChartTooltip();
+      return;
+    }
+    const rawIndex = model.pointCount > 1
+      ? Math.round((x - model.padding.left) / model.step)
+      : 0;
+    const index = Math.max(0, Math.min(model.pointCount - 1, rawIndex));
+    state.hoverIndex = index;
+    renderChartTooltip(event.clientX, event.clientY, index);
+  }
+
   function drawChart(bundle) {
     if (!el.canvas) return;
     const ctx = el.canvas.getContext("2d");
@@ -202,7 +367,7 @@
 
     ctx.clearRect(0, 0, containerWidth, containerHeight);
 
-    const padding = { top: 24, right: 22, bottom: 30, left: 52 };
+    const padding = { top: 18, right: 22, bottom: 30, left: 52 };
     const width = Math.max(1, containerWidth - padding.left - padding.right);
     const height = Math.max(1, containerHeight - padding.top - padding.bottom);
 
@@ -215,6 +380,8 @@
     ctx.stroke();
 
     if (!bundle) {
+      state.chartModel = null;
+      hideChartTooltip();
       renderEmptyState(true);
       return;
     }
@@ -271,23 +438,14 @@
     drawSeries(requests, seriesColors.requests);
     drawSeries(errors, seriesColors.errors);
 
-    const legendY = padding.top - 7;
-    const legendItems = [
-      { label: "Requests/sec", color: seriesColors.requests },
-      { label: "Errors/sec", color: seriesColors.errors }
-    ];
-    let legendX = padding.left;
-    legendItems.forEach((item) => {
-      ctx.strokeStyle = item.color;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(legendX, legendY - 4);
-      ctx.lineTo(legendX + 18, legendY - 4);
-      ctx.stroke();
-      ctx.fillStyle = "rgba(255,255,255,0.74)";
-      ctx.fillText(item.label, legendX + 24, legendY);
-      legendX += 24 + ctx.measureText(item.label).width + 20;
-    });
+    state.chartModel = {
+      padding,
+      width,
+      step,
+      pointCount,
+      requests,
+      errors
+    };
   }
 
   function renderEmptyState(show) {
@@ -318,35 +476,64 @@
     return `<div class="api-usage-note muted">${escapeHtml(notes.join(" • "))}</div>`;
   }
 
+  function numericOrNull(value) {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : null;
+  }
+
   function sanitizeEndpointRows(payload) {
     const rows = Array.isArray(payload) ? payload : [];
     return rows.map((row) => {
       const endpoint = row?.endpoint || row?.path || row?.route || "unknown";
-      const hits = Number(row?.hits ?? 0);
-      const errors = Number(row?.errors ?? 0);
-      const rpm = Number(row?.rpm ?? 0);
-      const errorRate = Number(row?.error_rate ?? 0);
-      const avgLatency = Number(
-        row?.avg_latency_ms ?? row?.latency?.avg_ms ?? row?.latency_avg_ms ?? 0
+      const hits = numericOrNull(row?.hits);
+      const errors = numericOrNull(row?.errors);
+      const rpm = numericOrNull(row?.rpm);
+      const rowErrorRate = numericOrNull(row?.error_rate);
+      const avgLatency = numericOrNull(
+        row?.avg_latency_ms ?? row?.latency?.avg_ms ?? row?.latency_avg_ms
       );
-      const p95Latency = Number(
-        row?.p95_latency_ms ?? row?.latency?.p95_ms ?? row?.latency_p95_ms ?? 0
+      const p95Latency = numericOrNull(
+        row?.p95_latency_ms ?? row?.latency?.p95_ms ?? row?.latency_p95_ms
       );
-      const statusRaw = String(row?.status || "unknown").trim().toLowerCase();
-      const status = ["healthy", "degraded", "unhealthy", "unknown"].includes(statusRaw)
-        ? statusRaw
-        : "unknown";
+      const normalizedHits = Number.isFinite(hits) ? Math.max(0, hits) : 0;
+      const normalizedErrors = Number.isFinite(errors) ? Math.max(0, errors) : 0;
+      const computedErrorRate = normalizedHits > 0 ? normalizedErrors / normalizedHits : null;
+      const errorRate = Number.isFinite(rowErrorRate) ? Math.max(0, rowErrorRate) : computedErrorRate;
       return {
         endpoint,
-        hits: Number.isFinite(hits) ? hits : 0,
+        hits: normalizedHits,
         rpm: Number.isFinite(rpm) ? rpm : 0,
-        errors: Number.isFinite(errors) ? errors : 0,
-        error_rate: Number.isFinite(errorRate) ? errorRate : 0,
-        avg_latency_ms: Number.isFinite(avgLatency) ? avgLatency : 0,
-        p95_latency_ms: Number.isFinite(p95Latency) ? p95Latency : 0,
-        status
+        errors: normalizedErrors,
+        error_rate: Number.isFinite(errorRate) ? errorRate : null,
+        avg_latency_ms: Number.isFinite(avgLatency) ? Math.max(0, avgLatency) : null,
+        p95_latency_ms: Number.isFinite(p95Latency) ? Math.max(0, p95Latency) : null
       };
     });
+  }
+
+  function classifyEndpointHealth(row) {
+    const hits = Number(row?.hits ?? 0);
+    if (hits < HEALTH_THRESHOLDS.minSampleHits) return "unknown";
+
+    const errorRate = Number(row?.error_rate);
+    const hasErrorRate = Number.isFinite(errorRate);
+    const p95 = Number(row?.p95_latency_ms);
+    const avg = Number(row?.avg_latency_ms);
+    const hasP95 = Number.isFinite(p95);
+    const hasAvg = Number.isFinite(avg);
+
+    if (!hasP95 && !hasAvg && !hasErrorRate) return "unknown";
+
+    if (hasErrorRate && errorRate > HEALTH_THRESHOLDS.errorRate.degradedMax) return "unhealthy";
+    if (hasP95 && p95 > HEALTH_THRESHOLDS.p95LatencyMs.degradedMax) return "unhealthy";
+    if (!hasP95 && hasAvg && avg > HEALTH_THRESHOLDS.avgLatencyMs.degradedMax) return "unhealthy";
+
+    if (hasErrorRate && errorRate >= HEALTH_THRESHOLDS.errorRate.healthyMax) return "degraded";
+    if (hasP95 && p95 >= HEALTH_THRESHOLDS.p95LatencyMs.healthyMax) return "degraded";
+    if (!hasP95 && hasAvg && avg >= HEALTH_THRESHOLDS.avgLatencyMs.healthyMax) return "degraded";
+
+    if (hasErrorRate || hasP95 || hasAvg) return "healthy";
+    return "unknown";
   }
 
   function statusClass(status) {
@@ -356,16 +543,69 @@
     return "pill-default";
   }
 
-  function heatBucketClass(value, max) {
-    if (!Number.isFinite(value) || value <= 0 || !Number.isFinite(max) || max <= 0) {
+  function quantile(sortedValues, q) {
+    if (!sortedValues.length) return 0;
+    const idx = (sortedValues.length - 1) * q;
+    const low = Math.floor(idx);
+    const high = Math.ceil(idx);
+    if (low === high) return sortedValues[low];
+    const ratio = idx - low;
+    return sortedValues[low] * (1 - ratio) + sortedValues[high] * ratio;
+  }
+
+  function buildHeatMap(rows) {
+    const hitsValues = rows
+      .map((row) => Number(row?.hits ?? 0))
+      .filter((value) => Number.isFinite(value) && value > 0)
+      .sort((a, b) => a - b);
+
+    if (!hitsValues.length) {
+      return {
+        thresholds: [0, 0, 0, 0],
+        getBucketFor: () => 0
+      };
+    }
+
+    const thresholds = [0.2, 0.4, 0.6, 0.8].map((q) => quantile(hitsValues, q));
+    const min = hitsValues[0];
+    const max = hitsValues[hitsValues.length - 1];
+    const nearFlat = max - min <= Math.max(1, max * 0.02);
+
+    let rankMap = null;
+    if (nearFlat) {
+      const ranked = [...rows].sort((left, right) => {
+        const hitsCmp = compareValues(left.hits, right.hits, "desc");
+        if (hitsCmp !== 0) return hitsCmp;
+        return compareValues(left.endpoint, right.endpoint, "asc");
+      });
+      rankMap = new Map();
+      ranked.forEach((row, index) => rankMap.set(row, index));
+    }
+
+    const getBucketFor = (row, index) => {
+      const value = Number(row?.hits ?? 0);
+      if (!Number.isFinite(value) || value <= 0) return 0;
+      if (nearFlat) {
+        if (rows.length <= 1) return 3;
+        const rank = rankMap?.get(row);
+        const safeRank = Number.isInteger(rank) ? rank : index;
+        return 1 + Math.floor((safeRank / (rows.length - 1)) * 4);
+      }
+      if (value < thresholds[0]) return 1;
+      if (value < thresholds[1]) return 2;
+      if (value < thresholds[2]) return 3;
+      if (value < thresholds[3]) return 4;
+      return 5;
+    };
+
+    return { thresholds, getBucketFor };
+  }
+
+  function heatBucketClass(bucket) {
+    if (!Number.isFinite(bucket) || bucket <= 0) {
       return "api-usage-heat-0";
     }
-    const ratio = value / max;
-    if (ratio >= 0.8) return "api-usage-heat-4";
-    if (ratio >= 0.55) return "api-usage-heat-3";
-    if (ratio >= 0.3) return "api-usage-heat-2";
-    if (ratio >= 0.1) return "api-usage-heat-1";
-    return "api-usage-heat-0";
+    return `api-usage-heat-${Math.min(5, Math.max(1, Math.floor(bucket)))}`;
   }
 
   function compareValues(a, b, direction) {
@@ -399,7 +639,7 @@
     }
 
     const sorted = sortEndpoints(rows);
-    const maxHits = Math.max(0, ...sorted.map((row) => row.hits));
+    const heatMap = buildHeatMap(sorted);
 
     const headers = [
       ["endpoint", "Endpoint"],
@@ -407,8 +647,8 @@
       ["rpm", "RPM"],
       ["errors", "Errors"],
       ["error_rate", "Error Rate"],
-      ["avg_latency_ms", "Avg Latency (ms)"],
-      ["p95_latency_ms", "P95 Latency (ms)"],
+      ["avg_latency_ms", "Avg Latency"],
+      ["p95_latency_ms", "P95 Latency"],
       ["status", "Status"]
     ];
 
@@ -420,30 +660,43 @@
             ? "sorted-asc"
             : "sorted-desc"
           : "";
-        return `<th class="sortable ${sortedClass}" data-sort-key="${escapeHtml(key)}">${escapeHtml(label)}</th>`;
+        const ariaSort = isSorted
+          ? state.sort.direction === "asc"
+            ? "ascending"
+            : "descending"
+          : "none";
+        return `
+          <th class="sortable ${sortedClass}" data-sort-key="${escapeHtml(key)}" aria-sort="${ariaSort}">
+            <span class="ss-sort-label">${escapeHtml(label)}</span>
+            <span class="ss-sort-indicator" aria-hidden="true"></span>
+          </th>
+        `;
       })
       .join("");
 
     const bodyHtml = sorted
-      .map((row) => {
-        const heatClass = heatBucketClass(row.hits, maxHits);
+      .map((row, index) => {
+        const bucket = heatMap.getBucketFor(row, index);
+        const heatClass = heatBucketClass(bucket);
+        const status = classifyEndpointHealth(row);
         return `
           <tr>
             <td><code>${escapeHtml(row.endpoint)}</code></td>
-            <td class="${heatClass}">${formatNumber(row.hits)}</td>
+            <td class="${heatClass}">${formatInteger(row.hits)}</td>
             <td>${formatDecimal(row.rpm, 2)}</td>
-            <td>${formatNumber(row.errors)}</td>
+            <td>${formatInteger(row.errors)}</td>
             <td>${formatPercent(row.error_rate)}</td>
-            <td>${formatDecimal(row.avg_latency_ms, 1)}</td>
-            <td>${formatDecimal(row.p95_latency_ms, 1)}</td>
-            <td><span class="pill ${statusClass(row.status)}">${escapeHtml(toTitleCase(row.status))}</span></td>
+            <td>${formatLatency(row.avg_latency_ms)}</td>
+            <td>${formatLatency(row.p95_latency_ms)}</td>
+            <td><span class="pill ${statusClass(status)}">${escapeHtml(toTitleCase(status))}</span></td>
           </tr>
         `;
       })
       .join("");
 
     el.endpointHealth.innerHTML = `
-      <div class="api-usage-note muted">Endpoint Health + Endpoint Heatmap</div>
+      <div class="api-usage-note muted">Endpoint health uses conservative thresholds: low sample (&lt;${HEALTH_THRESHOLDS.minSampleHits} hits) = Unknown; Healthy &lt;1% errors and low latency; Degraded at 1-5% errors or elevated latency; Unhealthy above 5% errors or severe latency.</div>
+      <div class="api-usage-note muted">Heat: relative hits in selected window (adaptive quantile buckets).</div>
       <div class="ss-table-scroll api-usage-table-scroll" id="api-usage-endpoints-scroll">
         <table class="ss-table ss-table-compact" id="api-usage-endpoints-table">
           <thead>
@@ -758,6 +1011,7 @@
 
   function handleResize() {
     drawChart(state.data);
+    hideChartTooltip();
   }
 
   function handleWindowChange() {
@@ -778,12 +1032,20 @@
     el.panel = $("api-usage-chart-panel");
     el.canvas = $("api-usage-chart");
     el.empty = $("api-usage-empty");
+    el.chartLegend = $("api-usage-chart-legend");
+    el.chartTooltip = $("api-usage-chart-tooltip");
     el.endpointHealth = $("api-usage-endpoint-health");
     el.authSignals = $("api-usage-auth-signals");
     el.tierSurface = $("api-usage-tier-surface");
     el.versionRegression = $("api-usage-version-regression");
 
+    ensureChartChrome();
+
     window.addEventListener("resize", handleResize);
+    if (el.canvas) {
+      el.canvas.addEventListener("mousemove", handleChartPointerMove);
+      el.canvas.addEventListener("mouseleave", hideChartTooltip);
+    }
 
     if (el.panel && "ResizeObserver" in window) {
       state.resizeObserver = new ResizeObserver(() => {
@@ -818,6 +1080,10 @@
     }
 
     window.removeEventListener("resize", handleResize);
+    if (el.canvas) {
+      el.canvas.removeEventListener("mousemove", handleChartPointerMove);
+      el.canvas.removeEventListener("mouseleave", hideChartTooltip);
+    }
 
     if (el.windowSelect) {
       el.windowSelect.removeEventListener("change", handleWindowChange);
