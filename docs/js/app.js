@@ -1234,6 +1234,196 @@ function bindNavOverflow() {
   }
 }
 
+const adminUserMenu = {
+  initialized: false,
+  root: null,
+  toggle: null,
+  menu: null,
+  isOpen: false,
+  raf: 0
+};
+
+function resolveAdminMenuThemeToggle() {
+  if (typeof window.StreamSuitesTheme?.toggle === "function") {
+    return () => window.StreamSuitesTheme.toggle();
+  }
+  if (typeof window.StreamSuitesThemeToggle?.toggle === "function") {
+    return () => window.StreamSuitesThemeToggle.toggle();
+  }
+  const domToggle = document.querySelector("[data-theme-toggle], #theme-toggle");
+  if (domToggle) {
+    return () => domToggle.click();
+  }
+  return null;
+}
+
+function navigateToDashboardView(viewName) {
+  if (!viewName) return;
+
+  const navTarget = document.querySelector(`[data-view="${viewName}"]`);
+  if (navTarget) {
+    navTarget.click();
+    return;
+  }
+
+  const normalized = String(viewName).replace(/^#+/, "");
+  if (window.location.hash.replace(/^#/, "") === normalized) {
+    window.dispatchEvent(new Event("hashchange"));
+    return;
+  }
+  window.location.hash = `#${normalized}`;
+}
+
+function scheduleAdminUserMenuPosition() {
+  if (!adminUserMenu.isOpen || !adminUserMenu.menu || !adminUserMenu.toggle) return;
+  if (adminUserMenu.raf) {
+    window.cancelAnimationFrame(adminUserMenu.raf);
+  }
+
+  adminUserMenu.raf = window.requestAnimationFrame(() => {
+    adminUserMenu.raf = 0;
+    if (!adminUserMenu.isOpen || !adminUserMenu.menu || !adminUserMenu.toggle) return;
+
+    const menuEl = adminUserMenu.menu;
+    const toggleRect = adminUserMenu.toggle.getBoundingClientRect();
+    const margin = 10;
+    const gap = 8;
+
+    menuEl.style.maxHeight = `${Math.max(180, window.innerHeight - margin * 2)}px`;
+    const menuWidth = menuEl.offsetWidth || 260;
+    const menuHeight = menuEl.offsetHeight || 260;
+
+    let left = toggleRect.right - menuWidth;
+    left = Math.min(left, window.innerWidth - menuWidth - margin);
+    left = Math.max(margin, left);
+
+    const belowTop = toggleRect.bottom + gap;
+    const aboveTop = toggleRect.top - menuHeight - gap;
+    const spaceBelow = window.innerHeight - belowTop - margin;
+    const spaceAbove = toggleRect.top - gap - margin;
+
+    let top = belowTop;
+    let placement = "bottom";
+    if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
+      top = Math.max(margin, aboveTop);
+      placement = "top";
+    }
+
+    if (top + menuHeight > window.innerHeight - margin) {
+      top = Math.max(margin, window.innerHeight - menuHeight - margin);
+    }
+
+    menuEl.dataset.placement = placement;
+    menuEl.style.left = `${Math.round(left)}px`;
+    menuEl.style.top = `${Math.round(top)}px`;
+    menuEl.style.right = "auto";
+  });
+}
+
+function setAdminUserMenuOpen(nextOpen) {
+  if (!adminUserMenu.root || !adminUserMenu.toggle || !adminUserMenu.menu) return;
+  const shouldOpen = Boolean(nextOpen);
+  if (adminUserMenu.isOpen === shouldOpen) return;
+
+  adminUserMenu.isOpen = shouldOpen;
+  adminUserMenu.root.classList.toggle("is-open", shouldOpen);
+  adminUserMenu.toggle.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
+  adminUserMenu.menu.classList.toggle("hidden", !shouldOpen);
+
+  if (!shouldOpen) {
+    if (adminUserMenu.raf) {
+      window.cancelAnimationFrame(adminUserMenu.raf);
+      adminUserMenu.raf = 0;
+    }
+    return;
+  }
+
+  adminUserMenu.menu.style.visibility = "hidden";
+  scheduleAdminUserMenuPosition();
+  window.requestAnimationFrame(() => {
+    if (!adminUserMenu.isOpen || !adminUserMenu.menu) return;
+    adminUserMenu.menu.style.visibility = "";
+  });
+}
+
+function initAdminUserMenu() {
+  if (adminUserMenu.initialized) return;
+
+  const root = document.getElementById("admin-auth-indicator");
+  const toggle = document.getElementById("admin-user-menu-toggle");
+  const menu = document.getElementById("admin-user-menu");
+  if (!root || !toggle || !menu) return;
+
+  adminUserMenu.initialized = true;
+  adminUserMenu.root = root;
+  adminUserMenu.toggle = toggle;
+  adminUserMenu.menu = menu;
+
+  const themeToggle = resolveAdminMenuThemeToggle();
+  const themeItem = menu.querySelector('[data-admin-user-action="theme"]');
+  if (themeItem && themeToggle) {
+    themeItem.disabled = false;
+    themeItem.classList.remove("is-disabled");
+    themeItem.removeAttribute("aria-disabled");
+    const themeLabel = themeItem.querySelector("span:last-child");
+    if (themeLabel) {
+      themeLabel.textContent = "Theme";
+    }
+  }
+
+  toggle.addEventListener("click", (event) => {
+    event.preventDefault();
+    setAdminUserMenuOpen(!adminUserMenu.isOpen);
+  });
+
+  menu.addEventListener("click", (event) => {
+    const target = event.target.closest("[data-admin-user-action]");
+    if (!target) return;
+
+    const action = target.getAttribute("data-admin-user-action") || "";
+    if (action === "account") {
+      setAdminUserMenuOpen(false);
+      navigateToDashboardView("accounts");
+      return;
+    }
+    if (action === "settings") {
+      setAdminUserMenuOpen(false);
+      navigateToDashboardView("settings");
+      return;
+    }
+    if (action === "theme") {
+      if (target.hasAttribute("disabled")) return;
+      themeToggle?.();
+      setAdminUserMenuOpen(false);
+      return;
+    }
+    if (action === "logout") {
+      setAdminUserMenuOpen(false);
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!adminUserMenu.isOpen) return;
+    if (adminUserMenu.root?.contains(event.target)) return;
+    setAdminUserMenuOpen(false);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    if (!adminUserMenu.isOpen) return;
+    setAdminUserMenuOpen(false);
+    adminUserMenu.toggle?.focus();
+  });
+
+  window.addEventListener("resize", () => {
+    scheduleAdminUserMenuPosition();
+  }, { passive: true });
+
+  window.addEventListener("scroll", () => {
+    scheduleAdminUserMenuPosition();
+  }, { passive: true, capture: true });
+}
+
 function updateNavActiveState(viewName) {
   $all("[data-view]").forEach((el) => {
     if (el.dataset.view === viewName) {
@@ -1378,6 +1568,7 @@ async function initApp() {
     setModeDataset(document.getElementById("view-container"));
 
     initSidebarShell();
+    initAdminUserMenu();
     bindNavigation();
     bindDelegatedNavigation();
     bindHashChange();

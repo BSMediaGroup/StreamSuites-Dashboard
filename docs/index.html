@@ -454,32 +454,70 @@
           <div class="header-right">
             <div class="header-row header-auth-row">
               <div id="admin-auth-indicator" class="streamsuites-auth hidden">
-                <div class="streamsuites-auth-avatar">
-                  <img
-                    id="admin-auth-avatar"
-                    src="/assets/icons/ui/profile.svg"
-                    data-fallback="/assets/icons/ui/profile.svg"
-                    alt="StreamSuites account avatar"
-                  />
-                </div>
-                <div class="streamsuites-auth-meta">
-                  <span id="admin-auth-name" class="streamsuites-auth-name">
-                    <span class="streamsuites-auth-name-text">Administrator</span>
+                <button
+                  type="button"
+                  id="admin-user-menu-toggle"
+                  class="streamsuites-auth-toggle"
+                  aria-haspopup="menu"
+                  aria-controls="admin-user-menu"
+                  aria-expanded="false"
+                >
+                  <div class="streamsuites-auth-avatar">
                     <img
-                      id="admin-auth-tier-badge"
-                      class="streamsuites-auth-tier-badge"
-                      src="/assets/icons/tierbadge-core.svg"
-                      alt=""
-                      aria-hidden="true"
+                      id="admin-auth-avatar"
+                      src="/assets/icons/ui/profile.svg"
+                      data-fallback="/assets/icons/ui/profile.svg"
+                      alt="StreamSuites account avatar"
                     />
-                  </span>
-                  <span id="admin-auth-identity" class="streamsuites-auth-identity">admin@streamsuites.app</span>
-                </div>
-                <span id="admin-auth-role" class="streamsuites-auth-role">Admin</span>
-                <span id="admin-auth-tier" class="streamsuites-auth-tier">CORE</span>
-                <button id="admin-auth-logout" class="ss-btn ss-btn-secondary ss-btn-small">
-                  Logout
+                  </div>
+                  <div class="streamsuites-auth-meta">
+                    <span id="admin-auth-name" class="streamsuites-auth-name">
+                      <span class="streamsuites-auth-name-text">Administrator</span>
+                      <img
+                        id="admin-auth-tier-badge"
+                        class="streamsuites-auth-tier-badge"
+                        src="/assets/icons/tierbadge-core.svg"
+                        alt=""
+                        aria-hidden="true"
+                      />
+                    </span>
+                    <span id="admin-auth-identity" class="streamsuites-auth-identity">admin@streamsuites.app</span>
+                  </div>
+                  <span id="admin-auth-role" class="streamsuites-auth-role">Admin</span>
+                  <span id="admin-auth-tier" class="streamsuites-auth-tier">CORE</span>
+                  <span class="streamsuites-auth-caret" aria-hidden="true"></span>
                 </button>
+                <div
+                  id="admin-user-menu"
+                  class="ss-user-menu hidden"
+                  role="menu"
+                  aria-label="User menu"
+                >
+                  <button type="button" class="ss-user-menu-item" data-admin-user-action="account" role="menuitem">
+                    <span class="ss-user-menu-item-icon" data-icon="profile" aria-hidden="true"></span>
+                    <span>Account</span>
+                  </button>
+                  <button type="button" class="ss-user-menu-item" data-admin-user-action="settings" role="menuitem">
+                    <span class="ss-user-menu-item-icon" data-icon="cog" aria-hidden="true"></span>
+                    <span>Settings</span>
+                  </button>
+                  <div class="ss-user-menu-divider" role="separator" aria-hidden="true"></div>
+                  <button
+                    type="button"
+                    class="ss-user-menu-item is-disabled"
+                    data-admin-user-action="theme"
+                    role="menuitem"
+                    aria-disabled="true"
+                    disabled
+                  >
+                    <span class="ss-user-menu-item-icon" data-icon="switch" aria-hidden="true"></span>
+                    <span>Theme (soon)</span>
+                  </button>
+                  <button id="admin-auth-logout" type="button" class="ss-user-menu-item" data-admin-user-action="logout" role="menuitem">
+                    <span class="ss-user-menu-item-icon" data-icon="portal" aria-hidden="true"></span>
+                    <span>Logout</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
