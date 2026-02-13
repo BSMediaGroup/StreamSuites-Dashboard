@@ -191,6 +191,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1.75fr) minmax(280px, 1fr);
   grid-template-areas:
+    "banner banner"
     "map referrers"
     "map sessions";
   gap: 14px;
@@ -203,6 +204,14 @@
 
 .ss-analytics-map-panel {
   grid-area: map;
+}
+
+.ss-analytics-banner-wrap {
+  grid-area: banner;
+}
+
+.ss-analytics-banner-wrap .ss-alert {
+  margin: 0;
 }
 
 .ss-analytics-map-shell {
@@ -315,6 +324,23 @@
   letter-spacing: 0.03em;
 }
 
+.ss-analytics-subtitle {
+  margin: 12px 0 8px;
+  font-family: "RechargeBd", sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.ss-analytics-surfaces-wrap {
+  margin-top: 12px;
+}
+
+.ss-analytics-surfaces-list {
+  margin-top: 0;
+}
+
 .ss-analytics-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -348,6 +374,7 @@
   .ss-analytics-main {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
+      "banner"
       "map"
       "referrers"
       "sessions";
