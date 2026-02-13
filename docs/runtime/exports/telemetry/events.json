@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-02-13T14:32:19.860377Z",
+  "generated_at": "2026-02-13T15:35:00.855844Z",
   "events": [
     {
       "timestamp": "2026-01-22T05:45:05Z",
@@ -553,7 +553,29 @@
       "result": "success"
     },
     {
-      "timestamp": "2026-02-13T14:27:47.377512Z",
+      "timestamp": "2026-02-13T14:49:41Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=google user=user_code:JqhcS2m result=success",
+      "event_type": "session_issued",
+      "email_type": "google",
+      "user_identifier": "user_code:JqhcS2m",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-02-13T15:18:13Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=google user=user_code:JqhcS2m result=success",
+      "event_type": "session_issued",
+      "email_type": "google",
+      "user_identifier": "user_code:JqhcS2m",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-02-13T15:34:39.674855Z",
       "source": "system",
       "severity": "info",
       "message": "Runtime boot sequence started"
