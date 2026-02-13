@@ -24,7 +24,8 @@
     clusterCore: "ss-analytics-cluster-core",
     clusterLabel: "ss-analytics-cluster-label",
     pointHalo: "ss-analytics-point-halo",
-    pointCore: "ss-analytics-point-core"
+    pointCore: "ss-analytics-point-core",
+    activityHit: "ss-analytics-activity-hit"
   };
 
   const FALLBACK_COUNTRY_CENTROIDS = {
@@ -626,6 +627,28 @@
       });
     }
 
+    if (!map.getLayer(LAYERS.activityHit)) {
+      map.addLayer({
+        id: LAYERS.activityHit,
+        type: "circle",
+        source: SOURCE_ID,
+        filter: ["!", ["has", "point_count"]],
+        paint: {
+          "circle-radius": [
+            "interpolate",
+            ["linear"],
+            ["coalesce", ["get", "sessions"], ["get", "requests"], 0],
+            1, 14,
+            10, 15,
+            50, 17.5,
+            150, 20
+          ],
+          "circle-opacity": 0,
+          "circle-stroke-opacity": 0
+        }
+      });
+    }
+
     const source = map.getSource(SOURCE_ID);
     if (source) {
       source.setData(state.pendingGeoJson || emptyGeoJson());
@@ -634,14 +657,14 @@
     getOrCreateMapPopup(map);
 
     if (!map.__ssAnalyticsHoverBound) {
-      map.on("mouseenter", LAYERS.pointCore, () => {
+      map.on("mouseenter", LAYERS.activityHit, () => {
         map.getCanvas().style.cursor = "pointer";
       });
-      map.on("mouseleave", LAYERS.pointCore, () => {
+      map.on("mouseleave", LAYERS.activityHit, () => {
         map.getCanvas().style.cursor = "";
         map.__ssAnalyticsPopup?.remove();
       });
-      map.on("mousemove", LAYERS.pointCore, (event) => {
+      map.on("mousemove", LAYERS.activityHit, (event) => {
         const feature = event?.features?.[0];
         if (!feature) return;
         const props = feature.properties || {};
