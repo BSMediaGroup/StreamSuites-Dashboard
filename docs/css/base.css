@@ -325,6 +325,10 @@ body.header-hidden #app-header {
   flex: 0 0 auto;
 }
 
+.streamsuites-auth-admin-badge {
+  filter: saturate(1.02);
+}
+
 .streamsuites-auth-identity {
   font-size: 11px;
   opacity: 0.75;
@@ -372,28 +376,47 @@ body.header-hidden #app-header {
 }
 
 .streamsuites-auth-toggle {
-  appearance: none;
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 4px 10px;
+  padding: 4px 8px 4px 10px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.04);
   color: inherit;
-  cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .streamsuites-auth-toggle:hover,
-.streamsuites-auth-toggle:focus-visible,
+.streamsuites-auth-toggle:focus-within,
 .streamsuites-auth.is-open .streamsuites-auth-toggle {
   border-color: var(--border-strong);
   background: rgba(255, 255, 255, 0.08);
-  outline: none;
 }
 
-.streamsuites-auth-toggle:focus-visible {
+.streamsuites-auth-caret-toggle {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: 0 0 auto;
+  transition: background 0.15s ease;
+}
+
+.streamsuites-auth-caret-toggle:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.streamsuites-auth-caret-toggle:focus-visible {
+  outline: none;
+  background: rgba(255, 255, 255, 0.09);
   box-shadow: 0 0 0 2px rgba(92, 176, 188, 0.35);
 }
 
@@ -407,14 +430,14 @@ body.header-hidden #app-header {
   transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
-.streamsuites-auth-toggle[aria-expanded="true"] .streamsuites-auth-caret {
+.streamsuites-auth-caret-toggle[aria-expanded="true"] .streamsuites-auth-caret {
   opacity: 1;
   transform: rotate(225deg) translateY(-1px);
 }
 
 .ss-user-menu {
   position: fixed;
-  z-index: 320;
+  z-index: 1400;
   width: min(260px, calc(100vw - 24px));
   border-radius: 14px;
   border: 1px solid var(--border-subtle);

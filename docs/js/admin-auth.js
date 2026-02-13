@@ -424,6 +424,9 @@
       const headerTierBadge = this.elements.headerName?.querySelector(
         ".streamsuites-auth-tier-badge"
       );
+      const headerAdminBadge = this.elements.headerName?.querySelector(
+        ".streamsuites-auth-admin-badge"
+      );
       if (this.elements.headerName) {
         const displayName = name || email || "Administrator";
         if (headerNameText) {
@@ -447,6 +450,9 @@
           headerTierBadge.src = resolveBaseAssetPath(`/assets/icons/tierbadge-${badgeTier}.svg`);
           headerTierBadge.dataset.tier = resolvedTier;
         }
+      }
+      if (headerAdminBadge) {
+        headerAdminBadge.src = resolveBaseAssetPath("/assets/icons/tierbadge-admin.svg");
       }
       if (this.elements.headerAvatar) {
         const resolvedAvatar = avatarUrl || fallbackAvatar;

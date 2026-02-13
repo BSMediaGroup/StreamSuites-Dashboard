@@ -454,14 +454,7 @@
           <div class="header-right">
             <div class="header-row header-auth-row">
               <div id="admin-auth-indicator" class="streamsuites-auth hidden">
-                <button
-                  type="button"
-                  id="admin-user-menu-toggle"
-                  class="streamsuites-auth-toggle"
-                  aria-haspopup="menu"
-                  aria-controls="admin-user-menu"
-                  aria-expanded="false"
-                >
+                <div class="streamsuites-auth-toggle">
                   <div class="streamsuites-auth-avatar">
                     <img
                       id="admin-auth-avatar"
@@ -480,13 +473,28 @@
                         alt=""
                         aria-hidden="true"
                       />
+                      <img
+                        id="admin-auth-admin-badge"
+                        class="streamsuites-auth-tier-badge streamsuites-auth-admin-badge"
+                        src="/assets/icons/tierbadge-admin.svg"
+                        alt="Admin"
+                      />
                     </span>
                     <span id="admin-auth-identity" class="streamsuites-auth-identity">admin@streamsuites.app</span>
                   </div>
-                  <span id="admin-auth-role" class="streamsuites-auth-role">Admin</span>
                   <span id="admin-auth-tier" class="streamsuites-auth-tier">CORE</span>
-                  <span class="streamsuites-auth-caret" aria-hidden="true"></span>
-                </button>
+                  <button
+                    type="button"
+                    id="admin-user-menu-toggle"
+                    class="streamsuites-auth-caret-toggle"
+                    aria-haspopup="menu"
+                    aria-controls="admin-user-menu"
+                    aria-expanded="false"
+                    aria-label="Toggle user menu"
+                  >
+                    <span class="streamsuites-auth-caret" aria-hidden="true"></span>
+                  </button>
+                </div>
                 <div
                   id="admin-user-menu"
                   class="ss-user-menu hidden"

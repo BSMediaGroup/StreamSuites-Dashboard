@@ -1373,10 +1373,12 @@ function initAdminUserMenu() {
 
   toggle.addEventListener("click", (event) => {
     event.preventDefault();
+    event.stopPropagation();
     setAdminUserMenuOpen(!adminUserMenu.isOpen);
   });
 
   menu.addEventListener("click", (event) => {
+    event.stopPropagation();
     const target = event.target.closest("[data-admin-user-action]");
     if (!target) return;
 
