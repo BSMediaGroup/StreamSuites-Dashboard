@@ -410,6 +410,31 @@
   letter-spacing: 0.05em;
 }
 
+.region-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.flag-icon {
+  width: 16px;
+  height: 12px;
+  flex: 0 0 auto;
+  border-radius: 2px;
+  border: 1px solid var(--border-subtle);
+  object-fit: cover;
+  background: rgba(8, 12, 20, 0.68);
+}
+
+.flag-icon-fallback {
+  display: inline-block;
+}
+
+.region-name {
+  min-width: 0;
+}
+
 .ss-map-popup .ss-map-popup-label {
   color: #a7b9d9;
 }

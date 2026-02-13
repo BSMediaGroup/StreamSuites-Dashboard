@@ -14,6 +14,7 @@
   const COUNTRY_DEFAULT_SORT_KEY = "sessions";
   const COUNTRY_DEFAULT_SORT_DIRECTION = "desc";
   const COUNTRY_FOCUS_ZOOM = 3;
+  const FLAG_SVG_BASE = "https://flagcdn.com";
 
   const DEFAULT_MAP_STYLE_URL =
     "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
@@ -342,21 +343,129 @@
     return resolved;
   }
 
-  function buildCountryPopupHtml(entry) {
+  function getFlagSvgUrl(code) {
+    const iso2 = String(code || "").trim().toUpperCase();
+    if (!/^[A-Z]{2}$/.test(iso2)) return null;
+    return `${FLAG_SVG_BASE}/${iso2.toLowerCase()}.svg`;
+  }
+
+  function buildFallbackRegionIcon() {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 16 12");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
+    svg.setAttribute("class", "flag-icon flag-icon-fallback");
+
+    const bg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    bg.setAttribute("x", "0.5");
+    bg.setAttribute("y", "0.5");
+    bg.setAttribute("width", "15");
+    bg.setAttribute("height", "11");
+    bg.setAttribute("rx", "2");
+    bg.setAttribute("fill", "rgba(19, 28, 43, 0.9)");
+    bg.setAttribute("stroke", "rgba(149, 183, 218, 0.5)");
+    bg.setAttribute("stroke-width", "1");
+    svg.appendChild(bg);
+
+    const globe = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    globe.setAttribute("cx", "8");
+    globe.setAttribute("cy", "6");
+    globe.setAttribute("r", "3");
+    globe.setAttribute("fill", "none");
+    globe.setAttribute("stroke", "rgba(205, 226, 255, 0.95)");
+    globe.setAttribute("stroke-width", "0.9");
+    svg.appendChild(globe);
+
+    const lat = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    lat.setAttribute("d", "M5.5 6h5");
+    lat.setAttribute("fill", "none");
+    lat.setAttribute("stroke", "rgba(205, 226, 255, 0.95)");
+    lat.setAttribute("stroke-width", "0.8");
+    lat.setAttribute("stroke-linecap", "round");
+    svg.appendChild(lat);
+
+    const lon = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    lon.setAttribute("d", "M8 3.2c-1.1 0-2 1.2-2 2.8s0.9 2.8 2 2.8 2-1.2 2-2.8-0.9-2.8-2-2.8z");
+    lon.setAttribute("fill", "none");
+    lon.setAttribute("stroke", "rgba(205, 226, 255, 0.95)");
+    lon.setAttribute("stroke-width", "0.7");
+    lon.setAttribute("stroke-linecap", "round");
+    lon.setAttribute("stroke-linejoin", "round");
+    svg.appendChild(lon);
+
+    return svg;
+  }
+
+  function buildRegionLabelNode({ code, name }) {
+    const iso2 = String(code || "").trim().toUpperCase();
+    const labelName = String(name || resolveCountryName(iso2) || iso2 || "Unknown").trim() || "Unknown";
+    const container = document.createElement("span");
+    container.className = "region-label";
+
+    const flagUrl = getFlagSvgUrl(iso2);
+    if (flagUrl) {
+      const img = document.createElement("img");
+      img.className = "flag-icon";
+      img.decoding = "async";
+      img.loading = "lazy";
+      img.src = flagUrl;
+      img.alt = `${iso2} flag`;
+      img.onerror = () => {
+        img.replaceWith(buildFallbackRegionIcon());
+      };
+      container.appendChild(img);
+    } else {
+      container.appendChild(buildFallbackRegionIcon());
+    }
+
+    const nameEl = document.createElement("span");
+    nameEl.className = "region-name";
+    nameEl.textContent = labelName;
+    container.appendChild(nameEl);
+    return container;
+  }
+
+  function buildCountryPopupContent(entry) {
     const code = String(entry?.code || entry?.country || "--").trim().toUpperCase() || "--";
     const resolvedName = String(entry?.name || resolveCountryName(code) || code).trim() || code;
     const sessionsRaw = Number(entry?.sessions ?? 0);
     const requestsRaw = Number(entry?.requests ?? 0);
     const sessions = Number.isFinite(sessionsRaw) ? Math.max(0, Math.round(sessionsRaw)) : 0;
     const requests = Number.isFinite(requestsRaw) ? Math.max(0, Math.round(requestsRaw)) : 0;
-    const title = resolvedName.toUpperCase() === code ? code : `${resolvedName} (${code})`;
-    return `<div class="ss-map-popup-inner"><strong>${escapeHtml(
-      title
-    )}</strong><span><span class="ss-map-popup-label">Sessions:</span> <span class="ss-map-popup-value">${escapeHtml(
-      formatNumber(sessions)
-    )}</span></span><span><span class="ss-map-popup-label">Requests:</span> <span class="ss-map-popup-value">${escapeHtml(
-      formatNumber(requests)
-    )}</span></span></div>`;
+
+    const root = document.createElement("div");
+    root.className = "ss-map-popup-inner";
+
+    const title = document.createElement("strong");
+    title.appendChild(
+      buildRegionLabelNode({
+        code,
+        name: resolvedName
+      })
+    );
+    root.appendChild(title);
+
+    const sessionsLine = document.createElement("span");
+    const sessionsLabel = document.createElement("span");
+    sessionsLabel.className = "ss-map-popup-label";
+    sessionsLabel.textContent = "Sessions:";
+    const sessionsValue = document.createElement("span");
+    sessionsValue.className = "ss-map-popup-value";
+    sessionsValue.textContent = formatNumber(sessions);
+    sessionsLine.append(sessionsLabel, document.createTextNode(" "), sessionsValue);
+    root.appendChild(sessionsLine);
+
+    const requestsLine = document.createElement("span");
+    const requestsLabel = document.createElement("span");
+    requestsLabel.className = "ss-map-popup-label";
+    requestsLabel.textContent = "Requests:";
+    const requestsValue = document.createElement("span");
+    requestsValue.className = "ss-map-popup-value";
+    requestsValue.textContent = formatNumber(requests);
+    requestsLine.append(requestsLabel, document.createTextNode(" "), requestsValue);
+    root.appendChild(requestsLine);
+
+    return root;
   }
 
   async function waitForMapReady(timeoutMs = 3000) {
@@ -697,8 +806,8 @@
         const requests = Number.isFinite(requestsRaw) ? Math.max(0, Math.round(requestsRaw)) : 0;
         getOrCreateMapPopup(map)
           ?.setLngLat(event.lngLat)
-          .setHTML(
-            buildCountryPopupHtml({
+          .setDOMContent(
+            buildCountryPopupContent({
               code,
               name,
               sessions,
@@ -863,7 +972,7 @@
     );
   }
 
-  function resolveTopCountryLabel(rows) {
+  function resolveTopCountry(rows) {
     let top = null;
     (Array.isArray(rows) ? rows : []).forEach((entry) => {
       if (!top) {
@@ -884,11 +993,7 @@
         }
       }
     });
-    if (!top) return "--";
-    const code = String(top?.code || top?.country || "").trim().toUpperCase();
-    const name = String(top?.name || resolveCountryName(code) || code).trim();
-    if (!code) return name || "--";
-    return name && name.toUpperCase() !== code ? `${name} (${code})` : code;
+    return top;
   }
 
   function updateMapStatsStrip() {
@@ -899,7 +1004,20 @@
       el.mapSessions.textContent = formatNumber(state.countryTotals.sessions);
     }
     if (el.mapTopCountry) {
-      el.mapTopCountry.textContent = resolveTopCountryLabel(state.countryRows);
+      const top = resolveTopCountry(state.countryRows);
+      el.mapTopCountry.textContent = "";
+      if (!top) {
+        el.mapTopCountry.textContent = "--";
+      } else {
+        const code = String(top?.code || top?.country || "").trim().toUpperCase();
+        const name = String(top?.name || resolveCountryName(code) || code).trim() || code;
+        el.mapTopCountry.appendChild(
+          buildRegionLabelNode({
+            code,
+            name
+          })
+        );
+      }
     }
   }
 
@@ -992,27 +1110,59 @@
     }
 
     el.countriesEmpty.classList.add("hidden");
-    el.countriesBody.innerHTML = sortedRows
-      .map((entry) => {
-        const code = String(entry?.code || "").toUpperCase();
-        const name = String(entry?.name || code);
-        const isActive = code === state.activeCountryCode;
-        return `
-          <tr class="ss-analytics-country-row${isActive ? " is-active" : ""}" data-country-code="${escapeHtml(
-            code
-          )}" tabindex="0" role="button" aria-label="Focus map on ${escapeHtml(name)}">
-            <td>
-              <span class="ss-analytics-country-name">${escapeHtml(name)}</span>
-              <span class="ss-analytics-country-code">${escapeHtml(code)}</span>
-            </td>
-            <td class="ss-analytics-metric">${escapeHtml(formatNumber(entry.sessions))}</td>
-            <td class="ss-analytics-metric">${escapeHtml(formatNumber(entry.requests))}</td>
-            <td class="ss-analytics-metric">${escapeHtml(formatShare(entry.sessions, totals?.sessions))}</td>
-            <td class="ss-analytics-metric">${escapeHtml(formatShare(entry.requests, totals?.requests))}</td>
-          </tr>
-        `;
-      })
-      .join("");
+    el.countriesBody.textContent = "";
+    const fragment = document.createDocumentFragment();
+    sortedRows.forEach((entry) => {
+      const code = String(entry?.code || "").toUpperCase();
+      const name = String(entry?.name || code).trim() || code;
+      const isActive = code === state.activeCountryCode;
+
+      const row = document.createElement("tr");
+      row.className = `ss-analytics-country-row${isActive ? " is-active" : ""}`;
+      row.setAttribute("data-country-code", code);
+      row.setAttribute("tabindex", "0");
+      row.setAttribute("role", "button");
+      row.setAttribute("aria-label", `Focus map on ${name}`);
+      row.setAttribute("data-region-name", name);
+
+      const regionCell = document.createElement("td");
+      const nameEl = document.createElement("span");
+      nameEl.className = "ss-analytics-country-name";
+      nameEl.appendChild(
+        buildRegionLabelNode({
+          code,
+          name
+        })
+      );
+      const codeEl = document.createElement("span");
+      codeEl.className = "ss-analytics-country-code";
+      codeEl.textContent = code;
+      regionCell.append(nameEl, codeEl);
+      row.appendChild(regionCell);
+
+      const sessionsCell = document.createElement("td");
+      sessionsCell.className = "ss-analytics-metric";
+      sessionsCell.textContent = formatNumber(entry.sessions);
+      row.appendChild(sessionsCell);
+
+      const requestsCell = document.createElement("td");
+      requestsCell.className = "ss-analytics-metric";
+      requestsCell.textContent = formatNumber(entry.requests);
+      row.appendChild(requestsCell);
+
+      const sessionsShareCell = document.createElement("td");
+      sessionsShareCell.className = "ss-analytics-metric";
+      sessionsShareCell.textContent = formatShare(entry.sessions, totals?.sessions);
+      row.appendChild(sessionsShareCell);
+
+      const requestsShareCell = document.createElement("td");
+      requestsShareCell.className = "ss-analytics-metric";
+      requestsShareCell.textContent = formatShare(entry.requests, totals?.requests);
+      row.appendChild(requestsShareCell);
+
+      fragment.appendChild(row);
+    });
+    el.countriesBody.appendChild(fragment);
   }
 
   async function focusCountryFromTable(code) {
@@ -1048,7 +1198,7 @@
     const map = state.map;
 
     map.resize();
-    getOrCreateMapPopup(map)?.setLngLat(center).setHTML(buildCountryPopupHtml(country)).addTo(map);
+    getOrCreateMapPopup(map)?.setLngLat(center).setDOMContent(buildCountryPopupContent(country)).addTo(map);
     map.flyTo({
       center,
       zoom: Math.max(map.getZoom() || 1, COUNTRY_FOCUS_ZOOM),
@@ -1059,7 +1209,7 @@
       if (!state.map || focusToken !== state.countryFocusToken) return;
       getOrCreateMapPopup(state.map)
         ?.setLngLat(center)
-        .setHTML(buildCountryPopupHtml(country))
+        .setDOMContent(buildCountryPopupContent(country))
         .addTo(state.map);
     });
   }
