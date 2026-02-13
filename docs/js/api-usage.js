@@ -499,7 +499,7 @@
       const normalizedErrors = Number.isFinite(errors) ? Math.max(0, errors) : 0;
       const computedErrorRate = normalizedHits > 0 ? normalizedErrors / normalizedHits : null;
       const errorRate = Number.isFinite(rowErrorRate) ? Math.max(0, rowErrorRate) : computedErrorRate;
-      return {
+      const normalized = {
         endpoint,
         hits: normalizedHits,
         rpm: Number.isFinite(rpm) ? rpm : 0,
@@ -508,32 +508,56 @@
         avg_latency_ms: Number.isFinite(avgLatency) ? Math.max(0, avgLatency) : null,
         p95_latency_ms: Number.isFinite(p95Latency) ? Math.max(0, p95Latency) : null
       };
+      const health = buildEndpointHealthMetadata(normalized);
+      return {
+        ...normalized,
+        status: health.status,
+        low_sample: health.lowSample,
+        status_tooltip: health.tooltip
+      };
     });
   }
 
-  function classifyEndpointHealth(row) {
+  function buildEndpointHealthMetadata(row) {
     const hits = Number(row?.hits ?? 0);
-    if (hits < HEALTH_THRESHOLDS.minSampleHits) return "unknown";
-
+    const lowSample = Number.isFinite(hits) && hits > 0 && hits < HEALTH_THRESHOLDS.minSampleHits;
     const errorRate = Number(row?.error_rate);
     const hasErrorRate = Number.isFinite(errorRate);
     const p95 = Number(row?.p95_latency_ms);
     const avg = Number(row?.avg_latency_ms);
     const hasP95 = Number.isFinite(p95);
     const hasAvg = Number.isFinite(avg);
+    const hasLatency = hasP95 || hasAvg;
 
-    if (!hasP95 && !hasAvg && !hasErrorRate) return "unknown";
+    if (!hasErrorRate && !hasLatency) {
+      return {
+        status: "unknown",
+        lowSample,
+        tooltip: "Status unknown: error rate and latency are unavailable."
+      };
+    }
 
-    if (hasErrorRate && errorRate > HEALTH_THRESHOLDS.errorRate.degradedMax) return "unhealthy";
-    if (hasP95 && p95 > HEALTH_THRESHOLDS.p95LatencyMs.degradedMax) return "unhealthy";
-    if (!hasP95 && hasAvg && avg > HEALTH_THRESHOLDS.avgLatencyMs.degradedMax) return "unhealthy";
+    let status = "healthy";
 
-    if (hasErrorRate && errorRate >= HEALTH_THRESHOLDS.errorRate.healthyMax) return "degraded";
-    if (hasP95 && p95 >= HEALTH_THRESHOLDS.p95LatencyMs.healthyMax) return "degraded";
-    if (!hasP95 && hasAvg && avg >= HEALTH_THRESHOLDS.avgLatencyMs.healthyMax) return "degraded";
+    if (hasErrorRate && errorRate > HEALTH_THRESHOLDS.errorRate.degradedMax) status = "unhealthy";
+    if (hasP95 && p95 > HEALTH_THRESHOLDS.p95LatencyMs.degradedMax) status = "unhealthy";
+    if (!hasP95 && hasAvg && avg > HEALTH_THRESHOLDS.avgLatencyMs.degradedMax) status = "unhealthy";
 
-    if (hasErrorRate || hasP95 || hasAvg) return "healthy";
-    return "unknown";
+    if (status !== "unhealthy") {
+      if (hasErrorRate && errorRate >= HEALTH_THRESHOLDS.errorRate.healthyMax) status = "degraded";
+      if (hasP95 && p95 >= HEALTH_THRESHOLDS.p95LatencyMs.healthyMax) status = "degraded";
+      if (!hasP95 && hasAvg && avg >= HEALTH_THRESHOLDS.avgLatencyMs.healthyMax) status = "degraded";
+    }
+
+    const tooltip = lowSample
+      ? `Low sample: ${formatInteger(hits)} hits (<${HEALTH_THRESHOLDS.minSampleHits}). Status is inferred from current error and latency signals.`
+      : "";
+
+    return { status, lowSample, tooltip };
+  }
+
+  function classifyEndpointHealth(row) {
+    return buildEndpointHealthMetadata(row).status;
   }
 
   function statusClass(status) {
@@ -678,7 +702,11 @@
       .map((row, index) => {
         const bucket = heatMap.getBucketFor(row, index);
         const heatClass = heatBucketClass(bucket);
-        const status = classifyEndpointHealth(row);
+        const status = typeof row?.status === "string" ? row.status : classifyEndpointHealth(row);
+        const statusTitle = typeof row?.status_tooltip === "string" ? row.status_tooltip.trim() : "";
+        const statusAttrs = statusTitle
+          ? ` title="${escapeHtml(statusTitle)}" aria-label="${escapeHtml(statusTitle)}"`
+          : "";
         return `
           <tr>
             <td><code>${escapeHtml(row.endpoint)}</code></td>
@@ -688,14 +716,14 @@
             <td>${formatPercent(row.error_rate)}</td>
             <td>${formatLatency(row.avg_latency_ms)}</td>
             <td>${formatLatency(row.p95_latency_ms)}</td>
-            <td><span class="pill ${statusClass(status)}">${escapeHtml(toTitleCase(status))}</span></td>
+            <td><span class="pill ${statusClass(status)}"${statusAttrs}>${escapeHtml(toTitleCase(status))}</span></td>
           </tr>
         `;
       })
       .join("");
 
     el.endpointHealth.innerHTML = `
-      <div class="api-usage-note muted">Endpoint health uses conservative thresholds: low sample (&lt;${HEALTH_THRESHOLDS.minSampleHits} hits) = Unknown; Healthy &lt;1% errors and low latency; Degraded at 1-5% errors or elevated latency; Unhealthy above 5% errors or severe latency.</div>
+      <div class="api-usage-note muted">Endpoint health uses conservative thresholds: Healthy &lt;1% errors and low latency; Degraded at 1-5% errors or elevated latency; Unhealthy above 5% errors or severe latency. Low-sample endpoints (&lt;${HEALTH_THRESHOLDS.minSampleHits} hits) still classify; hover the status pill for confidence context. Unknown appears only when both error and latency metrics are unavailable.</div>
       <div class="api-usage-note muted">Heat: relative hits in selected window (adaptive quantile buckets).</div>
       <div class="ss-table-scroll api-usage-table-scroll" id="api-usage-endpoints-scroll">
         <table class="ss-table ss-table-compact" id="api-usage-endpoints-table">
