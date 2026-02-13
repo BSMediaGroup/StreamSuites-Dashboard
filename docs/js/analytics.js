@@ -107,6 +107,7 @@
     surfacesList: null,
     surfacesEmpty: null
   };
+  let surfacesClickBound = false;
 
   function $(id) {
     return document.getElementById(id);
@@ -635,6 +636,40 @@
     return [];
   }
 
+  function resolveSurfaceViewHash(key) {
+    const normalized = String(key || "").trim().toLowerCase();
+    const directMap = {
+      overview: "#overview",
+      analytics: "#analytics",
+      accounts: "#accounts",
+      donations: "#accounts",
+      "data-signals": "#data-signals",
+      telemetry: "#overview",
+      "auth-events": "#overview",
+      "auth_events": "#overview",
+      "admin-activity": "#overview",
+      "admin_activity": "#overview",
+      "api-usage": "#api-usage",
+      "api_usage": "#api-usage"
+    };
+    if (directMap[normalized]) return directMap[normalized];
+    if (normalized.includes("donation")) return "#accounts";
+    if (normalized.includes("auth")) return "#overview";
+    if (normalized.includes("telemetry")) return "#overview";
+    if (normalized.includes("activity")) return "#overview";
+    if (normalized.includes("signal")) return "#data-signals";
+    return "";
+  }
+
+  function handleSurfaceViewClick(event) {
+    const button = event.target.closest("[data-surface-view]");
+    if (!(button instanceof HTMLButtonElement)) return;
+    const hash = String(button.getAttribute("data-surface-view") || "").trim();
+    if (!hash) return;
+    event.preventDefault();
+    window.location.hash = hash;
+  }
+
   function renderSurfaces(surfaces) {
     if (!el.surfacesList || !el.surfacesEmpty) return;
     const rows = normalizeSurfaces(surfaces).filter((entry) => entry.count > 0);
@@ -646,10 +681,17 @@
     el.surfacesEmpty.classList.add("hidden");
     el.surfacesList.innerHTML = rows
       .map((entry) => {
+        const viewHash = resolveSurfaceViewHash(entry.key);
         return `
-          <li>
-            <span>${escapeHtml(entry.key)}</span>
-            <strong>${escapeHtml(formatNumber(entry.count))}</strong>
+          <li class="ss-analytics-surface-row">
+            <div class="ss-analytics-surface-main">
+              <span>${escapeHtml(entry.key)}</span>
+              <span class="ss-analytics-surface-source">API</span>
+            </div>
+            <div class="ss-analytics-surface-meta">
+              <strong>${escapeHtml(formatNumber(entry.count))}</strong>
+              ${viewHash ? `<button type="button" class="ss-btn ss-btn-small ss-btn-secondary" data-surface-view="${escapeHtml(viewHash)}">View</button>` : ""}
+            </div>
           </li>
         `;
       })
@@ -756,6 +798,10 @@
     el.generatedAt = $("analytics-generated-at");
     el.surfacesList = $("analytics-surfaces-list");
     el.surfacesEmpty = $("analytics-surfaces-empty");
+    if (el.surfacesList && !surfacesClickBound) {
+      el.surfacesList.addEventListener("click", handleSurfaceViewClick);
+      surfacesClickBound = true;
+    }
 
     if (el.windowSelect) {
       el.windowSelect.value = DEFAULT_WINDOW;
@@ -803,6 +849,11 @@
     if (state.refreshHandle) {
       clearInterval(state.refreshHandle);
       state.refreshHandle = null;
+    }
+
+    if (el.surfacesList && surfacesClickBound) {
+      el.surfacesList.removeEventListener("click", handleSurfaceViewClick);
+      surfacesClickBound = false;
     }
 
     state.mapReady = false;

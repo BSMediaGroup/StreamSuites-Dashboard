@@ -6,8 +6,8 @@
   "use strict";
 
   const RUNTIME_ENDPOINT = "/admin/accounts";
-  const ANALYTICS_ENDPOINT = "/api/admin/analytics";
-  const ANALYTICS_WINDOW = "5m";
+  const DONATIONS_ENDPOINT = "/api/admin/donations";
+  const DONATIONS_WINDOW = "30d";
   const ANALYTICS_CACHE_TTL_MS = 8000;
   const COLUMN_WIDTH_STORAGE_KEY = "ss_admin_accounts_colwidths_v2";
   const ROW_CLICK_DELAY_MS = 240;
@@ -1162,27 +1162,39 @@ function normalizeUser(raw = {}) {
   async function loadDonations(options = {}) {
     try {
       let payload = null;
-      if (window.StreamSuitesApi?.getAdminAnalytics) {
-        payload = await window.StreamSuitesApi.getAdminAnalytics(ANALYTICS_WINDOW, {
+      if (window.StreamSuitesApi?.getAdminDonations) {
+        payload = await window.StreamSuitesApi.getAdminDonations(DONATIONS_WINDOW, {
           ttlMs: ANALYTICS_CACHE_TTL_MS,
+          limit: options.limit,
           forceRefresh: options.forceReload === true
         });
       } else {
-        const endpoint = `${ANALYTICS_ENDPOINT}?window=${encodeURIComponent(ANALYTICS_WINDOW)}`;
+        const endpoint = `${DONATIONS_ENDPOINT}?window=${encodeURIComponent(DONATIONS_WINDOW)}`;
         payload = await window.StreamSuitesApi?.apiFetch?.(endpoint, {
           cacheTtlMs: ANALYTICS_CACHE_TTL_MS,
-          cacheKey: `admin-analytics:${ANALYTICS_WINDOW}`,
+          cacheKey: `admin-donations:${DONATIONS_WINDOW}`,
           forceRefresh: options.forceReload === true
         });
       }
-      const dataset = Array.isArray(payload?.data?.donations) ? payload.data.donations : [];
+      const dataset = Array.isArray(payload?.items)
+        ? payload.items
+        : Array.isArray(payload?.data?.donations)
+          ? payload.data.donations
+          : [];
+      const notConfigured =
+        payload?.not_configured === true || payload?.summary?.not_configured === true;
       state.donationStats = buildDonationStats(dataset);
       state.donationsLoaded = true;
       applyDonationStats();
       applyFilters();
-      setBanner("", false);
-      if (!dataset.length) {
-        setStatus("No events in selected window.");
+      if (notConfigured) {
+        setBanner("Donations telemetry is not configured yet.", true);
+        setStatus("Donations telemetry not configured.");
+      } else {
+        setBanner("", false);
+        if (!dataset.length) {
+          setStatus("No events in this window.");
+        }
       }
     } catch (err) {
       if (err?.status === 401 || err?.status === 403 || err?.isAuthError) {
@@ -1195,7 +1207,7 @@ function normalizeUser(raw = {}) {
       state.donationsLoaded = false;
       applyDonationStats();
       applyFilters();
-      setInlineError("Analytics API unavailable for donation stats.", {
+      setInlineError("Donations API unavailable for donation stats.", {
         retryAction: "donations"
       });
     }

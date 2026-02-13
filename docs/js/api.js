@@ -151,10 +151,60 @@
     });
   }
 
+  function buildWindowedPath(path, windowValue, options = {}) {
+    const params = new URLSearchParams();
+    const selected = String(windowValue || "").trim().toLowerCase();
+    if (selected) {
+      params.set("window", selected);
+    }
+    const limit = Number(options.limit);
+    if (Number.isFinite(limit) && limit > 0) {
+      params.set("limit", String(Math.floor(limit)));
+    }
+    const query = params.toString();
+    return query ? `${path}?${query}` : path;
+  }
+
+  async function getAdminActivity(windowValue = "5m", options = {}) {
+    const selected = String(windowValue || "5m").trim().toLowerCase() || "5m";
+    return apiFetch(buildWindowedPath("/api/admin/activity", selected, options), {
+      cacheTtlMs: options.ttlMs ?? 8000,
+      cacheKey: `admin-activity:${selected}:${Number(options.limit) || 0}`,
+      forceRefresh: options.forceRefresh === true,
+      timeoutMs: options.timeoutMs,
+      signal: options.signal
+    });
+  }
+
+  async function getAdminAuthEvents(windowValue = "24h", options = {}) {
+    const selected = String(windowValue || "24h").trim().toLowerCase() || "24h";
+    return apiFetch(buildWindowedPath("/api/admin/telemetry/auth-events", selected, options), {
+      cacheTtlMs: options.ttlMs ?? 8000,
+      cacheKey: `admin-auth-events:${selected}:${Number(options.limit) || 0}`,
+      forceRefresh: options.forceRefresh === true,
+      timeoutMs: options.timeoutMs,
+      signal: options.signal
+    });
+  }
+
+  async function getAdminDonations(windowValue = "30d", options = {}) {
+    const selected = String(windowValue || "30d").trim().toLowerCase() || "30d";
+    return apiFetch(buildWindowedPath("/api/admin/donations", selected, options), {
+      cacheTtlMs: options.ttlMs ?? 8000,
+      cacheKey: `admin-donations:${selected}:${Number(options.limit) || 0}`,
+      forceRefresh: options.forceRefresh === true,
+      timeoutMs: options.timeoutMs,
+      signal: options.signal
+    });
+  }
+
   window.StreamSuitesApi = {
     getApiBase,
     buildApiUrl,
     apiFetch,
-    getAdminAnalytics
+    getAdminAnalytics,
+    getAdminActivity,
+    getAdminAuthEvents,
+    getAdminDonations
   };
 })();

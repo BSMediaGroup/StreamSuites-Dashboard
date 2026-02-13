@@ -341,6 +341,36 @@
   margin-top: 0;
 }
 
+.ss-analytics-surface-row {
+  align-items: stretch;
+}
+
+.ss-analytics-surface-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ss-analytics-surface-source {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ss-analytics-surface-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .ss-analytics-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));

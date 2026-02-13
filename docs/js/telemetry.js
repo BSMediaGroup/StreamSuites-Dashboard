@@ -244,14 +244,23 @@
 
   async function loadAuthEvents(options = {}) {
     try {
-      const selectedWindow = String(options.window || "5m").trim().toLowerCase() || "5m";
-      const payload = await window.StreamSuitesApi?.getAdminAnalytics?.(selectedWindow, {
-        ttlMs: options.ttlMs ?? 8000,
-        forceRefresh: options.forceReload === true
-      });
+      const selectedWindow = String(options.window || "24h").trim().toLowerCase() || "24h";
+      let payload = null;
+      if (window.StreamSuitesApi?.getAdminAuthEvents) {
+        payload = await window.StreamSuitesApi.getAdminAuthEvents(selectedWindow, {
+          ttlMs: options.ttlMs ?? 8000,
+          limit: options.limit,
+          forceRefresh: options.forceReload === true
+        });
+      } else {
+        payload = await window.StreamSuitesApi?.getAdminAnalytics?.(selectedWindow, {
+          ttlMs: options.ttlMs ?? 8000,
+          forceRefresh: options.forceReload === true
+        });
+      }
       return normalizeAuthEventSnapshot({
-        generated_at: payload?.end_ts || payload?.start_ts || null,
-        events: payload?.data?.auth_events || []
+        generated_at: payload?.generated_at || payload?.end_ts || payload?.start_ts || null,
+        events: payload?.items || payload?.events || payload?.data?.auth_events || []
       });
     } catch (err) {
       if (err?.status === 401 || err?.status === 403 || err?.isAuthError) {

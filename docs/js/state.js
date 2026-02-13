@@ -869,13 +869,28 @@
 
     try {
       const selectedWindow = String(options.window || "5m").trim().toLowerCase() || "5m";
-      const payload = await window.StreamSuitesApi?.getAdminAnalytics?.(selectedWindow, {
-        ttlMs: options.ttlMs ?? 8000,
-        forceRefresh: options.forceReload === true
-      });
+      let payload = null;
+      if (window.StreamSuitesApi?.getAdminActivity) {
+        payload = await window.StreamSuitesApi.getAdminActivity(selectedWindow, {
+          ttlMs: options.ttlMs ?? 8000,
+          limit: options.limit,
+          forceRefresh: options.forceReload === true
+        });
+      } else {
+        payload = await window.StreamSuitesApi?.getAdminAnalytics?.(selectedWindow, {
+          ttlMs: options.ttlMs ?? 8000,
+          forceRefresh: options.forceReload === true
+        });
+      }
+
+      const events = Array.isArray(payload?.items)
+        ? payload.items
+        : Array.isArray(payload?.events)
+          ? payload.events
+          : payload?.data?.admin_activity || [];
       const normalized = normalizeAdminActivity({
-        updated_at: payload?.end_ts || payload?.start_ts || null,
-        events: payload?.data?.admin_activity || []
+        updated_at: payload?.generated_at || payload?.end_ts || payload?.start_ts || null,
+        events
       });
       cache.adminActivity = normalized || null;
       return normalized ? deepClone(normalized) : null;

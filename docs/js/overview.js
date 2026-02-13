@@ -379,6 +379,9 @@
     body.innerHTML = "";
 
     if (!events.length) {
+      if (el.adminActivityEmpty) {
+        el.adminActivityEmpty.textContent = "No events in this window.";
+      }
       toggleEmptyState(el.adminActivityEmpty, true);
       return;
     }
@@ -857,13 +860,16 @@
     renderTelemetryWarning(
       el.telemetryAuthEventsWarning,
       health,
-      "No events in selected window."
+      "No events in this window."
     );
 
     const events = Array.isArray(snapshot?.events) ? snapshot.events : [];
     body.innerHTML = "";
 
     if (!events.length) {
+      if (el.telemetryAuthEventsEmpty) {
+        el.telemetryAuthEventsEmpty.textContent = "No events in this window.";
+      }
       toggleEmptyState(el.telemetryAuthEventsEmpty, true);
       return;
     }
