@@ -23,8 +23,8 @@
     clusterHalo: "ss-analytics-cluster-halo",
     clusterCore: "ss-analytics-cluster-core",
     clusterLabel: "ss-analytics-cluster-label",
-    pointHalo: "ss-analytics-point-halo",
-    pointCore: "ss-analytics-point-core",
+    activityGlow: "ss-analytics-activity-glow",
+    activityCore: "ss-analytics-activity-core",
     activityHit: "ss-analytics-activity-hit"
   };
 
@@ -580,48 +580,69 @@
       });
     }
 
-    if (!map.getLayer(LAYERS.pointHalo)) {
+    if (!map.getLayer(LAYERS.activityGlow)) {
       map.addLayer({
-        id: LAYERS.pointHalo,
+        id: LAYERS.activityGlow,
         type: "circle",
         source: SOURCE_ID,
         filter: ["!", ["has", "point_count"]],
         paint: {
-          "circle-color": "#6ed6ff",
-          "circle-opacity": 0.22,
-          "circle-blur": 0.65,
+          "circle-color": "#9f4dff",
+          "circle-opacity": [
+            "interpolate",
+            ["linear"],
+            ["coalesce", ["get", "sessions"], ["get", "requests"], 0],
+            0, 0.16,
+            10, 0.24,
+            50, 0.34,
+            150, 0.46,
+            400, 0.58
+          ],
+          "circle-blur": 0.78,
           "circle-radius": [
             "interpolate",
             ["linear"],
             ["coalesce", ["get", "sessions"], ["get", "requests"], 0],
-            1, 9,
+            0, 9,
             10, 13,
             50, 18,
-            150, 24
+            150, 23,
+            400, 28
           ]
         }
       });
     }
 
-    if (!map.getLayer(LAYERS.pointCore)) {
+    if (!map.getLayer(LAYERS.activityCore)) {
       map.addLayer({
-        id: LAYERS.pointCore,
+        id: LAYERS.activityCore,
         type: "circle",
         source: SOURCE_ID,
         filter: ["!", ["has", "point_count"]],
         paint: {
-          "circle-color": "#c7f4ff",
-          "circle-opacity": 0.95,
-          "circle-stroke-color": "rgba(255,255,255,0.82)",
+          "circle-color": "#d6b8ff",
+          "circle-opacity": [
+            "interpolate",
+            ["linear"],
+            ["coalesce", ["get", "sessions"], ["get", "requests"], 0],
+            0, 0.82,
+            10, 0.88,
+            50, 0.93,
+            150, 0.97,
+            400, 0.99
+          ],
+          "circle-blur": 0.08,
+          "circle-stroke-color": "rgba(242,228,255,0.86)",
           "circle-stroke-width": 0.75,
           "circle-radius": [
             "interpolate",
             ["linear"],
             ["coalesce", ["get", "sessions"], ["get", "requests"], 0],
-            1, 3.2,
+            0, 3.2,
             10, 4.8,
             50, 7.2,
-            150, 9.4
+            150, 9.4,
+            400, 11.2
           ]
         }
       });
