@@ -380,11 +380,14 @@ body.header-hidden #app-header {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 4px 8px 4px 10px;
+  padding: 4px 10px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.04);
   color: inherit;
+  cursor: pointer;
+  user-select: none;
+  overflow: visible;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
@@ -400,14 +403,15 @@ body.header-hidden #app-header {
   border: 0;
   background: transparent;
   color: inherit;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   flex: 0 0 auto;
+  overflow: visible;
   transition: background 0.15s ease;
 }
 
@@ -422,18 +426,20 @@ body.header-hidden #app-header {
 }
 
 .streamsuites-auth-caret {
-  width: 9px;
-  height: 9px;
-  border-right: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
+  display: block;
+  box-sizing: border-box;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
   opacity: 0.72;
-  transform: rotate(45deg) translateY(-1px);
+  transform: rotate(45deg);
   transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
 .streamsuites-auth-caret-toggle[aria-expanded="true"] .streamsuites-auth-caret {
   opacity: 1;
-  transform: rotate(225deg) translateY(-1px);
+  transform: rotate(225deg);
 }
 
 .ss-user-menu {
