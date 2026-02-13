@@ -6,11 +6,8 @@
   const PREVIEW_LIMIT = 5;
   const NOTIFICATIONS_EVENT = "streamsuites:notifications-updated";
 
-  const DATA_SOURCES = [
-    "runtime/exports/notifications.json",
-    "runtime/exports/admin/notifications.json",
-    "data/notifications.json"
-  ];
+  const NOTIFICATIONS_ENDPOINT_PATH = "/api/admin/notifications";
+  const NOTIFICATIONS_DEFAULT_LIMIT = 50;
 
   const DEFAULT_PREFS = Object.freeze({
     muteAll: false,
@@ -277,16 +274,53 @@
 
   function extractNotifications(payload) {
     if (Array.isArray(payload)) return payload;
+    if (payload && typeof payload === "object" && Array.isArray(payload.items)) {
+      return payload.items;
+    }
     if (payload && typeof payload === "object" && Array.isArray(payload.notifications)) {
       return payload.notifications;
     }
     return [];
   }
 
-  async function fetchNotificationsFrom(relativePath) {
-    const url = new URL(relativePath, document.baseURI);
+  function resolveApiBase() {
+    const explicitBase =
+      window.StreamSuitesAdminAuth?.config?.baseUrl ||
+      document.querySelector('meta[name="streamsuites-auth-base"]')?.getAttribute("content") ||
+      "";
+    return explicitBase ? String(explicitBase).replace(/\/+$/, "") : "";
+  }
+
+  function buildApiUrl(path) {
+    const base = resolveApiBase();
+    const normalized = path.startsWith("/") ? path : `/${path}`;
+    return base ? `${base}${normalized}` : normalized;
+  }
+
+  function shouldLogDebugInfo() {
+    return window.__STREAMSUITES_SAFE_MODE__ === true || window.__STREAMSUITES_DEBUG__ === true;
+  }
+
+  async function fetchNotificationsFromApi() {
+    const endpoint = buildApiUrl(NOTIFICATIONS_ENDPOINT_PATH);
+    const url = `${endpoint}?limit=${encodeURIComponent(String(NOTIFICATIONS_DEFAULT_LIMIT))}`;
+    if (shouldLogDebugInfo()) {
+      console.info("[Notifications] Boot live endpoint:", url);
+    }
+
     try {
-      const response = await fetch(url, { cache: "no-store" });
+      const response = await fetch(url, {
+        method: "GET",
+        cache: "no-store",
+        credentials: "include",
+        headers: {
+          Accept: "application/json"
+        }
+      });
+
+      if (response.status === 404 || response.status === 501) {
+        return [];
+      }
       if (!response.ok) return null;
 
       const payload = await response.json();
@@ -310,13 +344,11 @@
       window.StreamSuitesGlobalLoader?.startLoading?.("Hydrating notifications...") || null;
 
     try {
-      for (const source of DATA_SOURCES) {
-        const list = await fetchNotificationsFrom(source);
-        if (Array.isArray(list)) {
-          state.items = list;
-          state.loaded = true;
-          return;
-        }
+      const list = await fetchNotificationsFromApi();
+      if (Array.isArray(list)) {
+        state.items = list;
+        state.loaded = true;
+        return;
       }
 
       state.items = [];
