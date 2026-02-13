@@ -25,12 +25,22 @@
   </section>
 
   <section class="ss-panel ss-analytics-map-panel">
-    <header class="ss-panel-header">
+    <header class="ss-panel-header ss-analytics-map-header">
       <div class="ss-panel-header-main">
         <h2>Global Sessions Map</h2>
         <p class="muted">Country-level request aggregates rendered on a 2D map.</p>
       </div>
-      <div class="ss-panel-header-actions">
+      <div class="ss-panel-header-actions ss-analytics-map-header-actions">
+        <div class="ss-analytics-map-header-meta" aria-live="polite">
+          <span class="ss-analytics-live-pill">
+            <span class="ss-analytics-live-dot" aria-hidden="true"></span>
+            Live
+          </span>
+          <span class="ss-analytics-map-updated-label">
+            Updated
+            <time id="analytics-map-generated-at" datetime="">--</time>
+          </span>
+        </div>
         <button
           id="analytics-map-toggle"
           class="ss-btn ss-btn-secondary ss-btn-small ss-analytics-map-toggle"
@@ -44,6 +54,20 @@
       </div>
     </header>
     <div id="analytics-map-panel-body" class="ss-panel-body ss-analytics-map-panel-body">
+      <div class="ss-analytics-map-stats-strip" aria-label="Map summary">
+        <article class="ss-analytics-map-stat-chip">
+          <span class="label">Countries plotted</span>
+          <strong id="analytics-map-country-count">0</strong>
+        </article>
+        <article class="ss-analytics-map-stat-chip">
+          <span class="label">Sessions on map</span>
+          <strong id="analytics-map-sessions">0</strong>
+        </article>
+        <article class="ss-analytics-map-stat-chip">
+          <span class="label">Top country</span>
+          <strong id="analytics-map-top-country">--</strong>
+        </article>
+      </div>
       <div class="ss-analytics-map-shell">
         <div id="analytics-world-map" class="ss-analytics-map" role="img" aria-label="Global session map"></div>
         <div id="analytics-map-feedback" class="ss-analytics-map-feedback hidden" role="status" aria-live="polite"></div>

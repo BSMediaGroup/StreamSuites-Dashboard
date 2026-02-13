@@ -121,6 +121,10 @@
     mapPanelBody: null,
     mapToggle: null,
     mapToggleLabel: null,
+    mapGeneratedAt: null,
+    mapCountryCount: null,
+    mapSessions: null,
+    mapTopCountry: null,
     mapFeedback: null,
     banner: null,
     status: null,
@@ -218,11 +222,13 @@
     if (!text) {
       el.mapFeedback.textContent = "";
       el.mapFeedback.classList.add("hidden");
+      el.mapFeedback.classList.remove("is-error");
       el.map?.classList.remove("is-error");
       return;
     }
     el.mapFeedback.textContent = text;
     el.mapFeedback.classList.remove("hidden");
+    el.mapFeedback.classList.toggle("is-error", isError);
     el.map?.classList.toggle("is-error", isError);
   }
 
@@ -269,6 +275,17 @@
       minimumFractionDigits: 1,
       maximumFractionDigits: 1
     })}%`;
+  }
+
+  function setMapHeaderTimestamp(value) {
+    if (!el.mapGeneratedAt) return;
+    el.mapGeneratedAt.textContent = formatTimestamp(value);
+    if (!value) {
+      el.mapGeneratedAt.setAttribute("datetime", "");
+      return;
+    }
+    const parsed = new Date(value);
+    el.mapGeneratedAt.setAttribute("datetime", Number.isNaN(parsed.getTime()) ? String(value) : parsed.toISOString());
   }
 
   function delay(ms) {
@@ -802,6 +819,46 @@
     );
   }
 
+  function resolveTopCountryLabel(rows) {
+    let top = null;
+    (Array.isArray(rows) ? rows : []).forEach((entry) => {
+      if (!top) {
+        top = entry;
+        return;
+      }
+      const sessions = Number(entry?.sessions ?? 0);
+      const topSessions = Number(top?.sessions ?? 0);
+      if (sessions > topSessions) {
+        top = entry;
+        return;
+      }
+      if (sessions === topSessions) {
+        const requests = Number(entry?.requests ?? 0);
+        const topRequests = Number(top?.requests ?? 0);
+        if (requests > topRequests) {
+          top = entry;
+        }
+      }
+    });
+    if (!top) return "--";
+    const code = String(top?.code || top?.country || "").trim().toUpperCase();
+    const name = String(top?.name || resolveCountryName(code) || code).trim();
+    if (!code) return name || "--";
+    return name && name.toUpperCase() !== code ? `${name} (${code})` : code;
+  }
+
+  function updateMapStatsStrip() {
+    if (el.mapCountryCount) {
+      el.mapCountryCount.textContent = formatNumber(state.countryRows.length);
+    }
+    if (el.mapSessions) {
+      el.mapSessions.textContent = formatNumber(state.countryTotals.sessions);
+    }
+    if (el.mapTopCountry) {
+      el.mapTopCountry.textContent = resolveTopCountryLabel(state.countryRows);
+    }
+  }
+
   function resolveCountrySortValue(entry, key, totals) {
     if (key === "name") {
       return `${String(entry?.name || "").toLowerCase()}|${String(entry?.code || "").toLowerCase()}`;
@@ -1005,6 +1062,7 @@
     const centroids = await loadCountryCentroids();
     state.countryRows = buildCountryRows(rows, centroids);
     state.countryTotals = computeCountryTotals(state.countryRows);
+    updateMapStatsStrip();
     if (state.activeCountryCode) {
       const exists = state.countryRows.some((entry) => entry.code === state.activeCountryCode);
       if (!exists) {
@@ -1181,6 +1239,7 @@
     if (el.generatedAt) {
       el.generatedAt.textContent = formatTimestamp(generatedAt);
     }
+    setMapHeaderTimestamp(generatedAt);
     renderSurfaces(safe?.surfaces);
   }
 
@@ -1273,6 +1332,10 @@
     el.mapPanelBody = $("analytics-map-panel-body");
     el.mapToggle = $("analytics-map-toggle");
     el.mapToggleLabel = $("analytics-map-toggle-label");
+    el.mapGeneratedAt = $("analytics-map-generated-at");
+    el.mapCountryCount = $("analytics-map-country-count");
+    el.mapSessions = $("analytics-map-sessions");
+    el.mapTopCountry = $("analytics-map-top-country");
     el.mapFeedback = $("analytics-map-feedback");
     el.banner = $("analytics-banner");
     el.status = $("analytics-status");
