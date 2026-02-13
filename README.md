@@ -683,6 +683,9 @@ StreamSuites-Dashboard/
 │   └── TIERS.md
 ├── runtime
 │   ├── exports
+│   │   ├── admin
+│   │   │   └── donations
+│   │   │       └── donations.json
 │   │   ├── changelog.json
 │   │   ├── changelog.runtime.json
 │   │   └── version.json
@@ -707,6 +710,11 @@ StreamSuites-Dashboard/
 │   ├── system.schema.json
 │   ├── tiers.schema.json
 │   └── triggers.schema.json
+├── shared
+│   └── state
+│       ├── telemetry
+│       │   └── auth_events.json
+│       └── admin_activity.json
 ├── .gitignore
 ├── COMMERCIAL-LICENSE-NOTICE.md
 ├── DASHBOARD_AUDIT_REPORT.md

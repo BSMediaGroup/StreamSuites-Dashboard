@@ -1,0 +1,7 @@
+{
+  "success": false,
+  "deprecated": true,
+  "error": "Moved",
+  "moved_to": "https://api.streamsuites.app/api/admin/donations",
+  "note": "This path no longer serves live data. Use the API as the canonical source of truth."
+}
