@@ -277,6 +277,7 @@ body.header-hidden #app-header {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
+  z-index: 20;
 }
 
 .streamsuites-auth-avatar {
@@ -436,7 +437,10 @@ body.header-hidden #app-header {
 }
 
 .ss-user-menu {
-  position: fixed;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  left: auto;
   z-index: 1400;
   width: min(260px, calc(100vw - 24px));
   border-radius: 14px;
@@ -459,7 +463,7 @@ body.header-hidden #app-header {
 }
 
 .ss-user-menu[data-placement="top"] {
-  transform-origin: bottom right;
+  transform-origin: top right;
 }
 
 .ss-user-menu[data-placement="bottom"] {

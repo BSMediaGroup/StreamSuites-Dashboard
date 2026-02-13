@@ -1239,8 +1239,7 @@ const adminUserMenu = {
   root: null,
   toggle: null,
   menu: null,
-  isOpen: false,
-  raf: 0
+  isOpen: false
 };
 
 function resolveAdminMenuThemeToggle() {
@@ -1274,52 +1273,6 @@ function navigateToDashboardView(viewName) {
   window.location.hash = `#${normalized}`;
 }
 
-function scheduleAdminUserMenuPosition() {
-  if (!adminUserMenu.isOpen || !adminUserMenu.menu || !adminUserMenu.toggle) return;
-  if (adminUserMenu.raf) {
-    window.cancelAnimationFrame(adminUserMenu.raf);
-  }
-
-  adminUserMenu.raf = window.requestAnimationFrame(() => {
-    adminUserMenu.raf = 0;
-    if (!adminUserMenu.isOpen || !adminUserMenu.menu || !adminUserMenu.toggle) return;
-
-    const menuEl = adminUserMenu.menu;
-    const toggleRect = adminUserMenu.toggle.getBoundingClientRect();
-    const margin = 10;
-    const gap = 8;
-
-    menuEl.style.maxHeight = `${Math.max(180, window.innerHeight - margin * 2)}px`;
-    const menuWidth = menuEl.offsetWidth || 260;
-    const menuHeight = menuEl.offsetHeight || 260;
-
-    let left = toggleRect.right - menuWidth;
-    left = Math.min(left, window.innerWidth - menuWidth - margin);
-    left = Math.max(margin, left);
-
-    const belowTop = toggleRect.bottom + gap;
-    const aboveTop = toggleRect.top - menuHeight - gap;
-    const spaceBelow = window.innerHeight - belowTop - margin;
-    const spaceAbove = toggleRect.top - gap - margin;
-
-    let top = belowTop;
-    let placement = "bottom";
-    if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
-      top = Math.max(margin, aboveTop);
-      placement = "top";
-    }
-
-    if (top + menuHeight > window.innerHeight - margin) {
-      top = Math.max(margin, window.innerHeight - menuHeight - margin);
-    }
-
-    menuEl.dataset.placement = placement;
-    menuEl.style.left = `${Math.round(left)}px`;
-    menuEl.style.top = `${Math.round(top)}px`;
-    menuEl.style.right = "auto";
-  });
-}
-
 function setAdminUserMenuOpen(nextOpen) {
   if (!adminUserMenu.root || !adminUserMenu.toggle || !adminUserMenu.menu) return;
   const shouldOpen = Boolean(nextOpen);
@@ -1329,21 +1282,6 @@ function setAdminUserMenuOpen(nextOpen) {
   adminUserMenu.root.classList.toggle("is-open", shouldOpen);
   adminUserMenu.toggle.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
   adminUserMenu.menu.classList.toggle("hidden", !shouldOpen);
-
-  if (!shouldOpen) {
-    if (adminUserMenu.raf) {
-      window.cancelAnimationFrame(adminUserMenu.raf);
-      adminUserMenu.raf = 0;
-    }
-    return;
-  }
-
-  adminUserMenu.menu.style.visibility = "hidden";
-  scheduleAdminUserMenuPosition();
-  window.requestAnimationFrame(() => {
-    if (!adminUserMenu.isOpen || !adminUserMenu.menu) return;
-    adminUserMenu.menu.style.visibility = "";
-  });
 }
 
 function initAdminUserMenu() {
@@ -1416,14 +1354,6 @@ function initAdminUserMenu() {
     setAdminUserMenuOpen(false);
     adminUserMenu.toggle?.focus();
   });
-
-  window.addEventListener("resize", () => {
-    scheduleAdminUserMenuPosition();
-  }, { passive: true });
-
-  window.addEventListener("scroll", () => {
-    scheduleAdminUserMenuPosition();
-  }, { passive: true, capture: true });
 }
 
 function updateNavActiveState(viewName) {
