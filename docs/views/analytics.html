@@ -1,0 +1,75 @@
+<!-- ========================================================= -->
+<!-- StreamSuites - Analytics (scaffold) -->
+<!-- ========================================================= -->
+
+<header class="ss-header">
+  <div class="ss-header-left">
+    <h1 class="ss-title">Analytics</h1>
+    <span class="ss-subtitle">Privacy-safe traffic snapshot (aggregated)</span>
+  </div>
+</header>
+
+<main class="ss-main ss-analytics-main">
+  <section class="ss-panel ss-analytics-map-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Global Sessions Map</h2>
+        <p class="muted">2D world map preview with placeholder aggregation points.</p>
+      </div>
+    </header>
+    <div class="ss-panel-body">
+      <div class="ss-analytics-map-shell">
+        <div id="analytics-world-map" class="ss-analytics-map" role="img" aria-label="Global session map"></div>
+        <div id="analytics-map-feedback" class="ss-analytics-map-feedback hidden" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="ss-panel ss-analytics-side-panel ss-analytics-referrers" aria-labelledby="analytics-referrers-title">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2 id="analytics-referrers-title">Top Referrers</h2>
+        <p class="muted">Placeholder ranking for UI validation.</p>
+      </div>
+    </header>
+    <div class="ss-panel-body ss-analytics-side-body">
+      <ol class="ss-analytics-list">
+        <li><span>direct / none</span><strong>42%</strong></li>
+        <li><span>youtube.com</span><strong>21%</strong></li>
+        <li><span>x.com</span><strong>14%</strong></li>
+        <li><span>discord.com</span><strong>9%</strong></li>
+        <li><span>search</span><strong>7%</strong></li>
+        <li><span>other</span><strong>7%</strong></li>
+      </ol>
+    </div>
+  </aside>
+
+  <aside class="ss-panel ss-analytics-side-panel ss-analytics-sessions" aria-labelledby="analytics-sessions-title">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2 id="analytics-sessions-title">Recent Sessions</h2>
+        <p class="muted">Snapshot placeholders before runtime hydration wiring.</p>
+      </div>
+    </header>
+    <div class="ss-panel-body ss-analytics-side-body">
+      <div class="ss-analytics-stats">
+        <article class="ss-analytics-stat">
+          <span class="label">Last 30m</span>
+          <strong>1,284</strong>
+        </article>
+        <article class="ss-analytics-stat">
+          <span class="label">Unique countries</span>
+          <strong>19</strong>
+        </article>
+        <article class="ss-analytics-stat">
+          <span class="label">Avg session</span>
+          <strong>04m 18s</strong>
+        </article>
+        <article class="ss-analytics-stat">
+          <span class="label">Bounce rate</span>
+          <strong>28%</strong>
+        </article>
+      </div>
+    </div>
+  </aside>
+</main>

@@ -209,11 +209,16 @@
   <!-- ============================= -->
   <!-- Core Styles -->
   <!-- ============================= -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
+  />
   <link rel="stylesheet" href="/css/base.css" />
   <link rel="stylesheet" href="/css/theme-dark.css" />
   <link rel="stylesheet" href="/css/layout.css" />
   <link rel="stylesheet" href="/css/components.css" />
   <link rel="stylesheet" href="/css/updates.css" />
+  <script defer src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 </head>
 
 <body>
@@ -360,6 +365,7 @@
           <li data-view="audit">Audit Logs</li>
           <li data-view="approvals">Approvals</li>
           <li data-view="api-usage">API Usage</li>
+          <li data-view="analytics">Analytics</li>
           <li data-view="triggers">Chat Triggers</li>
           <li data-view="jobs">Jobs</li>
           <li data-view="notifications">Notifications</li>
@@ -632,6 +638,7 @@
         "js/approvals.js",
         "js/audit.js",
         "js/api-usage.js",
+        "js/analytics.js",
         "js/data-signals.js",
         "js/bots.js",
         "js/overview.js",

@@ -496,6 +496,7 @@ StreamSuites-Dashboard/
 │   │   │   └── versioning.js
 │   │   ├── about.js
 │   │   ├── accounts.js
+│   │   ├── analytics.js
 │   │   ├── admin-auth.js
 │   │   ├── admin-gate.js
 │   │   ├── admin-login.js
@@ -638,6 +639,7 @@ StreamSuites-Dashboard/
 │   │   │   └── youtube.html
 │   │   ├── about.html
 │   │   ├── accounts.html
+│   │   ├── analytics.html
 │   │   ├── api-usage.html
 │   │   ├── approvals.html
 │   │   ├── audit.html
