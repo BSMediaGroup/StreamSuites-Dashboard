@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-02-13T08:37:30.678834Z",
+  "generated_at": "2026-02-13T10:58:20.191548Z",
   "events": [
     {
       "timestamp": "2026-01-22T05:45:05Z",
@@ -498,7 +498,18 @@
       "result": "allowed"
     },
     {
-      "timestamp": "2026-02-13T08:36:59.272208Z",
+      "timestamp": "2026-02-13T10:16:55Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:7XaVoy7 result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:7XaVoy7",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-02-13T10:56:48.628768Z",
       "source": "system",
       "severity": "info",
       "message": "Runtime boot sequence started"
