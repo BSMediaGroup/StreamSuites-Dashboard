@@ -1276,6 +1276,26 @@ body.header-hidden #app {
   text-transform: uppercase;
 }
 
+#app-nav li.nav-group-label {
+  position: relative;
+  pointer-events: none;
+  margin-top: 10px;
+  letter-spacing: 0.12em;
+}
+
+#app-nav li.nav-group-label:first-child {
+  margin-top: 0;
+}
+
+#app-nav li.nav-group-label:not(:first-child)::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
 #app-nav .nav-overflow {
   display: none !important;
 }

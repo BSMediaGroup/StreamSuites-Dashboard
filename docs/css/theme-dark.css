@@ -452,6 +452,18 @@ tr:hover td {
   box-shadow: inset 2px 0 0 var(--link-accent);
 }
 
+#app-nav li.nav-group-label,
+#app-nav li.nav-group-label:hover,
+#app-nav li.nav-group-label.active {
+  color: rgba(255, 255, 255, 0.52);
+  background: transparent;
+  box-shadow: none;
+}
+
+#app-nav li.nav-group-label {
+  border-bottom: 0;
+}
+
 #app-header {
   background:
     linear-gradient(
