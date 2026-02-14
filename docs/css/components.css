@@ -1554,6 +1554,8 @@ body.ss-col-resizing-active {
   gap: 14px;
   scrollbar-width: thin;
   scrollbar-color: rgba(148, 162, 184, 0.52) rgba(7, 10, 16, 0.75);
+  align-items: start;
+  align-content: start;
 }
 
 .accounts-details-content::-webkit-scrollbar {
