@@ -256,11 +256,43 @@
       return baseBottom;
     };
 
+    const readBaseRight = () => {
+      const inlineRight = root.style.right;
+      root.style.right = "";
+      const baseRight = parsePixels(window.getComputedStyle(root).right, 10);
+      root.style.right = inlineRight;
+      return baseRight;
+    };
+
+    const getScrollbarInset = () => {
+      const viewportWidth = window.innerWidth || 0;
+      const docClientWidth = document.documentElement?.clientWidth || viewportWidth;
+      const documentScrollbar = Math.max(0, viewportWidth - docClientWidth);
+
+      const appMain = document.getElementById("app-main");
+      let appMainScrollbar = 0;
+      if (appMain instanceof HTMLElement) {
+        const style = window.getComputedStyle(appMain);
+        const allowsScroll = /(auto|scroll|overlay)/i.test(style.overflowY || "");
+        const isScrollable = appMain.scrollHeight > appMain.clientHeight + 1;
+        if (allowsScroll && isScrollable) {
+          appMainScrollbar = Math.max(0, appMain.offsetWidth - appMain.clientWidth);
+        }
+      }
+
+      return Math.max(documentScrollbar, appMainScrollbar);
+    };
+
     const getFooterEdge = () =>
       isVisibleElement(observedFooter) ? observedFooter : resolveFooterEdgeTarget();
 
     const applyFooterOffset = () => {
       footerOffsetRaf = 0;
+
+      const baseRight = readBaseRight();
+      const scrollbarInset = getScrollbarInset();
+      const scrollbarClearance = scrollbarInset > 0 ? scrollbarInset + 4 : 0;
+      root.style.right = scrollbarClearance > 0 ? `${Math.ceil(baseRight + scrollbarClearance)}px` : "";
 
       if (hasFooterSlot) {
         root.style.bottom = "";
@@ -310,7 +342,10 @@
     if (!hasFooterSlot) {
       bindFooterEdge();
       if ("MutationObserver" in window) {
-        const mutationObserver = new MutationObserver(bindFooterEdge);
+        const mutationObserver = new MutationObserver(() => {
+          bindFooterEdge();
+          requestFooterOffsetUpdate();
+        });
         mutationObserver.observe(document.documentElement, {
           childList: true,
           subtree: true,
@@ -367,6 +402,7 @@
         const response = await fetch(API_URL, {
           signal: controller.signal,
           cache: "no-store",
+          timeoutMs: 0,
           headers: { Accept: "application/json" },
         });
         if (!response.ok) throw new Error("status fetch failed");
