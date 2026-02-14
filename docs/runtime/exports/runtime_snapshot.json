@@ -1,11 +1,11 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-02-13T15:35:00.835703Z",
-  "heartbeat": "2026-02-13T15:35:00.835703Z",
+  "generated_at": "2026-02-14T13:56:42.962410Z",
+  "heartbeat": "2026-02-14T13:56:42.962410Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.4.0-alpha",
-    "build": "2026.02.13+009"
+    "build": "2026.02.14+001"
   },
   "system": {
     "platform_polling_enabled": {
@@ -129,7 +129,7 @@
       "state": "paused",
       "status": "paused",
       "paused_reason": "Platform ingestion paused",
-      "last_heartbeat": "2026-02-13T15:35:00.194133Z",
+      "last_heartbeat": "2026-02-14T13:56:42.349277Z",
       "last_success_ts": null,
       "last_event_ts": null,
       "error": null,
@@ -145,14 +145,14 @@
     {
       "name": "twitch",
       "platform": "twitch",
-      "enabled": false,
+      "enabled": true,
       "paused": false,
-      "telemetry_enabled": false,
-      "state": "disabled",
-      "status": "disabled",
+      "telemetry_enabled": true,
+      "state": "active",
+      "status": "running",
       "paused_reason": null,
-      "last_heartbeat": null,
-      "last_success_ts": null,
+      "last_heartbeat": "2026-02-14T13:56:42.349277Z",
+      "last_success_ts": "2026-02-14T13:56:36.107106Z",
       "last_event_ts": null,
       "error": null,
       "counters": {
@@ -222,7 +222,7 @@
         "twitter": true,
         "discord": true
       },
-      "last_heartbeat": "2026-02-13T15:35:00.194133Z",
+      "last_heartbeat": "2026-02-14T13:56:42.349277Z",
       "error": null
     }
   ],

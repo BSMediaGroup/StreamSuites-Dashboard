@@ -1,5 +1,13 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-02-13T15:35:00.855844Z",
-  "errors": []
+  "generated_at": "2026-02-14T13:56:42.976831Z",
+  "errors": [
+    {
+      "timestamp": "2026-02-14T13:56:33.539503Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "Twitch connection closed; reconnecting",
+      "source": "twitch"
+    }
+  ]
 }

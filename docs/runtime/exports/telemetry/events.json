@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-02-13T15:35:00.855844Z",
+  "generated_at": "2026-02-14T13:56:42.976831Z",
   "events": [
     {
       "timestamp": "2026-01-22T05:45:05Z",
@@ -575,10 +575,88 @@
       "result": "success"
     },
     {
-      "timestamp": "2026-02-13T15:34:39.674855Z",
+      "timestamp": "2026-02-13T17:05:31Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
+      "event_type": "session_issued",
+      "email_type": "github",
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-02-13T17:09:23Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
+      "event_type": "session_issued",
+      "email_type": "github",
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-02-14T07:35:52Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
+      "event_type": "session_issued",
+      "email_type": "github",
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-02-14T07:46:27Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=google user=user_code:7lPBEiA result=success",
+      "event_type": "session_issued",
+      "email_type": "google",
+      "user_identifier": "user_code:7lPBEiA",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-02-14T07:50:47Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:7lPBEiA result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:7lPBEiA",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-02-14T07:51:20Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
+      "event_type": "session_issued",
+      "email_type": "github",
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-02-14T13:56:21.778839Z",
       "source": "system",
       "severity": "info",
       "message": "Runtime boot sequence started"
+    },
+    {
+      "timestamp": "2026-02-14T13:56:21.859834Z",
+      "source": "twitch",
+      "severity": "info",
+      "message": "Platform worker started"
+    },
+    {
+      "timestamp": "2026-02-14T13:56:33.539503Z",
+      "source": "twitch",
+      "severity": "error",
+      "message": "Twitch connection closed; reconnecting"
     }
   ]
 }
