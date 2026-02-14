@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-02-14T14:02:14.610007Z",
+  "generated_at": "2026-02-14T15:08:12.055070Z",
   "events": [
     {
       "timestamp": "2026-01-22T05:45:05Z",
@@ -641,82 +641,10 @@
       "result": "success"
     },
     {
-      "timestamp": "2026-02-14T13:56:21.778839Z",
+      "timestamp": "2026-02-14T15:05:51.347243Z",
       "source": "system",
       "severity": "info",
       "message": "Runtime boot sequence started"
-    },
-    {
-      "timestamp": "2026-02-14T13:56:21.859834Z",
-      "source": "twitch",
-      "severity": "info",
-      "message": "Platform worker started"
-    },
-    {
-      "timestamp": "2026-02-14T13:56:33.539503Z",
-      "source": "twitch",
-      "severity": "error",
-      "message": "Twitch connection closed; reconnecting"
-    },
-    {
-      "timestamp": "2026-02-14T13:56:46.514462Z",
-      "source": "twitch",
-      "severity": "error",
-      "message": "Twitch connection closed; reconnecting"
-    },
-    {
-      "timestamp": "2026-02-14T13:57:01.503731Z",
-      "source": "twitch",
-      "severity": "error",
-      "message": "Twitch connection closed; reconnecting"
-    },
-    {
-      "timestamp": "2026-02-14T13:57:20.479091Z",
-      "source": "twitch",
-      "severity": "error",
-      "message": "Twitch connection closed; reconnecting"
-    },
-    {
-      "timestamp": "2026-02-14T13:57:47.610741Z",
-      "source": "twitch",
-      "severity": "error",
-      "message": "Twitch connection closed; reconnecting"
-    },
-    {
-      "timestamp": "2026-02-14T13:58:28.736730Z",
-      "source": "twitch",
-      "severity": "error",
-      "message": "Twitch connection closed; reconnecting"
-    },
-    {
-      "timestamp": "2026-02-14T13:59:09.878723Z",
-      "source": "twitch",
-      "severity": "error",
-      "message": "Twitch connection closed; reconnecting"
-    },
-    {
-      "timestamp": "2026-02-14T13:59:51.002695Z",
-      "source": "twitch",
-      "severity": "error",
-      "message": "Twitch connection closed; reconnecting"
-    },
-    {
-      "timestamp": "2026-02-14T14:00:32.146970Z",
-      "source": "twitch",
-      "severity": "error",
-      "message": "Twitch connection closed; reconnecting"
-    },
-    {
-      "timestamp": "2026-02-14T14:01:13.308626Z",
-      "source": "twitch",
-      "severity": "error",
-      "message": "Twitch connection closed; reconnecting"
-    },
-    {
-      "timestamp": "2026-02-14T14:01:54.450855Z",
-      "source": "twitch",
-      "severity": "error",
-      "message": "Twitch connection closed; reconnecting"
     }
   ]
 }
