@@ -44,12 +44,17 @@
     const footer = document.getElementById("app-footer");
     if (!footer) return;
 
-    const center = footer.querySelector(".footer-center") || footer;
-    const versionEl = ensureElement(center, "#footer-version", "span", "footer-version");
+    const metaGroup =
+      footer.querySelector("[data-footer-meta]") ||
+      footer.querySelector(".footer-left") ||
+      footer.querySelector(".footer-center") ||
+      footer;
+
+    const versionEl = ensureElement(metaGroup, "#footer-version", "span", "footer-version");
     versionEl.id = "footer-version";
     versionEl.textContent = meta.versionText;
 
-    const copyrightEl = ensureElement(center, "#footer-copyright", "a", "footer-copyright");
+    const copyrightEl = ensureElement(metaGroup, "#footer-copyright", "a", "footer-copyright");
     copyrightEl.id = "footer-copyright";
     if (meta.copyrightText) {
       copyrightEl.textContent = meta.copyrightText;
