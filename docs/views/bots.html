@@ -77,24 +77,9 @@
               <label for="bots-manual-platform">Platform</label>
               <select id="bots-manual-platform" name="platform" required>
                 <option value="">Select platform</option>
-                <option value="twitch">Twitch</option>
-                <option value="kick">Kick</option>
-                <option value="youtube">YouTube</option>
-                <option value="rumble">Rumble</option>
-                <option value="pilled">Pilled</option>
               </select>
             </div>
-            <div class="ss-form-row">
-              <label for="bots-manual-target">Target identifier</label>
-              <input
-                id="bots-manual-target"
-                name="target_identifier"
-                type="text"
-                autocomplete="off"
-                placeholder="Channel name or stream reference"
-                required
-              />
-            </div>
+            <div id="bots-manual-platform-fields" class="ss-bots-manual-platform-fields"></div>
           </div>
           <div id="bots-manual-error" class="ss-alert ss-alert-danger hidden"></div>
           <div class="ss-bots-manual-actions">

@@ -15,12 +15,72 @@
     rumble: "Rumble",
     pilled: "Pilled"
   };
+  const DEPLOY_PLATFORM_SCHEMA_FALLBACK = {
+    twitch: {
+      platform: "twitch",
+      label: "Twitch",
+      deployEnabled: true,
+      staged: false,
+      blockedReason: "",
+      targetLabel: "Target Channel Login",
+      targetPlaceholder: "e.g. danclancy",
+      targetHelp: "Twitch IRC channel login (without #).",
+      extraHelp:
+        "Bot nickname and OAuth token come from runtime config/secrets. If missing, runtime returns a deploy error."
+    },
+    youtube: {
+      platform: "youtube",
+      label: "YouTube",
+      deployEnabled: true,
+      staged: false,
+      blockedReason: "",
+      targetLabel: "Live Chat ID",
+      targetPlaceholder: "e.g. Cg0KC...",
+      targetHelp:
+        "Live Chat ID required by runtime manual deploy for YouTube chat workers.",
+      extraHelp: ""
+    },
+    rumble: {
+      platform: "rumble",
+      label: "Rumble",
+      deployEnabled: true,
+      staged: false,
+      blockedReason: "",
+      targetLabel: "Stream Watch URL",
+      targetPlaceholder: "https://rumble.com/...",
+      targetHelp: "Rumble stream watch URL consumed by runtime manual deploy.",
+      extraHelp: ""
+    },
+    kick: {
+      platform: "kick",
+      label: "Kick",
+      deployEnabled: true,
+      staged: false,
+      blockedReason: "",
+      targetLabel: "Channel Login",
+      targetPlaceholder: "e.g. creatorname",
+      targetHelp: "Kick channel login used for runtime manual deploy.",
+      extraHelp: ""
+    },
+    pilled: {
+      platform: "pilled",
+      label: "Pilled",
+      deployEnabled: false,
+      staged: true,
+      blockedReason: "Pilled manual deploy is staged/disabled in runtime.",
+      targetLabel: "",
+      targetPlaceholder: "",
+      targetHelp: "",
+      extraHelp: ""
+    }
+  };
 
   const state = {
     pollHandle: null,
     tickHandle: null,
     lastPayload: null,
     lastRuntimeSnapshot: null,
+    deployPlatformSchemas: Object.create(null),
     platformSummary: Object.create(null),
     lastReceivedAt: null,
     sourceUrl: null,
@@ -33,7 +93,8 @@
     manualFormOpen: false,
     manualDeploy: {
       pending: false,
-      error: ""
+      error: "",
+      renderedPlatform: ""
     }
   };
 
@@ -50,6 +111,7 @@
     manualCreator: null,
     manualCreatorList: null,
     manualPlatform: null,
+    manualPlatformFields: null,
     manualTarget: null,
     manualSubmit: null,
     manualCancel: null,
@@ -94,15 +156,6 @@
     return PLATFORM_DISPLAY[key] || key || "-";
   }
 
-  function listPlatformsFromConfig(config) {
-    if (!config || typeof config !== "object") return [];
-    const platforms = config.platforms;
-    if (!platforms || typeof platforms !== "object") return [];
-    return Object.keys(platforms)
-      .map((platform) => normalizePlatformKey(platform))
-      .filter(Boolean);
-  }
-
   function sortPlatformKeys(keys) {
     return Array.from(new Set(keys.filter(Boolean))).sort((a, b) =>
       a.localeCompare(b)
@@ -111,6 +164,20 @@
 
   function parseBoolean(value) {
     if (value === true || value === false) return value;
+    return null;
+  }
+
+  function parseBooleanLike(value) {
+    if (value === true || value === false) return value;
+    if (typeof value !== "string") return null;
+    const normalized = value.trim().toLowerCase();
+    if (!normalized) return null;
+    if (["1", "true", "yes", "on", "enabled", "supported"].includes(normalized)) {
+      return true;
+    }
+    if (["0", "false", "no", "off", "disabled", "unsupported"].includes(normalized)) {
+      return false;
+    }
     return null;
   }
 
@@ -196,6 +263,14 @@
       payload?.platforms_supported ||
       payload?.platformsSupported ||
       null;
+    const platformCapabilitiesRaw =
+      payload?.platform_capabilities ||
+      payload?.platformCapabilities ||
+      payload?.deploy_platforms ||
+      payload?.deployPlatforms ||
+      payload?.manual_deploy_platforms ||
+      payload?.manualDeployPlatforms ||
+      null;
     const supportedPlatforms = Array.isArray(supportedPlatformsRaw)
       ? supportedPlatformsRaw
       : supportedPlatformsRaw && typeof supportedPlatformsRaw === "object"
@@ -215,8 +290,148 @@
       supportedPlatforms: sortPlatformKeys(
         supportedPlatforms.map((platform) => normalizePlatformKey(platform))
       ),
+      platformCapabilitiesRaw,
       bots
     };
+  }
+
+  function defaultDeploySchema(platform) {
+    const key = normalizePlatformKey(platform);
+    if (!key) return null;
+    const fallback = DEPLOY_PLATFORM_SCHEMA_FALLBACK[key];
+    if (fallback) {
+      return { ...fallback };
+    }
+    return {
+      platform: key,
+      label: platformDisplayName(key),
+      deployEnabled: true,
+      staged: false,
+      blockedReason: "",
+      targetLabel: "Target Identifier",
+      targetPlaceholder: "Target identifier",
+      targetHelp: "Identifier consumed by runtime manual deploy endpoint.",
+      extraHelp: ""
+    };
+  }
+
+  function buildFallbackDeploySchemas() {
+    const schemas = Object.create(null);
+    Object.keys(DEPLOY_PLATFORM_SCHEMA_FALLBACK).forEach((platform) => {
+      schemas[platform] = defaultDeploySchema(platform);
+    });
+    return schemas;
+  }
+
+  function normalizeDeploySchemaEntry(entry, platformHint = "") {
+    const raw = entry && typeof entry === "object" ? entry : {};
+    const platform = normalizePlatformKey(
+      platformHint || raw.platform || raw.id || raw.name
+    );
+    if (!platform) return null;
+
+    const base = defaultDeploySchema(platform);
+    if (!base) return null;
+    const explicitDeploy = parseBooleanLike(
+      raw.manual_deploy ??
+        raw.manualDeploy ??
+        raw.manual_deploy_enabled ??
+        raw.manualDeployEnabled ??
+        raw.deploy_enabled ??
+        raw.deployEnabled ??
+        raw.supports_manual_deploy ??
+        raw.supportsManualDeploy ??
+        raw.supported
+    );
+    const explicitStaged = parseBooleanLike(
+      raw.staged ?? raw.is_staged ?? raw.planned ?? raw.disabled
+    );
+    const deployEnabled = explicitDeploy === null ? base.deployEnabled : explicitDeploy;
+    const staged = explicitStaged === null ? base.staged || !deployEnabled : explicitStaged;
+    const blockedReason =
+      String(
+        raw.disabled_reason ||
+          raw.disabledReason ||
+          raw.reason ||
+          raw.note ||
+          (deployEnabled ? "" : base.blockedReason || "Platform deploy is disabled.")
+      ).trim();
+
+    return {
+      ...base,
+      platform,
+      label: String(raw.label || raw.display_name || raw.displayName || base.label).trim() || base.label,
+      deployEnabled,
+      staged,
+      blockedReason,
+      targetLabel:
+        String(raw.target_label || raw.targetLabel || base.targetLabel).trim() || base.targetLabel,
+      targetPlaceholder:
+        String(raw.target_placeholder || raw.targetPlaceholder || base.targetPlaceholder).trim() ||
+        base.targetPlaceholder,
+      targetHelp: String(raw.target_help || raw.targetHelp || base.targetHelp).trim() || base.targetHelp,
+      extraHelp: String(raw.extra_help || raw.extraHelp || base.extraHelp).trim() || base.extraHelp
+    };
+  }
+
+  function resolveDeployPlatformSchemas(normalizedPayload) {
+    const schemas = Object.create(null);
+    const rawCapabilities = normalizedPayload?.platformCapabilitiesRaw;
+    if (Array.isArray(rawCapabilities)) {
+      rawCapabilities.forEach((entry) => {
+        const normalized = normalizeDeploySchemaEntry(entry);
+        if (!normalized) return;
+        schemas[normalized.platform] = normalized;
+      });
+    } else if (rawCapabilities && typeof rawCapabilities === "object") {
+      Object.keys(rawCapabilities).forEach((platformKey) => {
+        const entry = rawCapabilities[platformKey];
+        if (entry && typeof entry === "object") {
+          const normalized = normalizeDeploySchemaEntry(entry, platformKey);
+          if (!normalized) return;
+          schemas[normalized.platform] = normalized;
+          return;
+        }
+        if (typeof entry === "boolean") {
+          const base = defaultDeploySchema(platformKey);
+          if (!base) return;
+          schemas[base.platform] = {
+            ...base,
+            deployEnabled: entry,
+            staged: !entry || base.staged,
+            blockedReason:
+              entry ? "" : base.blockedReason || "Platform deploy is disabled."
+          };
+        }
+      });
+    }
+
+    const supportedPlatforms = Array.isArray(normalizedPayload?.supportedPlatforms)
+      ? normalizedPayload.supportedPlatforms
+      : [];
+    supportedPlatforms.forEach((platform) => {
+      const key = normalizePlatformKey(platform);
+      if (!key) return;
+      const base = schemas[key] || defaultDeploySchema(key);
+      if (!base) return;
+      schemas[key] = {
+        ...base,
+        deployEnabled: true,
+        staged: false,
+        blockedReason: ""
+      };
+    });
+
+    if (Object.keys(schemas).length > 0) {
+      return schemas;
+    }
+    return buildFallbackDeploySchemas();
+  }
+
+  function getDeployPlatformSchema(platform) {
+    const key = normalizePlatformKey(platform);
+    if (!key) return null;
+    return state.deployPlatformSchemas?.[key] || null;
   }
 
   function statusTone(status) {
@@ -343,40 +558,38 @@
     return normalized;
   }
 
-  function buildPlatformSummary(normalizedPayload, runtimeSnapshot, platformConfig) {
+  function buildPlatformSummary(runtimeSnapshot, deployPlatformSchemas) {
     const runtimePlatforms = normalizeRuntimePlatforms(runtimeSnapshot);
-    const payloadSupported = Array.isArray(normalizedPayload?.supportedPlatforms)
-      ? normalizedPayload.supportedPlatforms
-      : [];
-    const keys = new Set(
-      payloadSupported.map((platform) => normalizePlatformKey(platform)).filter(Boolean)
-    );
-    const lockToRuntimeSupported = keys.size > 0;
-    if (!lockToRuntimeSupported) {
-      listPlatformsFromConfig(platformConfig).forEach((platform) => keys.add(platform));
-      Object.keys(runtimePlatforms).forEach((platform) => keys.add(platform));
-      (normalizedPayload?.bots || []).forEach((bot) => {
-        const platform = normalizePlatformKey(bot?.platform);
-        if (platform) keys.add(platform);
-      });
-    }
+    const keys = sortPlatformKeys(Object.keys(deployPlatformSchemas || {}));
 
     const summary = Object.create(null);
-    sortPlatformKeys(Array.from(keys)).forEach((platform) => {
+    keys.forEach((platform) => {
+      const schema = deployPlatformSchemas?.[platform] || null;
       const runtime = runtimePlatforms[platform] || null;
-      const availability = runtime?.availability || "unavailable";
-      const reason =
-        runtime?.paused
-          ? runtime.pausedReason || "Paused by runtime control."
-          : availability === "unavailable"
-            ? "No active runtime availability reported."
-            : "Runtime available.";
+      const deployEnabled = schema?.deployEnabled === true;
+      let availability = "unavailable";
+      let reason = "No active runtime availability reported.";
+      if (!deployEnabled) {
+        availability = "staged";
+        reason = schema?.blockedReason || "Staged/disabled for runtime manual deploy.";
+      } else if (runtime?.paused) {
+        availability = "paused";
+        reason = runtime.pausedReason || "Paused by runtime control.";
+      } else if (runtime?.availability === "active") {
+        availability = "active";
+        reason = "Runtime available.";
+      } else if (runtime?.error) {
+        availability = "unavailable";
+        reason = runtime.error;
+      }
 
       summary[platform] = {
         platform,
-        label: runtime?.label || platformDisplayName(platform),
+        label: schema?.label || runtime?.label || platformDisplayName(platform),
+        deployEnabled,
+        staged: schema?.staged === true || !deployEnabled,
         availability,
-        status: runtime?.status || "unknown",
+        status: !deployEnabled ? "staged" : runtime?.status || "unknown",
         paused: runtime?.paused === true,
         pausedReason: runtime?.pausedReason || "",
         reason
@@ -409,12 +622,16 @@
             ? "is-paused"
             : availability === "active"
               ? "is-active"
+              : availability === "staged"
+                ? "is-staged"
               : "is-unavailable";
         const badgeLabel =
           availability === "paused"
             ? "Paused"
             : availability === "active"
               ? "Active"
+              : availability === "staged"
+                ? "Staged/Disabled"
               : "Unavailable";
         return `
           <article class="ss-bots-platform-chip ${stateClass}">
@@ -429,10 +646,13 @@
     if (el.platformsStatus) {
       const pausedCount = entries.filter((entry) => entry.availability === "paused").length;
       const activeCount = entries.filter((entry) => entry.availability === "active").length;
+      const stagedCount = entries.filter((entry) => entry.availability === "staged").length;
       const unavailableCount = entries.filter(
         (entry) => entry.availability === "unavailable"
       ).length;
-      el.platformsStatus.textContent = `Active ${activeCount} | Paused ${pausedCount} | Unavailable ${unavailableCount}`;
+      el.platformsStatus.textContent =
+        `Active ${activeCount} | Paused ${pausedCount} | ` +
+        `Unavailable ${unavailableCount} | Staged ${stagedCount}`;
     }
   }
 
@@ -440,10 +660,20 @@
     const creatorId = String(bot?.creator_id || "");
     const platform = String(bot?.platform || "");
     const ui = getRowUi(creatorId, platform);
+    const deploySchema = getDeployPlatformSchema(platform);
+    const deploySupported = deploySchema?.deployEnabled === true;
     const runtimeOffline = !isRuntimeAvailable();
     const runtimePaused = platformState?.paused === true;
-    const attachDisabled = ui.pending || runtimeOffline || runtimePaused || !canAttach(bot);
-    const detachDisabled = ui.pending || runtimeOffline || !canDetach(bot);
+    const deployBlockedMessage = !deploySupported
+      ? deploySchema?.blockedReason || "Manual deploy is unavailable for this platform."
+      : "";
+    const attachDisabled =
+      ui.pending ||
+      runtimeOffline ||
+      runtimePaused ||
+      !deploySupported ||
+      !canAttach(bot);
+    const detachDisabled = ui.pending || runtimeOffline || !deploySupported || !canDetach(bot);
     const attachLabel =
       ui.pending && ui.pendingAction === "attach" ? "Deploying..." : "Manual Deploy";
     const detachLabel = ui.pending && ui.pendingAction === "detach" ? "Detaching..." : "Detach";
@@ -478,6 +708,9 @@
           : ""}
         ${runtimePaused
           ? `<div class="ss-bot-actions-row-note">${escapeHtml(`Paused: ${pausedMessage}`)}</div>`
+          : ""}
+        ${deployBlockedMessage
+          ? `<div class="ss-bot-actions-row-note">${escapeHtml(deployBlockedMessage)}</div>`
           : ""}
         <div class="ss-bot-row-error ${rowError ? "has-error" : ""}">${escapeHtml(
           rowError || "-"
@@ -560,9 +793,12 @@
   }
 
   function manualFormValues() {
+    const platform = normalizePlatformKey(el.manualPlatform?.value);
+    const schema = getDeployPlatformSchema(platform);
     return {
       creatorId: String(el.manualCreator?.value || "").trim(),
-      platform: normalizePlatformKey(el.manualPlatform?.value),
+      platform,
+      schema,
       targetIdentifier: String(el.manualTarget?.value || "").trim()
     };
   }
@@ -579,6 +815,14 @@
   }
 
   function getManualDeployBlockedReason(platform) {
+    if (!platform) return "";
+    const schema = getDeployPlatformSchema(platform);
+    if (!schema) {
+      return "Platform is not available for runtime manual deploy.";
+    }
+    if (schema.deployEnabled !== true) {
+      return schema.blockedReason || "Platform deploy is staged/disabled.";
+    }
     if (!isRuntimeAvailable()) return "Runtime is offline.";
     return getPausedPlatformMessage(platform);
   }
@@ -595,6 +839,87 @@
       .join("");
   }
 
+  function renderManualPlatformOptions() {
+    if (!el.manualPlatform) return;
+    const selected = normalizePlatformKey(el.manualPlatform.value);
+    const options = sortPlatformKeys(Object.keys(state.deployPlatformSchemas || {}));
+    const optionMarkup = options
+      .map((platform) => {
+        const schema = state.deployPlatformSchemas[platform];
+        if (!schema) return "";
+        const suffix = schema.deployEnabled ? "" : " (Staged/Disabled)";
+        return `<option value="${escapeHtml(platform)}">${escapeHtml(
+          `${schema.label || platformDisplayName(platform)}${suffix}`
+        )}</option>`;
+      })
+      .join("");
+    el.manualPlatform.innerHTML = `<option value="">Select platform</option>${optionMarkup}`;
+    if (selected && state.deployPlatformSchemas[selected]) {
+      el.manualPlatform.value = selected;
+    } else {
+      el.manualPlatform.value = "";
+    }
+  }
+
+  function renderManualPlatformFieldset(platform) {
+    if (!el.manualPlatformFields) return;
+    const key = normalizePlatformKey(platform);
+    if (state.manualDeploy.renderedPlatform === key && (key ? true : !el.manualTarget)) {
+      return;
+    }
+    state.manualDeploy.renderedPlatform = key;
+
+    if (!key) {
+      el.manualPlatformFields.innerHTML = "";
+      el.manualTarget = null;
+      return;
+    }
+
+    const schema = getDeployPlatformSchema(key);
+    if (!schema) {
+      el.manualPlatformFields.innerHTML = "";
+      el.manualTarget = null;
+      return;
+    }
+
+    if (schema.deployEnabled !== true) {
+      const blockedReason = schema.blockedReason || "Manual deploy is not available.";
+      el.manualPlatformFields.innerHTML = `
+        <fieldset class="ss-bots-manual-fieldset" data-platform-fieldset="${escapeHtml(key)}">
+          <p class="muted ss-bots-manual-field-help">${escapeHtml(blockedReason)}</p>
+        </fieldset>
+      `;
+      el.manualTarget = null;
+      return;
+    }
+
+    el.manualPlatformFields.innerHTML = `
+      <fieldset class="ss-bots-manual-fieldset" data-platform-fieldset="${escapeHtml(key)}">
+        <div class="ss-form-row">
+          <label for="bots-manual-target">${escapeHtml(schema.targetLabel)}</label>
+          <input
+            id="bots-manual-target"
+            name="target_identifier"
+            type="text"
+            autocomplete="off"
+            placeholder="${escapeHtml(schema.targetPlaceholder)}"
+            required
+          />
+          <div class="muted ss-bots-manual-field-help">${escapeHtml(schema.targetHelp)}</div>
+          ${
+            schema.extraHelp
+              ? `<div class="muted ss-bots-manual-field-help">${escapeHtml(schema.extraHelp)}</div>`
+              : ""
+          }
+        </div>
+      </fieldset>
+    `;
+    el.manualTarget = $("bots-manual-target");
+    if (el.manualTarget) {
+      el.manualTarget.disabled = state.manualDeploy.pending;
+    }
+  }
+
   function updateManualDeployUi() {
     if (!el.manualToggle || !el.manualForm) return;
 
@@ -603,9 +928,14 @@
     el.manualToggle.textContent = formOpen ? "Hide Manual Deploy" : "Manual Deploy Bot";
 
     const values = manualFormValues();
-    const blockedReason = getManualDeployBlockedReason(values.platform);
+    renderManualPlatformFieldset(values.platform);
+    const refreshed = manualFormValues();
+    const requiresTarget = refreshed.schema?.deployEnabled === true;
+    const blockedReason = getManualDeployBlockedReason(refreshed.platform);
     const hasRequiredFields = Boolean(
-      values.creatorId && values.platform && values.targetIdentifier
+      refreshed.creatorId &&
+        refreshed.platform &&
+        (!requiresTarget || refreshed.targetIdentifier)
     );
     const submitDisabled = state.manualDeploy.pending || Boolean(blockedReason) || !hasRequiredFields;
 
@@ -630,11 +960,19 @@
     if (el.manualNote) {
       const note =
         blockedReason ||
-        (values.platform
+        (refreshed.schema?.deployEnabled === true
           ? "Manual deploy will create bot instance if needed."
+          : refreshed.platform
+            ? refreshed.schema?.blockedReason || "Platform deploy is staged/disabled."
           : "Choose creator, platform, and target.");
       el.manualNote.textContent = note;
     }
+  }
+
+  function getManualRequiredTargetMessage(schema) {
+    if (!schema || schema.deployEnabled !== true) return "Target identifier is required.";
+    const label = String(schema.targetLabel || "Target identifier").trim();
+    return `${label} is required.`;
   }
 
   function toggleManualForm(forceOpen) {
@@ -658,8 +996,26 @@
       return;
     }
 
-    if (!values.creatorId || !values.platform || !values.targetIdentifier) {
-      setManualError("Creator, platform, and target identifier are required.");
+    if (!values.creatorId || !values.platform) {
+      setManualError("Creator and platform are required.");
+      updateManualDeployUi();
+      return;
+    }
+
+    if (!values.schema) {
+      setManualError("Selected platform is unavailable for manual deploy.");
+      updateManualDeployUi();
+      return;
+    }
+
+    if (values.schema.deployEnabled !== true) {
+      setManualError(values.schema.blockedReason || "Selected platform deploy is disabled.");
+      updateManualDeployUi();
+      return;
+    }
+
+    if (!values.targetIdentifier) {
+      setManualError(getManualRequiredTargetMessage(values.schema));
       updateManualDeployUi();
       return;
     }
@@ -752,25 +1108,14 @@
     return null;
   }
 
-  async function fetchPlatformConfig() {
-    try {
-      if (window.ConfigState?.loadPlatforms) {
-        return (await window.ConfigState.loadPlatforms()) || null;
-      }
-    } catch (err) {
-      return null;
-    }
-    return null;
-  }
-
-  function render(normalized, runtimeSnapshot, platformConfig) {
+  function render(normalized, runtimeSnapshot) {
     const now = Date.now();
     state.lastPayload = normalized;
     state.lastRuntimeSnapshot = runtimeSnapshot || null;
+    state.deployPlatformSchemas = resolveDeployPlatformSchemas(normalized);
     state.platformSummary = buildPlatformSummary(
-      normalized,
       runtimeSnapshot || null,
-      platformConfig || null
+      state.deployPlatformSchemas
     );
     state.lastReceivedAt = now;
 
@@ -781,6 +1126,7 @@
     updateMeta(normalized, now);
 
     renderPlatformSummary(state.platformSummary);
+    renderManualPlatformOptions();
     updateManualCreatorSuggestions();
     updateManualDeployUi();
 
@@ -801,18 +1147,18 @@
     }
 
     try {
-      const [normalized, runtimeSnapshot, platformConfig] = await Promise.all([
+      const [normalized, runtimeSnapshot] = await Promise.all([
         fetchPayload(),
-        fetchRuntimeSnapshot(),
-        fetchPlatformConfig()
+        fetchRuntimeSnapshot()
       ]);
       setError("");
-      render(normalized, runtimeSnapshot, platformConfig);
+      render(normalized, runtimeSnapshot);
     } catch (err) {
       setRuntimeAvailable(false);
       state.lastPayload = { bots: [], supportedPlatforms: [], generatedAt: null };
       state.lastRuntimeSnapshot = null;
-      state.platformSummary = buildPlatformSummary({ bots: [] }, null, null);
+      state.deployPlatformSchemas = buildFallbackDeploySchemas();
+      state.platformSummary = buildPlatformSummary(null, state.deployPlatformSchemas);
       state.lastReceivedAt = Date.now();
       if (el.status) {
         el.status.textContent = "Unable to load runtime bot status.";
@@ -827,6 +1173,7 @@
         el.body.innerHTML = "";
       }
       renderPlatformSummary(state.platformSummary);
+      renderManualPlatformOptions();
       if (el.empty) {
         el.empty.classList.remove("hidden");
       }
@@ -841,7 +1188,8 @@
     stopPolling();
     state.lastPayload = { bots: [], supportedPlatforms: [], generatedAt: null };
     state.lastRuntimeSnapshot = null;
-    state.platformSummary = buildPlatformSummary({ bots: [] }, null, null);
+    state.deployPlatformSchemas = buildFallbackDeploySchemas();
+    state.platformSummary = buildPlatformSummary(null, state.deployPlatformSchemas);
     state.lastReceivedAt = Date.now();
     if (el.status) {
       el.status.textContent = "Runtime offline - bot status unavailable";
@@ -859,6 +1207,7 @@
       el.body.innerHTML = "";
     }
     renderPlatformSummary(state.platformSummary);
+    renderManualPlatformOptions();
     if (el.empty) {
       el.empty.classList.remove("hidden");
     }
@@ -899,6 +1248,14 @@
 
     const ui = getRowUi(creatorId, platform);
     if (ui.pending) return;
+    const deploySchema = getDeployPlatformSchema(platform);
+    if (!deploySchema || deploySchema.deployEnabled !== true) {
+      ui.error = deploySchema?.blockedReason || "Manual deploy is unavailable for this platform.";
+      if (el.body) {
+        el.body.innerHTML = renderRows(state.lastPayload, Date.now(), state.platformSummary);
+      }
+      return;
+    }
     const platformState = state.platformSummary?.[normalizePlatformKey(platform)] || null;
     if (platformState?.paused) {
       ui.error = platformState.pausedReason || "Platform is paused by runtime control.";
@@ -912,14 +1269,17 @@
     if (action === "attach") {
       const currentTarget = String(bot?.active_target || "").trim();
       const promptDefault = currentTarget && currentTarget !== "-" ? currentTarget : "";
+      const promptTargetLabel = String(
+        deploySchema.targetLabel || "target identifier"
+      ).trim();
       const prompted = window.prompt(
-        `Manual deploy target for ${creatorId} (${platform}):\nEnter channel name or stream identifier.`,
+        `Manual deploy target for ${creatorId} (${deploySchema.label}):\nEnter ${promptTargetLabel}.`,
         promptDefault
       );
       if (prompted === null) return;
       const trimmed = String(prompted || "").trim();
       if (!trimmed) {
-        ui.error = "Target identifier is required for manual deploy.";
+        ui.error = getManualRequiredTargetMessage(deploySchema);
         if (el.body) {
           el.body.innerHTML = renderRows(state.lastPayload, Date.now(), state.platformSummary);
         }
@@ -1048,7 +1408,8 @@
     el.manualCreator = $("bots-manual-creator");
     el.manualCreatorList = $("bots-manual-creator-list");
     el.manualPlatform = $("bots-manual-platform");
-    el.manualTarget = $("bots-manual-target");
+    el.manualPlatformFields = $("bots-manual-platform-fields");
+    el.manualTarget = null;
     el.manualSubmit = $("bots-manual-submit");
     el.manualCancel = $("bots-manual-cancel");
     el.manualNote = $("bots-manual-note");
@@ -1068,6 +1429,8 @@
     el.manualForm?.addEventListener("input", state.onManualFormChange);
     el.manualForm?.addEventListener("change", state.onManualFormChange);
     state.manualFormOpen = false;
+    state.deployPlatformSchemas = buildFallbackDeploySchemas();
+    renderManualPlatformOptions();
     setManualError("");
     updateManualCreatorSuggestions();
     updateManualDeployUi();
@@ -1099,9 +1462,10 @@
     state.onManualFormSubmit = null;
     state.onManualFormChange = null;
     state.manualFormOpen = false;
-    state.manualDeploy = { pending: false, error: "" };
+    state.manualDeploy = { pending: false, error: "", renderedPlatform: "" };
     state.lastPayload = null;
     state.lastRuntimeSnapshot = null;
+    state.deployPlatformSchemas = Object.create(null);
     state.platformSummary = Object.create(null);
     state.lastReceivedAt = null;
     state.sourceUrl = null;

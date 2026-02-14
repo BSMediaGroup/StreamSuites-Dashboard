@@ -2293,6 +2293,11 @@ body.ss-col-resizing-active {
   background: rgba(148, 163, 184, 0.08);
 }
 
+.ss-bots-platform-chip.is-staged {
+  border-color: rgba(100, 116, 139, 0.45);
+  background: rgba(100, 116, 139, 0.12);
+}
+
 .ss-bot-platform-note {
   margin-top: 6px;
   font-size: 11px;
@@ -2332,6 +2337,23 @@ body.ss-col-resizing-active {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 10px;
+}
+
+.ss-bots-manual-platform-fields {
+  display: grid;
+}
+
+.ss-bots-manual-fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+
+.ss-bots-manual-field-help {
+  margin-top: 6px;
+  font-size: 11px;
+  line-height: 1.35;
 }
 
 .ss-bots-manual-actions {
