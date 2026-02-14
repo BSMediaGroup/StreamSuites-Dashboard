@@ -277,7 +277,11 @@
       const overlap = Math.max(0, viewportHeight - footerEdge.getBoundingClientRect().top);
       const baseBottom = readBaseBottom();
       const clearance = 8;
-      root.style.bottom = overlap > 0 ? `${Math.ceil(baseBottom + overlap + clearance)}px` : "";
+      const downwardShift = 20;
+      root.style.bottom =
+        overlap > 0
+          ? `${Math.ceil(baseBottom + overlap + clearance - downwardShift)}px`
+          : "";
     };
 
     const requestFooterOffsetUpdate = () => {
