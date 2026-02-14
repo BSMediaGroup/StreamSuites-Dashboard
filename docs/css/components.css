@@ -295,7 +295,7 @@
   padding: 2px;
   border: 1px solid rgba(132, 168, 226, 0.28);
   border-radius: 999px;
-  background: rgba(9, 18, 33, 0.66);
+  background: rgba(11, 27, 41, 0.66);
 }
 
 .ss-analytics-map-marker-filter .ss-btn {
@@ -395,11 +395,11 @@
 }
 
 .ss-analytics-map-panel.is-map-enlarged .ss-analytics-map-shell {
-  min-height: clamp(560px, 74vh, 760px);
+  min-height: clamp(700px, 86vh, 1100px);
 }
 
 .ss-analytics-map-panel.is-map-enlarged .ss-analytics-map {
-  min-height: calc(clamp(560px, 74vh, 760px) - 20px);
+  min-height: calc(clamp(700px, 86vh, 1100px) - 20px);
 }
 
 .ss-analytics-map .maplibregl-canvas {
@@ -814,11 +814,11 @@
   }
 
   .ss-analytics-map-panel.is-map-enlarged .ss-analytics-map-shell {
-    min-height: clamp(430px, 66vh, 620px);
+    min-height: clamp(540px, 80vh, 860px);
   }
 
   .ss-analytics-map-panel.is-map-enlarged .ss-analytics-map {
-    min-height: calc(clamp(430px, 66vh, 620px) - 20px);
+    min-height: calc(clamp(540px, 80vh, 860px) - 20px);
   }
 }
 
@@ -837,6 +837,14 @@
     left: 14px;
     right: 14px;
     bottom: 12px;
+  }
+
+  .ss-analytics-map-panel.is-map-enlarged .ss-analytics-map-shell {
+    min-height: clamp(460px, 76vh, 700px);
+  }
+
+  .ss-analytics-map-panel.is-map-enlarged .ss-analytics-map {
+    min-height: calc(clamp(460px, 76vh, 700px) - 20px);
   }
 }
 

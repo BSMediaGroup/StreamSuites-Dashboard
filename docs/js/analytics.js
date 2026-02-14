@@ -12,6 +12,9 @@
   const COUNTRY_CENTROIDS_PATH = "/shared/data/country_centroids.json";
   const MAP_COLLAPSED_STORAGE_KEY = "ss_admin_analytics_map_collapsed";
   const MAP_MARKER_FILTER_DEFAULT = "both";
+  const MAP_ENLARGED_SINGLE_POINT_ZOOM = 2.5;
+  const MAP_ENLARGED_FIT_MAX_ZOOM = 3.8;
+  const MAP_ENLARGED_FIT_DURATION_MS = 360;
   const COUNTRY_DEFAULT_SORT_KEY = "sessions";
   const COUNTRY_DEFAULT_SORT_DIRECTION = "desc";
   const COUNTRY_FOCUS_ZOOM = 3;
@@ -118,7 +121,8 @@
     mapEnlarged: false,
     mapMarkerFilter: MAP_MARKER_FILTER_DEFAULT,
     mapResizeRaf: null,
-    mapResizeTimeout: null
+    mapResizeTimeout: null,
+    mapFrameTimeout: null
   };
 
   const el = {
@@ -515,8 +519,112 @@
         state.mapResizeTimeout = null;
         if (!state.map || state.destroyed || state.mapCollapsed) return;
         state.map.resize();
+        if (state.mapEnlarged) {
+          scheduleMapFrameForEnlargedMode({
+            animate: false
+          });
+        }
       }, 100);
     });
+  }
+
+  function collectMapCoordinatesFromGeoJson() {
+    const features = Array.isArray(state.pendingGeoJson?.features) ? state.pendingGeoJson.features : [];
+    const coords = [];
+    features.forEach((feature) => {
+      if (feature?.geometry?.type !== "Point") return;
+      const pair = feature.geometry.coordinates;
+      if (!Array.isArray(pair) || pair.length !== 2) return;
+      const lon = Number(pair[0]);
+      const lat = Number(pair[1]);
+      if (!Number.isFinite(lon) || !Number.isFinite(lat)) return;
+      coords.push([lon, lat]);
+    });
+    return coords;
+  }
+
+  function resolveEnlargedMapFitPadding() {
+    const height = Number(el.map?.clientHeight || 0);
+    if (height >= 780) {
+      return {
+        top: 84,
+        right: 88,
+        bottom: 112,
+        left: 88
+      };
+    }
+    if (height <= 420) {
+      return {
+        top: 34,
+        right: 38,
+        bottom: 50,
+        left: 38
+      };
+    }
+    return {
+      top: 58,
+      right: 62,
+      bottom: 80,
+      left: 62
+    };
+  }
+
+  function frameMapForEnlargedMode(options = {}) {
+    if (!state.map || !state.mapReady || state.destroyed || state.mapCollapsed || !state.mapEnlarged) return;
+    if (options.respectActiveCountry !== false && state.activeCountryCode) return;
+
+    const coordinates = collectMapCoordinatesFromGeoJson();
+    if (!coordinates.length) return;
+
+    const map = state.map;
+    const animate = options.animate === true;
+    const duration = animate ? MAP_ENLARGED_FIT_DURATION_MS : 0;
+
+    if (coordinates.length === 1) {
+      map.easeTo({
+        center: coordinates[0],
+        zoom: MAP_ENLARGED_SINGLE_POINT_ZOOM,
+        duration,
+        essential: true
+      });
+      return;
+    }
+
+    let minLon = 180;
+    let maxLon = -180;
+    let minLat = 90;
+    let maxLat = -90;
+    coordinates.forEach(([lon, lat]) => {
+      minLon = Math.min(minLon, lon);
+      maxLon = Math.max(maxLon, lon);
+      minLat = Math.min(minLat, lat);
+      maxLat = Math.max(maxLat, lat);
+    });
+    if (minLon > maxLon || minLat > maxLat) return;
+
+    map.fitBounds(
+      [
+        [minLon, minLat],
+        [maxLon, maxLat]
+      ],
+      {
+        padding: resolveEnlargedMapFitPadding(),
+        maxZoom: MAP_ENLARGED_FIT_MAX_ZOOM,
+        duration,
+        essential: true
+      }
+    );
+  }
+
+  function scheduleMapFrameForEnlargedMode(options = {}) {
+    if (state.mapFrameTimeout) {
+      clearTimeout(state.mapFrameTimeout);
+      state.mapFrameTimeout = null;
+    }
+    state.mapFrameTimeout = setTimeout(() => {
+      state.mapFrameTimeout = null;
+      frameMapForEnlargedMode(options);
+    }, 140);
   }
 
   function updateMapToggleUi() {
@@ -623,6 +731,11 @@
     updateMapToggleUi();
     if (changed && options.resize !== false && !state.mapCollapsed) {
       scheduleMapResize();
+      if (shouldEnlarge) {
+        scheduleMapFrameForEnlargedMode({
+          animate: true
+        });
+      }
     }
   }
 
@@ -1404,6 +1517,11 @@
       return;
     }
     setMapFeedback("");
+    if (state.mapEnlarged) {
+      scheduleMapFrameForEnlargedMode({
+        animate: false
+      });
+    }
   }
 
   function normalizeReferrers(referrers) {
@@ -1780,6 +1898,10 @@
     if (state.mapResizeTimeout) {
       clearTimeout(state.mapResizeTimeout);
       state.mapResizeTimeout = null;
+    }
+    if (state.mapFrameTimeout) {
+      clearTimeout(state.mapFrameTimeout);
+      state.mapFrameTimeout = null;
     }
 
     if (el.surfacesList && surfacesClickBound) {
