@@ -137,6 +137,28 @@
       text-decoration: none;
     }
 
+    .ss-sidebar-brand .header-left a {
+      align-items: center;
+    }
+
+    .ss-sidebar-brand .ss-sidebar-brand-text {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .ss-sidebar-brand .ss-sidebar-brand-text .app-title {
+      margin: 0;
+      line-height: 1;
+    }
+
+    html.ss-sidebar-collapsed .ss-sidebar-brand .ss-sidebar-brand-text,
+    body.ss-sidebar-collapsed .ss-sidebar-brand .ss-sidebar-brand-text {
+      display: none;
+    }
+
     .dashboard-badge {
       margin-left: 6px;
       padding: 2px 4px;
@@ -148,6 +170,12 @@
       color: #ddd;
       font-family: "SuiGenerisRg", system-ui, sans-serif;
       text-transform: uppercase;
+    }
+
+    .ss-sidebar-brand .ss-sidebar-brand-text .dashboard-badge {
+      margin: 0;
+      margin-left: 0;
+      align-self: flex-start;
     }
 
     /* ---------------------------------------------------------- */
@@ -346,14 +374,16 @@
     <aside id="app-nav" class="ss-sidebar">
       <div class="ss-sidebar-brand">
         <div class="header-left">
-          <a href="https://admin.streamsuites.app">
+          <a href="https://admin.streamsuites.app" class="ss-sidebar-brand-link">
             <img src="/assets/logos/adminredshield.webp" alt="StreamSuites Logo" />
-            <h1 class="app-title">StreamSuites™</h1>
+            <div class="ss-sidebar-brand-text">
+              <h1 class="app-title">StreamSuites™</h1>
+              <span class="dashboard-badge" id="dashboard-mode">
+                ADMIN CONTROL
+              </span>
+            </div>
           </a>
         </div>
-        <span class="dashboard-badge" id="dashboard-mode">
-          ADMIN DASHBOARD
-        </span>
       </div>
       <div class="nav-shell">
         <ul id="app-nav-list">
