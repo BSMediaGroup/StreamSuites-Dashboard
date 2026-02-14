@@ -115,6 +115,7 @@
     regionDisplayNames: null,
     regionNameCache: Object.create(null),
     mapCollapsed: false,
+    mapEnlarged: false,
     mapMarkerFilter: MAP_MARKER_FILTER_DEFAULT,
     mapResizeRaf: null,
     mapResizeTimeout: null
@@ -126,6 +127,8 @@
     mapPanelBody: null,
     mapToggle: null,
     mapToggleLabel: null,
+    mapEnlargeToggle: null,
+    mapEnlargeToggleLabel: null,
     mapMarkerFilter: null,
     mapGeneratedAt: null,
     mapCountryCount: null,
@@ -518,6 +521,7 @@
 
   function updateMapToggleUi() {
     const collapsed = state.mapCollapsed === true;
+    const enlarged = state.mapEnlarged === true;
     const nextActionLabel = collapsed ? "Expand" : "Collapse";
     if (el.mapToggleLabel) {
       el.mapToggleLabel.textContent = nextActionLabel;
@@ -529,6 +533,15 @@
         iconEl.innerHTML = collapsed ? "&#9654;" : "&#9660;";
       }
     }
+    if (el.mapEnlargeToggleLabel) {
+      el.mapEnlargeToggleLabel.textContent = enlarged ? "Restore" : "Enlarge";
+    }
+    if (el.mapEnlargeToggle) {
+      el.mapEnlargeToggle.hidden = collapsed;
+      el.mapEnlargeToggle.disabled = collapsed;
+      el.mapEnlargeToggle.setAttribute("aria-pressed", String(enlarged));
+    }
+    el.mapPanel?.classList.toggle("is-map-enlarged", !collapsed && enlarged);
   }
 
   function normalizeMapMarkerFilter(value) {
@@ -582,6 +595,9 @@
   function setMapCollapsed(collapsed, options = {}) {
     const shouldCollapse = collapsed === true;
     state.mapCollapsed = shouldCollapse;
+    if (shouldCollapse) {
+      state.mapEnlarged = false;
+    }
     el.mapPanel?.classList.toggle("is-collapsed", shouldCollapse);
     if (el.mapPanelBody) {
       el.mapPanelBody.hidden = shouldCollapse;
@@ -600,9 +616,26 @@
     }
   }
 
+  function setMapEnlarged(enlarged, options = {}) {
+    const shouldEnlarge = enlarged === true && !state.mapCollapsed;
+    const changed = shouldEnlarge !== state.mapEnlarged;
+    state.mapEnlarged = shouldEnlarge;
+    updateMapToggleUi();
+    if (changed && options.resize !== false && !state.mapCollapsed) {
+      scheduleMapResize();
+    }
+  }
+
   function handleMapToggleClick() {
     setMapCollapsed(!state.mapCollapsed, {
       persist: true,
+      resize: true
+    });
+  }
+
+  function handleMapEnlargeToggleClick() {
+    if (state.mapCollapsed) return;
+    setMapEnlarged(!state.mapEnlarged, {
       resize: true
     });
   }
@@ -1613,6 +1646,8 @@
     el.mapPanelBody = $("analytics-map-panel-body");
     el.mapToggle = $("analytics-map-toggle");
     el.mapToggleLabel = $("analytics-map-toggle-label");
+    el.mapEnlargeToggle = $("analytics-map-enlarge-toggle");
+    el.mapEnlargeToggleLabel = $("analytics-map-enlarge-toggle-label");
     el.mapMarkerFilter = document.querySelector(".ss-analytics-map-marker-filter");
     el.mapGeneratedAt = $("analytics-map-generated-at");
     el.mapCountryCount = $("analytics-map-country-count");
@@ -1636,6 +1671,9 @@
     el.countriesCount = $("analytics-countries-count");
     if (el.mapToggle) {
       el.mapToggle.addEventListener("click", handleMapToggleClick);
+    }
+    if (el.mapEnlargeToggle) {
+      el.mapEnlargeToggle.addEventListener("click", handleMapEnlargeToggleClick);
     }
     if (el.mapMarkerFilter) {
       el.mapMarkerFilter.addEventListener("click", handleMapMarkerFilterClick);
@@ -1706,6 +1744,9 @@
     if (el.mapToggle) {
       el.mapToggle.removeEventListener("click", handleMapToggleClick);
     }
+    if (el.mapEnlargeToggle) {
+      el.mapEnlargeToggle.removeEventListener("click", handleMapEnlargeToggleClick);
+    }
     if (el.mapMarkerFilter) {
       el.mapMarkerFilter.removeEventListener("click", handleMapMarkerFilterClick);
     }
@@ -1748,6 +1789,7 @@
 
     state.mapReady = false;
     state.mapCollapsed = false;
+    state.mapEnlarged = false;
     state.mapMarkerFilter = MAP_MARKER_FILTER_DEFAULT;
     state.pendingGeoJson = emptyGeoJson();
     state.latestByCountry = [];
