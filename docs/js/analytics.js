@@ -11,6 +11,7 @@
   const TOP_REFERRERS_LIMIT = 8;
   const COUNTRY_CENTROIDS_PATH = "/shared/data/country_centroids.json";
   const MAP_COLLAPSED_STORAGE_KEY = "ss_admin_analytics_map_collapsed";
+  const MAP_MARKER_FILTER_DEFAULT = "both";
   const COUNTRY_DEFAULT_SORT_KEY = "sessions";
   const COUNTRY_DEFAULT_SORT_DIRECTION = "desc";
   const COUNTRY_FOCUS_ZOOM = 3;
@@ -24,6 +25,7 @@
     clusterHalo: "ss-analytics-cluster-halo",
     clusterCore: "ss-analytics-cluster-core",
     clusterLabel: "ss-analytics-cluster-label",
+    requestsBackdrop: "ss-analytics-requests-backdrop",
     activityGlow: "ss-analytics-activity-glow",
     activityCore: "ss-analytics-activity-core",
     activityHit: "ss-analytics-activity-hit"
@@ -113,6 +115,7 @@
     regionDisplayNames: null,
     regionNameCache: Object.create(null),
     mapCollapsed: false,
+    mapMarkerFilter: MAP_MARKER_FILTER_DEFAULT,
     mapResizeRaf: null,
     mapResizeTimeout: null
   };
@@ -123,6 +126,7 @@
     mapPanelBody: null,
     mapToggle: null,
     mapToggleLabel: null,
+    mapMarkerFilter: null,
     mapGeneratedAt: null,
     mapCountryCount: null,
     mapSessions: null,
@@ -527,6 +531,54 @@
     }
   }
 
+  function normalizeMapMarkerFilter(value) {
+    const normalized = String(value || "").trim().toLowerCase();
+    if (normalized === "sessions" || normalized === "requests" || normalized === "both") {
+      return normalized;
+    }
+    return MAP_MARKER_FILTER_DEFAULT;
+  }
+
+  function setMapLayerVisibility(layerId, visible) {
+    if (!state.map || !state.mapReady || !layerId) return;
+    if (!state.map.getLayer(layerId)) return;
+    state.map.setLayoutProperty(layerId, "visibility", visible ? "visible" : "none");
+  }
+
+  function applyMapMarkerVisibility() {
+    const mode = normalizeMapMarkerFilter(state.mapMarkerFilter);
+    const showSessions = mode === "sessions" || mode === "both";
+    const showRequests = mode === "requests" || mode === "both";
+    setMapLayerVisibility(LAYERS.requestsBackdrop, showRequests);
+    setMapLayerVisibility(LAYERS.activityGlow, showSessions);
+    setMapLayerVisibility(LAYERS.activityCore, showSessions);
+    setMapLayerVisibility(LAYERS.activityHit, showSessions || showRequests);
+  }
+
+  function renderMapMarkerFilterUi() {
+    if (!el.mapMarkerFilter) return;
+    const active = normalizeMapMarkerFilter(state.mapMarkerFilter);
+    const buttons = el.mapMarkerFilter.querySelectorAll("[data-map-marker-filter]");
+    buttons.forEach((button) => {
+      const buttonMode = normalizeMapMarkerFilter(button.getAttribute("data-map-marker-filter"));
+      const isActive = buttonMode === active;
+      button.classList.toggle("is-active", isActive);
+      button.setAttribute("aria-pressed", String(isActive));
+    });
+  }
+
+  function setMapMarkerFilter(value) {
+    state.mapMarkerFilter = normalizeMapMarkerFilter(value);
+    renderMapMarkerFilterUi();
+    applyMapMarkerVisibility();
+  }
+
+  function handleMapMarkerFilterClick(event) {
+    const button = event.target.closest("[data-map-marker-filter]");
+    if (!(button instanceof HTMLButtonElement)) return;
+    setMapMarkerFilter(button.getAttribute("data-map-marker-filter"));
+  }
+
   function setMapCollapsed(collapsed, options = {}) {
     const shouldCollapse = collapsed === true;
     state.mapCollapsed = shouldCollapse;
@@ -689,6 +741,39 @@
       });
     }
 
+    if (!map.getLayer(LAYERS.requestsBackdrop)) {
+      map.addLayer({
+        id: LAYERS.requestsBackdrop,
+        type: "circle",
+        source: SOURCE_ID,
+        filter: ["!", ["has", "point_count"]],
+        paint: {
+          "circle-color": "#1d4d93",
+          "circle-opacity": [
+            "interpolate",
+            ["linear"],
+            ["coalesce", ["get", "requests"], 0],
+            0, 0.1,
+            10, 0.16,
+            50, 0.22,
+            150, 0.28,
+            400, 0.34
+          ],
+          "circle-blur": 0.68,
+          "circle-radius": [
+            "interpolate",
+            ["linear"],
+            ["coalesce", ["get", "requests"], 0],
+            0, 10.5,
+            10, 15,
+            50, 21,
+            150, 27,
+            400, 33
+          ]
+        }
+      });
+    }
+
     if (!map.getLayer(LAYERS.activityGlow)) {
       map.addLayer({
         id: LAYERS.activityGlow,
@@ -700,7 +785,7 @@
           "circle-opacity": [
             "interpolate",
             ["linear"],
-            ["coalesce", ["get", "sessions"], ["get", "requests"], 0],
+            ["coalesce", ["get", "sessions"], 0],
             0, 0.16,
             10, 0.24,
             50, 0.34,
@@ -711,7 +796,7 @@
           "circle-radius": [
             "interpolate",
             ["linear"],
-            ["coalesce", ["get", "sessions"], ["get", "requests"], 0],
+            ["coalesce", ["get", "sessions"], 0],
             0, 9,
             10, 13,
             50, 18,
@@ -733,7 +818,7 @@
           "circle-opacity": [
             "interpolate",
             ["linear"],
-            ["coalesce", ["get", "sessions"], ["get", "requests"], 0],
+            ["coalesce", ["get", "sessions"], 0],
             0, 0.82,
             10, 0.88,
             50, 0.93,
@@ -746,7 +831,7 @@
           "circle-radius": [
             "interpolate",
             ["linear"],
-            ["coalesce", ["get", "sessions"], ["get", "requests"], 0],
+            ["coalesce", ["get", "sessions"], 0],
             0, 3.2,
             10, 4.8,
             50, 7.2,
@@ -767,7 +852,7 @@
           "circle-radius": [
             "interpolate",
             ["linear"],
-            ["coalesce", ["get", "sessions"], ["get", "requests"], 0],
+            ["max", ["coalesce", ["get", "sessions"], 0], ["coalesce", ["get", "requests"], 0]],
             1, 14,
             10, 15,
             50, 17.5,
@@ -778,6 +863,8 @@
         }
       });
     }
+
+    applyMapMarkerVisibility();
 
     const source = map.getSource(SOURCE_ID);
     if (source) {
@@ -1526,6 +1613,7 @@
     el.mapPanelBody = $("analytics-map-panel-body");
     el.mapToggle = $("analytics-map-toggle");
     el.mapToggleLabel = $("analytics-map-toggle-label");
+    el.mapMarkerFilter = document.querySelector(".ss-analytics-map-marker-filter");
     el.mapGeneratedAt = $("analytics-map-generated-at");
     el.mapCountryCount = $("analytics-map-country-count");
     el.mapSessions = $("analytics-map-sessions");
@@ -1549,6 +1637,9 @@
     if (el.mapToggle) {
       el.mapToggle.addEventListener("click", handleMapToggleClick);
     }
+    if (el.mapMarkerFilter) {
+      el.mapMarkerFilter.addEventListener("click", handleMapMarkerFilterClick);
+    }
     if (el.surfacesList && !surfacesClickBound) {
       el.surfacesList.addEventListener("click", handleSurfaceViewClick);
       surfacesClickBound = true;
@@ -1564,6 +1655,7 @@
       el.countriesSearch.value = "";
       el.countriesSearch.addEventListener("input", handleCountrySearchInput);
     }
+    setMapMarkerFilter(MAP_MARKER_FILTER_DEFAULT);
 
     if (el.windowSelect) {
       el.windowSelect.value = DEFAULT_WINDOW;
@@ -1614,6 +1706,9 @@
     if (el.mapToggle) {
       el.mapToggle.removeEventListener("click", handleMapToggleClick);
     }
+    if (el.mapMarkerFilter) {
+      el.mapMarkerFilter.removeEventListener("click", handleMapMarkerFilterClick);
+    }
     if (el.countriesTable) {
       el.countriesTable.removeEventListener("click", handleCountrySortClick);
     }
@@ -1653,6 +1748,7 @@
 
     state.mapReady = false;
     state.mapCollapsed = false;
+    state.mapMarkerFilter = MAP_MARKER_FILTER_DEFAULT;
     state.pendingGeoJson = emptyGeoJson();
     state.latestByCountry = [];
     state.countryRows = [];

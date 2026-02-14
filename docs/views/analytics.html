@@ -41,6 +41,32 @@
             <time id="analytics-map-generated-at" datetime="">--</time>
           </span>
         </div>
+        <div class="ss-analytics-map-marker-filter" role="group" aria-label="Map marker filter">
+          <button
+            type="button"
+            class="ss-btn ss-btn-secondary ss-btn-small is-active"
+            data-map-marker-filter="both"
+            aria-pressed="true"
+          >
+            Both
+          </button>
+          <button
+            type="button"
+            class="ss-btn ss-btn-secondary ss-btn-small"
+            data-map-marker-filter="sessions"
+            aria-pressed="false"
+          >
+            Sessions only
+          </button>
+          <button
+            type="button"
+            class="ss-btn ss-btn-secondary ss-btn-small"
+            data-map-marker-filter="requests"
+            aria-pressed="false"
+          >
+            Requests only
+          </button>
+        </div>
         <button
           id="analytics-map-toggle"
           class="ss-btn ss-btn-secondary ss-btn-small ss-analytics-map-toggle"

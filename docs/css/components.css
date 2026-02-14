@@ -283,6 +283,27 @@
   color: var(--text-primary);
 }
 
+.ss-analytics-map-marker-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px;
+  border: 1px solid rgba(132, 168, 226, 0.28);
+  border-radius: 999px;
+  background: rgba(9, 18, 33, 0.66);
+}
+
+.ss-analytics-map-marker-filter .ss-btn {
+  border-radius: 999px;
+  padding-inline: 9px;
+}
+
+.ss-analytics-map-marker-filter .ss-btn.is-active {
+  background: rgba(69, 129, 220, 0.34);
+  border-color: rgba(124, 182, 255, 0.52);
+  color: #e8f3ff;
+}
+
 .ss-analytics-banner-wrap {
   grid-area: banner;
 }
@@ -754,11 +775,16 @@
   .ss-analytics-map-header-actions {
     width: 100%;
     justify-content: space-between;
+    flex-wrap: wrap;
   }
 
   .ss-analytics-map-header-meta {
     gap: 8px;
     font-size: 10px;
+  }
+
+  .ss-analytics-map-marker-filter {
+    order: 3;
   }
 
   .ss-analytics-map-stats-strip {
