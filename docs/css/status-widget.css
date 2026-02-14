@@ -168,7 +168,7 @@
 }
 
 .ss-status-item-title {
-  font-weight: 600;
+  font-weight: 200;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
