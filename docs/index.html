@@ -246,6 +246,7 @@
   <link rel="stylesheet" href="/css/layout.css" />
   <link rel="stylesheet" href="/css/components.css" />
   <link rel="stylesheet" href="/css/updates.css" />
+  <link rel="stylesheet" href="/css/status-widget.css" />
   <script defer src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 </head>
 
@@ -611,7 +612,7 @@
 
     </div>
 
-    <footer id="app-footer">
+    <footer id="app-footer" data-ss-footer-edge="true">
       <div class="footer-left">
         <img
           src="/assets/icons/discord-silver.svg"
@@ -855,5 +856,6 @@
       }
     })();
   </script>
+  <script src="/js/status-widget.js" defer></script>
 </body>
 </html>
