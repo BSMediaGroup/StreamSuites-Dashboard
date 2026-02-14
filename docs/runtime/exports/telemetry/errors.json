@@ -1,9 +1,79 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-02-14T13:56:42.976831Z",
+  "generated_at": "2026-02-14T14:02:14.610007Z",
   "errors": [
     {
       "timestamp": "2026-02-14T13:56:33.539503Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "Twitch connection closed; reconnecting",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-02-14T13:56:46.514462Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "Twitch connection closed; reconnecting",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-02-14T13:57:01.503731Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "Twitch connection closed; reconnecting",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-02-14T13:57:20.479091Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "Twitch connection closed; reconnecting",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-02-14T13:57:47.610741Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "Twitch connection closed; reconnecting",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-02-14T13:58:28.736730Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "Twitch connection closed; reconnecting",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-02-14T13:59:09.878723Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "Twitch connection closed; reconnecting",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-02-14T13:59:51.002695Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "Twitch connection closed; reconnecting",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-02-14T14:00:32.146970Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "Twitch connection closed; reconnecting",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-02-14T14:01:13.308626Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "Twitch connection closed; reconnecting",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-02-14T14:01:54.450855Z",
       "subsystem": "platform",
       "error_type": "platform_error",
       "message": "Twitch connection closed; reconnecting",

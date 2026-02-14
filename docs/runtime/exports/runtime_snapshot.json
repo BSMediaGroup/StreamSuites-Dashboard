@@ -1,7 +1,7 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-02-14T13:56:42.962410Z",
-  "heartbeat": "2026-02-14T13:56:42.962410Z",
+  "generated_at": "2026-02-14T14:02:14.585922Z",
+  "heartbeat": "2026-02-14T14:02:14.585922Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.4.0-alpha",
@@ -129,7 +129,7 @@
       "state": "paused",
       "status": "paused",
       "paused_reason": "Platform ingestion paused",
-      "last_heartbeat": "2026-02-14T13:56:42.349277Z",
+      "last_heartbeat": "2026-02-14T14:02:12.520045Z",
       "last_success_ts": null,
       "last_event_ts": null,
       "error": null,
@@ -149,12 +149,12 @@
       "paused": false,
       "telemetry_enabled": true,
       "state": "active",
-      "status": "running",
+      "status": "error",
       "paused_reason": null,
-      "last_heartbeat": "2026-02-14T13:56:42.349277Z",
-      "last_success_ts": "2026-02-14T13:56:36.107106Z",
+      "last_heartbeat": "2026-02-14T14:02:12.520045Z",
+      "last_success_ts": "2026-02-14T14:01:44.030734Z",
       "last_event_ts": null,
-      "error": null,
+      "error": "Twitch connection closed; reconnecting",
       "counters": {
         "messages": 0,
         "triggers": 0,
@@ -222,8 +222,8 @@
         "twitter": true,
         "discord": true
       },
-      "last_heartbeat": "2026-02-14T13:56:42.349277Z",
-      "error": null
+      "last_heartbeat": "2026-02-14T14:02:12.520045Z",
+      "error": "Twitch connection closed; reconnecting"
     }
   ],
   "triggers": {
