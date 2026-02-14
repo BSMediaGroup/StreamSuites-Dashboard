@@ -2305,6 +2305,27 @@ body.ss-col-resizing-active {
   line-height: 1.25;
 }
 
+.ss-bot-platform-log {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ss-bot-platform-log-time {
+  font-size: 11px;
+  color: var(--text-secondary);
+  letter-spacing: 0.03em;
+}
+
+.ss-bot-platform-log-message {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--text-primary);
+  line-height: 1.35;
+  word-break: break-word;
+}
+
 .ss-bots-manual-panel {
   margin: 0 0 14px;
   padding: 12px;

@@ -79,11 +79,12 @@
     pollHandle: null,
     tickHandle: null,
     lastPayload: null,
-    lastRuntimeSnapshot: null,
     deployPlatformSchemas: Object.create(null),
     platformSummary: Object.create(null),
     lastReceivedAt: null,
     sourceUrl: null,
+    hydrationLive: false,
+    hydrationLabel: "Waiting for runtime status...",
     rowUi: Object.create(null),
     onBodyClick: null,
     onManualToggleClick: null,
@@ -192,6 +193,28 @@
     }
   }
 
+  function formatTimestampCompact(value) {
+    if (!value) return "--";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value);
+    try {
+      return date.toLocaleTimeString(undefined, {
+        hour12: false,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+    } catch (err) {
+      return String(value);
+    }
+  }
+
+  function truncateForCard(value, max = 120) {
+    const text = String(value || "").trim();
+    if (!text) return "";
+    return text.length > max ? `${text.slice(0, max - 1)}...` : text;
+  }
+
   function asFiniteNumber(value) {
     if (typeof value === "number" && Number.isFinite(value)) return value;
     if (typeof value === "string" && value.trim() !== "") {
@@ -237,25 +260,6 @@
     window.__RUNTIME_AVAILABLE__ = value === true;
   }
 
-  async function probeRuntimeAvailability() {
-    try {
-      const response = await fetch(buildApiUrl(BOTS_STATUS_ENDPOINT), {
-        method: "GET",
-        cache: "no-store",
-        credentials: "include",
-        headers: {
-          Accept: "application/json"
-        }
-      });
-      const available = response.ok;
-      setRuntimeAvailable(available);
-      return available;
-    } catch (err) {
-      setRuntimeAvailable(false);
-      return false;
-    }
-  }
-
   function normalizePayload(payload) {
     const supportedPlatformsRaw =
       payload?.supported_platforms ||
@@ -276,6 +280,54 @@
       : supportedPlatformsRaw && typeof supportedPlatformsRaw === "object"
         ? Object.keys(supportedPlatformsRaw)
         : [];
+    const platformRowsRaw = Array.isArray(payload?.platforms)
+      ? payload.platforms
+      : payload?.platforms && typeof payload.platforms === "object"
+        ? Object.keys(payload.platforms).map((key) => ({
+          platform: key,
+          ...(payload.platforms[key] || {})
+        }))
+        : [];
+
+    const platformRows = platformRowsRaw
+      .map((entry) => {
+        const key = normalizePlatformKey(entry?.platform || entry?.name || entry?.id);
+        if (!key) return null;
+        const status = String(entry?.status || "unknown").trim().toLowerCase();
+        const rawSeverity = String(
+          entry?.last_log?.severity || entry?.lastLog?.severity || ""
+        )
+          .trim()
+          .toLowerCase();
+        const severity = ["info", "warning", "error"].includes(rawSeverity)
+          ? rawSeverity
+          : "info";
+        const logMessage = String(
+          entry?.last_log?.message || entry?.lastLog?.message || ""
+        ).trim();
+
+        return {
+          platform: key,
+          label: String(entry?.label || entry?.name || platformDisplayName(key)).trim() ||
+            platformDisplayName(key),
+          available: entry?.available === true,
+          status,
+          paused: entry?.paused === true || status === "paused",
+          pausedReason: String(entry?.paused_reason || entry?.pausedReason || "").trim(),
+          error: String(entry?.error || "").trim(),
+          staged: entry?.staged === true || status === "staged",
+          disabledReason: String(entry?.disabled_reason || entry?.disabledReason || "").trim(),
+          lastLog: logMessage
+            ? {
+              timestamp: entry?.last_log?.timestamp || entry?.lastLog?.timestamp || null,
+              severity,
+              message: logMessage
+            }
+            : null
+        };
+      })
+      .filter(Boolean);
+
     const bots = Array.isArray(payload?.bots) ? payload.bots.slice() : [];
     bots.sort((a, b) => {
       const creatorCompare = String(a?.creator_id || "").localeCompare(String(b?.creator_id || ""));
@@ -286,11 +338,13 @@
     return {
       schemaVersion: payload?.schema_version || null,
       generatedAt: payload?.generated_at || null,
+      serverGeneratedAt: payload?.server_generated_at || payload?.generated_at || null,
       count: typeof payload?.count === "number" ? payload.count : bots.length,
       supportedPlatforms: sortPlatformKeys(
         supportedPlatforms.map((platform) => normalizePlatformKey(platform))
       ),
       platformCapabilitiesRaw,
+      platformRows,
       bots
     };
   }
@@ -558,9 +612,23 @@
     return normalized;
   }
 
-  function buildPlatformSummary(runtimeSnapshot, deployPlatformSchemas) {
-    const runtimePlatforms = normalizeRuntimePlatforms(runtimeSnapshot);
-    const keys = sortPlatformKeys(Object.keys(deployPlatformSchemas || {}));
+  function buildPlatformSummary(normalizedPayload, deployPlatformSchemas, options = {}) {
+    const runtimePlatforms = Object.create(null);
+    const runtimeRows = Array.isArray(normalizedPayload?.platformRows)
+      ? normalizedPayload.platformRows
+      : [];
+    runtimeRows.forEach((row) => {
+      runtimePlatforms[row.platform] = row;
+    });
+    const keys = sortPlatformKeys(
+      Object.keys({
+        ...(deployPlatformSchemas || {}),
+        ...runtimePlatforms
+      })
+    );
+    const fallbackMode = options?.fallback === true;
+    const fallbackReason =
+      options?.fallbackReason || "STALE / FALLBACK: runtime platform status unavailable.";
 
     const summary = Object.create(null);
     keys.forEach((platform) => {
@@ -572,15 +640,27 @@
       if (!deployEnabled) {
         availability = "staged";
         reason = schema?.blockedReason || "Staged/disabled for runtime manual deploy.";
+      } else if (fallbackMode) {
+        availability = "unavailable";
+        reason = fallbackReason;
       } else if (runtime?.paused) {
         availability = "paused";
         reason = runtime.pausedReason || "Paused by runtime control.";
-      } else if (runtime?.availability === "active") {
+      } else if (
+        runtime?.available === true ||
+        runtime?.status === "connected" ||
+        runtime?.status === "online" ||
+        runtime?.status === "active" ||
+        runtime?.status === "running"
+      ) {
         availability = "active";
         reason = "Runtime available.";
-      } else if (runtime?.error) {
+      } else if (runtime?.status === "error" || runtime?.error) {
         availability = "unavailable";
-        reason = runtime.error;
+        reason = runtime?.error || "Runtime reported an error.";
+      } else if (runtime?.status === "staged") {
+        availability = "staged";
+        reason = runtime?.disabledReason || schema?.blockedReason || "Staged/disabled.";
       }
 
       summary[platform] = {
@@ -589,17 +669,26 @@
         deployEnabled,
         staged: schema?.staged === true || !deployEnabled,
         availability,
-        status: !deployEnabled ? "staged" : runtime?.status || "unknown",
+        status: !deployEnabled ? "staged" : runtime?.status || (fallbackMode ? "fallback" : "unknown"),
         paused: runtime?.paused === true,
         pausedReason: runtime?.pausedReason || "",
-        reason
+        reason,
+        lastLog: runtime?.lastLog || null,
+        isFallback: fallbackMode
       };
     });
 
     return summary;
   }
 
-  function renderPlatformSummary(platformSummary) {
+  function severityBadgeClass(severity) {
+    const normalized = String(severity || "").trim().toLowerCase();
+    if (normalized === "error") return "ss-badge-danger";
+    if (normalized === "warning") return "ss-badge-warning";
+    return "ss-badge-success";
+  }
+
+  function renderPlatformSummary(platformSummary, options = {}) {
     if (!el.platformsGrid) return;
 
     const entries = sortPlatformKeys(Object.keys(platformSummary || {})).map((platform) => (
@@ -633,17 +722,40 @@
               : availability === "staged"
                 ? "Staged/Disabled"
               : "Unavailable";
+        const lastLog = entry?.lastLog;
+        const hasLog = Boolean(lastLog && String(lastLog.message || "").trim());
+        const logMessage = hasLog
+          ? String(lastLog.message || "").trim()
+          : "No runtime log reported.";
+        const logSeverity = hasLog
+          ? String(lastLog.severity || "info").trim().toLowerCase()
+          : "info";
+        const logTimestamp = hasLog
+          ? formatTimestampCompact(lastLog.timestamp)
+          : "--";
+        const logPreview = truncateForCard(logMessage, 110);
         return `
           <article class="ss-bots-platform-chip ${stateClass}">
             <div class="ss-bots-platform-name">${escapeHtml(entry.label)}</div>
             <div>${renderStatus(badgeLabel)}</div>
             <div class="ss-bot-platform-note">${escapeHtml(entry.reason)}</div>
+            <div class="ss-bot-platform-log">
+              <span class="ss-badge ${severityBadgeClass(logSeverity)}">${escapeHtml(
+          logSeverity.toUpperCase()
+        )}</span>
+              <span class="ss-bot-platform-log-time">${escapeHtml(logTimestamp)}</span>
+            </div>
+            <div class="ss-bot-platform-log-message" title="${escapeHtml(logMessage)}">${escapeHtml(
+          logPreview
+        )}</div>
           </article>
         `;
       })
       .join("");
 
     if (el.platformsStatus) {
+      const modeLabel = options?.live === true ? "Live" : "STALE / FALLBACK";
+      const updatedLabel = formatTimestamp(options?.updatedAt || null);
       const pausedCount = entries.filter((entry) => entry.availability === "paused").length;
       const activeCount = entries.filter((entry) => entry.availability === "active").length;
       const stagedCount = entries.filter((entry) => entry.availability === "staged").length;
@@ -651,7 +763,7 @@
         (entry) => entry.availability === "unavailable"
       ).length;
       el.platformsStatus.textContent =
-        `Active ${activeCount} | Paused ${pausedCount} | ` +
+        `${modeLabel} | Last updated ${updatedLabel} | Active ${activeCount} | Paused ${pausedCount} | ` +
         `Unavailable ${unavailableCount} | Staged ${stagedCount}`;
     }
   }
@@ -1075,8 +1187,12 @@
       el.generatedAt.textContent = `Generated: ${formatTimestamp(normalized?.generatedAt)}`;
     }
     if (el.status) {
-      const received = formatTimestamp(new Date(receivedAt).toISOString());
-      el.status.textContent = `Live runtime snapshot (${received})`;
+      if (state.hydrationLive) {
+        const received = formatTimestamp(new Date(receivedAt).toISOString());
+        el.status.textContent = `Live runtime API (${received})`;
+      } else {
+        el.status.textContent = state.hydrationLabel || "Runtime unreachable - bot status unavailable";
+      }
     }
   }
 
@@ -1094,30 +1210,26 @@
     return normalizePayload(payload);
   }
 
-  async function fetchRuntimeSnapshot() {
-    try {
-      if (window.ConfigState?.loadRuntimeSnapshot) {
-        return (await window.ConfigState.loadRuntimeSnapshot({ forceReload: true })) || null;
-      }
-      if (window.Telemetry?.loadSnapshot) {
-        return (await window.Telemetry.loadSnapshot(true)) || null;
-      }
-    } catch (err) {
-      return null;
-    }
-    return null;
-  }
-
-  function render(normalized, runtimeSnapshot) {
+  function render(normalized) {
     const now = Date.now();
+    const hasLivePlatformRows =
+      Array.isArray(normalized?.platformRows) && normalized.platformRows.length > 0;
     state.lastPayload = normalized;
-    state.lastRuntimeSnapshot = runtimeSnapshot || null;
     state.deployPlatformSchemas = resolveDeployPlatformSchemas(normalized);
     state.platformSummary = buildPlatformSummary(
-      runtimeSnapshot || null,
-      state.deployPlatformSchemas
+      normalized,
+      state.deployPlatformSchemas,
+      {
+        fallback: !hasLivePlatformRows,
+        fallbackReason: "STALE / FALLBACK: runtime API did not return platform availability."
+      }
     );
     state.lastReceivedAt = now;
+    state.hydrationLive = hasLivePlatformRows;
+    state.hydrationLabel = hasLivePlatformRows
+      ? "Live runtime API"
+      : "Runtime API reachable - STALE / FALLBACK platform availability";
+    setRuntimeAvailable(true);
 
     if (el.source) {
       el.source.textContent = `Source: ${state.sourceUrl || buildApiUrl(BOTS_STATUS_ENDPOINT)}`;
@@ -1125,7 +1237,10 @@
 
     updateMeta(normalized, now);
 
-    renderPlatformSummary(state.platformSummary);
+    renderPlatformSummary(state.platformSummary, {
+      live: hasLivePlatformRows,
+      updatedAt: normalized?.serverGeneratedAt || normalized?.generatedAt || null
+    });
     renderManualPlatformOptions();
     updateManualCreatorSuggestions();
     updateManualDeployUi();
@@ -1141,27 +1256,23 @@
   }
 
   async function refresh() {
-    if (!(await probeRuntimeAvailability())) {
-      renderRuntimeOffline();
-      return;
-    }
-
     try {
-      const [normalized, runtimeSnapshot] = await Promise.all([
-        fetchPayload(),
-        fetchRuntimeSnapshot()
-      ]);
+      const normalized = await fetchPayload();
       setError("");
-      render(normalized, runtimeSnapshot);
+      render(normalized);
     } catch (err) {
       setRuntimeAvailable(false);
       state.lastPayload = { bots: [], supportedPlatforms: [], generatedAt: null };
-      state.lastRuntimeSnapshot = null;
       state.deployPlatformSchemas = buildFallbackDeploySchemas();
-      state.platformSummary = buildPlatformSummary(null, state.deployPlatformSchemas);
+      state.platformSummary = buildPlatformSummary(null, state.deployPlatformSchemas, {
+        fallback: true,
+        fallbackReason: "STALE / FALLBACK: runtime API unreachable."
+      });
       state.lastReceivedAt = Date.now();
+      state.hydrationLive = false;
+      state.hydrationLabel = "Runtime unreachable - bot status unavailable";
       if (el.status) {
-        el.status.textContent = "Unable to load runtime bot status.";
+        el.status.textContent = state.hydrationLabel;
       }
       if (el.count) {
         el.count.textContent = "-- rows";
@@ -1172,7 +1283,10 @@
       if (el.body) {
         el.body.innerHTML = "";
       }
-      renderPlatformSummary(state.platformSummary);
+      renderPlatformSummary(state.platformSummary, {
+        live: false,
+        updatedAt: null
+      });
       renderManualPlatformOptions();
       if (el.empty) {
         el.empty.classList.remove("hidden");
@@ -1185,14 +1299,17 @@
   }
 
   function renderRuntimeOffline() {
-    stopPolling();
     state.lastPayload = { bots: [], supportedPlatforms: [], generatedAt: null };
-    state.lastRuntimeSnapshot = null;
     state.deployPlatformSchemas = buildFallbackDeploySchemas();
-    state.platformSummary = buildPlatformSummary(null, state.deployPlatformSchemas);
+    state.platformSummary = buildPlatformSummary(null, state.deployPlatformSchemas, {
+      fallback: true,
+      fallbackReason: "STALE / FALLBACK: runtime unavailable."
+    });
     state.lastReceivedAt = Date.now();
+    state.hydrationLive = false;
+    state.hydrationLabel = "Runtime offline - bot status unavailable";
     if (el.status) {
-      el.status.textContent = "Runtime offline - bot status unavailable";
+      el.status.textContent = state.hydrationLabel;
     }
     if (el.count) {
       el.count.textContent = "-- rows";
@@ -1206,7 +1323,10 @@
     if (el.body) {
       el.body.innerHTML = "";
     }
-    renderPlatformSummary(state.platformSummary);
+    renderPlatformSummary(state.platformSummary, {
+      live: false,
+      updatedAt: null
+    });
     renderManualPlatformOptions();
     if (el.empty) {
       el.empty.classList.remove("hidden");
@@ -1375,10 +1495,6 @@
 
   async function startPollingAsync() {
     stopPolling();
-    if (!(await probeRuntimeAvailability())) {
-      renderRuntimeOffline();
-      return;
-    }
     await refresh();
     state.pollHandle = setInterval(refresh, POLL_INTERVAL_MS);
     state.tickHandle = setInterval(tick, 1000);
@@ -1464,11 +1580,12 @@
     state.manualFormOpen = false;
     state.manualDeploy = { pending: false, error: "", renderedPlatform: "" };
     state.lastPayload = null;
-    state.lastRuntimeSnapshot = null;
     state.deployPlatformSchemas = Object.create(null);
     state.platformSummary = Object.create(null);
     state.lastReceivedAt = null;
     state.sourceUrl = null;
+    state.hydrationLive = false;
+    state.hydrationLabel = "Waiting for runtime status...";
     state.rowUi = Object.create(null);
   }
 
