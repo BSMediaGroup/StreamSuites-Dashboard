@@ -2257,6 +2257,13 @@ body.ss-col-resizing-active {
   text-transform: uppercase;
 }
 
+.ss-bots-live-total {
+  margin-bottom: 8px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .ss-bots-platforms-grid {
   display: grid;
   gap: 8px;
@@ -2264,18 +2271,50 @@ body.ss-col-resizing-active {
 }
 
 .ss-bots-platform-chip {
+  position: relative;
   display: grid;
   gap: 4px;
   padding: 10px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+}
+
+.ss-bots-platform-logo {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  opacity: 0.45;
+  pointer-events: none;
 }
 
 .ss-bots-platform-name {
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  padding-right: 20px;
+}
+
+.ss-bots-platform-live {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.ss-bots-platform-chip .ss-bot-status,
+.ss-bots-platform-chip .ss-badge {
+  font-size: 8px;
+  padding: 2px 6px;
+  line-height: 1.1;
+}
+
+.ss-bots-platform-chip .ss-bot-status {
+  min-width: 46px;
 }
 
 .ss-bots-platform-chip.is-active {

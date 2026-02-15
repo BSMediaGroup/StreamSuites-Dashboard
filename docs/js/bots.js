@@ -15,6 +15,13 @@
     rumble: "Rumble",
     pilled: "Pilled"
   };
+  const PLATFORM_ICON_PATHS = Object.freeze({
+    twitch: "/assets/icons/twitch.svg",
+    kick: "/assets/icons/kick.svg",
+    youtube: "/assets/icons/youtube.svg",
+    rumble: "/assets/icons/rumble.svg",
+    pilled: "/assets/icons/pilled.svg"
+  });
   const DEPLOY_PLATFORM_SCHEMA_FALLBACK = {
     twitch: {
       platform: "twitch",
@@ -107,6 +114,7 @@
     error: null,
     platformsStatus: null,
     platformsGrid: null,
+    liveTotal: null,
     manualToggle: null,
     manualForm: null,
     manualCreator: null,
@@ -155,6 +163,11 @@
   function platformDisplayName(platform) {
     const key = normalizePlatformKey(platform);
     return PLATFORM_DISPLAY[key] || key || "-";
+  }
+
+  function platformIconPath(platform) {
+    const key = normalizePlatformKey(platform);
+    return PLATFORM_ICON_PATHS[key] || "/assets/icons/ui/bot.svg";
   }
 
   function sortPlatformKeys(keys) {
@@ -681,6 +694,25 @@
     return summary;
   }
 
+  function buildLiveBotCounts(normalizedPayload, platformSummary) {
+    const byPlatform = Object.create(null);
+    const bots = Array.isArray(normalizedPayload?.bots) ? normalizedPayload.bots : [];
+    bots.forEach((bot) => {
+      const key = normalizePlatformKey(bot?.platform);
+      if (!key) return;
+      byPlatform[key] = (byPlatform[key] || 0) + 1;
+    });
+    Object.keys(platformSummary || {}).forEach((platform) => {
+      if (!Number.isFinite(byPlatform[platform])) {
+        byPlatform[platform] = 0;
+      }
+    });
+    return {
+      byPlatform,
+      total: bots.length
+    };
+  }
+
   function severityBadgeClass(severity) {
     const normalized = String(severity || "").trim().toLowerCase();
     if (normalized === "error") return "ss-badge-danger";
@@ -690,6 +722,7 @@
 
   function renderPlatformSummary(platformSummary, options = {}) {
     if (!el.platformsGrid) return;
+    const liveCounts = options?.liveCounts || { byPlatform: Object.create(null), total: 0 };
 
     const entries = sortPlatformKeys(Object.keys(platformSummary || {})).map((platform) => (
       platformSummary[platform] || {
@@ -718,10 +751,13 @@
           availability === "paused"
             ? "Paused"
             : availability === "active"
-              ? "Active"
+              ? "Ready"
               : availability === "staged"
                 ? "Staged/Disabled"
               : "Unavailable";
+        const liveCount = Number.isFinite(liveCounts.byPlatform?.[entry.platform])
+          ? liveCounts.byPlatform[entry.platform]
+          : 0;
         const lastLog = entry?.lastLog;
         const hasLog = Boolean(lastLog && String(lastLog.message || "").trim());
         const logMessage = hasLog
@@ -736,8 +772,12 @@
         const logPreview = truncateForCard(logMessage, 110);
         return `
           <article class="ss-bots-platform-chip ${stateClass}">
+            <img class="ss-bots-platform-logo" src="${escapeHtml(
+          platformIconPath(entry.platform)
+        )}" alt="${escapeHtml(entry.label)} logo" loading="lazy" decoding="async" />
             <div class="ss-bots-platform-name">${escapeHtml(entry.label)}</div>
             <div>${renderStatus(badgeLabel)}</div>
+            <div class="ss-bots-platform-live">LIVE: ${escapeHtml(String(liveCount))}</div>
             <div class="ss-bot-platform-note">${escapeHtml(entry.reason)}</div>
             <div class="ss-bot-platform-log">
               <span class="ss-badge ${severityBadgeClass(logSeverity)}">${escapeHtml(
@@ -765,6 +805,10 @@
       el.platformsStatus.textContent =
         `${modeLabel} | Last updated ${updatedLabel} | Active ${activeCount} | Paused ${pausedCount} | ` +
         `Unavailable ${unavailableCount} | Staged ${stagedCount}`;
+    }
+    if (el.liveTotal) {
+      const totalLive = Number.isFinite(liveCounts.total) ? liveCounts.total : 0;
+      el.liveTotal.textContent = `TOTAL LIVE BOTS: ${totalLive}`;
     }
   }
 
@@ -1236,10 +1280,12 @@
     }
 
     updateMeta(normalized, now);
+    const liveCounts = buildLiveBotCounts(normalized, state.platformSummary);
 
     renderPlatformSummary(state.platformSummary, {
       live: hasLivePlatformRows,
-      updatedAt: normalized?.serverGeneratedAt || normalized?.generatedAt || null
+      updatedAt: normalized?.serverGeneratedAt || normalized?.generatedAt || null,
+      liveCounts
     });
     renderManualPlatformOptions();
     updateManualCreatorSuggestions();
@@ -1285,7 +1331,8 @@
       }
       renderPlatformSummary(state.platformSummary, {
         live: false,
-        updatedAt: null
+        updatedAt: null,
+        liveCounts: buildLiveBotCounts(state.lastPayload, state.platformSummary)
       });
       renderManualPlatformOptions();
       if (el.empty) {
@@ -1325,7 +1372,8 @@
     }
     renderPlatformSummary(state.platformSummary, {
       live: false,
-      updatedAt: null
+      updatedAt: null,
+      liveCounts: buildLiveBotCounts(state.lastPayload, state.platformSummary)
     });
     renderManualPlatformOptions();
     if (el.empty) {
@@ -1338,14 +1386,26 @@
 
   function tick() {
     if (!state.lastPayload || !state.lastReceivedAt) return;
-    if (el.body) {
-      el.body.innerHTML = renderRows(
-        state.lastPayload,
-        Date.now(),
-        state.platformSummary
-      );
-    }
+    renderRowsAndCountersFromState(Date.now());
     updateMeta(state.lastPayload, state.lastReceivedAt);
+  }
+
+  function renderRowsAndCountersFromState(receivedAt = Date.now()) {
+    if (!state.lastPayload) return;
+    const hasRows = Array.isArray(state.lastPayload.bots) && state.lastPayload.bots.length > 0;
+    if (el.body) {
+      el.body.innerHTML = hasRows
+        ? renderRows(state.lastPayload, receivedAt, state.platformSummary)
+        : "";
+    }
+    if (el.empty) {
+      el.empty.classList.toggle("hidden", hasRows);
+    }
+    renderPlatformSummary(state.platformSummary, {
+      live: state.hydrationLive,
+      updatedAt: state.lastPayload?.serverGeneratedAt || state.lastPayload?.generatedAt || null,
+      liveCounts: buildLiveBotCounts(state.lastPayload, state.platformSummary)
+    });
   }
 
   async function readJsonSafe(response) {
@@ -1371,17 +1431,13 @@
     const deploySchema = getDeployPlatformSchema(platform);
     if (!deploySchema || deploySchema.deployEnabled !== true) {
       ui.error = deploySchema?.blockedReason || "Manual deploy is unavailable for this platform.";
-      if (el.body) {
-        el.body.innerHTML = renderRows(state.lastPayload, Date.now(), state.platformSummary);
-      }
+      renderRowsAndCountersFromState();
       return;
     }
     const platformState = state.platformSummary?.[normalizePlatformKey(platform)] || null;
     if (platformState?.paused) {
       ui.error = platformState.pausedReason || "Platform is paused by runtime control.";
-      if (el.body) {
-        el.body.innerHTML = renderRows(state.lastPayload, Date.now(), state.platformSummary);
-      }
+      renderRowsAndCountersFromState();
       return;
     }
 
@@ -1400,9 +1456,7 @@
       const trimmed = String(prompted || "").trim();
       if (!trimmed) {
         ui.error = getManualRequiredTargetMessage(deploySchema);
-        if (el.body) {
-          el.body.innerHTML = renderRows(state.lastPayload, Date.now(), state.platformSummary);
-        }
+        renderRowsAndCountersFromState();
         return;
       }
       targetIdentifier = trimmed;
@@ -1414,9 +1468,7 @@
     ui.pending = true;
     ui.pendingAction = action;
     ui.error = "";
-    if (el.body) {
-      el.body.innerHTML = renderRows(state.lastPayload, Date.now(), state.platformSummary);
-    }
+    renderRowsAndCountersFromState();
 
     try {
       const payload = {
@@ -1453,9 +1505,7 @@
     } finally {
       ui.pending = false;
       ui.pendingAction = "";
-      if (state.lastPayload && el.body) {
-        el.body.innerHTML = renderRows(state.lastPayload, Date.now(), state.platformSummary);
-      }
+      renderRowsAndCountersFromState();
     }
   }
 
@@ -1519,6 +1569,7 @@
     el.error = $("bots-error");
     el.platformsStatus = $("bots-platforms-status");
     el.platformsGrid = $("bots-platforms-grid");
+    el.liveTotal = $("bots-live-total");
     el.manualToggle = $("bots-manual-toggle");
     el.manualForm = $("bots-manual-form");
     el.manualCreator = $("bots-manual-creator");
