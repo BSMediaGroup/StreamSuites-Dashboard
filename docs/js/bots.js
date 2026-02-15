@@ -803,7 +803,7 @@
         (entry) => entry.availability === "unavailable"
       ).length;
       el.platformsStatus.textContent =
-        `${modeLabel} | Last updated ${updatedLabel} | Active ${activeCount} | Paused ${pausedCount} | ` +
+        `${modeLabel} | Last updated ${updatedLabel} | Ready ${activeCount} | Paused ${pausedCount} | ` +
         `Unavailable ${unavailableCount} | Staged ${stagedCount}`;
     }
     if (el.liveTotal) {
