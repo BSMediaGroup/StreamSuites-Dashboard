@@ -203,6 +203,7 @@
   color: #80e89b;
   border-color: rgba(126, 226, 150, 0.5);
   background: rgba(18, 26, 34, 0.44);
+  line-height: 1.25;
 }
 
 .ss-status-indicator[data-state='degraded'] .ss-status-dot,
