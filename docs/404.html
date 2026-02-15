@@ -158,7 +158,12 @@
       border-color: rgba(189, 198, 210, 0.32);
     }
 
+    #app {
+      grid-template-columns: minmax(0, 1fr) !important;
+    }
+
     .ss-main.no-sidebar {
+      grid-column: 1 !important;
       display: grid;
       grid-template-rows: auto 1fr;
       min-height: calc(100vh - 46px);
