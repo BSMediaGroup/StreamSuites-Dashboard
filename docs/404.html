@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<!-- ===================================================================== -->
+<!-- StreamSuites™ Dashboard (Static Admin UI)                             -->
+<!-- Owner: Daniel Clancy                                                  -->
+<!-- Copyright: © 2026 Brainstream Media Group                             -->
+<!-- ===================================================================== -->
+<html lang="en">
+<head>
+  <script>
+    window.ADMIN_BASE_PATH = "/docs";
+  </script>
+  <meta charset="UTF-8" />
+  <title>404 — Not Found | StreamSuites™ Admin Dashboard</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <meta name="description" content="The requested StreamSuites admin route could not be found." />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="discord-client-id" content="1449280789010321420" />
+  <meta name="discord-redirect-uri" content="https://admin.streamsuites.app/" />
+  <meta name="discord-scopes" content="identify guilds" />
+  <meta name="streamsuites-auth-base" content="https://api.streamsuites.app" />
+  <meta name="streamsuites-auth-session" content="https://api.streamsuites.app/auth/session" />
+  <meta name="streamsuites-auth-logout" content="https://api.streamsuites.app/auth/logout" />
+  <meta name="streamsuites-auth-login" content="https://api.streamsuites.app/auth/login?surface=admin&amp;redirect=https://admin.streamsuites.app/index.html" />
+  <meta name="streamsuites-auth-google" content="https://api.streamsuites.app/auth/login/google?surface=admin&amp;return_to=https://admin.streamsuites.app/auth/success.html" />
+  <meta name="streamsuites-auth-github" content="https://api.streamsuites.app/auth/login/github?surface=admin&amp;return_to=https://admin.streamsuites.app/auth/success.html" />
+  <meta name="streamsuites-auth-discord" content="https://api.streamsuites.app/auth/login/discord?surface=admin&amp;return_to=https://admin.streamsuites.app/auth/success.html" />
+  <meta name="streamsuites-auth-x" content="https://api.streamsuites.app/auth/x/start?surface=admin&amp;return_to=https://admin.streamsuites.app/auth/success.html" />
+  <meta name="streamsuites-auth-twitch" content="https://api.streamsuites.app/oauth/twitch/start" />
+  <meta name="streamsuites-auth-magic-link" content="https://api.streamsuites.app/auth/magic-link" />
+  <meta name="streamsuites-livechat-url" content="" />
+
+  <meta property="og:title" content="StreamSuites™ Admin Dashboard" />
+  <meta property="og:description" content="The requested StreamSuites admin route could not be found." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://admin.streamsuites.app/404.html" />
+  <meta property="og:image" content="https://admin.streamsuites.app/assets/logos/seodash.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="StreamSuites™ Admin Dashboard" />
+  <meta name="twitter:description" content="The requested StreamSuites admin route could not be found." />
+  <meta name="twitter:image:src" content="https://admin.streamsuites.app/assets/logos/seodash.jpg" />
+
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+
+  <style>
+    @font-face {
+      font-family: "RechargeBd";
+      src: url("https://raw.githubusercontent.com/BSMediaGroup/Resources/master/FONTS/Recharge%20Bd.otf")
+           format("opentype");
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "SuiGenerisRg";
+      src: url("https://raw.githubusercontent.com/BSMediaGroup/Resources/master/FONTS/Sui%20Generis%20Rg.otf")
+           format("opentype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    #app-footer a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    #app-footer a:hover {
+      text-decoration: underline;
+    }
+
+    #app-footer {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) auto !important;
+      align-items: center !important;
+      column-gap: 18px !important;
+      justify-content: stretch !important;
+      overflow: visible !important;
+    }
+
+    #app-footer .footer-left,
+    #app-footer .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      white-space: nowrap;
+    }
+
+    #app-footer .footer-left {
+      justify-self: start;
+      overflow: hidden;
+    }
+
+    #app-footer .footer-left .footer-version,
+    #app-footer .footer-left #footer-copyright {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #app-footer .footer-right {
+      justify-self: end;
+      justify-content: flex-end;
+      text-align: right;
+      gap: 6px;
+      overflow: visible;
+    }
+
+    #app-footer .footer-status-slot {
+      display: inline-flex;
+      align-items: center;
+      position: relative;
+      overflow: visible;
+      min-width: 0;
+      margin-right: 2px;
+    }
+
+    #app-footer #app-status.footer-active-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-right: 2px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(126, 226, 150, 0.38);
+      background: rgba(18, 26, 34, 0.44);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      font-size: 8px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+    }
+
+    #app-footer #app-status.footer-active-pill::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: currentColor;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.3);
+      flex-shrink: 0;
+    }
+
+    #app-footer #app-status.footer-active-pill.active {
+      color: #80e89b;
+      border-color: rgba(126, 226, 150, 0.5);
+      line-height: 1.25;
+    }
+
+    #app-footer #app-status.footer-active-pill.idle {
+      color: rgba(189, 198, 210, 0.88);
+      border-color: rgba(189, 198, 210, 0.32);
+    }
+
+    .ss-main.no-sidebar {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-height: calc(100vh - 46px);
+    }
+
+    .ss-topbar-404 {
+      padding-inline: clamp(16px, 2.5vw, 32px);
+    }
+
+    .ss-topbar-404 .ss-topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ss-topbar-404-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .ss-topbar-404-brand img {
+      width: 38px;
+      height: 38px;
+      display: block;
+    }
+
+    .ss-not-found-main {
+      display: grid;
+      place-items: center;
+      padding: 32px 20px 48px;
+    }
+
+    .ss-not-found-card {
+      width: min(760px, 100%);
+      text-align: center;
+      padding: clamp(24px, 4vw, 40px);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(8, 16, 24, 0.55);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .ss-not-found-logo {
+      width: min(180px, 40vw);
+      height: auto;
+      margin: 0 auto 18px;
+      display: block;
+    }
+
+    .ss-not-found-card h1 {
+      margin: 0 0 10px;
+      font-family: "RechargeBd", system-ui, sans-serif;
+      letter-spacing: 0.02em;
+    }
+
+    .ss-not-found-card p {
+      margin: 0;
+    }
+
+    .ss-not-found-copy {
+      color: rgba(223, 231, 241, 0.9);
+      margin-bottom: 22px !important;
+    }
+
+    .ss-not-found-cta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin: 0 auto 14px;
+      width: min(420px, 100%);
+    }
+
+    .ss-not-found-link-row {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      font-size: 0.9rem;
+    }
+
+    .ss-not-found-link-row a {
+      color: rgba(205, 218, 233, 0.92);
+    }
+
+    .ss-not-found-requested {
+      margin-top: 14px !important;
+      font-size: 0.82rem;
+      color: rgba(170, 182, 197, 0.82);
+      word-break: break-all;
+    }
+
+    @media (max-width: 560px) {
+      .ss-not-found-cta-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
+  />
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/theme-dark.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+  <link rel="stylesheet" href="/css/updates.css" />
+  <link rel="stylesheet" href="/css/status-widget.css" />
+  <script defer src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+</head>
+<body>
+  <div id="app">
+    <div class="ss-main no-sidebar">
+      <header id="app-header" class="ss-topbar ss-topbar-404">
+        <div class="ss-topbar-left">
+          <a href="https://admin.streamsuites.app" class="ss-topbar-404-brand" aria-label="StreamSuites Admin Dashboard">
+            <img src="/assets/logos/adminredshield.webp" alt="StreamSuites Logo" />
+            <span class="ss-topbar-title">StreamSuites™ Admin</span>
+          </a>
+          <span class="ss-topbar-title">404 — Not Found</span>
+        </div>
+      </header>
+
+      <main id="app-main" class="ss-not-found-main">
+        <section class="ss-not-found-card" aria-labelledby="not-found-title">
+          <img class="ss-not-found-logo" src="/assets/logos/adminredshield.webp" alt="StreamSuites Admin" />
+          <h1 id="not-found-title">Page not found</h1>
+          <p class="ss-not-found-copy">The admin route you requested does not exist or may have been moved.</p>
+
+          <div class="ss-not-found-cta-grid">
+            <a class="ss-btn ss-btn-primary" href="https://admin.streamsuites.app">Return to Admin Dashboard</a>
+            <a class="ss-btn ss-btn-secondary" href="https://streamsuites.app">Public Site</a>
+          </div>
+
+          <div class="ss-not-found-link-row">
+            <a href="https://streamsuites.app/support">Support</a>
+            <a href="https://docs.streamsuites.app">Documentation</a>
+          </div>
+
+          <p id="requested-path" class="ss-not-found-requested" hidden></p>
+        </section>
+      </main>
+    </div>
+
+    <footer id="app-footer" data-ss-footer-edge="true">
+      <div class="footer-left" data-footer-meta="true">
+        <span id="footer-version" class="footer-version">Version unavailable</span>
+        <span class="footer-sep">•</span>
+        <a id="footer-copyright" href="https://brainstream.media" target="_blank" rel="noopener noreferrer">
+          © 2026 Brainstream Media Group
+        </a>
+      </div>
+
+      <div class="footer-right">
+        <span id="app-status" class="status-indicator idle footer-active-pill">
+          idle
+        </span>
+        <span class="footer-status-slot" data-status-slot data-status-slot-mode="inline"></span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      const requestedPath = document.getElementById("requested-path");
+      if (requestedPath && typeof window.location.pathname === "string") {
+        requestedPath.textContent = `Requested: ${window.location.pathname}`;
+        requestedPath.hidden = false;
+      }
+
+      const statusEl = document.getElementById("app-status");
+      if (statusEl) {
+        statusEl.textContent = "active";
+        statusEl.classList.remove("idle");
+        statusEl.classList.add("active");
+      }
+
+      const defaultHomeHash = "#overview";
+      const hasHash = Boolean(window.location.hash && window.location.hash.length > 1);
+      const pathname = window.location.pathname || "/";
+
+      if (!hasHash && pathname !== "/") {
+        window.setTimeout(() => {
+          if (window.location.hash) return;
+          const target = `${window.location.origin}/${defaultHomeHash}`;
+          window.location.assign(target);
+        }, 3000);
+      }
+    })();
+  </script>
+  <script src="/js/utils/versioning.js"></script>
+  <script src="/js/utils/version-stamp.js"></script>
+  <script src="/js/status-widget.js" defer></script>
+</body>
+</html>
