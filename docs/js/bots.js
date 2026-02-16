@@ -7,6 +7,7 @@
 
   const POLL_INTERVAL_MS = 5000;
   const BOTS_STATUS_ENDPOINT = "/api/admin/bots/status";
+  const CREATORS_ENDPOINT = "/api/admin/creators";
   const MANUAL_DEPLOY_ENDPOINT = "/api/admin/runtime/manual-deploy";
   const MANUAL_RESUME_ENDPOINT = "/api/admin/runtime/manual-resume";
   const MANUAL_CLEAR_ENDPOINT = "/api/admin/runtime/manual-instance";
@@ -89,6 +90,7 @@
     tickHandle: null,
     lastPayload: null,
     deployPlatformSchemas: Object.create(null),
+    creators: [],
     platformSummary: Object.create(null),
     lastReceivedAt: null,
     sourceUrl: null,
@@ -120,7 +122,6 @@
     manualToggle: null,
     manualForm: null,
     manualCreator: null,
-    manualCreatorList: null,
     manualPlatform: null,
     manualPlatformFields: null,
     manualTarget: null,
@@ -995,8 +996,9 @@
   function manualFormValues() {
     const platform = normalizePlatformKey(el.manualPlatform?.value);
     const schema = getDeployPlatformSchema(platform);
+    const creatorId = String(el.manualCreator?.value || "").trim();
     return {
-      creatorId: String(el.manualCreator?.value || "").trim(),
+      creatorId,
       platform,
       schema,
       targetIdentifier: String(el.manualTarget?.value || "").trim()
@@ -1014,7 +1016,22 @@
     return "Platform is paused by runtime control.";
   }
 
-  function getManualDeployBlockedReason(platform) {
+  function hasManualCreatorOptions() {
+    return Array.isArray(state.creators) && state.creators.length > 0;
+  }
+
+  function getManualDeployBlockedReason(platform, creatorId = "") {
+    if (!hasManualCreatorOptions()) {
+      return "No runtime creators available. Manual deploy is disabled.";
+    }
+    if (creatorId) {
+      const exists = state.creators.some(
+        (creator) => String(creator?.creator_id || "").trim() === creatorId
+      );
+      if (!exists) {
+        return "Selected creator is not in runtime creators registry.";
+      }
+    }
     if (!platform) return "";
     const schema = getDeployPlatformSchema(platform);
     if (!schema) {
@@ -1028,15 +1045,31 @@
   }
 
   function updateManualCreatorSuggestions() {
-    if (!el.manualCreatorList) return;
-    const creatorIds = sortPlatformKeys(
-      (state.lastPayload?.bots || [])
-        .map((bot) => String(bot?.creator_id || "").trim())
-        .filter(Boolean)
-    );
-    el.manualCreatorList.innerHTML = creatorIds
-      .map((creatorId) => `<option value="${escapeHtml(creatorId)}"></option>`)
+    if (!el.manualCreator) return;
+    const selected = String(el.manualCreator.value || "").trim();
+    const options = (state.creators || [])
+      .map((creator) => ({
+        creator_id: String(creator?.creator_id || "").trim(),
+        display_name: String(creator?.display_name || "").trim()
+      }))
+      .filter((creator) => creator.creator_id)
+      .sort((a, b) => a.creator_id.localeCompare(b.creator_id));
+
+    const optionMarkup = options
+      .map((creator) => {
+        const label = creator.display_name
+          ? `${creator.creator_id} - ${creator.display_name}`
+          : creator.creator_id;
+        return `<option value="${escapeHtml(creator.creator_id)}">${escapeHtml(label)}</option>`;
+      })
       .join("");
+
+    el.manualCreator.innerHTML = `<option value="">Select creator</option>${optionMarkup}`;
+    if (selected && options.some((creator) => creator.creator_id === selected)) {
+      el.manualCreator.value = selected;
+    } else {
+      el.manualCreator.value = "";
+    }
   }
 
   function renderManualPlatformOptions() {
@@ -1123,15 +1156,18 @@
   function updateManualDeployUi() {
     if (!el.manualToggle || !el.manualForm) return;
 
+    const creatorsAvailable = hasManualCreatorOptions();
     const formOpen = state.manualFormOpen === true;
     el.manualForm.classList.toggle("hidden", !formOpen);
     el.manualToggle.textContent = formOpen ? "Hide Manual Deploy" : "Manual Deploy Bot";
+    el.manualToggle.disabled = !creatorsAvailable;
+    el.manualToggle.setAttribute("aria-disabled", creatorsAvailable ? "false" : "true");
 
     const values = manualFormValues();
     renderManualPlatformFieldset(values.platform);
     const refreshed = manualFormValues();
     const requiresTarget = refreshed.schema?.deployEnabled === true;
-    const blockedReason = getManualDeployBlockedReason(refreshed.platform);
+    const blockedReason = getManualDeployBlockedReason(refreshed.platform, refreshed.creatorId);
     const hasRequiredFields = Boolean(
       refreshed.creatorId &&
         refreshed.platform &&
@@ -1145,7 +1181,7 @@
     }
 
     if (el.manualCreator) {
-      el.manualCreator.disabled = state.manualDeploy.pending;
+      el.manualCreator.disabled = state.manualDeploy.pending || !creatorsAvailable;
     }
     if (el.manualPlatform) {
       el.manualPlatform.disabled = state.manualDeploy.pending;
@@ -1189,7 +1225,7 @@
     event.preventDefault();
 
     const values = manualFormValues();
-    const blockedReason = getManualDeployBlockedReason(values.platform);
+    const blockedReason = getManualDeployBlockedReason(values.platform, values.creatorId);
     if (blockedReason) {
       setManualError(blockedReason);
       updateManualDeployUi();
@@ -1312,6 +1348,41 @@
     return normalizePayload(payload);
   }
 
+  function normalizeCreatorsPayload(payload) {
+    const rows = Array.isArray(payload?.creators) ? payload.creators : [];
+    return rows
+      .map((entry) => {
+        const creatorId = String(entry?.creator_id || "").trim();
+        if (!creatorId) return null;
+        return {
+          creator_id: creatorId,
+          display_name: String(entry?.display_name || creatorId).trim() || creatorId,
+          tier: String(entry?.tier || "").trim().toLowerCase(),
+          status: String(entry?.status || "").trim().toLowerCase()
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.creator_id.localeCompare(b.creator_id));
+  }
+
+  async function fetchCreators() {
+    const endpoint = buildApiUrl(CREATORS_ENDPOINT);
+    const res = await fetch(endpoint, {
+      cache: "no-store",
+      credentials: "include",
+      headers: { Accept: "application/json" }
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+    const payload = await res.json();
+    if (payload?.success === false) {
+      const detail = String(payload?.error || payload?.message || "Creators endpoint failed");
+      throw new Error(detail);
+    }
+    return normalizeCreatorsPayload(payload);
+  }
+
   function render(normalized) {
     const now = Date.now();
     const hasLivePlatformRows =
@@ -1361,11 +1432,13 @@
 
   async function refresh() {
     try {
-      const normalized = await fetchPayload();
+      const [normalized, creators] = await Promise.all([fetchPayload(), fetchCreators()]);
+      state.creators = Array.isArray(creators) ? creators : [];
       setError("");
       render(normalized);
     } catch (err) {
       setRuntimeAvailable(false);
+      state.creators = [];
       state.lastPayload = { bots: [], supportedPlatforms: [], generatedAt: null };
       state.deployPlatformSchemas = buildFallbackDeploySchemas();
       state.platformSummary = buildPlatformSummary(null, state.deployPlatformSchemas, {
@@ -1404,6 +1477,7 @@
   }
 
   function renderRuntimeOffline() {
+    state.creators = [];
     state.lastPayload = { bots: [], supportedPlatforms: [], generatedAt: null };
     state.deployPlatformSchemas = buildFallbackDeploySchemas();
     state.platformSummary = buildPlatformSummary(null, state.deployPlatformSchemas, {
@@ -1673,7 +1747,6 @@
     el.manualToggle = $("bots-manual-toggle");
     el.manualForm = $("bots-manual-form");
     el.manualCreator = $("bots-manual-creator");
-    el.manualCreatorList = $("bots-manual-creator-list");
     el.manualPlatform = $("bots-manual-platform");
     el.manualPlatformFields = $("bots-manual-platform-fields");
     el.manualTarget = null;
@@ -1732,6 +1805,7 @@
     state.manualDeploy = { pending: false, error: "", renderedPlatform: "" };
     state.lastPayload = null;
     state.deployPlatformSchemas = Object.create(null);
+    state.creators = [];
     state.platformSummary = Object.create(null);
     state.lastReceivedAt = null;
     state.sourceUrl = null;

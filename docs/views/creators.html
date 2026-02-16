@@ -50,9 +50,9 @@
 
       <!-- Empty state -->
       <div id="creators-empty" class="ss-empty-state hidden">
-        <p>No creators configured.</p>
+        <p>No runtime creators found.</p>
         <p class="muted">
-          Add a creator to begin managing livestream automation.
+          Creators are loaded from runtime registry via <code>/api/admin/creators</code>.
         </p>
       </div>
 
@@ -61,10 +61,9 @@
         <thead>
           <tr>
             <th>Creator ID</th>
-            <th>Display Name</th>
-            <th>Platforms</th>
+            <th>Tier</th>
             <th>Status</th>
-            <th>Notes</th>
+            <th>Last seen / updated</th>
             <th class="align-right">Actions</th>
           </tr>
         </thead>

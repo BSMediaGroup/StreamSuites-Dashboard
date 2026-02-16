@@ -53,6 +53,7 @@
             <h3 id="bots-manual-title">Manual Bot Deploy</h3>
             <p class="muted">
               Admin/debug control to create and deploy bot instances directly from runtime.
+              Creator ID is runtime creator identity and is not the admin account user code.
             </p>
           </div>
           <button id="bots-manual-toggle" class="ss-btn ss-btn-primary ss-btn-small" type="button">
@@ -63,16 +64,13 @@
           <div class="ss-bots-manual-grid">
             <div class="ss-form-row">
               <label for="bots-manual-creator">Creator</label>
-              <input
+              <select
                 id="bots-manual-creator"
                 name="creator"
-                type="text"
-                list="bots-manual-creator-list"
-                autocomplete="off"
-                placeholder="Creator ID"
                 required
-              />
-              <datalist id="bots-manual-creator-list"></datalist>
+              >
+                <option value="">Select creator</option>
+              </select>
             </div>
             <div class="ss-form-row">
               <label for="bots-manual-platform">Platform</label>
