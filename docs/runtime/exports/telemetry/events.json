@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-02-14T15:08:12.055070Z",
+  "generated_at": "2026-02-16T16:59:21.667568Z",
   "events": [
     {
       "timestamp": "2026-01-22T05:45:05Z",
@@ -641,7 +641,84 @@
       "result": "success"
     },
     {
-      "timestamp": "2026-02-14T15:05:51.347243Z",
+      "timestamp": "2026-02-14T16:31:55Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
+      "event_type": "session_issued",
+      "email_type": "github",
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-02-14T17:46:58Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
+      "event_type": "session_issued",
+      "email_type": "github",
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-02-14T19:47:01Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
+      "event_type": "session_issued",
+      "email_type": "github",
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-02-15T08:29:32Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=feature_request_vote user=token:34f9706a... result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "feature_request_vote",
+      "user_identifier": "token:34f9706a...",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-02-15T08:29:34Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=feature_request_vote user=token:34f9706a... result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "feature_request_vote",
+      "user_identifier": "token:34f9706a...",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-02-15T08:34:51Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
+      "event_type": "session_issued",
+      "email_type": "github",
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-02-16T12:41:40Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
+      "event_type": "session_issued",
+      "email_type": "github",
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-02-16T16:59:01.478178Z",
       "source": "system",
       "severity": "info",
       "message": "Runtime boot sequence started"
