@@ -8,6 +8,8 @@
   const POLL_INTERVAL_MS = 5000;
   const BOTS_STATUS_ENDPOINT = "/api/admin/bots/status";
   const MANUAL_DEPLOY_ENDPOINT = "/api/admin/runtime/manual-deploy";
+  const MANUAL_RESUME_ENDPOINT = "/api/admin/runtime/manual-resume";
+  const MANUAL_CLEAR_ENDPOINT = "/api/admin/runtime/manual-instance";
   const PLATFORM_DISPLAY = {
     twitch: "Twitch",
     kick: "Kick",
@@ -760,12 +762,20 @@
           : 0;
         const lastLog = entry?.lastLog;
         const hasLog = Boolean(lastLog && String(lastLog.message || "").trim());
+        const runtimeMessageFallback =
+          String(entry?.error || "").trim() ||
+          String(entry?.pausedReason || "").trim() ||
+          String(entry?.reason || "").trim();
         const logMessage = hasLog
           ? String(lastLog.message || "").trim()
-          : "No runtime log reported.";
+          : runtimeMessageFallback || "No runtime log reported.";
         const logSeverity = hasLog
           ? String(lastLog.severity || "info").trim().toLowerCase()
-          : "info";
+          : entry?.error
+            ? "error"
+            : entry?.pausedReason
+              ? "warning"
+              : "info";
         const logTimestamp = hasLog
           ? formatTimestampCompact(lastLog.timestamp)
           : "--";
@@ -830,12 +840,24 @@
       !deploySupported ||
       !canAttach(bot);
     const detachDisabled = ui.pending || runtimeOffline || !deploySupported || !canDetach(bot);
+    const botPauseReason = String(bot?.pause_reason || "").trim();
+    const pauseReason = botPauseReason || String(platformState?.pausedReason || "").trim();
+    const isPaused = String(bot?.status || "").trim().toLowerCase() === "paused" || runtimePaused;
+    const resumeDisabled =
+      ui.pending ||
+      runtimeOffline ||
+      !deploySupported ||
+      !isPaused ||
+      !String(bot?.active_target || "").trim();
+    const clearDisabled = ui.pending || runtimeOffline || !isPaused;
     const attachLabel =
       ui.pending && ui.pendingAction === "attach" ? "Deploying..." : "Manual Deploy";
     const detachLabel = ui.pending && ui.pendingAction === "detach" ? "Detaching..." : "Detach";
+    const resumeLabel = ui.pending && ui.pendingAction === "resume" ? "Resuming..." : "Resume";
+    const clearLabel = ui.pending && ui.pendingAction === "clear" ? "Clearing..." : "Clear";
     const rowError = String(ui.error || "");
-    const pausedMessage = runtimePaused
-      ? platformState?.pausedReason || "Paused by runtime control."
+    const pausedMessage = isPaused
+      ? pauseReason || "Paused by runtime control."
       : "";
     const runtimeOfflineMessage = runtimeOffline
       ? "Runtime is offline."
@@ -859,10 +881,29 @@
             ${detachDisabled ? "disabled" : ""}
           >${detachLabel}</button>
         </div>
+        ${isPaused
+          ? `
+        <div class="ss-bot-actions-row">
+          <button
+            class="ss-btn ss-btn-small ss-btn-secondary"
+            data-bot-action="resume"
+            data-creator-id="${encodeData(creatorId)}"
+            data-platform="${encodeData(platform)}"
+            ${resumeDisabled ? "disabled" : ""}
+          >${resumeLabel}</button>
+          <button
+            class="ss-btn ss-btn-small ss-btn-danger"
+            data-bot-action="clear"
+            data-creator-id="${encodeData(creatorId)}"
+            data-platform="${encodeData(platform)}"
+            ${clearDisabled ? "disabled" : ""}
+          >${clearLabel}</button>
+        </div>`
+          : ""}
         ${runtimeOffline
           ? `<div class="ss-bot-actions-row-note">${escapeHtml(runtimeOfflineMessage)}</div>`
           : ""}
-        ${runtimePaused
+        ${isPaused
           ? `<div class="ss-bot-actions-row-note">${escapeHtml(`Paused: ${pausedMessage}`)}</div>`
           : ""}
         ${deployBlockedMessage
@@ -899,8 +940,11 @@
       const platformState = platformSummary?.[platformKey] || null;
       const isPaused = status === "paused" || platformState?.paused === true;
       const effectiveStatus = isPaused ? "paused" : bot?.status;
-      const lastError = bot?.last_error;
-      const hasError = typeof lastError === "string" && lastError.trim() !== "";
+      const lastError =
+        String(bot?.last_error || "").trim() ||
+        String(bot?.pause_reason || "").trim() ||
+        String(platformState?.pausedReason || "").trim();
+      const hasError = Boolean(lastError);
       const uptimeSeconds = getDisplayUptimeSeconds(bot, normalized.generatedAt, receivedAt);
       const uptimeLabel = uptimeSeconds === null ? "-" : formatUptime(uptimeSeconds);
       const rowClass = isPaused ? "ss-bots-row-paused" : "";
@@ -915,7 +959,7 @@
           <td>${renderManualOverride(bot?.manual_override === true)}</td>
           <td>${escapeHtml(formatTimestamp(bot?.connected_at))}</td>
           <td>${escapeHtml(uptimeLabel)}</td>
-          <td class="${errorClass}">${escapeHtml(hasError ? lastError : "-")}</td>
+          <td class="${errorClass}">${escapeHtml(hasError ? lastError : "—")}</td>
           <td>${renderActionCell(bot, platformState)}</td>
         </tr>
       `;
@@ -1185,8 +1229,12 @@
         action: "attach",
         creator_id: values.creatorId,
         platform: values.platform,
-        target_identifier: values.targetIdentifier
+        target_identifier: values.targetIdentifier,
+        target: values.targetIdentifier
       };
+      if (values.platform === "twitch") {
+        payload.channel_login = values.targetIdentifier;
+      }
 
       const response = await fetch(buildApiUrl(MANUAL_DEPLOY_ENDPOINT), {
         method: "POST",
@@ -1198,17 +1246,27 @@
         body: JSON.stringify(payload)
       });
 
-      if (!response.ok) {
-        const errorPayload = await readJsonSafe(response);
+      const responsePayload = await readJsonSafe(response);
+      if (!response.ok || responsePayload?.success === false) {
         const detail =
-          errorPayload?.error ||
-          errorPayload?.message ||
+          responsePayload?.error ||
+          responsePayload?.message ||
           `Manual deploy failed (HTTP ${response.status}).`;
         setManualError(String(detail));
         return;
       }
 
-      setManualError("");
+      const result = responsePayload?.result || null;
+      const pausedOnDeploy = String(result?.status || "").trim().toLowerCase() === "paused";
+      if (pausedOnDeploy) {
+        const pausedDetail =
+          String(result?.pause_reason || "").trim() ||
+          String(result?.last_error || "").trim() ||
+          "Instance paused by runtime control.";
+        setManualError(`Deploy created a paused instance: ${pausedDetail}`);
+      } else {
+        setManualError("");
+      }
       if (el.manualTarget) {
         el.manualTarget.value = "";
       }
@@ -1435,7 +1493,7 @@
       return;
     }
     const platformState = state.platformSummary?.[normalizePlatformKey(platform)] || null;
-    if (platformState?.paused) {
+    if (platformState?.paused && action === "attach") {
       ui.error = platformState.pausedReason || "Platform is paused by runtime control.";
       renderRowsAndCountersFromState();
       return;
@@ -1460,9 +1518,22 @@
         return;
       }
       targetIdentifier = trimmed;
+      if (platform.toLowerCase() === "twitch") {
+        targetIdentifier = targetIdentifier.replace(/^#/, "").trim();
+      }
     } else if (action === "detach") {
       const currentTarget = String(bot?.active_target || "").trim();
       targetIdentifier = currentTarget && currentTarget !== "-" ? currentTarget : null;
+    } else if (action === "resume") {
+      const currentTarget = String(bot?.active_target || "").trim();
+      targetIdentifier = currentTarget && currentTarget !== "-" ? currentTarget : null;
+      if (!targetIdentifier) {
+        ui.error = "Cannot resume: missing target identifier.";
+        renderRowsAndCountersFromState();
+        return;
+      }
+    } else if (action === "clear") {
+      targetIdentifier = null;
     }
 
     ui.pending = true;
@@ -1471,34 +1542,63 @@
     renderRowsAndCountersFromState();
 
     try {
-      const payload = {
-        action,
-        platform,
-        creator_id: creatorId,
-        target_identifier: targetIdentifier
-      };
+      let response;
+      if (action === "clear") {
+        const query = `?creator_id=${encodeURIComponent(creatorId)}&platform=${encodeURIComponent(platform)}`;
+        response = await fetch(buildApiUrl(`${MANUAL_CLEAR_ENDPOINT}${query}`), {
+          method: "DELETE",
+          credentials: "include",
+          headers: {
+            Accept: "application/json"
+          }
+        });
+      } else {
+        const endpoint = action === "resume" ? MANUAL_RESUME_ENDPOINT : MANUAL_DEPLOY_ENDPOINT;
+        const payload = {
+          action,
+          platform,
+          creator_id: creatorId,
+          target_identifier: targetIdentifier
+        };
+        if (action === "attach") {
+          payload.target = targetIdentifier;
+          if (platform.toLowerCase() === "twitch") {
+            payload.channel_login = targetIdentifier;
+          }
+        }
+        response = await fetch(buildApiUrl(endpoint), {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+      }
 
-      const response = await fetch(buildApiUrl(MANUAL_DEPLOY_ENDPOINT), {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        const errorPayload = await readJsonSafe(response);
+      const responsePayload = await readJsonSafe(response);
+      if (!response.ok || responsePayload?.success === false) {
         const detail =
-          errorPayload?.error ||
-          errorPayload?.message ||
+          responsePayload?.error ||
+          responsePayload?.message ||
           `Manual ${action} failed (HTTP ${response.status}).`;
         ui.error = String(detail);
         return;
       }
 
-      ui.error = "";
+      const result = responsePayload?.result || null;
+      const paused =
+        String(result?.status || "").trim().toLowerCase() === "paused" ||
+        String(result?.pause_reason || "").trim() !== "";
+      if (paused && action !== "clear") {
+        ui.error =
+          String(result?.pause_reason || "").trim() ||
+          String(result?.last_error || "").trim() ||
+          "Paused by runtime control.";
+      } else {
+        ui.error = "";
+      }
       await refresh();
     } catch (err) {
       ui.error = err?.message ? String(err.message) : `Manual ${action} failed.`;
@@ -1514,7 +1614,7 @@
     if (!(button instanceof HTMLButtonElement) || button.disabled) return;
 
     const action = String(button.dataset.botAction || "").trim().toLowerCase();
-    if (action !== "attach" && action !== "detach") return;
+    if (!["attach", "detach", "resume", "clear"].includes(action)) return;
 
     const creatorId = decodeData(button.dataset.creatorId || "");
     const platform = decodeData(button.dataset.platform || "");
