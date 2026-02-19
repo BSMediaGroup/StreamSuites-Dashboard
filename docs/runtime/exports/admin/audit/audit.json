@@ -1,12 +1,25 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-02-16T16:59:21.686074Z",
+  "exported_at": "2026-02-19T14:47:46.350116Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.4.1-alpha",
-    "build": "2026.02.16+004"
+    "build": "2026.02.19+005"
   },
   "audit": [
+    {
+      "id": "e0c1fa94-7dbd-438a-9cfc-6649d1cb3b66",
+      "ts": "2026-02-18T18:56:26Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
     {
       "id": "9e62e028-14be-481e-a78c-809633cb313f",
       "ts": "2026-02-16T12:41:40Z",

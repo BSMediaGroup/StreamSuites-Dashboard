@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-02-16T16:59:21.667568Z",
+  "generated_at": "2026-02-19T14:47:46.327200Z",
   "events": [
     {
       "timestamp": "2026-01-22T05:45:05Z",
@@ -718,7 +718,18 @@
       "result": "success"
     },
     {
-      "timestamp": "2026-02-16T16:59:01.478178Z",
+      "timestamp": "2026-02-18T18:56:26Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
+      "event_type": "session_issued",
+      "email_type": "github",
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-02-19T14:47:36.147645Z",
       "source": "system",
       "severity": "info",
       "message": "Runtime boot sequence started"
