@@ -35,6 +35,7 @@
     donationStats: new Map(),
     donationsLoaded: false,
     openDrawerId: "",
+    pendingNavAccountId: "",
     columnResize: null,
     columnResizeHydrated: false,
     escapeBound: false,
@@ -86,6 +87,35 @@
       .replace(/>/g, "&gt;")
       .replace(/\"/g, "&quot;")
       .replace(/'/g, "&#39;");
+  }
+
+  function getLinkageNavState() {
+    if (!window.StreamSuitesIdentityLinkageNav || typeof window.StreamSuitesIdentityLinkageNav !== "object") {
+      window.StreamSuitesIdentityLinkageNav = {};
+    }
+    return window.StreamSuitesIdentityLinkageNav;
+  }
+
+  function navigateToView(viewName) {
+    if (!viewName) return;
+    const target = document.querySelector(`[data-view="${viewName}"]`);
+    if (target) {
+      target.click();
+      return;
+    }
+    window.location.hash = `#${viewName}`;
+  }
+
+  function consumePendingAccountFocus() {
+    const navState = getLinkageNavState();
+    const accountId = String(navState.accountId || "").trim();
+    const from = String(navState.from || "").trim().toLowerCase();
+    if (!accountId || from !== "creators") {
+      return "";
+    }
+    navState.accountId = "";
+    navState.from = "";
+    return accountId;
   }
 
   function formatBadgeLabel(value) {
@@ -659,6 +689,22 @@ function normalizeUser(raw = {}) {
     )}</span>`;
   }
 
+  function renderUserCodeLink(user) {
+    const userCode = String(user?.userCode || "").trim();
+    if (!userCode || userCode === "—") {
+      return renderTextValue(userCode || "—");
+    }
+    return `
+      <button
+        type="button"
+        class="ss-link-btn"
+        data-account-open-creator="${escapeHtml(userCode)}"
+      >
+        <code>${escapeHtml(userCode)}</code>
+      </button>
+    `;
+  }
+
   function renderActionsToggle(user) {
     const accountId = normalizeAccountId(user.id);
     return `
@@ -681,7 +727,7 @@ function normalizeUser(raw = {}) {
       <td class="accounts-id-column" data-account-id="${escapeHtml(accountId)}">${renderTextValue(
         accountId || "—"
       )}</td>
-      <td>${renderTextValue(user.userCode)}</td>
+      <td>${renderUserCodeLink(user)}</td>
       <td>${renderTextValue(user.email)}</td>
       <td>${renderEmailVerified(user.emailVerified)}</td>
       <td>${renderTextValue(user.displayName)}</td>
@@ -701,6 +747,16 @@ function normalizeUser(raw = {}) {
     const id = normalizeAccountId(accountId);
     if (!id) return null;
     return state.raw.find((entry) => normalizeAccountId(entry?.id) === id) || null;
+  }
+
+  function openCreatorIdentity(userCode) {
+    const normalizedCode = String(userCode || "").trim();
+    if (!normalizedCode || normalizedCode === "—") return;
+    const navState = getLinkageNavState();
+    navState.userCode = normalizedCode;
+    navState.from = "accounts";
+    navState.ts = Date.now();
+    navigateToView("creators");
   }
 
   function getBaseRowByAccountId(accountId) {
@@ -935,6 +991,18 @@ function normalizeUser(raw = {}) {
       return;
     }
     openDrawer(state.openDrawerId, { preserveScroll: true });
+  }
+
+  function applyPendingAccountFocus() {
+    const accountId = normalizeAccountId(state.pendingNavAccountId);
+    if (!accountId) return;
+    state.pendingNavAccountId = "";
+    openDrawer(accountId);
+    const row = getBaseRowByAccountId(accountId);
+    if (!(row instanceof HTMLTableRowElement)) return;
+    row.classList.add("accounts-row-jump-highlight");
+    row.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+    window.setTimeout(() => row.classList.remove("accounts-row-jump-highlight"), 2200);
   }
 
   function isBaseAccountRow(row) {
@@ -1516,6 +1584,14 @@ function normalizeUser(raw = {}) {
         openDrawer(accountId, { focusActions: true });
         return;
       }
+      const creatorLink = target.closest("[data-account-open-creator]");
+      if (creatorLink) {
+        event.preventDefault();
+        clearRowClickTimer();
+        const userCode = creatorLink.getAttribute("data-account-open-creator") || "";
+        openCreatorIdentity(userCode);
+        return;
+      }
       if (isInteractiveRowTarget(target)) return;
       const row = target.closest("tr");
       if (!isBaseAccountRow(row)) return;
@@ -1579,6 +1655,7 @@ function normalizeUser(raw = {}) {
   function handleTableRender(renderedItems = []) {
     markRenderedAccountRows(renderedItems);
     restoreOpenDrawer();
+    applyPendingAccountFocus();
     toggleIdColumn(el.idToggle?.checked !== false);
     if (!state.columnResizeHydrated && renderedItems.length > 0) {
       state.columnResizeHydrated = true;
@@ -1651,6 +1728,7 @@ function normalizeUser(raw = {}) {
     el.detailsActionsSection = $("accounts-details-actions-section");
     el.detailsActionsHeading = $("accounts-details-actions-heading");
     state.openDrawerId = "";
+    state.pendingNavAccountId = consumePendingAccountFocus();
     state.columnResizeHydrated = false;
     clearRowClickTimer();
     closeOpenDrawer({ keepState: true });

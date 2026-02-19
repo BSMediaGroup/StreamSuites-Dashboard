@@ -22,6 +22,9 @@
     <button id="btn-refresh-creators" class="ss-btn ss-btn-secondary">
       Refresh
     </button>
+    <button id="btn-backfill-creators" class="ss-btn ss-btn-secondary">
+      Backfill Creator Identities
+    </button>
     <button id="btn-add-creator" class="ss-btn ss-btn-primary">
       Add Creator
     </button>
@@ -47,12 +50,14 @@
       <div id="creators-import-error" class="ss-alert ss-alert-danger hidden">
         <span id="creators-import-error-text"></span>
       </div>
+      <div id="creators-backfill-status" class="ss-alert hidden"></div>
+      <div id="creators-link-note" class="ss-alert hidden"></div>
 
       <!-- Empty state -->
       <div id="creators-empty" class="ss-empty-state hidden">
-        <p>No runtime creators found.</p>
+        <p>No creator identities found.</p>
         <p class="muted">
-          Creators are loaded from runtime registry via <code>/api/admin/creators</code>.
+          Creator identities are loaded from <code>/api/admin/creators</code>.
         </p>
       </div>
 
@@ -60,10 +65,12 @@
       <table id="creators-table" class="ss-table">
         <thead>
           <tr>
-            <th>Creator ID</th>
-            <th>Tier</th>
+            <th>User Code</th>
             <th>Status</th>
-            <th>Last seen / updated</th>
+            <th>Account Email</th>
+            <th>Account ID</th>
+            <th>Activated</th>
+            <th>Created</th>
             <th class="align-right">Actions</th>
           </tr>
         </thead>
