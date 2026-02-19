@@ -1,6 +1,6 @@
 {
   "project": "StreamSuites Runtime",
-  "version": "0.4.0-alpha",
+  "version": "0.4.1-alpha",
   "build": "local",
   "generated_at": "",
   "source": "dashboard-static"
