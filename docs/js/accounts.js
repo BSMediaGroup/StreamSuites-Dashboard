@@ -256,6 +256,8 @@ function normalizeUser(raw = {}) {
       id: internalId,
       userCode: raw.user_code || raw.userCode || raw.code || raw.handle || "—",
       email: raw.email || raw.email_address || raw.username || "—",
+      pendingEmail: raw.pending_email || raw.pendingEmail || "",
+      emailChangeExpiresAt: raw.email_change_expires_at || raw.emailChangeExpiresAt || "",
       emailVerified: emailVerifiedRaw,
       emailVerifiedLabel: resolveEmailVerifiedLabel(emailVerifiedRaw),
       displayName: raw.display_name || raw.displayName || raw.name || "—",
@@ -470,6 +472,26 @@ function normalizeUser(raw = {}) {
         tone: "ss-btn-secondary",
         disabled: manageDisabled || isDeleted || !hasEmail || isEmailVerified,
         title: isEmailVerified ? "Email already verified." : !hasEmail ? "No email on file." : "",
+        accountId
+      })
+    );
+
+    actions.push(
+      renderActionButton({
+        label: "Change Email",
+        action: "admin-email-change",
+        tone: "ss-btn-secondary",
+        disabled: manageDisabled || isDeleted,
+        accountId
+      })
+    );
+
+    actions.push(
+      renderActionButton({
+        label: "Unlink Method",
+        action: "admin-auth-unlink",
+        tone: "ss-btn-secondary",
+        disabled: manageDisabled || isDeleted,
         accountId
       })
     );
@@ -868,8 +890,12 @@ function normalizeUser(raw = {}) {
             badgeToneForStatus(user.onboardingStatus)
           )}</span></div>
           <div><span class="label">Email</span><span class="value">${escapeHtml(user.email || "—")}</span></div>
+          <div><span class="label">Pending Email</span><span class="value">${escapeHtml(user.pendingEmail || "—")}</span></div>
           <div><span class="label">Created</span><span class="value">${escapeHtml(
             formatTimestamp(user.createdAt)
+          )}</span></div>
+          <div><span class="label">Pending Expires</span><span class="value">${escapeHtml(
+            formatTimestamp(user.emailChangeExpiresAt)
           )}</span></div>
           <div><span class="label">Last Login</span><span class="value">${escapeHtml(
             formatTimestamp(user.lastLogin)
@@ -1323,6 +1349,12 @@ function normalizeUser(raw = {}) {
     if (action === "delete") {
       return `Delete ${name}? This is a destructive action and will soft-delete the account.`;
     }
+    if (action === "admin-email-change") {
+      return `Change email for ${name}?`;
+    }
+    if (action === "admin-auth-unlink") {
+      return `Unlink a sign-in method for ${name}?`;
+    }
     return "";
   }
 
@@ -1333,6 +1365,8 @@ function normalizeUser(raw = {}) {
       "reset-onboarding",
       "force-email-reverify",
       "mark-email-verified",
+      "admin-email-change",
+      "admin-auth-unlink",
       "delete"
     ].includes(action);
   }
@@ -1415,17 +1449,52 @@ function normalizeUser(raw = {}) {
     }
 
     const base = "/admin/accounts";
-    const endpoint =
+    let endpoint =
       action === "delete"
         ? `${base}/${encodeURIComponent(user.id)}`
         : `${base}/${encodeURIComponent(user.id)}/${action}`;
-    const forceApiBase =
-      action === "force-email-reverify" || action === "mark-email-verified"
-        ? "https://api.streamsuites.app"
-        : null;
+    const forceApiBase = null;
     try {
       let method = "POST";
       let body = null;
+      if (action === "admin-email-change") {
+        const nextEmail = window.prompt("New email address:", user.email && user.email !== "—" ? user.email : "");
+        if (!nextEmail) return;
+        const normalizedEmail = String(nextEmail).trim().toLowerCase();
+        if (!normalizedEmail.includes("@")) {
+          setInlineError("Enter a valid email address.");
+          return;
+        }
+        const forceNow = window.confirm(
+          "Force change + mark verified now?\nSelect Cancel to require email verification by link."
+        );
+        endpoint = `/api/admin/accounts/${encodeURIComponent(user.id)}/email/change`;
+        method = "POST";
+        body = JSON.stringify({
+          new_email: normalizedEmail,
+          require_verification: !forceNow,
+          force_verified: forceNow
+        });
+      } else if (action === "admin-auth-unlink") {
+        const currentProviders = Array.isArray(user.providers) ? user.providers : [];
+        const providerOptions = currentProviders.map((provider) => provider.label).filter(Boolean);
+        if (!providerOptions.length) {
+          setInlineError("No linked providers to unlink.");
+          return;
+        }
+        const provider = window.prompt(
+          `Provider to unlink (${providerOptions.join(", ")}):`,
+          providerOptions[0] || ""
+        );
+        if (!provider) return;
+        const override = window.confirm("Allow override if this is the last sign-in method?");
+        endpoint = `/api/admin/accounts/${encodeURIComponent(user.id)}/auth-methods/unlink`;
+        method = "POST";
+        body = JSON.stringify({
+          provider: String(provider).trim().toLowerCase(),
+          override_last_method: override
+        });
+      }
       if (action === "delete") {
         method = "DELETE";
       } else if (action === "tier") {
