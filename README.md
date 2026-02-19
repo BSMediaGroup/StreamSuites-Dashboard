@@ -20,11 +20,20 @@ The dashboard loads snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progre
 - **Audit context:** Refer to the attached audit report for historical and architectural context. **Do not regenerate it.**
 - **Surface separation:** Public and Creator dashboards live in separate repositories/domains. Cross-surface navigation uses absolute URLs only.
 
+## What's New / Highlights (v0.4.1-alpha)
+
+- **Admin dashboard surface refresh:** Expanded operational views across overview, analytics, approvals, audit, jobs, notifications, data signals, and API usage.
+- **Runtime visibility depth:** Telemetry/events/errors/rates plus platform heartbeat and status views are wired to runtime-exported snapshots.
+- **Bot availability/error surfacing:** `docs/views/bots.html` + `docs/js/bots.js` expose platform availability and runtime-state/error visibility with admin-debug controls.
+- **Platform status posture:** YouTube/Twitch active scaffolds, Rumble pause-state handling, Kick scaffolded parity, and Pilled staged/ingest-only treatment.
+- **Read-only runtime state model:** The web surface renders runtime state and routes privileged operations through Auth API/runtime boundaries.
+
 ## Version & Ownership
 
 - **Version/build source:** This repo does not define version/build. It consumes runtime-exported metadata only.
 - **Authoritative runtime:** The StreamSuites Runtime repository is the single source of truth for version/build metadata.
 - **Canonical version metadata endpoint:** `/docs/runtime/exports/meta.json` (with `version.json` fallback when referenced by the export manifest).
+- **Current consumed release:** `v0.4.1-alpha` (`build 2026.02.16+004`) from `docs/runtime/exports/version.json`.
 - **Runtime export source:** Admin dashboard reads runtime exports locally from `/docs/runtime/exports` and never fetches them from the Auth API.
 - **Dashboard role:** Admin-authoritative for configuration and runtime control; consumes runtime exports for operational visibility.
 - **Licensing:** Proprietary • All Rights Reserved • © 2026 Brainstream Media Group.
@@ -188,276 +197,55 @@ This repository is a **companion project** to the StreamSuites Runtime.
 - Public and Creator dashboards are hosted in separate repos/domains.
 - Cross-surface navigation uses absolute URLs only.
 
-## Repo Tree (full)
+## Repo Tree (abridged, accurate)
 
-```
+```text
 StreamSuites-Dashboard/
-├── .github
-│   └── workflows
+├── .github/
+│   └── workflows/
 │       └── pages.yml
-├── .vscode
+├── .vscode/
 │   └── launch.json
-├── changelog
+├── changelog/
 │   └── changelog.runtime.json
-├── dev-notes
+├── dev-notes/
 │   ├── compatibility.md
 │   ├── decisions.md
 │   └── roadmap.md
-├── docs
-│   ├── about
+├── docs/  [GitHub Pages deployment root]
+│   ├── index.html
+│   ├── home.html
+│   ├── about.html
+│   ├── accessibility.html
+│   ├── changelog.html
+│   ├── clips.html
+│   ├── polls.html
+│   ├── tallies.html
+│   ├── scoreboards.html
+│   ├── privacy.html
+│   ├── postmortem.html
+│   ├── TIERS.md
+│   ├── CONTRACTS.md
+│   ├── POST_MORTEM.md
+│   ├── 404.html
+│   ├── auth/
+│   │   ├── login.html
+│   │   └── success.html
+│   ├── about/
 │   │   ├── about.manifest.json
 │   │   ├── about_part1_core.json
 │   │   ├── about_part2_platforms_interfaces.json
 │   │   └── about_part3_about_system_spec.json
-│   ├── assets
-│   │   ├── backgrounds
-│   │   │   ├── .gitkeep
-│   │   │   ├── seodash.jpg
-│   │   │   ├── seodashxS1.png
-│   │   │   ├── seoshare.jpg
-│   │   │   ├── SS-YTBANNER-01.png
-│   │   │   └── STSS-RUMBLEBANNER-01.png
-│   │   ├── fonts
-│   │   │   ├── .gitkeep
-│   │   │   ├── Recharge-Bold.otf
-│   │   │   └── SuiGeneris-Regular.otf
-│   │   ├── icons
-│   │   │   ├── ui
-│   │   │   │   ├── admin.svg
-│   │   │   │   ├── api.svg
-│   │   │   │   ├── automation.svg
-│   │   │   │   ├── bot.svg
-│   │   │   │   ├── brick.svg
-│   │   │   │   ├── browser.svg
-│   │   │   │   ├── cards.svg
-│   │   │   │   ├── clickpoint.svg
-│   │   │   │   ├── codeblock.svg
-│   │   │   │   ├── cog.svg
-│   │   │   │   ├── dashboard.svg
-│   │   │   │   ├── dashgear.svg
-│   │   │   │   ├── devices.svg
-│   │   │   │   ├── emoji.svg
-│   │   │   │   ├── extension.svg
-│   │   │   │   ├── globe.svg
-│   │   │   │   ├── identity.svg
-│   │   │   │   ├── inputs.svg
-│   │   │   │   ├── joystick.svg
-│   │   │   │   ├── memory.svg
-│   │   │   │   ├── options.svg
-│   │   │   │   ├── package.svg
-│   │   │   │   ├── pc.svg
-│   │   │   │   ├── plus.svg
-│   │   │   │   ├── portal.svg
-│   │   │   │   ├── profile.svg
-│   │   │   │   ├── send.svg
-│   │   │   │   ├── settingsquare.svg
-│   │   │   │   ├── sidebar.svg
-│   │   │   │   ├── storage.svg
-│   │   │   │   ├── switch.svg
-│   │   │   │   ├── terminal.svg
-│   │   │   │   ├── tune.svg
-│   │   │   │   ├── ui.svg
-│   │   │   │   ├── uiscreen.svg
-│   │   │   │   ├── webhook.svg
-│   │   │   │   ├── widget.svg
-│   │   │   │   └── windows.svg
-│   │   │   ├── .gitkeep
-│   │   │   ├── browser-extension.svg
-│   │   │   ├── dcbadge.svg
-│   │   │   ├── discord-0.svg
-│   │   │   ├── discord-muted.svg
-│   │   │   ├── discord-silver.svg
-│   │   │   ├── discord-white.svg
-│   │   │   ├── discord.svg
-│   │   │   ├── favicon.ico
-│   │   │   ├── github-0.svg
-│   │   │   ├── github-muted.svg
-│   │   │   ├── github-silver.svg
-│   │   │   ├── github-white.svg
-│   │   │   ├── github.svg
-│   │   │   ├── google-0.svg
-│   │   │   ├── google-muted.svg
-│   │   │   ├── google-silver.svg
-│   │   │   ├── google-white.svg
-│   │   │   ├── google.svg
-│   │   │   ├── kick-0.svg
-│   │   │   ├── kick-muted.svg
-│   │   │   ├── kick-silver.svg
-│   │   │   ├── kick-white.svg
-│   │   │   ├── kick.svg
-│   │   │   ├── mod.svg
-│   │   │   ├── obs-0.svg
-│   │   │   ├── obs-silver.svg
-│   │   │   ├── obs-white.svg
-│   │   │   ├── obs.svg
-│   │   │   ├── pilled-0.svg
-│   │   │   ├── pilled-muted.svg
-│   │   │   ├── pilled-silver.svg
-│   │   │   ├── pilled-white.svg
-│   │   │   ├── pilled.svg
-│   │   │   ├── prossuser.svg
-│   │   │   ├── prouser.svg
-│   │   │   ├── rumble-0.svg
-│   │   │   ├── rumble-muted.svg
-│   │   │   ├── rumble-silver.svg
-│   │   │   ├── rumble-white.svg
-│   │   │   ├── rumble.svg
-│   │   │   ├── studioconmain.ico
-│   │   │   ├── twitch-0.svg
-│   │   │   ├── twitch-muted.svg
-│   │   │   ├── twitch-silver.svg
-│   │   │   ├── twitch-white.svg
-│   │   │   ├── twitch.svg
-│   │   │   ├── twitter-0.svg
-│   │   │   ├── twitter-muted.svg
-│   │   │   ├── twitter-silver.svg
-│   │   │   ├── twitter-square-0.svg
-│   │   │   ├── twitter-square-muted.svg
-│   │   │   ├── twitter-square-silver.svg
-│   │   │   ├── twitter-square-white.svg
-│   │   │   ├── twitter-square.svg
-│   │   │   ├── twitter-white.svg
-│   │   │   ├── twitter.svg
-│   │   │   ├── win1.ico
-│   │   │   ├── x.svg
-│   │   │   ├── youtube-0.svg
-│   │   │   ├── youtube-muted.svg
-│   │   │   ├── youtube-silver.svg
-│   │   │   ├── youtube-white.svg
-│   │   │   └── youtube.svg
-│   │   ├── illustrations
-│   │   │   └── .gitkeep
-│   │   ├── logos
-│   │   │   ├── admingold.ico
-│   │   │   ├── admingold.png
-│   │   │   ├── admingold.webp
-│   │   │   ├── adminhex.ico
-│   │   │   ├── adminredshield.png
-│   │   │   ├── adminredshield.webp
-│   │   │   ├── adminshieldcon.ico
-│   │   │   ├── adminshieldcon.png
-│   │   │   ├── adminshieldcon.webp
-│   │   │   ├── adminshieldcongold.png
-│   │   │   ├── adminshieldcongold.webp
-│   │   │   ├── adminx.ico
-│   │   │   ├── adminx.png
-│   │   │   ├── adminx.webp
-│   │   │   ├── bsmgx.png
-│   │   │   ├── bsmgx.svg
-│   │   │   ├── bsmgy.png
-│   │   │   ├── bsmgy.svg
-│   │   │   ├── dclive.svg
-│   │   │   ├── dcliveblack.png
-│   │   │   ├── dcliveblack.svg
-│   │   │   ├── dcx.svg
-│   │   │   ├── docscon.ico
-│   │   │   ├── docscon.png
-│   │   │   ├── docscon3d.ico
-│   │   │   ├── docscon3d.png
-│   │   │   ├── docscon3d.webp
-│   │   │   ├── LOG2-3D-SML.png
-│   │   │   ├── LOG2-3D.png
-│   │   │   ├── LOG2TRIM-SML.png
-│   │   │   ├── LOG2TRIM.png
-│   │   │   ├── loghealth-green.png
-│   │   │   ├── loghealth-red.png
-│   │   │   ├── loghealth-yellow.png
-│   │   │   ├── logo.png
-│   │   │   ├── logocircle.png
-│   │   │   ├── logocircle.svg
-│   │   │   ├── logoshield-gold.ico
-│   │   │   ├── logoshield-gold.png
-│   │   │   ├── logoshield-white.ico
-│   │   │   ├── logoshield-white.png
-│   │   │   ├── logoshield-white3dx.ico
-│   │   │   ├── logoshield-white3dx.png
-│   │   │   ├── logoshield-white3dx.webp
-│   │   │   ├── logoshield-whitex.webp
-│   │   │   ├── logoshield.png
-│   │   │   ├── logoshield.svg
-│   │   │   ├── newcon.ico
-│   │   │   ├── newcon.png
-│   │   │   ├── newconx.ico
-│   │   │   ├── pubcon.ico
-│   │   │   ├── pubcon.png
-│   │   │   ├── pubcon.webp
-│   │   │   ├── seodash.jpg
-│   │   │   ├── ssblueshield.png
-│   │   │   ├── ssblueshield.webp
-│   │   │   ├── sscmatte.ico
-│   │   │   ├── sscmatte.png
-│   │   │   ├── sscmatte.webp
-│   │   │   ├── sscmatteblue.png
-│   │   │   ├── sscmatteblue.webp
-│   │   │   ├── sscmattegold.png
-│   │   │   ├── sscmattegold.webp
-│   │   │   ├── sscmattepfp.png
-│   │   │   ├── sscmattepfpdark.png
-│   │   │   ├── sscmattepurple.png
-│   │   │   ├── sscmattered.png
-│   │   │   ├── sscmattered.webp
-│   │   │   ├── sscmattesilver.ico
-│   │   │   ├── sscmattesilver.png
-│   │   │   ├── sscmattesilver.webp
-│   │   │   ├── sscmattex.ico
-│   │   │   ├── sscmattex.png
-│   │   │   ├── ssconchrome.ico
-│   │   │   ├── ssconchrome.png
-│   │   │   ├── ssconchrome.webp
-│   │   │   ├── ssconchromeblue.ico
-│   │   │   ├── ssconchromeblue.png
-│   │   │   ├── ssconchromeblue.webp
-│   │   │   ├── ssicon.ico
-│   │   │   ├── ssicon.png
-│   │   │   ├── ssicon.webp
-│   │   │   ├── ssnewcon.ico
-│   │   │   ├── ssnewcon.png
-│   │   │   ├── ssnewcon.webp
-│   │   │   ├── ssnewfavicon.ico
-│   │   │   ├── ssnewfavicon.png
-│   │   │   ├── sspfpbluechrome.png
-│   │   │   ├── sspfpchrome.png
-│   │   │   ├── sswm.png
-│   │   │   ├── ssxshieldblack.ico
-│   │   │   ├── ssxshieldblack.png
-│   │   │   ├── ssxshieldblack.webp
-│   │   │   ├── ssxshieldblue.ico
-│   │   │   ├── ssxshieldblue.png
-│   │   │   ├── ssxshieldblue.webp
-│   │   │   ├── ssxshieldred.ico
-│   │   │   ├── ssxshieldred.png
-│   │   │   ├── ssxshieldred.webp
-│   │   │   ├── ssxshieldsilver.ico
-│   │   │   ├── ssxshieldsilver.png
-│   │   │   ├── ssxshieldsilver.webp
-│   │   │   ├── streamsuites.svg
-│   │   │   ├── studioconmain.ico
-│   │   │   ├── xbsmgmainx1.png
-│   │   │   ├── xbsmgmainx1.svg
-│   │   │   ├── xbsmgshield.png
-│   │   │   ├── xbsmgshield.svg
-│   │   │   ├── xbsmgy.png
-│   │   │   └── xbsmgy.svg
-│   │   └── placeholders
-│   │       ├── .gitkeep
-│   │       ├── daniel.png
-│   │       ├── hotdog.jpg
-│   │       └── streamsuites.jpg
-│   ├── auth
-│   │   ├── login.html
-│   │   └── success.html
-│   ├── css
+│   ├── assets/
+│   │   └── [REDACTED: asset files/folders (backgrounds/fonts/icons/illustrations/logos/placeholders)]
+│   ├── css/
 │   │   ├── base.css
 │   │   ├── components.css
 │   │   ├── layout.css
 │   │   ├── overrides.css
 │   │   ├── theme-dark.css
 │   │   └── updates.css
-│   ├── data
-│   │   ├── telemetry
-│   │   │   ├── errors.json
-│   │   │   ├── events.json
-│   │   │   └── rates.json
+│   ├── data/
 │   │   ├── admin_activity.json
 │   │   ├── changelog.dashboard.json
 │   │   ├── chat_events.json
@@ -475,31 +263,18 @@ StreamSuites-Dashboard/
 │   │   ├── runtime_snapshot.json
 │   │   ├── score_events.json
 │   │   ├── system.json
-│   │   └── tally_events.json
-│   ├── js
-│   │   ├── platforms
-│   │   │   ├── discord.js
-│   │   │   ├── kick.js
-│   │   │   ├── pilled.js
-│   │   │   ├── rumble.js
-│   │   │   ├── twitch.js
-│   │   │   ├── twitter.js
-│   │   │   └── youtube.js
-│   │   ├── utils
-│   │   │   ├── about-data.js
-│   │   │   ├── global-loader.js
-│   │   │   ├── search-pagination.js
-│   │   │   ├── snapshot-health.js
-│   │   │   ├── standalone-guard.js
-│   │   │   ├── table-resize.js
-│   │   │   ├── version-stamp.js
-│   │   │   └── versioning.js
+│   │   ├── tally_events.json
+│   │   └── telemetry/
+│   │       ├── errors.json
+│   │       ├── events.json
+│   │       └── rates.json
+│   ├── js/
 │   │   ├── about.js
 │   │   ├── accounts.js
-│   │   ├── analytics.js
 │   │   ├── admin-auth.js
 │   │   ├── admin-gate.js
 │   │   ├── admin-login.js
+│   │   ├── analytics.js
 │   │   ├── api-usage.js
 │   │   ├── api.js
 │   │   ├── app.js
@@ -532,48 +307,47 @@ StreamSuites-Dashboard/
 │   │   ├── render.js
 │   │   ├── settings.js
 │   │   ├── state.js
+│   │   ├── status-widget.js
 │   │   ├── tally-detail.js
 │   │   ├── telemetry.js
 │   │   ├── tiers.js
 │   │   ├── triggers.js
 │   │   ├── updates.js
-│   │   └── view-loader.js
-│   ├── livechat
-│   │   ├── partials
+│   │   ├── view-loader.js
+│   │   ├── platforms/
+│   │   │   ├── discord.js
+│   │   │   ├── kick.js
+│   │   │   ├── pilled.js
+│   │   │   ├── rumble.js
+│   │   │   ├── twitch.js
+│   │   │   ├── twitter.js
+│   │   │   └── youtube.js
+│   │   └── utils/
+│   │       ├── about-data.js
+│   │       ├── global-loader.js
+│   │       ├── search-pagination.js
+│   │       ├── snapshot-health.js
+│   │       ├── standalone-guard.js
+│   │       ├── table-resize.js
+│   │       ├── version-stamp.js
+│   │       └── versioning.js
+│   ├── livechat/
+│   │   ├── index.html
+│   │   ├── favicon.ico
+│   │   ├── partials/
 │   │   │   ├── footer_live.html
 │   │   │   ├── footer_replay.html
 │   │   │   ├── theme_menu.html
 │   │   │   └── theme_selector.html
-│   │   ├── static
-│   │   │   ├── themes
-│   │   │   │   ├── theme-default.css
-│   │   │   │   ├── theme-midnight.css
-│   │   │   │   └── theme-slate.css
-│   │   │   ├── chat.css
-│   │   │   └── chat_live_input.css
-│   │   ├── favicon.ico
-│   │   └── index.html
-│   ├── runtime
-│   │   └── exports
-│   │       ├── admin
-│   │       │   ├── audit
-│   │       │   │   ├── audit.json
-│   │       │   │   └── tmpu8gnpp5u
-│   │       │   └── users
-│   │       │       ├── tmpc7dpld6s
-│   │       │       └── users.json
-│   │       ├── telemetry
-│   │       │   ├── auth_events.json
-│   │       │   ├── errors.json
-│   │       │   ├── events.json
-│   │       │   ├── rates.json
-│   │       │   ├── tmp076fi3_5
-│   │       │   ├── tmp51uhqc6_
-│   │       │   ├── tmp_1s4idh9
-│   │       │   ├── tmpjhws_z56
-│   │       │   ├── tmppj2dq2z0
-│   │       │   ├── tmpqx_cbo9m
-│   │       │   └── tmptwfxz_hg
+│   │   └── static/
+│   │       ├── chat.css
+│   │       ├── chat_live_input.css
+│   │       └── themes/
+│   │           ├── theme-default.css
+│   │           ├── theme-midnight.css
+│   │           └── theme-slate.css
+│   ├── runtime/
+│   │   └── exports/
 │   │       ├── about.admin.json
 │   │       ├── about.public.json
 │   │       ├── changelog.json
@@ -587,19 +361,25 @@ StreamSuites-Dashboard/
 │   │       ├── runtime_snapshot.json
 │   │       ├── scoreboards.json
 │   │       ├── tallies.json
-│   │       ├── tmp7y_po37m
-│   │       ├── tmpwc9v6sjt
-│   │       └── version.json
-│   ├── shared
-│   │   ├── data
+│   │       ├── version.json
+│   │       ├── admin/
+│   │       │   ├── audit/
+│   │       │   │   ├── audit.json
+│   │       │   │   └── [REDACTED: temp output files]
+│   │       │   └── users/
+│   │       │       ├── users.json
+│   │       │       └── [REDACTED: temp output files]
+│   │       ├── telemetry/
+│   │       │   ├── auth_events.json
+│   │       │   ├── errors.json
+│   │       │   ├── events.json
+│   │       │   ├── rates.json
+│   │       │   └── [REDACTED: temp output files]
+│   │       └── [REDACTED: temp output files]
+│   ├── shared/
+│   │   ├── data/
 │   │   │   └── country_centroids.json
-│   │   ├── state
-│   │   │   ├── discord
-│   │   │   │   └── runtime.json
-│   │   │   ├── telemetry
-│   │   │   │   ├── errors.json
-│   │   │   │   ├── events.json
-│   │   │   │   └── rates.json
+│   │   ├── state/
 │   │   │   ├── about.admin.json
 │   │   │   ├── about.public.json
 │   │   │   ├── changelog.json
@@ -614,91 +394,74 @@ StreamSuites-Dashboard/
 │   │   │   ├── runtime_snapshot.json
 │   │   │   ├── scoreboards.json
 │   │   │   ├── tallies.json
-│   │   │   ├── tmp1jjy08ht
-│   │   │   └── version.json
-│   │   └── suspension
+│   │   │   ├── version.json
+│   │   │   ├── discord/
+│   │   │   │   └── runtime.json
+│   │   │   └── telemetry/
+│   │   │       ├── errors.json
+│   │   │       ├── events.json
+│   │   │       └── rates.json
+│   │   └── suspension/
 │   │       ├── suspension-banner.css
 │   │       └── suspension-banner.js
-│   ├── support
-│   │   ├── views
-│   │   │   ├── documentation.html
-│   │   │   └── overview.html
-│   │   └── index.html
-│   ├── tools
-│   │   ├── views
-│   │   │   ├── automation.html
-│   │   │   ├── overview.html
-│   │   │   └── studio.html
-│   │   └── index.html
-│   ├── views
-│   │   ├── platforms
-│   │   │   ├── discord.html
-│   │   │   ├── kick.html
-│   │   │   ├── pilled.html
-│   │   │   ├── rumble.html
-│   │   │   ├── twitch.html
-│   │   │   ├── twitter.html
-│   │   │   └── youtube.html
-│   │   ├── about.html
-│   │   ├── accounts.html
-│   │   ├── analytics.html
-│   │   ├── api-usage.html
-│   │   ├── approvals.html
-│   │   ├── audit.html
-│   │   ├── bots.html
-│   │   ├── chat-replay.html
-│   │   ├── chat_overlay_obs.html
-│   │   ├── chat_replay_window.html
-│   │   ├── chat_window.html
-│   │   ├── clips.html
-│   │   ├── creators.html
-│   │   ├── data-signals.html
-│   │   ├── design.html
-│   │   ├── jobs.html
-│   │   ├── notifications.html
-│   │   ├── overview.html
-│   │   ├── polls.html
-│   │   ├── ratelimits.html
-│   │   ├── scoreboard-management.html
-│   │   ├── scoreboards.html
-│   │   ├── settings.html
-│   │   ├── support.html
-│   │   ├── tallies.html
-│   │   ├── tiers.html
-│   │   ├── triggers.html
-│   │   └── updates.html
-│   ├── about.html
-│   ├── accessibility.html
-│   ├── changelog.html
-│   ├── clips.html
-│   ├── CONTRACTS.md
-│   ├── favicon.ico
-│   ├── home.html
-│   ├── index.html
-│   ├── lander.html
-│   ├── polls.html
-│   ├── POST_MORTEM.md
-│   ├── postmortem.html
-│   ├── privacy.html
-│   ├── scoreboards.html
-│   ├── tallies.html
-│   └── TIERS.md
-├── runtime
-│   ├── exports
-│   │   ├── admin
-│   │   │   └── donations
-│   │   │       └── donations.json
-│   │   ├── changelog.json
-│   │   ├── changelog.runtime.json
-│   │   └── version.json
-│   └── version.py
-├── schemas
-│   ├── platform
-│   │   ├── discord.schema.json
-│   │   ├── rumble.schema.json
-│   │   ├── twitch.schema.json
-│   │   ├── twitter.schema.json
-│   │   └── youtube.schema.json
+│   ├── support/
+│   │   ├── index.html
+│   │   └── views/
+│   │       ├── documentation.html
+│   │       └── overview.html
+│   ├── tools/
+│   │   ├── index.html
+│   │   └── views/
+│   │       ├── automation.html
+│   │       ├── overview.html
+│   │       └── studio.html
+│   └── views/
+│       ├── about.html
+│       ├── accounts.html
+│       ├── analytics.html
+│       ├── api-usage.html
+│       ├── approvals.html
+│       ├── audit.html
+│       ├── bots.html
+│       ├── chat-replay.html
+│       ├── chat_overlay_obs.html
+│       ├── chat_replay_window.html
+│       ├── chat_window.html
+│       ├── clips.html
+│       ├── creators.html
+│       ├── data-signals.html
+│       ├── design.html
+│       ├── jobs.html
+│       ├── notifications.html
+│       ├── overview.html
+│       ├── polls.html
+│       ├── ratelimits.html
+│       ├── scoreboard-management.html
+│       ├── scoreboards.html
+│       ├── settings.html
+│       ├── support.html
+│       ├── tallies.html
+│       ├── tiers.html
+│       ├── triggers.html
+│       ├── updates.html
+│       └── platforms/
+│           ├── discord.html
+│           ├── kick.html
+│           ├── pilled.html
+│           ├── rumble.html
+│           ├── twitch.html
+│           ├── twitter.html
+│           └── youtube.html
+├── runtime/
+│   ├── version.py
+│   └── exports/
+│       ├── changelog.json
+│       ├── changelog.runtime.json
+│       ├── version.json
+│       └── admin/
+│           └── donations/
+│               └── donations.json
+├── schemas/
 │   ├── chat_behaviour.schema.json
 │   ├── chat_log.schema.json
 │   ├── clip_schema.json
@@ -711,12 +474,20 @@ StreamSuites-Dashboard/
 │   ├── services.schema.json
 │   ├── system.schema.json
 │   ├── tiers.schema.json
-│   └── triggers.schema.json
-├── shared
-│   └── state
-│       ├── telemetry
-│       │   └── auth_events.json
-│       └── admin_activity.json
+│   ├── triggers.schema.json
+│   └── platform/
+│       ├── discord.schema.json
+│       ├── rumble.schema.json
+│       ├── twitch.schema.json
+│       ├── twitter.schema.json
+│       └── youtube.schema.json
+├── shared/
+│   └── state/
+│       ├── admin_activity.json
+│       └── telemetry/
+│           └── auth_events.json
+├── tmp/
+│   └── [REDACTED: temp output files]
 ├── .gitignore
 ├── COMMERCIAL-LICENSE-NOTICE.md
 ├── DASHBOARD_AUDIT_REPORT.md
@@ -725,7 +496,6 @@ StreamSuites-Dashboard/
 ├── LICENSE
 └── README.md
 ```
-
 ## Data Sources & Fallbacks
 
 Runtime telemetry loads client-side with graceful fallbacks:
@@ -800,12 +570,13 @@ The dashboard remains neutral and only visualizes exported snapshots describing 
 - **Config drafts:** Creators/platforms configs are edited locally and exported as JSON; they do **not** push to runtimes.
 
 ## README Change Log (This Update)
-- **Replaced:** The previous **Repo Tree (partial)** section has been replaced with a full repo tree listing that includes every directory and file.
-- **Removed:** The duplicate **Directory Structure (Exhaustive)** repo tree listing was removed to keep a single authoritative repo tree section.
-- **Updated:** Overview/auth sections now explicitly describe the admin-only static UI, non-authoritative state posture, and privileged action routing through the Auth API/runtime.
-- **Added:** Differences between the Admin Dashboard, Creator dashboard, and Public site are documented in a dedicated section.
+- **Version alignment:** Explicitly aligned the admin surface documentation to runtime-exported `v0.4.1-alpha` metadata.
+- **Surface posture:** Clarified read-only runtime-state rendering and API-mediated privileged action routing.
+- **Highlights refresh:** Updated current admin surface highlights for analytics/status/telemetry and bot availability/error surfacing.
+- **Repo tree refresh:** Reconciled the tree with the current filesystem and redacted only `assets` plus temp/build output locations.
 
 ## Status
-- **Stage:** Alpha revival (admin control + telemetry visibility, no backend services).
+- **Stage:** `v0.4.1-alpha` (admin control + telemetry visibility, no local backend services).
 - **Owner:** Brainstream Media Group / Daniel Clancy.
 - **License:** Proprietary • All Rights Reserved.
+
