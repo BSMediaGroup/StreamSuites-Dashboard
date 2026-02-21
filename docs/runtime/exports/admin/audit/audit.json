@@ -1,12 +1,77 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-02-19T14:47:46.350116Z",
+  "exported_at": "2026-02-21T21:01:27.479659Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.4.1-alpha",
-    "build": "2026.02.19+005"
+    "build": "2026.02.21+002"
   },
   "audit": [
+    {
+      "id": "9a050ae1-1cad-4061-a5e4-b2a17ce17099",
+      "ts": "2026-02-21T20:52:00Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "33c1fc7f-9e18-4a8a-a508-4c7b3edc56e8",
+      "ts": "2026-02-21T20:51:09Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "role_changed",
+      "metadata": {
+        "source": "fallback_login"
+      }
+    },
+    {
+      "id": "5d837ca7-7c8f-4a80-ba44-ee1a6f6a0250",
+      "ts": "2026-02-21T20:51:09Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "account_created",
+      "metadata": {
+        "provider": "fallback"
+      }
+    },
+    {
+      "id": "2782a0d1-5097-4d4b-aeef-6415f1621a11",
+      "ts": "2026-02-21T20:51:09Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "fallback"
+      }
+    },
+    {
+      "id": "23e78641-ddf8-4663-9a2f-6bafd8cf54a7",
+      "ts": "2026-02-20T06:37:12Z",
+      "actor_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "actor_user_code": "7XaVoy7",
+      "actor_role": "admin",
+      "target_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "target_user_code": "7XaVoy7",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
     {
       "id": "e0c1fa94-7dbd-438a-9cfc-6649d1cb3b66",
       "ts": "2026-02-18T18:56:26Z",

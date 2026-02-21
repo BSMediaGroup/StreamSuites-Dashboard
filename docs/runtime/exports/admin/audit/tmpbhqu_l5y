@@ -1,0 +1,623 @@
+{
+  "schema_version": "v1",
+  "exported_at": "2026-01-28T18:29:10.892420Z",
+  "runtime": {
+    "project": "StreamSuites\u2122 Runtime",
+    "version": "0.2.3-alpha",
+    "build": "2026.01.24+001"
+  },
+  "audit": [
+    {
+      "id": "afff07de-b02f-4fad-8850-1da2148ced3c",
+      "ts": "2026-01-25T09:34:56Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "4a29cc37-fc64-4e24-8817-e95b2e307383",
+      "ts": "2026-01-23T21:44:36Z",
+      "actor_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "actor_user_code": "7lPBEiA",
+      "actor_role": "creator",
+      "target_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "target_user_code": "7lPBEiA",
+      "action": "account_created",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "f97e255b-5767-4c51-8195-fe30072d95d7",
+      "ts": "2026-01-23T21:44:36Z",
+      "actor_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "actor_user_code": "7lPBEiA",
+      "actor_role": "creator",
+      "target_user_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "target_user_code": "7lPBEiA",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "0d35404d-a95b-4c96-80e8-520ae7c7e138",
+      "ts": "2026-01-22T16:38:28Z",
+      "actor_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "actor_user_code": "VIvXsPS",
+      "actor_role": "creator",
+      "target_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "target_user_code": "VIvXsPS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "0ff6a60b-bd72-4d92-a78c-81fdd51c8087",
+      "ts": "2026-01-22T08:26:42Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "631dd725-646b-480a-bdb0-11b4dd98e97c",
+      "ts": "2026-01-22T08:20:33Z",
+      "actor_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "actor_user_code": "VIvXsPS",
+      "actor_role": "creator",
+      "target_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "target_user_code": "VIvXsPS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "33987926-5618-44aa-9a1d-ab6d0507a3b8",
+      "ts": "2026-01-22T08:19:17Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "target_user_code": "JqhcS2m",
+      "action": "rate_limit_blocked",
+      "metadata": {
+        "email_redacted": "ka***@gmail.com",
+        "ip": "83.171.250.195",
+        "reason": "login_backoff",
+        "retry_after": 5
+      }
+    },
+    {
+      "id": "4f0584ff-1842-4013-9c86-c85b6b24108a",
+      "ts": "2026-01-22T05:46:07Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "d52fd24c-5c1f-434e-857d-df86be1a337b",
+      "ts": "2026-01-22T05:45:05Z",
+      "actor_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "actor_user_code": "JqhcS2m",
+      "actor_role": "creator",
+      "target_user_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "target_user_code": "JqhcS2m",
+      "action": "account_created",
+      "metadata": {
+        "provider": "email_password"
+      }
+    },
+    {
+      "id": "e3b5bcb0-4f55-4824-98cf-f06720bc697f",
+      "ts": "2026-01-20T16:35:18Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "f8e89a2a-c608-447a-b003-2f39f3fc1b25",
+      "ts": "2026-01-20T16:08:36Z",
+      "actor_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "actor_user_code": "VIvXsPS",
+      "actor_role": "creator",
+      "target_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "target_user_code": "VIvXsPS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "f50179eb-7a97-4d49-824f-8d64315238a7",
+      "ts": "2026-01-20T16:07:43Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "target_user_code": "VIvXsPS",
+      "action": "onboarding_reset",
+      "metadata": {
+        "after": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "open"
+        },
+        "before": {
+          "onboarding": "required",
+          "status": "active",
+          "tier": "open"
+        },
+        "previous_status": "required",
+        "sessions_invalidated": 2
+      }
+    },
+    {
+      "id": "2031b971-bce7-49f6-8c2d-e954e8616f9d",
+      "ts": "2026-01-20T16:05:49Z",
+      "actor_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "actor_user_code": "VIvXsPS",
+      "actor_role": "creator",
+      "target_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "target_user_code": "VIvXsPS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "e62dee84-5c9e-48d1-bc6b-c13e992843b0",
+      "ts": "2026-01-20T13:56:18Z",
+      "actor_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "actor_user_code": "hVRt8Qp",
+      "actor_role": "creator",
+      "target_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "target_user_code": "hVRt8Qp",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "4598444b-b59e-4d04-b17c-0cf060c45ed3",
+      "ts": "2026-01-20T13:50:45Z",
+      "actor_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "actor_user_code": "hVRt8Qp",
+      "actor_role": "creator",
+      "target_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "target_user_code": "hVRt8Qp",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "61fdcf45-f754-4775-9c5c-b1574df935df",
+      "ts": "2026-01-20T13:49:11Z",
+      "actor_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "actor_user_code": "hVRt8Qp",
+      "actor_role": "creator",
+      "target_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "target_user_code": "hVRt8Qp",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "4af4414e-44cc-4365-92ed-775aa763a751",
+      "ts": "2026-01-20T13:46:02Z",
+      "actor_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "actor_user_code": "hVRt8Qp",
+      "actor_role": "creator",
+      "target_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "target_user_code": "hVRt8Qp",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "b4aef8f7-c4cc-4ff7-8044-386a96e5e8b5",
+      "ts": "2026-01-20T12:26:38Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "b40622b5-960f-4e24-a2ed-86911f1df696",
+      "ts": "2026-01-20T12:25:44Z",
+      "actor_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "actor_user_code": "hVRt8Qp",
+      "actor_role": "creator",
+      "target_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "target_user_code": "hVRt8Qp",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "c6b8a5b4-d203-4fca-a0ba-5ea83ac57931",
+      "ts": "2026-01-20T08:28:16Z",
+      "actor_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "actor_user_code": "VIvXsPS",
+      "actor_role": "creator",
+      "target_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "target_user_code": "VIvXsPS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "10b037da-6616-46cb-bda4-236935621f2f",
+      "ts": "2026-01-20T08:28:04Z",
+      "actor_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "actor_user_code": "hVRt8Qp",
+      "actor_role": "creator",
+      "target_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "target_user_code": "hVRt8Qp",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "fb28e6d8-e594-42b7-b2fb-622b52360803",
+      "ts": "2026-01-20T08:27:42Z",
+      "actor_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "actor_user_code": "hVRt8Qp",
+      "actor_role": "creator",
+      "target_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "target_user_code": "hVRt8Qp",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "8fdddc41-3d5b-4ebb-9ef9-c7a7a9403dec",
+      "ts": "2026-01-20T08:15:35Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "74a419fe-da32-435f-8c92-6f2d3d90b19e",
+      "ts": "2026-01-20T08:14:10Z",
+      "actor_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "actor_user_code": "hVRt8Qp",
+      "actor_role": "creator",
+      "target_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "target_user_code": "hVRt8Qp",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "0a8652d5-047f-407f-962e-3c37a5eb2081",
+      "ts": "2026-01-20T08:12:56Z",
+      "actor_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "actor_user_code": "7XaVoy7",
+      "actor_role": "admin",
+      "target_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "target_user_code": "7XaVoy7",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "474f5d9a-fc04-416e-aa39-aaa742491f79",
+      "ts": "2026-01-20T07:54:07Z",
+      "actor_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "actor_user_code": "7XaVoy7",
+      "actor_role": "admin",
+      "target_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "target_user_code": "7XaVoy7",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "46e655ff-45a6-40cd-b4f5-e6eed816d0e6",
+      "ts": "2026-01-20T07:53:22Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "f45d415a-6e9e-4157-82bf-b03899be55af",
+      "ts": "2026-01-20T07:40:35Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "7616e070-1b69-4079-9219-4e243ae5ab1c",
+      "ts": "2026-01-20T07:39:03Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "d3349164-59f9-479c-8cc1-99ce4bb7770b",
+      "ts": "2026-01-20T07:38:33Z",
+      "actor_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "actor_user_code": "7XaVoy7",
+      "actor_role": "admin",
+      "target_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "target_user_code": "7XaVoy7",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "d7e74f0c-0b34-4ce0-9fa9-19972a082fac",
+      "ts": "2026-01-20T06:55:52Z",
+      "actor_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "actor_user_code": "7XaVoy7",
+      "actor_role": "admin",
+      "target_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "target_user_code": "7XaVoy7",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "bc1158b7-07d7-44f1-97db-711239c34c2b",
+      "ts": "2026-01-20T06:53:26Z",
+      "actor_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "actor_user_code": "7XaVoy7",
+      "actor_role": "admin",
+      "target_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "target_user_code": "7XaVoy7",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "ad7bd12e-114f-47d1-8606-48f487b71c77",
+      "ts": "2026-01-20T06:52:59Z",
+      "actor_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "actor_user_code": "7XaVoy7",
+      "actor_role": "admin",
+      "target_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "target_user_code": "7XaVoy7",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "348fe321-161e-48b2-b7c0-3f7a91c7acf2",
+      "ts": "2026-01-20T06:52:11Z",
+      "actor_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "actor_user_code": "hVRt8Qp",
+      "actor_role": "creator",
+      "target_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "target_user_code": "hVRt8Qp",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "1d3e610c-5eda-4cee-96ea-901f2ed1c129",
+      "ts": "2026-01-20T04:28:14Z",
+      "actor_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "actor_user_code": "hVRt8Qp",
+      "actor_role": "creator",
+      "target_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "target_user_code": "hVRt8Qp",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "09018cee-abc6-461f-9689-37e27a73de85",
+      "ts": "2026-01-20T03:55:05Z",
+      "actor_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "actor_user_code": "hVRt8Qp",
+      "actor_role": "creator",
+      "target_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "target_user_code": "hVRt8Qp",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "f2e1449b-771a-4cc6-80b5-7abe31b94716",
+      "ts": "2026-01-20T03:54:02Z",
+      "actor_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "actor_user_code": "hVRt8Qp",
+      "actor_role": "creator",
+      "target_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "target_user_code": "hVRt8Qp",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "f82da777-785d-4fd6-98c6-ae0c849baf3d",
+      "ts": "2026-01-20T03:00:15Z",
+      "actor_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "actor_user_code": "hVRt8Qp",
+      "actor_role": "creator",
+      "target_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "target_user_code": "hVRt8Qp",
+      "action": "account_created",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "782ff1ca-3a68-41aa-875e-28beaecb4ea2",
+      "ts": "2026-01-20T03:00:15Z",
+      "actor_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "actor_user_code": "hVRt8Qp",
+      "actor_role": "creator",
+      "target_user_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "target_user_code": "hVRt8Qp",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "a29b505e-bb77-4839-ab99-5c2c92ddbc72",
+      "ts": "2026-01-19T09:36:58Z",
+      "actor_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "actor_user_code": "7XaVoy7",
+      "actor_role": "admin",
+      "target_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "target_user_code": "7XaVoy7",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "39017d74-b1e4-4432-baf9-dd2287b323b9",
+      "ts": "2026-01-19T09:34:39Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "79fd1108-cee0-40c0-8fb7-b43587542bb4",
+      "ts": "2026-01-19T09:34:06Z",
+      "actor_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "actor_user_code": "7XaVoy7",
+      "actor_role": "admin",
+      "target_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "target_user_code": "7XaVoy7",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "e183a526-3977-4d95-9d1d-73dd99392f6e",
+      "ts": "2026-01-19T09:33:50Z",
+      "actor_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "actor_user_code": "7XaVoy7",
+      "actor_role": "admin",
+      "target_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "target_user_code": "7XaVoy7",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "a497e64f-d009-4e18-b5d6-3d2efcf59422",
+      "ts": "2026-01-19T07:45:49Z",
+      "actor_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "actor_user_code": "VIvXsPS",
+      "actor_role": "creator",
+      "target_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "target_user_code": "VIvXsPS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "d982219e-6352-446e-bae4-4348755136ac",
+      "ts": "2026-01-19T07:08:24Z",
+      "actor_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "actor_user_code": "VIvXsPS",
+      "actor_role": "creator",
+      "target_user_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "target_user_code": "VIvXsPS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "92e9b09d-03a8-491f-a916-ae9cfc7f27c4",
+      "ts": "2026-01-19T06:26:36Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    }
+  ]
+}

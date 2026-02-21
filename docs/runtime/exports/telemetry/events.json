@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-02-19T14:47:46.327200Z",
+  "generated_at": "2026-02-21T21:01:27.458809Z",
   "events": [
     {
       "timestamp": "2026-01-22T05:45:05Z",
@@ -729,10 +729,32 @@
       "result": "success"
     },
     {
-      "timestamp": "2026-02-19T14:47:36.147645Z",
+      "timestamp": "2026-02-20T06:37:12Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=google user=user_code:7XaVoy7 result=success",
+      "event_type": "session_issued",
+      "email_type": "google",
+      "user_identifier": "user_code:7XaVoy7",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-02-21T20:50:54.309792Z",
       "source": "system",
       "severity": "info",
       "message": "Runtime boot sequence started"
+    },
+    {
+      "timestamp": "2026-02-21T20:52:00Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
+      "event_type": "session_issued",
+      "email_type": "github",
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "success"
     }
   ]
 }
