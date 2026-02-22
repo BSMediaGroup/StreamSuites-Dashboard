@@ -9,6 +9,7 @@
   const QUALITY_ORDER = ["exact", "approximate", "partial", "derived", "unavailable"];
   const DELTA_WINDOWS = ["day", "week", "month", "year"];
   const DONUT_COLORS = ["#6ce1ff", "#89f7a1", "#f8c96b", "#e99fff", "#ff8f8f", "#9fb0ff"];
+  const statsFormatter = window.StreamSuitesAdminStatsFormatting;
 
   const state = {
     accountId: "",
@@ -60,6 +61,44 @@
     const num = Number(value);
     if (!Number.isFinite(num)) return "—";
     return Math.round(num).toLocaleString();
+  }
+
+  function normalizeQuality(value) {
+    if (statsFormatter?.normalizeQuality) {
+      return statsFormatter.normalizeQuality(value);
+    }
+    const normalized = String(value || "").trim().toLowerCase();
+    if (!normalized) return "unavailable";
+    if (normalized === "estimated") return "approximate";
+    if (normalized === "direct") return "exact";
+    if (QUALITY_ORDER.includes(normalized)) return normalized;
+    return "unavailable";
+  }
+
+  function getQualityMarker(quality, options = {}) {
+    const normalized = normalizeQuality(quality);
+    if (normalized === "approximate") return "~";
+    if (normalized === "partial") return "+";
+    if (normalized === "derived") return "*";
+    if (normalized === "unavailable" && options.includeUnavailable === true) return "—";
+    return "";
+  }
+
+  function formatMetric(value, quality, formatter = formatNumber, legend = {}) {
+    if (statsFormatter?.formatValue) {
+      return statsFormatter.formatValue(value, {
+        quality,
+        formatter,
+        legend,
+        unavailableTitle: "Not available"
+      });
+    }
+    return {
+      displayText: formatter(value),
+      titleText: "Not available",
+      suffix: "",
+      quality: normalizeQuality(quality)
+    };
   }
 
   function formatPercent(value) {
@@ -117,9 +156,12 @@
     return candidate;
   }
 
-  function qualityBadge(quality) {
-    const normalized = String(quality || "").trim().toLowerCase() || "unavailable";
-    return `<span class="creator-stats-quality creator-stats-quality-${escapeHtml(normalized)}">${escapeHtml(normalized)}</span>`;
+  function qualityBadge(quality, legend = {}, options = {}) {
+    const normalized = normalizeQuality(quality);
+    const marker = getQualityMarker(normalized, options);
+    if (!marker) return "";
+    const qualityTitle = legend?.[normalized] || "Not available";
+    return `<span class="creator-stats-quality creator-stats-quality-${escapeHtml(normalized)}" title="${escapeHtml(qualityTitle)}">${escapeHtml(marker)}</span>`;
   }
 
   function setStatus(message) {
@@ -185,15 +227,21 @@
   function resolvePayload(rawPayload) {
     const envelope = rawPayload && typeof rawPayload === "object" ? rawPayload : {};
     const data = envelope.data && typeof envelope.data === "object" ? envelope.data : {};
+    const legend = statsFormatter?.resolveLegend
+      ? statsFormatter.resolveLegend(data.data_quality_legend)
+      : data.data_quality_legend && typeof data.data_quality_legend === "object"
+        ? data.data_quality_legend
+        : {};
     return {
       generatedAt: envelope.generated_at_utc || "",
       accountId: envelope.account_id || state.accountId,
-      legend:
-        data.data_quality_legend && typeof data.data_quality_legend === "object"
-          ? data.data_quality_legend
-          : {},
+      legend,
       channels: Array.isArray(data.channels) ? data.channels : [],
       growth: data.growth && typeof data.growth === "object" ? data.growth : {},
+      growthSeries:
+        data.growth_series && typeof data.growth_series === "object" ? data.growth_series : {},
+      platformShare:
+        data.platform_share && typeof data.platform_share === "object" ? data.platform_share : {},
       latestStream:
         data.latest_stream && typeof data.latest_stream === "object" ? data.latest_stream : {},
       recentStreams: Array.isArray(data.recent_streams) ? data.recent_streams.slice(0, 10) : [],
@@ -204,6 +252,7 @@
 
   function renderKpis(payload) {
     if (!el.kpis) return;
+    const legend = payload.legend || {};
     const totals = payload.growth?.totals || {};
     const deltas = payload.growth?.deltas || {};
     const latestViewCount = payload.latestStream?.view_count_total;
@@ -216,7 +265,7 @@
           <span class="creator-stats-platform-chip">
             <span class="platform">${escapeHtml(platform)}</span>
             <strong>${escapeHtml(formatDelta(entry.delta))}</strong>
-            ${qualityBadge(entry.quality)}
+            ${qualityBadge(entry.quality, legend)}
           </span>
         `;
       })
@@ -225,17 +274,20 @@
     const cards = [
       {
         title: "Audience Total",
-        value: formatNumber(totals.audience_total),
+        value: totals.audience_total,
+        formatter: formatNumber,
         quality: totals.audience_total_quality
       },
       {
         title: "Platforms Connected",
-        value: formatNumber(totals.platforms_connected),
+        value: totals.platforms_connected,
+        formatter: formatNumber,
         quality: totals.platforms_connected_quality
       },
       {
         title: "Latest Stream Views",
-        value: formatNumber(latestViewCount),
+        value: latestViewCount,
+        formatter: formatNumber,
         quality: latestViewQuality
       },
       {
@@ -245,21 +297,25 @@
         )} / ${formatDelta(deltas?.month?.audience_delta)} / ${formatDelta(
           deltas?.year?.audience_delta
         )}`,
+        formatter: (v) => String(v),
         quality: deltas?.day?.audience_delta_quality || deltas?.week?.audience_delta_quality
       }
     ];
 
     el.kpis.innerHTML = cards
       .map(
-        (card) => `
+        (card) => {
+          const metric = formatMetric(card.value, card.quality, card.formatter, legend);
+          return `
           <article class="creator-stats-kpi-card">
             <div class="creator-stats-kpi-head">
               <span>${escapeHtml(card.title)}</span>
-              ${qualityBadge(card.quality)}
+              ${qualityBadge(card.quality, legend)}
             </div>
-            <strong>${escapeHtml(card.value)}</strong>
+            <strong title="${escapeHtml(metric.titleText)}">${escapeHtml(metric.displayText)}</strong>
           </article>
-        `
+        `;
+        }
       )
       .join("");
 
@@ -274,16 +330,37 @@
 
   function renderGrowthChart(payload) {
     if (!el.growthChart) return;
-    const deltas = payload.growth?.deltas || {};
-    const points = DELTA_WINDOWS.map((windowKey) => {
-      const item = deltas[windowKey] || {};
-      return {
-        key: windowKey,
-        label: windowKey.toUpperCase(),
-        value: Number(item.audience_delta) || 0,
-        quality: item.audience_delta_quality || "unavailable"
-      };
-    });
+    const legend = payload.legend || {};
+    const dailyPoints = Array.isArray(payload.growthSeries?.daily_points)
+      ? payload.growthSeries.daily_points
+      : [];
+    let points = [];
+
+    if (dailyPoints.length) {
+      points = dailyPoints
+        .slice(-30)
+        .map((entry, index) => {
+          const totals = entry?.totals && typeof entry.totals === "object" ? entry.totals : {};
+          const value = Number(totals.followers_total);
+          return {
+            key: entry?.date_utc || `point-${index + 1}`,
+            label: String(entry?.date_utc || `P${index + 1}`).slice(5),
+            value: Number.isFinite(value) ? value : 0,
+            quality: entry?.quality?.followers_total || "derived"
+          };
+        });
+    } else {
+      const deltas = payload.growth?.deltas || {};
+      points = DELTA_WINDOWS.map((windowKey) => {
+        const item = deltas[windowKey] || {};
+        return {
+          key: windowKey,
+          label: windowKey.toUpperCase(),
+          value: Number(item.audience_delta) || 0,
+          quality: item.audience_delta_quality || "unavailable"
+        };
+      });
+    }
 
     const maxValue = Math.max(...points.map((p) => p.value), 1);
     const minValue = Math.min(...points.map((p) => p.value), 0);
@@ -321,7 +398,7 @@
       </svg>
       <div class="creator-stats-quality-inline">
         ${coords
-          .map((point) => `<span>${escapeHtml(point.label)} ${qualityBadge(point.quality)}</span>`)
+          .map((point) => `<span>${escapeHtml(point.label)} ${qualityBadge(point.quality, legend)}</span>`)
           .join("")}
       </div>
     `;
@@ -329,17 +406,46 @@
 
   function renderShareChart(payload) {
     if (!el.shareChart) return;
-    const platformEntries = Array.isArray(payload.latestStream?.platforms)
-      ? payload.latestStream.platforms
-      : [];
-    const usable = platformEntries
-      .map((entry) => ({
-        platform: String(entry?.platform || "").trim() || "unknown",
-        value: Math.max(0, Number(entry?.view_count) || 0),
-        quality: entry?.view_count_quality || "unavailable",
-        url: entry?.url || ""
-      }))
+    const legend = payload.legend || {};
+    const platformShareByPlatform =
+      payload.platformShare?.by_platform && typeof payload.platformShare.by_platform === "object"
+        ? payload.platformShare.by_platform
+        : {};
+    const platformShareQualityByPlatform =
+      payload.platformShare?.quality?.by_platform &&
+      typeof payload.platformShare.quality.by_platform === "object"
+        ? payload.platformShare.quality.by_platform
+        : {};
+
+    let usable = Object.keys(platformShareByPlatform)
+      .map((platform) => {
+        const entry = platformShareByPlatform[platform] || {};
+        const value = Number(entry?.followers_total);
+        const qualityRaw = platformShareQualityByPlatform[platform];
+        const quality =
+          qualityRaw && typeof qualityRaw === "object"
+            ? qualityRaw.followers_total
+            : qualityRaw;
+        return {
+          platform: String(platform || "").trim() || "unknown",
+          value: Number.isFinite(value) ? Math.max(0, value) : 0,
+          quality: quality || "unavailable"
+        };
+      })
       .filter((entry) => entry.value > 0);
+
+    if (!usable.length) {
+      const platformEntries = Array.isArray(payload.latestStream?.platforms)
+        ? payload.latestStream.platforms
+        : [];
+      usable = platformEntries
+        .map((entry) => ({
+          platform: String(entry?.platform || "").trim() || "unknown",
+          value: Math.max(0, Number(entry?.view_count) || 0),
+          quality: entry?.view_count_quality || "unavailable"
+        }))
+        .filter((entry) => entry.value > 0);
+    }
 
     if (!usable.length) {
       el.shareChart.innerHTML = '<div class="ss-empty-state">No platform view-count data available for share chart.</div>';
@@ -370,7 +476,7 @@
       })
       .join("");
 
-    const legend = usable
+    const legendMarkup = usable
       .map((entry, index) => {
         const pct = total > 0 ? (entry.value / total) * 100 : 0;
         return `
@@ -378,7 +484,7 @@
             <span class="swatch" style="--swatch-color:${DONUT_COLORS[index % DONUT_COLORS.length]}"></span>
             <span class="name">${escapeHtml(entry.platform)}</span>
             <strong>${escapeHtml(formatNumber(entry.value))} (${pct.toFixed(1)}%)</strong>
-            ${qualityBadge(entry.quality)}
+            ${qualityBadge(entry.quality, legend)}
           </li>
         `;
       })
@@ -392,23 +498,28 @@
           <text x="60" y="56" text-anchor="middle" class="creator-stats-donut-total-label">Views</text>
           <text x="60" y="72" text-anchor="middle" class="creator-stats-donut-total-value">${escapeHtml(formatNumber(total))}</text>
         </svg>
-        <ul class="creator-stats-share-legend">${legend}</ul>
+        <ul class="creator-stats-share-legend">${legendMarkup}</ul>
       </div>
     `;
   }
 
   function renderLatestStream(payload) {
     if (!el.latestStream) return;
+    const legend = payload.legend || {};
     const latest = payload.latestStream || {};
     const platforms = Array.isArray(latest.platforms) ? latest.platforms : [];
     const platformItems = platforms
       .map((entry) => {
         const platform = String(entry?.platform || "unknown");
         const url = String(entry?.url || "").trim();
+        const viewMetric = formatMetric(entry?.view_count, entry?.view_count_quality, formatNumber, legend);
         return `
           <li>
-            <span><strong>${escapeHtml(platform)}</strong> · ${escapeHtml(formatNumber(entry?.view_count))} views ${qualityBadge(
-          entry?.view_count_quality
+            <span title="${escapeHtml(viewMetric.titleText)}"><strong>${escapeHtml(platform)}</strong> · ${escapeHtml(
+          viewMetric.displayText
+        )} views ${qualityBadge(
+          entry?.view_count_quality,
+          legend
         )}</span>
             ${
               url
@@ -420,13 +531,23 @@
       })
       .join("");
 
+    const totalViewsMetric = formatMetric(
+      latest.view_count_total,
+      latest.view_count_total_quality,
+      formatNumber,
+      legend
+    );
+
     el.latestStream.innerHTML = `
       <div class="creator-stats-latest-summary">
         <div><span class="label">Title</span><strong>${escapeHtml(latest.title || "—")}</strong></div>
         <div><span class="label">Started</span><strong>${escapeHtml(formatTimestamp(latest.started_at_utc))}</strong></div>
         <div><span class="label">Ended</span><strong>${escapeHtml(formatTimestamp(latest.ended_at_utc))}</strong></div>
-        <div><span class="label">Total Views</span><strong>${escapeHtml(formatNumber(latest.view_count_total))} ${qualityBadge(
-      latest.view_count_total_quality
+        <div><span class="label">Total Views</span><strong title="${escapeHtml(totalViewsMetric.titleText)}">${escapeHtml(
+      totalViewsMetric.displayText
+    )} ${qualityBadge(
+      latest.view_count_total_quality,
+      legend
     )}</strong></div>
       </div>
       <ul class="creator-stats-platform-links">${platformItems || '<li class="muted">No platform records available.</li>'}</ul>
@@ -506,7 +627,10 @@
     el.qualityLegend.innerHTML = `
       <ul class="creator-stats-legend-list">
         ${keys
-          .map((key) => `<li>${qualityBadge(key)} <span>${escapeHtml(legend[key])}</span></li>`)
+          .map((key) => {
+            const marker = qualityBadge(key, legend, { includeUnavailable: true }) || "—";
+            return `<li>${marker} <span><strong>${escapeHtml(key)}</strong> · ${escapeHtml(legend[key])}</span></li>`;
+          })
           .join("")}
       </ul>
     `;
