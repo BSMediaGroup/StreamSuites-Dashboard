@@ -404,8 +404,22 @@
     }
 
     const values = points.map((point) => Number(point.value) || 0);
-    const maxValue = Math.max(...values, 1);
-    const minValue = Math.min(...values, 0);
+    const dataMin = Math.min(...values);
+    const dataMax = Math.max(...values);
+    const isDailySeries = dailyPoints.length > 0;
+    const domainShouldIncludeZero = !isDailySeries;
+    let minValue = domainShouldIncludeZero ? Math.min(dataMin, 0) : dataMin;
+    let maxValue = domainShouldIncludeZero ? Math.max(dataMax, 1) : dataMax;
+
+    if (isDailySeries) {
+      const pad = Math.max(8, Math.round(Math.max(1, dataMax - dataMin) * 0.14));
+      minValue = Math.max(0, dataMin - pad);
+      maxValue = dataMax + pad;
+      if (maxValue <= minValue) {
+        maxValue = minValue + 1;
+      }
+    }
+
     const range = Math.max(maxValue - minValue, 1);
     const deltas = values.map((value, index) => (index === 0 ? 0 : value - values[index - 1]));
     const deltaAbsMax = Math.max(1, ...deltas.map((value) => Math.abs(value)));
@@ -443,7 +457,10 @@
         return `${point.x},${y}`;
       })
       .join(" ");
-    const baselineY = padding.top + ((maxValue - 0) / range) * chartH;
+    const zeroWithinDomain = minValue <= 0 && maxValue >= 0;
+    const baselineY = zeroWithinDomain
+      ? padding.top + ((maxValue - 0) / range) * chartH
+      : padding.chartBottom;
 
     const tickCandidates =
       coords.length > 8 ? [0, 4, 9, 14, 19, 24, coords.length - 1] : coords.map((_p, i) => i);
@@ -514,7 +531,11 @@
     el.growthChart.innerHTML = `
       <svg viewBox="0 0 ${width} ${height}" class="creator-stats-line-svg" role="img" aria-label="Audience growth trend">
         ${yTicks}
-        <line x1="${padding.x}" y1="${baselineY}" x2="${width - padding.x}" y2="${baselineY}" class="creator-stats-line-baseline"></line>
+        ${
+          zeroWithinDomain
+            ? `<line x1="${padding.x}" y1="${baselineY}" x2="${width - padding.x}" y2="${baselineY}" class="creator-stats-line-baseline"></line>`
+            : ""
+        }
         <line x1="${padding.x}" y1="${(padding.barsTop - 8).toFixed(2)}" x2="${(width - padding.x).toFixed(
           2
         )}" y2="${(padding.barsTop - 8).toFixed(2)}" class="creator-stats-line-separator"></line>
@@ -535,8 +556,8 @@
       </svg>
       <div class="creator-stats-quality-inline">
         <span>Points: ${coords.length}</span>
-        <span>Min: ${escapeHtml(formatNumber(minValue))}</span>
-        <span>Max: ${escapeHtml(formatNumber(maxValue))}</span>
+        <span>Min: ${escapeHtml(formatNumber(dataMin))}</span>
+        <span>Max: ${escapeHtml(formatNumber(dataMax))}</span>
         <span>Net: ${escapeHtml(formatDelta(netChange))}</span>
         ${qualitySummary}
       </div>
