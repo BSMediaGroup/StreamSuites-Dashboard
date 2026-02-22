@@ -8,7 +8,7 @@
   const CACHE = new Map();
   const QUALITY_ORDER = ["exact", "approximate", "partial", "derived", "unavailable"];
   const QUALITY_MARKER_ICON_PATHS = Object.freeze({
-    exact: "/assets/icons/ui/tickcircle.svg",
+    exact: "/assets/icons/ui/tickyeslarge.svg",
     approximate: "/assets/icons/ui/approx.svg",
     partial: "/assets/icons/ui/add.svg",
     derived: "/assets/icons/ui/asterisk.svg",
