@@ -86,6 +86,13 @@
 
   function buildQualityMarkerInlineSvg(quality, options = {}) {
     const normalized = normalizeQuality(quality);
+    if (normalized === "derived") {
+      return `
+        <svg class="creator-stats-quality-svg" viewBox="0 0 10 10" aria-hidden="true" focusable="false">
+          <path d="M5 1.2V8.8M1.9 2.3L8.1 7.7M8.1 2.3L1.9 7.7" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"></path>
+        </svg>
+      `;
+    }
     if (normalized === "partial") {
       return `
         <svg class="creator-stats-quality-svg" viewBox="0 0 10 10" aria-hidden="true" focusable="false">
