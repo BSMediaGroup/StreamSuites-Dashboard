@@ -937,6 +937,7 @@ const SIDEBAR_ICON_FALLBACK = "/assets/icons/ui/cog.svg";
 const SIDEBAR_VIEW_ICON_MAP = Object.freeze({
   overview: "/assets/icons/ui/dashboard.svg",
   creators: "/assets/icons/ui/profile.svg",
+  "creator-stats": "/assets/icons/ui/globe.svg",
   accounts: "/assets/icons/ui/identity.svg",
   tiers: "/assets/icons/ui/cards.svg",
   audit: "/assets/icons/ui/admin.svg",
@@ -1414,12 +1415,27 @@ function bindDelegatedNavigation() {
   });
 }
 
+function parseHashRoute() {
+  const raw = window.location.hash.replace(/^#/, "").trim();
+  if (!raw) {
+    return { raw: "", view: "", query: "" };
+  }
+
+  const [viewToken, ...queryParts] = raw.split("?");
+  return {
+    raw,
+    view: (viewToken || "").trim(),
+    query: queryParts.join("?")
+  };
+}
+
 /* ----------------------------------------------------------------------
    URL Hash Routing (MINIMALLY EXTENDED)
    ---------------------------------------------------------------------- */
 
 function resolveInitialView() {
-  const hash = window.location.hash.replace("#", "");
+  const route = parseHashRoute();
+  const hash = route.view;
 
   if (hash && App.views[hash]) {
     return hash;
@@ -1429,7 +1445,8 @@ function resolveInitialView() {
 
 function bindHashChange() {
   window.addEventListener("hashchange", () => {
-    const hash = window.location.hash.replace("#", "");
+    const route = parseHashRoute();
+    const hash = route.view;
 
     if (App.views[hash]) {
       loadView(hash);
@@ -1566,6 +1583,14 @@ registerView("creators", {
   },
   onUnload: () => {
     window.CreatorsView?.destroy?.();
+  }
+});
+registerView("creator-stats", {
+  onLoad: () => {
+    window.CreatorStatsView?.init?.();
+  },
+  onUnload: () => {
+    window.CreatorStatsView?.destroy?.();
   }
 });
   registerView("accounts", {

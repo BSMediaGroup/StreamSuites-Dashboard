@@ -730,16 +730,26 @@ function normalizeUser(raw = {}) {
   function renderActionsToggle(user) {
     const accountId = normalizeAccountId(user.id);
     return `
-      <button
-        type="button"
-        class="ss-btn ss-btn-small ss-btn-secondary accounts-actions-toggle"
-        data-account-open-actions
-        data-account-id="${escapeHtml(accountId)}"
-        aria-expanded="false"
-        aria-controls="accounts-details-drawer"
-      >
-        Actions
-      </button>
+      <div class="accounts-inline-actions">
+        <button
+          type="button"
+          class="ss-btn ss-btn-small ss-btn-secondary"
+          data-account-open-stats
+          data-account-id="${escapeHtml(accountId)}"
+        >
+          View stats
+        </button>
+        <button
+          type="button"
+          class="ss-btn ss-btn-small ss-btn-secondary accounts-actions-toggle"
+          data-account-open-actions
+          data-account-id="${escapeHtml(accountId)}"
+          aria-expanded="false"
+          aria-controls="accounts-details-drawer"
+        >
+          Actions
+        </button>
+      </div>
     `;
   }
 
@@ -779,6 +789,18 @@ function normalizeUser(raw = {}) {
     navState.from = "accounts";
     navState.ts = Date.now();
     navigateToView("creators");
+  }
+
+  function openCreatorStats(accountId) {
+    const normalizedId = normalizeAccountId(accountId);
+    if (!normalizedId || normalizedId === "—") return;
+    if (!window.StreamSuitesCreatorStatsNav || typeof window.StreamSuitesCreatorStatsNav !== "object") {
+      window.StreamSuitesCreatorStatsNav = {};
+    }
+    window.StreamSuitesCreatorStatsNav.accountId = normalizedId;
+    window.StreamSuitesCreatorStatsNav.from = "accounts";
+    window.StreamSuitesCreatorStatsNav.ts = Date.now();
+    window.location.hash = `#creator-stats?account_id=${encodeURIComponent(normalizedId)}`;
   }
 
   function getBaseRowByAccountId(accountId) {
@@ -1661,6 +1683,14 @@ function normalizeUser(raw = {}) {
         openCreatorIdentity(userCode);
         return;
       }
+      const statsButton = target.closest("[data-account-open-stats]");
+      if (statsButton) {
+        event.preventDefault();
+        clearRowClickTimer();
+        const accountId = normalizeAccountId(statsButton.getAttribute("data-account-id"));
+        openCreatorStats(accountId);
+        return;
+      }
       if (isInteractiveRowTarget(target)) return;
       const row = target.closest("tr");
       if (!isBaseAccountRow(row)) return;
@@ -1742,7 +1772,7 @@ function normalizeUser(raw = {}) {
       skipLastHandle: false,
       excludedColumnKeys: ["actions"],
       defaultColumnWidths: {
-        actions: 132
+        actions: 220
       }
     });
   }

@@ -1,0 +1,147 @@
+<!-- ========================================================= -->
+<!-- StreamSuites - Creator Stats (Admin / Phase 0) -->
+<!-- ========================================================= -->
+
+<header class="ss-header">
+  <div class="ss-header-left">
+    <h1 class="ss-title">Creator Statistics</h1>
+    <span class="ss-subtitle">Admin-only view of account-level creator metrics (Phase 0 mock data)</span>
+  </div>
+</header>
+
+<main class="ss-main creator-stats-main">
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Lookup</h2>
+        <p class="muted" style="margin:6px 0 0;">Select an account to inspect current creator stats payloads.</p>
+      </div>
+    </header>
+    <div class="ss-panel-body">
+      <form id="creator-stats-form" class="creator-stats-toolbar" autocomplete="off">
+        <label for="creator-stats-account-input" class="muted">Account ID</label>
+        <input
+          type="text"
+          id="creator-stats-account-input"
+          class="ss-input"
+          placeholder="Enter account id"
+          spellcheck="false"
+        />
+        <button id="creator-stats-load" type="submit" class="ss-btn ss-btn-primary">Load</button>
+        <button id="creator-stats-refresh" type="button" class="ss-btn ss-btn-secondary">Refresh</button>
+        <span id="creator-stats-status" class="muted">Awaiting account selection.</span>
+      </form>
+      <div id="creator-stats-banner" class="ss-alert ss-alert-danger hidden" role="status" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2 id="creator-stats-account-heading">Account: —</h2>
+        <p class="muted">Last updated: <span id="creator-stats-generated-at">—</span></p>
+      </div>
+    </header>
+    <div id="creator-stats-content" class="ss-panel-body">
+      <div id="creator-stats-empty" class="ss-empty-state">Load an account to view creator statistics.</div>
+      <div id="creator-stats-loading" class="creator-stats-loading hidden" aria-hidden="true">
+        <div class="creator-stats-skeleton-row">
+          <div class="creator-stats-skeleton-card"></div>
+          <div class="creator-stats-skeleton-card"></div>
+          <div class="creator-stats-skeleton-card"></div>
+          <div class="creator-stats-skeleton-card"></div>
+        </div>
+        <div class="creator-stats-skeleton-row creator-stats-skeleton-row-wide">
+          <div class="creator-stats-skeleton-card"></div>
+          <div class="creator-stats-skeleton-card"></div>
+        </div>
+        <div class="creator-stats-skeleton-row creator-stats-skeleton-row-wide">
+          <div class="creator-stats-skeleton-card"></div>
+        </div>
+      </div>
+      <div id="creator-stats-error" class="ss-empty-state hidden"></div>
+      <div id="creator-stats-sections" class="creator-stats-sections hidden">
+        <section class="creator-stats-kpi-grid" id="creator-stats-kpis"></section>
+
+        <section class="creator-stats-grid-two">
+          <article class="ss-panel creator-stats-inner-card">
+            <header class="ss-panel-header">
+              <div class="ss-panel-header-main">
+                <h3>Growth Trend</h3>
+                <p class="muted">Audience delta across day, week, month, and year windows.</p>
+              </div>
+            </header>
+            <div class="ss-panel-body">
+              <div id="creator-stats-growth-chart" class="creator-stats-chart"></div>
+            </div>
+          </article>
+
+          <article class="ss-panel creator-stats-inner-card">
+            <header class="ss-panel-header">
+              <div class="ss-panel-header-main">
+                <h3>Platform Share</h3>
+                <p class="muted">Latest livestream view-count distribution by platform.</p>
+              </div>
+            </header>
+            <div class="ss-panel-body">
+              <div id="creator-stats-share-chart" class="creator-stats-share"></div>
+            </div>
+          </article>
+        </section>
+
+        <section class="creator-stats-grid-two">
+          <article class="ss-panel creator-stats-inner-card">
+            <header class="ss-panel-header">
+              <div class="ss-panel-header-main">
+                <h3>Latest Livestream</h3>
+                <p class="muted">Total view count and per-platform stream URLs.</p>
+              </div>
+            </header>
+            <div class="ss-panel-body" id="creator-stats-latest-stream"></div>
+          </article>
+
+          <article class="ss-panel creator-stats-inner-card">
+            <header class="ss-panel-header">
+              <div class="ss-panel-header-main">
+                <h3>Automation ROI</h3>
+                <p class="muted">Triggers, clips, jobs, success rate, and error counts.</p>
+              </div>
+            </header>
+            <div class="ss-panel-body" id="creator-stats-automation"></div>
+          </article>
+        </section>
+
+        <section class="ss-panel creator-stats-inner-card">
+          <header class="ss-panel-header">
+            <div class="ss-panel-header-main">
+              <h3>Recent Streams (10)</h3>
+            </div>
+          </header>
+          <div class="ss-panel-body">
+            <div class="ss-table-scroll">
+              <table class="ss-table ss-table-compact">
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Started (UTC)</th>
+                    <th>Platforms</th>
+                  </tr>
+                </thead>
+                <tbody id="creator-stats-recent-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="ss-panel creator-stats-inner-card">
+          <header class="ss-panel-header">
+            <div class="ss-panel-header-main">
+              <h3>Data Quality Legend</h3>
+            </div>
+          </header>
+          <div class="ss-panel-body" id="creator-stats-quality-legend"></div>
+        </section>
+      </div>
+    </div>
+  </section>
+</main>

@@ -22,6 +22,7 @@ The dashboard loads snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progre
 
 ## What's New / Highlights (v0.4.1-alpha)
 
+- **Creator Stats admin page (Phase 0 mock):** Added admin-only `Creator Stats` view wired to `GET /api/admin/accounts/{account_id}/stats`.
 - **Admin dashboard surface refresh:** Expanded operational views across overview, analytics, approvals, audit, jobs, notifications, data signals, and API usage.
 - **Runtime visibility depth:** Telemetry/events/errors/rates plus platform heartbeat and status views are wired to runtime-exported snapshots.
 - **Bot availability/error surfacing:** `docs/views/bots.html` + `docs/js/bots.js` expose platform availability and runtime-state/error visibility with admin-debug controls.
@@ -288,6 +289,7 @@ StreamSuites-Dashboard/
 │   │   ├── clip-detail.js
 │   │   ├── clips.js
 │   │   ├── creators.js
+│   │   ├── creator-stats.js
 │   │   ├── data-signals.js
 │   │   ├── discord-guild.js
 │   │   ├── jobs.js
@@ -428,6 +430,7 @@ StreamSuites-Dashboard/
 │       ├── chat_replay_window.html
 │       ├── chat_window.html
 │       ├── clips.html
+│       ├── creator-stats.html
 │       ├── creators.html
 │       ├── data-signals.html
 │       ├── design.html
