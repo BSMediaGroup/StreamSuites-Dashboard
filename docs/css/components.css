@@ -1836,7 +1836,9 @@ body.ss-col-resizing-active {
 .creator-stats-quality {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: 2px 7px;
+  min-width: 18px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.16);
   background: rgba(255, 255, 255, 0.05);
@@ -1845,6 +1847,14 @@ body.ss-col-resizing-active {
   text-transform: uppercase;
   color: var(--text-primary);
   white-space: nowrap;
+}
+
+.creator-stats-quality-svg {
+  width: 9px;
+  height: 9px;
+  display: block;
+  color: currentColor;
+  overflow: visible;
 }
 
 .creator-stats-quality-exact {
@@ -1933,6 +1943,11 @@ body.ss-col-resizing-active {
   stroke-width: 1;
 }
 
+.creator-stats-line-grid {
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 1;
+}
+
 .creator-stats-line-path {
   fill: none;
   stroke: #6cd7ff;
@@ -1941,20 +1956,60 @@ body.ss-col-resizing-active {
   stroke-linejoin: round;
 }
 
+.creator-stats-line-path-avg {
+  stroke: rgba(137, 247, 161, 0.95);
+  stroke-width: 2;
+  stroke-dasharray: 5 5;
+}
+
 .creator-stats-line-point {
   fill: #89f7a1;
   stroke: rgba(8, 19, 24, 0.9);
   stroke-width: 2;
 }
 
+.creator-stats-line-point.is-latest {
+  fill: #dce6ff;
+  stroke: rgba(108, 215, 255, 0.9);
+}
+
+.creator-stats-line-separator {
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 1;
+}
+
+.creator-stats-line-axis-tick {
+  stroke: rgba(255, 255, 255, 0.18);
+  stroke-width: 1;
+}
+
+.creator-stats-line-crosshair {
+  stroke: rgba(108, 215, 255, 0.34);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+
+.creator-stats-delta-bar {
+  opacity: 0.88;
+}
+
+.creator-stats-delta-bar.is-pos {
+  fill: rgba(137, 247, 161, 0.68);
+}
+
+.creator-stats-delta-bar.is-neg {
+  fill: rgba(255, 143, 143, 0.7);
+}
+
 .creator-stats-line-label {
-  font-size: 10px;
+  font-size: 9px;
   letter-spacing: 0.05em;
   fill: var(--text-secondary);
 }
 
 .creator-stats-line-value {
   font-size: 10px;
+  font-weight: 600;
   letter-spacing: 0.03em;
   fill: var(--text-primary);
 }

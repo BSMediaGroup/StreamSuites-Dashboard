@@ -84,6 +84,33 @@
     return "";
   }
 
+  function buildQualityMarkerInlineSvg(quality, options = {}) {
+    const normalized = normalizeQuality(quality);
+    if (normalized === "partial") {
+      return `
+        <svg class="creator-stats-quality-svg" viewBox="0 0 10 10" aria-hidden="true" focusable="false">
+          <path d="M5 1.2V8.8M1.2 5H8.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+        </svg>
+      `;
+    }
+    if (normalized === "unavailable" && options.includeUnavailable === true) {
+      return `
+        <svg class="creator-stats-quality-svg" viewBox="0 0 10 10" aria-hidden="true" focusable="false">
+          <path d="M1.5 5H8.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+        </svg>
+      `;
+    }
+    if (normalized === "approximate") {
+      return `
+        <svg class="creator-stats-quality-svg" viewBox="0 0 12 10" aria-hidden="true" focusable="false">
+          <path d="M1 3.4c1.2-1 2.5-1 3.7 0 1.2 1 2.5 1 3.7 0" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"></path>
+          <path d="M1 6.6c1.2-1 2.5-1 3.7 0 1.2 1 2.5 1 3.7 0" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"></path>
+        </svg>
+      `;
+    }
+    return "";
+  }
+
   function formatMetric(value, quality, formatter = formatNumber, legend = {}) {
     if (statsFormatter?.formatValue) {
       return statsFormatter.formatValue(value, {
@@ -159,9 +186,23 @@
   function qualityBadge(quality, legend = {}, options = {}) {
     const normalized = normalizeQuality(quality);
     const marker = getQualityMarker(normalized, options);
-    if (!marker) return "";
+    const inlineSvg = buildQualityMarkerInlineSvg(normalized, options);
+    if (!marker && !inlineSvg) return "";
     const qualityTitle = legend?.[normalized] || "Not available";
-    return `<span class="creator-stats-quality creator-stats-quality-${escapeHtml(normalized)}" title="${escapeHtml(qualityTitle)}">${escapeHtml(marker)}</span>`;
+    return `
+      <span class="creator-stats-quality creator-stats-quality-${escapeHtml(normalized)}" title="${escapeHtml(
+      qualityTitle
+    )}" aria-label="${escapeHtml(qualityTitle)}">
+        ${inlineSvg || escapeHtml(marker)}
+      </span>
+    `;
+  }
+
+  function formatCompactDateLabel(value) {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value).slice(5, 10);
+    return date.toLocaleDateString(undefined, { month: "2-digit", day: "2-digit" });
   }
 
   function setStatus(message) {
@@ -344,7 +385,7 @@
           const value = Number(totals.followers_total);
           return {
             key: entry?.date_utc || `point-${index + 1}`,
-            label: String(entry?.date_utc || `P${index + 1}`).slice(5),
+            label: formatCompactDateLabel(entry?.date_utc) || `Day ${index + 1}`,
             value: Number.isFinite(value) ? value : 0,
             quality: entry?.quality?.followers_total || "derived"
           };
@@ -362,44 +403,142 @@
       });
     }
 
-    const maxValue = Math.max(...points.map((p) => p.value), 1);
-    const minValue = Math.min(...points.map((p) => p.value), 0);
+    const values = points.map((point) => Number(point.value) || 0);
+    const maxValue = Math.max(...values, 1);
+    const minValue = Math.min(...values, 0);
     const range = Math.max(maxValue - minValue, 1);
-    const width = 460;
-    const height = 180;
-    const padding = { x: 30, y: 20 };
+    const deltas = values.map((value, index) => (index === 0 ? 0 : value - values[index - 1]));
+    const deltaAbsMax = Math.max(1, ...deltas.map((value) => Math.abs(value)));
+    const movingAverage = values.map((_value, index) => {
+      const start = Math.max(0, index - 6);
+      const windowValues = values.slice(start, index + 1);
+      return Math.round(windowValues.reduce((sum, value) => sum + value, 0) / windowValues.length);
+    });
+    const netChange = values[values.length - 1] - values[0];
+
+    const width = 520;
+    const height = 260;
+    const padding = {
+      x: 28,
+      top: 18,
+      chartBottom: 154,
+      axisBottom: 176,
+      barsTop: 188,
+      barsBottom: 242
+    };
     const usableW = width - padding.x * 2;
-    const usableH = height - padding.y * 2;
+    const chartH = padding.chartBottom - padding.top;
+    const barsH = padding.barsBottom - padding.barsTop;
 
     const coords = points.map((point, index) => {
       const x = padding.x + (points.length === 1 ? 0 : (index / (points.length - 1)) * usableW);
-      const y = padding.y + ((maxValue - point.value) / range) * usableH;
-      return { ...point, x, y };
+      const y = padding.top + ((maxValue - values[index]) / range) * chartH;
+      return { ...point, x, y, avg: movingAverage[index], delta: deltas[index] };
     });
 
     const polyline = coords.map((point) => `${point.x},${point.y}`).join(" ");
-    const baselineY = padding.y + ((maxValue - 0) / range) * usableH;
+    const avgPolyline = coords
+      .map((point) => {
+        const y = padding.top + ((maxValue - point.avg) / range) * chartH;
+        return `${point.x},${y}`;
+      })
+      .join(" ");
+    const baselineY = padding.top + ((maxValue - 0) / range) * chartH;
+
+    const tickCandidates =
+      coords.length > 8 ? [0, 4, 9, 14, 19, 24, coords.length - 1] : coords.map((_p, i) => i);
+    const tickIndexes = tickCandidates.filter((value, index, arr) => arr.indexOf(value) === index);
+
+    const yTicks = [0, 0.25, 0.5, 0.75, 1]
+      .map((ratio) => {
+        const yPos = padding.chartBottom - ratio * chartH;
+        return `<line x1="${padding.x}" y1="${yPos.toFixed(2)}" x2="${(width - padding.x).toFixed(
+          2
+        )}" y2="${yPos.toFixed(2)}" class="creator-stats-line-grid"></line>`;
+      })
+      .join("");
+
+    const xTicks = tickIndexes
+      .map((index) => {
+        const point = coords[index];
+        return `
+          <line x1="${point.x.toFixed(2)}" y1="${padding.chartBottom.toFixed(2)}" x2="${point.x.toFixed(
+          2
+        )}" y2="${(padding.chartBottom + 6).toFixed(2)}" class="creator-stats-line-axis-tick"></line>
+          <text x="${point.x.toFixed(2)}" y="${padding.axisBottom.toFixed(
+          2
+        )}" text-anchor="middle" class="creator-stats-line-label">${escapeHtml(point.label)}</text>
+        `;
+      })
+      .join("");
+
+    const pointMarkers = coords
+      .map((point, index) => {
+        const isEmphasis = index === 0 || index === coords.length - 1 || tickIndexes.includes(index);
+        if (!isEmphasis) return "";
+        return `<circle cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="${
+          index === coords.length - 1 ? "3.9" : "2.8"
+        }" class="creator-stats-line-point${index === coords.length - 1 ? " is-latest" : ""}"></circle>`;
+      })
+      .join("");
+
+    const barWidth = Math.max(4, (usableW / Math.max(1, coords.length)) * 0.62);
+    const deltaBars = coords
+      .map((point) => {
+        const magnitude = Math.abs(point.delta);
+        const barHeight = Math.max(2, (magnitude / deltaAbsMax) * (barsH - 4));
+        const y = padding.barsBottom - barHeight;
+        const tone = point.delta >= 0 ? "is-pos" : "is-neg";
+        return `<rect x="${(point.x - barWidth / 2).toFixed(2)}" y="${y.toFixed(2)}" width="${barWidth.toFixed(
+          2
+        )}" height="${barHeight.toFixed(2)}" rx="2" class="creator-stats-delta-bar ${tone}"></rect>`;
+      })
+      .join("");
+
+    const latest = coords[coords.length - 1];
+    const qualityCounts = coords.reduce((acc, point) => {
+      const key = normalizeQuality(point.quality);
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+    const qualitySummary = Object.keys(qualityCounts)
+      .filter((key) => qualityCounts[key] > 0)
+      .map(
+        (key) =>
+          `<span>${qualityBadge(key, legend, { includeUnavailable: true })} ${escapeHtml(
+            key
+          )}: ${qualityCounts[key]}</span>`
+      )
+      .join("");
 
     el.growthChart.innerHTML = `
-      <svg viewBox="0 0 ${width} ${height}" class="creator-stats-line-svg" role="img" aria-label="Audience delta trend by window">
+      <svg viewBox="0 0 ${width} ${height}" class="creator-stats-line-svg" role="img" aria-label="Audience growth trend">
+        ${yTicks}
         <line x1="${padding.x}" y1="${baselineY}" x2="${width - padding.x}" y2="${baselineY}" class="creator-stats-line-baseline"></line>
+        <line x1="${padding.x}" y1="${(padding.barsTop - 8).toFixed(2)}" x2="${(width - padding.x).toFixed(
+          2
+        )}" y2="${(padding.barsTop - 8).toFixed(2)}" class="creator-stats-line-separator"></line>
+        <polyline points="${avgPolyline}" class="creator-stats-line-path creator-stats-line-path-avg"></polyline>
         <polyline points="${polyline}" class="creator-stats-line-path"></polyline>
-        ${coords
-          .map(
-            (point) => `
-              <circle cx="${point.x}" cy="${point.y}" r="4.5" class="creator-stats-line-point"></circle>
-              <text x="${point.x}" y="${height - 6}" text-anchor="middle" class="creator-stats-line-label">${escapeHtml(point.label)}</text>
-              <text x="${point.x}" y="${Math.max(14, point.y - 10)}" text-anchor="middle" class="creator-stats-line-value">${escapeHtml(
-              formatDelta(point.value)
-            )}</text>
-            `
-          )
-          .join("")}
+        ${pointMarkers}
+        <g class="creator-stats-delta-bars">${deltaBars}</g>
+        ${xTicks}
+        <line x1="${latest.x.toFixed(2)}" y1="${padding.top}" x2="${latest.x.toFixed(2)}" y2="${padding.chartBottom.toFixed(
+          2
+        )}" class="creator-stats-line-crosshair"></line>
+        <text x="${Math.max(padding.x + 38, latest.x - 4).toFixed(2)}" y="${Math.max(
+          14,
+          latest.y - 10
+        ).toFixed(2)}" text-anchor="end" class="creator-stats-line-value">${escapeHtml(
+          formatNumber(latest.value)
+        )}</text>
       </svg>
       <div class="creator-stats-quality-inline">
-        ${coords
-          .map((point) => `<span>${escapeHtml(point.label)} ${qualityBadge(point.quality, legend)}</span>`)
-          .join("")}
+        <span>Points: ${coords.length}</span>
+        <span>Min: ${escapeHtml(formatNumber(minValue))}</span>
+        <span>Max: ${escapeHtml(formatNumber(maxValue))}</span>
+        <span>Net: ${escapeHtml(formatDelta(netChange))}</span>
+        ${qualitySummary}
       </div>
     `;
   }
