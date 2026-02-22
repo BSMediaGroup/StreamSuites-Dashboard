@@ -8,6 +8,7 @@
   const CACHE = new Map();
   const QUALITY_ORDER = ["exact", "approximate", "partial", "derived", "unavailable"];
   const QUALITY_MARKER_ICON_PATHS = Object.freeze({
+    exact: "/assets/icons/ui/tickcircle.svg",
     approximate: "/assets/icons/ui/approx.svg",
     partial: "/assets/icons/ui/add.svg",
     derived: "/assets/icons/ui/asterisk.svg",
@@ -83,7 +84,7 @@
 
   function getQualityMarker(quality, options = {}) {
     const normalized = normalizeQuality(quality);
-    if (normalized === "approximate") return "~";
+    if (normalized === "approximate") return "\u2248";
     if (normalized === "partial") return "+";
     if (normalized === "derived") return "*";
     if (normalized === "unavailable" && options.includeUnavailable === true) return "—";
@@ -92,6 +93,7 @@
 
   function getQualityMarkerIconPath(quality, options = {}) {
     const normalized = normalizeQuality(quality);
+    if (normalized === "exact") return QUALITY_MARKER_ICON_PATHS.exact;
     if (normalized === "approximate") return QUALITY_MARKER_ICON_PATHS.approximate;
     if (normalized === "partial") return QUALITY_MARKER_ICON_PATHS.partial;
     if (normalized === "derived") return QUALITY_MARKER_ICON_PATHS.derived;
@@ -963,3 +965,5 @@
     destroy
   };
 })();
+
+
