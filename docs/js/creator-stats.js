@@ -7,6 +7,12 @@
 
   const CACHE = new Map();
   const QUALITY_ORDER = ["exact", "approximate", "partial", "derived", "unavailable"];
+  const QUALITY_MARKER_ICON_PATHS = Object.freeze({
+    approximate: "/assets/icons/ui/approx.svg",
+    partial: "/assets/icons/ui/add.svg",
+    derived: "/assets/icons/ui/asterisk.svg",
+    unavailable: "/assets/icons/ui/minus.svg"
+  });
   const DELTA_WINDOWS = ["day", "week", "month", "year"];
   const DONUT_COLORS = ["#6ce1ff", "#89f7a1", "#f8c96b", "#e99fff", "#ff8f8f", "#9fb0ff"];
   const statsFormatter = window.StreamSuitesAdminStatsFormatting;
@@ -84,36 +90,13 @@
     return "";
   }
 
-  function buildQualityMarkerInlineSvg(quality, options = {}) {
+  function getQualityMarkerIconPath(quality, options = {}) {
     const normalized = normalizeQuality(quality);
-    if (normalized === "derived") {
-      return `
-        <svg class="creator-stats-quality-svg" viewBox="0 0 10 10" aria-hidden="true" focusable="false">
-          <path d="M5 1.2V8.8M1.9 2.3L8.1 7.7M8.1 2.3L1.9 7.7" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"></path>
-        </svg>
-      `;
-    }
-    if (normalized === "partial") {
-      return `
-        <svg class="creator-stats-quality-svg" viewBox="0 0 10 10" aria-hidden="true" focusable="false">
-          <path d="M5 1.2V8.8M1.2 5H8.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
-        </svg>
-      `;
-    }
+    if (normalized === "approximate") return QUALITY_MARKER_ICON_PATHS.approximate;
+    if (normalized === "partial") return QUALITY_MARKER_ICON_PATHS.partial;
+    if (normalized === "derived") return QUALITY_MARKER_ICON_PATHS.derived;
     if (normalized === "unavailable" && options.includeUnavailable === true) {
-      return `
-        <svg class="creator-stats-quality-svg" viewBox="0 0 10 10" aria-hidden="true" focusable="false">
-          <path d="M1.5 5H8.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
-        </svg>
-      `;
-    }
-    if (normalized === "approximate") {
-      return `
-        <svg class="creator-stats-quality-svg" viewBox="0 0 12 10" aria-hidden="true" focusable="false">
-          <path d="M1 3.4c1.2-1 2.5-1 3.7 0 1.2 1 2.5 1 3.7 0" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"></path>
-          <path d="M1 6.6c1.2-1 2.5-1 3.7 0 1.2 1 2.5 1 3.7 0" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"></path>
-        </svg>
-      `;
+      return QUALITY_MARKER_ICON_PATHS.unavailable;
     }
     return "";
   }
@@ -193,14 +176,20 @@
   function qualityBadge(quality, legend = {}, options = {}) {
     const normalized = normalizeQuality(quality);
     const marker = getQualityMarker(normalized, options);
-    const inlineSvg = buildQualityMarkerInlineSvg(normalized, options);
-    if (!marker && !inlineSvg) return "";
+    const iconPath = getQualityMarkerIconPath(normalized, options);
+    if (!marker && !iconPath) return "";
     const qualityTitle = legend?.[normalized] || "Not available";
     return `
       <span class="creator-stats-quality creator-stats-quality-${escapeHtml(normalized)}" title="${escapeHtml(
       qualityTitle
     )}" aria-label="${escapeHtml(qualityTitle)}">
-        ${inlineSvg || escapeHtml(marker)}
+        ${
+          iconPath
+            ? `<span class="creator-stats-quality-marker-icon" style="--quality-marker-icon:url('${escapeHtml(
+                iconPath
+              )}')" aria-hidden="true"></span>`
+            : escapeHtml(marker)
+        }
       </span>
     `;
   }

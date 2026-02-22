@@ -1849,12 +1849,19 @@ body.ss-col-resizing-active {
   white-space: nowrap;
 }
 
-.creator-stats-quality-svg {
+.creator-stats-quality-marker-icon {
   width: 9px;
   height: 9px;
   display: block;
-  color: currentColor;
-  overflow: visible;
+  background-color: currentColor;
+  -webkit-mask-image: var(--quality-marker-icon);
+  mask-image: var(--quality-marker-icon);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
 }
 
 .creator-stats-quality-exact {
