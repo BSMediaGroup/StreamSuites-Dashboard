@@ -43,6 +43,7 @@
     el.discordPublicLast = document.getElementById("ov-discord-public-last");
     el.discordPublicError = document.getElementById("ov-discord-public-error");
     el.discordBotStatus = document.getElementById("ov-discord-bot");
+    el.discordNote = document.getElementById("ov-discord-note");
 
     el.rumbleConfig = document.getElementById("ov-rumble-config");
     el.rumbleRuntime = document.getElementById("ov-rumble-runtime");
@@ -370,25 +371,46 @@
     target.textContent = status || "Unknown";
   }
 
-  function renderDiscordUnavailable() {
+  function setDiscordNote(message) {
+    if (!el.discordNote) return;
+    const text = String(message || "").trim();
+    el.discordNote.textContent = text;
+    el.discordNote.classList.toggle("hidden", !text);
+  }
+
+  function renderDiscordUnavailable(noteMessage = "") {
     setText(el.discordOfficialGuild, "Unavailable");
     setText(el.discordAdminStatus, "Unavailable");
     setText(el.discordAdminLast, "—");
-    setText(el.discordAdminError, "Unknown");
+    setText(el.discordAdminError, "Unavailable");
     setText(el.discordPublicStatus, "Unavailable");
     setText(el.discordPublicLast, "—");
-    setText(el.discordPublicError, "Unknown");
+    setText(el.discordPublicError, "Unavailable");
     setStatusBadge(el.discordBotStatus, "unavailable");
     if (el.badgeDiscord) {
       el.badgeDiscord.textContent = "Unavailable";
     }
+    setDiscordNote(noteMessage);
   }
 
   async function refreshDiscord() {
     try {
       const payload = (await fetchDiscordBotStatus()) || {};
+      const payloadError = normalizeText(payload?.error || payload?.message || "", "");
+      if (payload?.success === false) {
+        renderDiscordUnavailable(payloadError || "Discord unavailable (Auth API returned success=false).");
+        return;
+      }
+
       const admin = payload?.profiles?.admin || {};
       const publicProfile = payload?.profiles?.public || {};
+      const hasAdminProfile = Boolean(payload?.profiles?.admin && typeof payload?.profiles?.admin === "object");
+      const hasPublicProfile = Boolean(payload?.profiles?.public && typeof payload?.profiles?.public === "object");
+      if (!hasAdminProfile || !hasPublicProfile) {
+        renderDiscordUnavailable(payloadError || "Discord unavailable (missing profile data).");
+        return;
+      }
+
       const officialGuild = normalizeText(
         payload?.official_guild_id ||
           admin?.verification?.guild_id ||
@@ -415,6 +437,7 @@
         formatDiscordTimestamp(publicProfile?.verification?.last_verified_at)
       );
       setText(el.discordPublicError, formatErrorIndicator(publicProfile));
+      setDiscordNote("");
 
       setStatusBadge(el.discordBotStatus, healthy ? "healthy" : "attention");
       if (el.badgeDiscord) {
@@ -424,8 +447,10 @@
       const isAuthError = err?.isAuthError || err?.status === 401 || err?.status === 403;
       if (isAuthError) {
         promptAdminReauth();
+        renderDiscordUnavailable("Admin session expired. Please log in again.");
+        return;
       }
-      renderDiscordUnavailable();
+      renderDiscordUnavailable("Discord unavailable (network/API error).");
     }
   }
 

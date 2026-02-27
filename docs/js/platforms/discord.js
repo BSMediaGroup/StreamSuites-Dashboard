@@ -15,6 +15,7 @@
       status: document.getElementById("dc-admin-status"),
       banner: document.getElementById("dc-admin-banner"),
       admin: {
+        statusPill: document.getElementById("dc-admin-card-status"),
         reverify: document.getElementById("dc-admin-reverify"),
         install: document.getElementById("dc-admin-install"),
         officialGuildId: document.getElementById("dc-admin-official-guild-id"),
@@ -30,6 +31,7 @@
         error: document.getElementById("dc-admin-error"),
       },
       public: {
+        statusPill: document.getElementById("dc-public-card-status"),
         reverify: document.getElementById("dc-public-reverify"),
         install: document.getElementById("dc-public-install"),
         officialGuildId: document.getElementById("dc-public-official-guild-id"),
@@ -116,6 +118,14 @@
     setText(els.status, `● ${text}`);
   }
 
+  function setCardStatusPill(cardEls, value, tone = "offline") {
+    const pill = cardEls?.statusPill;
+    if (!pill) return;
+    pill.classList.remove("online", "offline");
+    pill.classList.add(tone === "online" ? "online" : "offline");
+    setText(pill, value);
+  }
+
   function promptAdminReauth() {
     if (typeof window.StreamSuitesAdminGate?.logout === "function") {
       window.StreamSuitesAdminGate.logout();
@@ -135,7 +145,20 @@
     return normalizeText(verification.error || "", "");
   }
 
-  function renderProfileCard(cardEls, payload, profile) {
+  function getPayloadErrorText(payload) {
+    if (!payload || typeof payload !== "object") return "";
+    return normalizeText(payload.error || payload.message || "", "");
+  }
+
+  function renderCardInlineError(cardEls, message) {
+    if (!cardEls?.errorWrap) return;
+    const text = normalizeText(message || "", "");
+    cardEls.errorWrap.classList.toggle("hidden", !text);
+    cardEls.errorWrap.open = false;
+    setText(cardEls.error, text);
+  }
+
+  function renderProfileCard(cardEls, payload, profile, options = {}) {
     if (!cardEls) return;
     const verification = profile?.verification || {};
     const install = profile?.install || {};
@@ -143,6 +166,28 @@
       payload?.official_guild_id || verification?.guild_id,
       OFFICIAL_GUILD_FALLBACK
     );
+    const fallbackError = normalizeText(options.errorText || getPayloadErrorText(payload), "");
+    const hasProfile = Boolean(profile && typeof profile === "object");
+    const defaultUnavailable = options.statusLabel || "Unavailable";
+
+    if (!hasProfile) {
+      setText(cardEls.officialGuildId, officialGuildId);
+      setText(cardEls.isInstalled, defaultUnavailable);
+      setText(cardEls.verified, defaultUnavailable);
+      setText(cardEls.lastVerifiedAt, NOT_AVAILABLE_TEXT);
+      setText(cardEls.botUserId, NOT_AVAILABLE_TEXT);
+      setText(cardEls.expectedBotUserId, NOT_AVAILABLE_TEXT);
+      setText(cardEls.installClientId, NOT_AVAILABLE_TEXT);
+      setText(cardEls.installPermissions, NOT_AVAILABLE_TEXT);
+      setText(cardEls.installScopes, NOT_AVAILABLE_TEXT);
+      renderCardInlineError(cardEls, fallbackError || "Profile data unavailable.");
+      if (cardEls.install) {
+        cardEls.install.dataset.hasInstallUrl = "false";
+        cardEls.install.disabled = true;
+      }
+      setCardStatusPill(cardEls, defaultUnavailable, "offline");
+      return;
+    }
 
     setText(cardEls.officialGuildId, officialGuildId);
     setText(
@@ -174,17 +219,21 @@
         : NOT_AVAILABLE_TEXT
     );
 
-    const errorText = parseVerifyError(verification);
-    if (cardEls.errorWrap) {
-      cardEls.errorWrap.classList.toggle("hidden", !errorText);
-      cardEls.errorWrap.open = false;
-    }
-    setText(cardEls.error, errorText);
+    const errorText = parseVerifyError(verification) || fallbackError;
+    renderCardInlineError(cardEls, errorText);
 
     if (cardEls.install) {
       const hasInstallUrl = Boolean(normalizeText(install?.url, ""));
       cardEls.install.dataset.hasInstallUrl = hasInstallUrl ? "true" : "false";
       cardEls.install.disabled = !hasInstallUrl;
+    }
+
+    if (verification?.success === true) {
+      setCardStatusPill(cardEls, "Verified", "online");
+    } else if (verification?.success === false) {
+      setCardStatusPill(cardEls, "Error", "offline");
+    } else {
+      setCardStatusPill(cardEls, "Unavailable", "offline");
     }
   }
 
@@ -324,8 +373,10 @@
           hasMore: false,
         },
         items: [],
+        emptyMessage: "No installs found.",
         expandedErrorKeys: new Set(),
       },
+      hasRenderedStatus: false,
     };
 
     function addListener(node, eventName, handler) {
@@ -358,6 +409,8 @@
       targets.forEach((target) => setText(target, LOADING_TEXT));
       if (state.els?.admin?.errorWrap) state.els.admin.errorWrap.classList.add("hidden");
       if (state.els?.public?.errorWrap) state.els.public.errorWrap.classList.add("hidden");
+      setCardStatusPill(state.els?.admin, "Loading...", "offline");
+      setCardStatusPill(state.els?.public, "Loading...", "offline");
       if (state.els?.installs?.body) {
         state.els.installs.body.innerHTML =
           '<tr><td class="muted" colspan="5">Loading...</td></tr>';
@@ -429,7 +482,9 @@
       const items = Array.isArray(state.installs.items) ? state.installs.items : [];
       if (!items.length) {
         installsEls.body.innerHTML =
-          '<tr><td class="muted" colspan="5">No creator guild installs found for the selected filters.</td></tr>';
+          `<tr><td class="muted" colspan="5">${escapeHtml(
+            state.installs.emptyMessage || "No installs found."
+          )}</td></tr>`;
         return;
       }
 
@@ -517,24 +572,78 @@
       try {
         const payload = await fetchStatus();
         state.payload = payload || {};
-        renderProfileCard(state.els?.admin, state.payload, state.payload?.profiles?.admin);
-        renderProfileCard(state.els?.public, state.payload, state.payload?.profiles?.public);
+        const payloadError = getPayloadErrorText(state.payload);
+
+        if (state.payload?.success === false) {
+          renderProfileCard(state.els?.admin, state.payload, null, {
+            statusLabel: "Error",
+            errorText: payloadError || "Auth API reported an error for Discord bot status.",
+          });
+          renderProfileCard(state.els?.public, state.payload, null, {
+            statusLabel: "Error",
+            errorText: payloadError || "Auth API reported an error for Discord bot status.",
+          });
+          setBanner(
+            state.els,
+            payloadError || "Discord bot status is currently unavailable.",
+            "warning"
+          );
+          setStatusIndicator(state.els, "Discord bot status: Error", "idle");
+          state.hasRenderedStatus = true;
+          return;
+        }
+
+        renderProfileCard(state.els?.admin, state.payload, state.payload?.profiles?.admin, {
+          statusLabel: "Unavailable",
+          errorText: payloadError,
+        });
+        renderProfileCard(state.els?.public, state.payload, state.payload?.profiles?.public, {
+          statusLabel: "Unavailable",
+          errorText: payloadError,
+        });
+        state.hasRenderedStatus = true;
         setStatusIndicator(state.els, "Discord bot status: Loaded", "active");
       } catch (err) {
         const isAuthError = err?.isAuthError || err?.status === 401 || err?.status === 403;
         if (isAuthError) {
+          const message = "Admin session expired. Please log in again.";
           setBanner(
             state.els,
-            "Admin session expired. Please log in again.",
+            message,
             "danger"
           );
+          renderCardInlineError(state.els?.admin, message);
+          renderCardInlineError(state.els?.public, message);
+          if (!state.hasRenderedStatus) {
+            renderProfileCard(state.els?.admin, state.payload, null, {
+              statusLabel: "Error",
+              errorText: message,
+            });
+            renderProfileCard(state.els?.public, state.payload, null, {
+              statusLabel: "Error",
+              errorText: message,
+            });
+            state.hasRenderedStatus = true;
+          }
           promptAdminReauth();
         } else {
+          const message = "Unable to load Discord bot status right now. You can retry.";
           setBanner(
             state.els,
-            "Unable to load Discord bot status right now. You can retry.",
+            message,
             "warning"
           );
+          if (!state.hasRenderedStatus) {
+            renderProfileCard(state.els?.admin, state.payload, null, {
+              statusLabel: "Unavailable",
+              errorText: message,
+            });
+            renderProfileCard(state.els?.public, state.payload, null, {
+              statusLabel: "Unavailable",
+              errorText: message,
+            });
+            state.hasRenderedStatus = true;
+          }
         }
         setStatusIndicator(state.els, "Discord bot status: Error", "idle");
       } finally {
@@ -554,11 +663,37 @@
 
       try {
         const payload = await fetchInstalls(state.installs.filters, state.installs.offset);
+        if (payload?.success === false) {
+          state.installs.items = [];
+          state.installs.emptyMessage = "No installs found.";
+          renderInstallsPaging({
+            offset: state.installs.offset,
+            returned: 0,
+            total: 0,
+            has_more: false,
+          });
+          const payloadMessage = normalizeText(
+            payload?.error || payload?.message,
+            "Unable to load creator guild installs right now. Try Refresh."
+          );
+          const isAuthPayload = payload?.status === 401 || payload?.status === 403;
+          if (isAuthPayload) {
+            setInstallsError(state.els, "Admin session expired. Please log in again.", "danger");
+            promptAdminReauth();
+          } else {
+            setInstallsError(state.els, payloadMessage, "warning");
+          }
+          renderInstallsTable();
+          return;
+        }
+
         state.installs.items = Array.isArray(payload?.items) ? payload.items : [];
+        state.installs.emptyMessage = "No installs found.";
         renderInstallsPaging(payload?.paging);
         renderInstallsTable();
       } catch (err) {
         state.installs.items = [];
+        state.installs.emptyMessage = "No installs found.";
         renderInstallsPaging({
           offset: state.installs.offset,
           returned: 0,
