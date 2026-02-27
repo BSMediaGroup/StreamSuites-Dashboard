@@ -8,6 +8,9 @@
   const TELEMETRY_MAX_ERRORS = 8;
   const TELEMETRY_MAX_METRICS = 6;
   const ADMIN_ACTIVITY_MAX = 8;
+  const DISCORD_STATUS_ENDPOINT = "/api/admin/discord/bot/status";
+  const DISCORD_OFFICIAL_GUILD_FALLBACK =
+    "Configured in Auth API (DISCORD_SS_GUILD_ID)";
 
   let refreshHandle = null;
   let quotaRefreshHandle = null;
@@ -32,11 +35,13 @@
     el.twitchEnabledCount = document.getElementById("ov-twitch-enabled-count");
     el.youtubeEnabledCount = document.getElementById("ov-youtube-enabled-count");
 
-    el.discordRuntime = document.getElementById("ov-discord-runtime");
-    el.discordConnection = document.getElementById("ov-discord-connection");
-    el.discordHeartbeat = document.getElementById("ov-discord-heartbeat");
-    el.discordGuilds = document.getElementById("ov-discord-guilds");
-    el.discordPresence = document.getElementById("ov-discord-presence");
+    el.discordOfficialGuild = document.getElementById("ov-discord-official-guild");
+    el.discordAdminStatus = document.getElementById("ov-discord-admin-status");
+    el.discordAdminLast = document.getElementById("ov-discord-admin-last");
+    el.discordAdminError = document.getElementById("ov-discord-admin-error");
+    el.discordPublicStatus = document.getElementById("ov-discord-public-status");
+    el.discordPublicLast = document.getElementById("ov-discord-public-last");
+    el.discordPublicError = document.getElementById("ov-discord-public-error");
     el.discordBotStatus = document.getElementById("ov-discord-bot");
 
     el.rumbleConfig = document.getElementById("ov-rumble-config");
@@ -268,39 +273,80 @@
      DISCORD SNAPSHOT (READ-ONLY)
      ============================================================ */
 
-  function formatPresence(runtime) {
-    const parts = [];
-    if (runtime?.statusEmoji) parts.push(runtime.statusEmoji);
-    if (runtime?.statusText) parts.push(runtime.statusText);
-    return parts.length ? parts.join(" ") : "Not available";
+  function normalizeText(value, fallback = "Not available") {
+    if (value === null || value === undefined) return fallback;
+    const text = String(value).trim();
+    return text || fallback;
   }
 
-  function formatHeartbeat(runtime) {
-    return (
-      window.StreamSuitesState?.formatTimestamp?.(runtime?.lastHeartbeat) ||
-      "Not available"
-    );
+  function parseVerifyError(verification) {
+    if (!verification || typeof verification !== "object") return "";
+    const exact = normalizeText(verification.last_verify_error || "", "");
+    if (exact) return exact;
+    return normalizeText(verification.error || "", "");
   }
 
-  function formatGuildCount(runtime) {
-    return Number.isInteger(runtime?.guildCount)
-      ? String(runtime.guildCount)
-      : "Not available";
+  function formatDiscordTimestamp(value) {
+    if (!value) return "Not available";
+    return window.StreamSuitesState?.formatTimestamp?.(value) || normalizeText(value);
   }
 
-  function formatConnection(runtime) {
-    return (
-      window.StreamSuitesState?.describeDiscordConnection?.(runtime) ||
-      "Unknown"
-    );
+  function formatProfileStatus(profile) {
+    const verification = profile?.verification || {};
+    const installed = verification?.is_installed;
+    const verified = verification?.success;
+
+    if (installed === true && verified === true) return "Installed + verified";
+    if (installed === false) return "Not installed";
+    if (verified === false) return "Verification failed";
+    if (installed === true) return "Installed";
+    if (verified === true) return "Verified";
+    return "Not available";
   }
 
-  function formatConnectionDetail(runtime) {
-    if (!runtime) return "Not running";
-    if (runtime.connected === true) return "Connected";
-    if (runtime.connected === false) return "Disconnected";
-    if (runtime.running === false) return "Not running";
-    return "Unknown";
+  function formatErrorIndicator(profile) {
+    return parseVerifyError(profile?.verification) ? "Present" : "None";
+  }
+
+  function promptAdminReauth() {
+    if (typeof window.StreamSuitesAdminGate?.logout === "function") {
+      window.StreamSuitesAdminGate.logout();
+      return true;
+    }
+    if (typeof window.StreamSuitesAdminAuth?.logout === "function") {
+      window.StreamSuitesAdminAuth.logout();
+      return true;
+    }
+    return false;
+  }
+
+  async function fetchDiscordBotStatus() {
+    if (typeof window.StreamSuitesApi?.apiFetch === "function") {
+      return window.StreamSuitesApi.apiFetch(DISCORD_STATUS_ENDPOINT, {
+        cacheTtlMs: 0,
+        forceRefresh: true,
+        timeoutMs: 10000,
+      });
+    }
+
+    const url =
+      typeof window.StreamSuitesApi?.buildApiUrl === "function"
+        ? window.StreamSuitesApi.buildApiUrl(DISCORD_STATUS_ENDPOINT)
+        : DISCORD_STATUS_ENDPOINT;
+    const response = await fetch(url, {
+      method: "GET",
+      cache: "no-store",
+      credentials: "include",
+      headers: { Accept: "application/json" },
+    });
+
+    if (!response.ok) {
+      const err = new Error(`Request failed (${response.status})`);
+      err.status = response.status;
+      err.isAuthError = response.status === 401 || response.status === 403;
+      throw err;
+    }
+    return response.json();
   }
 
   function setStatusBadge(target, status) {
@@ -309,15 +355,15 @@
     target.classList.remove("online", "offline");
     target.classList.add("badge");
 
-    if (normalized === "online") {
+    if (normalized === "healthy") {
       target.classList.add("online");
-      target.textContent = "Online";
+      target.textContent = "Healthy";
       return;
     }
 
-    if (normalized === "offline" || normalized === "not running") {
+    if (normalized === "attention" || normalized === "unavailable") {
       target.classList.add("offline");
-      target.textContent = "Offline";
+      target.textContent = status === "unavailable" ? "Unavailable" : "Attention";
       return;
     }
 
@@ -325,41 +371,61 @@
   }
 
   function renderDiscordUnavailable() {
-    const unavailable = "Unavailable";
-    setText(el.discordRuntime, unavailable);
-    setText(el.discordConnection, unavailable);
-    setText(el.discordHeartbeat, "—");
-    setText(el.discordGuilds, "—");
-    setText(el.discordPresence, "—");
-    setStatusBadge(el.discordBotStatus, unavailable);
+    setText(el.discordOfficialGuild, "Unavailable");
+    setText(el.discordAdminStatus, "Unavailable");
+    setText(el.discordAdminLast, "—");
+    setText(el.discordAdminError, "Unknown");
+    setText(el.discordPublicStatus, "Unavailable");
+    setText(el.discordPublicLast, "—");
+    setText(el.discordPublicError, "Unknown");
+    setStatusBadge(el.discordBotStatus, "unavailable");
     if (el.badgeDiscord) {
       el.badgeDiscord.textContent = "Unavailable";
     }
   }
 
   async function refreshDiscord() {
-    if (window.__RUNTIME_AVAILABLE__ !== true) {
-      return;
-    }
-    if (window.__DISCORD_FEATURES_ENABLED__ === false) {
+    try {
+      const payload = (await fetchDiscordBotStatus()) || {};
+      const admin = payload?.profiles?.admin || {};
+      const publicProfile = payload?.profiles?.public || {};
+      const officialGuild = normalizeText(
+        payload?.official_guild_id ||
+          admin?.verification?.guild_id ||
+          publicProfile?.verification?.guild_id,
+        DISCORD_OFFICIAL_GUILD_FALLBACK
+      );
+
+      const adminError = parseVerifyError(admin?.verification);
+      const publicError = parseVerifyError(publicProfile?.verification);
+      const healthy =
+        admin?.verification?.is_installed === true &&
+        admin?.verification?.success === true &&
+        publicProfile?.verification?.success === true &&
+        !adminError &&
+        !publicError;
+
+      setText(el.discordOfficialGuild, officialGuild);
+      setText(el.discordAdminStatus, formatProfileStatus(admin));
+      setText(el.discordAdminLast, formatDiscordTimestamp(admin?.verification?.last_verified_at));
+      setText(el.discordAdminError, formatErrorIndicator(admin));
+      setText(el.discordPublicStatus, formatProfileStatus(publicProfile));
+      setText(
+        el.discordPublicLast,
+        formatDiscordTimestamp(publicProfile?.verification?.last_verified_at)
+      );
+      setText(el.discordPublicError, formatErrorIndicator(publicProfile));
+
+      setStatusBadge(el.discordBotStatus, healthy ? "healthy" : "attention");
+      if (el.badgeDiscord) {
+        el.badgeDiscord.textContent = healthy ? "Verified" : "Needs Attention";
+      }
+    } catch (err) {
+      const isAuthError = err?.isAuthError || err?.status === 401 || err?.status === 403;
+      if (isAuthError) {
+        promptAdminReauth();
+      }
       renderDiscordUnavailable();
-      return;
-    }
-    const runtime =
-      (await window.StreamSuitesState?.loadDiscordRuntimeSnapshot?.()) || null;
-
-    const runtimeStatus = formatConnection(runtime);
-
-    setText(el.discordRuntime, runtimeStatus);
-    setText(el.discordConnection, formatConnectionDetail(runtime));
-    setText(el.discordHeartbeat, formatHeartbeat(runtime));
-    setText(el.discordGuilds, formatGuildCount(runtime));
-    setText(el.discordPresence, formatPresence(runtime));
-    setStatusBadge(el.discordBotStatus, runtimeStatus);
-
-    if (el.badgeDiscord) {
-      el.badgeDiscord.textContent =
-        runtime && runtime.running ? "Foundation" : "Offline";
     }
   }
 
@@ -495,18 +561,6 @@
     const emptyMessage = "Runtime not connected. Start the runtime service and refresh.";
 
     setText(el.dashboardState, "static mode");
-
-    setText(el.discordRuntime, placeholder);
-    setText(el.discordConnection, placeholder);
-    setText(el.discordHeartbeat, placeholder);
-    setText(el.discordGuilds, "—");
-    setText(el.discordPresence, "—");
-
-    if (el.discordBotStatus) {
-      el.discordBotStatus.classList.remove("online");
-      el.discordBotStatus.classList.add("offline");
-      el.discordBotStatus.textContent = "Disconnected";
-    }
 
     setText(el.rumbleRuntime, placeholder);
     setText(el.kickRuntime, placeholder);
@@ -973,6 +1027,7 @@
 
     if (window.__RUNTIME_AVAILABLE__ !== true) {
       renderRuntimeDisconnected();
+      void refreshDiscord();
       console.info("[Overview] Static offline mode.");
       return;
     }

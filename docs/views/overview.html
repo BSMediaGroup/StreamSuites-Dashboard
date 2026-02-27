@@ -341,42 +341,57 @@
   <!-- --------------------------------------------------------- -->
   <section class="ss-panel" data-view="discord" data-discord-locked tabindex="0" role="button" style="cursor:pointer;">
     <header class="ss-panel-header">
-      <h2>
-        Discord Control-Plane
-        <span class="ss-platform-badge foundation" id="badge-discord">
-          Foundation (Runtime Pending)
-        </span>
-      </h2>
+      <div class="ss-panel-header-main">
+        <h2>
+          Discord Control-Plane
+          <span class="ss-platform-badge foundation" id="badge-discord">
+            Foundation (Runtime Pending)
+          </span>
+        </h2>
+      </div>
+      <div class="ss-panel-header-actions">
+        <button type="button" class="ss-btn ss-btn-secondary" data-view="discord">
+          Go to Discord page
+        </button>
+      </div>
     </header>
 
     <div class="ss-panel-body">
       <table class="ss-table ss-table-compact">
         <tbody>
           <tr>
-            <td>Discord Runtime</td>
-            <td id="ov-discord-runtime" class="align-right muted">Loading…</td>
-          </tr>
-          <tr>
-            <td>Connection</td>
-            <td id="ov-discord-connection" class="align-right muted">Loading…</td>
-          </tr>
-          <tr>
-            <td>Control Bot</td>
+            <td>Bot Summary</td>
             <td class="align-right">
-              <span id="ov-discord-bot" class="badge offline">Offline</span>
+              <span id="ov-discord-bot" class="badge offline">Loading...</span>
             </td>
           </tr>
           <tr>
-            <td>Last Heartbeat</td>
-            <td id="ov-discord-heartbeat" class="align-right muted">Loading…</td>
+            <td>Official Guild</td>
+            <td id="ov-discord-official-guild" class="align-right muted">Loading...</td>
           </tr>
           <tr>
-            <td>Guilds Connected</td>
-            <td id="ov-discord-guilds" class="align-right muted">Loading…</td>
+            <td>Admin Bot (official guild)</td>
+            <td id="ov-discord-admin-status" class="align-right muted">Loading...</td>
           </tr>
           <tr>
-            <td>Status</td>
-            <td id="ov-discord-presence" class="align-right muted">Loading…</td>
+            <td>Admin last_verified_at</td>
+            <td id="ov-discord-admin-last" class="align-right muted">Loading...</td>
+          </tr>
+          <tr>
+            <td>Admin error indicator</td>
+            <td id="ov-discord-admin-error" class="align-right muted">Loading...</td>
+          </tr>
+          <tr>
+            <td>Public Bot (official guild informational)</td>
+            <td id="ov-discord-public-status" class="align-right muted">Loading...</td>
+          </tr>
+          <tr>
+            <td>Public last_verified_at</td>
+            <td id="ov-discord-public-last" class="align-right muted">Loading...</td>
+          </tr>
+          <tr>
+            <td>Public error indicator</td>
+            <td id="ov-discord-public-error" class="align-right muted">Loading...</td>
           </tr>
         </tbody>
       </table>
@@ -397,7 +412,7 @@
       </p>
 
       <p class="muted" style="margin-top: 0.5rem;">
-        Discord status is read-only and may be unavailable if the control-plane runtime is not deployed.
+        Discord status is read-only and sourced from the Auth API.
       </p>
     </div>
   </section>
