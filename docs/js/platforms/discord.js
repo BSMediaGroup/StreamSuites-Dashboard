@@ -2,9 +2,13 @@
   "use strict";
 
   const STATUS_ENDPOINT = "/api/admin/discord/bot/status";
+  const INSTALLS_ENDPOINT = "/api/admin/discord/bot/installs";
   const LOADING_TEXT = "Loading...";
   const NOT_AVAILABLE_TEXT = "Not available";
   const OFFICIAL_GUILD_FALLBACK = "Configured in Auth API (DISCORD_SS_GUILD_ID)";
+  const EMPTY_DASH = "—";
+  const INSTALLS_LIMIT_DEFAULT = 50;
+  const INSTALLS_LIMIT_MAX = 200;
 
   function cacheElements() {
     return {
@@ -40,6 +44,19 @@
         errorWrap: document.getElementById("dc-public-error-wrap"),
         error: document.getElementById("dc-public-error"),
       },
+      installs: {
+        refresh: document.getElementById("dc-installs-refresh"),
+        guildFilter: document.getElementById("dc-installs-guild-filter"),
+        accountFilter: document.getElementById("dc-installs-account-filter"),
+        installedOnly: document.getElementById("dc-installs-installed-only"),
+        limit: document.getElementById("dc-installs-limit"),
+        loading: document.getElementById("dc-installs-loading"),
+        error: document.getElementById("dc-installs-error"),
+        body: document.getElementById("dc-installs-body"),
+        prev: document.getElementById("dc-installs-prev"),
+        next: document.getElementById("dc-installs-next"),
+        pageIndicator: document.getElementById("dc-installs-page-indicator"),
+      },
     };
   }
 
@@ -54,6 +71,11 @@
     return text ? text : fallback;
   }
 
+  function normalizeOptionalText(value) {
+    const text = String(value ?? "").trim();
+    return text || null;
+  }
+
   function formatTimestamp(value) {
     if (!value) return NOT_AVAILABLE_TEXT;
     try {
@@ -61,6 +83,15 @@
       if (formatted && formatted !== "Not available") return formatted;
     } catch {}
     return normalizeText(value);
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
   function setBanner(els, message, variant = "warning") {
@@ -157,7 +188,7 @@
     }
   }
 
-  function setLoadingState(els, loading) {
+  function setStatusLoadingState(els, loading) {
     const sections = [els?.admin, els?.public];
     sections.forEach((section) => {
       if (!section) return;
@@ -171,6 +202,46 @@
       }
     });
     if (loading) setStatusIndicator(els, "Discord bot status: Loading", "idle");
+  }
+
+  function setInstallsError(els, message, variant = "warning") {
+    const errorEl = els?.installs?.error;
+    if (!errorEl) return;
+    const tone = variant === "danger" ? "danger" : "warning";
+    errorEl.classList.remove("hidden", "ss-alert-danger", "ss-alert-warning");
+    errorEl.classList.add(`ss-alert-${tone}`);
+    setText(errorEl, message);
+  }
+
+  function clearInstallsError(els) {
+    const errorEl = els?.installs?.error;
+    if (!errorEl) return;
+    errorEl.classList.add("hidden");
+    errorEl.classList.remove("ss-alert-danger", "ss-alert-warning");
+    setText(errorEl, "");
+  }
+
+  function clampLimit(value) {
+    const parsed = Number.parseInt(String(value ?? ""), 10);
+    if (!Number.isFinite(parsed)) return INSTALLS_LIMIT_DEFAULT;
+    return Math.max(1, Math.min(parsed, INSTALLS_LIMIT_MAX));
+  }
+
+  function buildInstallsQuery(filters, offset) {
+    const params = new URLSearchParams();
+    params.set("bot_profile", "public");
+    params.set("limit", String(clampLimit(filters?.limit)));
+    params.set("offset", String(Math.max(0, Number(offset) || 0)));
+
+    const guildId = normalizeOptionalText(filters?.guildId);
+    if (guildId) params.set("guild_id", guildId);
+
+    const accountId = normalizeOptionalText(filters?.accountId);
+    if (accountId) params.set("account_id", accountId);
+
+    if (filters?.installedOnly) params.set("installed_only", "1");
+
+    return params.toString();
   }
 
   async function fetchStatus() {
@@ -190,11 +261,39 @@
       method: "GET",
       cache: "no-store",
       credentials: "include",
-      headers: {
-        Accept: "application/json",
-      },
+      headers: { Accept: "application/json" },
     });
 
+    if (!response.ok) {
+      const err = new Error(`Request failed (${response.status})`);
+      err.status = response.status;
+      err.isAuthError = response.status === 401 || response.status === 403;
+      throw err;
+    }
+    return response.json();
+  }
+
+  async function fetchInstalls(filters, offset) {
+    const query = buildInstallsQuery(filters, offset);
+    const endpoint = `${INSTALLS_ENDPOINT}?${query}`;
+    if (typeof window.StreamSuitesApi?.apiFetch === "function") {
+      return window.StreamSuitesApi.apiFetch(endpoint, {
+        cacheTtlMs: 0,
+        forceRefresh: true,
+        timeoutMs: 10000,
+      });
+    }
+
+    const url =
+      typeof window.StreamSuitesApi?.buildApiUrl === "function"
+        ? window.StreamSuitesApi.buildApiUrl(endpoint)
+        : endpoint;
+    const response = await fetch(url, {
+      method: "GET",
+      cache: "no-store",
+      credentials: "include",
+      headers: { Accept: "application/json" },
+    });
     if (!response.ok) {
       const err = new Error(`Request failed (${response.status})`);
       err.status = response.status;
@@ -210,6 +309,23 @@
       payload: null,
       busy: false,
       listeners: [],
+      installs: {
+        busy: false,
+        filters: {
+          guildId: "",
+          accountId: "",
+          installedOnly: false,
+          limit: INSTALLS_LIMIT_DEFAULT,
+        },
+        offset: 0,
+        paging: {
+          returned: 0,
+          total: 0,
+          hasMore: false,
+        },
+        items: [],
+        expandedErrorKeys: new Set(),
+      },
     };
 
     function addListener(node, eventName, handler) {
@@ -242,6 +358,138 @@
       targets.forEach((target) => setText(target, LOADING_TEXT));
       if (state.els?.admin?.errorWrap) state.els.admin.errorWrap.classList.add("hidden");
       if (state.els?.public?.errorWrap) state.els.public.errorWrap.classList.add("hidden");
+      if (state.els?.installs?.body) {
+        state.els.installs.body.innerHTML =
+          '<tr><td class="muted" colspan="5">Loading...</td></tr>';
+      }
+      if (state.els?.installs?.pageIndicator) {
+        setText(state.els.installs.pageIndicator, "Showing 0-0 of 0");
+      }
+      clearInstallsError(state.els);
+    }
+
+    function syncInstallFilterStateFromUi() {
+      const installsEls = state.els?.installs;
+      if (!installsEls) return;
+      state.installs.filters.guildId = String(installsEls.guildFilter?.value || "").trim();
+      state.installs.filters.accountId = String(installsEls.accountFilter?.value || "").trim();
+      state.installs.filters.installedOnly = Boolean(installsEls.installedOnly?.checked);
+      state.installs.filters.limit = clampLimit(installsEls.limit?.value);
+      if (installsEls.limit) installsEls.limit.value = String(state.installs.filters.limit);
+    }
+
+    function setInstallsLoadingState(loading) {
+      const installsEls = state.els?.installs;
+      if (!installsEls) return;
+
+      if (installsEls.loading) installsEls.loading.classList.toggle("hidden", !loading);
+      if (installsEls.refresh) installsEls.refresh.disabled = loading;
+      if (installsEls.guildFilter) installsEls.guildFilter.disabled = loading;
+      if (installsEls.accountFilter) installsEls.accountFilter.disabled = loading;
+      if (installsEls.installedOnly) installsEls.installedOnly.disabled = loading;
+      if (installsEls.limit) installsEls.limit.disabled = loading;
+
+      const hasPrev = state.installs.offset > 0;
+      const hasNext = Boolean(state.installs.paging?.hasMore);
+      if (installsEls.prev) installsEls.prev.disabled = loading || !hasPrev;
+      if (installsEls.next) installsEls.next.disabled = loading || !hasNext;
+    }
+
+    function formatInstallAccount(item) {
+      const account = item?.account || {};
+      const accountId = normalizeOptionalText(account.account_id);
+      const display = normalizeOptionalText(account.display) || accountId || EMPTY_DASH;
+      return {
+        html: accountId
+          ? `<div>${escapeHtml(display)}</div><div class="muted">${escapeHtml(accountId)}</div>`
+          : `<div>${escapeHtml(display)}</div>`,
+      };
+    }
+
+    function formatInstallGuild(item) {
+      const install = item?.install || {};
+      const guildId = normalizeOptionalText(install.guild_id) || EMPTY_DASH;
+      const guildName = normalizeOptionalText(install.guild_name);
+      const showSubtext = guildName && guildName !== guildId;
+      return showSubtext
+        ? `<div>${escapeHtml(guildName)}</div><div class="muted">${escapeHtml(guildId)}</div>`
+        : `<div>${escapeHtml(guildName || guildId)}</div>`;
+    }
+
+    function installRowKey(item, index) {
+      const accountId = normalizeOptionalText(item?.account?.account_id) || "unknown-account";
+      const guildId = normalizeOptionalText(item?.install?.guild_id) || "unknown-guild";
+      return `${accountId}::${guildId}::${index}`;
+    }
+
+    function renderInstallsTable() {
+      const installsEls = state.els?.installs;
+      if (!installsEls?.body) return;
+
+      const items = Array.isArray(state.installs.items) ? state.installs.items : [];
+      if (!items.length) {
+        installsEls.body.innerHTML =
+          '<tr><td class="muted" colspan="5">No creator guild installs found for the selected filters.</td></tr>';
+        return;
+      }
+
+      const rows = [];
+      items.forEach((item, index) => {
+        const key = installRowKey(item, index);
+        const install = item?.install || {};
+        const accountCell = formatInstallAccount(item).html;
+        const guildCell = formatInstallGuild(item);
+        const isInstalled = Boolean(install.is_installed);
+        const statusText = isInstalled ? "Installed" : "Not Installed";
+        const lastVerified = normalizeOptionalText(install.last_verified_at)
+          ? formatTimestamp(install.last_verified_at)
+          : EMPTY_DASH;
+        const verifyError = normalizeOptionalText(install.last_verify_error);
+        const isExpanded = state.installs.expandedErrorKeys.has(key);
+        const toggleLabel = isExpanded ? "Hide" : "View";
+
+        rows.push(
+          `<tr data-install-key="${escapeHtml(key)}">` +
+            `<td>${accountCell}</td>` +
+            `<td>${guildCell}</td>` +
+            `<td>${escapeHtml(statusText)}</td>` +
+            `<td>${escapeHtml(lastVerified)}</td>` +
+            `<td>` +
+              (verifyError
+                ? `<button class="ss-btn ss-btn-small ss-btn-secondary" data-error-toggle="${escapeHtml(
+                    key
+                  )}" type="button">${escapeHtml(toggleLabel)}</button>`
+                : `<span class="muted">${EMPTY_DASH}</span>`) +
+            `</td>` +
+          `</tr>`
+        );
+
+        if (verifyError && isExpanded) {
+          rows.push(
+            `<tr data-install-error-row="${escapeHtml(key)}">` +
+              `<td colspan="5" class="muted" style="word-break: break-word;">${escapeHtml(verifyError)}</td>` +
+            `</tr>`
+          );
+        }
+      });
+
+      installsEls.body.innerHTML = rows.join("");
+    }
+
+    function renderInstallsPaging(payloadPaging) {
+      const paging = payloadPaging && typeof payloadPaging === "object" ? payloadPaging : {};
+      const total = Math.max(0, Number(paging.total) || 0);
+      const returned = Math.max(0, Number(paging.returned) || 0);
+      const offset = Math.max(0, Number(paging.offset) || state.installs.offset || 0);
+      const hasMore = Boolean(paging.has_more);
+      state.installs.paging = { total, returned, hasMore };
+      state.installs.offset = offset;
+
+      const start = total > 0 && returned > 0 ? offset + 1 : 0;
+      const end = total > 0 && returned > 0 ? offset + returned : 0;
+      if (state.els?.installs?.pageIndicator) {
+        setText(state.els.installs.pageIndicator, `Showing ${start}-${end} of ${total}`);
+      }
     }
 
     function openInstall(profileKey) {
@@ -260,10 +508,10 @@
       window.open(url, "_blank", "noopener,noreferrer");
     }
 
-    async function hydrate() {
+    async function hydrateStatus() {
       if (state.busy) return;
       state.busy = true;
-      setLoadingState(state.els, true);
+      setStatusLoadingState(state.els, true);
       clearBanner(state.els);
 
       try {
@@ -291,20 +539,86 @@
         setStatusIndicator(state.els, "Discord bot status: Error", "idle");
       } finally {
         state.busy = false;
-        setLoadingState(state.els, false);
+        setStatusLoadingState(state.els, false);
       }
+    }
+
+    async function hydrateInstalls(options = {}) {
+      if (state.installs.busy) return;
+      if (options.resetOffset) state.installs.offset = 0;
+      syncInstallFilterStateFromUi();
+
+      state.installs.busy = true;
+      setInstallsLoadingState(true);
+      clearInstallsError(state.els);
+
+      try {
+        const payload = await fetchInstalls(state.installs.filters, state.installs.offset);
+        state.installs.items = Array.isArray(payload?.items) ? payload.items : [];
+        renderInstallsPaging(payload?.paging);
+        renderInstallsTable();
+      } catch (err) {
+        state.installs.items = [];
+        renderInstallsPaging({
+          offset: state.installs.offset,
+          returned: 0,
+          total: 0,
+          has_more: false,
+        });
+        renderInstallsTable();
+
+        const isAuthError = err?.isAuthError || err?.status === 401 || err?.status === 403;
+        if (isAuthError) {
+          setInstallsError(state.els, "Admin session expired. Please log in again.", "danger");
+          promptAdminReauth();
+        } else {
+          setInstallsError(
+            state.els,
+            "Unable to load creator guild installs right now. Try Refresh.",
+            "warning"
+          );
+        }
+      } finally {
+        state.installs.busy = false;
+        setInstallsLoadingState(false);
+      }
+    }
+
+    function goToPreviousInstallsPage() {
+      const limit = clampLimit(state.installs.filters.limit);
+      if (state.installs.offset <= 0) return;
+      state.installs.offset = Math.max(0, state.installs.offset - limit);
+      hydrateInstalls();
+    }
+
+    function goToNextInstallsPage() {
+      if (!state.installs.paging?.hasMore) return;
+      const limit = clampLimit(state.installs.filters.limit);
+      state.installs.offset = Math.max(0, state.installs.offset + limit);
+      hydrateInstalls();
+    }
+
+    function toggleInstallErrorRow(key) {
+      if (!key) return;
+      if (state.installs.expandedErrorKeys.has(key)) {
+        state.installs.expandedErrorKeys.delete(key);
+      } else {
+        state.installs.expandedErrorKeys.add(key);
+      }
+      renderInstallsTable();
     }
 
     function init() {
       state.els = cacheElements();
       setInitialLoading();
-      setLoadingState(state.els, true);
+      setStatusLoadingState(state.els, true);
+      setInstallsLoadingState(true);
 
       addListener(state.els?.admin?.reverify, "click", () => {
-        hydrate();
+        hydrateStatus();
       });
       addListener(state.els?.public?.reverify, "click", () => {
-        hydrate();
+        hydrateStatus();
       });
       addListener(state.els?.admin?.install, "click", () => {
         openInstall("admin");
@@ -312,8 +626,35 @@
       addListener(state.els?.public?.install, "click", () => {
         openInstall("public");
       });
+      addListener(state.els?.installs?.refresh, "click", () => {
+        hydrateInstalls({ resetOffset: true });
+      });
+      addListener(state.els?.installs?.prev, "click", () => {
+        goToPreviousInstallsPage();
+      });
+      addListener(state.els?.installs?.next, "click", () => {
+        goToNextInstallsPage();
+      });
+      addListener(state.els?.installs?.installedOnly, "change", () => {
+        hydrateInstalls({ resetOffset: true });
+      });
+      addListener(state.els?.installs?.limit, "change", () => {
+        hydrateInstalls({ resetOffset: true });
+      });
+      addListener(state.els?.installs?.guildFilter, "keydown", (event) => {
+        if (event.key === "Enter") hydrateInstalls({ resetOffset: true });
+      });
+      addListener(state.els?.installs?.accountFilter, "keydown", (event) => {
+        if (event.key === "Enter") hydrateInstalls({ resetOffset: true });
+      });
+      addListener(state.els?.installs?.body, "click", (event) => {
+        const button = event.target?.closest?.("[data-error-toggle]");
+        if (!button) return;
+        toggleInstallErrorRow(button.getAttribute("data-error-toggle"));
+      });
 
-      hydrate();
+      hydrateStatus();
+      hydrateInstalls();
     }
 
     function destroy() {
@@ -325,6 +666,9 @@
       }
       state.payload = null;
       state.busy = false;
+      state.installs.busy = false;
+      state.installs.items = [];
+      state.installs.expandedErrorKeys.clear();
     }
 
     return { init, destroy };

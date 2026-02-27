@@ -150,6 +150,81 @@
       </details>
     </div>
   </section>
+
+  <section class="ss-panel" data-scope="admin">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Creator Guild Installs (Public Bot)</h2>
+        <p class="muted" style="margin: 0.35rem 0 0;">
+          Read-only view of creator-linked servers recorded by Auth API
+        </p>
+      </div>
+    </header>
+    <div class="ss-panel-body">
+      <div id="dc-installs-error" class="ss-alert ss-alert-warning hidden" role="status" aria-live="polite"></div>
+
+      <div class="ss-toolbar" style="margin-bottom: 0.85rem;">
+        <div class="ss-toolbar-left">
+          <input
+            type="search"
+            id="dc-installs-guild-filter"
+            class="ss-input"
+            placeholder="Guild ID filter"
+            autocomplete="off"
+          />
+          <input
+            type="search"
+            id="dc-installs-account-filter"
+            class="ss-input"
+            placeholder="Account ID filter"
+            autocomplete="off"
+          />
+          <label class="muted">
+            <input type="checkbox" id="dc-installs-installed-only" />
+            Installed only
+          </label>
+          <select id="dc-installs-limit" class="ss-input" aria-label="Page size">
+            <option value="25">25</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+          </select>
+          <button id="dc-installs-refresh" class="ss-btn ss-btn-primary">Refresh</button>
+        </div>
+        <div class="ss-toolbar-right">
+          <span id="dc-installs-loading" class="muted hidden">Loading installs…</span>
+        </div>
+      </div>
+
+      <div class="ss-table-scroll">
+        <table class="ss-table ss-table-compact">
+          <thead>
+            <tr>
+              <th>Account</th>
+              <th>Guild</th>
+              <th>Status</th>
+              <th>Last Verified</th>
+              <th>Error</th>
+            </tr>
+          </thead>
+          <tbody id="dc-installs-body">
+            <tr>
+              <td class="muted" colspan="5">Loading...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ss-toolbar" style="margin-top: 0.75rem;">
+        <div class="ss-toolbar-left">
+          <button id="dc-installs-prev" class="ss-btn ss-btn-secondary">Previous</button>
+          <button id="dc-installs-next" class="ss-btn ss-btn-secondary">Next</button>
+        </div>
+        <div class="ss-toolbar-right">
+          <span id="dc-installs-page-indicator" class="muted">Showing 0-0 of 0</span>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
 
 <!-- ========================================================= -->
