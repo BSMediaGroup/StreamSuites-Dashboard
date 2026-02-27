@@ -937,7 +937,7 @@ const SIDEBAR_ICON_FALLBACK = "/assets/icons/ui/cog.svg";
 const SIDEBAR_VIEW_ICON_MAP = Object.freeze({
   overview: "/assets/icons/ui/dashboard.svg",
   creators: "/assets/icons/ui/profile.svg",
-  "creator-stats": "/assets/icons/ui/globe.svg",
+  "creator-stats": "/assets/icons/ui/linechart.svg",
   accounts: "/assets/icons/ui/identity.svg",
   tiers: "/assets/icons/ui/cards.svg",
   audit: "/assets/icons/ui/admin.svg",
