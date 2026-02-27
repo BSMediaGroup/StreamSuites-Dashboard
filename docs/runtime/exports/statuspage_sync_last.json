@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-02-21T21:00:43.059440Z",
+  "generated_at": "2026-02-27T13:19:15.073819Z",
   "enabled": true,
   "interval_seconds": 60,
   "ready": true,
   "readiness_errors": [],
-  "last_run_at": "2026-02-21T21:00:30.816776Z",
+  "last_run_at": "2026-02-27T13:19:03.146382Z",
   "last_success_at": null,
   "last_error": "runtime_engine: status push failed (RuntimeError: Statuspage API PATCH /pages/v0hwlmly3pd2/components/replace-with-statuspage-component-id-runtime-engine failed with 404: {\"error\":\"Couldn't find Component with [WHERE \\\"components\\\".\\\"page_id\\\" = $1 AND \\\"components\\\".\\\"code\\\" = $2]\"}); auth_api: status push failed (RuntimeError: Statuspage API PATCH /pages/v0hwlmly3pd2/components/replace-with-statuspage-component-id-auth-api failed with 404: {\"error\":\"Couldn't find Component with [WHERE \\\"components\\\".\\\"page_id\\\" = $1 AND \\\"components\\\".\\\"code\\\" = $2]\"}); creator_dashboard: status push failed (RuntimeError: Statuspage API PATCH /pages/v0hwlmly3pd2/components/replace-with-statuspage-component-id-creator-dashboard failed with 404: {\"error\":\"Couldn't find Component with [WHERE \\\"components\\\".\\\"page_id\\\" = $1 AND \\\"components\\\".\\\"code\\\" = $2]\"}); admin_dashboard: status push failed (RuntimeError: Statuspage API PATCH /pages/v0hwlmly3pd2/components/replace-with-statuspage-component-id-admin-dashboard failed with 404: {\"error\":\"Couldn't find Component with [WHERE \\\"components\\\".\\\"page_id\\\" = $1 AND \\\"components\\\".\\\"code\\\" = $2]\"}); public_pages: status push failed (RuntimeError: Statuspage API PATCH /pages/v0hwlmly3pd2/components/replace-with-statuspage-component-id-public-pages failed with 404: {\"error\":\"Couldn't find Component with [WHERE \\\"components\\\".\\\"page_id\\\" = $1 AND \\\"components\\\".\\\"code\\\" = $2]\"}); support_hub: status push failed (RuntimeError: Statuspage API PATCH /pages/v0hwlmly3pd2/components/replace-with-statuspage-component-id-support-hub failed with 404: {\"error\":\"Couldn't find Component with [WHERE \\\"components\\\".\\\"page_id\\\" = $1 AND \\\"components\\\".\\\"code\\\" = $2]\"}); account_session: status push failed (RuntimeError: Statuspage API PATCH /pages/v0hwlmly3pd2/components/replace-with-statuspage-component-id-account-session failed with 404: {\"error\":\"Couldn't find Component with [WHERE \\\"components\\\".\\\"page_id\\\" = $1 AND \\\"components\\\".\\\"code\\\" = $2]\"}); automation_trigger: status push failed (RuntimeError: Statuspage API PATCH /pages/v0hwlmly3pd2/components/replace-with-statuspage-component-id-automation-trigger failed with 404: {\"error\":\"Couldn't find Component with [WHERE \\\"components\\\".\\\"page_id\\\" = $1 AND \\\"components\\\".\\\"code\\\" = $2]\"}); telemetry_usage: status push failed (RuntimeError: Statuspage API PATCH /pages/v0hwlmly3pd2/components/replace-with-statuspage-component-id-telemetry-usage failed with 404: {\"error\":\"Couldn't find Component with [WHERE \\\"components\\\".\\\"page_id\\\" = $1 AND \\\"components\\\".\\\"code\\\" = $2]\"})",
   "components": {
@@ -14,13 +14,13 @@
       "last_pushed_status": null,
       "last_pushed_at": null,
       "consecutive_failures": 0,
-      "consecutive_successes": 9,
+      "consecutive_successes": 389,
       "last_check": {
         "ok": true,
         "status_code": 200,
-        "latency_ms": 16,
+        "latency_ms": 15,
         "error": null,
-        "checked_at": "2026-02-21T21:00:34.401225Z"
+        "checked_at": "2026-02-27T13:19:06.550838Z"
       }
     },
     "admin_dashboard": {
@@ -29,13 +29,13 @@
       "last_pushed_status": null,
       "last_pushed_at": null,
       "consecutive_failures": 0,
-      "consecutive_successes": 9,
+      "consecutive_successes": 389,
       "last_check": {
         "ok": true,
         "status_code": 200,
-        "latency_ms": 984,
+        "latency_ms": 1125,
         "error": null,
-        "checked_at": "2026-02-21T21:00:32.976709Z"
+        "checked_at": "2026-02-27T13:19:05.337618Z"
       }
     },
     "auth_api": {
@@ -44,13 +44,13 @@
       "last_pushed_status": null,
       "last_pushed_at": null,
       "consecutive_failures": 0,
-      "consecutive_successes": 9,
+      "consecutive_successes": 389,
       "last_check": {
         "ok": true,
         "status_code": 200,
-        "latency_ms": 0,
+        "latency_ms": 30,
         "error": null,
-        "checked_at": "2026-02-21T21:00:30.829816Z"
+        "checked_at": "2026-02-27T13:19:03.166067Z"
       }
     },
     "automation_trigger": {
@@ -58,14 +58,14 @@
       "computed_status": "major_outage",
       "last_pushed_status": null,
       "last_pushed_at": null,
-      "consecutive_failures": 9,
+      "consecutive_failures": 389,
       "consecutive_successes": 0,
       "last_check": {
         "ok": false,
         "status_code": 404,
         "latency_ms": 0,
         "error": "Unexpected status 404",
-        "checked_at": "2026-02-21T21:00:34.402226Z"
+        "checked_at": "2026-02-27T13:19:06.552840Z"
       }
     },
     "creator_dashboard": {
@@ -74,13 +74,13 @@
       "last_pushed_status": null,
       "last_pushed_at": null,
       "consecutive_failures": 0,
-      "consecutive_successes": 9,
+      "consecutive_successes": 389,
       "last_check": {
         "ok": true,
         "status_code": 200,
-        "latency_ms": 1171,
+        "latency_ms": 1047,
         "error": null,
-        "checked_at": "2026-02-21T21:00:32.000746Z"
+        "checked_at": "2026-02-27T13:19:04.217869Z"
       }
     },
     "public_pages": {
@@ -89,13 +89,13 @@
       "last_pushed_status": null,
       "last_pushed_at": null,
       "consecutive_failures": 0,
-      "consecutive_successes": 9,
+      "consecutive_successes": 389,
       "last_check": {
         "ok": true,
         "status_code": 200,
-        "latency_ms": 1187,
+        "latency_ms": 1015,
         "error": null,
-        "checked_at": "2026-02-21T21:00:34.161112Z"
+        "checked_at": "2026-02-27T13:19:06.352803Z"
       }
     },
     "runtime_engine": {
@@ -103,14 +103,14 @@
       "computed_status": "major_outage",
       "last_pushed_status": null,
       "last_pushed_at": null,
-      "consecutive_failures": 9,
+      "consecutive_failures": 389,
       "consecutive_successes": 0,
       "last_check": {
         "ok": false,
         "status_code": 404,
-        "latency_ms": 16,
+        "latency_ms": 0,
         "error": "Unexpected status 404",
-        "checked_at": "2026-02-21T21:00:30.817776Z"
+        "checked_at": "2026-02-27T13:19:03.148381Z"
       }
     },
     "support_hub": {
@@ -119,13 +119,13 @@
       "last_pushed_status": null,
       "last_pushed_at": null,
       "consecutive_failures": 0,
-      "consecutive_successes": 9,
+      "consecutive_successes": 389,
       "last_check": {
         "ok": true,
         "status_code": 200,
-        "latency_ms": 217,
+        "latency_ms": 157,
         "error": null,
-        "checked_at": "2026-02-21T21:00:34.390153Z"
+        "checked_at": "2026-02-27T13:19:06.524171Z"
       }
     },
     "telemetry_usage": {
@@ -133,14 +133,14 @@
       "computed_status": "major_outage",
       "last_pushed_status": null,
       "last_pushed_at": null,
-      "consecutive_failures": 9,
+      "consecutive_failures": 389,
       "consecutive_successes": 0,
       "last_check": {
         "ok": false,
         "status_code": 404,
         "latency_ms": 0,
         "error": "Unexpected status 404",
-        "checked_at": "2026-02-21T21:00:34.403227Z"
+        "checked_at": "2026-02-27T13:19:06.553839Z"
       }
     }
   },

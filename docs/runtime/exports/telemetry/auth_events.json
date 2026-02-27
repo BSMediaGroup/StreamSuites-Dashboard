@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-02-21T21:01:27.458809Z",
+  "generated_at": "2026-02-27T13:19:25.650509Z",
   "events": [
     {
       "timestamp_utc": "2026-01-22T05:45:05Z",
@@ -952,6 +952,20 @@
       "result": "success",
       "resend_message_id": null,
       "ip": "83.171.250.94",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp_utc": "2026-02-27T06:25:55Z",
+      "event_type": "session_issued",
+      "event_name": "google",
+      "action": "google",
+      "email_type": "google",
+      "account_id": "7lPBEiA",
+      "user_identifier": "user_code:7lPBEiA",
+      "email_redacted": null,
+      "result": "success",
+      "resend_message_id": null,
+      "ip": "135.196.82.7",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
     }
   ]
