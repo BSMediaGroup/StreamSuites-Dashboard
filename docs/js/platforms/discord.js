@@ -363,7 +363,7 @@
           '<tr><td class="muted" colspan="5">Loading...</td></tr>';
       }
       if (state.els?.installs?.pageIndicator) {
-        setText(state.els.installs.pageIndicator, "Showing 0-0 of 0");
+        setText(state.els.installs.pageIndicator, "Showing 0–0 of 0");
       }
       clearInstallsError(state.els);
     }
@@ -488,7 +488,7 @@
       const start = total > 0 && returned > 0 ? offset + 1 : 0;
       const end = total > 0 && returned > 0 ? offset + returned : 0;
       if (state.els?.installs?.pageIndicator) {
-        setText(state.els.installs.pageIndicator, `Showing ${start}-${end} of ${total}`);
+        setText(state.els.installs.pageIndicator, `Showing ${start}–${end} of ${total}`);
       }
     }
 
