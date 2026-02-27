@@ -237,13 +237,14 @@
     }
   }
 
-  function setStatusLoadingState(els, loading) {
+  function setStatusLoadingState(els, loading, options = {}) {
+    const loadingLabel = options.reverify === true ? "Re-verifying..." : "Re-verify";
     const sections = [els?.admin, els?.public];
     sections.forEach((section) => {
       if (!section) return;
       if (section.reverify) {
         section.reverify.disabled = loading;
-        setText(section.reverify, loading ? "Re-verifying..." : "Re-verify");
+        setText(section.reverify, loading ? loadingLabel : "Re-verify");
       }
       if (section.install) {
         const hasInstallUrl = section.install.dataset.hasInstallUrl === "true";
@@ -293,9 +294,19 @@
     return params.toString();
   }
 
-  async function fetchStatus() {
+  function buildStatusEndpoint(options = {}) {
+    const params = new URLSearchParams();
+    if (options.reverify === true) {
+      params.set("reverify", "1");
+    }
+    const query = params.toString();
+    return query ? `${STATUS_ENDPOINT}?${query}` : STATUS_ENDPOINT;
+  }
+
+  async function fetchStatus(options = {}) {
+    const endpoint = buildStatusEndpoint(options);
     if (typeof window.StreamSuitesApi?.apiFetch === "function") {
-      return window.StreamSuitesApi.apiFetch(STATUS_ENDPOINT, {
+      return window.StreamSuitesApi.apiFetch(endpoint, {
         cacheTtlMs: 0,
         forceRefresh: true,
         timeoutMs: 10000,
@@ -304,8 +315,8 @@
 
     const url =
       typeof window.StreamSuitesApi?.buildApiUrl === "function"
-        ? window.StreamSuitesApi.buildApiUrl(STATUS_ENDPOINT)
-        : STATUS_ENDPOINT;
+        ? window.StreamSuitesApi.buildApiUrl(endpoint)
+        : endpoint;
     const response = await fetch(url, {
       method: "GET",
       cache: "no-store",
@@ -547,30 +558,34 @@
       }
     }
 
+    function getProfileElements(profileKey) {
+      if (profileKey === "admin") return state.els?.admin || null;
+      if (profileKey === "public") return state.els?.public || null;
+      return null;
+    }
+
     function openInstall(profileKey) {
+      const profileEls = getProfileElements(profileKey);
       const url = normalizeText(
         state.payload?.profiles?.[profileKey]?.install?.url,
         ""
       );
       if (!url) {
-        setBanner(
-          state.els,
-          "Install URL is not available for this bot profile.",
-          "warning"
-        );
+        renderCardInlineError(profileEls, "Install URL is not available for this bot profile.");
         return;
       }
+      renderCardInlineError(profileEls, parseVerifyError(state.payload?.profiles?.[profileKey]?.verification));
       window.open(url, "_blank", "noopener,noreferrer");
     }
 
-    async function hydrateStatus() {
+    async function hydrateStatus(options = {}) {
       if (state.busy) return;
       state.busy = true;
-      setStatusLoadingState(state.els, true);
+      setStatusLoadingState(state.els, true, options);
       clearBanner(state.els);
 
       try {
-        const payload = await fetchStatus();
+        const payload = await fetchStatus(options);
         state.payload = payload || {};
         const payloadError = getPayloadErrorText(state.payload);
 
@@ -648,7 +663,7 @@
         setStatusIndicator(state.els, "Discord bot status: Error", "idle");
       } finally {
         state.busy = false;
-        setStatusLoadingState(state.els, false);
+        setStatusLoadingState(state.els, false, options);
       }
     }
 
@@ -750,10 +765,10 @@
       setInstallsLoadingState(true);
 
       addListener(state.els?.admin?.reverify, "click", () => {
-        hydrateStatus();
+        hydrateStatus({ reverify: true });
       });
       addListener(state.els?.public?.reverify, "click", () => {
-        hydrateStatus();
+        hydrateStatus({ reverify: true });
       });
       addListener(state.els?.admin?.install, "click", () => {
         openInstall("admin");
