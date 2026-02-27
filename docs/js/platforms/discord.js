@@ -17,6 +17,7 @@
     return {
       status: document.getElementById("dc-admin-status"),
       banner: document.getElementById("dc-admin-banner"),
+      debugLine: document.getElementById("dc-debug-line"),
       admin: {
         statusPill: document.getElementById("dc-admin-card-status"),
         reverify: document.getElementById("dc-admin-reverify"),
@@ -148,6 +149,27 @@
     return normalizeText(verification.error || "", "");
   }
 
+  function isNotVerifiedYet(verification) {
+    const error = normalizeText(verification?.error || verification?.last_verify_error || "", "");
+    const lastVerifiedAt = normalizeText(verification?.last_verified_at || "", "");
+    return error === "not_verified_yet" && !lastVerifiedAt;
+  }
+
+  function formatHttpStatus(value) {
+    const status = Number(value);
+    if (Number.isFinite(status) && status > 0) return String(status);
+    return "n/a";
+  }
+
+  function setDebugLine(els, options = {}) {
+    const target = els?.debugLine;
+    if (!target) return;
+    const timestamp = options.timestamp || new Date().toLocaleString();
+    const source = options.source || "cached";
+    const http = formatHttpStatus(options.httpStatus);
+    target.textContent = `Last refresh: ${timestamp} | Source: ${source} | HTTP: ${http}`;
+  }
+
   function getPayloadErrorText(payload) {
     if (!payload || typeof payload !== "object") return "";
     return normalizeText(payload.error || payload.message || "", "");
@@ -222,7 +244,9 @@
         : NOT_AVAILABLE_TEXT
     );
 
-    const errorText = parseVerifyError(verification) || fallbackError;
+    const notVerifiedYet = isNotVerifiedYet(verification);
+    const verifyError = parseVerifyError(verification);
+    const errorText = notVerifiedYet ? fallbackError : verifyError || fallbackError;
     renderCardInlineError(cardEls, errorText);
 
     if (cardEls.install) {
@@ -233,8 +257,10 @@
 
     if (verification?.success === true) {
       setCardStatusPill(cardEls, "Verified", "online");
+    } else if (notVerifiedYet) {
+      setCardStatusPill(cardEls, "Not verified", "offline");
     } else if (verification?.success === false) {
-      setCardStatusPill(cardEls, "Error", "offline");
+      setCardStatusPill(cardEls, "Verification failed", "offline");
     } else {
       setCardStatusPill(cardEls, "Unavailable", "offline");
     }
@@ -310,11 +336,15 @@
     const endpoint = buildStatusEndpoint(options);
     const timeoutMs = options.reverify === true ? STATUS_REVERIFY_TIMEOUT_MS : STATUS_TIMEOUT_MS;
     if (typeof window.StreamSuitesApi?.apiFetch === "function") {
-      return window.StreamSuitesApi.apiFetch(endpoint, {
+      const payload = await window.StreamSuitesApi.apiFetch(endpoint, {
         cacheTtlMs: 0,
         forceRefresh: true,
         timeoutMs,
       });
+      return {
+        payload,
+        httpStatus: 200,
+      };
     }
 
     const url =
@@ -334,7 +364,10 @@
       err.isAuthError = response.status === 401 || response.status === 403;
       throw err;
     }
-    return response.json();
+    return {
+      payload: await response.json(),
+      httpStatus: response.status,
+    };
   }
 
   async function fetchInstalls(filters, offset) {
@@ -587,10 +620,12 @@
       state.busy = true;
       setStatusLoadingState(state.els, true, options);
       clearBanner(state.els);
+      const sourceLabel = options.reverify === true ? "reverify" : "cached";
 
       try {
-        const payload = await fetchStatus(options);
-        state.payload = payload || {};
+        const response = await fetchStatus(options);
+        state.payload = response?.payload || {};
+        setDebugLine(state.els, { source: sourceLabel, httpStatus: response?.httpStatus });
         const payloadError = getPayloadErrorText(state.payload);
 
         if (state.payload?.success === false) {
@@ -623,6 +658,10 @@
         state.hasRenderedStatus = true;
         setStatusIndicator(state.els, "Discord bot status: Loaded", "active");
       } catch (err) {
+        setDebugLine(state.els, {
+          source: sourceLabel,
+          httpStatus: err?.status || 0,
+        });
         const isAuthError = err?.isAuthError || err?.status === 401 || err?.status === 403;
         if (isAuthError) {
           const message = "Admin session expired. Please log in again.";

@@ -288,6 +288,12 @@
     return normalizeText(verification.error || "", "");
   }
 
+  function isNotVerifiedYet(verification) {
+    const error = normalizeText(verification?.error || verification?.last_verify_error || "", "");
+    const lastVerifiedAt = normalizeText(verification?.last_verified_at || "", "");
+    return error === "not_verified_yet" && !lastVerifiedAt;
+  }
+
   function formatDiscordTimestamp(value) {
     if (!value) return "Not available";
     return window.StreamSuitesState?.formatTimestamp?.(value) || normalizeText(value);
@@ -297,6 +303,7 @@
     const verification = profile?.verification || {};
     const installed = verification?.is_installed;
     const verified = verification?.success;
+    if (isNotVerifiedYet(verification)) return "Not verified";
 
     if (installed === true && verified === true) return "Installed + verified";
     if (installed === false) return "Not installed";
@@ -307,7 +314,9 @@
   }
 
   function formatErrorIndicator(profile) {
-    return parseVerifyError(profile?.verification) ? "Present" : "None";
+    const verification = profile?.verification || {};
+    if (isNotVerifiedYet(verification)) return "Not verified yet";
+    return parseVerifyError(verification) || "None";
   }
 
   function promptAdminReauth() {
