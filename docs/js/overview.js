@@ -9,6 +9,7 @@
   const TELEMETRY_MAX_METRICS = 6;
   const ADMIN_ACTIVITY_MAX = 8;
   const DISCORD_STATUS_ENDPOINT = "/api/admin/discord/bot/status";
+  const DISCORD_STATUS_TIMEOUT_MS = 10000;
   const DISCORD_OFFICIAL_GUILD_FALLBACK =
     "Configured in Auth API (DISCORD_SS_GUILD_ID)";
 
@@ -326,7 +327,7 @@
       return window.StreamSuitesApi.apiFetch(DISCORD_STATUS_ENDPOINT, {
         cacheTtlMs: 0,
         forceRefresh: true,
-        timeoutMs: 10000,
+        timeoutMs: DISCORD_STATUS_TIMEOUT_MS,
       });
     }
 
@@ -379,16 +380,16 @@
   }
 
   function renderDiscordUnavailable(noteMessage = "") {
-    setText(el.discordOfficialGuild, "Unavailable");
-    setText(el.discordAdminStatus, "Unavailable");
+    setText(el.discordOfficialGuild, "Unable to load");
+    setText(el.discordAdminStatus, "Unable to load");
     setText(el.discordAdminLast, "—");
-    setText(el.discordAdminError, "Unavailable");
-    setText(el.discordPublicStatus, "Unavailable");
+    setText(el.discordAdminError, "Offline");
+    setText(el.discordPublicStatus, "Unable to load");
     setText(el.discordPublicLast, "—");
-    setText(el.discordPublicError, "Unavailable");
+    setText(el.discordPublicError, "Offline");
     setStatusBadge(el.discordBotStatus, "unavailable");
     if (el.badgeDiscord) {
-      el.badgeDiscord.textContent = "Unavailable";
+      el.badgeDiscord.textContent = "Offline";
     }
     setDiscordNote(noteMessage);
   }
@@ -447,10 +448,10 @@
       const isAuthError = err?.isAuthError || err?.status === 401 || err?.status === 403;
       if (isAuthError) {
         promptAdminReauth();
-        renderDiscordUnavailable("Admin session expired. Please log in again.");
+        renderDiscordUnavailable("Unable to load Discord status: admin session expired.");
         return;
       }
-      renderDiscordUnavailable("Discord unavailable (network/API error).");
+      renderDiscordUnavailable("Unable to load Discord status (network/API error).");
     }
   }
 

@@ -9,6 +9,9 @@
   const EMPTY_DASH = "—";
   const INSTALLS_LIMIT_DEFAULT = 50;
   const INSTALLS_LIMIT_MAX = 200;
+  const STATUS_TIMEOUT_MS = 10000;
+  const STATUS_REVERIFY_TIMEOUT_MS = 20000;
+  const INSTALLS_TIMEOUT_MS = 12000;
 
   function cacheElements() {
     return {
@@ -305,11 +308,12 @@
 
   async function fetchStatus(options = {}) {
     const endpoint = buildStatusEndpoint(options);
+    const timeoutMs = options.reverify === true ? STATUS_REVERIFY_TIMEOUT_MS : STATUS_TIMEOUT_MS;
     if (typeof window.StreamSuitesApi?.apiFetch === "function") {
       return window.StreamSuitesApi.apiFetch(endpoint, {
         cacheTtlMs: 0,
         forceRefresh: true,
-        timeoutMs: 10000,
+        timeoutMs,
       });
     }
 
@@ -340,7 +344,7 @@
       return window.StreamSuitesApi.apiFetch(endpoint, {
         cacheTtlMs: 0,
         forceRefresh: true,
-        timeoutMs: 10000,
+        timeoutMs: INSTALLS_TIMEOUT_MS,
       });
     }
 
@@ -759,52 +763,60 @@
     }
 
     function init() {
-      state.els = cacheElements();
-      setInitialLoading();
-      setStatusLoadingState(state.els, true);
-      setInstallsLoadingState(true);
+      try {
+        state.els = cacheElements();
+        setInitialLoading();
+        setStatusLoadingState(state.els, true);
+        setInstallsLoadingState(true);
 
-      addListener(state.els?.admin?.reverify, "click", () => {
-        hydrateStatus({ reverify: true });
-      });
-      addListener(state.els?.public?.reverify, "click", () => {
-        hydrateStatus({ reverify: true });
-      });
-      addListener(state.els?.admin?.install, "click", () => {
-        openInstall("admin");
-      });
-      addListener(state.els?.public?.install, "click", () => {
-        openInstall("public");
-      });
-      addListener(state.els?.installs?.refresh, "click", () => {
-        hydrateInstalls({ resetOffset: true });
-      });
-      addListener(state.els?.installs?.prev, "click", () => {
-        goToPreviousInstallsPage();
-      });
-      addListener(state.els?.installs?.next, "click", () => {
-        goToNextInstallsPage();
-      });
-      addListener(state.els?.installs?.installedOnly, "change", () => {
-        hydrateInstalls({ resetOffset: true });
-      });
-      addListener(state.els?.installs?.limit, "change", () => {
-        hydrateInstalls({ resetOffset: true });
-      });
-      addListener(state.els?.installs?.guildFilter, "keydown", (event) => {
-        if (event.key === "Enter") hydrateInstalls({ resetOffset: true });
-      });
-      addListener(state.els?.installs?.accountFilter, "keydown", (event) => {
-        if (event.key === "Enter") hydrateInstalls({ resetOffset: true });
-      });
-      addListener(state.els?.installs?.body, "click", (event) => {
-        const button = event.target?.closest?.("[data-error-toggle]");
-        if (!button) return;
-        toggleInstallErrorRow(button.getAttribute("data-error-toggle"));
-      });
+        addListener(state.els?.admin?.reverify, "click", () => {
+          hydrateStatus({ reverify: true });
+        });
+        addListener(state.els?.public?.reverify, "click", () => {
+          hydrateStatus({ reverify: true });
+        });
+        addListener(state.els?.admin?.install, "click", () => {
+          openInstall("admin");
+        });
+        addListener(state.els?.public?.install, "click", () => {
+          openInstall("public");
+        });
+        addListener(state.els?.installs?.refresh, "click", () => {
+          hydrateInstalls({ resetOffset: true });
+        });
+        addListener(state.els?.installs?.prev, "click", () => {
+          goToPreviousInstallsPage();
+        });
+        addListener(state.els?.installs?.next, "click", () => {
+          goToNextInstallsPage();
+        });
+        addListener(state.els?.installs?.installedOnly, "change", () => {
+          hydrateInstalls({ resetOffset: true });
+        });
+        addListener(state.els?.installs?.limit, "change", () => {
+          hydrateInstalls({ resetOffset: true });
+        });
+        addListener(state.els?.installs?.guildFilter, "keydown", (event) => {
+          if (event.key === "Enter") hydrateInstalls({ resetOffset: true });
+        });
+        addListener(state.els?.installs?.accountFilter, "keydown", (event) => {
+          if (event.key === "Enter") hydrateInstalls({ resetOffset: true });
+        });
+        addListener(state.els?.installs?.body, "click", (event) => {
+          const button = event.target?.closest?.("[data-error-toggle]");
+          if (!button) return;
+          toggleInstallErrorRow(button.getAttribute("data-error-toggle"));
+        });
 
-      hydrateStatus();
-      hydrateInstalls();
+        hydrateStatus();
+        hydrateInstalls();
+      } catch (err) {
+        const message = "Discord page failed to initialize. Refresh and try again.";
+        const fallbackEls = state.els || cacheElements();
+        setBanner(fallbackEls, message, "danger");
+        setStatusIndicator(fallbackEls, "Discord bot status: Error", "idle");
+        console.error("[DiscordView] init failed", err);
+      }
     }
 
     function destroy() {
