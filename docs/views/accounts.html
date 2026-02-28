@@ -47,6 +47,9 @@
             class="ss-input"
             placeholder="Search by user code, email, or name"
           />
+          <select id="accounts-type-filter" class="ss-input">
+            <option value="">All account types</option>
+          </select>
           <select id="accounts-role-filter" class="ss-input">
             <option value="">All roles</option>
           </select>
@@ -81,6 +84,7 @@
               <th data-sort="email" data-col-key="email">Email</th>
               <th data-sort="emailVerifiedLabel" data-col-key="emailVerified">Email Verified</th>
               <th data-sort="displayName" data-col-key="displayName">Display Name</th>
+              <th data-sort="accountType" data-col-key="accountType">Account Type</th>
               <th data-sort="role" data-col-key="role">Role</th>
               <th data-sort="tier" data-col-key="tier">Tier</th>
               <th data-sort="supporterLabel" data-col-key="supporter" data-supporter-column="true">Supporter</th>

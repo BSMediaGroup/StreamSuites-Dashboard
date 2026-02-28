@@ -15,6 +15,7 @@
     "userCode",
     "email",
     "displayName",
+    "accountType",
     "role",
     "tier",
     "accountStatus",
@@ -55,6 +56,7 @@
     pagination: null,
     empty: null,
     search: null,
+    typeFilter: null,
     roleFilter: null,
     tierFilter: null,
     providerFilter: null,
@@ -138,6 +140,22 @@
     const normalized = text.toLowerCase();
     if (normalized === "open") return "Core";
     return text;
+  }
+
+  function normalizeAccountType(value) {
+    const normalized = String(value || "").trim().toUpperCase();
+    if (normalized === "PUBLIC" || normalized === "CREATOR" || normalized === "ADMIN") {
+      return normalized;
+    }
+    return "";
+  }
+
+  function resolveAccountType(raw = {}) {
+    return (
+      normalizeAccountType(raw.account_type || raw.accountType || raw.type) ||
+      normalizeAccountType(raw.role || raw.account_role) ||
+      "PUBLIC"
+    );
   }
 
   function resolveTierData(value) {
@@ -228,6 +246,7 @@
 
 function normalizeUser(raw = {}) {
     const providers = resolveProviders(raw.providers || raw.authProviders || raw.auth_providers);
+    const accountType = resolveAccountType(raw);
     let internalId =
       raw.internal_id || raw.internalId || raw.id || raw.uuid || raw.user_id || raw.userId || "";
     if (!String(internalId || "").trim() || String(internalId).trim() === "—") {
@@ -261,7 +280,8 @@ function normalizeUser(raw = {}) {
       emailVerified: emailVerifiedRaw,
       emailVerifiedLabel: resolveEmailVerifiedLabel(emailVerifiedRaw),
       displayName: raw.display_name || raw.displayName || raw.name || "—",
-      role: raw.role || raw.account_role || "—",
+      accountType,
+      role: raw.role || raw.account_role || accountType || "—",
       tier: normalizeTierLabel(raw.tier || raw.account_tier || raw.plan || "Core"),
       accountStatus: raw.account_status || raw.accountStatus || raw.status || "—",
       onboardingStatus: raw.onboarding_status || raw.onboardingStatus || raw.onboarding || "—",
@@ -606,6 +626,7 @@ function normalizeUser(raw = {}) {
   function updateEmptyStateMessage(filteredCount) {
     if (!el.empty) return;
     const hasFilters =
+      Boolean(el.typeFilter?.value) ||
       Boolean(el.roleFilter?.value) ||
       Boolean(el.tierFilter?.value) ||
       Boolean(el.providerFilter?.value) ||
@@ -623,11 +644,13 @@ function normalizeUser(raw = {}) {
   }
 
   function updateFilterOptions(items) {
+    const accountTypes = new Set();
     const roles = new Set();
     const tiers = new Set();
     const providers = new Set();
 
     items.forEach((item) => {
+      if (item.accountType && item.accountType !== "—") accountTypes.add(item.accountType);
       if (item.role && item.role !== "—") roles.add(item.role);
       if (item.tier && item.tier !== "—") tiers.add(item.tier);
       (item.providers || []).forEach((provider) => {
@@ -635,6 +658,7 @@ function normalizeUser(raw = {}) {
       });
     });
 
+    fillSelect(el.typeFilter, accountTypes, "All account types");
     fillSelect(el.roleFilter, roles, "All roles");
     fillSelect(el.tierFilter, tiers, "All tiers");
     fillSelect(el.providerFilter, providers, "All providers");
@@ -656,11 +680,15 @@ function normalizeUser(raw = {}) {
   }
 
   function getFilteredData() {
+    const accountType = el.typeFilter?.value || "";
     const role = el.roleFilter?.value || "";
     const tier = el.tierFilter?.value || "";
     const provider = el.providerFilter?.value || "";
 
     return state.raw.filter((item) => {
+      if (accountType && String(item.accountType).toLowerCase() !== accountType.toLowerCase()) {
+        return false;
+      }
       if (role && String(item.role).toLowerCase() !== role.toLowerCase()) {
         return false;
       }
@@ -763,6 +791,7 @@ function normalizeUser(raw = {}) {
       <td>${renderTextValue(user.email)}</td>
       <td>${renderEmailVerified(user.emailVerified)}</td>
       <td>${renderTextValue(user.displayName)}</td>
+      <td>${renderBadge(user.accountType)}</td>
       <td>${renderBadge(user.role)}</td>
       <td>${renderBadge(user.tier)}</td>
       <td>${renderBadge(user.supporterLabel, user.supporterLabel === "Yes" ? "ss-badge-success" : "")}</td>
@@ -888,7 +917,11 @@ function normalizeUser(raw = {}) {
   function renderDrawerProfileSummary(user) {
     const title = user.displayName || user.userCode || user.email || "Account";
     const subtitle = user.userCode || "—";
+    const accountTypeBadge = renderBadge(user.accountType || "PUBLIC");
     const roleBadges = resolveRoleList(user.role).map((role) => renderBadge(role)).join("");
+    const publicProfileHref = `https://streamsuites.app/community/profile.html?id=${encodeURIComponent(
+      user.id || ""
+    )}`;
     return `
       <article class="accounts-details-profile-card glass-card">
         <div class="accounts-details-profile-head">
@@ -898,10 +931,11 @@ function normalizeUser(raw = {}) {
           <div class="accounts-details-identity">
             <strong class="accounts-details-name">${escapeHtml(title)}</strong>
             <span class="accounts-details-user-code">${escapeHtml(subtitle)}</span>
-            <div class="accounts-details-role-row">${roleBadges}</div>
+            <div class="accounts-details-role-row">${accountTypeBadge}${roleBadges}</div>
           </div>
         </div>
         <div class="accounts-details-meta-grid">
+          <div><span class="label">Account Type</span><span class="value">${accountTypeBadge}</span></div>
           <div><span class="label">Tier</span><span class="value">${renderBadge(user.tier || "—")}</span></div>
           <div><span class="label">Status</span><span class="value">${renderBadge(
             user.accountStatus || "—",
@@ -922,6 +956,12 @@ function normalizeUser(raw = {}) {
           <div><span class="label">Last Login</span><span class="value">${escapeHtml(
             formatTimestamp(user.lastLogin)
           )}</span></div>
+          <div>
+            <span class="label">Public Profile</span>
+            <span class="value"><a class="ss-link" href="${escapeHtml(
+              publicProfileHref
+            )}" target="_blank" rel="noopener noreferrer">Open profile</a></span>
+          </div>
         </div>
       </article>
       <div class="accounts-details-placeholder-group">
@@ -1621,6 +1661,7 @@ function normalizeUser(raw = {}) {
   }
 
   function bindEvents() {
+    el.typeFilter?.addEventListener("change", applyFilters);
     el.roleFilter?.addEventListener("change", applyFilters);
     el.tierFilter?.addEventListener("change", applyFilters);
     el.providerFilter?.addEventListener("change", applyFilters);
@@ -1808,6 +1849,7 @@ function normalizeUser(raw = {}) {
     el.pagination = $("accounts-pagination");
     el.empty = $("accounts-empty");
     el.search = $("accounts-search");
+    el.typeFilter = $("accounts-type-filter");
     el.roleFilter = $("accounts-role-filter");
     el.tierFilter = $("accounts-tier-filter");
     el.providerFilter = $("accounts-provider-filter");
