@@ -1,12 +1,64 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-03-01T03:26:18.328002Z",
+  "exported_at": "2026-03-01T11:43:52.926177Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.4.1-alpha",
-    "build": "2026.02.28+003"
+    "build": "2026.03.01+010"
   },
   "audit": [
+    {
+      "id": "171504c1-e928-484d-8d7d-2f87af408220",
+      "ts": "2026-03-01T11:43:37Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "fallback"
+      }
+    },
+    {
+      "id": "8572a7c5-d222-454f-87ea-424ca7a4f197",
+      "ts": "2026-03-01T11:43:37Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "fallback"
+      }
+    },
+    {
+      "id": "c0ec06b4-2dff-4c3e-918f-dbf8e133eb46",
+      "ts": "2026-03-01T11:43:37Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "fallback"
+      }
+    },
+    {
+      "id": "e80f7727-6087-45f4-abfc-2a6878bee03a",
+      "ts": "2026-03-01T11:43:36Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "fallback"
+      }
+    },
     {
       "id": "4ea1cac0-8207-452b-aa84-12a7fabba2ad",
       "ts": "2026-03-01T03:16:28Z",
