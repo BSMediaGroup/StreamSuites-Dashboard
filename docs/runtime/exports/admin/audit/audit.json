@@ -1,12 +1,77 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-02-27T13:19:25.668973Z",
+  "exported_at": "2026-03-01T03:26:18.328002Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.4.1-alpha",
-    "build": "2026.02.27+011"
+    "build": "2026.02.28+003"
   },
   "audit": [
+    {
+      "id": "4ea1cac0-8207-452b-aa84-12a7fabba2ad",
+      "ts": "2026-03-01T03:16:28Z",
+      "actor_user_id": "494098e5-1409-40ea-99a5-ec4a1b797da4",
+      "actor_user_code": "CZ3FKGJ",
+      "actor_role": "public",
+      "target_user_id": "494098e5-1409-40ea-99a5-ec4a1b797da4",
+      "target_user_code": "CZ3FKGJ",
+      "action": "account_created",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "8e04ac62-3bc8-450d-a604-e62127c2a1cb",
+      "ts": "2026-03-01T03:16:28Z",
+      "actor_user_id": "494098e5-1409-40ea-99a5-ec4a1b797da4",
+      "actor_user_code": "CZ3FKGJ",
+      "actor_role": "public",
+      "target_user_id": "494098e5-1409-40ea-99a5-ec4a1b797da4",
+      "target_user_code": "CZ3FKGJ",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "1d3c7b66-a7d0-4ae0-84fc-136ead1fa00e",
+      "ts": "2026-03-01T00:38:53Z",
+      "actor_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "actor_user_code": "7XaVoy7",
+      "actor_role": "admin",
+      "target_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "target_user_code": "7XaVoy7",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "30ea0621-c7a4-4390-8c55-dffc40fcd95e",
+      "ts": "2026-02-28T15:12:44Z",
+      "actor_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "actor_user_code": "7XaVoy7",
+      "actor_role": "admin",
+      "target_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "target_user_code": "7XaVoy7",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "ecc55a23-67ba-443a-a495-f94b0bddb2cd",
+      "ts": "2026-02-28T12:29:28Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "fallback"
+      }
+    },
     {
       "id": "8136453f-77ed-4fb3-b78a-74711c6fb234",
       "ts": "2026-02-27T06:25:55Z",

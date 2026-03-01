@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-02-27T13:19:25.650509Z",
+  "generated_at": "2026-03-01T03:26:18.305491Z",
   "events": [
     {
       "timestamp": "2026-01-22T05:45:05Z",
@@ -751,12 +751,6 @@
       "result": "success"
     },
     {
-      "timestamp": "2026-02-27T05:36:46.830467Z",
-      "source": "system",
-      "severity": "info",
-      "message": "Runtime boot sequence started"
-    },
-    {
       "timestamp": "2026-02-27T06:25:55Z",
       "source": "auth",
       "severity": "info",
@@ -766,6 +760,78 @@
       "user_identifier": "user_code:7lPBEiA",
       "provider_message_id": null,
       "result": "success"
+    },
+    {
+      "timestamp": "2026-02-28T12:29:06.977013Z",
+      "source": "system",
+      "severity": "info",
+      "message": "Runtime boot sequence started"
+    },
+    {
+      "timestamp": "2026-02-28T15:12:44Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=google user=user_code:7XaVoy7 result=success",
+      "event_type": "session_issued",
+      "email_type": "google",
+      "user_identifier": "user_code:7XaVoy7",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-02-28T23:50:57Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:7lPBEiA result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:7lPBEiA",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-03-01T00:38:53Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=google user=user_code:7XaVoy7 result=success",
+      "event_type": "session_issued",
+      "email_type": "google",
+      "user_identifier": "user_code:7XaVoy7",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-03-01T03:07:50Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:7XaVoy7 result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:7XaVoy7",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-03-01T03:16:28Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=google user=user_code:CZ3FKGJ result=success",
+      "event_type": "session_issued",
+      "email_type": "google",
+      "user_identifier": "user_code:CZ3FKGJ",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-03-01T03:18:06Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:CZ3FKGJ result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:CZ3FKGJ",
+      "provider_message_id": null,
+      "result": "sent"
     }
   ]
 }
