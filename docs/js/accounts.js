@@ -791,7 +791,6 @@ function normalizeUser(raw = {}) {
       <td>${renderTextValue(user.email)}</td>
       <td>${renderEmailVerified(user.emailVerified)}</td>
       <td>${renderTextValue(user.displayName)}</td>
-      <td>${renderBadge(user.accountType)}</td>
       <td>${renderBadge(user.role)}</td>
       <td>${renderBadge(user.tier)}</td>
       <td>${renderBadge(user.supporterLabel, user.supporterLabel === "Yes" ? "ss-badge-success" : "")}</td>
@@ -917,8 +916,10 @@ function normalizeUser(raw = {}) {
   function renderDrawerProfileSummary(user) {
     const title = user.displayName || user.userCode || user.email || "Account";
     const subtitle = user.userCode || "—";
-    const accountTypeBadge = renderBadge(user.accountType || "PUBLIC");
     const roleBadges = resolveRoleList(user.role).map((role) => renderBadge(role)).join("");
+    const roleLabel = resolveRoleList(user.role)
+      .map((role) => formatBadgeLabel(role))
+      .join(", ");
     const publicProfileHref = `https://streamsuites.app/community/profile.html?id=${encodeURIComponent(
       user.id || ""
     )}`;
@@ -931,11 +932,11 @@ function normalizeUser(raw = {}) {
           <div class="accounts-details-identity">
             <strong class="accounts-details-name">${escapeHtml(title)}</strong>
             <span class="accounts-details-user-code">${escapeHtml(subtitle)}</span>
-            <div class="accounts-details-role-row">${accountTypeBadge}${roleBadges}</div>
+            <div class="accounts-details-role-row">${roleBadges}</div>
           </div>
         </div>
         <div class="accounts-details-meta-grid">
-          <div><span class="label">Account Type</span><span class="value">${accountTypeBadge}</span></div>
+          <div><span class="label">Role</span><span class="value">${escapeHtml(roleLabel || "Unknown")}</span></div>
           <div><span class="label">Tier</span><span class="value">${renderBadge(user.tier || "—")}</span></div>
           <div><span class="label">Status</span><span class="value">${renderBadge(
             user.accountStatus || "—",
