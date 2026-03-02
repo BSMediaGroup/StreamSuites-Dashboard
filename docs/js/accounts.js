@@ -739,6 +739,37 @@ function normalizeUser(raw = {}) {
     )}</span>`;
   }
 
+  function buildProfileHoverAttrs(user, options = {}) {
+    const profile = user && typeof user === "object" ? user : {};
+    const displayName = String(
+      options.displayName || profile.displayName || profile.userCode || profile.email || "Account"
+    ).trim();
+    const userCode = String(options.userCode || profile.userCode || "").trim();
+    const userId = normalizeAccountId(options.userId || profile.id || "");
+    const role = String(options.role || profile.role || profile.accountType || "PUBLIC")
+      .trim()
+      .toUpperCase();
+    const profileHref = userCode
+      ? `https://streamsuites.app/community/profile.html?u=${encodeURIComponent(userCode)}`
+      : userId
+      ? `https://streamsuites.app/community/profile.html?id=${encodeURIComponent(userId)}`
+      : "";
+    const attrs = [
+      `data-ss-display-name="${escapeHtml(displayName || "Account")}"`,
+      `data-ss-role="${escapeHtml(role || "PUBLIC")}"`,
+      `data-ss-user-code="${escapeHtml(userCode)}"`,
+      `data-ss-user-id="${escapeHtml(userId)}"`,
+      `data-ss-profile-href="${escapeHtml(profileHref)}"`
+    ];
+    return attrs.join(" ");
+  }
+
+  function renderDisplayNameValue(user) {
+    const displayName = String(user?.displayName || "—").trim() || "—";
+    const hoverAttrs = buildProfileHoverAttrs(user, { displayName });
+    return `<span class="accounts-cell-ellipsis ss-profile-hover" ${hoverAttrs} title="${escapeHtml(displayName)}">${escapeHtml(displayName)}</span>`;
+  }
+
   function renderUserCodeLink(user) {
     const userCode = String(user?.userCode || "").trim();
     if (!userCode || userCode === "—") {
@@ -747,8 +778,9 @@ function normalizeUser(raw = {}) {
     return `
       <button
         type="button"
-        class="ss-link-btn"
+        class="ss-link-btn ss-profile-hover"
         data-account-open-creator="${escapeHtml(userCode)}"
+        ${buildProfileHoverAttrs(user, { userCode })}
       >
         <code>${escapeHtml(userCode)}</code>
       </button>
@@ -790,7 +822,7 @@ function normalizeUser(raw = {}) {
       <td>${renderUserCodeLink(user)}</td>
       <td>${renderTextValue(user.email)}</td>
       <td>${renderEmailVerified(user.emailVerified)}</td>
-      <td>${renderTextValue(user.displayName)}</td>
+      <td>${renderDisplayNameValue(user)}</td>
       <td>${renderBadge(user.role)}</td>
       <td>${renderBadge(user.tier)}</td>
       <td>${renderBadge(user.supporterLabel, user.supporterLabel === "Yes" ? "ss-badge-success" : "")}</td>
@@ -926,11 +958,17 @@ function normalizeUser(raw = {}) {
     return `
       <article class="accounts-details-profile-card glass-card">
         <div class="accounts-details-profile-head">
-          <div class="accounts-details-avatar" aria-hidden="true">${escapeHtml(
+          <div class="accounts-details-avatar ss-profile-hover" ${buildProfileHoverAttrs(
+            user,
+            { displayName: title }
+          )} aria-hidden="true">${escapeHtml(
             resolveAvatarInitials(user)
           )}</div>
           <div class="accounts-details-identity">
-            <strong class="accounts-details-name">${escapeHtml(title)}</strong>
+            <strong class="accounts-details-name ss-profile-hover" ${buildProfileHoverAttrs(
+              user,
+              { displayName: title }
+            )}>${escapeHtml(title)}</strong>
             <span class="accounts-details-user-code">${escapeHtml(subtitle)}</span>
             <div class="accounts-details-role-row">${roleBadges}</div>
           </div>

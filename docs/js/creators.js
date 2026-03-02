@@ -157,13 +157,21 @@
     const userCode = escapeHtml(creator.user_code);
     const accountId = escapeHtml(creator.account_id || "");
     const orphaned = creator.orphaned || !creator.account_id;
+    const profileHref = `https://streamsuites.app/community/profile.html?u=${encodeURIComponent(
+      creator.user_code || ""
+    )}`;
     return `
       <button
         type="button"
-        class="ss-link-btn"
+        class="ss-link-btn ss-profile-hover"
         data-creator-open-account="${userCode}"
         data-account-id="${accountId}"
         data-orphaned="${orphaned ? "1" : "0"}"
+        data-ss-user-code="${userCode}"
+        data-ss-user-id="${accountId}"
+        data-ss-display-name="${userCode}"
+        data-ss-role="CREATOR"
+        data-ss-profile-href="${escapeHtml(profileHref)}"
       >
         <code>${userCode}</code>
       </button>

@@ -291,6 +291,7 @@
   <link rel="stylesheet" href="/css/components.css" />
   <link rel="stylesheet" href="/css/updates.css" />
   <link rel="stylesheet" href="/css/status-widget.css" />
+  <link rel="stylesheet" href="/assets/css/ss-profile-hovercard.css" />
   <script defer src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 </head>
 
@@ -541,7 +542,7 @@
           </div>
           <div class="header-right">
             <div class="header-row header-auth-row">
-              <div id="admin-auth-indicator" class="streamsuites-auth hidden">
+              <div id="admin-auth-indicator" class="streamsuites-auth hidden ss-no-profile-hover" data-ss-profile-hover="off">
                 <div class="streamsuites-auth-toggle">
                   <div class="streamsuites-auth-avatar">
                     <img
@@ -682,6 +683,7 @@
     window.StreamSuitesAdminGate?.bootstrap({
       scripts: [
         "js/utils/global-loader.js",
+        "assets/js/ss-profile-hovercard.js",
         "js/app.js",
         "js/view-loader.js",
         "js/utils/versioning.js",

@@ -238,6 +238,10 @@ StreamSuites-Dashboard/
 │   │   ├── about_part2_platforms_interfaces.json
 │   │   └── about_part3_about_system_spec.json
 │   ├── assets/
+│   │   ├── css/
+│   │   │   └── ss-profile-hovercard.css
+│   │   ├── js/
+│   │   │   └── ss-profile-hovercard.js
 │   │   └── [REDACTED: asset files/folders (backgrounds/fonts/icons/illustrations/logos/placeholders)]
 │   ├── css/
 │   │   ├── base.css
