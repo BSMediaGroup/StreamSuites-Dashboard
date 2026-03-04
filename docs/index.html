@@ -555,19 +555,23 @@
                   <div class="streamsuites-auth-meta">
                     <span id="admin-auth-name" class="streamsuites-auth-name">
                       <span class="streamsuites-auth-name-text">Administrator</span>
-                      <img
-                        id="admin-auth-tier-badge"
-                        class="streamsuites-auth-tier-badge"
-                        src="/assets/icons/tierbadge-core.svg"
-                        alt=""
-                        aria-hidden="true"
-                      />
-                      <img
-                        id="admin-auth-admin-badge"
-                        class="streamsuites-auth-tier-badge streamsuites-auth-admin-badge"
-                        src="/assets/icons/tierbadge-admin.svg"
-                        alt="Admin"
-                      />
+                      <span class="ss-role-badges" data-ss-badge-kind="role">
+                        <img
+                          id="admin-auth-tier-badge"
+                          class="streamsuites-auth-tier-badge ss-tier-badge"
+                          data-ss-role-badge="core"
+                          src="/assets/icons/tierbadge-core.svg"
+                          alt=""
+                          aria-hidden="true"
+                        />
+                        <img
+                          id="admin-auth-admin-badge"
+                          class="streamsuites-auth-tier-badge streamsuites-auth-admin-badge ss-role-badge"
+                          data-ss-role-badge="admin"
+                          src="/assets/icons/tierbadge-admin.svg"
+                          alt="Admin"
+                        />
+                      </span>
                     </span>
                     <span id="admin-auth-identity" class="streamsuites-auth-identity">admin@streamsuites.app</span>
                   </div>
