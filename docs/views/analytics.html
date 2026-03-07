@@ -193,4 +193,282 @@
       </aside>
     </div>
   </section>
+
+  <section class="ss-panel ss-analytics-alerts-panel" aria-labelledby="analytics-alerting-title">
+    <header class="ss-panel-header ss-analytics-alerts-header">
+      <div class="ss-panel-header-main">
+        <h2 id="analytics-alerting-title">Alerting Controls</h2>
+        <p class="muted">Backend-driven notification preferences, rules, targets, and recent delivery activity.</p>
+      </div>
+      <div class="ss-analytics-alerts-header-actions">
+        <button type="button" id="analytics-alerts-refresh" class="ss-btn ss-btn-secondary ss-btn-small">Refresh all</button>
+        <span id="analytics-alerts-status" class="muted">Loading alerting...</span>
+      </div>
+    </header>
+    <div class="ss-panel-body ss-analytics-alerts-body">
+      <div id="analytics-alerts-banner" class="ss-alert ss-alert-danger hidden" role="status" aria-live="polite"></div>
+
+      <div class="ss-analytics-alerts-summary" aria-live="polite">
+        <article class="ss-analytics-alerts-summary-card">
+          <span class="label">Rules</span>
+          <strong id="analytics-alerts-summary-rules">0</strong>
+          <span id="analytics-alerts-summary-enabled-rules" class="muted">0 enabled</span>
+        </article>
+        <article class="ss-analytics-alerts-summary-card">
+          <span class="label">Targets</span>
+          <strong id="analytics-alerts-summary-targets">0</strong>
+          <span id="analytics-alerts-summary-targets-enabled" class="muted">0 enabled</span>
+        </article>
+        <article class="ss-analytics-alerts-summary-card">
+          <span class="label">Recent deliveries</span>
+          <strong id="analytics-alerts-summary-history">0</strong>
+          <span id="analytics-alerts-summary-subscribers" class="muted">0 live subscribers</span>
+        </article>
+        <article class="ss-analytics-alerts-summary-card">
+          <span class="label">Timezone</span>
+          <strong id="analytics-alerts-summary-timezone">UTC</strong>
+          <span id="analytics-alerts-summary-generated" class="muted">--</span>
+        </article>
+      </div>
+
+      <div class="ss-analytics-alerts-grid">
+        <section class="ss-panel ss-analytics-alerts-subpanel" aria-labelledby="analytics-alerts-preferences-title">
+          <header class="ss-panel-header">
+            <div class="ss-panel-header-main">
+              <h3 id="analytics-alerts-preferences-title">Global preferences</h3>
+              <p class="muted">Authoritative alert preferences are stored in the runtime/Auth API.</p>
+            </div>
+          </header>
+          <div class="ss-panel-body">
+            <form id="analytics-alerts-preferences-form" class="ss-analytics-alerts-form">
+              <div class="ss-analytics-alerts-toggle-grid">
+                <label class="ss-analytics-alerts-inline-toggle">
+                  <input type="checkbox" id="analytics-alerts-master-enabled" />
+                  <span>Notifications enabled</span>
+                </label>
+                <label class="ss-analytics-alerts-inline-toggle">
+                  <input type="checkbox" id="analytics-alerts-quiet-hours-enabled" />
+                  <span>Quiet hours enabled</span>
+                </label>
+              </div>
+
+              <div class="ss-analytics-alerts-form-grid">
+                <label class="ss-form-row">
+                  <span>Quiet hours start</span>
+                  <input type="time" id="analytics-alerts-quiet-start" />
+                </label>
+                <label class="ss-form-row">
+                  <span>Quiet hours end</span>
+                  <input type="time" id="analytics-alerts-quiet-end" />
+                </label>
+                <label class="ss-form-row ss-analytics-alerts-form-grid-wide">
+                  <span>Timezone</span>
+                  <input type="text" id="analytics-alerts-timezone" placeholder="UTC" autocomplete="off" />
+                </label>
+              </div>
+
+              <fieldset class="ss-fieldset">
+                <legend>Destination defaults</legend>
+                <div id="analytics-alerts-destination-defaults" class="ss-analytics-alerts-destination-defaults"></div>
+              </fieldset>
+
+              <div class="ss-analytics-alerts-form-actions">
+                <button type="submit" id="analytics-alerts-preferences-save" class="ss-btn ss-btn-primary">Save preferences</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section class="ss-panel ss-analytics-alerts-subpanel" aria-labelledby="analytics-alerts-test-title">
+          <header class="ss-panel-header">
+            <div class="ss-panel-header-main">
+              <h3 id="analytics-alerts-test-title">Send test alert</h3>
+              <p class="muted">Trigger an admin-only test alert through the backend endpoint.</p>
+            </div>
+          </header>
+          <div class="ss-panel-body">
+            <form id="analytics-alerts-test-form" class="ss-analytics-alerts-form">
+              <div class="ss-analytics-alerts-form-grid">
+                <label class="ss-form-row">
+                  <span>Event type</span>
+                  <select id="analytics-alerts-test-event-type"></select>
+                </label>
+                <label class="ss-form-row">
+                  <span>Severity override</span>
+                  <select id="analytics-alerts-test-severity">
+                    <option value="">Default</option>
+                    <option value="info">Info</option>
+                    <option value="warning">Warning</option>
+                    <option value="error">Error</option>
+                    <option value="critical">Critical</option>
+                  </select>
+                </label>
+                <label class="ss-form-row">
+                  <span>Metric value</span>
+                  <input type="number" id="analytics-alerts-test-metric-value" min="0" step="1" value="9999" />
+                </label>
+                <label class="ss-form-row">
+                  <span>Rule</span>
+                  <select id="analytics-alerts-test-rule">
+                    <option value="">Use matching rules</option>
+                  </select>
+                </label>
+                <label class="ss-form-row ss-analytics-alerts-form-grid-wide">
+                  <span>Title</span>
+                  <input type="text" id="analytics-alerts-test-title-input" placeholder="Optional test title" autocomplete="off" />
+                </label>
+                <label class="ss-form-row ss-analytics-alerts-form-grid-wide">
+                  <span>Message</span>
+                  <input type="text" id="analytics-alerts-test-message" placeholder="Optional message" autocomplete="off" />
+                </label>
+              </div>
+
+              <fieldset class="ss-fieldset">
+                <legend>Destinations</legend>
+                <div id="analytics-alerts-test-destinations" class="ss-analytics-alerts-destination-defaults"></div>
+              </fieldset>
+
+              <label class="ss-analytics-alerts-inline-toggle">
+                <input type="checkbox" id="analytics-alerts-test-force" />
+                <span>Bypass quiet hours and suppression checks</span>
+              </label>
+
+              <div class="ss-analytics-alerts-form-actions">
+                <button type="submit" id="analytics-alerts-test-submit" class="ss-btn ss-btn-primary">Send Test Alert</button>
+              </div>
+            </form>
+          </div>
+        </section>
+      </div>
+
+      <section class="ss-panel ss-analytics-alerts-subpanel ss-analytics-alerts-rules-panel" aria-labelledby="analytics-alerts-rules-title">
+        <header class="ss-panel-header">
+          <div class="ss-panel-header-main">
+            <h3 id="analytics-alerts-rules-title">Alert rules</h3>
+            <p class="muted">Create, edit, enable, disable, and remove backend-owned alert rules.</p>
+          </div>
+          <div class="ss-analytics-alerts-header-actions">
+            <button type="button" id="analytics-alerts-rule-create" class="ss-btn ss-btn-secondary ss-btn-small">New rule</button>
+            <button type="button" id="analytics-alerts-rules-refresh" class="ss-btn ss-btn-secondary ss-btn-small">Refresh</button>
+          </div>
+        </header>
+        <div class="ss-panel-body">
+          <form id="analytics-alerts-rule-form" class="ss-analytics-alerts-form ss-analytics-alerts-rule-form">
+            <div class="ss-analytics-alerts-form-topline">
+              <h4 id="analytics-alerts-rule-form-title">Create rule</h4>
+              <div class="ss-analytics-alerts-form-actions">
+                <button type="button" id="analytics-alerts-rule-cancel" class="ss-btn ss-btn-secondary ss-btn-small hidden">Cancel edit</button>
+                <button type="submit" id="analytics-alerts-rule-save" class="ss-btn ss-btn-primary">Save rule</button>
+              </div>
+            </div>
+
+            <div class="ss-analytics-alerts-form-grid">
+              <label class="ss-form-row">
+                <span>Event type</span>
+                <select id="analytics-alerts-rule-event-type"></select>
+              </label>
+              <label class="ss-form-row">
+                <span>Severity</span>
+                <select id="analytics-alerts-rule-severity">
+                  <option value="info">Info</option>
+                  <option value="warning">Warning</option>
+                  <option value="error">Error</option>
+                  <option value="critical">Critical</option>
+                </select>
+              </label>
+              <label class="ss-form-row">
+                <span>Threshold type</span>
+                <select id="analytics-alerts-rule-threshold-type">
+                  <option value="count">Count</option>
+                  <option value="rate">Rate</option>
+                  <option value="state">State</option>
+                  <option value="custom">Custom</option>
+                </select>
+              </label>
+              <label class="ss-form-row">
+                <span>Enabled</span>
+                <select id="analytics-alerts-rule-enabled">
+                  <option value="true">Enabled</option>
+                  <option value="false">Disabled</option>
+                </select>
+              </label>
+              <label class="ss-form-row ss-analytics-alerts-form-grid-wide">
+                <span>Label / name</span>
+                <input type="text" id="analytics-alerts-rule-name" maxlength="120" placeholder="Rule label" autocomplete="off" />
+              </label>
+              <label class="ss-form-row ss-analytics-alerts-form-grid-wide">
+                <span>Description</span>
+                <textarea id="analytics-alerts-rule-description" rows="2" placeholder="Optional description"></textarea>
+              </label>
+              <label class="ss-form-row" id="analytics-alerts-rule-threshold-number-row">
+                <span>Threshold value</span>
+                <input type="number" id="analytics-alerts-rule-threshold-number" min="0" step="1" value="1" />
+              </label>
+              <label class="ss-form-row hidden" id="analytics-alerts-rule-threshold-state-row">
+                <span>Threshold state</span>
+                <select id="analytics-alerts-rule-threshold-state">
+                  <option value="true">True</option>
+                  <option value="false">False</option>
+                </select>
+              </label>
+              <label class="ss-form-row hidden" id="analytics-alerts-rule-threshold-custom-row">
+                <span>Threshold value</span>
+                <input type="text" id="analytics-alerts-rule-threshold-custom" placeholder="Custom threshold" autocomplete="off" />
+              </label>
+              <label class="ss-form-row">
+                <span>Window minutes</span>
+                <input type="number" id="analytics-alerts-rule-window-minutes" min="1" step="1" value="5" />
+              </label>
+              <label class="ss-form-row">
+                <span>Cooldown minutes</span>
+                <input type="number" id="analytics-alerts-rule-cooldown-minutes" min="0" step="1" value="15" />
+              </label>
+            </div>
+
+            <fieldset class="ss-fieldset">
+              <legend>Destinations</legend>
+              <div id="analytics-alerts-rule-destinations" class="ss-analytics-alerts-destination-defaults"></div>
+            </fieldset>
+          </form>
+
+          <div id="analytics-alerts-rules-list" class="ss-analytics-alerts-rules-list" aria-live="polite"></div>
+          <div id="analytics-alerts-rules-empty" class="ss-empty-state hidden">No alert rules configured yet.</div>
+        </div>
+      </section>
+
+      <div class="ss-analytics-alerts-bottom-grid">
+        <section class="ss-panel ss-analytics-alerts-subpanel" aria-labelledby="analytics-alerts-targets-title">
+          <header class="ss-panel-header">
+            <div class="ss-panel-header-main">
+              <h3 id="analytics-alerts-targets-title">Registered targets</h3>
+              <p class="muted">Visibility into backend-registered delivery targets and basic enabled state.</p>
+            </div>
+            <div class="ss-analytics-alerts-header-actions">
+              <button type="button" id="analytics-alerts-targets-refresh" class="ss-btn ss-btn-secondary ss-btn-small">Refresh</button>
+            </div>
+          </header>
+          <div class="ss-panel-body">
+            <div id="analytics-alerts-targets-list" class="ss-analytics-alerts-targets-list" aria-live="polite"></div>
+            <div id="analytics-alerts-targets-empty" class="ss-empty-state hidden">No registered delivery targets yet.</div>
+          </div>
+        </section>
+
+        <section class="ss-panel ss-analytics-alerts-subpanel" aria-labelledby="analytics-alerts-history-title">
+          <header class="ss-panel-header">
+            <div class="ss-panel-header-main">
+              <h3 id="analytics-alerts-history-title">Recent deliveries</h3>
+              <p class="muted">Recent alert outcomes returned by backend delivery history.</p>
+            </div>
+            <div class="ss-analytics-alerts-header-actions">
+              <button type="button" id="analytics-alerts-history-refresh" class="ss-btn ss-btn-secondary ss-btn-small">Refresh</button>
+            </div>
+          </header>
+          <div class="ss-panel-body">
+            <div id="analytics-alerts-history-list" class="ss-analytics-alerts-history-list" aria-live="polite"></div>
+            <div id="analytics-alerts-history-empty" class="ss-empty-state hidden">No recent alert deliveries yet.</div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
 </main>

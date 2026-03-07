@@ -198,6 +198,130 @@
     });
   }
 
+  function buildQueryPath(path, query = {}) {
+    const params = new URLSearchParams();
+    Object.entries(query || {}).forEach(([key, value]) => {
+      if (value === undefined || value === null || value === "") return;
+      params.set(key, String(value));
+    });
+    const serialized = params.toString();
+    return serialized ? `${path}?${serialized}` : path;
+  }
+
+  function jsonRequest(method, path, body, options = {}) {
+    return apiFetch(path, {
+      method,
+      cacheTtlMs: 0,
+      forceRefresh: true,
+      timeoutMs: options.timeoutMs,
+      signal: options.signal,
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      },
+      body: JSON.stringify(body || {})
+    });
+  }
+
+  async function getAdminAlertEventTypes(options = {}) {
+    return apiFetch("/api/admin/alerts/event-types", {
+      cacheTtlMs: options.ttlMs ?? 30000,
+      cacheKey: "admin-alert-event-types",
+      forceRefresh: options.forceRefresh === true,
+      timeoutMs: options.timeoutMs,
+      signal: options.signal
+    });
+  }
+
+  async function getAdminAlertSettings(options = {}) {
+    return apiFetch("/api/admin/alerts/settings", {
+      cacheTtlMs: options.ttlMs ?? 5000,
+      cacheKey: "admin-alert-settings",
+      forceRefresh: options.forceRefresh === true,
+      timeoutMs: options.timeoutMs,
+      signal: options.signal
+    });
+  }
+
+  async function getAdminAlertPreferences(options = {}) {
+    return apiFetch("/api/admin/alerts/preferences", {
+      cacheTtlMs: options.ttlMs ?? 5000,
+      cacheKey: "admin-alert-preferences",
+      forceRefresh: options.forceRefresh === true,
+      timeoutMs: options.timeoutMs,
+      signal: options.signal
+    });
+  }
+
+  async function updateAdminAlertPreferences(preferences, options = {}) {
+    return jsonRequest("PUT", "/api/admin/alerts/preferences", { preferences }, options);
+  }
+
+  async function getAdminAlertRules(options = {}) {
+    return apiFetch("/api/admin/alerts/rules", {
+      cacheTtlMs: options.ttlMs ?? 5000,
+      cacheKey: "admin-alert-rules",
+      forceRefresh: options.forceRefresh === true,
+      timeoutMs: options.timeoutMs,
+      signal: options.signal
+    });
+  }
+
+  async function createAdminAlertRule(rule, options = {}) {
+    return jsonRequest("POST", "/api/admin/alerts/rules", rule, options);
+  }
+
+  async function updateAdminAlertRule(ruleId, rule, options = {}) {
+    return jsonRequest("PUT", `/api/admin/alerts/rules/${encodeURIComponent(ruleId)}`, rule, options);
+  }
+
+  async function setAdminAlertRuleEnabled(ruleId, enabled, options = {}) {
+    return jsonRequest(
+      "POST",
+      `/api/admin/alerts/rules/${encodeURIComponent(ruleId)}/enabled`,
+      { enabled: Boolean(enabled) },
+      options
+    );
+  }
+
+  async function deleteAdminAlertRule(ruleId, options = {}) {
+    return apiFetch(`/api/admin/alerts/rules/${encodeURIComponent(ruleId)}`, {
+      method: "DELETE",
+      cacheTtlMs: 0,
+      forceRefresh: true,
+      timeoutMs: options.timeoutMs,
+      signal: options.signal
+    });
+  }
+
+  async function getAdminAlertTargets(query = {}, options = {}) {
+    return apiFetch(buildQueryPath("/api/admin/alerts/targets", query), {
+      cacheTtlMs: options.ttlMs ?? 5000,
+      cacheKey: `admin-alert-targets:${JSON.stringify(query || {})}`,
+      forceRefresh: options.forceRefresh === true,
+      timeoutMs: options.timeoutMs,
+      signal: options.signal
+    });
+  }
+
+  async function updateAdminAlertTarget(targetId, target, options = {}) {
+    return jsonRequest("PUT", `/api/admin/alerts/targets/${encodeURIComponent(targetId)}`, target, options);
+  }
+
+  async function getAdminAlertHistory(query = {}, options = {}) {
+    return apiFetch(buildQueryPath("/api/admin/alerts/history", query), {
+      cacheTtlMs: options.ttlMs ?? 5000,
+      cacheKey: `admin-alert-history:${JSON.stringify(query || {})}`,
+      forceRefresh: options.forceRefresh === true,
+      timeoutMs: options.timeoutMs,
+      signal: options.signal
+    });
+  }
+
+  async function triggerAdminTestAlert(payload, options = {}) {
+    return jsonRequest("POST", "/api/admin/alerts/test", payload, options);
+  }
+
   window.StreamSuitesApi = {
     getApiBase,
     buildApiUrl,
@@ -205,6 +329,19 @@
     getAdminAnalytics,
     getAdminActivity,
     getAdminAuthEvents,
-    getAdminDonations
+    getAdminDonations,
+    getAdminAlertEventTypes,
+    getAdminAlertSettings,
+    getAdminAlertPreferences,
+    updateAdminAlertPreferences,
+    getAdminAlertRules,
+    createAdminAlertRule,
+    updateAdminAlertRule,
+    setAdminAlertRuleEnabled,
+    deleteAdminAlertRule,
+    getAdminAlertTargets,
+    updateAdminAlertTarget,
+    getAdminAlertHistory,
+    triggerAdminTestAlert
   };
 })();

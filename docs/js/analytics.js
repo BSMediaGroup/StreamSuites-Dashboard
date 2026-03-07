@@ -1837,6 +1837,7 @@
     if (!state.mapCollapsed) {
       scheduleMapResize();
     }
+    window.StreamSuitesAnalyticsAlerting?.init?.();
     void fetchAnalytics({ withLoader: true });
     if (state.refreshHandle) {
       clearInterval(state.refreshHandle);
@@ -1933,6 +1934,8 @@
     Object.keys(el).forEach((key) => {
       el[key] = null;
     });
+
+    window.StreamSuitesAnalyticsAlerting?.destroy?.();
   }
 
   window.AnalyticsView = {

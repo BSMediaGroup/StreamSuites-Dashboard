@@ -24,6 +24,7 @@ The dashboard loads snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progre
 
 - **Creator Stats admin page (Phase 0 mock):** Admin-only `Creator Stats` view wired to `GET /api/admin/accounts/{account_id}/stats`, consuming API chart fields (`growth_series`, `platform_share`) with client-side quality formatting.
 - **Admin dashboard surface refresh:** Expanded operational views across overview, analytics, approvals, audit, jobs, notifications, data signals, and API usage.
+- **Web alert settings in Analytics:** The admin analytics view now includes backend-driven alert preferences, rule management, registered target visibility, recent delivery history, and an admin test-alert action via Auth API endpoints.
 - **Runtime visibility depth:** Telemetry/events/errors/rates plus platform heartbeat and status views are wired to runtime-exported snapshots.
 - **Bot availability/error surfacing:** `docs/views/bots.html` + `docs/js/bots.js` expose platform availability and runtime-state/error visibility with admin-debug controls.
 - **Platform status posture:** YouTube/Twitch active scaffolds, Rumble pause-state handling, Kick scaffolded parity, and Pilled staged/ingest-only treatment.
@@ -109,6 +110,7 @@ These settings map directly to runtime configuration; the dashboard does not exe
 ## Differences from Creator Dashboard and Public Site
 
 - **Admin Dashboard (this repo):** Admin-only control + visualization layer, gated by the Auth API, renders runtime exports, and emits admin configuration/control inputs. Deployed as a static UI from `/docs`.
+- **Analytics alerting controls:** Alert preferences and notification rules are configured from the Analytics admin experience, but authoritative state remains in the runtime/Auth API.
 - **Creator Dashboard:** Creator-focused surface in a separate repository/domain; emphasizes creator self-service settings and visibility rather than admin control.
 - **Public Site:** Public-facing marketing/content surface in a separate repository/domain; no admin auth, no privileged actions, and no configuration control inputs.
 
@@ -280,6 +282,7 @@ StreamSuites-Dashboard/
 │   │   ├── admin-gate.js
 │   │   ├── admin-login.js
 │   │   ├── analytics.js
+│   │   ├── analytics-alerting.js
 │   │   ├── api-usage.js
 │   │   ├── api.js
 │   │   ├── app.js
