@@ -38,7 +38,14 @@
     settings: null,
     activeRuleId: null,
     loadToken: 0,
-    ruleScopePassthrough: {}
+    ruleScopePassthrough: {},
+    targetFilters: {
+      type: "",
+      status: ""
+    },
+    targetActionIds: new Set(),
+    targetsLoading: false,
+    targetsError: ""
   };
 
   const el = {
@@ -117,6 +124,9 @@
     rulesList: null,
     rulesEmpty: null,
     targetsRefresh: null,
+    targetsTypeFilter: null,
+    targetsStatusFilter: null,
+    targetsState: null,
     targetsList: null,
     targetsEmpty: null,
     historyRefresh: null,
@@ -358,6 +368,73 @@
     if (normalized === "windows_client") return "Windows client";
     if (normalized === "pushover") return "Pushover";
     return labelize(normalized || "destination");
+  }
+
+  function targetStatusTone(status) {
+    const normalized = String(status || "").trim().toLowerCase();
+    if (normalized === "active") return "success";
+    if (normalized === "stale") return "warning";
+    return "muted";
+  }
+
+  function normalizeTarget(rawTarget) {
+    const base = rawTarget && typeof rawTarget === "object" ? cloneJson(rawTarget) || {} : {};
+    const deviceType = String(base.device_type || base.target_type || "").trim().toLowerCase();
+    const metadata = base.metadata && typeof base.metadata === "object" ? base.metadata : {};
+    const ownerHint = String(
+      base.owner_hint || base.owner_display || base.owner_user_code || base.owner_account_id || ""
+    ).trim();
+    const status = String(base.status || "").trim().toLowerCase() || (base.enabled === false ? "disabled" : "unknown");
+    const statusLabel = String(base.status_label || "").trim()
+      || (status === "active" ? "Active / Recently seen" : labelize(status || "unknown"));
+    const metadataSummary = String(base.metadata_summary || "").trim()
+      || [metadata.machine_label, metadata.machine_name, metadata.hostname, metadata.os_version].filter(Boolean).join(" | ");
+    return {
+      ...base,
+      id: String(base.id || "").trim(),
+      device_type: deviceType,
+      target_type: String(base.target_type || deviceType).trim() || deviceType,
+      type_label: String(base.type_label || destinationLabel(deviceType)).trim() || destinationLabel(deviceType),
+      display_name: String(base.display_name || metadata.machine_label || destinationLabel(deviceType)).trim() || destinationLabel(deviceType),
+      enabled: coerceBoolean(base.enabled, true),
+      owner_hint: ownerHint,
+      owner_display: ownerHint || "Unassigned",
+      status,
+      status_label: statusLabel,
+      metadata,
+      metadata_summary: metadataSummary || null,
+      connection_status: String(base.connection_status || "").trim() || null,
+      last_seen_at: base.last_seen_at || null,
+      created_at: base.created_at || null,
+      updated_at: base.updated_at || null
+    };
+  }
+
+  function getFilteredTargets() {
+    return state.targets.filter((target) => {
+      if (state.targetFilters.type && target.device_type !== state.targetFilters.type) return false;
+      if (state.targetFilters.status && target.status !== state.targetFilters.status) return false;
+      return true;
+    });
+  }
+
+  function updateTargetsState(message) {
+    if (!el.targetsState) return;
+    el.targetsState.textContent = message || "";
+    el.targetsState.classList.toggle("hidden", !message);
+  }
+
+  function renderTargetFilters() {
+    if (!el.targetsTypeFilter) return;
+    const current = String(state.targetFilters.type || "").trim();
+    const options = Array.from(new Set(state.targets.map((target) => target.device_type).filter(Boolean)));
+    el.targetsTypeFilter.innerHTML = ['<option value="">All</option>']
+      .concat(options.map((key) => `<option value="${escapeHtml(key)}">${escapeHtml(destinationLabel(key))}</option>`))
+      .join("");
+    el.targetsTypeFilter.value = options.includes(current) ? current : "";
+    if (el.targetsStatusFilter) {
+      el.targetsStatusFilter.value = String(state.targetFilters.status || "").trim();
+    }
   }
 
   function severityLabel(value) {
@@ -998,34 +1075,74 @@
 
   function renderTargetsList() {
     if (!el.targetsList || !el.targetsEmpty) return;
+    const filteredTargets = getFilteredTargets();
+    renderTargetFilters();
+    if (state.targetsLoading) {
+      el.targetsList.innerHTML = "";
+      el.targetsEmpty.classList.add("hidden");
+      updateTargetsState("Loading registered targets...");
+      return;
+    }
+    if (state.targetsError) {
+      el.targetsList.innerHTML = "";
+      el.targetsEmpty.classList.add("hidden");
+      updateTargetsState(state.targetsError);
+      return;
+    }
     if (!state.targets.length) {
       el.targetsList.innerHTML = "";
       el.targetsEmpty.classList.remove("hidden");
+      el.targetsEmpty.textContent = "No registered delivery targets yet.";
+      updateTargetsState("No registered delivery targets yet.");
+      return;
+    }
+    if (!filteredTargets.length) {
+      el.targetsList.innerHTML = "";
+      el.targetsEmpty.classList.remove("hidden");
+      el.targetsEmpty.textContent = "No registered targets match the current filters.";
+      updateTargetsState("No targets match the selected filters.");
       return;
     }
     el.targetsEmpty.classList.add("hidden");
-    el.targetsList.innerHTML = state.targets
+    el.targetsEmpty.textContent = "No registered delivery targets yet.";
+    updateTargetsState(`${filteredTargets.length} target${filteredTargets.length === 1 ? "" : "s"} shown.`);
+    el.targetsList.innerHTML = filteredTargets
       .map((target) => {
-        const ownerBits = [target.owner_user_code, target.owner_account_id].filter(Boolean);
+        const busy = state.targetActionIds.has(target.id);
+        const statusTone = targetStatusTone(target.status);
         return `
-          <article class="ss-analytics-alerts-target-card${target.enabled ? "" : " is-disabled"}">
+          <article class="ss-analytics-alerts-target-card${target.enabled ? "" : " is-disabled"}${busy ? " is-busy" : ""}">
             <div class="ss-analytics-alerts-target-header">
               <div>
                 <h4 class="ss-analytics-alerts-target-name">${escapeHtml(target.display_name || destinationLabel(target.device_type))}</h4>
                 <div class="ss-analytics-alerts-target-chips">
-                  <span class="ss-chip">${escapeHtml(destinationLabel(target.device_type))}</span>
+                  <span class="ss-chip">${escapeHtml(target.type_label || destinationLabel(target.device_type))}</span>
+                  <span class="ss-chip ss-chip-${escapeHtml(statusTone)}">${escapeHtml(target.status_label || labelize(target.status))}</span>
                   <span class="ss-chip">${escapeHtml(target.enabled ? "Enabled" : "Disabled")}</span>
                 </div>
               </div>
-              <button type="button" class="ss-btn ss-btn-secondary ss-btn-small" data-target-action="toggle" data-target-id="${escapeHtml(target.id)}">
-                ${target.enabled ? "Disable" : "Enable"}
-              </button>
+              <div class="ss-analytics-alerts-target-actions">
+                <button type="button" class="ss-btn ss-btn-secondary ss-btn-small" data-target-action="rename-toggle" data-target-id="${escapeHtml(target.id)}" ${busy ? "disabled" : ""}>Rename</button>
+                <button type="button" class="ss-btn ss-btn-secondary ss-btn-small" data-target-action="toggle" data-target-id="${escapeHtml(target.id)}" ${busy ? "disabled" : ""}>
+                  ${target.enabled ? "Disable" : "Enable"}
+                </button>
+              </div>
             </div>
-            <p class="ss-analytics-alerts-target-owner">${escapeHtml(ownerBits.length ? `Owner: ${ownerBits.join(" / ")}` : "Owner: unassigned")}</p>
+            <div class="ss-analytics-alerts-target-identity">
+              <span>Owner: ${escapeHtml(target.owner_display || "Unassigned")}</span>
+              <span>Status: ${escapeHtml(target.connection_status || "unknown")}</span>
+              ${target.metadata_summary ? `<span>${escapeHtml(target.metadata_summary)}</span>` : ""}
+            </div>
             <div class="ss-analytics-alerts-target-meta">
               <span>Last seen: ${escapeHtml(formatTimestamp(target.last_seen_at))}</span>
+              <span>Created: ${escapeHtml(formatTimestamp(target.created_at))}</span>
               <span>Updated: ${escapeHtml(formatTimestamp(target.updated_at))}</span>
             </div>
+            <form class="ss-analytics-alerts-target-rename hidden" data-target-rename-form="${escapeHtml(target.id)}">
+              <input type="text" maxlength="120" value="${escapeHtml(target.display_name || "")}" data-target-rename-input="${escapeHtml(target.id)}" ${busy ? "disabled" : ""} />
+              <button type="submit" class="ss-btn ss-btn-primary ss-btn-small" ${busy ? "disabled" : ""}>Save</button>
+              <button type="button" class="ss-btn ss-btn-secondary ss-btn-small" data-target-action="rename-cancel" data-target-id="${escapeHtml(target.id)}" ${busy ? "disabled" : ""}>Cancel</button>
+            </form>
           </article>
         `;
       })
@@ -1106,25 +1223,37 @@
   }
 
   async function refreshOperationalPanels(options = {}) {
-    const [settingsPayload, targetsPayload, historyPayload] = await Promise.all([
-      window.StreamSuitesApi.getAdminAlertSettings({
-        forceRefresh: options.forceRefresh === true
-      }),
-      window.StreamSuitesApi.getAdminAlertTargets({
-        forceRefresh: options.forceRefresh === true
-      }),
-      window.StreamSuitesApi.getAdminAlertHistory(
-        { limit: HISTORY_LIMIT },
-        { forceRefresh: options.forceRefresh === true }
-      )
-    ]);
-    state.settings = extractSettings(settingsPayload);
-    state.targets = extractItems(targetsPayload);
-    state.history = extractItems(historyPayload);
-    renderSummary();
+    state.targetsLoading = true;
+    state.targetsError = "";
     renderTargetsList();
-    renderHistoryList();
-    renderPersistenceMeta();
+    try {
+      const [settingsPayload, targetsPayload, historyPayload] = await Promise.all([
+        window.StreamSuitesApi.getAdminAlertSettings({
+          forceRefresh: options.forceRefresh === true
+        }),
+        window.StreamSuitesApi.getAdminAlertTargets({
+          forceRefresh: options.forceRefresh === true
+        }),
+        window.StreamSuitesApi.getAdminAlertHistory(
+          { limit: HISTORY_LIMIT },
+          { forceRefresh: options.forceRefresh === true }
+        )
+      ]);
+      state.settings = extractSettings(settingsPayload);
+      state.targets = extractItems(targetsPayload).map(normalizeTarget);
+      state.history = extractItems(historyPayload);
+      renderSummary();
+      renderTargetsList();
+      renderHistoryList();
+      renderPersistenceMeta();
+    } catch (err) {
+      state.targetsError = err?.message || "Unable to load alert targets.";
+      renderTargetsList();
+      throw err;
+    } finally {
+      state.targetsLoading = false;
+      renderTargetsList();
+    }
   }
 
   async function loadAlerting(options = {}) {
@@ -1132,6 +1261,9 @@
     const task = async () => {
       clearBanner();
       setStatus("Loading alerting...");
+      state.targetsLoading = true;
+      state.targetsError = "";
+      renderTargetsList();
       try {
         const [settingsPayload, eventTypesPayload, configurationPayload, targetsPayload, historyPayload] =
           await Promise.all([
@@ -1164,17 +1296,23 @@
           ...(configuration && typeof configuration === "object" ? configuration : {}),
           exported_at: configurationPayload?.generated_at || configuration?.exported_at || state.settings?.generated_at || null
         }, { syncCleanState: true });
-        state.targets = extractItems(targetsPayload);
+        state.targets = extractItems(targetsPayload).map(normalizeTarget);
+        state.targetsLoading = false;
         state.history = extractItems(historyPayload);
         renderAll();
         setStatus("Alerting synced");
       } catch (err) {
+        state.targetsLoading = false;
         if (err?.status === 401 || err?.status === 403 || err?.isAuthError) {
+          state.targetsError = "Admin session required.";
+          renderTargetsList();
           promptAdminReauth();
           setStatus("Admin session required");
           setBanner("Admin session required. Redirecting to login...");
           return;
         }
+        state.targetsError = err?.message || "Unable to load alert targets.";
+        renderTargetsList();
         setStatus("Alerting unavailable");
         setBanner(err?.message || "Unable to load alerting controls.");
       }
@@ -1416,11 +1554,22 @@
     const button = event.target.closest("[data-target-action][data-target-id]");
     if (!(button instanceof HTMLButtonElement)) return;
     const targetId = String(button.getAttribute("data-target-id") || "").trim();
+    const action = String(button.getAttribute("data-target-action") || "").trim();
     const target = state.targets.find((item) => item.id === targetId);
     if (!target) return;
 
+    if (action === "rename-toggle" || action === "rename-cancel") {
+      const form = el.targetsList?.querySelector(`[data-target-rename-form="${CSS.escape(targetId)}"]`);
+      if (form) {
+        form.classList.toggle("hidden", action === "rename-cancel" ? true : !form.classList.contains("hidden"));
+      }
+      return;
+    }
+    if (action !== "toggle") return;
+
     clearBanner();
-    button.disabled = true;
+    state.targetActionIds.add(targetId);
+    renderTargetsList();
     try {
       await window.StreamSuitesApi.updateAdminAlertTarget(targetId, {
         device_type: target.device_type,
@@ -1437,8 +1586,57 @@
       setStatus("Target update failed");
       setBanner(err?.message || "Unable to update alert target.");
     } finally {
-      button.disabled = false;
+      state.targetActionIds.delete(targetId);
+      renderTargetsList();
     }
+  }
+
+  async function handleTargetRenameSubmit(event) {
+    const form = event.target.closest("[data-target-rename-form]");
+    if (!(form instanceof HTMLFormElement)) return;
+    event.preventDefault();
+
+    const targetId = String(form.getAttribute("data-target-rename-form") || "").trim();
+    const target = state.targets.find((item) => item.id === targetId);
+    const input = form.querySelector(`[data-target-rename-input="${CSS.escape(targetId)}"]`);
+    if (!target || !(input instanceof HTMLInputElement)) return;
+
+    const nextName = String(input.value || "").trim();
+    if (!nextName) {
+      setStatus("Target rename failed");
+      setBanner("Display name is required.");
+      input.focus();
+      return;
+    }
+
+    clearBanner();
+    state.targetActionIds.add(targetId);
+    renderTargetsList();
+    try {
+      await window.StreamSuitesApi.updateAdminAlertTarget(targetId, {
+        device_type: target.device_type,
+        display_name: nextName,
+        enabled: target.enabled,
+        owner_account_id: target.owner_account_id || undefined,
+        owner_user_code: target.owner_user_code || undefined,
+        last_seen_at: target.last_seen_at || undefined,
+        metadata: target.metadata || {}
+      });
+      setStatus("Target renamed");
+      await refreshOperationalPanels({ forceRefresh: true });
+    } catch (err) {
+      setStatus("Target rename failed");
+      setBanner(err?.message || "Unable to rename alert target.");
+    } finally {
+      state.targetActionIds.delete(targetId);
+      renderTargetsList();
+    }
+  }
+
+  function handleTargetFilterChange() {
+    state.targetFilters.type = String(el.targetsTypeFilter?.value || "").trim();
+    state.targetFilters.status = String(el.targetsStatusFilter?.value || "").trim();
+    renderTargetsList();
   }
 
   function handleRuleEventTypeChange() {
@@ -1617,7 +1815,10 @@
     el.ruleScopeEnabled?.addEventListener("change", handleRuleScopeToggle);
     el.rulesList?.addEventListener("click", handleRulesListClick);
     el.targetsList?.addEventListener("click", handleTargetsListClick);
+    el.targetsList?.addEventListener("submit", handleTargetRenameSubmit);
     el.targetsRefresh?.addEventListener("click", handleRefreshAll);
+    el.targetsTypeFilter?.addEventListener("change", handleTargetFilterChange);
+    el.targetsStatusFilter?.addEventListener("change", handleTargetFilterChange);
     el.historyRefresh?.addEventListener("click", handleRefreshAll);
     window.addEventListener("beforeunload", handleBeforeUnload);
   }
@@ -1640,7 +1841,10 @@
     el.ruleScopeEnabled?.removeEventListener("change", handleRuleScopeToggle);
     el.rulesList?.removeEventListener("click", handleRulesListClick);
     el.targetsList?.removeEventListener("click", handleTargetsListClick);
+    el.targetsList?.removeEventListener("submit", handleTargetRenameSubmit);
     el.targetsRefresh?.removeEventListener("click", handleRefreshAll);
+    el.targetsTypeFilter?.removeEventListener("change", handleTargetFilterChange);
+    el.targetsStatusFilter?.removeEventListener("change", handleTargetFilterChange);
     el.historyRefresh?.removeEventListener("click", handleRefreshAll);
     window.removeEventListener("beforeunload", handleBeforeUnload);
   }
@@ -1721,6 +1925,9 @@
     el.rulesList = $("analytics-alerts-rules-list");
     el.rulesEmpty = $("analytics-alerts-rules-empty");
     el.targetsRefresh = $("analytics-alerts-targets-refresh");
+    el.targetsTypeFilter = $("analytics-alerts-targets-type-filter");
+    el.targetsStatusFilter = $("analytics-alerts-targets-status-filter");
+    el.targetsState = $("analytics-alerts-targets-state");
     el.targetsList = $("analytics-alerts-targets-list");
     el.targetsEmpty = $("analytics-alerts-targets-empty");
     el.historyRefresh = $("analytics-alerts-history-refresh");

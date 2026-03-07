@@ -453,13 +453,30 @@
           <header class="ss-panel-header">
             <div class="ss-panel-header-main">
               <h3 id="analytics-alerts-targets-title">Registered targets</h3>
-              <p class="muted">Visibility into backend-registered delivery targets and basic enabled state.</p>
+              <p class="muted">Inspect and manage backend-registered delivery targets without moving authority out of the Auth API.</p>
             </div>
             <div class="ss-analytics-alerts-header-actions">
+              <label class="ss-analytics-alerts-filter">
+                <span class="muted">Type</span>
+                <select id="analytics-alerts-targets-type-filter">
+                  <option value="">All</option>
+                </select>
+              </label>
+              <label class="ss-analytics-alerts-filter">
+                <span class="muted">Status</span>
+                <select id="analytics-alerts-targets-status-filter">
+                  <option value="">All</option>
+                  <option value="active">Active</option>
+                  <option value="stale">Stale</option>
+                  <option value="disabled">Disabled</option>
+                  <option value="unknown">Unknown</option>
+                </select>
+              </label>
               <button type="button" id="analytics-alerts-targets-refresh" class="ss-btn ss-btn-secondary ss-btn-small">Refresh</button>
             </div>
           </header>
           <div class="ss-panel-body">
+            <div id="analytics-alerts-targets-state" class="ss-analytics-alerts-section-state muted">Loading registered targets...</div>
             <div id="analytics-alerts-targets-list" class="ss-analytics-alerts-targets-list" aria-live="polite"></div>
             <div id="analytics-alerts-targets-empty" class="ss-empty-state hidden">No registered delivery targets yet.</div>
           </div>

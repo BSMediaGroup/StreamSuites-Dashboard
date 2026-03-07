@@ -1114,10 +1114,20 @@
   padding: 14px 16px;
 }
 
+.ss-analytics-alerts-section-state {
+  margin-bottom: 10px;
+  min-height: 18px;
+}
+
 .ss-analytics-alerts-rule-card.is-disabled,
 .ss-analytics-alerts-target-card.is-disabled,
 .ss-analytics-alerts-history-card.is-suppressed {
   opacity: 0.8;
+}
+
+.ss-analytics-alerts-target-card.is-busy {
+  pointer-events: none;
+  opacity: 0.7;
 }
 
 .ss-analytics-alerts-rule-name,
@@ -1156,6 +1166,66 @@
 .ss-analytics-alerts-target-owner,
 .ss-analytics-alerts-history-message {
   line-height: 1.45;
+}
+
+.ss-analytics-alerts-target-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.ss-analytics-alerts-target-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ss-analytics-alerts-target-rename {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ss-analytics-alerts-target-rename input {
+  min-width: 0;
+  flex: 1 1 220px;
+}
+
+.ss-analytics-alerts-target-identity {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 10px;
+  color: var(--text-secondary);
+}
+
+.ss-analytics-alerts-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ss-analytics-alerts-filter select {
+  min-width: 118px;
+}
+
+.ss-chip.ss-chip-success {
+  color: #d7ffe8;
+  background: rgba(59, 168, 95, 0.22);
+  border-color: rgba(59, 168, 95, 0.32);
+}
+
+.ss-chip.ss-chip-warning {
+  color: #fff2cf;
+  background: rgba(173, 126, 35, 0.22);
+  border-color: rgba(173, 126, 35, 0.32);
+}
+
+.ss-chip.ss-chip-muted {
+  color: #dde5ef;
+  background: rgba(132, 149, 168, 0.18);
+  border-color: rgba(132, 149, 168, 0.28);
 }
 
 .ss-analytics-alerts-history-status {
