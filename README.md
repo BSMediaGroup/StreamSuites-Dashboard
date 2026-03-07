@@ -26,6 +26,8 @@ The dashboard loads snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progre
 - **Admin dashboard surface refresh:** Expanded operational views across overview, analytics, approvals, audit, jobs, notifications, data signals, and API usage.
 - **Web alert settings in Analytics:** The admin analytics view now includes backend-driven alert preferences, rule management, registered target visibility, recent delivery history, and an admin test-alert action via Auth API endpoints.
 - **Scoped alert-rule editing:** The Analytics admin alerting UI now visually edits backend-owned scoped rules, shows compact scope summaries, and exposes cooldown/dedupe anti-noise controls without moving rule logic out of the Auth API/runtime.
+- **Backend-aware alert ruleset persistence:** Analytics now exposes explicit reload, save/apply, JSON export, and JSON import controls for backend-authored alert configuration, with dirty-state and validation feedback while keeping runtime delivery history separate.
+- **Cleaner Analytics alert workspace:** The alerting area below the map is regrouped into a clearer persistence, configuration, rule-editing, device, history, and test-alert flow without redesigning the broader admin shell.
 - **Runtime visibility depth:** Telemetry/events/errors/rates plus platform heartbeat and status views are wired to runtime-exported snapshots.
 - **Bot availability/error surfacing:** `docs/views/bots.html` + `docs/js/bots.js` expose platform availability and runtime-state/error visibility with admin-debug controls.
 - **Platform status posture:** YouTube/Twitch active scaffolds, Rumble pause-state handling, Kick scaffolded parity, and Pilled staged/ingest-only treatment.
@@ -111,7 +113,7 @@ These settings map directly to runtime configuration; the dashboard does not exe
 ## Differences from Creator Dashboard and Public Site
 
 - **Admin Dashboard (this repo):** Admin-only control + visualization layer, gated by the Auth API, renders runtime exports, and emits admin configuration/control inputs. Deployed as a static UI from `/docs`.
-- **Analytics alerting controls:** Alert preferences, scoped notification rules, and anti-noise settings are configured from the Analytics admin experience, but authoritative state remains in the runtime/Auth API.
+- **Analytics alerting controls:** Alert preferences, scoped notification rules, anti-noise settings, and explicit backend-aware ruleset reload/save/import/export controls are configured from the Analytics admin experience, but authoritative state remains in the runtime/Auth API.
 - **Creator Dashboard:** Creator-focused surface in a separate repository/domain; emphasizes creator self-service settings and visibility rather than admin control.
 - **Public Site:** Public-facing marketing/content surface in a separate repository/domain; no admin auth, no privileged actions, and no configuration control inputs.
 

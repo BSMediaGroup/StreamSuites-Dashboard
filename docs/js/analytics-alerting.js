@@ -28,6 +28,9 @@
   const state = {
     destroyed: false,
     eventTypes: [],
+    configuration: null,
+    lastSavedConfigurationHash: "",
+    lastImportedSummary: "",
     preferences: null,
     rules: [],
     targets: [],
@@ -40,9 +43,22 @@
 
   const el = {
     root: null,
-    refreshAll: null,
+    dirtyIndicator: null,
     status: null,
     banner: null,
+    configReload: null,
+    configSave: null,
+    configExport: null,
+    configImport: null,
+    configImportFile: null,
+    configState: null,
+    configDetail: null,
+    configSchema: null,
+    configSource: null,
+    configSynced: null,
+    configImported: null,
+    configWorkingRules: null,
+    configWorkingPreferences: null,
     summaryRules: null,
     summaryEnabledRules: null,
     summaryTargets: null,
@@ -153,6 +169,36 @@
     } catch (_err) {
       return null;
     }
+  }
+
+  function coerceBoolean(value, fallback = false) {
+    if (typeof value === "boolean") return value;
+    if (typeof value === "string") {
+      const normalized = value.trim().toLowerCase();
+      if (["true", "1", "yes", "on"].includes(normalized)) return true;
+      if (["false", "0", "no", "off"].includes(normalized)) return false;
+    }
+    return fallback;
+  }
+
+  function stableSerialize(value) {
+    if (Array.isArray(value)) {
+      return `[${value.map((item) => stableSerialize(item)).join(",")}]`;
+    }
+    if (value && typeof value === "object") {
+      return `{${Object.keys(value)
+        .sort((a, b) => a.localeCompare(b))
+        .map((key) => `${JSON.stringify(key)}:${stableSerialize(value[key])}`)
+        .join(",")}}`;
+    }
+    return JSON.stringify(value);
+  }
+
+  function generateUuid() {
+    if (typeof window.crypto?.randomUUID === "function") {
+      return window.crypto.randomUUID();
+    }
+    return `alert-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
   }
 
   function normalizeScopeText(value, { pathLike = false, lower = false } = {}) {
@@ -379,6 +425,181 @@
     return payload?.preferences && typeof payload.preferences === "object" ? payload.preferences : null;
   }
 
+  function normalizePreferences(preferences) {
+    const payload = preferences && typeof preferences === "object" ? preferences : {};
+    const destinationDefaults = payload.destination_defaults && typeof payload.destination_defaults === "object"
+      ? payload.destination_defaults
+      : {};
+    const destinationKeys = new Set([
+      ...DEFAULT_DESTINATIONS,
+      ...Object.keys(destinationDefaults),
+      ...getDestinationKeys()
+    ]);
+    const normalizedDestinationDefaults = {};
+    Array.from(destinationKeys).filter(Boolean).forEach((key) => {
+      const current = destinationDefaults[key] && typeof destinationDefaults[key] === "object"
+        ? destinationDefaults[key]
+        : {};
+      normalizedDestinationDefaults[key] = {
+        enabled: coerceBoolean(current.enabled, true),
+        severity_minimum: SEVERITIES.includes(String(current.severity_minimum || "").trim().toLowerCase())
+          ? String(current.severity_minimum).trim().toLowerCase()
+          : "info"
+      };
+    });
+    return {
+      master_enabled: coerceBoolean(payload.master_enabled, true),
+      quiet_hours_enabled: coerceBoolean(payload.quiet_hours_enabled, false),
+      quiet_hours_start: String(payload.quiet_hours_start || "22:00").trim() || "22:00",
+      quiet_hours_end: String(payload.quiet_hours_end || "07:00").trim() || "07:00",
+      timezone: String(payload.timezone || "UTC").trim() || "UTC",
+      destination_defaults: normalizedDestinationDefaults
+    };
+  }
+
+  function normalizeRuleForEditor(rawRule, index = 0) {
+    if (!rawRule || typeof rawRule !== "object") {
+      throw new Error(`Imported rule ${index + 1} is not an object.`);
+    }
+    const base = cloneJson(rawRule) || {};
+    const eventType = String(base.event_type || "").trim();
+    if (!eventType) {
+      throw new Error(`Imported rule ${index + 1} is missing event_type.`);
+    }
+    const supportedEventTypes = new Set(state.eventTypes.map((item) => item?.key).filter(Boolean));
+    if (supportedEventTypes.size && !supportedEventTypes.has(eventType)) {
+      throw new Error(`Imported rule ${index + 1} uses unsupported event_type "${eventType}".`);
+    }
+    const thresholdType = ["count", "rate", "state", "custom"].includes(String(base.threshold_type || "").trim())
+      ? String(base.threshold_type).trim()
+      : "count";
+    const thresholdValue = thresholdType === "state"
+      ? coerceBoolean(base.threshold_value, true)
+      : thresholdType === "custom"
+        ? String(base.threshold_value || "").trim()
+        : Number(base.threshold_value ?? 1);
+    if (thresholdType === "custom" && !thresholdValue) {
+      throw new Error(`Imported rule ${index + 1} is missing a custom threshold value.`);
+    }
+    if (thresholdType !== "custom" && thresholdType !== "state" && (!Number.isFinite(thresholdValue) || thresholdValue < 0)) {
+      throw new Error(`Imported rule ${index + 1} has an invalid numeric threshold.`);
+    }
+    const normalizedScope = normalizeScopeValues(base.scope);
+    const destinations = Array.isArray(base.destinations)
+      ? Array.from(new Set(base.destinations.map((item) => String(item || "").trim()).filter(Boolean)))
+      : [];
+    return {
+      ...base,
+      id: String(base.id || "").trim() || generateUuid(),
+      event_type: eventType,
+      enabled: coerceBoolean(base.enabled, true),
+      name: String(base.name || base.label || labelize(eventType)).trim() || labelize(eventType),
+      description: String(base.description || "").trim() || null,
+      severity: SEVERITIES.includes(String(base.severity || "").trim().toLowerCase())
+        ? String(base.severity).trim().toLowerCase()
+        : (getEventMeta(eventType)?.default_severity || "info"),
+      threshold_type: thresholdType,
+      threshold_value: thresholdValue,
+      window_minutes: Math.max(1, Number.parseInt(String(base.window_minutes ?? 5), 10) || 5),
+      cooldown_minutes: Math.max(0, Number.parseInt(String(base.cooldown_minutes ?? 15), 10) || 15),
+      dedupe_window_minutes: Math.max(0, Number.parseInt(String(base.dedupe_window_minutes ?? 0), 10) || 0),
+      scope_mode: String(base.scope_mode || "all").trim() || "all",
+      scope: normalizedScope,
+      destinations: destinations.length ? destinations : ["windows_client"]
+    };
+  }
+
+  function buildConfigurationSnapshot() {
+    return {
+      schema_version: String(state.configuration?.schema_version || "alerts.v2").trim() || "alerts.v2",
+      source: String(state.configuration?.source || "auth_api").trim() || "auth_api",
+      preferences: normalizePreferences(state.preferences),
+      rules: state.rules.map((rule, index) => normalizeRuleForEditor(rule, index))
+    };
+  }
+
+  function getConfigurationHash() {
+    return stableSerialize(buildConfigurationSnapshot());
+  }
+
+  function hasUnsavedChanges() {
+    return !!state.lastSavedConfigurationHash && state.lastSavedConfigurationHash !== getConfigurationHash();
+  }
+
+  function updateDirtyStateUi() {
+    const dirty = hasUnsavedChanges();
+    if (el.dirtyIndicator) {
+      el.dirtyIndicator.textContent = dirty ? "Unsaved changes" : "Clean";
+      el.dirtyIndicator.classList.toggle("is-dirty", dirty);
+    }
+    if (el.configState) {
+      el.configState.textContent = dirty ? "Unsaved edits" : "Clean";
+    }
+    if (el.configDetail) {
+      el.configDetail.textContent = dirty
+        ? "Reloading will discard the current working copy until you save/apply it."
+        : "Working copy matches the backend-authored configuration.";
+    }
+    if (el.configWorkingRules) {
+      el.configWorkingRules.textContent = `${state.rules.length} rule${state.rules.length === 1 ? "" : "s"}`;
+    }
+    if (el.configWorkingPreferences) {
+      el.configWorkingPreferences.textContent = `Timezone ${state.preferences?.timezone || "UTC"}`;
+    }
+    if (el.configSave) {
+      el.configSave.disabled = !state.configuration || !dirty;
+    }
+  }
+
+  function setWorkingConfiguration(configuration, { syncCleanState = false, importedSummary = "" } = {}) {
+    const payload = configuration && typeof configuration === "object" ? configuration : {};
+    state.configuration = {
+      ...payload,
+      schema_version: String(payload.schema_version || "alerts.v2").trim() || "alerts.v2",
+      source: String(payload.source || "auth_api").trim() || "auth_api"
+    };
+    state.preferences = normalizePreferences(payload.preferences);
+    state.rules = Array.isArray(payload.rules)
+      ? payload.rules.map((rule, index) => normalizeRuleForEditor(rule, index))
+      : [];
+    if (syncCleanState) {
+      state.lastSavedConfigurationHash = getConfigurationHash();
+      state.lastImportedSummary = "";
+    } else if (importedSummary) {
+      state.lastImportedSummary = importedSummary;
+    }
+    updateDirtyStateUi();
+  }
+
+  function normalizeImportedConfigurationDocument(payload) {
+    if (!payload || typeof payload !== "object") {
+      throw new Error("Imported ruleset must be a JSON object.");
+    }
+    const configuration = payload.configuration && typeof payload.configuration === "object"
+      ? payload.configuration
+      : payload;
+    if (!configuration || typeof configuration !== "object") {
+      throw new Error("Imported ruleset does not contain a configuration object.");
+    }
+    if (!Array.isArray(configuration.rules)) {
+      throw new Error("Imported ruleset is missing a rules array.");
+    }
+    const normalized = {
+      schema_version: String(configuration.schema_version || payload.schema_version || state.configuration?.schema_version || "alerts.v2").trim() || "alerts.v2",
+      source: String(configuration.source || payload.source || "import").trim() || "import",
+      preferences: normalizePreferences(configuration.preferences),
+      rules: configuration.rules.map((rule, index) => normalizeRuleForEditor(rule, index))
+    };
+    const seenIds = new Set();
+    normalized.rules.forEach((rule) => {
+      if (seenIds.has(rule.id)) {
+        throw new Error(`Imported ruleset contains duplicate rule id "${rule.id}".`);
+      }
+      seenIds.add(rule.id);
+    });
+    return normalized;
+  }
+
   function renderSelectOptions(selectEl, items, getValue, getLabel, emptyLabel = "") {
     if (!(selectEl instanceof HTMLSelectElement)) return;
     const previous = selectEl.value;
@@ -417,6 +638,24 @@
     if (el.summaryGenerated) {
       el.summaryGenerated.textContent = formatTimestamp(settings?.generated_at || null);
     }
+  }
+
+  function renderPersistenceMeta() {
+    if (el.configSchema) {
+      el.configSchema.textContent = state.configuration?.schema_version || "--";
+    }
+    if (el.configSource) {
+      el.configSource.textContent = state.configuration?.source
+        ? `Source: ${state.configuration.source}`
+        : "Awaiting backend config";
+    }
+    if (el.configSynced) {
+      el.configSynced.textContent = formatTimestamp(state.configuration?.exported_at || state.settings?.generated_at || null);
+    }
+    if (el.configImported) {
+      el.configImported.textContent = state.lastImportedSummary || "No import staged";
+    }
+    updateDirtyStateUi();
   }
 
   function renderDestinationDefaults() {
@@ -843,6 +1082,7 @@
   }
 
   function renderAll() {
+    renderPersistenceMeta();
     renderSummary();
     renderPreferencesForm();
     renderEventTypeSelects();
@@ -855,6 +1095,7 @@
       populateRuleForm(null);
       el.ruleForm.dataset.initialized = "true";
     }
+    updateDirtyStateUi();
   }
 
   async function runWithLoader(task, reason, withLoader) {
@@ -864,13 +1105,35 @@
     return task();
   }
 
+  async function refreshOperationalPanels(options = {}) {
+    const [settingsPayload, targetsPayload, historyPayload] = await Promise.all([
+      window.StreamSuitesApi.getAdminAlertSettings({
+        forceRefresh: options.forceRefresh === true
+      }),
+      window.StreamSuitesApi.getAdminAlertTargets({
+        forceRefresh: options.forceRefresh === true
+      }),
+      window.StreamSuitesApi.getAdminAlertHistory(
+        { limit: HISTORY_LIMIT },
+        { forceRefresh: options.forceRefresh === true }
+      )
+    ]);
+    state.settings = extractSettings(settingsPayload);
+    state.targets = extractItems(targetsPayload);
+    state.history = extractItems(historyPayload);
+    renderSummary();
+    renderTargetsList();
+    renderHistoryList();
+    renderPersistenceMeta();
+  }
+
   async function loadAlerting(options = {}) {
     const token = ++state.loadToken;
     const task = async () => {
       clearBanner();
       setStatus("Loading alerting...");
       try {
-        const [settingsPayload, eventTypesPayload, preferencesPayload, rulesPayload, targetsPayload, historyPayload] =
+        const [settingsPayload, eventTypesPayload, configurationPayload, targetsPayload, historyPayload] =
           await Promise.all([
             window.StreamSuitesApi.getAdminAlertSettings({
               forceRefresh: options.forceRefresh === true
@@ -878,10 +1141,7 @@
             window.StreamSuitesApi.getAdminAlertEventTypes({
               forceRefresh: options.forceRefresh === true
             }),
-            window.StreamSuitesApi.getAdminAlertPreferences({
-              forceRefresh: options.forceRefresh === true
-            }),
-            window.StreamSuitesApi.getAdminAlertRules({
+            window.StreamSuitesApi.getAdminAlertConfiguration({
               forceRefresh: options.forceRefresh === true
             }),
             window.StreamSuitesApi.getAdminAlertTargets({
@@ -897,8 +1157,13 @@
 
         state.settings = extractSettings(settingsPayload);
         state.eventTypes = extractItems(eventTypesPayload);
-        state.preferences = extractPreferences(preferencesPayload) || state.settings.preferences || {};
-        state.rules = extractItems(rulesPayload);
+        const configuration = configurationPayload?.configuration && typeof configurationPayload.configuration === "object"
+          ? configurationPayload.configuration
+          : configurationPayload;
+        setWorkingConfiguration({
+          ...(configuration && typeof configuration === "object" ? configuration : {}),
+          exported_at: configurationPayload?.generated_at || configuration?.exported_at || state.settings?.generated_at || null
+        }, { syncCleanState: true });
         state.targets = extractItems(targetsPayload);
         state.history = extractItems(historyPayload);
         renderAll();
@@ -962,6 +1227,9 @@
   }
 
   function collectRulePayload() {
+    const existingRule = state.activeRuleId
+      ? state.rules.find((item) => item.id === state.activeRuleId) || null
+      : null;
     const eventType = String(el.ruleEventType?.value || "").trim();
     const name = String(el.ruleName?.value || "").trim();
     const thresholdType = String(el.ruleThresholdType?.value || "count").trim();
@@ -1002,6 +1270,8 @@
     }
 
     return {
+      ...(cloneJson(existingRule) || {}),
+      id: existingRule?.id || generateUuid(),
       event_type: eventType,
       enabled: el.ruleEnabled?.value !== "false",
       name,
@@ -1021,53 +1291,42 @@
   async function handlePreferencesSubmit(event) {
     event.preventDefault();
     clearBanner();
-    setStatus("Saving preferences...");
-    el.preferencesSave.disabled = true;
-    try {
-      const payload = readPreferencesPayload();
-      const response = await window.StreamSuitesApi.updateAdminAlertPreferences(payload);
-      state.preferences = extractPreferences(response) || payload;
-      renderPreferencesForm();
-      renderSummary();
-      setStatus("Preferences saved");
-      await loadAlerting({ forceRefresh: true, withLoader: false });
-    } catch (err) {
-      setStatus("Preferences save failed");
-      setBanner(err?.message || "Unable to save alert preferences.");
-    } finally {
-      el.preferencesSave.disabled = false;
-    }
+    state.preferences = normalizePreferences(readPreferencesPayload());
+    renderPreferencesForm();
+    renderSummary();
+    renderPersistenceMeta();
+    setStatus("Preferences updated in working copy");
+    setBanner("Preference edits are staged locally. Use Save / Apply to persist them to the backend.", "success");
+  }
+
+  function handlePreferencesDraftChange() {
+    state.preferences = normalizePreferences(readPreferencesPayload());
+    renderSummary();
+    renderPersistenceMeta();
+    setStatus(hasUnsavedChanges() ? "Preference edits pending" : "Alerting synced");
   }
 
   async function handleRuleSubmit(event) {
     event.preventDefault();
     clearBanner();
-    setStatus(state.activeRuleId ? "Saving rule..." : "Creating rule...");
-    el.ruleSave.disabled = true;
     try {
       const payload = collectRulePayload();
-      const response = state.activeRuleId
-        ? await window.StreamSuitesApi.updateAdminAlertRule(state.activeRuleId, payload)
-        : await window.StreamSuitesApi.createAdminAlertRule(payload);
-      const savedRule = response?.rule && typeof response.rule === "object" ? response.rule : null;
-      if (savedRule) {
-        const index = state.rules.findIndex((item) => item.id === savedRule.id);
-        if (index >= 0) {
-          state.rules.splice(index, 1, savedRule);
-        } else {
-          state.rules.unshift(savedRule);
-        }
+      const index = state.rules.findIndex((item) => item.id === payload.id);
+      if (index >= 0) {
+        state.rules.splice(index, 1, payload);
+      } else {
+        state.rules.unshift(payload);
       }
       populateRuleForm(null);
       renderRulesList();
       renderTestRuleOptions();
-      setStatus("Rule saved");
-      await loadAlerting({ forceRefresh: true, withLoader: false });
+      renderSummary();
+      renderPersistenceMeta();
+      setStatus(index >= 0 ? "Rule updated in working copy" : "Rule added to working copy");
+      setBanner("Rule edits are staged locally. Use Save / Apply to persist them to the backend.", "success");
     } catch (err) {
-      setStatus("Rule save failed");
-      setBanner(err?.message || "Unable to save alert rule.");
-    } finally {
-      el.ruleSave.disabled = false;
+      setStatus("Rule draft failed");
+      setBanner(err?.message || "Unable to stage alert rule changes.");
     }
   }
 
@@ -1098,7 +1357,7 @@
       const result = response?.result && typeof response.result === "object" ? response.result : {};
       const matchedRules = Number(result.matched_rules) || 0;
       setStatus(`Test alert sent (${matchedRules} rule match${matchedRules === 1 ? "" : "es"})`);
-      await loadAlerting({ forceRefresh: true, withLoader: false });
+      await refreshOperationalPanels({ forceRefresh: true });
     } catch (err) {
       setStatus("Test alert failed");
       setBanner(err?.message || "Unable to trigger test alert.");
@@ -1107,7 +1366,7 @@
     }
   }
 
-  async function handleRulesListClick(event) {
+  function handleRulesListClick(event) {
     const button = event.target.closest("[data-rule-action][data-rule-id]");
     if (!(button instanceof HTMLButtonElement)) return;
     const ruleId = String(button.getAttribute("data-rule-id") || "").trim();
@@ -1116,36 +1375,40 @@
     if (!rule) return;
 
     clearBanner();
-    button.disabled = true;
     try {
       if (action === "edit") {
         populateRuleForm(rule);
         el.ruleName?.focus();
-        setStatus("Editing rule");
+        setStatus("Editing working-copy rule");
         return;
       }
       if (action === "toggle") {
-        await window.StreamSuitesApi.setAdminAlertRuleEnabled(ruleId, !rule.enabled);
-        setStatus("Rule updated");
-        await loadAlerting({ forceRefresh: true, withLoader: false });
+        rule.enabled = !rule.enabled;
+        renderRulesList();
+        renderSummary();
+        renderPersistenceMeta();
+        setStatus("Rule enabled state updated in working copy");
+        setBanner("Rule toggle is staged locally. Use Save / Apply to persist it to the backend.", "success");
         return;
       }
       if (action === "delete") {
         if (!window.confirm(`Delete alert rule "${rule.name || rule.event_type}"?`)) {
           return;
         }
-        await window.StreamSuitesApi.deleteAdminAlertRule(ruleId);
+        state.rules = state.rules.filter((item) => item.id !== ruleId);
         if (state.activeRuleId === ruleId) {
           populateRuleForm(null);
         }
-        setStatus("Rule deleted");
-        await loadAlerting({ forceRefresh: true, withLoader: false });
+        renderRulesList();
+        renderTestRuleOptions();
+        renderSummary();
+        renderPersistenceMeta();
+        setStatus("Rule removed from working copy");
+        setBanner("Rule removal is staged locally. Use Save / Apply to persist it to the backend.", "success");
       }
     } catch (err) {
       setStatus("Rule action failed");
-      setBanner(err?.message || "Unable to update alert rule.");
-    } finally {
-      button.disabled = false;
+      setBanner(err?.message || "Unable to update working-copy rule.");
     }
   }
 
@@ -1169,7 +1432,7 @@
         metadata: target.metadata || {}
       });
       setStatus("Target updated");
-      await loadAlerting({ forceRefresh: true, withLoader: false });
+      await refreshOperationalPanels({ forceRefresh: true });
     } catch (err) {
       setStatus("Target update failed");
       setBanner(err?.message || "Unable to update alert target.");
@@ -1211,7 +1474,18 @@
     updateScopeVisibility();
   }
 
+  function confirmDiscardUnsavedChanges(actionLabel) {
+    if (!hasUnsavedChanges()) return true;
+    return window.confirm(
+      `${actionLabel} will discard the current unsaved alert working copy. Continue?`
+    );
+  }
+
   function handleRefreshAll() {
+    if (!confirmDiscardUnsavedChanges("Reloading from backend")) {
+      setStatus("Reload cancelled");
+      return;
+    }
     void loadAlerting({ forceRefresh: true, withLoader: false });
   }
 
@@ -1226,9 +1500,113 @@
     setStatus("Rule edit cancelled");
   }
 
+  async function handleConfigurationSave() {
+    if (!hasUnsavedChanges()) {
+      setStatus("No alert config changes to save");
+      return;
+    }
+    clearBanner();
+    setStatus("Saving alert configuration...");
+    if (el.configSave) el.configSave.disabled = true;
+    try {
+      const response = await window.StreamSuitesApi.updateAdminAlertConfiguration(buildConfigurationSnapshot());
+      const configuration = response?.configuration && typeof response.configuration === "object"
+        ? response.configuration
+        : response;
+      setWorkingConfiguration({
+        ...(configuration && typeof configuration === "object" ? configuration : {}),
+        exported_at: response?.generated_at || configuration?.exported_at || new Date().toISOString()
+      }, { syncCleanState: true });
+      renderAll();
+      setStatus("Alert configuration saved");
+      setBanner("Alert ruleset saved to the backend successfully.", "success");
+      await loadAlerting({ forceRefresh: true, withLoader: false });
+    } catch (err) {
+      setStatus("Alert configuration save failed");
+      setBanner(err?.message || "Unable to save the alert ruleset to the backend.");
+    } finally {
+      updateDirtyStateUi();
+    }
+  }
+
+  function triggerConfigExport() {
+    clearBanner();
+    try {
+      const payload = {
+        ...buildConfigurationSnapshot(),
+        exported_at: new Date().toISOString(),
+        source: "dashboard_admin"
+      };
+      const blob = new Blob([`${JSON.stringify(payload, null, 2)}\n`], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `streamsuites-alert-config-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setStatus("Alert configuration exported");
+      setBanner("Alert ruleset JSON exported successfully.", "success");
+    } catch (err) {
+      setStatus("Alert configuration export failed");
+      setBanner(err?.message || "Unable to export the alert ruleset JSON.");
+    }
+  }
+
+  function handleConfigImportClick() {
+    el.configImportFile?.click();
+  }
+
+  async function handleConfigImportFileChange(event) {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement) || !input.files?.length) return;
+    const file = input.files[0];
+    clearBanner();
+    try {
+      if (!confirmDiscardUnsavedChanges("Importing a ruleset")) {
+        input.value = "";
+        setStatus("Import cancelled");
+        return;
+      }
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const configuration = normalizeImportedConfigurationDocument(parsed);
+      const summary = `${file.name}: ${configuration.rules.length} rule${configuration.rules.length === 1 ? "" : "s"}, timezone ${configuration.preferences.timezone || "UTC"}`;
+      if (!window.confirm(`Stage imported ruleset?\n\n${summary}\n\nUse Save / Apply to persist it to the backend.`)) {
+        input.value = "";
+        setStatus("Import cancelled");
+        return;
+      }
+      setWorkingConfiguration({
+        ...configuration,
+        exported_at: state.configuration?.exported_at || state.settings?.generated_at || null
+      }, { importedSummary: summary });
+      renderAll();
+      setStatus("Alert ruleset imported into working copy");
+      setBanner("Imported alert ruleset staged locally. Review it, then use Save / Apply to persist it.", "success");
+    } catch (err) {
+      setStatus("Alert ruleset import failed");
+      setBanner(err?.message || "Unable to import the alert ruleset JSON.");
+    } finally {
+      input.value = "";
+    }
+  }
+
+  function handleBeforeUnload(event) {
+    if (!hasUnsavedChanges()) return;
+    event.preventDefault();
+    event.returnValue = "";
+  }
+
   function bindEvents() {
-    el.refreshAll?.addEventListener("click", handleRefreshAll);
+    el.configReload?.addEventListener("click", handleRefreshAll);
+    el.configSave?.addEventListener("click", handleConfigurationSave);
+    el.configExport?.addEventListener("click", triggerConfigExport);
+    el.configImport?.addEventListener("click", handleConfigImportClick);
+    el.configImportFile?.addEventListener("change", handleConfigImportFileChange);
     el.preferencesForm?.addEventListener("submit", handlePreferencesSubmit);
+    el.preferencesForm?.addEventListener("change", handlePreferencesDraftChange);
     el.testForm?.addEventListener("submit", handleTestSubmit);
     el.rulesRefresh?.addEventListener("click", handleRefreshAll);
     el.rulesCreate?.addEventListener("click", handleNewRuleClick);
@@ -1241,11 +1619,17 @@
     el.targetsList?.addEventListener("click", handleTargetsListClick);
     el.targetsRefresh?.addEventListener("click", handleRefreshAll);
     el.historyRefresh?.addEventListener("click", handleRefreshAll);
+    window.addEventListener("beforeunload", handleBeforeUnload);
   }
 
   function unbindEvents() {
-    el.refreshAll?.removeEventListener("click", handleRefreshAll);
+    el.configReload?.removeEventListener("click", handleRefreshAll);
+    el.configSave?.removeEventListener("click", handleConfigurationSave);
+    el.configExport?.removeEventListener("click", triggerConfigExport);
+    el.configImport?.removeEventListener("click", handleConfigImportClick);
+    el.configImportFile?.removeEventListener("change", handleConfigImportFileChange);
     el.preferencesForm?.removeEventListener("submit", handlePreferencesSubmit);
+    el.preferencesForm?.removeEventListener("change", handlePreferencesDraftChange);
     el.testForm?.removeEventListener("submit", handleTestSubmit);
     el.rulesRefresh?.removeEventListener("click", handleRefreshAll);
     el.rulesCreate?.removeEventListener("click", handleNewRuleClick);
@@ -1258,13 +1642,27 @@
     el.targetsList?.removeEventListener("click", handleTargetsListClick);
     el.targetsRefresh?.removeEventListener("click", handleRefreshAll);
     el.historyRefresh?.removeEventListener("click", handleRefreshAll);
+    window.removeEventListener("beforeunload", handleBeforeUnload);
   }
 
   function bindElements() {
     el.root = document.getElementById("analytics-alerting-title")?.closest(".ss-analytics-alerts-panel") || null;
-    el.refreshAll = $("analytics-alerts-refresh");
+    el.dirtyIndicator = $("analytics-alerts-dirty-indicator");
     el.status = $("analytics-alerts-status");
     el.banner = $("analytics-alerts-banner");
+    el.configReload = $("analytics-alerts-config-reload");
+    el.configSave = $("analytics-alerts-config-save");
+    el.configExport = $("analytics-alerts-config-export");
+    el.configImport = $("analytics-alerts-config-import");
+    el.configImportFile = $("analytics-alerts-config-import-file");
+    el.configState = $("analytics-alerts-config-state");
+    el.configDetail = $("analytics-alerts-config-detail");
+    el.configSchema = $("analytics-alerts-config-schema");
+    el.configSource = $("analytics-alerts-config-source");
+    el.configSynced = $("analytics-alerts-config-synced");
+    el.configImported = $("analytics-alerts-config-imported");
+    el.configWorkingRules = $("analytics-alerts-config-working-rules");
+    el.configWorkingPreferences = $("analytics-alerts-config-working-preferences");
     el.summaryRules = $("analytics-alerts-summary-rules");
     el.summaryEnabledRules = $("analytics-alerts-summary-enabled-rules");
     el.summaryTargets = $("analytics-alerts-summary-targets");

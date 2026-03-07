@@ -243,6 +243,20 @@
     });
   }
 
+  async function getAdminAlertConfiguration(options = {}) {
+    return apiFetch("/api/admin/alerts/configuration", {
+      cacheTtlMs: options.ttlMs ?? 5000,
+      cacheKey: "admin-alert-configuration",
+      forceRefresh: options.forceRefresh === true,
+      timeoutMs: options.timeoutMs,
+      signal: options.signal
+    });
+  }
+
+  async function updateAdminAlertConfiguration(configuration, options = {}) {
+    return jsonRequest("PUT", "/api/admin/alerts/configuration", configuration, options);
+  }
+
   async function getAdminAlertPreferences(options = {}) {
     return apiFetch("/api/admin/alerts/preferences", {
       cacheTtlMs: options.ttlMs ?? 5000,
@@ -332,6 +346,8 @@
     getAdminDonations,
     getAdminAlertEventTypes,
     getAdminAlertSettings,
+    getAdminAlertConfiguration,
+    updateAdminAlertConfiguration,
     getAdminAlertPreferences,
     updateAdminAlertPreferences,
     getAdminAlertRules,

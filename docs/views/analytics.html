@@ -201,12 +201,55 @@
         <p class="muted">Backend-driven notification preferences, rules, targets, and recent delivery activity.</p>
       </div>
       <div class="ss-analytics-alerts-header-actions">
-        <button type="button" id="analytics-alerts-refresh" class="ss-btn ss-btn-secondary ss-btn-small">Refresh all</button>
+        <span id="analytics-alerts-dirty-indicator" class="ss-chip ss-analytics-alerts-dirty-indicator">Clean</span>
         <span id="analytics-alerts-status" class="muted">Loading alerting...</span>
       </div>
     </header>
     <div class="ss-panel-body ss-analytics-alerts-body">
       <div id="analytics-alerts-banner" class="ss-alert ss-alert-danger hidden" role="status" aria-live="polite"></div>
+
+      <section class="ss-panel ss-analytics-alerts-subpanel ss-analytics-alerts-persistence-panel" aria-labelledby="analytics-alerts-persistence-title">
+        <header class="ss-panel-header">
+          <div class="ss-panel-header-main">
+            <h3 id="analytics-alerts-persistence-title">Ruleset persistence</h3>
+            <p class="muted">Work on a dashboard editing copy, then explicitly reload, apply, export, or import the backend-authored alert configuration.</p>
+          </div>
+          <div class="ss-analytics-alerts-header-actions">
+            <button type="button" id="analytics-alerts-config-reload" class="ss-btn ss-btn-secondary ss-btn-small">Reload from backend</button>
+            <button type="button" id="analytics-alerts-config-export" class="ss-btn ss-btn-secondary ss-btn-small">Export JSON</button>
+            <button type="button" id="analytics-alerts-config-import" class="ss-btn ss-btn-secondary ss-btn-small">Import JSON</button>
+            <button type="button" id="analytics-alerts-config-save" class="ss-btn ss-btn-primary ss-btn-small">Save / Apply</button>
+            <input type="file" id="analytics-alerts-config-import-file" accept="application/json,.json" class="hidden" />
+          </div>
+        </header>
+        <div class="ss-panel-body ss-analytics-alerts-persistence-body">
+          <div class="ss-analytics-alerts-summary" aria-live="polite">
+            <article class="ss-analytics-alerts-summary-card">
+              <span class="label">Config state</span>
+              <strong id="analytics-alerts-config-state">Clean</strong>
+              <span id="analytics-alerts-config-detail" class="muted">No unsaved changes</span>
+            </article>
+            <article class="ss-analytics-alerts-summary-card">
+              <span class="label">Schema version</span>
+              <strong id="analytics-alerts-config-schema">--</strong>
+              <span id="analytics-alerts-config-source" class="muted">Awaiting backend config</span>
+            </article>
+            <article class="ss-analytics-alerts-summary-card">
+              <span class="label">Last sync</span>
+              <strong id="analytics-alerts-config-synced">--</strong>
+              <span id="analytics-alerts-config-imported" class="muted">No import staged</span>
+            </article>
+            <article class="ss-analytics-alerts-summary-card">
+              <span class="label">Working copy</span>
+              <strong id="analytics-alerts-config-working-rules">0 rules</strong>
+              <span id="analytics-alerts-config-working-preferences" class="muted">Timezone --</span>
+            </article>
+          </div>
+          <p id="analytics-alerts-persistence-note" class="ss-analytics-alerts-persistence-note muted">
+            Runtime delivery history remains read-only and separate from ruleset import/export.
+          </p>
+        </div>
+      </section>
 
       <div class="ss-analytics-alerts-summary" aria-live="polite">
         <article class="ss-analytics-alerts-summary-card">
@@ -273,68 +316,7 @@
               </fieldset>
 
               <div class="ss-analytics-alerts-form-actions">
-                <button type="submit" id="analytics-alerts-preferences-save" class="ss-btn ss-btn-primary">Save preferences</button>
-              </div>
-            </form>
-          </div>
-        </section>
-
-        <section class="ss-panel ss-analytics-alerts-subpanel" aria-labelledby="analytics-alerts-test-title">
-          <header class="ss-panel-header">
-            <div class="ss-panel-header-main">
-              <h3 id="analytics-alerts-test-title">Send test alert</h3>
-              <p class="muted">Trigger an admin-only test alert through the backend endpoint.</p>
-            </div>
-          </header>
-          <div class="ss-panel-body">
-            <form id="analytics-alerts-test-form" class="ss-analytics-alerts-form">
-              <div class="ss-analytics-alerts-form-grid">
-                <label class="ss-form-row">
-                  <span>Event type</span>
-                  <select id="analytics-alerts-test-event-type"></select>
-                </label>
-                <label class="ss-form-row">
-                  <span>Severity override</span>
-                  <select id="analytics-alerts-test-severity">
-                    <option value="">Default</option>
-                    <option value="info">Info</option>
-                    <option value="warning">Warning</option>
-                    <option value="error">Error</option>
-                    <option value="critical">Critical</option>
-                  </select>
-                </label>
-                <label class="ss-form-row">
-                  <span>Metric value</span>
-                  <input type="number" id="analytics-alerts-test-metric-value" min="0" step="1" value="9999" />
-                </label>
-                <label class="ss-form-row">
-                  <span>Rule</span>
-                  <select id="analytics-alerts-test-rule">
-                    <option value="">Use matching rules</option>
-                  </select>
-                </label>
-                <label class="ss-form-row ss-analytics-alerts-form-grid-wide">
-                  <span>Title</span>
-                  <input type="text" id="analytics-alerts-test-title-input" placeholder="Optional test title" autocomplete="off" />
-                </label>
-                <label class="ss-form-row ss-analytics-alerts-form-grid-wide">
-                  <span>Message</span>
-                  <input type="text" id="analytics-alerts-test-message" placeholder="Optional message" autocomplete="off" />
-                </label>
-              </div>
-
-              <fieldset class="ss-fieldset">
-                <legend>Destinations</legend>
-                <div id="analytics-alerts-test-destinations" class="ss-analytics-alerts-destination-defaults"></div>
-              </fieldset>
-
-              <label class="ss-analytics-alerts-inline-toggle">
-                <input type="checkbox" id="analytics-alerts-test-force" />
-                <span>Bypass quiet hours and suppression checks</span>
-              </label>
-
-              <div class="ss-analytics-alerts-form-actions">
-                <button type="submit" id="analytics-alerts-test-submit" class="ss-btn ss-btn-primary">Send Test Alert</button>
+                <button type="submit" id="analytics-alerts-preferences-save" class="ss-btn ss-btn-secondary">Update working copy</button>
               </div>
             </form>
           </div>
@@ -358,7 +340,7 @@
               <h4 id="analytics-alerts-rule-form-title">Create rule</h4>
               <div class="ss-analytics-alerts-form-actions">
                 <button type="button" id="analytics-alerts-rule-cancel" class="ss-btn ss-btn-secondary ss-btn-small hidden">Cancel edit</button>
-                <button type="submit" id="analytics-alerts-rule-save" class="ss-btn ss-btn-primary">Save rule</button>
+                <button type="submit" id="analytics-alerts-rule-save" class="ss-btn ss-btn-primary">Update working copy</button>
               </div>
             </div>
 
@@ -496,6 +478,67 @@
           <div class="ss-panel-body">
             <div id="analytics-alerts-history-list" class="ss-analytics-alerts-history-list" aria-live="polite"></div>
             <div id="analytics-alerts-history-empty" class="ss-empty-state hidden">No recent alert deliveries yet.</div>
+          </div>
+        </section>
+
+        <section class="ss-panel ss-analytics-alerts-subpanel" aria-labelledby="analytics-alerts-test-title">
+          <header class="ss-panel-header">
+            <div class="ss-panel-header-main">
+              <h3 id="analytics-alerts-test-title">Send test alert</h3>
+              <p class="muted">Trigger an admin-only test alert through the backend endpoint.</p>
+            </div>
+          </header>
+          <div class="ss-panel-body">
+            <form id="analytics-alerts-test-form" class="ss-analytics-alerts-form">
+              <div class="ss-analytics-alerts-form-grid">
+                <label class="ss-form-row">
+                  <span>Event type</span>
+                  <select id="analytics-alerts-test-event-type"></select>
+                </label>
+                <label class="ss-form-row">
+                  <span>Severity override</span>
+                  <select id="analytics-alerts-test-severity">
+                    <option value="">Default</option>
+                    <option value="info">Info</option>
+                    <option value="warning">Warning</option>
+                    <option value="error">Error</option>
+                    <option value="critical">Critical</option>
+                  </select>
+                </label>
+                <label class="ss-form-row">
+                  <span>Metric value</span>
+                  <input type="number" id="analytics-alerts-test-metric-value" min="0" step="1" value="9999" />
+                </label>
+                <label class="ss-form-row">
+                  <span>Rule</span>
+                  <select id="analytics-alerts-test-rule">
+                    <option value="">Use matching rules</option>
+                  </select>
+                </label>
+                <label class="ss-form-row ss-analytics-alerts-form-grid-wide">
+                  <span>Title</span>
+                  <input type="text" id="analytics-alerts-test-title-input" placeholder="Optional test title" autocomplete="off" />
+                </label>
+                <label class="ss-form-row ss-analytics-alerts-form-grid-wide">
+                  <span>Message</span>
+                  <input type="text" id="analytics-alerts-test-message" placeholder="Optional message" autocomplete="off" />
+                </label>
+              </div>
+
+              <fieldset class="ss-fieldset">
+                <legend>Destinations</legend>
+                <div id="analytics-alerts-test-destinations" class="ss-analytics-alerts-destination-defaults"></div>
+              </fieldset>
+
+              <label class="ss-analytics-alerts-inline-toggle">
+                <input type="checkbox" id="analytics-alerts-test-force" />
+                <span>Bypass quiet hours and suppression checks</span>
+              </label>
+
+              <div class="ss-analytics-alerts-form-actions">
+                <button type="submit" id="analytics-alerts-test-submit" class="ss-btn ss-btn-primary">Send Test Alert</button>
+              </div>
+            </form>
           </div>
         </section>
       </div>
