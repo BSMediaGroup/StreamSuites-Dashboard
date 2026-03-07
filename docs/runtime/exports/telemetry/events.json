@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-03-01T11:43:52.896383Z",
+  "generated_at": "2026-03-07T16:15:44.673206Z",
   "events": [
     {
       "timestamp": "2026-01-22T05:45:05Z",
@@ -828,7 +828,40 @@
       "result": "sent"
     },
     {
-      "timestamp": "2026-03-01T11:43:32.528979Z",
+      "timestamp": "2026-03-07T04:29:00Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
+      "event_type": "session_issued",
+      "email_type": "github",
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-03-07T04:48:58Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=google user=user_code:7lPBEiA result=success",
+      "event_type": "session_issued",
+      "email_type": "google",
+      "user_identifier": "user_code:7lPBEiA",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-03-07T13:07:59Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
+      "event_type": "session_issued",
+      "email_type": "github",
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-03-07T16:14:49.898500Z",
       "source": "system",
       "severity": "info",
       "message": "Runtime boot sequence started"
