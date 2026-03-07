@@ -4,6 +4,26 @@
   const DEFAULT_DESTINATIONS = ["windows_client", "pushover"];
   const HISTORY_LIMIT = 12;
   const SEVERITIES = ["info", "warning", "error", "critical"];
+  const SCOPE_FIELD_ORDER = [
+    "page_path",
+    "page_key",
+    "route",
+    "auth_provider",
+    "user_type",
+    "admin_only",
+    "surface",
+    "destination_type"
+  ];
+  const SCOPE_FIELD_CONFIG = {
+    page_path: { label: "Page path", kind: "text", placeholder: "/about.html" },
+    page_key: { label: "Page key", kind: "text", placeholder: "about" },
+    route: { label: "Route", kind: "text", placeholder: "/auth/login" },
+    auth_provider: { label: "Auth provider", kind: "select" },
+    user_type: { label: "User type", kind: "select" },
+    admin_only: { label: "Admin only", kind: "checkbox" },
+    surface: { label: "Surface", kind: "select" },
+    destination_type: { label: "Destination type", kind: "select" }
+  };
 
   const state = {
     destroyed: false,
@@ -14,7 +34,8 @@
     history: [],
     settings: null,
     activeRuleId: null,
-    loadToken: 0
+    loadToken: 0,
+    ruleScopePassthrough: {}
   };
 
   const el = {
@@ -68,6 +89,14 @@
     ruleThresholdCustom: null,
     ruleWindowMinutes: null,
     ruleCooldownMinutes: null,
+    ruleDedupeWindowMinutes: null,
+    ruleScopeEnabled: null,
+    ruleScopeBody: null,
+    ruleScopeHelper: null,
+    ruleScopeWarning: null,
+    ruleScopeRecommended: null,
+    ruleScopeAdvancedDetails: null,
+    ruleScopeAdvanced: null,
     ruleDestinations: null,
     rulesList: null,
     rulesEmpty: null,
@@ -116,6 +145,166 @@
       .replace(/_/g, " ")
       .replace(/\b\w/g, (char) => char.toUpperCase())
       .trim();
+  }
+
+  function cloneJson(value) {
+    try {
+      return JSON.parse(JSON.stringify(value));
+    } catch (_err) {
+      return null;
+    }
+  }
+
+  function normalizeScopeText(value, { pathLike = false, lower = false } = {}) {
+    let text = String(value || "").trim();
+    if (!text) return "";
+    if (pathLike && !text.startsWith("/")) {
+      text = `/${text.replace(/^\/+/, "")}`;
+    }
+    return lower ? text.toLowerCase() : text;
+  }
+
+  function normalizeScopeValues(rawScope) {
+    const input = rawScope && typeof rawScope === "object" ? rawScope : {};
+    const normalized = {};
+    SCOPE_FIELD_ORDER.forEach((field) => {
+      const value = input[field];
+      if (field === "admin_only") {
+        if (value === true) normalized[field] = true;
+        return;
+      }
+      if (field === "page_path" || field === "route") {
+        const text = normalizeScopeText(value, { pathLike: true });
+        if (text) normalized[field] = text;
+        return;
+      }
+      if (field === "page_key") {
+        const text = normalizeScopeText(value);
+        if (text) normalized[field] = text;
+        return;
+      }
+      const text = normalizeScopeText(value, { lower: true });
+      if (text) normalized[field] = text;
+    });
+    return normalized;
+  }
+
+  function hasScopeValues(scope) {
+    return !!(scope && typeof scope === "object" && Object.keys(scope).length);
+  }
+
+  function formatScopeSummary(scope) {
+    const normalized = normalizeScopeValues(scope);
+    if (!hasScopeValues(normalized)) {
+      return "All matching events";
+    }
+    const parts = [];
+    if (normalized.page_path) parts.push(normalized.page_path);
+    if (normalized.page_key) parts.push(`page_key=${normalized.page_key}`);
+    if (normalized.route) parts.push(`route=${normalized.route}`);
+    if (normalized.auth_provider) parts.push(`provider=${normalized.auth_provider}`);
+    if (normalized.user_type) parts.push(`user_type=${normalized.user_type}`);
+    if (normalized.admin_only) parts.push("admin_only");
+    if (normalized.surface) parts.push(`surface=${normalized.surface}`);
+    if (normalized.destination_type) parts.push(`destination=${normalized.destination_type}`);
+    return parts.join(" + ");
+  }
+
+  function collectObservedScopeValues(field) {
+    const values = new Set();
+    state.rules.forEach((rule) => {
+      const scope = rule?.scope;
+      if (scope && typeof scope === "object" && scope[field] !== undefined && scope[field] !== null && scope[field] !== "") {
+        values.add(String(scope[field]).trim());
+      }
+    });
+    state.history.forEach((entry) => {
+      const metadata = entry?.metadata;
+      const scope = metadata?.effective_scope || metadata?.rule_scope;
+      if (scope && typeof scope === "object" && scope[field] !== undefined && scope[field] !== null && scope[field] !== "") {
+        values.add(String(scope[field]).trim());
+      }
+    });
+    return Array.from(values).filter(Boolean);
+  }
+
+  function getScopeSelectOptions(field, currentValue) {
+    const options = new Set();
+    if (field === "auth_provider") {
+      ["google", "github", "discord", "twitch", "x", "email", "magic_link"].forEach((item) => options.add(item));
+    } else if (field === "user_type") {
+      ["creator", "viewer", "admin"].forEach((item) => options.add(item));
+    } else if (field === "surface") {
+      ["public", "admin", "auth-controls", "self_service"].forEach((item) => options.add(item));
+    } else if (field === "destination_type") {
+      getDestinationKeys().forEach((item) => options.add(item));
+    }
+    collectObservedScopeValues(field).forEach((item) => options.add(String(item).toLowerCase()));
+    if (currentValue) options.add(String(currentValue).trim().toLowerCase());
+    return Array.from(options).filter(Boolean).sort((a, b) => a.localeCompare(b));
+  }
+
+  function getSupportedScopeKeys() {
+    const supported = new Set();
+    state.eventTypes.forEach((eventType) => {
+      (Array.isArray(eventType?.supported_scope_keys) ? eventType.supported_scope_keys : []).forEach((key) => {
+        if (SCOPE_FIELD_ORDER.includes(key)) supported.add(key);
+      });
+    });
+    return supported.size ? Array.from(supported) : Array.from(SCOPE_FIELD_ORDER);
+  }
+
+  function getScopeProfile(eventType) {
+    const key = String(eventType || "").trim().toLowerCase();
+    let recommended = ["surface"];
+    let helper = "Keep filters broad unless you need a page, provider, user-type, or admin-only slice.";
+    let defaults = {};
+    let autoEnable = false;
+
+    if (key === "public_page_visit" || key === "public_page_visit_spike") {
+      recommended = ["page_path", "page_key", "route", "surface"];
+      helper = "Page visit alerts usually scope to a route or specific public page to avoid broad traffic noise.";
+    } else if (
+      [
+        "login_success",
+        "login_failure",
+        "magic_link_requested",
+        "magic_link_completed",
+        "oauth_linked",
+        "oauth_unlinked",
+        "auth_failure_spike"
+      ].includes(key)
+    ) {
+      recommended = ["auth_provider", "route", "surface"];
+      helper = "Auth alerts are usually narrowed by provider, login route, or surface.";
+    } else if (key === "creator_signup") {
+      recommended = ["user_type", "surface"];
+      helper = "Creator signup alerts can stay explicit with `user_type=creator`.";
+      defaults = { user_type: "creator" };
+      autoEnable = true;
+    } else if (key === "viewer_signup") {
+      recommended = ["user_type", "surface"];
+      helper = "Viewer signup alerts can stay explicit with `user_type=viewer`.";
+      defaults = { user_type: "viewer" };
+      autoEnable = true;
+    } else if (key === "admin_login") {
+      recommended = ["admin_only", "surface", "route"];
+      helper = "Admin login alerts are often safest when restricted to admin-only activity.";
+      defaults = { admin_only: true };
+      autoEnable = true;
+    }
+
+    const supported = getSupportedScopeKeys();
+    const filteredRecommended = recommended.filter((field) => supported.includes(field));
+    const advanced = supported.filter((field) => !filteredRecommended.includes(field));
+    return { helper, recommended: filteredRecommended, advanced, defaults, autoEnable };
+  }
+
+  function getPassthroughScope(scope) {
+    const input = scope && typeof scope === "object" ? scope : {};
+    return Object.fromEntries(
+      Object.entries(input).filter(([key]) => !SCOPE_FIELD_ORDER.includes(key))
+    );
   }
 
   function destinationLabel(key) {
@@ -319,6 +508,94 @@
     renderDestinationCheckboxGroup(el.testDestinations, selected, "testDestination");
   }
 
+  function readScopeInputs() {
+    const scope = {};
+    const fields = el.ruleScopeBody?.querySelectorAll("[data-scope-field]") || [];
+    fields.forEach((node) => {
+      const field = String(node.getAttribute("data-scope-field") || "").trim();
+      if (!field || !SCOPE_FIELD_ORDER.includes(field)) return;
+      if (node instanceof HTMLInputElement && node.type === "checkbox") {
+        if (node.checked) scope[field] = true;
+        return;
+      }
+      const rawValue = node instanceof HTMLInputElement || node instanceof HTMLSelectElement ? node.value : "";
+      const normalized = normalizeScopeValues({ [field]: rawValue });
+      if (normalized[field] !== undefined) {
+        scope[field] = normalized[field];
+      }
+    });
+    return scope;
+  }
+
+  function updateScopeVisibility() {
+    const enabled = el.ruleScopeEnabled?.checked === true;
+    el.ruleScopeBody?.classList.toggle("hidden", !enabled);
+  }
+
+  function renderScopeField(field, value) {
+    const config = SCOPE_FIELD_CONFIG[field];
+    if (!config) return "";
+    if (config.kind === "checkbox") {
+      return `
+        <label class="ss-analytics-alerts-inline-toggle ss-analytics-alerts-scope-flag">
+          <input type="checkbox" data-scope-field="${escapeHtml(field)}" ${value === true ? "checked" : ""} />
+          <span>${escapeHtml(config.label)}</span>
+        </label>
+      `;
+    }
+    if (config.kind === "select") {
+      const options = getScopeSelectOptions(field, value)
+        .map((option) => {
+          const selected = String(value || "").toLowerCase() === option.toLowerCase() ? "selected" : "";
+          return `<option value="${escapeHtml(option)}" ${selected}>${escapeHtml(labelize(option))}</option>`;
+        })
+        .join("");
+      return `
+        <label class="ss-form-row">
+          <span>${escapeHtml(config.label)}</span>
+          <select data-scope-field="${escapeHtml(field)}">
+            <option value="">Any</option>
+            ${options}
+          </select>
+        </label>
+      `;
+    }
+    return `
+      <label class="ss-form-row">
+        <span>${escapeHtml(config.label)}</span>
+        <input
+          type="text"
+          data-scope-field="${escapeHtml(field)}"
+          value="${escapeHtml(value || "")}"
+          placeholder="${escapeHtml(config.placeholder || "")}"
+          autocomplete="off"
+        />
+      </label>
+    `;
+  }
+
+  function renderScopeEditor(scope) {
+    if (!el.ruleScopeRecommended || !el.ruleScopeAdvanced || !el.ruleScopeHelper) return;
+    const values = normalizeScopeValues(scope);
+    const profile = getScopeProfile(el.ruleEventType?.value);
+    el.ruleScopeHelper.textContent = profile.helper;
+    el.ruleScopeRecommended.innerHTML = profile.recommended.map((field) => renderScopeField(field, values[field])).join("");
+    el.ruleScopeAdvanced.innerHTML = profile.advanced.map((field) => renderScopeField(field, values[field])).join("");
+
+    const warningNeeded = hasScopeValues(state.ruleScopePassthrough);
+    if (el.ruleScopeWarning) {
+      el.ruleScopeWarning.textContent = warningNeeded
+        ? "This rule includes advanced scope data not shown in the structured editor. It will be preserved on save."
+        : "";
+      el.ruleScopeWarning.classList.toggle("hidden", !warningNeeded);
+    }
+    if (el.ruleScopeAdvancedDetails) {
+      const hasAdvancedValues = profile.advanced.some((field) => values[field] !== undefined);
+      el.ruleScopeAdvancedDetails.classList.toggle("hidden", !profile.advanced.length);
+      el.ruleScopeAdvancedDetails.open = hasAdvancedValues || warningNeeded;
+    }
+  }
+
   function updateThresholdFieldVisibility() {
     const thresholdType = String(el.ruleThresholdType?.value || "count");
     el.ruleThresholdNumberRow?.classList.toggle("hidden", !["count", "rate"].includes(thresholdType));
@@ -352,9 +629,26 @@
     }
   }
 
+  function applyScopeDefaultsFromEventType(eventTypeKey, incomingScope = {}) {
+    const profile = getScopeProfile(eventTypeKey);
+    const mergedScope = {
+      ...normalizeScopeValues(incomingScope),
+      ...Object.fromEntries(
+        Object.entries(profile.defaults || {}).filter(([, value]) => value !== undefined && value !== null && value !== "")
+      )
+    };
+    const shouldEnable = hasScopeValues(mergedScope) || profile.autoEnable;
+    if (el.ruleScopeEnabled) {
+      el.ruleScopeEnabled.checked = shouldEnable;
+    }
+    renderScopeEditor(mergedScope);
+    updateScopeVisibility();
+  }
+
   function populateRuleForm(rule) {
     const next = rule && typeof rule === "object" ? rule : null;
     setRuleFormMode(next);
+    state.ruleScopePassthrough = getPassthroughScope(next?.scope);
     if (el.ruleEventType) {
       el.ruleEventType.value = next?.event_type || state.eventTypes[0]?.key || "";
     }
@@ -390,14 +684,25 @@
     if (el.ruleCooldownMinutes) {
       el.ruleCooldownMinutes.value = String(next?.cooldown_minutes ?? 15);
     }
+    if (el.ruleDedupeWindowMinutes) {
+      el.ruleDedupeWindowMinutes.value = String(next?.dedupe_window_minutes ?? 0);
+    }
     renderDestinationCheckboxGroup(
       el.ruleDestinations,
       Array.isArray(next?.destinations) && next.destinations.length ? next.destinations : ["windows_client"],
       "ruleDestination"
     );
     updateThresholdFieldVisibility();
-    if (!next) {
+    if (next) {
+      const scope = normalizeScopeValues(next.scope);
+      if (el.ruleScopeEnabled) {
+        el.ruleScopeEnabled.checked = hasScopeValues(scope);
+      }
+      renderScopeEditor(scope);
+      updateScopeVisibility();
+    } else {
       applyRuleDefaultsFromEventType(el.ruleEventType?.value);
+      applyScopeDefaultsFromEventType(el.ruleEventType?.value);
     }
   }
 
@@ -415,6 +720,7 @@
         const destinations = (Array.isArray(rule.destinations) ? rule.destinations : [])
           .map((item) => `<span class="ss-chip">${escapeHtml(destinationLabel(item))}</span>`)
           .join("");
+        const scopeSummary = formatScopeSummary(rule.scope);
         return `
           <article class="ss-analytics-alerts-rule-card${rule.enabled ? "" : " is-disabled"}">
             <div class="ss-analytics-alerts-rule-header">
@@ -437,10 +743,12 @@
             </div>
             ${destinations ? `<div class="ss-analytics-alerts-rule-chips">${destinations}</div>` : ""}
             ${rule.description ? `<p class="ss-analytics-alerts-rule-description">${escapeHtml(rule.description)}</p>` : ""}
+            <p class="ss-analytics-alerts-rule-scope">Scope: ${escapeHtml(scopeSummary)}</p>
             <div class="ss-analytics-alerts-rule-meta">
               <span>Threshold: ${escapeHtml(String(rule.threshold_value))}</span>
               <span>Window: ${escapeHtml(String(rule.window_minutes))}m</span>
               <span>Cooldown: ${escapeHtml(String(rule.cooldown_minutes))}m</span>
+              <span>Dedupe: ${escapeHtml(String(rule.dedupe_window_minutes ?? 0))}m</span>
               <span>Updated: ${escapeHtml(formatTimestamp(rule.updated_at))}</span>
             </div>
           </article>
@@ -506,6 +814,8 @@
         const destinations = (Array.isArray(entry.destinations_targeted) ? entry.destinations_targeted : [])
           .map((item) => `<span class="ss-chip">${escapeHtml(destinationLabel(item))}</span>`)
           .join("");
+        const scopeSummary = entry?.metadata?.scope_summary
+          || formatScopeSummary(entry?.metadata?.effective_scope || entry?.metadata?.rule_scope || {});
         return `
           <article class="ss-analytics-alerts-history-card${entry.suppressed_reason ? " is-suppressed" : ""}">
             <div class="ss-analytics-alerts-history-header">
@@ -520,6 +830,7 @@
             </div>
             ${entry.message ? `<p class="ss-analytics-alerts-history-message">${escapeHtml(entry.message)}</p>` : ""}
             ${destinations ? `<div class="ss-analytics-alerts-history-chips">${destinations}</div>` : ""}
+            ${scopeSummary ? `<p class="ss-analytics-alerts-history-context">Scope: ${escapeHtml(scopeSummary)}</p>` : ""}
             <div class="ss-analytics-alerts-history-meta">
               <span>Triggered: ${escapeHtml(formatTimestamp(entry.triggered_at))}</span>
               ${entry.suppressed_reason ? `<span>Suppression: ${escapeHtml(labelize(entry.suppressed_reason))}</span>` : ""}
@@ -657,11 +968,20 @@
     const thresholdValue = parseThresholdValue(thresholdType);
     const windowMinutes = parseIntegerInput(el.ruleWindowMinutes, 5, 1);
     const cooldownMinutes = parseIntegerInput(el.ruleCooldownMinutes, 15, 0);
+    const dedupeWindowMinutes = parseIntegerInput(el.ruleDedupeWindowMinutes, 0, 0);
     const destinations = collectCheckedValues(
       el.ruleDestinations,
       "input[type='checkbox'][data-ruleDestination]",
       "data-ruleDestination"
     );
+    const scopeEnabled = el.ruleScopeEnabled?.checked === true;
+    const structuredScope = scopeEnabled ? readScopeInputs() : {};
+    const scope = scopeEnabled
+      ? {
+          ...(cloneJson(state.ruleScopePassthrough || {}) || {}),
+          ...structuredScope
+        }
+      : {};
 
     if (!eventType) {
       throw new Error("Select an event type.");
@@ -691,6 +1011,9 @@
       threshold_value: thresholdValue,
       window_minutes: windowMinutes,
       cooldown_minutes: cooldownMinutes,
+      dedupe_window_minutes: dedupeWindowMinutes,
+      scope_mode: "all",
+      scope,
       destinations
     };
   }
@@ -856,8 +1179,36 @@
   }
 
   function handleRuleEventTypeChange() {
-    if (state.activeRuleId) return;
-    applyRuleDefaultsFromEventType(el.ruleEventType?.value);
+    const currentScope = readScopeInputs();
+    if (!state.activeRuleId) {
+      applyRuleDefaultsFromEventType(el.ruleEventType?.value);
+      const profile = getScopeProfile(el.ruleEventType?.value);
+      const mergedScope = { ...currentScope };
+      Object.entries(profile.defaults || {}).forEach(([key, value]) => {
+        if (mergedScope[key] === undefined || mergedScope[key] === null || mergedScope[key] === "") {
+          mergedScope[key] = value;
+        }
+      });
+      if (el.ruleScopeEnabled && !el.ruleScopeEnabled.checked && profile.autoEnable && !hasScopeValues(currentScope)) {
+        el.ruleScopeEnabled.checked = true;
+      }
+      renderScopeEditor(mergedScope);
+      updateScopeVisibility();
+      return;
+    }
+    renderScopeEditor(currentScope);
+    updateScopeVisibility();
+  }
+
+  function handleRuleScopeToggle() {
+    if (el.ruleScopeEnabled?.checked) {
+      const currentScope = readScopeInputs();
+      if (!hasScopeValues(currentScope) && !state.activeRuleId) {
+        const profile = getScopeProfile(el.ruleEventType?.value);
+        renderScopeEditor({ ...currentScope, ...profile.defaults });
+      }
+    }
+    updateScopeVisibility();
   }
 
   function handleRefreshAll() {
@@ -885,6 +1236,7 @@
     el.ruleForm?.addEventListener("submit", handleRuleSubmit);
     el.ruleThresholdType?.addEventListener("change", updateThresholdFieldVisibility);
     el.ruleEventType?.addEventListener("change", handleRuleEventTypeChange);
+    el.ruleScopeEnabled?.addEventListener("change", handleRuleScopeToggle);
     el.rulesList?.addEventListener("click", handleRulesListClick);
     el.targetsList?.addEventListener("click", handleTargetsListClick);
     el.targetsRefresh?.addEventListener("click", handleRefreshAll);
@@ -901,6 +1253,7 @@
     el.ruleForm?.removeEventListener("submit", handleRuleSubmit);
     el.ruleThresholdType?.removeEventListener("change", updateThresholdFieldVisibility);
     el.ruleEventType?.removeEventListener("change", handleRuleEventTypeChange);
+    el.ruleScopeEnabled?.removeEventListener("change", handleRuleScopeToggle);
     el.rulesList?.removeEventListener("click", handleRulesListClick);
     el.targetsList?.removeEventListener("click", handleTargetsListClick);
     el.targetsRefresh?.removeEventListener("click", handleRefreshAll);
@@ -958,6 +1311,14 @@
     el.ruleThresholdCustom = $("analytics-alerts-rule-threshold-custom");
     el.ruleWindowMinutes = $("analytics-alerts-rule-window-minutes");
     el.ruleCooldownMinutes = $("analytics-alerts-rule-cooldown-minutes");
+    el.ruleDedupeWindowMinutes = $("analytics-alerts-rule-dedupe-window-minutes");
+    el.ruleScopeEnabled = $("analytics-alerts-rule-scope-enabled");
+    el.ruleScopeBody = $("analytics-alerts-rule-scope-body");
+    el.ruleScopeHelper = $("analytics-alerts-rule-scope-helper");
+    el.ruleScopeWarning = $("analytics-alerts-rule-scope-warning");
+    el.ruleScopeRecommended = $("analytics-alerts-rule-scope-recommended");
+    el.ruleScopeAdvancedDetails = $("analytics-alerts-rule-scope-advanced-details");
+    el.ruleScopeAdvanced = $("analytics-alerts-rule-scope-advanced");
     el.ruleDestinations = $("analytics-alerts-rule-destinations");
     el.rulesList = $("analytics-alerts-rules-list");
     el.rulesEmpty = $("analytics-alerts-rules-empty");

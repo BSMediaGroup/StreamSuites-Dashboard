@@ -423,7 +423,37 @@
                 <span>Cooldown minutes</span>
                 <input type="number" id="analytics-alerts-rule-cooldown-minutes" min="0" step="1" value="15" />
               </label>
+              <label class="ss-form-row">
+                <span>Dedupe window minutes</span>
+                <input type="number" id="analytics-alerts-rule-dedupe-window-minutes" min="0" step="1" value="0" />
+              </label>
             </div>
+
+            <p class="muted ss-analytics-alerts-helper-copy">
+              Cooldown and dedupe windows reduce noisy repeats. Identical matching alerts may be suppressed until those windows expire.
+            </p>
+
+            <section class="ss-analytics-alerts-scope-panel" aria-labelledby="analytics-alerts-rule-scope-title">
+              <div class="ss-analytics-alerts-scope-header">
+                <div>
+                  <h5 id="analytics-alerts-rule-scope-title">Scope / Filters</h5>
+                  <p class="muted">Optional filters that narrow a rule to specific pages, auth flows, user types, or surfaces.</p>
+                </div>
+                <label class="ss-analytics-alerts-inline-toggle">
+                  <input type="checkbox" id="analytics-alerts-rule-scope-enabled" />
+                  <span>Apply scope filters</span>
+                </label>
+              </div>
+              <div id="analytics-alerts-rule-scope-body" class="ss-analytics-alerts-scope-body hidden">
+                <p id="analytics-alerts-rule-scope-helper" class="ss-analytics-alerts-scope-helper muted"></p>
+                <div id="analytics-alerts-rule-scope-warning" class="ss-alert ss-alert-warning hidden" role="status" aria-live="polite"></div>
+                <div id="analytics-alerts-rule-scope-recommended" class="ss-analytics-alerts-form-grid"></div>
+                <details id="analytics-alerts-rule-scope-advanced-details" class="ss-analytics-alerts-scope-advanced">
+                  <summary>Advanced filters</summary>
+                  <div id="analytics-alerts-rule-scope-advanced" class="ss-analytics-alerts-form-grid"></div>
+                </details>
+              </div>
+            </section>
 
             <fieldset class="ss-fieldset">
               <legend>Destinations</legend>
