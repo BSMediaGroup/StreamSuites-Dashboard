@@ -100,9 +100,8 @@
 
   function navigateToView(viewName) {
     if (!viewName) return;
-    const target = document.querySelector(`[data-view="${viewName}"]`);
-    if (target) {
-      target.click();
+    if (window.StreamSuitesAdminRoutes?.navigateToView) {
+      window.StreamSuitesAdminRoutes.navigateToView(viewName);
       return;
     }
     window.location.hash = `#${viewName}`;
@@ -958,6 +957,12 @@ function normalizeUser(raw = {}) {
     window.StreamSuitesCreatorStatsNav.accountId = normalizedId;
     window.StreamSuitesCreatorStatsNav.from = "accounts";
     window.StreamSuitesCreatorStatsNav.ts = Date.now();
+    if (window.StreamSuitesAdminRoutes?.navigateToView) {
+      window.StreamSuitesAdminRoutes.navigateToView("creator-stats", {
+        params: { account_id: normalizedId }
+      });
+      return;
+    }
     window.location.hash = `#creator-stats?account_id=${encodeURIComponent(normalizedId)}`;
   }
 

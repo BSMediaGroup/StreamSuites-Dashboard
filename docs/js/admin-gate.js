@@ -37,7 +37,7 @@
   const ADMIN_ORIGIN = "https://admin.streamsuites.app";
   const ADMIN_SUCCESS = ADMIN_ORIGIN + "/auth/success.html";
   const ADMIN_SURFACE = "admin";
-  const ADMIN_DASH = `${ADMIN_ORIGIN}/`;
+  const ADMIN_DASH = `${ADMIN_ORIGIN}/overview`;
   const ADMIN_HOSTNAME = "admin.streamsuites.app";
   const PUBLIC_HOSTNAMES = new Set(["streamsuites.app", "www.streamsuites.app"]);
   const ADMIN_INDEX_URL = ADMIN_DASH;
@@ -93,7 +93,13 @@
     if (!parsed) return ADMIN_DASH;
     if (PUBLIC_HOSTNAMES.has(parsed.hostname.toLowerCase())) return ADMIN_DASH;
     if (parsed.hostname.toLowerCase() !== ADMIN_HOSTNAME) return ADMIN_DASH;
-    return `${parsed.origin}/`;
+    return `${parsed.origin}${parsed.pathname}${parsed.search}`;
+  }
+
+  function getCurrentAdminDestination() {
+    const pathname = window.location?.pathname || "/overview";
+    const search = window.location?.search || "";
+    return `${ADMIN_ORIGIN}${pathname}${search}`;
   }
 
   function applyAdminOAuthSafety(endpoint) {
@@ -117,7 +123,10 @@
 
     ["redirect_to", "post_login_redirect", "next"].forEach((paramName) => {
       const currentValue = endpoint.searchParams.get(paramName);
-      endpoint.searchParams.set(paramName, normalizeAdminDash(currentValue));
+      endpoint.searchParams.set(
+        paramName,
+        normalizeAdminDash(currentValue || getCurrentAdminDestination())
+      );
     });
 
     return endpoint;
@@ -667,6 +676,7 @@
     if (surface) {
       url.searchParams.set("surface", surface);
     }
+    url.searchParams.set("redirect", getCurrentAdminDestination());
     window.location.assign(url.toString());
   }
 

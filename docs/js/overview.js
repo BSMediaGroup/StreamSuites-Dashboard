@@ -656,7 +656,7 @@
       node.addEventListener("click", (e) => {
         e.stopPropagation();
         if (window.App?.views?.[view]) {
-          window.location.hash = `#${view}`;
+          window.StreamSuitesAdminRoutes?.navigateToView?.(view);
         }
       });
     });

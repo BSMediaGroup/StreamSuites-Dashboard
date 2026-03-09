@@ -52,9 +52,8 @@
 
   function navigateToView(viewName) {
     if (!viewName) return;
-    const target = document.querySelector(`[data-view="${viewName}"]`);
-    if (target) {
-      target.click();
+    if (window.StreamSuitesAdminRoutes?.navigateToView) {
+      window.StreamSuitesAdminRoutes.navigateToView(viewName);
       return;
     }
     window.location.hash = `#${viewName}`;

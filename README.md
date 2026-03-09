@@ -1,8 +1,8 @@
 # StreamSuites Admin Dashboard — Runtime Operations & Control
 
 StreamSuites Admin Dashboard is the **admin-only control and visualization layer** for monitoring and configuring the StreamSuites ecosystem.  
-It is a **static web UI** deployed via **GitHub Pages** from the `/docs` directory to **https://admin.streamsuites.app** and provides **Auth API–enforced admin access** for configuration and runtime control inputs.  
-Admin views live under `/docs/views`, and runtime exports are read locally from `/docs/runtime/exports` (no runtime exports are fetched from the Auth API).
+It is a **static web UI** currently shipped from the `/docs` directory and now prepared for **Cloudflare Pages deep-linkable routing** at **https://admin.streamsuites.app** while preserving GitHub Pages-safe static delivery during migration.  
+Admin views live under `/docs/views`, major admin surfaces now resolve through clean path-based routes (with legacy hash compatibility retained during migration), and runtime exports are read locally from `/docs/runtime/exports` (no runtime exports are fetched from the Auth API).
 
 All execution, chat ingestion, livestream control, scheduling, and command dispatch live in the **StreamSuites Runtime** repository — this dashboard supplies the configuration and control inputs for those systems.
 
@@ -34,6 +34,7 @@ The dashboard loads snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progre
 - **Bot availability/error surfacing:** `docs/views/bots.html` + `docs/js/bots.js` expose platform availability and runtime-state/error visibility with admin-debug controls.
 - **Platform status posture:** YouTube/Twitch active scaffolds, Rumble pause-state handling, Kick scaffolded parity, and Pilled staged/ingest-only treatment.
 - **Read-only runtime state model:** The web surface renders runtime state and routes privileged operations through Auth API/runtime boundaries.
+- **Cloudflare Pages routing readiness:** The admin shell now prefers clean route URLs such as `/overview`, `/users`, `/profiles`, `/telemetry`, `/alerts`, `/settings`, and `/integrations/...`, while preserving legacy hash-link compatibility during migration.
 
 ## Version & Ownership
 
@@ -114,7 +115,7 @@ These settings map directly to runtime configuration; the dashboard does not exe
 
 ## Differences from Creator Dashboard and Public Site
 
-- **Admin Dashboard (this repo):** Admin-only control + visualization layer, gated by the Auth API, renders runtime exports, and emits admin configuration/control inputs. Deployed as a static UI from `/docs`.
+- **Admin Dashboard (this repo):** Admin-only control + visualization layer, gated by the Auth API, renders runtime exports, and emits admin configuration/control inputs. Shipped from `/docs` with clean admin route support for Cloudflare Pages migration readiness.
 - **Analytics alerting controls:** Alert preferences, scoped notification rules, anti-noise settings, and explicit backend-aware ruleset reload/save/import/export controls are configured from the Analytics admin experience, but authoritative state remains in the runtime/Auth API.
 - **Creator Dashboard:** Creator-focused surface in a separate repository/domain; emphasizes creator self-service settings and visibility rather than admin control.
 - **Public Site:** Public-facing marketing/content surface in a separate repository/domain; no admin auth, no privileged actions, and no configuration control inputs.
@@ -193,11 +194,13 @@ This repository is a **companion project** to the StreamSuites Runtime.
 - **Scaffolded platform:** Kick mirrors YouTube/Twitch scaffolding during expansion.
 - **Paused platform:** Rumble remains visible with red roadmap treatment.
 - **Planned ingest-only:** Pilled is locked to placeholders.
-- **Static hosting:** All pages remain GitHub Pages–safe.
+- **Static hosting:** All pages remain static-host safe while the admin shell is prepared for Cloudflare Pages clean-route rewrites.
 
 ## Hosting & Deployment Model
 
-- Static site hosting (GitHub Pages) deployed to https://admin.streamsuites.app from the `/docs` directory (Pages root).
+- Static site assets continue to ship from the `/docs` directory.
+- Cloudflare Pages migration readiness is in place via clean admin route support plus `docs/_redirects` rewrites for deep-linkable dashboard paths.
+- Legacy GitHub Pages/404 compatibility is retained during migration through client-side fallback handoff for recognized admin routes.
 - No local backend; authentication is provided by the central StreamSuites Auth API.
 - Discord OAuth required for Discord-specific configuration views.
 - Embed/iframe friendly (e.g., Wix Studio).
@@ -220,7 +223,8 @@ StreamSuites-Dashboard/
 │   ├── compatibility.md
 │   ├── decisions.md
 │   └── roadmap.md
-├── docs/  [GitHub Pages deployment root]
+├── docs/  [static deployment root; GitHub Pages legacy source + Cloudflare Pages-ready rewrites]
+│   ├── _redirects
 │   ├── index.html
 │   ├── home.html
 │   ├── about.html
@@ -237,6 +241,7 @@ StreamSuites-Dashboard/
 │   ├── POST_MORTEM.md
 │   ├── 404.html
 │   ├── auth/
+│   │   ├── index.html
 │   │   ├── login.html
 │   │   └── success.html
 │   ├── about/
@@ -286,6 +291,7 @@ StreamSuites-Dashboard/
 │   │   ├── admin-auth.js
 │   │   ├── admin-gate.js
 │   │   ├── admin-login.js
+│   │   ├── admin-routes.js
 │   │   ├── analytics.js
 │   │   ├── analytics-alerting.js
 │   │   ├── api-usage.js

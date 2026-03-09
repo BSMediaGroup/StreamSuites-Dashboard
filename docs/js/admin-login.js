@@ -8,7 +8,7 @@
   const ADMIN_ORIGIN = "https://admin.streamsuites.app";
   const ADMIN_SUCCESS = ADMIN_ORIGIN + "/auth/success.html";
   const ADMIN_SURFACE = "admin";
-  const ADMIN_DASH = `${ADMIN_ORIGIN}/`;
+  const ADMIN_DASH = `${ADMIN_ORIGIN}/overview`;
   const ADMIN_HOSTNAME = "admin.streamsuites.app";
   const PUBLIC_HOSTNAMES = new Set(["streamsuites.app", "www.streamsuites.app"]);
   const resolvedBasePath = (() => {
@@ -81,7 +81,7 @@
     if (!parsed) return ADMIN_DASH;
     if (PUBLIC_HOSTNAMES.has(parsed.hostname.toLowerCase())) return ADMIN_DASH;
     if (parsed.hostname.toLowerCase() !== ADMIN_HOSTNAME) return ADMIN_DASH;
-    return `${parsed.origin}/`;
+    return `${parsed.origin}${parsed.pathname}${parsed.search}`;
   }
 
   function applyAdminOAuthSafety(endpoint) {
@@ -203,9 +203,16 @@
       return;
     }
 
+    const redirectUrl = parseUrl(destination, ADMIN_ORIGIN);
+    if (redirectUrl) {
+      ["redirect_to", "post_login_redirect", "next"].forEach((paramName) => {
+        redirectUrl.searchParams.set(paramName, redirectTarget);
+      });
+    }
+
     persistLastOauthProvider(provider);
     setStatus("loading", `Redirecting to ${provider}…`);
-    window.location.assign(destination);
+    window.location.assign(redirectUrl ? redirectUrl.toString() : destination);
   }
 
   async function submitEmergencyLogin(event) {

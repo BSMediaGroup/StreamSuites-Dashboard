@@ -724,6 +724,13 @@
     if (!normalized) return;
 
     if (normalized.startsWith("#")) {
+      const route = window.StreamSuitesAdminRoutes?.resolveViewFromHash?.(normalized);
+      if (route?.view) {
+        window.StreamSuitesAdminRoutes.navigateToView(route.view, {
+          params: route.queryString
+        });
+        return;
+      }
       window.location.hash = normalized;
       return;
     }
@@ -738,6 +745,15 @@
       return;
     }
 
+    const route = window.StreamSuitesAdminRoutes?.resolveViewFromHash?.(
+      `#${normalized.replace(/^#+/, "")}`
+    );
+    if (route?.view) {
+      window.StreamSuitesAdminRoutes.navigateToView(route.view, {
+        params: route.queryString
+      });
+      return;
+    }
     window.location.hash = `#${normalized.replace(/^#+/, "")}`;
   }
 

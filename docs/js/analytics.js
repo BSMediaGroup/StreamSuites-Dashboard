@@ -1595,38 +1595,38 @@
     return [];
   }
 
-  function resolveSurfaceViewHash(key) {
+  function resolveSurfaceView(key) {
     const normalized = String(key || "").trim().toLowerCase();
     const directMap = {
-      overview: "#overview",
-      analytics: "#analytics",
-      accounts: "#accounts",
-      donations: "#accounts",
-      "data-signals": "#data-signals",
-      telemetry: "#overview",
-      "auth-events": "#overview",
-      "auth_events": "#overview",
-      "admin-activity": "#overview",
-      "admin_activity": "#overview",
-      "api-usage": "#api-usage",
-      "api_usage": "#api-usage"
+      overview: "overview",
+      analytics: "analytics",
+      accounts: "accounts",
+      donations: "accounts",
+      "data-signals": "data-signals",
+      telemetry: "overview",
+      "auth-events": "overview",
+      "auth_events": "overview",
+      "admin-activity": "overview",
+      "admin_activity": "overview",
+      "api-usage": "api-usage",
+      "api_usage": "api-usage"
     };
     if (directMap[normalized]) return directMap[normalized];
-    if (normalized.includes("donation")) return "#accounts";
-    if (normalized.includes("auth")) return "#overview";
-    if (normalized.includes("telemetry")) return "#overview";
-    if (normalized.includes("activity")) return "#overview";
-    if (normalized.includes("signal")) return "#data-signals";
+    if (normalized.includes("donation")) return "accounts";
+    if (normalized.includes("auth")) return "overview";
+    if (normalized.includes("telemetry")) return "overview";
+    if (normalized.includes("activity")) return "overview";
+    if (normalized.includes("signal")) return "data-signals";
     return "";
   }
 
   function handleSurfaceViewClick(event) {
     const button = event.target.closest("[data-surface-view]");
     if (!(button instanceof HTMLButtonElement)) return;
-    const hash = String(button.getAttribute("data-surface-view") || "").trim();
-    if (!hash) return;
+    const view = String(button.getAttribute("data-surface-view") || "").trim();
+    if (!view) return;
     event.preventDefault();
-    window.location.hash = hash;
+    window.StreamSuitesAdminRoutes?.navigateToView?.(view);
   }
 
   function renderSurfaces(surfaces) {
@@ -1640,7 +1640,7 @@
     el.surfacesEmpty.classList.add("hidden");
     el.surfacesList.innerHTML = rows
       .map((entry) => {
-        const viewHash = resolveSurfaceViewHash(entry.key);
+        const targetView = resolveSurfaceView(entry.key);
         return `
           <li class="ss-analytics-surface-row">
             <div class="ss-analytics-surface-main">
@@ -1649,7 +1649,7 @@
             </div>
             <div class="ss-analytics-surface-meta">
               <strong>${escapeHtml(formatNumber(entry.count))}</strong>
-              ${viewHash ? `<button type="button" class="ss-btn ss-btn-small ss-btn-secondary" data-surface-view="${escapeHtml(viewHash)}">View</button>` : ""}
+              ${targetView ? `<button type="button" class="ss-btn ss-btn-small ss-btn-secondary" data-surface-view="${escapeHtml(targetView)}">View</button>` : ""}
             </div>
           </li>
         `;

@@ -151,13 +151,16 @@
     });
   }
 
-  function parseHashView() {
-    const hash = String(window.location.hash || "").replace(/^#/, "");
-    const [view] = hash.split("?");
-    return view.trim();
+  function resolveCurrentRoute() {
+    return window.StreamSuitesAdminRoutes?.resolveLocation?.() || null;
   }
 
-  function parseAccountIdFromHash() {
+  function parseAccountIdFromRoute() {
+    const route = resolveCurrentRoute();
+    if (route?.mode === "path") {
+      const params = new URLSearchParams(window.location.search || "");
+      return normalizeAccountId(params.get("account_id"));
+    }
     const hash = String(window.location.hash || "").replace(/^#/, "");
     const queryIndex = hash.indexOf("?");
     if (queryIndex === -1) return "";
@@ -882,14 +885,15 @@
   function resolveInitialAccountId() {
     const pending = consumePendingAccountId();
     if (pending) return pending;
-    const fromHash = parseAccountIdFromHash();
+    const fromHash = parseAccountIdFromRoute();
     if (fromHash) return fromHash;
     return "";
   }
 
-  function handleHashChange() {
-    if (parseHashView() !== "creator-stats") return;
-    const fromHash = parseAccountIdFromHash();
+  function handleRouteChange() {
+    const route = resolveCurrentRoute();
+    if (route?.view !== "creator-stats") return;
+    const fromHash = parseAccountIdFromRoute();
     const normalized = normalizeAccountId(fromHash);
     if (!normalized || normalized === state.accountId) return;
     void loadAccountStats(normalized);
@@ -903,7 +907,13 @@
         setBanner("Enter an account id to load creator stats.", "warning");
         return;
       }
-      window.location.hash = `#creator-stats?account_id=${encodeURIComponent(accountId)}`;
+      if (window.StreamSuitesAdminRoutes?.navigateToView) {
+        window.StreamSuitesAdminRoutes.navigateToView("creator-stats", {
+          params: { account_id: accountId }
+        });
+      } else {
+        window.location.hash = `#creator-stats?account_id=${encodeURIComponent(accountId)}`;
+      }
       void loadAccountStats(accountId);
     });
 
@@ -916,8 +926,8 @@
       void loadAccountStats(accountId, { force: true });
     });
 
-    state.boundHashChange = handleHashChange;
-    window.addEventListener("hashchange", state.boundHashChange);
+    state.boundHashChange = handleRouteChange;
+    window.addEventListener("streamsuites:routechange", state.boundHashChange);
   }
 
   function init() {
@@ -954,7 +964,7 @@
 
   function destroy() {
     if (state.boundHashChange) {
-      window.removeEventListener("hashchange", state.boundHashChange);
+      window.removeEventListener("streamsuites:routechange", state.boundHashChange);
       state.boundHashChange = null;
     }
     state.requestToken += 1;
@@ -965,5 +975,4 @@
     destroy
   };
 })();
-
 

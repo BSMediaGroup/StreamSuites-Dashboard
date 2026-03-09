@@ -194,6 +194,7 @@ async function probeRuntimeAvailability() {
 
 const App = {
   currentView: null,
+  currentRoute: null,
   views: {},
   initialized: false,
   storage: {},
@@ -1260,19 +1261,10 @@ function resolveAdminMenuThemeToggle() {
 
 function navigateToDashboardView(viewName) {
   if (!viewName) return;
-
-  const navTarget = document.querySelector(`[data-view="${viewName}"]`);
-  if (navTarget) {
-    navTarget.click();
+  if (window.StreamSuitesAdminRoutes?.navigateToView) {
+    window.StreamSuitesAdminRoutes.navigateToView(viewName);
     return;
   }
-
-  const normalized = String(viewName).replace(/^#+/, "");
-  if (window.location.hash.replace(/^#/, "") === normalized) {
-    window.dispatchEvent(new Event("hashchange"));
-    return;
-  }
-  window.location.hash = `#${normalized}`;
 }
 
 function setAdminUserMenuOpen(nextOpen) {
@@ -1378,15 +1370,16 @@ function updateNavActiveState(viewName) {
 
 function bindNavigation() {
   $all("[data-view]").forEach((el) => {
-    el.addEventListener("click", () => {
+    el.addEventListener("click", (event) => {
+      event.preventDefault();
       const view = el.dataset.view;
-      if (view) loadView(view);
+      if (view) navigateToDashboardView(view);
     });
     el.addEventListener("keydown", (event) => {
       if (event.key !== "Enter" && event.key !== " ") return;
       event.preventDefault();
       const view = el.dataset.view;
-      if (view) loadView(view);
+      if (view) navigateToDashboardView(view);
     });
   });
 }
@@ -1409,48 +1402,56 @@ function bindDelegatedNavigation() {
   container.addEventListener("click", (e) => {
     const target = e.target.closest("[data-view]");
     if (!target) return;
+    e.preventDefault();
 
     const view = target.dataset.view;
-    if (view) loadView(view);
+    if (view) navigateToDashboardView(view);
   });
 }
 
-function parseHashRoute() {
-  const raw = window.location.hash.replace(/^#/, "").trim();
-  if (!raw) {
-    return { raw: "", view: "", query: "" };
+function resolveDashboardRoute() {
+  const router = window.StreamSuitesAdminRoutes;
+  if (router?.resolveLocation) {
+    return router.resolveLocation();
   }
-
+  const raw = window.location.hash.replace(/^#/, "").trim();
   const [viewToken, ...queryParts] = raw.split("?");
   return {
-    raw,
+    mode: "hash",
     view: (viewToken || "").trim(),
-    query: queryParts.join("?")
+    query: queryParts.length ? `?${queryParts.join("?")}` : "",
+    queryString: queryParts.join("?")
   };
 }
 
-/* ----------------------------------------------------------------------
-   URL Hash Routing (MINIMALLY EXTENDED)
-   ---------------------------------------------------------------------- */
-
 function resolveInitialView() {
-  const route = parseHashRoute();
-  const hash = route.view;
-
-  if (hash && App.views[hash]) {
-    return hash;
+  const route = resolveDashboardRoute();
+  const view = route?.view;
+  if (view && App.views[view]) {
+    return view;
   }
   return "overview";
 }
 
-function bindHashChange() {
-  window.addEventListener("hashchange", () => {
-    const route = parseHashRoute();
-    const hash = route.view;
+function handleDashboardRouteChange(route = resolveDashboardRoute()) {
+  const targetView = route?.view && App.views[route.view] ? route.view : "overview";
+  App.currentRoute = route;
 
-    if (App.views[hash]) {
-      loadView(hash);
-    }
+  if (route?.mode === "hash") {
+    window.StreamSuitesAdminRoutes?.canonicalizeLegacyHashRoute?.(route);
+    return;
+  }
+
+  if (App.currentView === targetView) {
+    return;
+  }
+
+  loadView(targetView);
+}
+
+function bindRouteChanges() {
+  window.addEventListener("streamsuites:routechange", (event) => {
+    handleDashboardRouteChange(event?.detail?.route || resolveDashboardRoute());
   });
 }
 
@@ -1528,14 +1529,21 @@ async function initApp() {
     initAdminUserMenu();
     bindNavigation();
     bindDelegatedNavigation();
-    bindHashChange();
+    bindRouteChanges();
 
     console.log("[BOOT:50] router begin", performance.now());
+    const initialRoute = resolveDashboardRoute();
     const initialView = resolveInitialView();
+    App.currentRoute = initialRoute;
     App.boot.firstViewName = initialView;
     console.log("[BOOT:55] Router ready", performance.now());
     console.log("[BOOT:60] first view mount begin", performance.now());
-    loadView(initialView);
+    await loadView(initialView);
+    if (initialRoute?.mode === "hash" && initialRoute.view) {
+      window.StreamSuitesAdminRoutes?.canonicalizeLegacyHashRoute?.(initialRoute);
+    } else if (!initialRoute?.view || initialRoute?.pathname === "/") {
+      window.StreamSuitesAdminRoutes?.navigateToView?.(initialView, { replace: true });
+    }
 
     App.initialized = true;
   }
