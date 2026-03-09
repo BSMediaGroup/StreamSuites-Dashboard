@@ -23,6 +23,7 @@ The dashboard loads snapshot JSON for **YouTube, Twitch, Rumble, Kick (in-progre
 ## What's New / Highlights (v0.4.1-alpha)
 
 - **Creator Stats admin page (Phase 0 mock):** Admin-only `Creator Stats` view wired to `GET /api/admin/accounts/{account_id}/stats`, consuming API chart fields (`growth_series`, `platform_share`) with client-side quality formatting.
+- **Authoritative public-profile inspection in Accounts:** The Accounts drawer now surfaces canonical slug, creator-capable vs viewer-only state, StreamSuites and FindMeHere eligibility/visibility/reason fields, canonical profile URLs, and media fields from the centralized profile payload.
 - **Admin dashboard surface refresh:** Expanded operational views across overview, analytics, approvals, audit, jobs, notifications, data signals, and API usage.
 - **Web alert settings in Analytics:** The admin analytics view now includes backend-driven alert preferences, rule management, registered target visibility, recent delivery history, and an admin test-alert action via Auth API endpoints.
 - **Alert destination management polish:** The Analytics admin target panel now exposes shared backend-owned target/device records with status badges, last-seen visibility, rename and enable/disable actions, and clearer type distinctions for Windows notifier clients plus future targets such as Pushover.

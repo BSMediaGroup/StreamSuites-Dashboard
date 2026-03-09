@@ -150,6 +150,23 @@
     return "";
   }
 
+  function coerceText(value, fallback = "") {
+    if (value === undefined || value === null) return fallback;
+    const normalized = String(value).trim();
+    return normalized || fallback;
+  }
+
+  function coerceBoolean(value, fallback = false) {
+    if (typeof value === "boolean") return value;
+    if (typeof value === "number") return value !== 0;
+    if (typeof value === "string") {
+      const normalized = value.trim().toLowerCase();
+      if (["true", "1", "yes", "on"].includes(normalized)) return true;
+      if (["false", "0", "no", "off"].includes(normalized)) return false;
+    }
+    return fallback;
+  }
+
   function resolveAccountType(raw = {}) {
     return (
       normalizeAccountType(raw.account_type || raw.accountType || raw.type) ||
@@ -247,6 +264,64 @@
 function normalizeUser(raw = {}) {
     const providers = resolveProviders(raw.providers || raw.authProviders || raw.auth_providers);
     const accountType = resolveAccountType(raw);
+    const publicProfile =
+      raw.public_profile && typeof raw.public_profile === "object" ? raw.public_profile : {};
+    const publicSlug = coerceText(raw.public_slug || raw.slug || publicProfile.public_slug);
+    const publicSurfaceAccountType = coerceText(
+      raw.public_surface_account_type || publicProfile.public_surface_account_type
+    );
+    const creatorCapable = coerceBoolean(
+      raw.creator_capable ?? publicProfile.creator_capable,
+      accountType !== "PUBLIC"
+    );
+    const viewerOnly = coerceBoolean(raw.viewer_only ?? publicProfile.viewer_only, accountType === "PUBLIC");
+    const streamsuitesProfileEnabled = coerceBoolean(
+      raw.streamsuites_profile_enabled ?? publicProfile.streamsuites_profile_enabled,
+      true
+    );
+    const streamsuitesProfileEligible = coerceBoolean(
+      raw.streamsuites_profile_eligible ?? publicProfile.streamsuites_profile_eligible,
+      Boolean(publicSlug)
+    );
+    const streamsuitesProfileVisible = coerceBoolean(
+      raw.streamsuites_profile_visible ?? publicProfile.streamsuites_profile_visible,
+      false
+    );
+    const streamsuitesProfileStatusReason = coerceText(
+      raw.streamsuites_profile_status_reason || publicProfile.streamsuites_profile_status_reason
+    );
+    const streamsuitesProfileUrl = coerceText(
+      raw.streamsuites_profile_url || raw.streamsuites_share_url || publicProfile.streamsuites_profile_url
+    );
+    const streamsuitesShareUrl = coerceText(
+      raw.streamsuites_share_url || publicProfile.streamsuites_share_url || streamsuitesProfileUrl
+    );
+    const findMeHereEnabled = coerceBoolean(
+      raw.findmehere_enabled ?? publicProfile.findmehere_enabled,
+      true
+    );
+    const findMeHereEligible = coerceBoolean(
+      raw.findmehere_eligible ?? publicProfile.findmehere_eligible,
+      false
+    );
+    const findMeHereVisible = coerceBoolean(
+      raw.findmehere_visible ?? publicProfile.findmehere_visible,
+      false
+    );
+    const findMeHereStatusReason = coerceText(
+      raw.findmehere_status_reason || publicProfile.findmehere_status_reason
+    );
+    const findMeHereProfileUrl = coerceText(
+      raw.findmehere_profile_url || raw.findmehere_share_url || publicProfile.findmehere_profile_url
+    );
+    const findMeHereShareUrl = coerceText(
+      raw.findmehere_share_url || publicProfile.findmehere_share_url || findMeHereProfileUrl
+    );
+    const coverImageUrl = coerceText(
+      raw.cover_image_url || raw.banner_image_url || publicProfile.cover_image_url || publicProfile.banner_image_url
+    );
+    const backgroundImageUrl = coerceText(raw.background_image_url || publicProfile.background_image_url);
+    const avatarUrl = coerceText(raw.avatar_url || publicProfile.avatar_url);
     let internalId =
       raw.internal_id || raw.internalId || raw.id || raw.uuid || raw.user_id || raw.userId || "";
     if (!String(internalId || "").trim() || String(internalId).trim() === "—") {
@@ -280,6 +355,29 @@ function normalizeUser(raw = {}) {
       emailVerified: emailVerifiedRaw,
       emailVerifiedLabel: resolveEmailVerifiedLabel(emailVerifiedRaw),
       displayName: raw.display_name || raw.displayName || raw.name || "—",
+      publicSlug,
+      publicSurfaceAccountType,
+      creatorCapable,
+      viewerOnly,
+      streamsuitesProfileEnabled,
+      streamsuitesProfileEligible,
+      streamsuitesProfileVisible,
+      streamsuitesProfileStatusReason,
+      streamsuitesProfileUrl,
+      streamsuitesShareUrl,
+      findMeHereEnabled,
+      findMeHereEligible,
+      findMeHereVisible,
+      findMeHereStatusReason,
+      findMeHereProfileUrl,
+      findMeHereShareUrl,
+      coverImageUrl,
+      bannerImageUrl: coverImageUrl,
+      backgroundImageUrl,
+      avatarUrl,
+      slugAliases: Array.isArray(raw.slug_aliases || publicProfile.slug_aliases)
+        ? (raw.slug_aliases || publicProfile.slug_aliases).map((item) => coerceText(item)).filter(Boolean)
+        : [],
       accountType,
       role: raw.role || raw.account_role || accountType || "—",
       tier: normalizeTierLabel(raw.tier || raw.account_tier || raw.plan || "Core"),
@@ -945,16 +1043,76 @@ function normalizeUser(raw = {}) {
     return `${parts[0][0] || ""}${parts[1][0] || ""}`.toUpperCase();
   }
 
+  function humanizeSurfaceReason(value) {
+    const normalized = String(value || "").trim().toLowerCase();
+    if (!normalized) return "No status reason provided.";
+    switch (normalized) {
+      case "visible":
+        return "Visible on the saved canonical profile.";
+      case "missing_public_slug":
+        return "Missing canonical public slug.";
+      case "disabled_by_account":
+        return "Disabled at the account level.";
+      case "creator_capable_required":
+        return "Requires a creator-capable account.";
+      default:
+        return formatBadgeLabel(normalized);
+    }
+  }
+
+  function renderBooleanBadge(value, trueLabel, falseLabel, falseTone = "") {
+    return renderBadge(value ? trueLabel : falseLabel, value ? "ss-badge-success" : falseTone);
+  }
+
+  function renderUrlValue(url, emptyLabel) {
+    if (!url) {
+      return `<span class="accounts-details-keyline-value accounts-system-text is-muted">${escapeHtml(
+        emptyLabel
+      )}</span>`;
+    }
+    return `
+      <a class="ss-link accounts-details-keyline-value accounts-system-text" href="${escapeHtml(
+        url
+      )}" target="_blank" rel="noopener noreferrer">${escapeHtml(url)}</a>
+    `;
+  }
+
   function renderDrawerProfileSummary(user) {
     const title = user.displayName || user.userCode || user.email || "Account";
     const subtitle = user.userCode || "—";
-    const roleBadges = resolveRoleList(user.role).map((role) => renderBadge(role)).join("");
+    const roleBadges = [
+      ...resolveRoleList(user.role).map((role) => renderBadge(role)),
+      renderBadge(
+        user.creatorCapable ? "Creator-capable" : "Viewer-only",
+        user.creatorCapable ? "ss-badge-success" : ""
+      ),
+      user.publicSurfaceAccountType
+        ? renderBadge(formatBadgeLabel(user.publicSurfaceAccountType))
+        : ""
+    ]
+      .filter(Boolean)
+      .join("");
     const roleLabel = resolveRoleList(user.role)
       .map((role) => formatBadgeLabel(role))
       .join(", ");
-    const publicProfileHref = `https://streamsuites.app/community/profile.html?id=${encodeURIComponent(
+    const publicProfileHref = user.streamsuitesProfileUrl || `https://streamsuites.app/community/profile.html?id=${encodeURIComponent(
       user.id || ""
     )}`;
+    const identitySummary = user.creatorCapable
+      ? "Creator-capable account"
+      : user.viewerOnly
+      ? "Viewer-only public account"
+      : "Account capability unknown";
+    const streamsuitesVisibilitySummary = user.streamsuitesProfileVisible
+      ? "Visible"
+      : user.streamsuitesProfileEligible
+      ? "Hidden"
+      : "Ineligible";
+    const findMeHereVisibilitySummary = user.findMeHereVisible
+      ? "Listed"
+      : user.findMeHereEligible
+      ? "Not listed"
+      : "Ineligible";
     return `
       <article class="accounts-details-profile-card glass-card">
         <div class="accounts-details-profile-head">
@@ -976,6 +1134,14 @@ function normalizeUser(raw = {}) {
         <div class="accounts-details-meta-grid">
           <div><span class="label">Role</span><span class="value">${escapeHtml(roleLabel || "Unknown")}</span></div>
           <div><span class="label">Tier</span><span class="value">${renderBadge(user.tier || "—")}</span></div>
+          <div><span class="label">Public Surface Type</span><span class="value">${renderBadge(
+            user.publicSurfaceAccountType || "Unknown",
+            user.creatorCapable ? "ss-badge-success" : ""
+          )}</span></div>
+          <div><span class="label">Capability</span><span class="value">${renderBadge(
+            user.creatorCapable ? "Creator-capable" : "Viewer-only",
+            user.creatorCapable ? "ss-badge-success" : ""
+          )}</span></div>
           <div><span class="label">Status</span><span class="value">${renderBadge(
             user.accountStatus || "—",
             badgeToneForStatus(user.accountStatus)
@@ -996,13 +1162,123 @@ function normalizeUser(raw = {}) {
             formatTimestamp(user.lastLogin)
           )}</span></div>
           <div>
-            <span class="label">Public Profile</span>
+            <span class="label">Profile Surface</span>
             <span class="value"><a class="ss-link" href="${escapeHtml(
               publicProfileHref
             )}" target="_blank" rel="noopener noreferrer">Open profile</a></span>
           </div>
         </div>
       </article>
+      <div class="accounts-details-group-grid">
+        <section class="accounts-details-group">
+          <h5 class="accounts-details-group-title">Public Identity</h5>
+          <div class="accounts-details-kpi-row">
+            ${renderBadge(identitySummary, user.creatorCapable ? "ss-badge-success" : "")}
+            ${renderBooleanBadge(user.viewerOnly, "Viewer-only", "Not viewer-only")}
+            ${renderBooleanBadge(user.creatorCapable, "Creator-capable", "Not creator-capable")}
+          </div>
+          <div class="accounts-details-meta-grid">
+            <div><span class="label">Canonical Slug</span><span class="value accounts-system-text">${escapeHtml(
+              user.publicSlug || "—"
+            )}</span></div>
+            <div><span class="label">Slug Aliases</span><span class="value accounts-system-text">${escapeHtml(
+              user.slugAliases.length ? user.slugAliases.join(", ") : "—"
+            )}</span></div>
+            <div><span class="label">Avatar URL</span><span class="value accounts-system-text">${escapeHtml(
+              user.avatarUrl || "—"
+            )}</span></div>
+            <div><span class="label">User Code</span><span class="value accounts-system-text">${escapeHtml(
+              user.userCode || "—"
+            )}</span></div>
+          </div>
+        </section>
+        <section class="accounts-details-group">
+          <h5 class="accounts-details-group-title">StreamSuites Profile State</h5>
+          <div class="accounts-details-kpi-row">
+            ${renderBooleanBadge(user.streamsuitesProfileEligible, "Eligible", "Ineligible")}
+            ${renderBooleanBadge(user.streamsuitesProfileEnabled, "Enabled", "Disabled", "ss-badge-danger")}
+            ${renderBadge(
+              streamsuitesVisibilitySummary,
+              user.streamsuitesProfileVisible
+                ? "ss-badge-success"
+                : user.streamsuitesProfileEligible
+                ? "ss-badge-warning"
+                : ""
+            )}
+          </div>
+          <div class="accounts-details-meta-grid">
+            <div><span class="label">Visibility Reason</span><span class="value">${escapeHtml(
+              humanizeSurfaceReason(user.streamsuitesProfileStatusReason)
+            )}</span></div>
+            <div><span class="label">Raw Reason</span><span class="value accounts-system-text">${escapeHtml(
+              user.streamsuitesProfileStatusReason || "—"
+            )}</span></div>
+          </div>
+        </section>
+        <section class="accounts-details-group">
+          <h5 class="accounts-details-group-title">FindMeHere State</h5>
+          <div class="accounts-details-kpi-row">
+            ${renderBooleanBadge(user.findMeHereEligible, "Eligible", "Ineligible")}
+            ${renderBooleanBadge(user.findMeHereEnabled, "Enabled", "Disabled", "ss-badge-danger")}
+            ${renderBadge(
+              findMeHereVisibilitySummary,
+              user.findMeHereVisible
+                ? "ss-badge-success"
+                : user.findMeHereEligible
+                ? "ss-badge-warning"
+                : ""
+            )}
+          </div>
+          <div class="accounts-details-meta-grid">
+            <div><span class="label">Visibility Reason</span><span class="value">${escapeHtml(
+              humanizeSurfaceReason(user.findMeHereStatusReason)
+            )}</span></div>
+            <div><span class="label">Raw Reason</span><span class="value accounts-system-text">${escapeHtml(
+              user.findMeHereStatusReason || "—"
+            )}</span></div>
+          </div>
+        </section>
+        <section class="accounts-details-group">
+          <h5 class="accounts-details-group-title">Canonical URLs &amp; Share Targets</h5>
+          <div class="accounts-details-link-grid">
+            <div class="accounts-details-url-card">
+              <span class="accounts-details-keyline-label">StreamSuites profile URL</span>
+              ${renderUrlValue(user.streamsuitesProfileUrl, "No canonical StreamSuites URL")}
+              <span class="accounts-details-url-note">${escapeHtml(
+                user.streamsuitesShareUrl
+                  ? "Canonical StreamSuites share target is live."
+                  : humanizeSurfaceReason(user.streamsuitesProfileStatusReason)
+              )}</span>
+            </div>
+            <div class="accounts-details-url-card">
+              <span class="accounts-details-keyline-label">FindMeHere profile URL</span>
+              ${renderUrlValue(user.findMeHereProfileUrl, "No canonical FindMeHere URL")}
+              <span class="accounts-details-url-note">${escapeHtml(
+                user.findMeHereShareUrl
+                  ? "Canonical FindMeHere share target is live."
+                  : humanizeSurfaceReason(user.findMeHereStatusReason)
+              )}</span>
+            </div>
+          </div>
+        </section>
+        <section class="accounts-details-group">
+          <h5 class="accounts-details-group-title">Media Fields</h5>
+          <div class="accounts-details-media-grid">
+            <div class="accounts-details-keyline">
+              <span class="accounts-details-keyline-label">Avatar URL</span>
+              ${renderUrlValue(user.avatarUrl, "No avatar URL")}
+            </div>
+            <div class="accounts-details-keyline">
+              <span class="accounts-details-keyline-label">Cover / banner image URL</span>
+              ${renderUrlValue(user.coverImageUrl, "No cover image URL")}
+            </div>
+            <div class="accounts-details-keyline">
+              <span class="accounts-details-keyline-label">Background image URL</span>
+              ${renderUrlValue(user.backgroundImageUrl, "No background image URL")}
+            </div>
+          </div>
+        </section>
+      </div>
       <div class="accounts-details-placeholder-group">
         <div class="accounts-details-placeholder-block">
           <div class="accounts-details-placeholder-title">Admin Notes</div>

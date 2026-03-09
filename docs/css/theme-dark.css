@@ -21,6 +21,14 @@
   font-weight: 400;
 }
 
+@font-face {
+  font-family: "SUSEMono";
+  src: url("/assets/fonts/mono/SUSEMono-Variable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+}
+
 /* ----------------------------------------------------------------------
    CSS Variables — Dark Theme Palette
    ---------------------------------------------------------------------- */
@@ -56,6 +64,8 @@
   --link-accent: #F49900;
   --status-active: #84C642;
   --status-idle: #DF2323;
+  --system-mono-font: "SUSEMono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
 }
 
 /* ----------------------------------------------------------------------
