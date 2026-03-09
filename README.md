@@ -1,7 +1,7 @@
 # StreamSuites Admin Dashboard — Runtime Operations & Control
 
 StreamSuites Admin Dashboard is the **admin-only control and visualization layer** for monitoring and configuring the StreamSuites ecosystem.  
-It is a **static web UI** currently shipped from the `/docs` directory and now prepared for **Cloudflare Pages deep-linkable routing** at **https://admin.streamsuites.app** while preserving GitHub Pages-safe static delivery during migration.  
+It is a **static web UI** currently shipped from the `/docs` directory and now prepared for **Cloudflare Pages deep-linkable routing** at **https://admin.streamsuites.app** while preserving GitHub Pages-safe static delivery during migration. A root-level Pages compatibility layer now mirrors the published app when Cloudflare is pointed at the repository root instead of `/docs`.  
 Admin views live under `/docs/views`, major admin surfaces now resolve through clean path-based routes (with legacy hash compatibility retained during migration), and runtime exports are read locally from `/docs/runtime/exports` (no runtime exports are fetched from the Auth API).
 
 All execution, chat ingestion, livestream control, scheduling, and command dispatch live in the **StreamSuites Runtime** repository — this dashboard supplies the configuration and control inputs for those systems.
@@ -200,6 +200,7 @@ This repository is a **companion project** to the StreamSuites Runtime.
 
 - Static site assets continue to ship from the `/docs` directory.
 - Cloudflare Pages migration readiness is in place via clean admin route support plus `docs/_redirects` rewrites for deep-linkable dashboard paths.
+- A root-level `_redirects` file and `index.html` fallback mirror the `docs/` app for Cloudflare Pages projects that publish the repository root during cutover.
 - Legacy GitHub Pages/404 compatibility is retained during migration through client-side fallback handoff for recognized admin routes.
 - No local backend; authentication is provided by the central StreamSuites Auth API.
 - Discord OAuth required for Discord-specific configuration views.
@@ -212,6 +213,7 @@ This repository is a **companion project** to the StreamSuites Runtime.
 
 ```text
 StreamSuites-Dashboard/
+├── _redirects  [Cloudflare Pages repo-root compatibility map -> /docs]
 ├── .github/
 │   └── workflows/
 │       └── pages.yml
@@ -223,6 +225,7 @@ StreamSuites-Dashboard/
 │   ├── compatibility.md
 │   ├── decisions.md
 │   └── roadmap.md
+├── index.html  [repo-root fallback redirect to docs app]
 ├── docs/  [static deployment root; GitHub Pages legacy source + Cloudflare Pages-ready rewrites]
 │   ├── _redirects
 │   ├── index.html
