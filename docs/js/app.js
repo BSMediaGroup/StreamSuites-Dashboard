@@ -874,6 +874,7 @@ async function loadView(name) {
 
     const html = await res.text();
     container.innerHTML = html;
+    markFirstViewMounted(name);
 
     setModeDataset(container);
 
@@ -904,7 +905,6 @@ async function loadView(name) {
     if (window.Versioning?.stampFooters) {
       window.Versioning.stampFooters();
     }
-    markFirstViewMounted(name);
   } catch (err) {
     console.error(`[Dashboard] Failed to load view ${name}`, err);
     container.innerHTML = `
@@ -1480,14 +1480,12 @@ async function initApp() {
 
   const watchdog = setTimeout(() => {
     console.error(
-      "[Dashboard] INIT WATCHDOG TRIPPED: init exceeded 3000ms; forcing abort UI."
+      "[Dashboard] INIT WATCHDOG TRIPPED: init exceeded 3000ms; continuing boot with diagnostics only."
     );
-    const root =
-      document.getElementById("app") ||
-      document.getElementById("root") ||
-      document.body;
-    root.innerHTML =
-      "<div style='padding:16px;font-family:system-ui;color:#fff;background:#111'>Dashboard init watchdog tripped. Check console for the last log line.</div>";
+    console.error("CURRENT_VIEW", App.currentView);
+    console.error("CURRENT_ROUTE", App.currentRoute);
+    console.error("FIRST_VIEW_NAME", App.boot?.firstViewName);
+    console.error("FIRST_VIEW_MOUNTED", App.boot?.firstViewMounted);
   }, 3000);
 
   console.log("[BOOT:20] auth complete", performance.now());
@@ -1503,10 +1501,6 @@ async function initApp() {
 
   async function initDashboard() {
     console.log("[BOOT:40] dashboard init begin", performance.now());
-    const resolvedMode = await waitForAppMode();
-    if (resolvedMode === "BOOT") {
-      setAppMode("NORMAL", { reason: "boot-timeout" });
-    }
     if (getAppMode() !== "NORMAL") {
       setAppMode("NORMAL", { reason: "init-start" });
     }
