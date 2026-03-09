@@ -1,15 +1,17 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-03-07T16:15:44.973496Z",
+  "exported_at": "2026-03-09T13:59:37.858076Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.4.1-alpha",
-    "build": "2026.03.07+014"
+    "build": "2026.03.09+001"
   },
   "users": [
     {
       "id": "494098e5-1409-40ea-99a5-ec4a1b797da4",
       "internal_id": "494098e5-1409-40ea-99a5-ec4a1b797da4",
+      "public_slug": "jacksonjones",
+      "slug_aliases": [],
       "user_code": "CZ3FKGJ",
       "email": "jacksonjones673@gmail.com",
       "email_verified": true,
@@ -43,6 +45,8 @@
     {
       "id": "3c426a3d-2409-4409-a0bf-c26960081027",
       "internal_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "public_slug": "bsmediagroup",
+      "slug_aliases": [],
       "user_code": "YR992ZS",
       "email": "dcadmin",
       "email_verified": true,
@@ -81,6 +85,8 @@
     {
       "id": "338edf81-9e24-4730-977a-c9972aecba4d",
       "internal_id": "338edf81-9e24-4730-977a-c9972aecba4d",
+      "public_slug": "danielclancylive",
+      "slug_aliases": [],
       "user_code": "rDbzSZQ",
       "email": null,
       "email_verified": true,
@@ -114,6 +120,8 @@
     {
       "id": "75d556b3-dd22-40b6-9d3e-8a034af552d6",
       "internal_id": "75d556b3-dd22-40b6-9d3e-8a034af552d6",
+      "public_slug": "digitalcyanide",
+      "slug_aliases": [],
       "user_code": "84BPuNT",
       "email": null,
       "email_verified": true,
@@ -147,6 +155,8 @@
     {
       "id": "3a190fb9-1804-4a8f-b0d4-03cbf03ef06c",
       "internal_id": "3a190fb9-1804-4a8f-b0d4-03cbf03ef06c",
+      "public_slug": "redmandolin2",
+      "slug_aliases": [],
       "user_code": "HNNqTcX",
       "email": null,
       "email_verified": true,
@@ -180,6 +190,8 @@
     {
       "id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
       "internal_id": "123750a8-351f-4f91-bf64-b331b3fd1df4",
+      "public_slug": "jarredpluschke",
+      "slug_aliases": [],
       "user_code": "7lPBEiA",
       "email": "jarredpluschke@gmail.com",
       "email_verified": true,
@@ -218,6 +230,8 @@
     {
       "id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
       "internal_id": "a5a9f0b4-17d8-4dae-9bfb-81463c199347",
+      "public_slug": "kanefort89",
+      "slug_aliases": [],
       "user_code": "JqhcS2m",
       "email": "kanefort89@gmail.com",
       "email_verified": true,
@@ -261,6 +275,8 @@
     {
       "id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
       "internal_id": "9112b74f-d53e-46fd-8dc8-08c6007b1489",
+      "public_slug": "danielclancy3",
+      "slug_aliases": [],
       "user_code": "hVRt8Qp",
       "email": "hurryupandpaymerumble@gmail.com",
       "email_verified": true,
@@ -294,6 +310,8 @@
     {
       "id": "2b20d3e9-feee-4b8b-a78d-566912b68e8d",
       "internal_id": "2b20d3e9-feee-4b8b-a78d-566912b68e8d",
+      "public_slug": "thirdrailify",
+      "slug_aliases": [],
       "user_code": "fowTR0T",
       "email": "thirdmailify@gmail.com",
       "email_verified": false,
@@ -327,6 +345,8 @@
     {
       "id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
       "internal_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "public_slug": "danielclancy2",
+      "slug_aliases": [],
       "user_code": "7XaVoy7",
       "email": "mail@danielclancy.net",
       "email_verified": true,
@@ -365,6 +385,8 @@
     {
       "id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
       "internal_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "public_slug": "danielclancy",
+      "slug_aliases": [],
       "user_code": "4TiOlvS",
       "email": "daniel@brainstream.media",
       "email_verified": true,
@@ -408,6 +430,8 @@
     {
       "id": "064370cb-161a-438d-b657-d57a54aa1712",
       "internal_id": "064370cb-161a-438d-b657-d57a54aa1712",
+      "public_slug": "redmandolin",
+      "slug_aliases": [],
       "user_code": "VIvXsPS",
       "email": "realredmandolin@gmail.com",
       "email_verified": true,
