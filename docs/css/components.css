@@ -2067,6 +2067,7 @@ body.ss-col-resizing-active {
   border-radius: 999px;
   display: grid;
   place-items: center;
+  overflow: hidden;
   font-family: "RechargeBd", sans-serif;
   font-size: 13px;
   color: #e8f3ff;
@@ -2074,6 +2075,24 @@ body.ss-col-resizing-active {
   background: radial-gradient(circle at 25% 25%, rgba(120, 195, 255, 0.46), rgba(65, 95, 150, 0.36));
   box-shadow: 0 0 16px rgba(120, 195, 255, 0.22);
   flex: 0 0 auto;
+}
+
+.accounts-details-avatar.has-image,
+.accounts-details-preview-avatar.has-image,
+.accounts-table-avatar.has-image {
+  background: rgba(7, 12, 22, 0.9);
+  border-color: rgba(120, 195, 255, 0.2);
+  box-shadow: none;
+}
+
+.accounts-details-avatar img,
+.accounts-details-preview-avatar img,
+.accounts-table-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: inherit;
 }
 
 .accounts-details-identity {
@@ -2238,6 +2257,110 @@ body.ss-col-resizing-active {
 
 .accounts-details-placeholder-value {
   font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.accounts-hover-link {
+  cursor: pointer;
+}
+
+.accounts-hover-button {
+  cursor: pointer;
+}
+
+.accounts-table-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  overflow: hidden;
+  font-size: 11px;
+  font-family: "RechargeBd", sans-serif;
+  color: #e8f3ff;
+  border: 1px solid rgba(120, 195, 255, 0.45);
+  background: radial-gradient(circle at 25% 25%, rgba(120, 195, 255, 0.46), rgba(65, 95, 150, 0.36));
+}
+
+.accounts-details-preview-cover,
+.accounts-details-preview-media {
+  min-height: 96px;
+  border-radius: 12px;
+  background: linear-gradient(140deg, rgba(120, 195, 255, 0.26), rgba(15, 24, 36, 0.88));
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.accounts-details-inline-preview {
+  gap: 12px;
+}
+
+.accounts-details-preview-card {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.accounts-details-preview-body {
+  display: grid;
+  gap: 10px;
+}
+
+.accounts-details-preview-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  overflow: hidden;
+  font-family: "RechargeBd", sans-serif;
+  color: #e8f3ff;
+  border: 1px solid rgba(120, 195, 255, 0.45);
+  background: radial-gradient(circle at 25% 25%, rgba(120, 195, 255, 0.46), rgba(65, 95, 150, 0.36));
+}
+
+.accounts-details-preview-head {
+  display: grid;
+  gap: 2px;
+}
+
+.accounts-details-preview-head strong {
+  font-size: 14px;
+}
+
+.accounts-details-preview-head span {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.accounts-details-preview-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.accounts-details-preview-badge {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.accounts-details-preview-bio {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.accounts-details-preview-links {
+  font-size: 12px;
+  line-height: 1.6;
   color: var(--text-secondary);
 }
 

@@ -80,6 +80,7 @@
           <thead>
             <tr>
               <th class="accounts-id-column" data-sort="id" data-col-key="internalId">Internal UUID</th>
+              <th data-col-key="avatar">Avatar</th>
               <th data-sort="userCode" data-col-key="userCode">User Code</th>
               <th data-sort="email" data-col-key="email">Email</th>
               <th data-sort="emailVerifiedLabel" data-col-key="emailVerified">Email Verified</th>
@@ -118,6 +119,7 @@
   aria-modal="true"
   aria-hidden="true"
   aria-labelledby="accounts-details-title"
+  data-ss-profile-hover="off"
   tabindex="-1"
 >
   <header class="accounts-details-header">
@@ -137,7 +139,7 @@
   </header>
 
   <div id="accounts-details-content" class="accounts-details-content">
-    <section id="accounts-details-profile-section" class="accounts-details-section" aria-label="Profile summary">
+    <section id="accounts-details-profile-section" class="accounts-details-section" aria-label="Profile summary" data-ss-profile-hover="off">
       <h4 class="accounts-details-section-title">Profile &amp; Public Surfaces</h4>
       <div id="accounts-details-profile"></div>
     </section>

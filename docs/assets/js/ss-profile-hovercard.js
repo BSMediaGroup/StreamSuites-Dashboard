@@ -1,11 +1,10 @@
 (() => {
-  const TRIGGER_SELECTOR = ".ss-profile-hover";
+  const TRIGGER_SELECTOR = '[data-ss-profile-hover-trigger="true"]';
   const OPTOUT_SELECTOR = '[data-ss-profile-hover="off"], .ss-no-profile-hover';
   const PROFILE_ENDPOINT = "https://api.streamsuites.app/api/public/profile";
   const HIDE_DELAY_MS = 120;
   const OFFSET = 10;
   const VIEWPORT_GAP = 12;
-  const THUMB_SELECTOR = ".item-thumb, .thumb";
   const ROLE_ICON_MAP = Object.freeze({
     admin: "/assets/icons/tierbadge-admin.svg"
   });
@@ -40,40 +39,6 @@
     "github",
     "website"
   ]);
-  const ROLE_BADGE_WRAPPER_QUERY = ".ss-role-badges";
-  const ROLE_BADGE_PRIMARY_QUERY =
-    ".ss-role-badges svg, .ss-role-badges img, .ss-role-badges [data-ss-role-badge]";
-  const ROLE_BADGE_SECONDARY_QUERY =
-    "[data-ss-badge-kind='role'] svg, [data-ss-badge-kind='role'] img, [data-ss-badge-kind='tier'] svg, [data-ss-badge-kind='tier'] img, .ss-role-badge, .ss-tier-badge, [data-ss-role-badge]";
-  const ROLE_BADGE_MARKER_QUERY =
-    "[data-ss-role-badge], [data-ss-badge-kind='role'], [data-ss-badge-kind='tier'], .ss-role-badge, .ss-tier-badge, .ss-role-badges";
-  const ROLE_BADGE_INCLUDE_TOKENS = Object.freeze(["tier", "core", "gold", "pro", "admin", "role"]);
-  const ROLE_BADGE_EXCLUDE_TOKENS = Object.freeze([
-    "youtube",
-    "twitch",
-    "rumble",
-    "kick",
-    "twitter",
-    "x",
-    "discord",
-    "tiktok",
-    "instagram",
-    "facebook",
-    "platform",
-    "source"
-  ]);
-  const BADGE_ANCESTOR_RADIUS = 3;
-  const SVG_NS = "http://www.w3.org/2000/svg";
-  const XLINK_NS = "http://www.w3.org/1999/xlink";
-  const FALLBACK_BADGE_ICON_MAP = Object.freeze({
-    admin: "M8 1.1 13.4 3.1v4.2c0 3.2-2.2 5.9-5.4 7.7C4.8 13.2 2.6 10.5 2.6 7.3V3.1L8 1.1zm2.6 5.2L7.4 9.5 5.8 8l-1.1 1.1 2.7 2.7 4.3-4.3-1.1-1.2z",
-    creator: "M8 1.2 9.9 5l4.2.6-3 2.9.7 4.1L8 10.7 4.2 12.6l.7-4.1-3-2.9L6.1 5 8 1.2z",
-    core: "M8 2.1a5.9 5.9 0 1 1 0 11.8A5.9 5.9 0 0 1 8 2.1zm0 2a3.9 3.9 0 1 0 0 7.8 3.9 3.9 0 0 0 0-7.8z",
-    gold: "M8 1.3 11 2.6l2.8 1.6-.6 3.2a6.5 6.5 0 0 1-5.2 5.3A6.5 6.5 0 0 1 2.8 7.4l-.6-3.2L5 2.6 8 1.3zm0 2.2-1.1 2.1-2.3.3 1.7 1.6-.4 2.3L8 8.7l2.1 1.1-.4-2.3 1.7-1.6-2.3-.3L8 3.5z",
-    pro: "M8 1.4 3.2 8h3L5.5 14.6 12.8 6H9.9L11 1.4H8z",
-    staff: "M8 1.1 13.6 3v4.4c0 3.4-2.4 6.2-5.6 7.8C4.8 13.6 2.4 10.8 2.4 7.4V3L8 1.1z",
-    verified: "M8 1.3a6.7 6.7 0 1 1 0 13.4A6.7 6.7 0 0 1 8 1.3zm2.7 4.3L7.1 9.4 5.3 7.7 4.2 8.8l2.9 2.9 4.9-4.9-1-1.2z"
-  });
 
   let card = null;
   let activeTrigger = null;
@@ -81,44 +46,30 @@
   let fetchController = null;
   let activeFetchToken = 0;
   let cardHovered = false;
-  let badgeCloneCounter = 0;
 
   const profileCache = new Map();
-
-  function clamp(value, min, max) {
-    return Math.min(Math.max(value, min), max);
-  }
-
-  function isInOptOutZone(node) {
-    return Boolean(node?.closest(OPTOUT_SELECTOR));
-  }
-
-  function getTrigger(node) {
-    const trigger = node?.closest(TRIGGER_SELECTOR);
-    if (!trigger) return null;
-    if (isInOptOutZone(trigger)) return null;
-    return trigger;
-  }
 
   function safeText(value, fallback = "") {
     const text = String(value || "").trim();
     return text || fallback;
   }
 
-  function textInitial(value) {
-    return safeText(value, "P").charAt(0).toUpperCase();
+  function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
   }
 
   function parseJsonObject(value) {
     const raw = safeText(value);
     if (!raw) return null;
     try {
-      const parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== "object") return null;
-      return parsed;
+      return JSON.parse(raw);
     } catch (_err) {
       return null;
     }
+  }
+
+  function textInitial(value) {
+    return safeText(value, "P").charAt(0).toUpperCase();
   }
 
   function normalizeRole(value) {
@@ -131,8 +82,7 @@
 
   function normalizeTier(value) {
     const tier = safeText(value).toLowerCase();
-    if (tier === "gold" || tier === "pro") return tier;
-    return "core";
+    return tier === "gold" || tier === "pro" ? tier : "core";
   }
 
   function normalizeSocialLinks(value) {
@@ -155,9 +105,20 @@
     return `https://${raw.replace(/^\/+/, "")}`;
   }
 
-  function socialIconPath(network) {
-    const normalized = safeText(network).toLowerCase();
-    return SOCIAL_ICON_MAP[normalized] || "/assets/icons/ui/globe.svg";
+  function normalizeLiveStatus(value) {
+    if (!value || typeof value !== "object") return null;
+    const provider = safeText(value.provider || value.active_provider || value.activeProvider).toLowerCase();
+    const viewerCount = Number(value.viewerCount ?? value.viewer_count);
+    return {
+      isLive: value.isLive === true || value.is_live === true,
+      provider,
+      providerLabel: safeText(
+        value.providerLabel || (provider ? provider.charAt(0).toUpperCase() + provider.slice(1) : "Live")
+      ),
+      title: safeText(value.title || value.live_title || value.liveTitle),
+      url: safeText(value.url || value.live_url || value.liveUrl),
+      viewerCount: Number.isFinite(viewerCount) && viewerCount >= 0 ? Math.round(viewerCount) : null
+    };
   }
 
   function collectSocialEntries(value) {
@@ -180,257 +141,87 @@
     return entries;
   }
 
+  function socialIconPath(network) {
+    return SOCIAL_ICON_MAP[safeText(network).toLowerCase()] || "/assets/icons/ui/globe.svg";
+  }
+
   function buildBadgesFromRole(role, tier = "core") {
     const normalizedRole = normalizeRole(role);
-    if (normalizedRole === "ADMIN") return [{ kind: "role-icon", value: "admin" }];
-    if (normalizedRole === "CREATOR") return [{ kind: "tier-icon", value: normalizeTier(tier) }];
+    if (normalizedRole === "ADMIN") return [{ kind: "role", value: "admin" }];
+    if (normalizedRole === "CREATOR") return [{ kind: "tier", value: normalizeTier(tier) }];
     return [];
   }
 
   function normalizeBadges(value, role, tier) {
-    if (Array.isArray(value)) {
-      return value
-        .map((badge) => {
-          if (!badge || typeof badge !== "object") return null;
-          const kind = safeText(badge.kind).toLowerCase();
-          const badgeValue = safeText(badge.value).toLowerCase();
-          if (!kind || !badgeValue) return null;
-          return { kind, value: badgeValue };
-        })
-        .filter(Boolean);
-    }
-    return buildBadgesFromRole(role, tier);
+    const source = Array.isArray(value) ? value : buildBadgesFromRole(role, tier);
+    return source
+      .map((badge) => {
+        if (!badge || typeof badge !== "object") return null;
+        const rawKind = safeText(badge.kind).toLowerCase();
+        const badgeValue = safeText(badge.value).toLowerCase();
+        if (!rawKind || !badgeValue) return null;
+        const kind = rawKind.includes("tier") ? "tier" : rawKind.includes("role") ? "role" : "";
+        if (!kind) return null;
+        if (kind === "role" && badgeValue !== "admin") return null;
+        if (kind === "tier" && !TIER_ICON_MAP[badgeValue]) return null;
+        return { kind, value: badgeValue };
+      })
+      .filter(Boolean);
   }
 
   function resolveBadgeIconPath(kind, value) {
-    if (kind === "role-icon") return ROLE_ICON_MAP[value] || "";
-    if (kind === "tier-icon") return TIER_ICON_MAP[value] || "";
+    if (kind === "role") return ROLE_ICON_MAP[value] || "";
+    if (kind === "tier") return TIER_ICON_MAP[value] || "";
     return "";
   }
 
-  function isLikelyBadgeIconElement(node) {
-    if (!(node instanceof Element)) return false;
-    if (node.closest(".ss-profile-hovercard")) return false;
-    if (!node.matches("svg, img, [data-ss-role-badge], .ss-role-badge, .ss-tier-badge")) return false;
-    const className = safeText(node.className || "").toLowerCase();
-    if (/avatar|profile-avatar|creator-avatar/.test(className)) return false;
-    return true;
+  function normalizeProfileLookup(value) {
+    return safeText(value)
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, "-")
+      .replace(/^-+|-+$/g, "");
   }
 
-  function nodeRoleBadgeTokenText(node) {
-    if (!(node instanceof Element)) return "";
-    const parts = [
-      node.getAttribute("class"),
-      node.getAttribute("id"),
-      node.getAttribute("data-ss-role-badge"),
-      node.getAttribute("data-ss-badge-kind"),
-      node.getAttribute("data-badge"),
-      node.getAttribute("aria-label"),
-      node.getAttribute("title")
-    ];
-    const useNode = node.matches("use") ? node : node.querySelector("use");
-    if (useNode instanceof Element) {
-      parts.push(useNode.getAttribute("href"));
-      parts.push(useNode.getAttribute("xlink:href"));
-    }
-    return parts
-      .map((value) => safeText(value).toLowerCase())
-      .filter(Boolean)
-      .join(" ");
+  function buildCanonicalProfileHref(profile) {
+    const slug = normalizeProfileLookup(
+      profile?.public_slug || profile?.publicSlug || profile?.slug || profile?.user_code || profile?.userCode
+    );
+    return slug ? `/u/${encodeURIComponent(slug)}` : "";
   }
 
-  function isRoleBadgeNode(node) {
-    if (!isLikelyBadgeIconElement(node)) return false;
-    if (node.matches(ROLE_BADGE_MARKER_QUERY) || node.closest(ROLE_BADGE_MARKER_QUERY)) return true;
-    const tokenText = nodeRoleBadgeTokenText(node);
-    if (!tokenText) return false;
-    const hasExcluded = ROLE_BADGE_EXCLUDE_TOKENS.some((token) => tokenText.includes(token));
-    if (hasExcluded) return false;
-    return ROLE_BADGE_INCLUDE_TOKENS.some((token) => tokenText.includes(token));
+  function isInOptOutZone(node) {
+    return Boolean(node?.closest(OPTOUT_SELECTOR));
   }
 
-  function collectRoleBadgeCandidates(root, query, out, seen) {
-    if (!(root instanceof Element) || !query) return;
-    root.querySelectorAll(query).forEach((node) => {
-      if (!(node instanceof Element)) return;
-      if (seen.has(node) || !isRoleBadgeNode(node)) return;
-      seen.add(node);
-      out.push(node);
-    });
-  }
-
-  function findBadgeNodes(triggerEl) {
-    if (!(triggerEl instanceof Element)) return [];
-    const nodes = [];
-    const seen = new Set();
-    const roots = [triggerEl];
-    let cursor = triggerEl;
-    for (let depth = 0; depth < BADGE_ANCESTOR_RADIUS; depth += 1) {
-      cursor = cursor?.parentElement || null;
-      if (!cursor || cursor === document.body) break;
-      roots.push(cursor);
-    }
-
-    let hasRoleWrapper = false;
-    roots.forEach((root) => {
-      if (!root.matches?.(ROLE_BADGE_WRAPPER_QUERY) && !root.querySelector(ROLE_BADGE_WRAPPER_QUERY)) return;
-      hasRoleWrapper = true;
-      collectRoleBadgeCandidates(root, ROLE_BADGE_PRIMARY_QUERY, nodes, seen);
-    });
-    if (hasRoleWrapper) return nodes.slice(0, 6);
-
-    let hasRoleMarker = false;
-    roots.forEach((root) => {
-      if (!root.matches?.(ROLE_BADGE_MARKER_QUERY) && !root.querySelector(ROLE_BADGE_MARKER_QUERY)) return;
-      hasRoleMarker = true;
-      collectRoleBadgeCandidates(root, ROLE_BADGE_SECONDARY_QUERY, nodes, seen);
-    });
-    if (!hasRoleMarker) {
-      return [];
-    }
-    return nodes.slice(0, 6);
-  }
-
-  function patchSvgUseReferences(svg) {
-    if (!(svg instanceof SVGElement)) return;
-    svg.querySelectorAll("use").forEach((useNode) => {
-      const hrefValue = safeText(useNode.getAttribute("href") || useNode.getAttributeNS(XLINK_NS, "href"));
-      if (!hrefValue) return;
-      useNode.setAttribute("href", hrefValue);
-      useNode.setAttributeNS(XLINK_NS, "xlink:href", hrefValue);
-    });
-  }
-
-  function dedupeSvgIds(svg) {
-    if (!(svg instanceof SVGElement)) return;
-    const renamed = new Map();
-    svg.querySelectorAll("[id]").forEach((node) => {
-      const oldId = safeText(node.id);
-      if (!oldId) return;
-      badgeCloneCounter += 1;
-      const newId = `ss-hover-badge-${badgeCloneCounter}`;
-      node.id = newId;
-      renamed.set(oldId, newId);
-    });
-    if (!renamed.size) return;
-    const attrs = ["href", "xlink:href", "fill", "stroke", "filter", "mask", "clip-path"];
-    svg.querySelectorAll("*").forEach((node) => {
-      attrs.forEach((attr) => {
-        const raw = safeText(node.getAttribute(attr));
-        if (!raw) return;
-        let next = raw;
-        renamed.forEach((newId, oldId) => {
-          next = next
-            .replaceAll(`#${oldId}`, `#${newId}`)
-            .replaceAll(`url(#${oldId})`, `url(#${newId})`);
-        });
-        if (next !== raw) {
-          node.setAttribute(attr, next);
-        }
-      });
-    });
-  }
-
-  function cloneBadgeNode(node) {
+  function getTrigger(node) {
     if (!(node instanceof Element)) return null;
-    let clone = node.cloneNode(true);
-    if (!(clone instanceof Element)) return null;
-    if (!clone.matches("svg, img")) {
-      const embeddedIcon = clone.querySelector("svg, img");
-      if (!(embeddedIcon instanceof Element)) return null;
-      clone = embeddedIcon;
-    }
-    clone.classList.add("ss-hover-badge-icon");
-    clone.removeAttribute("id");
-    clone.removeAttribute("aria-hidden");
-    clone.setAttribute("aria-hidden", "true");
-    if (clone instanceof SVGElement) {
-      patchSvgUseReferences(clone);
-      dedupeSvgIds(clone);
-    }
-    return clone;
-  }
-
-  function normalizeFallbackBadgeTokens(trigger, badges) {
-    const tokens = [];
-    const pushToken = (value) => {
-      const token = safeText(value).toLowerCase();
-      if (!token || tokens.includes(token)) return;
-      tokens.push(token);
-    };
-    normalizeBadges(badges, "PUBLIC", "core").forEach((badge) => {
-      pushToken(badge.value);
-    });
-    const rawAttr = safeText(trigger?.getAttribute("data-ss-badges") || trigger?.dataset?.ssBadges);
-    if (!rawAttr) return tokens;
-    try {
-      const parsed = JSON.parse(rawAttr);
-      if (Array.isArray(parsed)) {
-        parsed.forEach((entry) => {
-          if (typeof entry === "string") {
-            pushToken(entry);
-            return;
-          }
-          if (!entry || typeof entry !== "object") return;
-          pushToken(entry.value || entry.kind);
-        });
-        return tokens;
-      }
-      if (parsed && typeof parsed === "object") {
-        pushToken(parsed.value || parsed.kind);
-        return tokens;
-      }
-    } catch (_err) {
-      rawAttr.split(",").forEach((entry) => pushToken(entry));
-    }
-    return tokens;
-  }
-
-  function createFallbackBadgeSvg(token) {
-    const pathData = FALLBACK_BADGE_ICON_MAP[token];
-    if (!pathData) return null;
-    const svg = document.createElementNS(SVG_NS, "svg");
-    svg.setAttribute("viewBox", "0 0 16 16");
-    svg.setAttribute("aria-hidden", "true");
-    svg.classList.add("ss-hover-badge-icon");
-    const path = document.createElementNS(SVG_NS, "path");
-    path.setAttribute("d", pathData);
-    svg.appendChild(path);
-    return svg;
+    const trigger = node.closest(TRIGGER_SELECTOR);
+    if (!trigger || isInOptOutZone(trigger)) return null;
+    return trigger;
   }
 
   function parseTriggerData(trigger) {
     const ds = trigger?.dataset || {};
-    const displayName =
-      safeText(ds.ssDisplayName) ||
-      safeText(trigger?.getAttribute("aria-label")) ||
-      safeText(trigger?.textContent, "Public User");
-    const userCode = safeText(ds.ssUserCode);
-    const userId = safeText(ds.ssUserId);
-    const avatarUrl = safeText(ds.ssAvatarUrl);
     const role = normalizeRole(ds.ssRole);
-    const bio = safeText(ds.ssBio);
-    const profileHref = safeText(ds.ssProfileHref) || safeText(trigger?.getAttribute("href"));
-    const coverImageUrl = safeText(ds.ssCoverUrl || ds.ssCoverImageUrl);
-    const socialLinks = normalizeSocialLinks(parseJsonObject(ds.ssSocialLinks));
-    const badges = normalizeBadges(parseJsonObject(ds.ssBadges), role, "core");
     return {
-      displayName,
-      userCode,
-      userId,
-      avatarUrl,
+      displayName:
+        safeText(ds.ssDisplayName) || safeText(trigger?.getAttribute("aria-label")) || safeText(trigger?.textContent, "Public User"),
+      userCode: safeText(ds.ssUserCode),
+      userId: safeText(ds.ssUserId),
+      avatarUrl: safeText(ds.ssAvatarUrl),
       role,
-      bio,
-      profileHref,
-      coverImageUrl,
-      socialLinks,
-      badges
+      bio: safeText(ds.ssBio),
+      profileHref: safeText(ds.ssProfileHref) || safeText(trigger?.getAttribute("href")),
+      coverImageUrl: safeText(ds.ssCoverUrl || ds.ssCoverImageUrl),
+      socialLinks: normalizeSocialLinks(parseJsonObject(ds.ssSocialLinks)),
+      badges: normalizeBadges(parseJsonObject(ds.ssBadges), role, safeText(ds.ssTier)),
+      tier: normalizeTier(ds.ssTier),
+      liveStatus: normalizeLiveStatus(parseJsonObject(ds.ssLiveStatus))
     };
   }
 
   function createCard() {
     if (card) return card;
-
     card = document.createElement("aside");
     card.className = "ss-profile-hovercard";
     card.setAttribute("role", "tooltip");
@@ -459,7 +250,6 @@
         </div>
       </div>
     `;
-
     const coverImage = getSlot("cover-image");
     if (coverImage) {
       coverImage.addEventListener("load", () => {
@@ -471,17 +261,14 @@
         coverImage.hidden = true;
       });
     }
-
     card.addEventListener("mouseenter", () => {
       cardHovered = true;
       clearHideTimer();
     });
-
     card.addEventListener("mouseleave", () => {
       cardHovered = false;
       scheduleHide();
     });
-
     document.body.appendChild(card);
     return card;
   }
@@ -490,37 +277,18 @@
     return card?.querySelector(`[data-slot="${name}"]`) || null;
   }
 
-  function renderBadgeSuffix(row, badges, trigger) {
+  function renderBadgeSuffix(row, badges) {
     if (!row) return;
     row.textContent = "";
-    const sourceBadges = findBadgeNodes(trigger);
-    sourceBadges.forEach((node) => {
-      const clone = cloneBadgeNode(node);
-      if (!clone) return;
-      row.appendChild(clone);
+    normalizeBadges(badges, "PUBLIC", "core").forEach((badge) => {
+      const iconPath = resolveBadgeIconPath(badge.kind, badge.value);
+      if (!iconPath) return;
+      const icon = document.createElement("img");
+      icon.className = "ss-profile-hovercard-badge ss-hover-badge-icon";
+      icon.src = iconPath;
+      icon.alt = "";
+      row.appendChild(icon);
     });
-
-    if (!row.childElementCount) {
-      const normalized = normalizeBadges(badges, "PUBLIC", "core");
-      normalized.forEach((badge) => {
-        const iconPath = resolveBadgeIconPath(badge.kind, badge.value);
-        if (!iconPath) return;
-        const icon = document.createElement("img");
-        icon.className = "ss-profile-hovercard-badge ss-hover-badge-icon";
-        icon.src = iconPath;
-        icon.alt = "";
-        row.appendChild(icon);
-      });
-    }
-
-    if (!row.childElementCount) {
-      normalizeFallbackBadgeTokens(trigger, badges).forEach((token) => {
-        const icon = createFallbackBadgeSvg(token);
-        if (!icon) return;
-        row.appendChild(icon);
-      });
-    }
-
     row.hidden = row.childElementCount === 0;
   }
 
@@ -563,7 +331,16 @@
     coverImage.src = source;
   }
 
-  function updateCardContent(profile, trigger) {
+  function buildLiveBadge(liveStatus) {
+    if (!liveStatus?.isLive) return null;
+    const badge = document.createElement("span");
+    badge.className = "ss-profile-hovercard-live-badge";
+    badge.textContent = "LIVE";
+    badge.setAttribute("aria-label", `${liveStatus.providerLabel || "Live"} live now`);
+    return badge;
+  }
+
+  function updateCardContent(profile) {
     if (!card) return;
     const avatarEl = getSlot("avatar");
     const nameEl = getSlot("name");
@@ -571,10 +348,9 @@
     const subtitleEl = getSlot("subtitle");
     const bioEl = getSlot("bio");
     const socialRowEl = getSlot("social-row");
-    const actionsEl = getSlot("actions");
     const profileLink = getSlot("profile-link");
-
     if (avatarEl) {
+      avatarEl.classList.toggle("is-live", Boolean(profile.liveStatus?.isLive));
       if (profile.avatarUrl) {
         avatarEl.style.backgroundImage = `url(${profile.avatarUrl})`;
         avatarEl.textContent = "";
@@ -583,15 +359,22 @@
         avatarEl.textContent = textInitial(profile.displayName);
       }
     }
-
     if (nameEl) {
       nameEl.textContent = safeText(profile.displayName, "Public User");
     }
     if (badgesEl) {
-      renderBadgeSuffix(badgesEl, profile.badges, trigger || activeTrigger);
+      renderBadgeSuffix(badgesEl, profile.badges);
+      const liveBadge = buildLiveBadge(profile.liveStatus);
+      if (liveBadge) badgesEl.appendChild(liveBadge);
     }
     if (subtitleEl) {
-      subtitleEl.textContent = safeText(profile.role, "PUBLIC");
+      const parts = [safeText(profile.role, "PUBLIC")];
+      if (profile.liveStatus?.isLive) {
+        parts.push(
+          profile.liveStatus.viewerCount != null ? `${profile.liveStatus.viewerCount.toLocaleString()} watching` : "Live now"
+        );
+      }
+      subtitleEl.textContent = parts.join(" · ");
     }
     if (bioEl) {
       bioEl.textContent = safeText(profile.bio, "Profile details are being updated.");
@@ -599,10 +382,8 @@
     if (socialRowEl) {
       renderSocialRow(socialRowEl, profile.socialLinks);
     }
-
     setCoverImage(profile.coverImageUrl, profile.displayName);
-
-    if (actionsEl && profileLink) {
+    if (profileLink) {
       const href = safeText(profile.profileHref);
       if (href) {
         profileLink.href = href;
@@ -654,11 +435,9 @@
     if (!card || !trigger) return;
     const rect = trigger.getBoundingClientRect();
     const cardRect = card.getBoundingClientRect();
-
     const preferRight = rect.left + cardRect.width + OFFSET <= window.innerWidth - VIEWPORT_GAP;
     const rawLeft = preferRight ? rect.left : rect.right - cardRect.width;
     const left = clamp(rawLeft, VIEWPORT_GAP, window.innerWidth - cardRect.width - VIEWPORT_GAP);
-
     let top = rect.bottom + OFFSET;
     if (top + cardRect.height > window.innerHeight - VIEWPORT_GAP) {
       top = rect.top - cardRect.height - OFFSET;
@@ -666,14 +445,13 @@
     if (top < VIEWPORT_GAP) {
       top = clamp(rect.top + OFFSET, VIEWPORT_GAP, window.innerHeight - cardRect.height - VIEWPORT_GAP);
     }
-
     card.style.left = `${Math.round(left)}px`;
     card.style.top = `${Math.round(top)}px`;
   }
 
   function mergeProfile(base, next) {
     const role = normalizeRole(next?.role || base.role);
-    const merged = {
+    return {
       displayName: safeText(next?.displayName, base.displayName),
       userCode: safeText(next?.userCode, base.userCode),
       userId: safeText(next?.userId, base.userId),
@@ -683,52 +461,46 @@
       profileHref: safeText(next?.profileHref, base.profileHref),
       coverImageUrl: safeText(next?.coverImageUrl, base.coverImageUrl),
       socialLinks: normalizeSocialLinks(next?.socialLinks || base.socialLinks),
-      badges: normalizeBadges(next?.badges ?? base.badges, role, safeText(next?.tier || base?.tier || "core"))
+      badges: normalizeBadges(next?.badges ?? base.badges, role, safeText(next?.tier || base?.tier || "core")),
+      tier: normalizeTier(next?.tier || base?.tier),
+      liveStatus: normalizeLiveStatus(next?.liveStatus) || normalizeLiveStatus(base?.liveStatus)
     };
-    return merged;
   }
 
   function normalizeFetchedProfile(payload, fallback) {
     const profile = payload?.profile && typeof payload.profile === "object" ? payload.profile : payload;
     const accountType = normalizeRole(profile?.account_type || profile?.accountType || profile?.role || fallback.role);
-    const tier = normalizeTier(profile?.tier || "core");
-    const userCode = safeText(profile?.user_code || profile?.userCode || fallback.userCode);
-    const displayName = safeText(profile?.display_name || profile?.displayName || profile?.name || fallback.displayName);
-    const role = normalizeRole(accountType);
-    const avatarUrl = safeText(profile?.avatar_url || profile?.avatarUrl || profile?.avatar || fallback.avatarUrl);
-    const bio = safeText(profile?.bio || profile?.summary || fallback.bio);
-    const coverImageUrl = safeText(
-      profile?.cover_image_url ||
-      profile?.coverImageUrl ||
-      profile?.profile_cover ||
-      profile?.banner_url ||
-      profile?.bannerUrl ||
-      profile?.cover_url ||
-      profile?.coverUrl ||
-      fallback.coverImageUrl
-    );
-    const socialLinks = normalizeSocialLinks(profile?.social_links || profile?.socialLinks || fallback.socialLinks);
-    const badges = normalizeBadges(profile?.badges, role, tier);
-    const href = userCode ? `/community/profile.html?u=${encodeURIComponent(userCode)}` : fallback.profileHref;
+    const tier = normalizeTier(profile?.tier || fallback.tier);
     return {
-      displayName,
-      userCode,
-      userId: safeText(profile?.id || fallback.userId),
-      avatarUrl,
-      role,
-      bio,
-      profileHref: href,
-      coverImageUrl,
-      socialLinks,
-      badges,
-      tier
+      displayName: safeText(profile?.display_name || profile?.displayName || profile?.name, fallback.displayName),
+      userCode: safeText(profile?.user_code || profile?.userCode, fallback.userCode),
+      userId: safeText(profile?.id, fallback.userId),
+      avatarUrl: safeText(profile?.avatar_url || profile?.avatarUrl || profile?.avatar, fallback.avatarUrl),
+      role: accountType,
+      bio: safeText(profile?.bio || profile?.summary, fallback.bio),
+      profileHref:
+        safeText(profile?.streamsuites_profile_url) || buildCanonicalProfileHref(profile) || fallback.profileHref,
+      coverImageUrl: safeText(
+        profile?.banner_image_url ||
+          profile?.bannerImageUrl ||
+          profile?.cover_image_url ||
+          profile?.coverImageUrl ||
+          profile?.profile_cover ||
+          profile?.banner_url ||
+          profile?.bannerUrl ||
+          profile?.cover_url ||
+          profile?.coverUrl,
+        fallback.coverImageUrl
+      ),
+      socialLinks: normalizeSocialLinks(profile?.social_links || profile?.socialLinks || fallback.socialLinks),
+      badges: normalizeBadges(profile?.badges, accountType, tier),
+      tier,
+      liveStatus: normalizeLiveStatus(profile?.live_status || profile?.liveStatus || fallback.liveStatus)
     };
   }
 
   function shouldFetchProfile(profile) {
-    if (!profile.userCode) return false;
-    if (profileCache.has(profile.userCode)) return false;
-    return true;
+    return Boolean(profile.userCode) && !profileCache.has(profile.userCode);
   }
 
   function abortFetch() {
@@ -743,7 +515,6 @@
     fetchController = new AbortController();
     const endpoint = new URL(PROFILE_ENDPOINT);
     endpoint.searchParams.set("u", baseProfile.userCode);
-
     try {
       const response = await fetch(endpoint.toString(), {
         method: "GET",
@@ -756,16 +527,12 @@
       const payload = await response.json().catch(() => ({}));
       const profile = normalizeFetchedProfile(payload, baseProfile);
       profileCache.set(profile.userCode || baseProfile.userCode, profile);
-
       if (token !== activeFetchToken || !activeTrigger) return;
-      const merged = mergeProfile(baseProfile, profile);
-      updateCardContent(merged, activeTrigger);
+      updateCardContent(mergeProfile(baseProfile, profile));
       setLoading(false);
       positionCard(activeTrigger);
     } catch (_err) {
-      if (token === activeFetchToken) {
-        setLoading(false);
-      }
+      if (token === activeFetchToken) setLoading(false);
     } finally {
       fetchController = null;
     }
@@ -775,28 +542,33 @@
     if (!trigger) return;
     createCard();
     clearHideTimer();
-
     const initial = parseTriggerData(trigger);
     const cached = initial.userCode ? profileCache.get(initial.userCode) : null;
     const merged = cached ? mergeProfile(initial, cached) : initial;
-
     activeTrigger = trigger;
-    updateCardContent(merged, trigger);
+    updateCardContent(merged);
     setLoading(false);
     showCard();
     positionCard(trigger);
-
     if (!shouldFetchProfile(merged)) return;
-
     setLoading(true);
     activeFetchToken += 1;
     fetchProfileData(merged, activeFetchToken);
   }
 
+  function sameProfileIdentity(left, right) {
+    if (!(left instanceof Element) || !(right instanceof Element)) return false;
+    const leftUserCode = safeText(left.getAttribute("data-ss-user-code"));
+    const rightUserCode = safeText(right.getAttribute("data-ss-user-code"));
+    if (leftUserCode && rightUserCode && leftUserCode === rightUserCode) return true;
+    const leftUserId = safeText(left.getAttribute("data-ss-user-id"));
+    const rightUserId = safeText(right.getAttribute("data-ss-user-id"));
+    return Boolean(leftUserId && rightUserId && leftUserId === rightUserId);
+  }
+
   function handlePointerOver(event) {
     const trigger = getTrigger(event.target);
-    if (!trigger) return;
-    if (trigger === activeTrigger) return;
+    if (!trigger || trigger === activeTrigger) return;
     openForTrigger(trigger);
   }
 
@@ -805,6 +577,8 @@
     if (!activeTrigger.contains(event.target)) return;
     const next = event.relatedTarget;
     if (next && (activeTrigger.contains(next) || card.contains(next))) return;
+    const nextTrigger = getTrigger(next);
+    if (sameProfileIdentity(activeTrigger, nextTrigger)) return;
     scheduleHide();
   }
 
@@ -818,80 +592,18 @@
     if (!card || !activeTrigger) return;
     const next = event.relatedTarget;
     if (next && (activeTrigger.contains(next) || card.contains(next))) return;
+    const nextTrigger = getTrigger(next);
+    if (sameProfileIdentity(activeTrigger, nextTrigger)) return;
     scheduleHide();
   }
 
   function handleEscape(event) {
-    if (event.key !== "Escape") return;
-    hideCard();
+    if (event.key === "Escape") hideCard();
   }
 
   function handleViewportChange() {
     if (!card || !activeTrigger || !card.classList.contains("is-visible")) return;
     positionCard(activeTrigger);
-  }
-
-  function settleThumbLoading(thumb) {
-    if (!thumb) return;
-    thumb.classList.remove("is-loading");
-  }
-
-  function bindThumbMediaLoading(media, thumb) {
-    if (!media || !thumb) return;
-    thumb.classList.add("is-loading");
-    const settle = () => settleThumbLoading(thumb);
-    media.addEventListener("load", settle, { once: true });
-    media.addEventListener("loadeddata", settle, { once: true });
-    media.addEventListener("error", settle, { once: true });
-    if (media.complete || media.readyState >= 2) {
-      settle();
-    }
-  }
-
-  function ensureThumbSkeleton(thumb) {
-    if (!thumb || thumb.dataset.ssThumbSkeletonReady === "1") return;
-    thumb.dataset.ssThumbSkeletonReady = "1";
-
-    let skeleton = thumb.querySelector(".ss-thumb-skeleton");
-    if (!skeleton) {
-      skeleton = document.createElement("span");
-      skeleton.className = "ss-thumb-skeleton";
-      skeleton.setAttribute("aria-hidden", "true");
-      thumb.prepend(skeleton);
-    }
-
-    const media =
-      thumb.querySelector("img") ||
-      thumb.querySelector("video");
-
-    if (!media) {
-      settleThumbLoading(thumb);
-      return;
-    }
-
-    bindThumbMediaLoading(media, thumb);
-  }
-
-  function initThumbSkeletons(root = document) {
-    if (!root?.querySelectorAll) return;
-    root.querySelectorAll(THUMB_SELECTOR).forEach((thumb) => ensureThumbSkeleton(thumb));
-  }
-
-  function observeThumbSkeletons() {
-    if (!window.MutationObserver || !document.body) return;
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach((node) => {
-          if (!(node instanceof HTMLElement)) return;
-          if (node.matches?.(THUMB_SELECTOR)) {
-            ensureThumbSkeleton(node);
-            return;
-          }
-          initThumbSkeletons(node);
-        });
-      });
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
   }
 
   function init() {
@@ -902,8 +614,6 @@
     document.addEventListener("keydown", handleEscape);
     window.addEventListener("scroll", handleViewportChange, true);
     window.addEventListener("resize", handleViewportChange);
-    initThumbSkeletons(document);
-    observeThumbSkeletons();
   }
 
   if (document.readyState === "loading") {

@@ -9,7 +9,7 @@
   const DONATIONS_ENDPOINT = "/api/admin/donations";
   const DONATIONS_WINDOW = "30d";
   const ANALYTICS_CACHE_TTL_MS = 8000;
-  const COLUMN_WIDTH_STORAGE_KEY = "ss_admin_accounts_colwidths_v2";
+  const COLUMN_WIDTH_STORAGE_KEY = "ss_admin_accounts_colwidths_v3";
   const ROW_CLICK_DELAY_MS = 240;
   const SEARCH_FIELDS = [
     "userCode",
@@ -164,6 +164,15 @@
       if (["false", "0", "no", "off"].includes(normalized)) return false;
     }
     return fallback;
+  }
+
+  function serializeDataAttr(value) {
+    if (value == null) return "";
+    try {
+      return JSON.stringify(value);
+    } catch (_err) {
+      return "";
+    }
   }
 
   function resolveAccountType(raw = {}) {
@@ -321,6 +330,18 @@ function normalizeUser(raw = {}) {
     );
     const backgroundImageUrl = coerceText(raw.background_image_url || publicProfile.background_image_url);
     const avatarUrl = coerceText(raw.avatar_url || publicProfile.avatar_url);
+    const bio = coerceText(raw.bio || publicProfile.bio);
+    const socialLinks =
+      raw.social_links && typeof raw.social_links === "object"
+        ? raw.social_links
+        : publicProfile.social_links && typeof publicProfile.social_links === "object"
+        ? publicProfile.social_links
+        : {};
+    const badgeItems = Array.isArray(raw.badges)
+      ? raw.badges
+      : Array.isArray(publicProfile.badges)
+      ? publicProfile.badges
+      : [];
     let internalId =
       raw.internal_id || raw.internalId || raw.id || raw.uuid || raw.user_id || raw.userId || "";
     if (!String(internalId || "").trim() || String(internalId).trim() === "—") {
@@ -374,6 +395,11 @@ function normalizeUser(raw = {}) {
       bannerImageUrl: coverImageUrl,
       backgroundImageUrl,
       avatarUrl,
+      bio,
+      socialLinks,
+      badges: badgeItems,
+      isAnonymous: coerceBoolean(raw.is_anonymous ?? publicProfile.is_anonymous, false),
+      isListed: coerceBoolean(raw.is_listed ?? publicProfile.is_listed, true),
       slugAliases: Array.isArray(raw.slug_aliases || publicProfile.slug_aliases)
         ? (raw.slug_aliases || publicProfile.slug_aliases).map((item) => coerceText(item)).filter(Boolean)
         : [],
@@ -847,24 +873,51 @@ function normalizeUser(raw = {}) {
       .trim()
       .toUpperCase();
     const profileHref = userCode
-      ? `https://streamsuites.app/community/profile.html?u=${encodeURIComponent(userCode)}`
+      ? user.streamsuitesProfileUrl || `https://streamsuites.app/u/${encodeURIComponent(user.publicSlug || userCode)}`
       : userId
-      ? `https://streamsuites.app/community/profile.html?id=${encodeURIComponent(userId)}`
+      ? user.streamsuitesProfileUrl || `https://streamsuites.app/community/profile.html?id=${encodeURIComponent(userId)}`
       : "";
+    const badges = serializeDataAttr(options.badges || profile.badges || []);
+    const socialLinks = serializeDataAttr(options.socialLinks || profile.socialLinks || {});
     const attrs = [
+      'data-ss-profile-hover-trigger="true"',
       `data-ss-display-name="${escapeHtml(displayName || "Account")}"`,
       `data-ss-role="${escapeHtml(role || "PUBLIC")}"`,
       `data-ss-user-code="${escapeHtml(userCode)}"`,
       `data-ss-user-id="${escapeHtml(userId)}"`,
-      `data-ss-profile-href="${escapeHtml(profileHref)}"`
+      `data-ss-profile-href="${escapeHtml(profileHref)}"`,
+      `data-ss-avatar-url="${escapeHtml(coerceText(options.avatarUrl || profile.avatarUrl))}"`,
+      `data-ss-cover-url="${escapeHtml(coerceText(options.coverImageUrl || profile.coverImageUrl || profile.bannerImageUrl))}"`,
+      `data-ss-bio="${escapeHtml(coerceText(options.bio || profile.bio))}"`,
+      `data-ss-tier="${escapeHtml(coerceText(options.tier || profile.tier))}"`,
+      `data-ss-badges="${escapeHtml(badges)}"`,
+      `data-ss-social-links="${escapeHtml(socialLinks)}"`
     ];
     return attrs.join(" ");
+  }
+
+  function renderAccountIdValue(user) {
+    const accountId = normalizeAccountId(user?.id);
+    if (!accountId || accountId === "—") {
+      return renderTextValue(accountId || "—");
+    }
+    const hoverAttrs = buildProfileHoverAttrs(user, { userId: accountId });
+    return `<span class="accounts-cell-ellipsis accounts-hover-link" ${hoverAttrs} title="${escapeHtml(accountId)}">${escapeHtml(accountId)}</span>`;
+  }
+
+  function renderAvatarValue(user) {
+    const displayName = coerceText(user?.displayName || user?.userCode || user?.email, "Account");
+    const avatarUrl = coerceText(user?.avatarUrl);
+    const content = avatarUrl
+      ? `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(displayName)} avatar" loading="lazy" decoding="async" />`
+      : `<span>${escapeHtml(resolveAvatarInitials(user))}</span>`;
+    return `<span class="accounts-table-avatar${avatarUrl ? " has-image" : ""}" ${buildProfileHoverAttrs(user, { displayName, avatarUrl })}>${content}</span>`;
   }
 
   function renderDisplayNameValue(user) {
     const displayName = String(user?.displayName || "—").trim() || "—";
     const hoverAttrs = buildProfileHoverAttrs(user, { displayName });
-    return `<span class="accounts-cell-ellipsis ss-profile-hover" ${hoverAttrs} title="${escapeHtml(displayName)}">${escapeHtml(displayName)}</span>`;
+    return `<span class="accounts-cell-ellipsis accounts-hover-link" ${hoverAttrs} title="${escapeHtml(displayName)}">${escapeHtml(displayName)}</span>`;
   }
 
   function renderUserCodeLink(user) {
@@ -875,7 +928,7 @@ function normalizeUser(raw = {}) {
     return `
       <button
         type="button"
-        class="ss-link-btn ss-profile-hover"
+        class="ss-link-btn accounts-hover-button"
         data-account-open-creator="${escapeHtml(userCode)}"
         ${buildProfileHoverAttrs(user, { userCode })}
       >
@@ -913,9 +966,8 @@ function normalizeUser(raw = {}) {
   function renderRow(user) {
     const accountId = normalizeAccountId(user.id);
     return `
-      <td class="accounts-id-column" data-account-id="${escapeHtml(accountId)}">${renderTextValue(
-        accountId || "—"
-      )}</td>
+      <td class="accounts-id-column" data-account-id="${escapeHtml(accountId)}">${renderAccountIdValue(user)}</td>
+      <td>${renderAvatarValue(user)}</td>
       <td>${renderUserCodeLink(user)}</td>
       <td>${renderTextValue(user.email)}</td>
       <td>${renderEmailVerified(user.emailVerified)}</td>
@@ -1085,6 +1137,7 @@ function normalizeUser(raw = {}) {
   function renderDrawerProfileSummary(user) {
     const title = user.displayName || user.userCode || user.email || "Account";
     const subtitle = user.userCode || "—";
+    const previewHref = user.streamsuitesProfileUrl || `https://streamsuites.app/u/${encodeURIComponent(user.publicSlug || user.userCode || "")}`;
     const roleBadges = [
       ...resolveRoleList(user.role).map((role) => renderBadge(role)),
       renderBadge(
@@ -1100,9 +1153,6 @@ function normalizeUser(raw = {}) {
     const roleLabel = resolveRoleList(user.role)
       .map((role) => formatBadgeLabel(role))
       .join(", ");
-    const publicProfileHref = user.streamsuitesProfileUrl || `https://streamsuites.app/community/profile.html?id=${encodeURIComponent(
-      user.id || ""
-    )}`;
     const identitySummary = user.creatorCapable
       ? "Creator-capable account"
       : user.viewerOnly
@@ -1118,20 +1168,43 @@ function normalizeUser(raw = {}) {
       : user.findMeHereEligible
       ? "Not listed"
       : "Ineligible";
+    const badgeIcons = (Array.isArray(user.badges) ? user.badges : [])
+      .map((badge) => {
+        const kind = String(badge?.kind || "").trim().toLowerCase();
+        const value = String(badge?.value || "").trim().toLowerCase();
+        const icon =
+          kind.includes("role") && value === "admin"
+            ? "/assets/icons/tierbadge-admin.svg"
+            : kind.includes("tier") && ["core", "gold", "pro"].includes(value)
+            ? `/assets/icons/tierbadge-${value}.svg`
+            : "";
+        return icon
+          ? `<img class="accounts-details-preview-badge" src="${escapeHtml(icon)}" alt="${escapeHtml(value || kind)}" />`
+          : "";
+      })
+      .filter(Boolean)
+      .join("");
+    const socialLinks = user.socialLinks && typeof user.socialLinks === "object" ? user.socialLinks : {};
+    const socialMarkup = Object.entries(socialLinks)
+      .filter(([, url]) => coerceText(url))
+      .slice(0, 6)
+      .map(
+        ([label, url]) =>
+          `<a class="ss-link" href="${escapeHtml(coerceText(url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(
+            formatBadgeLabel(label)
+          )}</a>`
+      )
+      .join(" · ");
+    const avatarMarkup = user.avatarUrl
+      ? `<img src="${escapeHtml(user.avatarUrl)}" alt="${escapeHtml(title)} avatar" loading="lazy" decoding="async" />`
+      : `<span>${escapeHtml(resolveAvatarInitials(user))}</span>`;
     return `
       <article class="accounts-details-profile-card glass-card">
+        <div class="accounts-details-preview-cover"${user.coverImageUrl ? ` style="background-image:url('${escapeHtml(user.coverImageUrl)}')"` : ""}></div>
         <div class="accounts-details-profile-head">
-          <div class="accounts-details-avatar ss-profile-hover" ${buildProfileHoverAttrs(
-            user,
-            { displayName: title }
-          )} aria-hidden="true">${escapeHtml(
-            resolveAvatarInitials(user)
-          )}</div>
+          <div class="accounts-details-avatar${user.avatarUrl ? " has-image" : ""}" aria-hidden="true">${avatarMarkup}</div>
           <div class="accounts-details-identity">
-            <strong class="accounts-details-name ss-profile-hover" ${buildProfileHoverAttrs(
-              user,
-              { displayName: title }
-            )}>${escapeHtml(title)}</strong>
+            <strong class="accounts-details-name">${escapeHtml(title)}</strong>
             <span class="accounts-details-user-code">${escapeHtml(subtitle)}</span>
             <div class="accounts-details-role-row">${roleBadges}</div>
           </div>
@@ -1169,11 +1242,27 @@ function normalizeUser(raw = {}) {
           <div>
             <span class="label">Profile Surface</span>
             <span class="value"><a class="ss-link" href="${escapeHtml(
-              publicProfileHref
+              previewHref
             )}" target="_blank" rel="noopener noreferrer">Open profile</a></span>
           </div>
         </div>
       </article>
+      <section class="accounts-details-group accounts-details-inline-preview">
+        <h5 class="accounts-details-group-title">Inline Public Preview</h5>
+        <div class="accounts-details-preview-card">
+          <div class="accounts-details-preview-media"${user.coverImageUrl ? ` style="background-image:url('${escapeHtml(user.coverImageUrl)}')"` : ""}></div>
+          <div class="accounts-details-preview-body">
+            <div class="accounts-details-preview-avatar${user.avatarUrl ? " has-image" : ""}">${avatarMarkup}</div>
+            <div class="accounts-details-preview-head">
+              <strong>${escapeHtml(title)}</strong>
+              <span>${escapeHtml(formatBadgeLabel(user.publicSurfaceAccountType || user.role || "Public"))}</span>
+            </div>
+            <div class="accounts-details-preview-badges">${badgeIcons || '<span class="muted">No enabled badges</span>'}</div>
+            <p class="accounts-details-preview-bio">${escapeHtml(user.bio || "No public bio saved.")}</p>
+            <div class="accounts-details-preview-links">${socialMarkup || '<span class="muted">No public social links saved.</span>'}</div>
+          </div>
+        </div>
+      </section>
       <div class="accounts-details-group-grid">
         <section class="accounts-details-group">
           <h5 class="accounts-details-group-title">Public Identity</h5>

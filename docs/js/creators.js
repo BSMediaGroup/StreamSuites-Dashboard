@@ -114,10 +114,20 @@
         const account = entry?.account && typeof entry.account === "object" ? entry.account : {};
         const accountId = String(entry?.account_id || account?.account_id || "").trim();
         const accountEmail = String(entry?.email || account?.email || "").trim();
+        const displayName = String(entry?.display_name || account?.display_name || userCode).trim() || userCode;
+        const avatarUrl = String(entry?.avatar_url || account?.avatar_url || "").trim();
+        const publicProfile = account?.public_profile && typeof account.public_profile === "object" ? account.public_profile : {};
         const status = String(entry?.status || "").trim().toLowerCase() || "pending";
         return {
           user_code: userCode,
           creator_id: userCode,
+          display_name: displayName,
+          avatar_url: avatarUrl,
+          badges: Array.isArray(entry?.badges) ? entry.badges : Array.isArray(account?.badges) ? account.badges : [],
+          bio: String(publicProfile?.bio || "").trim(),
+          social_links: publicProfile?.social_links && typeof publicProfile.social_links === "object" ? publicProfile.social_links : {},
+          cover_image_url: String(publicProfile?.cover_image_url || publicProfile?.banner_image_url || "").trim(),
+          public_slug: String(publicProfile?.public_slug || "").trim(),
           status,
           account_id: accountId || "",
           account_email: accountEmail || "",
@@ -154,26 +164,81 @@
 
   function renderAccountLink(creator) {
     const userCode = escapeHtml(creator.user_code);
+    const displayName = escapeHtml(creator.display_name || creator.user_code);
     const accountId = escapeHtml(creator.account_id || "");
     const orphaned = creator.orphaned || !creator.account_id;
-    const profileHref = `https://streamsuites.app/community/profile.html?u=${encodeURIComponent(
-      creator.user_code || ""
-    )}`;
+    const profileHref = `https://streamsuites.app/u/${encodeURIComponent(creator.public_slug || creator.user_code || "")}`;
+    const badgeJson = escapeHtml(JSON.stringify(Array.isArray(creator.badges) ? creator.badges : []));
+    const socialJson = escapeHtml(JSON.stringify(creator.social_links || {}));
     return `
       <button
         type="button"
-        class="ss-link-btn ss-profile-hover"
+        class="ss-link-btn accounts-hover-button"
         data-creator-open-account="${userCode}"
         data-account-id="${accountId}"
         data-orphaned="${orphaned ? "1" : "0"}"
+        data-ss-profile-hover-trigger="true"
         data-ss-user-code="${userCode}"
         data-ss-user-id="${accountId}"
-        data-ss-display-name="${userCode}"
+        data-ss-display-name="${displayName}"
         data-ss-role="CREATOR"
+        data-ss-avatar-url="${escapeHtml(creator.avatar_url || "")}"
+        data-ss-cover-url="${escapeHtml(creator.cover_image_url || "")}"
+        data-ss-bio="${escapeHtml(creator.bio || "")}"
+        data-ss-tier="core"
+        data-ss-badges="${badgeJson}"
+        data-ss-social-links="${socialJson}"
         data-ss-profile-href="${escapeHtml(profileHref)}"
       >
         <code>${userCode}</code>
       </button>
+    `;
+  }
+
+  function renderAvatarCell(creator) {
+    const displayName = escapeHtml(creator.display_name || creator.user_code);
+    const avatarUrl = escapeHtml(creator.avatar_url || "");
+    const fallback = escapeHtml(String(creator.display_name || creator.user_code || "NA").trim().slice(0, 2).toUpperCase());
+    return `
+      <span
+        class="accounts-table-avatar${avatarUrl ? " has-image" : ""}"
+        data-ss-profile-hover-trigger="true"
+        data-ss-user-code="${escapeHtml(creator.user_code)}"
+        data-ss-user-id="${escapeHtml(creator.account_id || "")}"
+        data-ss-display-name="${displayName}"
+        data-ss-role="CREATOR"
+        data-ss-avatar-url="${avatarUrl}"
+        data-ss-cover-url="${escapeHtml(creator.cover_image_url || "")}"
+        data-ss-bio="${escapeHtml(creator.bio || "")}"
+        data-ss-tier="core"
+        data-ss-badges="${escapeHtml(JSON.stringify(Array.isArray(creator.badges) ? creator.badges : []))}"
+        data-ss-social-links="${escapeHtml(JSON.stringify(creator.social_links || {}))}"
+        data-ss-profile-href="${escapeHtml(`https://streamsuites.app/u/${encodeURIComponent(creator.public_slug || creator.user_code || "")}`)}"
+      >
+        ${avatarUrl ? `<img src="${avatarUrl}" alt="${displayName} avatar" loading="lazy" decoding="async" />` : `<span>${fallback}</span>`}
+      </span>
+    `;
+  }
+
+  function renderDisplayNameCell(creator) {
+    const displayName = escapeHtml(creator.display_name || creator.user_code);
+    return `
+      <span
+        class="accounts-cell-ellipsis accounts-hover-link"
+        data-ss-profile-hover-trigger="true"
+        data-ss-user-code="${escapeHtml(creator.user_code)}"
+        data-ss-user-id="${escapeHtml(creator.account_id || "")}"
+        data-ss-display-name="${displayName}"
+        data-ss-role="CREATOR"
+        data-ss-avatar-url="${escapeHtml(creator.avatar_url || "")}"
+        data-ss-cover-url="${escapeHtml(creator.cover_image_url || "")}"
+        data-ss-bio="${escapeHtml(creator.bio || "")}"
+        data-ss-tier="core"
+        data-ss-badges="${escapeHtml(JSON.stringify(Array.isArray(creator.badges) ? creator.badges : []))}"
+        data-ss-social-links="${escapeHtml(JSON.stringify(creator.social_links || {}))}"
+        data-ss-profile-href="${escapeHtml(`https://streamsuites.app/u/${encodeURIComponent(creator.public_slug || creator.user_code || "")}`)}"
+        title="${displayName}"
+      >${displayName}</span>
     `;
   }
 
@@ -222,10 +287,12 @@
       tr.setAttribute("data-user-code", creator.user_code);
       tr.setAttribute("data-account-id", creator.account_id || "");
       tr.innerHTML = `
+        <td>${renderAvatarCell(creator)}</td>
         <td>${renderAccountLink(creator)}</td>
+        <td>${renderDisplayNameCell(creator)}</td>
         <td>${renderStatus(creator.status)}</td>
         <td>${escapeHtml(creator.account_email || (creator.orphaned ? "—" : "-"))}</td>
-        <td>${creator.account_id ? `<code>${escapeHtml(creator.account_id)}</code>` : "—"}</td>
+        <td>${creator.account_id ? `<span class="accounts-cell-ellipsis accounts-hover-link" data-ss-profile-hover-trigger="true" data-ss-user-code="${escapeHtml(creator.user_code)}" data-ss-user-id="${escapeHtml(creator.account_id)}" data-ss-display-name="${escapeHtml(creator.display_name || creator.user_code)}" data-ss-role="CREATOR" data-ss-avatar-url="${escapeHtml(creator.avatar_url || "")}" data-ss-cover-url="${escapeHtml(creator.cover_image_url || "")}" data-ss-bio="${escapeHtml(creator.bio || "")}" data-ss-tier="core" data-ss-badges="${escapeHtml(JSON.stringify(Array.isArray(creator.badges) ? creator.badges : []))}" data-ss-social-links="${escapeHtml(JSON.stringify(creator.social_links || {}))}" data-ss-profile-href="${escapeHtml(`https://streamsuites.app/u/${encodeURIComponent(creator.public_slug || creator.user_code || "")}`)}" title="${escapeHtml(creator.account_id)}"><code>${escapeHtml(creator.account_id)}</code></span>` : "—"}</td>
         <td>${escapeHtml(formatTimestamp(creator.activated_at))}</td>
         <td>${escapeHtml(formatTimestamp(creator.created_at))}</td>
         <td class="align-right">
