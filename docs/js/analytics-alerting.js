@@ -28,6 +28,9 @@
   const state = {
     destroyed: false,
     eventTypes: [],
+    templateVariables: [],
+    templateSyntax: "{{variable_name}}",
+    templateMissingValuePolicy: "blank",
     configuration: null,
     lastSavedConfigurationHash: "",
     lastImportedSummary: "",
@@ -37,6 +40,7 @@
     history: [],
     settings: null,
     activeRuleId: null,
+    activeTemplateField: "body",
     loadToken: 0,
     ruleScopePassthrough: {},
     targetFilters: {
@@ -104,6 +108,11 @@
     ruleEnabled: null,
     ruleName: null,
     ruleDescription: null,
+    ruleTitleTemplate: null,
+    ruleBodyTemplate: null,
+    templateHelp: null,
+    templateFocus: null,
+    templateVariables: null,
     ruleThresholdNumberRow: null,
     ruleThresholdNumber: null,
     ruleThresholdStateRow: null,
@@ -581,6 +590,8 @@
       enabled: coerceBoolean(base.enabled, true),
       name: String(base.name || base.label || labelize(eventType)).trim() || labelize(eventType),
       description: String(base.description || "").trim() || null,
+      title_template: String(base.title_template || base.title || "").trim() || null,
+      body_template: String(base.body_template || base.message_template || base.description_template || "").trim() || null,
       severity: SEVERITIES.includes(String(base.severity || "").trim().toLowerCase())
         ? String(base.severity).trim().toLowerCase()
         : (getEventMeta(eventType)?.default_severity || "info"),
@@ -792,6 +803,70 @@
     container.innerHTML = html;
   }
 
+  function recommendedTemplateVariables(eventType) {
+    const normalized = String(eventType || "").trim();
+    return state.templateVariables.filter((item) => {
+      const eventTypes = Array.isArray(item?.event_types) ? item.event_types : [];
+      return eventTypes.includes(normalized);
+    });
+  }
+
+  function renderTemplateVariableGroup(title, items) {
+    if (!items.length) return "";
+    return `
+      <section class="ss-analytics-alerts-template-group">
+        <h6>${escapeHtml(title)}</h6>
+        <div class="ss-analytics-alerts-template-grid">
+          ${items.map((item) => `
+            <button type="button" class="ss-analytics-alerts-template-button" data-template-token="${escapeHtml(item.token)}">
+              <strong>${escapeHtml(item.label || item.key || item.token)}</strong>
+              <code>${escapeHtml(item.token)}</code>
+              <span>${escapeHtml(item.description || "")}</span>
+            </button>
+          `).join("")}
+        </div>
+      </section>
+    `;
+  }
+
+  function renderTemplateBrowser() {
+    if (!el.templateVariables || !el.templateHelp || !el.templateFocus) return;
+    const syntax = state.templateSyntax || "{{variable_name}}";
+    const missingText = state.templateMissingValuePolicy === "blank"
+      ? "Missing payload values render blank."
+      : "Missing payload values follow the backend missing-value policy.";
+    el.templateHelp.textContent = `Use ${syntax} tokens. ${missingText}`;
+    el.templateFocus.textContent = state.activeTemplateField === "title"
+      ? "Variables will insert into the title template field."
+      : "Variables will insert into the body template field.";
+
+    const recommended = recommendedTemplateVariables(el.ruleEventType?.value);
+    const recommendedKeys = new Set(recommended.map((item) => item.key));
+    const remaining = state.templateVariables.filter((item) => !recommendedKeys.has(item.key));
+    const categories = Array.from(new Set(remaining.map((item) => item.category || "Other")));
+    const sections = [];
+    if (recommended.length) {
+      sections.push(renderTemplateVariableGroup("Recommended for this event type", recommended));
+    }
+    categories.forEach((category) => {
+      const items = remaining.filter((item) => (item.category || "Other") === category);
+      sections.push(renderTemplateVariableGroup(category, items));
+    });
+    el.templateVariables.innerHTML = sections.join("") || "<p class=\"muted\">No template variables available from the backend.</p>";
+  }
+
+  function insertTokenIntoActiveTemplate(token) {
+    const target = state.activeTemplateField === "title" ? el.ruleTitleTemplate : el.ruleBodyTemplate;
+    if (!(target instanceof HTMLTextAreaElement)) return;
+    const start = target.selectionStart ?? target.value.length;
+    const end = target.selectionEnd ?? start;
+    const value = target.value || "";
+    target.value = `${value.slice(0, start)}${token}${value.slice(end)}`;
+    const nextPos = start + token.length;
+    target.focus();
+    target.setSelectionRange(nextPos, nextPos);
+  }
+
   function renderPreferencesForm() {
     const preferences = state.preferences || {};
     if (el.masterEnabled) el.masterEnabled.checked = preferences.master_enabled !== false;
@@ -992,6 +1067,12 @@
     if (el.ruleDescription) {
       el.ruleDescription.value = next?.description || "";
     }
+    if (el.ruleTitleTemplate) {
+      el.ruleTitleTemplate.value = next?.title_template || "";
+    }
+    if (el.ruleBodyTemplate) {
+      el.ruleBodyTemplate.value = next?.body_template || "";
+    }
     if (el.ruleThresholdNumber) {
       el.ruleThresholdNumber.value = ["count", "rate"].includes(next?.threshold_type)
         ? String(next?.threshold_value ?? 1)
@@ -1029,6 +1110,7 @@
       applyRuleDefaultsFromEventType(el.ruleEventType?.value);
       applyScopeDefaultsFromEventType(el.ruleEventType?.value);
     }
+    renderTemplateBrowser();
   }
 
   function renderRulesList() {
@@ -1214,6 +1296,7 @@
     renderEventTypeSelects();
     renderTestRuleOptions();
     renderTestDestinations();
+    renderTemplateBrowser();
     renderRulesList();
     renderTargetsList();
     renderHistoryList();
@@ -1274,12 +1357,15 @@
       state.targetsError = "";
       renderTargetsList();
       try {
-        const [settingsPayload, eventTypesPayload, configurationPayload, targetsPayload, historyPayload] =
+        const [settingsPayload, eventTypesPayload, templateVariablesPayload, configurationPayload, targetsPayload, historyPayload] =
           await Promise.all([
             window.StreamSuitesApi.getAdminAlertSettings({
               forceRefresh: options.forceRefresh === true
             }),
             window.StreamSuitesApi.getAdminAlertEventTypes({
+              forceRefresh: options.forceRefresh === true
+            }),
+            window.StreamSuitesApi.getAdminAlertTemplateVariables({
               forceRefresh: options.forceRefresh === true
             }),
             window.StreamSuitesApi.getAdminAlertConfiguration({
@@ -1298,6 +1384,9 @@
 
         state.settings = extractSettings(settingsPayload);
         state.eventTypes = extractItems(eventTypesPayload);
+        state.templateVariables = extractItems(templateVariablesPayload);
+        state.templateSyntax = String(templateVariablesPayload?.syntax || "{{variable_name}}").trim() || "{{variable_name}}";
+        state.templateMissingValuePolicy = String(templateVariablesPayload?.missing_value_policy || "blank").trim() || "blank";
         const configuration = configurationPayload?.configuration && typeof configurationPayload.configuration === "object"
           ? configurationPayload.configuration
           : configurationPayload;
@@ -1423,6 +1512,8 @@
       enabled: el.ruleEnabled?.value !== "false",
       name,
       description: String(el.ruleDescription?.value || "").trim() || null,
+      title_template: String(el.ruleTitleTemplate?.value || "").trim() || null,
+      body_template: String(el.ruleBodyTemplate?.value || "").trim() || null,
       severity: String(el.ruleSeverity?.value || "info").trim(),
       threshold_type: thresholdType,
       threshold_value: thresholdValue,
@@ -1664,10 +1755,12 @@
       }
       renderScopeEditor(mergedScope);
       updateScopeVisibility();
+      renderTemplateBrowser();
       return;
     }
     renderScopeEditor(currentScope);
     updateScopeVisibility();
+    renderTemplateBrowser();
   }
 
   function handleRuleScopeToggle() {
@@ -1679,6 +1772,25 @@
       }
     }
     updateScopeVisibility();
+  }
+
+  function handleTemplateFieldFocus(event) {
+    if (event.target === el.ruleTitleTemplate) {
+      state.activeTemplateField = "title";
+    } else if (event.target === el.ruleBodyTemplate) {
+      state.activeTemplateField = "body";
+    } else {
+      return;
+    }
+    renderTemplateBrowser();
+  }
+
+  function handleTemplateVariableClick(event) {
+    const button = event.target.closest("[data-template-token]");
+    if (!(button instanceof HTMLButtonElement)) return;
+    const token = String(button.getAttribute("data-template-token") || "").trim();
+    if (!token) return;
+    insertTokenIntoActiveTemplate(token);
   }
 
   function confirmDiscardUnsavedChanges(actionLabel) {
@@ -1822,6 +1934,9 @@
     el.ruleThresholdType?.addEventListener("change", updateThresholdFieldVisibility);
     el.ruleEventType?.addEventListener("change", handleRuleEventTypeChange);
     el.ruleScopeEnabled?.addEventListener("change", handleRuleScopeToggle);
+    el.ruleTitleTemplate?.addEventListener("focus", handleTemplateFieldFocus);
+    el.ruleBodyTemplate?.addEventListener("focus", handleTemplateFieldFocus);
+    el.templateVariables?.addEventListener("click", handleTemplateVariableClick);
     el.rulesList?.addEventListener("click", handleRulesListClick);
     el.targetsList?.addEventListener("click", handleTargetsListClick);
     el.targetsList?.addEventListener("submit", handleTargetRenameSubmit);
@@ -1848,6 +1963,9 @@
     el.ruleThresholdType?.removeEventListener("change", updateThresholdFieldVisibility);
     el.ruleEventType?.removeEventListener("change", handleRuleEventTypeChange);
     el.ruleScopeEnabled?.removeEventListener("change", handleRuleScopeToggle);
+    el.ruleTitleTemplate?.removeEventListener("focus", handleTemplateFieldFocus);
+    el.ruleBodyTemplate?.removeEventListener("focus", handleTemplateFieldFocus);
+    el.templateVariables?.removeEventListener("click", handleTemplateVariableClick);
     el.rulesList?.removeEventListener("click", handleRulesListClick);
     el.targetsList?.removeEventListener("click", handleTargetsListClick);
     el.targetsList?.removeEventListener("submit", handleTargetRenameSubmit);
@@ -1914,6 +2032,11 @@
     el.ruleEnabled = $("analytics-alerts-rule-enabled");
     el.ruleName = $("analytics-alerts-rule-name");
     el.ruleDescription = $("analytics-alerts-rule-description");
+    el.ruleTitleTemplate = $("analytics-alerts-rule-title-template");
+    el.ruleBodyTemplate = $("analytics-alerts-rule-body-template");
+    el.templateHelp = $("analytics-alerts-template-help");
+    el.templateFocus = $("analytics-alerts-template-focus");
+    el.templateVariables = $("analytics-alerts-template-variables");
     el.ruleThresholdNumberRow = $("analytics-alerts-rule-threshold-number-row");
     el.ruleThresholdNumber = $("analytics-alerts-rule-threshold-number");
     el.ruleThresholdStateRow = $("analytics-alerts-rule-threshold-state-row");

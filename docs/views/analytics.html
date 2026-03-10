@@ -447,6 +447,14 @@
                 <span>Description</span>
                 <textarea id="analytics-alerts-rule-description" rows="2" placeholder="Optional description"></textarea>
               </label>
+              <label class="ss-form-row ss-analytics-alerts-form-grid-wide">
+                <span>Title template</span>
+                <textarea id="analytics-alerts-rule-title-template" rows="2" placeholder="Optional alert title template"></textarea>
+              </label>
+              <label class="ss-form-row ss-analytics-alerts-form-grid-wide">
+                <span>Body template</span>
+                <textarea id="analytics-alerts-rule-body-template" rows="4" placeholder="Optional alert body template"></textarea>
+              </label>
               <label class="ss-form-row" id="analytics-alerts-rule-threshold-number-row">
                 <span>Threshold value</span>
                 <input type="number" id="analytics-alerts-rule-threshold-number" min="0" step="1" value="1" />
@@ -479,6 +487,18 @@
             <p class="muted ss-analytics-alerts-helper-copy">
               Cooldown and dedupe windows reduce noisy repeats. Identical matching alerts may be suppressed until those windows expire.
             </p>
+            <section class="ss-analytics-alerts-template-panel" aria-labelledby="analytics-alerts-template-title">
+              <div class="ss-analytics-alerts-scope-header">
+                <div>
+                  <h5 id="analytics-alerts-template-title">Message templates</h5>
+                  <p id="analytics-alerts-template-help" class="muted">Use `{{variable_name}}` tokens. Missing payload values render blank.</p>
+                </div>
+              </div>
+              <div class="ss-analytics-alerts-template-browser">
+                <div id="analytics-alerts-template-focus" class="ss-analytics-alerts-template-focus muted">Click a title/body template field, then choose a variable to insert.</div>
+                <div id="analytics-alerts-template-variables" class="ss-analytics-alerts-template-variables"></div>
+              </div>
+            </section>
 
             <section class="ss-analytics-alerts-scope-panel" aria-labelledby="analytics-alerts-rule-scope-title">
               <div class="ss-analytics-alerts-scope-header">
