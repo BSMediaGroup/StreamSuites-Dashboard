@@ -17,6 +17,7 @@ Admin-facing StreamSuites surface deployed to Cloudflare Pages at `https://admin
 - The current routing and auth cutover work is reflected in fail-closed Auth API session gating, Cloudflare Pages-safe login routing, and current route compatibility handling.
 - Analytics alerting, creator stats, telemetry, bot visibility, and account operations remain consumers or controllers over backend-owned state rather than independent authorities.
 - Analytics alert rules now expose backend-authored title/body template fields plus a backend-driven variable picker so admins can insert supported `{{variable}}` tokens without duplicating rendering logic in the dashboard.
+- Analytics alert preferences now manage backend-authored quiet hours, timezone-aware overnight suppression, and per-destination enabled/minimum-severity controls from the existing alerting workspace.
 
 ## Hosting and Routing
 
