@@ -112,56 +112,78 @@
   </section>
 
   <section class="ss-analytics-lower-grid">
-    <aside class="ss-panel ss-analytics-side-panel ss-analytics-countries" aria-labelledby="analytics-countries-title">
-      <header class="ss-panel-header">
-        <div class="ss-panel-header-main">
-          <h2 id="analytics-countries-title">Countries / Regions</h2>
-          <p class="muted">Detected regions for the selected analytics window.</p>
-        </div>
-      </header>
-      <div class="ss-panel-body ss-analytics-side-body ss-analytics-countries-body">
-        <div class="ss-analytics-countries-toolbar">
-          <input
-            type="search"
-            id="analytics-countries-search"
-            class="ss-input"
-            placeholder="Filter by country or code"
-            aria-label="Filter countries and regions"
-          />
-          <span id="analytics-countries-count" class="muted">0 regions</span>
-        </div>
-        <div class="ss-table-scroll ss-analytics-countries-table-wrap">
-          <table class="ss-table ss-table-compact" id="analytics-countries-table">
-            <thead>
-              <tr>
-                <th class="sortable" data-sort-key="name" aria-sort="none">Country / Region</th>
-                <th class="sortable sorted-desc ss-analytics-num-col" data-sort-key="sessions" aria-sort="descending">Sessions</th>
-                <th class="sortable ss-analytics-num-col" data-sort-key="requests" aria-sort="none">Requests</th>
-                <th class="sortable ss-analytics-num-col" data-sort-key="sessionsShare" aria-sort="none">Sessions %</th>
-                <th class="sortable ss-analytics-num-col" data-sort-key="requestsShare" aria-sort="none">Requests %</th>
-              </tr>
-            </thead>
-            <tbody id="analytics-countries-body"></tbody>
-          </table>
-        </div>
-        <div id="analytics-countries-empty" class="ss-empty-state hidden">No regions detected in this window.</div>
-      </div>
-    </aside>
-
-    <div class="ss-analytics-side-stack">
-      <aside class="ss-panel ss-analytics-side-panel ss-analytics-referrers" aria-labelledby="analytics-referrers-title">
+    <div class="ss-analytics-primary-stack">
+      <aside class="ss-panel ss-analytics-side-panel ss-analytics-countries" aria-labelledby="analytics-countries-title">
         <header class="ss-panel-header">
           <div class="ss-panel-header-main">
-            <h2 id="analytics-referrers-title">Top Referrers</h2>
-            <p class="muted">Top inbound domains in the selected window.</p>
+            <h2 id="analytics-countries-title">Geographic Breakdown</h2>
+            <p class="muted">Best-available country, region, and city aggregates from the runtime request path.</p>
           </div>
         </header>
-        <div class="ss-panel-body ss-analytics-side-body">
-          <ol id="analytics-referrers-list" class="ss-analytics-list" aria-live="polite"></ol>
-          <div id="analytics-referrers-empty" class="ss-empty-state hidden">No referrer data yet.</div>
+        <div class="ss-panel-body ss-analytics-countries-body">
+          <div id="analytics-geo-support" class="ss-analytics-geo-support" aria-live="polite">
+            <span class="ss-chip">Country-only <strong id="analytics-geo-country-only">0</strong></span>
+            <span class="ss-chip">Region detail <strong id="analytics-geo-region-detail">0</strong></span>
+            <span class="ss-chip">City detail <strong id="analytics-geo-city-detail">0</strong></span>
+          </div>
+          <div class="ss-analytics-countries-toolbar">
+            <input
+              type="search"
+              id="analytics-countries-search"
+              class="ss-input"
+              placeholder="Filter by country, region, city, or code"
+              aria-label="Filter geographic breakdown"
+            />
+            <span id="analytics-countries-count" class="muted">0 locations</span>
+          </div>
+          <div class="ss-table-scroll ss-analytics-countries-table-wrap">
+            <table class="ss-table ss-table-compact" id="analytics-countries-table">
+              <thead>
+                <tr>
+                  <th class="sortable" data-sort-key="location" aria-sort="none">Location</th>
+                  <th class="sortable" data-sort-key="country" aria-sort="none">Country</th>
+                  <th class="sortable" data-sort-key="precision" aria-sort="none">Precision</th>
+                  <th class="sortable sorted-desc ss-analytics-num-col" data-sort-key="sessions" aria-sort="descending">Sessions</th>
+                  <th class="sortable ss-analytics-num-col" data-sort-key="requests" aria-sort="none">Requests</th>
+                  <th class="sortable ss-analytics-num-col" data-sort-key="sessionsShare" aria-sort="none">Sessions %</th>
+                  <th class="sortable ss-analytics-num-col" data-sort-key="requestsShare" aria-sort="none">Requests %</th>
+                </tr>
+              </thead>
+              <tbody id="analytics-countries-body"></tbody>
+            </table>
+          </div>
+          <div id="analytics-countries-empty" class="ss-empty-state hidden">No geographic data detected in this window.</div>
         </div>
       </aside>
 
+      <aside class="ss-panel ss-analytics-side-panel ss-analytics-endpoints" aria-labelledby="analytics-endpoints-title">
+        <header class="ss-panel-header">
+          <div class="ss-panel-header-main">
+            <h2 id="analytics-endpoints-title">Top Routes / Resources</h2>
+            <p class="muted">Highest-volume runtime API routes in the selected window.</p>
+          </div>
+        </header>
+        <div class="ss-panel-body ss-analytics-endpoints-body">
+          <div class="ss-table-scroll ss-analytics-endpoints-table-wrap">
+            <table class="ss-table ss-table-compact" id="analytics-endpoints-table">
+              <thead>
+                <tr>
+                  <th>Route</th>
+                  <th>Method</th>
+                  <th class="ss-analytics-num-col">Requests</th>
+                  <th class="ss-analytics-num-col">Errors</th>
+                  <th class="ss-analytics-num-col">P95 ms</th>
+                </tr>
+              </thead>
+              <tbody id="analytics-endpoints-body"></tbody>
+            </table>
+          </div>
+          <div id="analytics-endpoints-empty" class="ss-empty-state hidden">No route activity yet.</div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="ss-analytics-secondary-stack">
       <aside class="ss-panel ss-analytics-side-panel ss-analytics-sessions" aria-labelledby="analytics-sessions-title">
         <header class="ss-panel-header">
           <div class="ss-panel-header-main">
@@ -176,6 +198,10 @@
               <strong id="analytics-total-requests">--</strong>
             </article>
             <article class="ss-analytics-stat">
+              <span class="label">Unique sessions</span>
+              <strong id="analytics-total-sessions">--</strong>
+            </article>
+            <article class="ss-analytics-stat">
               <span class="label">Window</span>
               <strong id="analytics-window-label">--</strong>
             </article>
@@ -188,6 +214,45 @@
             <h3 class="ss-analytics-subtitle">Surfaces</h3>
             <ul id="analytics-surfaces-list" class="ss-analytics-list ss-analytics-surfaces-list"></ul>
             <div id="analytics-surfaces-empty" class="ss-empty-state hidden">No events in this window.</div>
+          </div>
+        </div>
+      </aside>
+
+      <aside class="ss-panel ss-analytics-side-panel ss-analytics-referrers" aria-labelledby="analytics-referrers-title">
+        <header class="ss-panel-header">
+          <div class="ss-panel-header-main">
+            <h2 id="analytics-referrers-title">Top Referrers</h2>
+            <p class="muted">Top inbound domains in the selected window.</p>
+          </div>
+        </header>
+        <div class="ss-panel-body ss-analytics-side-body">
+          <ol id="analytics-referrers-list" class="ss-analytics-list" aria-live="polite"></ol>
+          <div id="analytics-referrers-empty" class="ss-empty-state hidden">No referrer data yet.</div>
+        </div>
+      </aside>
+
+      <aside class="ss-panel ss-analytics-side-panel ss-analytics-clients" aria-labelledby="analytics-clients-title">
+        <header class="ss-panel-header">
+          <div class="ss-panel-header-main">
+            <h2 id="analytics-clients-title">Client Mix</h2>
+            <p class="muted">Browser, device, and platform buckets derived from live request headers.</p>
+          </div>
+        </header>
+        <div class="ss-panel-body ss-analytics-clients-body">
+          <div class="ss-analytics-client-section">
+            <h3 class="ss-analytics-subtitle">Browsers</h3>
+            <ol id="analytics-browsers-list" class="ss-analytics-list" aria-live="polite"></ol>
+            <div id="analytics-browsers-empty" class="ss-empty-state hidden">No browser data yet.</div>
+          </div>
+          <div class="ss-analytics-client-section">
+            <h3 class="ss-analytics-subtitle">Devices</h3>
+            <ol id="analytics-devices-list" class="ss-analytics-list" aria-live="polite"></ol>
+            <div id="analytics-devices-empty" class="ss-empty-state hidden">No device data yet.</div>
+          </div>
+          <div class="ss-analytics-client-section">
+            <h3 class="ss-analytics-subtitle">Platforms</h3>
+            <ol id="analytics-platforms-list" class="ss-analytics-list" aria-live="polite"></ol>
+            <div id="analytics-platforms-empty" class="ss-empty-state hidden">No platform data yet.</div>
           </div>
         </div>
       </aside>

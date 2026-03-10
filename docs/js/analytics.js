@@ -108,6 +108,16 @@
       sessions: 0,
       requests: 0
     },
+    locationRows: [],
+    locationTotals: {
+      sessions: 0,
+      requests: 0
+    },
+    locationSupport: {
+      country: 0,
+      region: 0,
+      city: 0
+    },
     countrySort: {
       key: COUNTRY_DEFAULT_SORT_KEY,
       direction: COUNTRY_DEFAULT_SORT_DIRECTION
@@ -145,6 +155,7 @@
     referrersList: null,
     referrersEmpty: null,
     totalRequests: null,
+    totalSessions: null,
     windowLabel: null,
     generatedAt: null,
     surfacesList: null,
@@ -153,7 +164,18 @@
     countriesBody: null,
     countriesEmpty: null,
     countriesSearch: null,
-    countriesCount: null
+    countriesCount: null,
+    geoCountryOnly: null,
+    geoRegionDetail: null,
+    geoCityDetail: null,
+    endpointsBody: null,
+    endpointsEmpty: null,
+    browsersList: null,
+    browsersEmpty: null,
+    devicesList: null,
+    devicesEmpty: null,
+    platformsList: null,
+    platformsEmpty: null
   };
   let surfacesClickBound = false;
 
@@ -1136,6 +1158,13 @@
     return [];
   }
 
+  function normalizeLocationRows(byLocation) {
+    if (Array.isArray(byLocation)) {
+      return byLocation;
+    }
+    return [];
+  }
+
   function buildCountryRows(countryRows, centroids) {
     const aggregate = new Map();
     normalizeCountryRows(countryRows).forEach((entry) => {
@@ -1163,6 +1192,46 @@
         requests,
         sessions,
         centroid: [lon, lat]
+      });
+    });
+    return Array.from(aggregate.values());
+  }
+
+  function buildLocationRows(locationRows) {
+    const aggregate = new Map();
+    normalizeLocationRows(locationRows).forEach((entry) => {
+      const code = String(entry?.country || entry?.code || "").trim().toUpperCase();
+      if (!code || code === "ZZ") return;
+      const region = String(entry?.region || "").trim();
+      const regionCode = String(entry?.region_code || entry?.regionCode || "").trim().toUpperCase();
+      const city = String(entry?.city || "").trim();
+      const precision = city
+        ? "city"
+        : (region || regionCode || String(entry?.precision || "").trim().toLowerCase() === "region")
+          ? "region"
+          : "country";
+      const requestsRaw = Number(entry?.requests ?? entry?.count ?? 0);
+      const sessionsRaw = Number(entry?.sessions ?? entry?.count ?? requestsRaw);
+      const requests = Number.isFinite(requestsRaw) ? Math.max(0, Math.round(requestsRaw)) : 0;
+      const sessions = Number.isFinite(sessionsRaw) ? Math.max(0, Math.round(sessionsRaw)) : requests;
+      if (requests <= 0 && sessions <= 0) return;
+      const key = [code, region, regionCode, city].join("|");
+      const existing = aggregate.get(key);
+      if (existing) {
+        existing.requests += requests;
+        existing.sessions += sessions;
+        return;
+      }
+      aggregate.set(key, {
+        key,
+        code,
+        countryName: resolveCountryName(code),
+        region,
+        regionCode,
+        city,
+        precision,
+        requests,
+        sessions
       });
     });
     return Array.from(aggregate.values());
@@ -1229,6 +1298,25 @@
     return top;
   }
 
+  function resolveLocationLabel(entry) {
+    const city = String(entry?.city || "").trim();
+    const region = String(entry?.region || "").trim();
+    const regionCode = String(entry?.regionCode || entry?.region_code || "").trim();
+    if (city && region) return `${city}, ${region}`;
+    if (city && regionCode) return `${city}, ${regionCode}`;
+    if (city) return city;
+    if (region) return region;
+    if (regionCode) return regionCode;
+    return String(entry?.countryName || entry?.name || resolveCountryName(entry?.code) || entry?.code || "Unknown").trim() || "Unknown";
+  }
+
+  function resolveLocationMeta(entry) {
+    const precision = String(entry?.precision || "country").trim().toLowerCase() || "country";
+    if (precision === "city") return "City detail";
+    if (precision === "region") return "Region detail";
+    return "Country only";
+  }
+
   function updateMapStatsStrip() {
     if (el.mapCountryCount) {
       el.mapCountryCount.textContent = formatNumber(state.countryRows.length);
@@ -1255,8 +1343,19 @@
   }
 
   function resolveCountrySortValue(entry, key, totals) {
-    if (key === "name") {
-      return `${String(entry?.name || "").toLowerCase()}|${String(entry?.code || "").toLowerCase()}`;
+    if (key === "location") {
+      return `${resolveLocationLabel(entry).toLowerCase()}|${String(entry?.code || "").toLowerCase()}`;
+    }
+    if (key === "country") {
+      return `${String(entry?.countryName || resolveCountryName(entry?.code) || "").toLowerCase()}|${String(entry?.code || "").toLowerCase()}`;
+    }
+    if (key === "precision") {
+      const order = {
+        city: 3,
+        region: 2,
+        country: 1
+      };
+      return order[String(entry?.precision || "").toLowerCase()] || 0;
     }
     if (key === "sessionsShare") {
       const totalSessions = Number(totals?.sessions ?? 0);
@@ -1310,24 +1409,35 @@
   }
 
   function renderCountryTable() {
-    const allRows = Array.isArray(state.countryRows) ? state.countryRows : [];
+    const allRows = Array.isArray(state.locationRows) && state.locationRows.length ? state.locationRows : state.countryRows;
     const filterText = String(state.countryFilter || "").trim().toLowerCase();
     const filteredRows = filterText
       ? allRows.filter((entry) => {
           const code = String(entry?.code || "").toLowerCase();
-          const name = String(entry?.name || "").toLowerCase();
-          return code.includes(filterText) || name.includes(filterText);
+          const countryName = String(entry?.countryName || entry?.name || "").toLowerCase();
+          const region = String(entry?.region || "").toLowerCase();
+          const regionCode = String(entry?.regionCode || entry?.region_code || "").toLowerCase();
+          const city = String(entry?.city || "").toLowerCase();
+          const label = resolveLocationLabel(entry).toLowerCase();
+          return (
+            code.includes(filterText) ||
+            countryName.includes(filterText) ||
+            region.includes(filterText) ||
+            regionCode.includes(filterText) ||
+            city.includes(filterText) ||
+            label.includes(filterText)
+          );
         })
       : allRows;
-    const totals = state.countryTotals;
+    const totals = state.locationRows.length ? state.locationTotals : state.countryTotals;
     const sortedRows = sortCountryRows(filteredRows, totals);
     updateCountrySortHeaders();
 
     if (el.countriesCount) {
       if (filterText) {
-        el.countriesCount.textContent = `${sortedRows.length.toLocaleString()} of ${allRows.length.toLocaleString()} regions`;
+        el.countriesCount.textContent = `${sortedRows.length.toLocaleString()} of ${allRows.length.toLocaleString()} locations`;
       } else {
-        const label = allRows.length === 1 ? "region" : "regions";
+        const label = allRows.length === 1 ? "location" : "locations";
         el.countriesCount.textContent = `${allRows.length.toLocaleString()} ${label}`;
       }
     }
@@ -1336,8 +1446,8 @@
     if (!sortedRows.length) {
       el.countriesBody.innerHTML = "";
       el.countriesEmpty.textContent = filterText
-        ? "No regions match this filter."
-        : "No regions detected in this window.";
+        ? "No geographic rows match this filter."
+        : "No geographic data detected in this window.";
       el.countriesEmpty.classList.remove("hidden");
       return;
     }
@@ -1347,7 +1457,9 @@
     const fragment = document.createDocumentFragment();
     sortedRows.forEach((entry) => {
       const code = String(entry?.code || "").toUpperCase();
-      const name = String(entry?.name || code).trim() || code;
+      const countryName = String(entry?.countryName || entry?.name || resolveCountryName(code) || code).trim() || code;
+      const locationName = resolveLocationLabel(entry);
+      const locationMeta = resolveLocationMeta(entry);
       const isActive = code === state.activeCountryCode;
 
       const row = document.createElement("tr");
@@ -1355,23 +1467,37 @@
       row.setAttribute("data-country-code", code);
       row.setAttribute("tabindex", "0");
       row.setAttribute("role", "button");
-      row.setAttribute("aria-label", `Focus map on ${name}`);
-      row.setAttribute("data-region-name", name);
+      row.setAttribute("aria-label", `Focus map on ${countryName}`);
+      row.setAttribute("data-region-name", countryName);
 
-      const regionCell = document.createElement("td");
+      const locationCell = document.createElement("td");
+      const locationEl = document.createElement("span");
+      locationEl.className = "ss-analytics-location-name";
+      locationEl.textContent = locationName;
+      const locationMetaEl = document.createElement("span");
+      locationMetaEl.className = "ss-analytics-location-meta";
+      locationMetaEl.textContent = locationMeta;
+      locationCell.append(locationEl, locationMetaEl);
+      row.appendChild(locationCell);
+
+      const countryCell = document.createElement("td");
       const nameEl = document.createElement("span");
       nameEl.className = "ss-analytics-country-name";
       nameEl.appendChild(
         buildRegionLabelNode({
           code,
-          name
+          name: countryName
         })
       );
       const codeEl = document.createElement("span");
       codeEl.className = "ss-analytics-country-code";
       codeEl.textContent = code;
-      regionCell.append(nameEl, codeEl);
-      row.appendChild(regionCell);
+      countryCell.append(nameEl, codeEl);
+      row.appendChild(countryCell);
+
+      const precisionCell = document.createElement("td");
+      precisionCell.textContent = String(entry?.precision || "country").trim() || "country";
+      row.appendChild(precisionCell);
 
       const sessionsCell = document.createElement("td");
       sessionsCell.className = "ss-analytics-metric";
@@ -1456,7 +1582,8 @@
       state.countrySort.direction = state.countrySort.direction === "asc" ? "desc" : "asc";
     } else {
       state.countrySort.key = sortKey;
-      state.countrySort.direction = sortKey === "name" ? "asc" : "desc";
+      state.countrySort.direction =
+        sortKey === "location" || sortKey === "country" || sortKey === "precision" ? "asc" : "desc";
     }
     renderCountryTable();
   }
@@ -1524,6 +1651,19 @@
     }
   }
 
+  function updateLocationBreakdown(locationRows, locationSupport) {
+    const rows = buildLocationRows(locationRows);
+    state.locationRows = rows;
+    state.locationTotals = computeCountryTotals(rows);
+    state.locationSupport = {
+      country: Number(locationSupport?.country ?? 0) || 0,
+      region: Number(locationSupport?.region ?? 0) || 0,
+      city: Number(locationSupport?.city ?? 0) || 0
+    };
+    renderLocationSupport(state.locationSupport);
+    renderCountryTable();
+  }
+
   function normalizeReferrers(referrers) {
     const rows = Array.isArray(referrers) ? referrers : [];
     return rows
@@ -1555,6 +1695,105 @@
         return `
           <li>
             <span>${escapeHtml(entry.domain)}</span>
+            <strong>${escapeHtml(formatNumber(entry.count))}</strong>
+          </li>
+        `;
+      })
+      .join("");
+  }
+
+  function renderLocationSupport(locationSupport) {
+    const safe = locationSupport && typeof locationSupport === "object" ? locationSupport : {};
+    const countryOnly = Number(safe.country ?? 0);
+    const regionDetail = Number(safe.region ?? 0);
+    const cityDetail = Number(safe.city ?? 0);
+    if (el.geoCountryOnly) {
+      el.geoCountryOnly.textContent = formatNumber(countryOnly);
+    }
+    if (el.geoRegionDetail) {
+      el.geoRegionDetail.textContent = formatNumber(regionDetail);
+    }
+    if (el.geoCityDetail) {
+      el.geoCityDetail.textContent = formatNumber(cityDetail);
+    }
+  }
+
+  function normalizeEndpoints(endpoints) {
+    const rows = Array.isArray(endpoints) ? endpoints : [];
+    return rows
+      .map((entry) => {
+        const path = String(entry?.path || entry?.route || "").trim();
+        const method = String(entry?.method || "GET").trim().toUpperCase() || "GET";
+        const requests = Number(entry?.requests ?? 0);
+        const errors = Number(entry?.errors ?? 0);
+        const p95 = Number(entry?.p95_ms ?? entry?.p95 ?? 0);
+        if (!path) return null;
+        return {
+          path,
+          method,
+          requests: Number.isFinite(requests) ? Math.max(0, Math.round(requests)) : 0,
+          errors: Number.isFinite(errors) ? Math.max(0, Math.round(errors)) : 0,
+          p95_ms: Number.isFinite(p95) ? Math.max(0, Math.round(p95)) : 0
+        };
+      })
+      .filter(Boolean);
+  }
+
+  function renderEndpoints(endpoints) {
+    if (!el.endpointsBody || !el.endpointsEmpty) return;
+    const rows = normalizeEndpoints(endpoints);
+    if (!rows.length) {
+      el.endpointsBody.innerHTML = "";
+      el.endpointsEmpty.classList.remove("hidden");
+      return;
+    }
+    el.endpointsEmpty.classList.add("hidden");
+    el.endpointsBody.innerHTML = rows
+      .map((entry) => {
+        return `
+          <tr>
+            <td><span class="ss-analytics-endpoint-path">${escapeHtml(entry.path)}</span></td>
+            <td><span class="ss-analytics-endpoint-method">${escapeHtml(entry.method)}</span></td>
+            <td class="ss-analytics-metric">${escapeHtml(formatNumber(entry.requests))}</td>
+            <td class="ss-analytics-metric">${escapeHtml(formatNumber(entry.errors))}</td>
+            <td class="ss-analytics-metric">${escapeHtml(formatNumber(entry.p95_ms))}</td>
+          </tr>
+        `;
+      })
+      .join("");
+  }
+
+  function normalizeNamedCountRows(rows, keyNames) {
+    const list = Array.isArray(rows) ? rows : [];
+    return list
+      .map((entry) => {
+        const label = keyNames
+          .map((key) => String(entry?.[key] || "").trim())
+          .find((value) => value);
+        const count = Number(entry?.count ?? entry?.requests ?? 0);
+        if (!label) return null;
+        return {
+          label,
+          count: Number.isFinite(count) ? Math.max(0, Math.round(count)) : 0
+        };
+      })
+      .filter((entry) => entry && entry.count > 0);
+  }
+
+  function renderNamedCountList(listEl, emptyEl, rows, keyNames) {
+    if (!listEl || !emptyEl) return;
+    const items = normalizeNamedCountRows(rows, keyNames);
+    if (!items.length) {
+      listEl.innerHTML = "";
+      emptyEl.classList.remove("hidden");
+      return;
+    }
+    emptyEl.classList.add("hidden");
+    listEl.innerHTML = items
+      .map((entry) => {
+        return `
+          <li>
+            <span>${escapeHtml(entry.label)}</span>
             <strong>${escapeHtml(formatNumber(entry.count))}</strong>
           </li>
         `;
@@ -1660,10 +1899,14 @@
   function setSummary(payload) {
     const safe = payload && typeof payload === "object" ? payload : {};
     const totalRequests = Number(safe?.totals?.requests ?? 0);
+    const totalSessions = Number(safe?.totals?.sessions ?? 0);
     const generatedAt = safe?.generated_at || null;
     const windowLabel = String(safe?.window || state.selectedWindow || DEFAULT_WINDOW);
     if (el.totalRequests) {
       el.totalRequests.textContent = formatNumber(totalRequests);
+    }
+    if (el.totalSessions) {
+      el.totalSessions.textContent = formatNumber(totalSessions);
     }
     if (el.windowLabel) {
       el.windowLabel.textContent = windowLabel;
@@ -1706,7 +1949,12 @@
         });
         const data = payload?.data && typeof payload.data === "object" ? payload.data : payload;
         renderReferrers(data?.top_referrers);
+        renderEndpoints(data?.top_endpoints);
+        renderNamedCountList(el.browsersList, el.browsersEmpty, data?.clients?.browsers, ["browser", "label"]);
+        renderNamedCountList(el.devicesList, el.devicesEmpty, data?.clients?.devices, ["device", "label"]);
+        renderNamedCountList(el.platformsList, el.platformsEmpty, data?.clients?.platforms, ["platform", "label"]);
         setSummary(data);
+        updateLocationBreakdown(data?.by_location, data?.location_support);
         await updateMap(data?.by_country);
 
         if (Number(data?.totals?.requests || 0) <= 0) {
@@ -1751,6 +1999,16 @@
       sessions: 0,
       requests: 0
     };
+    state.locationRows = [];
+    state.locationTotals = {
+      sessions: 0,
+      requests: 0
+    };
+    state.locationSupport = {
+      country: 0,
+      region: 0,
+      city: 0
+    };
     state.countrySort = {
       key: COUNTRY_DEFAULT_SORT_KEY,
       direction: COUNTRY_DEFAULT_SORT_DIRECTION
@@ -1778,6 +2036,7 @@
     el.referrersList = $("analytics-referrers-list");
     el.referrersEmpty = $("analytics-referrers-empty");
     el.totalRequests = $("analytics-total-requests");
+    el.totalSessions = $("analytics-total-sessions");
     el.windowLabel = $("analytics-window-label");
     el.generatedAt = $("analytics-generated-at");
     el.surfacesList = $("analytics-surfaces-list");
@@ -1787,6 +2046,17 @@
     el.countriesEmpty = $("analytics-countries-empty");
     el.countriesSearch = $("analytics-countries-search");
     el.countriesCount = $("analytics-countries-count");
+    el.geoCountryOnly = $("analytics-geo-country-only");
+    el.geoRegionDetail = $("analytics-geo-region-detail");
+    el.geoCityDetail = $("analytics-geo-city-detail");
+    el.endpointsBody = $("analytics-endpoints-body");
+    el.endpointsEmpty = $("analytics-endpoints-empty");
+    el.browsersList = $("analytics-browsers-list");
+    el.browsersEmpty = $("analytics-browsers-empty");
+    el.devicesList = $("analytics-devices-list");
+    el.devicesEmpty = $("analytics-devices-empty");
+    el.platformsList = $("analytics-platforms-list");
+    el.platformsEmpty = $("analytics-platforms-empty");
     if (el.mapToggle) {
       el.mapToggle.addEventListener("click", handleMapToggleClick);
     }
@@ -1826,6 +2096,11 @@
 
     setSummary(null);
     renderReferrers([]);
+    renderEndpoints([]);
+    renderNamedCountList(el.browsersList, el.browsersEmpty, [], ["browser", "label"]);
+    renderNamedCountList(el.devicesList, el.devicesEmpty, [], ["device", "label"]);
+    renderNamedCountList(el.platformsList, el.platformsEmpty, [], ["platform", "label"]);
+    renderLocationSupport(null);
     void updateMap([]);
     setMapCollapsed(readMapCollapsedPreference(), {
       persist: false,
@@ -1920,6 +2195,16 @@
     state.countryTotals = {
       sessions: 0,
       requests: 0
+    };
+    state.locationRows = [];
+    state.locationTotals = {
+      sessions: 0,
+      requests: 0
+    };
+    state.locationSupport = {
+      country: 0,
+      region: 0,
+      city: 0
     };
     state.countrySort = {
       key: COUNTRY_DEFAULT_SORT_KEY,
