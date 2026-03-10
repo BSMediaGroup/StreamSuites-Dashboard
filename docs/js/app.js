@@ -869,6 +869,7 @@ async function loadView(name) {
     window.StreamSuitesGlobalLoader?.startLoading?.(`Loading ${name} view...`) || null;
 
   try {
+    window.StreamSuitesToast?.clearAll?.();
     const res = await fetchWithTimeout(viewUrl, { cache: "no-store" });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 

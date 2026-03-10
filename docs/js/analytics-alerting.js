@@ -459,10 +459,19 @@
   }
 
   function setBanner(message, tone = "danger") {
+    if (message) {
+      const mappedTone = tone === "danger" ? "error" : tone;
+      window.StreamSuitesToast?.[mappedTone]?.(message, {
+        key: "analytics-alerting-banner",
+        title: "Alerting",
+        autoDismissMs: mappedTone === "error" || mappedTone === "warning" ? 6800 : 4200
+      });
+    } else {
+      window.StreamSuitesToast?.dismiss?.("analytics-alerting-banner");
+    }
     if (!el.banner) return;
-    const text = String(message || "").trim();
-    el.banner.textContent = text;
-    el.banner.className = `ss-alert ss-alert-${tone}${text ? "" : " hidden"}`;
+    el.banner.textContent = "";
+    el.banner.className = "ss-alert hidden";
   }
 
   function clearBanner() {

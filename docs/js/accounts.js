@@ -469,7 +469,7 @@ function normalizeUser(raw = {}) {
 
   function setInlineError(message, options = {}) {
     setStatus(message);
-    setBanner(message, true, options);
+    setBanner(message, true, { ...options, inline: false });
   }
 
   async function readErrorMessage(res) {
@@ -694,7 +694,21 @@ function normalizeUser(raw = {}) {
   }
 
   function setBanner(message, visible, options = {}) {
+    if (visible && message) {
+      window.StreamSuitesToast?.[options.tone || "warning"]?.(message, {
+        key: options.key || "accounts-banner",
+        title: options.title || "Accounts",
+        autoDismissMs: options.autoDismissMs
+      });
+    } else if (!visible) {
+      window.StreamSuitesToast?.dismiss?.(options.key || "accounts-banner");
+    }
     if (!el.banner) return;
+    if (options.inline === false) {
+      el.banner.innerHTML = "";
+      el.banner.classList.add("hidden");
+      return;
+    }
     el.banner.innerHTML = "";
     if (visible) {
       const text = document.createElement("span");
@@ -1764,7 +1778,12 @@ function normalizeUser(raw = {}) {
     } catch (err) {
       if (err?.status === 401 || err?.status === 403 || err?.isAuthError) {
         promptAdminReauth();
-        setInlineError("Admin session expired. Sign in again to continue.");
+        setInlineError("Admin session expired. Sign in again to continue.", {
+          tone: "error",
+          key: "accounts-session-expired",
+          title: "Session expired",
+          autoDismissMs: 6800
+        });
         return;
       }
       console.warn("[Accounts] Failed to load donation analytics", err);
@@ -1773,7 +1792,11 @@ function normalizeUser(raw = {}) {
       applyDonationStats();
       applyFilters();
       setInlineError("Donations API unavailable for donation stats.", {
-        retryAction: "donations"
+        retryAction: "donations",
+        tone: "warning",
+        key: "accounts-donations-unavailable",
+        title: "Refresh failed",
+        autoDismissMs: 6800
       });
     }
   }
@@ -1933,7 +1956,11 @@ function normalizeUser(raw = {}) {
         if (!nextEmail) return;
         const normalizedEmail = String(nextEmail).trim().toLowerCase();
         if (!normalizedEmail.includes("@")) {
-          setInlineError("Enter a valid email address.");
+          setInlineError("Enter a valid email address.", {
+            tone: "error",
+            key: "accounts-email-validation",
+            title: "Validation"
+          });
           return;
         }
         const forceNow = window.confirm(
@@ -1950,7 +1977,11 @@ function normalizeUser(raw = {}) {
         const currentProviders = Array.isArray(user.providers) ? user.providers : [];
         const providerOptions = currentProviders.map((provider) => provider.label).filter(Boolean);
         if (!providerOptions.length) {
-          setInlineError("No linked providers to unlink.");
+          setInlineError("No linked providers to unlink.", {
+            tone: "warning",
+            key: "accounts-unlink-none",
+            title: "Nothing to unlink"
+          });
           return;
         }
         const provider = window.prompt(
@@ -1988,13 +2019,23 @@ function normalizeUser(raw = {}) {
       });
       if (!res.ok) {
         if (res.status === 401 || res.status === 403) {
-          setInlineError("Admin session expired. Sign in again to continue.");
+          setInlineError("Admin session expired. Sign in again to continue.", {
+            tone: "error",
+            key: "accounts-action-session",
+            title: "Session expired",
+            autoDismissMs: 6800
+          });
           return;
         }
         const message = await readErrorMessage(res);
         console.warn("[Accounts] Action failed", action, message || res.status);
         const detail = message ? ` (${message})` : "";
-        setInlineError(`Action failed${detail}. Retry or refresh your admin session.`);
+        setInlineError(`Action failed${detail}. Retry or refresh your admin session.`, {
+          tone: "error",
+          key: "accounts-action-failed",
+          title: "Action failed",
+          autoDismissMs: 6800
+        });
         return;
       }
       let payload = null;
@@ -2009,7 +2050,12 @@ function normalizeUser(raw = {}) {
       await loadUsers();
     } catch (err) {
       console.warn("[Accounts] Action error", action, err);
-      setInlineError("Action failed. Retry or contact an admin if it persists.");
+      setInlineError("Action failed. Retry or contact an admin if it persists.", {
+        tone: "error",
+        key: "accounts-action-error",
+        title: "Action failed",
+        autoDismissMs: 6800
+      });
     } finally {
       setRowActionLoading(row, button, false);
     }

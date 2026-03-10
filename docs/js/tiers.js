@@ -129,13 +129,24 @@
   }
 
   function setBanner(message, variant = "warning") {
+    if (message) {
+      const tone = variant === "danger" ? "error" : variant;
+      window.StreamSuitesToast?.[tone]?.(message, {
+        key: "tiers-banner",
+        title: "Tiers",
+        autoDismissMs: tone === "error" || tone === "warning" ? 6800 : 4200
+      });
+    } else {
+      window.StreamSuitesToast?.dismiss?.("tiers-banner");
+    }
     if (!el.banner) return;
-    el.banner.textContent = message;
-    el.banner.classList.remove("hidden", "ss-alert-danger", "ss-alert-warning", "ss-alert-success");
-    el.banner.classList.add(`ss-alert-${variant}`);
+    el.banner.textContent = "";
+    el.banner.classList.add("hidden");
+    el.banner.classList.remove("ss-alert-danger", "ss-alert-warning", "ss-alert-success");
   }
 
   function clearBanner() {
+    window.StreamSuitesToast?.dismiss?.("tiers-banner");
     if (!el.banner) return;
     el.banner.textContent = "";
     el.banner.classList.add("hidden");
