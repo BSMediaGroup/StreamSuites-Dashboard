@@ -656,7 +656,7 @@
     if (!rows.length) {
       el.endpointHealth.innerHTML = `
         <div class="ss-empty-state api-usage-empty-state">
-          No endpoint telemetry in this window yet.
+          No core runtime endpoint telemetry in this window yet. Auth-control traffic is shown in Auth & Access Signals.
         </div>
       `;
       return;
@@ -724,6 +724,7 @@
 
     el.endpointHealth.innerHTML = `
       <div class="api-usage-note muted">Endpoint health uses conservative thresholds: Healthy &lt;1% errors and low latency; Degraded at 1-5% errors or elevated latency; Unhealthy above 5% errors or severe latency. Low-sample endpoints (&lt;${HEALTH_THRESHOLDS.minSampleHits} hits) still classify; hover the status pill for confidence context. Unknown appears only when both error and latency metrics are unavailable.</div>
+      <div class="api-usage-note muted">Auth-control requests such as login redirects, callback redirects, logout, and expected session probes are excluded from this table and from the runtime error-rate chart.</div>
       <div class="api-usage-note muted">Heat: relative hits in selected window (adaptive quantile buckets).</div>
       <div class="ss-table-scroll api-usage-table-scroll" id="api-usage-endpoints-scroll">
         <table class="ss-table ss-table-compact" id="api-usage-endpoints-table">

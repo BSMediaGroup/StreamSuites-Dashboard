@@ -15,7 +15,7 @@
       <div class="ss-panel-header-main">
         <h2>Runtime API Usage</h2>
         <p class="muted" style="margin:6px 0 0;">
-          Rolling request and error rates sourced from the live runtime.
+          Rolling request and error rates for core runtime endpoints. Login, callback, logout, and session-control traffic is surfaced separately below.
           <a
             class="ss-link"
             href="https://docs.streamsuites.app/runtime/api-authentication"
@@ -62,7 +62,7 @@
       <div class="ss-panel-header-main">
         <h2>Endpoint Health</h2>
         <p class="muted" style="margin:6px 0 0;">
-          Per-endpoint latency, saturation, and reliability indicators.
+          Per-endpoint latency, saturation, and reliability indicators for core runtime endpoints. Auth-control handshakes are excluded from this health view.
         </p>
       </div>
     </header>
@@ -76,7 +76,7 @@
       <div class="ss-panel-header-main">
         <h2>Auth &amp; Access Signals</h2>
         <p class="muted" style="margin:6px 0 0;">
-          Authentication trends, denied requests, and suspicious access patterns.
+          Authentication trends, denied requests, expected session probes, and auth-control traffic excluded from core runtime health.
         </p>
       </div>
     </header>
