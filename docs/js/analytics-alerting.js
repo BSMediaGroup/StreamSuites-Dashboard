@@ -275,6 +275,30 @@
     return parts.join(" + ");
   }
 
+  function firstNonEmptyLocationValue(...values) {
+    for (const value of values) {
+      const text = String(value || "").trim();
+      if (text) return text;
+    }
+    return "";
+  }
+
+  function buildAlertLocationLabel(entry, options = {}) {
+    const includeCountryWithCity = options.includeCountryWithCity === true;
+    const geo = entry?.payload_snapshot?.geo || entry?.metadata?.template_context?.geo || entry?.geo || {};
+    const city = firstNonEmptyLocationValue(geo?.city);
+    const region = firstNonEmptyLocationValue(geo?.region);
+    const regionCode = firstNonEmptyLocationValue(geo?.region_code);
+    const country = firstNonEmptyLocationValue(geo?.country, geo?.country_code);
+
+    if (city && region) return includeCountryWithCity && country ? `${city}, ${region}, ${country}` : `${city}, ${region}`;
+    if (city && regionCode) return includeCountryWithCity && country ? `${city}, ${regionCode}, ${country}` : `${city}, ${regionCode}`;
+    if (city) return country && includeCountryWithCity ? `${city}, ${country}` : city;
+    if (region) return country ? `${region}, ${country}` : region;
+    if (regionCode) return country ? `${regionCode}, ${country}` : regionCode;
+    return country;
+  }
+
   function collectObservedScopeValues(field) {
     const values = new Set();
     state.rules.forEach((rule) => {
@@ -1261,6 +1285,7 @@
         const destinations = (Array.isArray(entry.destinations_targeted) ? entry.destinations_targeted : [])
           .map((item) => `<span class="ss-chip">${escapeHtml(destinationLabel(item))}</span>`)
           .join("");
+        const locationLabel = buildAlertLocationLabel(entry, { includeCountryWithCity: true });
         const scopeSummary = entry?.metadata?.scope_summary
           || formatScopeSummary(entry?.metadata?.effective_scope || entry?.metadata?.rule_scope || {});
         return `
@@ -1277,6 +1302,7 @@
             </div>
             ${entry.message ? `<p class="ss-analytics-alerts-history-message">${escapeHtml(entry.message)}</p>` : ""}
             ${destinations ? `<div class="ss-analytics-alerts-history-chips">${destinations}</div>` : ""}
+            ${locationLabel ? `<p class="ss-analytics-alerts-history-context">Location: ${escapeHtml(locationLabel)}</p>` : ""}
             ${scopeSummary ? `<p class="ss-analytics-alerts-history-context">Scope: ${escapeHtml(scopeSummary)}</p>` : ""}
             <div class="ss-analytics-alerts-history-meta">
               <span>Triggered: ${escapeHtml(formatTimestamp(entry.triggered_at))}</span>

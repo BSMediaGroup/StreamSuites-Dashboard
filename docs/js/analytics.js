@@ -1200,7 +1200,7 @@
   function buildLocationRows(locationRows) {
     const aggregate = new Map();
     normalizeLocationRows(locationRows).forEach((entry) => {
-      const code = String(entry?.country || entry?.code || "").trim().toUpperCase();
+      const code = String(entry?.country_code || entry?.country || entry?.code || "").trim().toUpperCase();
       if (!code || code === "ZZ") return;
       const region = String(entry?.region || "").trim();
       const regionCode = String(entry?.region_code || entry?.regionCode || "").trim().toUpperCase();
@@ -1225,6 +1225,7 @@
       aggregate.set(key, {
         key,
         code,
+        countryCode: code,
         countryName: resolveCountryName(code),
         region,
         regionCode,
@@ -1302,18 +1303,36 @@
     const city = String(entry?.city || "").trim();
     const region = String(entry?.region || "").trim();
     const regionCode = String(entry?.regionCode || entry?.region_code || "").trim();
+    const countryName = String(
+      entry?.countryName
+      || entry?.name
+      || resolveCountryName(entry?.countryCode || entry?.country_code || entry?.code)
+      || entry?.countryCode
+      || entry?.country_code
+      || entry?.code
+      || "Unknown"
+    ).trim() || "Unknown";
     if (city && region) return `${city}, ${region}`;
     if (city && regionCode) return `${city}, ${regionCode}`;
     if (city) return city;
-    if (region) return region;
-    if (regionCode) return regionCode;
-    return String(entry?.countryName || entry?.name || resolveCountryName(entry?.code) || entry?.code || "Unknown").trim() || "Unknown";
+    if (region) return `${region}, ${countryName}`;
+    if (regionCode) return `${regionCode}, ${countryName}`;
+    return countryName;
   }
 
   function resolveLocationMeta(entry) {
     const precision = String(entry?.precision || "country").trim().toLowerCase() || "country";
-    if (precision === "city") return "City detail";
-    if (precision === "region") return "Region detail";
+    const countryName = String(
+      entry?.countryName
+      || entry?.name
+      || resolveCountryName(entry?.countryCode || entry?.country_code || entry?.code)
+      || entry?.countryCode
+      || entry?.country_code
+      || entry?.code
+      || ""
+    ).trim();
+    if (precision === "city") return countryName ? `City detail - ${countryName}` : "City detail";
+    if (precision === "region") return countryName ? `Region detail - ${countryName}` : "Region detail";
     return "Country only";
   }
 
