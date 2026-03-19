@@ -23,6 +23,9 @@
   const DEFAULT_MAP_STYLE_URL =
     "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
 
+  const LOCALHOST_HOSTNAMES = new Set(["localhost", "127.0.0.1", "0.0.0.0"]);
+  const LOCATION_PLACEHOLDER_VALUES = new Set(["", "-", "--", "unknown", "n/a", "na", "null", "undefined"]);
+
   const SOURCE_ID = "ss-analytics-country-points";
   const LAYERS = {
     clusterHalo: "ss-analytics-cluster-halo",
@@ -188,6 +191,7 @@
     recentRequestsEmpty: null
   };
   let surfacesClickBound = false;
+  const helperWarningState = new Set();
 
   function $(id) {
     return document.getElementById(id);
@@ -311,6 +315,44 @@
       .replace(/'/g, "&#39;");
   }
 
+  function safeToText(value, fallback = "") {
+    try {
+      return String(value ?? fallback ?? "");
+    } catch (_) {
+      return String(fallback ?? "");
+    }
+  }
+
+  function shouldWarnHelperFallbacks() {
+    const hostname = String(window.location?.hostname || "").trim().toLowerCase();
+    const protocol = String(window.location?.protocol || "").trim().toLowerCase();
+    return protocol === "file:" || LOCALHOST_HOSTNAMES.has(hostname);
+  }
+
+  function warnHelperFallback(key, message, error) {
+    if (!shouldWarnHelperFallbacks() || helperWarningState.has(key)) return;
+    helperWarningState.add(key);
+    if (error) {
+      console.warn(`[Analytics] ${message}`, error);
+      return;
+    }
+    console.warn(`[Analytics] ${message}`);
+  }
+
+  function labelize(value, fallback = "Unknown") {
+    try {
+      const formatted = safeToText(value)
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, (char) => char.toUpperCase())
+        .trim();
+      return formatted || fallback;
+    } catch (error) {
+      warnHelperFallback("labelize", "Label formatter fallback engaged.", error);
+      const text = safeToText(undefined, fallback).trim();
+      return text || fallback;
+    }
+  }
+
   function formatShare(value, total) {
     const numerator = Number(value);
     const denominator = Number(total);
@@ -386,19 +428,154 @@
     return resolved;
   }
 
-  function buildLocationPresentation(entry) {
-    return window.StreamSuitesLocationFormatting.buildPresentation(
-      {
-        city: entry?.city,
-        region: entry?.region,
-        regionCode: entry?.regionCode ?? entry?.region_code,
-        country: entry?.countryName ?? entry?.country ?? entry?.name,
-        countryCode: entry?.countryCode ?? entry?.country_code ?? entry?.code
-      },
-      {
-        resolveCountryName
+  function collapseLocationWhitespace(value) {
+    return safeToText(value)
+      .replace(/\s+/g, " ")
+      .replace(/\s*,\s*/g, ", ")
+      .replace(/^,+|,+$/g, "")
+      .trim();
+  }
+
+  function isPlaceholderLocationValue(value) {
+    return LOCATION_PLACEHOLDER_VALUES.has(safeToText(value).trim().toLowerCase());
+  }
+
+  function normalizeLocationCode(value) {
+    const text = collapseLocationWhitespace(value).toUpperCase();
+    if (!text || isPlaceholderLocationValue(text) || text === "ZZ") return "";
+    return text;
+  }
+
+  function normalizeLocationName(value) {
+    const text = collapseLocationWhitespace(value);
+    if (!text || isPlaceholderLocationValue(text)) return "";
+    const alpha = text.replace(/[^A-Za-z]/g, "");
+    if (!alpha) return text;
+    const isAllLower = alpha === alpha.toLowerCase();
+    const isAllUpper = alpha === alpha.toUpperCase();
+    if ((isAllLower || isAllUpper) && alpha.length > 3) {
+      return text.toLowerCase().replace(/\b([a-z])/g, (match) => match.toUpperCase());
+    }
+    return text;
+  }
+
+  function dedupeLocationParts(parts) {
+    const normalized = [];
+    parts.forEach((part) => {
+      const text = collapseLocationWhitespace(part);
+      if (!text) return;
+      const previous = normalized[normalized.length - 1];
+      if (previous && previous.localeCompare(text, undefined, { sensitivity: "base" }) === 0) {
+        return;
       }
+      normalized.push(text);
+    });
+    return normalized;
+  }
+
+  function buildLocationLabel(parts) {
+    return dedupeLocationParts(parts).join(", ");
+  }
+
+  function buildFallbackLocationPresentation(entry) {
+    const city = normalizeLocationName(entry?.city);
+    const region = normalizeLocationName(entry?.region);
+    const regionCode = normalizeLocationCode(entry?.regionCode ?? entry?.region_code);
+    const countryCode = normalizeLocationCode(entry?.countryCode ?? entry?.country_code ?? entry?.code);
+    const rawCountry = normalizeLocationName(entry?.country ?? entry?.countryName ?? entry?.name);
+    const countryName = rawCountry || normalizeLocationName(resolveCountryName(countryCode));
+    const regionLabel = region || regionCode;
+    const detailedLabel = buildLocationLabel(
+      city
+        ? [city, regionLabel, countryName || countryCode]
+        : regionLabel
+          ? [regionLabel, countryName || countryCode]
+          : [countryName || countryCode]
     );
+
+    let primaryLabel = "";
+    let precision = "country";
+    if (city && regionLabel) {
+      primaryLabel = buildLocationLabel([city, regionLabel]);
+      precision = "city";
+    } else if (city && (countryName || countryCode)) {
+      primaryLabel = buildLocationLabel([city, countryName || countryCode]);
+      precision = "city";
+    } else if (city) {
+      primaryLabel = city;
+      precision = "city";
+    } else if (regionLabel && (countryName || countryCode)) {
+      primaryLabel = buildLocationLabel([regionLabel, countryName || countryCode]);
+      precision = "region";
+    } else if (regionLabel) {
+      primaryLabel = regionLabel;
+      precision = "region";
+    } else {
+      primaryLabel = countryName || countryCode;
+    }
+
+    const primaryOrFallback = primaryLabel || detailedLabel || "Unknown";
+    const secondaryLabel = detailedLabel && detailedLabel !== primaryOrFallback
+      ? detailedLabel
+      : (precision === "country" && primaryOrFallback ? "Country only" : "");
+
+    return {
+      city,
+      region,
+      regionCode,
+      countryCode,
+      countryName,
+      primaryLabel: primaryOrFallback,
+      detailedLabel: detailedLabel || primaryOrFallback,
+      secondaryLabel,
+      precision,
+      sortKey: [
+        normalizeLocationName(countryName || countryCode || primaryOrFallback).toLowerCase(),
+        normalizeLocationName(regionLabel).toLowerCase(),
+        normalizeLocationName(city).toLowerCase(),
+        precision === "country" ? "0" : precision === "region" ? "1" : "2",
+        normalizeLocationName(primaryOrFallback).toLowerCase()
+      ].join("|"),
+      filterText: [
+        primaryOrFallback,
+        detailedLabel,
+        city,
+        region,
+        regionCode,
+        countryName,
+        countryCode
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+    };
+  }
+
+  function buildLocationPresentation(entry) {
+    const payload = {
+      city: entry?.city,
+      region: entry?.region,
+      regionCode: entry?.regionCode ?? entry?.region_code,
+      country: entry?.countryName ?? entry?.country ?? entry?.name,
+      countryCode: entry?.countryCode ?? entry?.country_code ?? entry?.code
+    };
+    const formatter = window.StreamSuitesLocationFormatting?.buildPresentation;
+    if (typeof formatter === "function") {
+      try {
+        const formatted = formatter(payload, { resolveCountryName });
+        if (formatted && typeof formatted === "object") {
+          return {
+            ...buildFallbackLocationPresentation(payload),
+            ...formatted
+          };
+        }
+      } catch (error) {
+        warnHelperFallback("location-formatting-error", "Shared location formatter failed. Falling back to Analytics-safe labels.", error);
+      }
+    } else {
+      warnHelperFallback("location-formatting-missing", "Shared location formatter missing. Falling back to Analytics-safe labels.");
+    }
+    return buildFallbackLocationPresentation(payload);
   }
 
   function getFlagSvgUrl(code) {
