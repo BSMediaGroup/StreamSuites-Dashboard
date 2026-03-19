@@ -11,6 +11,11 @@
     windows_client: "/assets/icons/ui/win2.svg",
     pushover: "/assets/icons/ui/push2.svg"
   };
+  const PREVIEW_SURFACES = Object.freeze([
+    { key: "desktop", label: "Desktop" },
+    { key: "browser", label: "Browser" },
+    { key: "plain", label: "Plain text" }
+  ]);
   const SCOPE_FIELD_ORDER = [
     "page_path",
     "page_key",
@@ -278,6 +283,7 @@
     settings: null,
     activeRuleId: null,
     activeTemplateField: "body",
+    activePreviewSurface: "desktop",
     ruleView: "list",
     rulesPage: 1,
     historyPage: 1,
@@ -363,9 +369,8 @@
     templateVariables: null,
     previewEvent: null,
     previewSeverity: null,
-    previewTitleText: null,
-    previewMessageText: null,
-    previewDestinations: null,
+    previewSurfaceToggle: null,
+    previewMatrix: null,
     previewNote: null,
     ruleThresholdNumberRow: null,
     ruleThresholdNumber: null,
@@ -745,6 +750,189 @@
       .split(marker)
       .map((segment) => renderPlain(segment))
       .join(renderCountryFlagBadge(presentation));
+  }
+
+  function renderAlertTextPlain(text, options = {}) {
+    const rawText = String(text || "");
+    const marker = rawText.includes("{{country_flag}}")
+      ? "{{country_flag}}"
+      : (options.countryFlagValue && rawText.includes(options.countryFlagValue) ? options.countryFlagValue : "");
+    const presentation = buildCountryFlagPresentation(options.countryFlagValue, options.countryCode);
+    if (!marker || !presentation) {
+      return rawText;
+    }
+    const fallback = presentation.countryCode
+      ? `[country flag: ${presentation.countryCode}]`
+      : "[country flag]";
+    return rawText.split(marker).join(fallback);
+  }
+
+  function normalizePreviewSeverity(value) {
+    const normalized = String(value || "").trim().toLowerCase();
+    return SEVERITIES.includes(normalized) ? normalized : "info";
+  }
+
+  function buildRulePreviewModel() {
+    const eventMeta = getEventMeta(el.ruleEventType?.value);
+    const eventLabel = eventMeta?.label || labelize(el.ruleEventType?.value || "alert");
+    const severityKey = normalizePreviewSeverity(el.ruleSeverity?.value);
+    const severityText = severityLabel(severityKey);
+    const titleTemplate = getTemplateEditorValue("title").trim();
+    const bodyTemplate = getTemplateEditorValue("body").trim();
+    const ruleName = String(el.ruleName?.value || "").trim();
+    const adminNotes = String(el.ruleDescription?.value || "").trim();
+    const destinations = collectCheckedValues(
+      el.ruleDestinations,
+      "input[type='checkbox'][data-ruleDestination]",
+      "data-ruleDestination"
+    );
+    const previewTitle = titleTemplate || ruleName || eventLabel || "Notification title preview";
+    const previewMessage = bodyTemplate
+      || adminNotes
+      || eventMeta?.description
+      || "The backend default message will be used for this alert.";
+    const templateTokens = extractTemplateTokens(`${titleTemplate}\n${bodyTemplate}`);
+    const previewCountryFlag = buildCountryFlagPresentation("{{country_flag}}", "AU");
+    const textOptions = {
+      countryFlagValue: previewCountryFlag?.rawValue || "",
+      countryCode: previewCountryFlag?.countryCode || "AU"
+    };
+    const noteText = templateTokens.length
+      ? `Placeholders used here will be filled by the backend: ${templateTokens.join(", ")}.${templateTokens.includes("{{country_flag}}") ? " `{{country_flag}}` is optional and cosmetic." : ""}`
+      : (!titleTemplate && !bodyTemplate)
+        ? "Leave the title or message blank to fall back to the backend default wording for this event."
+        : "This preview reflects the current text fields. The backend will still attach live event values when the alert sends.";
+
+    return {
+      eventLabel,
+      severityKey,
+      severityText,
+      titleHtml: renderAlertTextHtml(previewTitle, textOptions),
+      messageHtml: renderAlertTextHtml(previewMessage, textOptions),
+      titlePlain: renderAlertTextPlain(previewTitle, textOptions),
+      messagePlain: renderAlertTextPlain(previewMessage, textOptions),
+      destinations,
+      destinationsText: destinations.length
+        ? destinations.map((item) => destinationLabel(item)).join(", ")
+        : "No destinations selected",
+      noteText,
+      hasCosmeticFallback: templateTokens.includes("{{country_flag}}")
+    };
+  }
+
+  function renderPreviewSurfaceToggle() {
+    if (!(el.previewSurfaceToggle instanceof HTMLElement)) return;
+    el.previewSurfaceToggle.querySelectorAll("[data-preview-surface-toggle]").forEach((button) => {
+      const key = String(button.getAttribute("data-preview-surface-toggle") || "").trim();
+      const isActive = key === state.activePreviewSurface;
+      button.classList.toggle("is-active", isActive);
+      button.setAttribute("aria-selected", isActive ? "true" : "false");
+      button.setAttribute("tabindex", isActive ? "0" : "-1");
+    });
+    el.previewMatrix?.querySelectorAll("[data-preview-surface]").forEach((panel) => {
+      const key = String(panel.getAttribute("data-preview-surface") || "").trim();
+      panel.classList.toggle("is-active", key === state.activePreviewSurface);
+    });
+  }
+
+  function renderDesktopPreviewCard(model) {
+    const destinationMarkup = model.destinations.length
+      ? model.destinations.map((item) => renderDestinationChip(item, "ss-alerts-preview-destination-chip")).join("")
+      : '<span class="muted">No destinations selected</span>';
+    return `
+      <article class="ss-alerts-preview-surface ss-alerts-preview-surface--desktop ss-alerts-preview-surface--severity-${escapeHtml(model.severityKey)}" data-preview-surface="desktop">
+        <div class="ss-alerts-preview-surface-header">
+          <div>
+            <p class="ss-alerts-preview-surface-kicker">Desktop</p>
+            <strong class="ss-alerts-preview-surface-title">Overlay notification</strong>
+          </div>
+          <span class="ss-alerts-preview-surface-badge">Live</span>
+        </div>
+        <div class="ss-alerts-preview-window">
+          <div class="ss-alerts-preview-window-toolbar">
+            <span class="ss-alerts-preview-window-dot"></span>
+            <span class="ss-alerts-preview-window-dot"></span>
+            <span class="ss-alerts-preview-window-dot"></span>
+          </div>
+          <section class="ss-alerts-preview-card ss-alerts-preview-card--desktop">
+            <div class="ss-alerts-preview-card-head">
+              <span class="ss-alerts-preview-severity-pill">${escapeHtml(model.severityText)}</span>
+              <span class="ss-alerts-preview-event-label">${escapeHtml(model.eventLabel)}</span>
+            </div>
+            <strong class="ss-alerts-preview-card-title">${model.titleHtml}</strong>
+            <p class="ss-alerts-preview-card-message">${model.messageHtml}</p>
+            <div class="ss-alerts-preview-meta">
+              <span class="ss-alerts-preview-meta-label">Destinations</span>
+              <div class="ss-alerts-preview-destination-list">${destinationMarkup}</div>
+            </div>
+          </section>
+        </div>
+      </article>
+    `;
+  }
+
+  function renderBrowserPreviewCard(model) {
+    const destinationMarkup = model.destinations.length
+      ? model.destinations.map((item) => renderDestinationChip(item, "ss-alerts-preview-destination-chip")).join("")
+      : '<span class="muted">No destinations selected</span>';
+    return `
+      <article class="ss-alerts-preview-surface ss-alerts-preview-surface--browser ss-alerts-preview-surface--severity-${escapeHtml(model.severityKey)}" data-preview-surface="browser">
+        <div class="ss-alerts-preview-surface-header">
+          <div>
+            <p class="ss-alerts-preview-surface-kicker">Browser</p>
+            <strong class="ss-alerts-preview-surface-title">Web notification card</strong>
+          </div>
+          <span class="ss-alerts-preview-surface-badge">Rich</span>
+        </div>
+        <section class="ss-alerts-preview-card ss-alerts-preview-card--browser">
+          <div class="ss-alerts-preview-browser-bar">
+            <span class="ss-alerts-preview-browser-pill">streamsuites.app</span>
+            <span class="ss-alerts-preview-browser-meta">${escapeHtml(model.eventLabel)}</span>
+          </div>
+          <div class="ss-alerts-preview-browser-body">
+            <div class="ss-alerts-preview-browser-accent"></div>
+            <div class="ss-alerts-preview-browser-copy">
+              <div class="ss-alerts-preview-card-head">
+                <span class="ss-alerts-preview-severity-pill">${escapeHtml(model.severityText)}</span>
+                <span class="ss-alerts-preview-browser-meta">Admin surface</span>
+              </div>
+              <strong class="ss-alerts-preview-card-title">${model.titleHtml}</strong>
+              <p class="ss-alerts-preview-card-message">${model.messageHtml}</p>
+              <div class="ss-alerts-preview-meta">
+                <span class="ss-alerts-preview-meta-label">Routes to</span>
+                <div class="ss-alerts-preview-destination-list">${destinationMarkup}</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </article>
+    `;
+  }
+
+  function renderPlainTextPreviewCard(model) {
+    const plainLines = [
+      `[${model.severityText}] ${model.eventLabel}`,
+      `Title: ${model.titlePlain}`,
+      `Message: ${model.messagePlain}`,
+      `Destinations: ${model.destinationsText}`
+    ];
+    if (model.hasCosmeticFallback) {
+      plainLines.push("Note: cosmetic placeholders are shown as readable text fallbacks.");
+    }
+    return `
+      <article class="ss-alerts-preview-surface ss-alerts-preview-surface--plain ss-alerts-preview-surface--severity-${escapeHtml(model.severityKey)}" data-preview-surface="plain">
+        <div class="ss-alerts-preview-surface-header">
+          <div>
+            <p class="ss-alerts-preview-surface-kicker">Plain text</p>
+            <strong class="ss-alerts-preview-surface-title">Fallback output</strong>
+          </div>
+          <span class="ss-alerts-preview-surface-badge">Text-only</span>
+        </div>
+        <section class="ss-alerts-preview-card ss-alerts-preview-card--plain">
+          <pre class="ss-alerts-preview-plain-block">${escapeHtml(plainLines.join("\n"))}</pre>
+        </section>
+      </article>
+    `;
   }
 
   function getEntryCountryFlagPresentation(entry) {
@@ -2000,57 +2188,29 @@
   }
 
   function renderRulePreview() {
-    const eventMeta = getEventMeta(el.ruleEventType?.value);
-    const eventLabel = eventMeta?.label || labelize(el.ruleEventType?.value || "alert");
-    const severity = severityLabel(el.ruleSeverity?.value || "info");
-    const titleTemplate = getTemplateEditorValue("title").trim();
-    const bodyTemplate = getTemplateEditorValue("body").trim();
-    const ruleName = String(el.ruleName?.value || "").trim();
-    const adminNotes = String(el.ruleDescription?.value || "").trim();
-    const destinations = collectCheckedValues(
-      el.ruleDestinations,
-      "input[type='checkbox'][data-ruleDestination]",
-      "data-ruleDestination"
-    );
-    const previewTitle = titleTemplate || ruleName || eventLabel || "Notification title preview";
-    const previewMessage = bodyTemplate
-      || adminNotes
-      || eventMeta?.description
-      || "The backend default message will be used for this alert.";
-    const templateTokens = extractTemplateTokens(`${titleTemplate}\n${bodyTemplate}`);
-    const previewCountryFlag = buildCountryFlagPresentation("{{country_flag}}", "AU");
-
-    if (el.previewEvent) el.previewEvent.textContent = eventLabel;
-    if (el.previewSeverity) el.previewSeverity.textContent = severity;
-    if (el.previewTitleText) {
-      el.previewTitleText.innerHTML = renderAlertTextHtml(previewTitle, {
-        countryFlagValue: previewCountryFlag?.rawValue || "",
-        countryCode: previewCountryFlag?.countryCode || "AU"
-      });
-    }
-    if (el.previewMessageText) {
-      el.previewMessageText.innerHTML = renderAlertTextHtml(previewMessage, {
-        countryFlagValue: previewCountryFlag?.rawValue || "",
-        countryCode: previewCountryFlag?.countryCode || "AU"
-      });
-    }
-    if (el.previewDestinations) {
-      el.previewDestinations.innerHTML = destinations.length
-        ? destinations.map((item) => renderDestinationChip(item)).join("")
-        : '<span class="muted">No destinations selected</span>';
+    const model = buildRulePreviewModel();
+    if (el.previewEvent) el.previewEvent.textContent = model.eventLabel;
+    if (el.previewSeverity) el.previewSeverity.textContent = model.severityText;
+    if (el.previewMatrix) {
+      el.previewMatrix.innerHTML = [
+        renderDesktopPreviewCard(model),
+        renderBrowserPreviewCard(model),
+        renderPlainTextPreviewCard(model)
+      ].join("");
     }
     if (el.previewNote) {
-      if (templateTokens.length) {
-        const countryFlagNote = templateTokens.includes("{{country_flag}}")
-          ? " `{{country_flag}}` is optional and cosmetic."
-          : "";
-        el.previewNote.textContent = `Placeholders used here will be filled by the backend: ${templateTokens.join(", ")}.${countryFlagNote}`;
-      } else if (!titleTemplate && !bodyTemplate) {
-        el.previewNote.textContent = "Leave the title or message blank to fall back to the backend default wording for this event.";
-      } else {
-        el.previewNote.textContent = "This preview reflects the current text fields. The backend will still attach live event values when the alert sends.";
-      }
+      el.previewNote.textContent = model.noteText;
     }
+    renderPreviewSurfaceToggle();
+  }
+
+  function handlePreviewSurfaceToggle(event) {
+    const button = event.target.closest("[data-preview-surface-toggle]");
+    if (!(button instanceof HTMLElement)) return;
+    const nextSurface = String(button.getAttribute("data-preview-surface-toggle") || "").trim();
+    if (!PREVIEW_SURFACES.some((item) => item.key === nextSurface)) return;
+    state.activePreviewSurface = nextSurface;
+    renderPreviewSurfaceToggle();
   }
 
   function readScopeInputs() {
@@ -3414,6 +3574,7 @@
     el.ruleForm?.addEventListener("submit", handleRuleSubmit);
     el.ruleForm?.addEventListener("input", renderRulePreview);
     el.ruleForm?.addEventListener("change", renderRulePreview);
+    el.previewSurfaceToggle?.addEventListener("click", handlePreviewSurfaceToggle);
     el.ruleThresholdType?.addEventListener("change", updateThresholdFieldVisibility);
     el.ruleEventType?.addEventListener("change", handleRuleEventTypeChange);
     el.ruleScopeEnabled?.addEventListener("change", handleRuleScopeToggle);
@@ -3462,6 +3623,7 @@
     el.ruleForm?.removeEventListener("submit", handleRuleSubmit);
     el.ruleForm?.removeEventListener("input", renderRulePreview);
     el.ruleForm?.removeEventListener("change", renderRulePreview);
+    el.previewSurfaceToggle?.removeEventListener("click", handlePreviewSurfaceToggle);
     el.ruleThresholdType?.removeEventListener("change", updateThresholdFieldVisibility);
     el.ruleEventType?.removeEventListener("change", handleRuleEventTypeChange);
     el.ruleScopeEnabled?.removeEventListener("change", handleRuleScopeToggle);
@@ -3559,9 +3721,8 @@
     el.templateVariables = $("analytics-alerts-template-variables");
     el.previewEvent = $("analytics-alerts-preview-event");
     el.previewSeverity = $("analytics-alerts-preview-severity");
-    el.previewTitleText = $("analytics-alerts-preview-title-text");
-    el.previewMessageText = $("analytics-alerts-preview-message-text");
-    el.previewDestinations = $("analytics-alerts-preview-destinations");
+    el.previewSurfaceToggle = $("analytics-alerts-preview-surface-toggle");
+    el.previewMatrix = $("analytics-alerts-preview-matrix");
     el.previewNote = $("analytics-alerts-preview-note");
     el.ruleThresholdNumberRow = $("analytics-alerts-rule-threshold-number-row");
     el.ruleThresholdNumber = $("analytics-alerts-rule-threshold-number");

@@ -241,24 +241,26 @@
                   <div class="ss-alerts-section-heading">
                     <div>
                       <h5 id="analytics-alerts-preview-title">Message preview</h5>
-                      <p class="muted">Shows how the current title and message map to an outbound notification.</p>
+                      <p class="muted">Compare the same live alert content across desktop, browser, and plain-text surfaces.</p>
                     </div>
                   </div>
-                  <article class="ss-alerts-preview-card">
-                    <div class="ss-alerts-preview-topline">
-                      <span id="analytics-alerts-preview-event" class="ss-chip">Event</span>
-                      <span id="analytics-alerts-preview-severity" class="ss-chip">Severity</span>
+                  <div class="ss-alerts-preview-shell">
+                    <div class="ss-alerts-preview-toolbar">
+                      <div class="ss-alerts-preview-topline">
+                        <span id="analytics-alerts-preview-event" class="ss-chip">Event</span>
+                        <span id="analytics-alerts-preview-severity" class="ss-chip">Severity</span>
+                      </div>
+                      <div id="analytics-alerts-preview-surface-toggle" class="ss-alerts-preview-surface-toggle" role="tablist" aria-label="Preview surfaces">
+                        <button type="button" class="ss-alerts-preview-surface-button" data-preview-surface-toggle="desktop" role="tab" aria-selected="true">Desktop</button>
+                        <button type="button" class="ss-alerts-preview-surface-button" data-preview-surface-toggle="browser" role="tab" aria-selected="false">Browser</button>
+                        <button type="button" class="ss-alerts-preview-surface-button" data-preview-surface-toggle="plain" role="tab" aria-selected="false">Plain text</button>
+                      </div>
                     </div>
-                    <strong id="analytics-alerts-preview-title-text">Notification title preview</strong>
-                    <p id="analytics-alerts-preview-message-text">Notification message preview</p>
-                    <div class="ss-alerts-preview-meta">
-                      <span><strong>Destinations:</strong></span>
-                      <div id="analytics-alerts-preview-destinations" class="ss-alerts-preview-destination-list">Windows client</div>
-                    </div>
+                    <div id="analytics-alerts-preview-matrix" class="ss-alerts-preview-matrix" aria-live="polite"></div>
                     <p id="analytics-alerts-preview-note" class="ss-alerts-preview-note muted">
                       Placeholders wrapped in braces stay visible here and are filled by the backend when the alert sends.
                     </p>
-                  </article>
+                  </div>
                 </section>
               </div>
               <section class="ss-analytics-alerts-template-panel ss-alerts-placeholders-panel ss-alerts-placeholders-panel--fullwidth" aria-labelledby="analytics-alerts-template-title">
