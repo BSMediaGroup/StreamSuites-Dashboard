@@ -2,8 +2,14 @@
   "use strict";
 
   const DEFAULT_DESTINATIONS = ["windows_client", "pushover"];
-  const HISTORY_LIMIT = 12;
+  const RULES_PAGE_SIZE = 6;
+  const HISTORY_LIMIT = 50;
+  const HISTORY_PAGE_SIZE = 5;
   const SEVERITIES = ["info", "warning", "error", "critical"];
+  const DESTINATION_ICON_MAP = {
+    windows_client: "/assets/icons/ui/windows.svg",
+    pushover: "/assets/icons/ui/bell.svg"
+  };
   const SCOPE_FIELD_ORDER = [
     "page_path",
     "page_key",
@@ -222,6 +228,9 @@
     settings: null,
     activeRuleId: null,
     activeTemplateField: "body",
+    ruleView: "list",
+    rulesPage: 1,
+    historyPage: 1,
     loadToken: 0,
     ruleScopePassthrough: {},
     targetFilters: {
@@ -323,16 +332,27 @@
     ruleDestinations: null,
     rulesList: null,
     rulesRailSummary: null,
+    rulesCountChip: null,
     rulesEmpty: null,
+    rulesPagination: null,
+    rulesViewToggle: null,
     targetsRefresh: null,
     targetsTypeFilter: null,
     targetsStatusFilter: null,
     targetsState: null,
     targetsList: null,
     targetsEmpty: null,
+    targetsSummaryMeta: null,
+    targetsSummaryDetail: null,
     historyRefresh: null,
     historyList: null,
-    historyEmpty: null
+    historyEmpty: null,
+    historyPagination: null,
+    historySummary: null,
+    preferencesSummaryMeta: null,
+    preferencesSummaryDetail: null,
+    testSummaryMeta: null,
+    testSummaryDetail: null
   };
 
   function $(id) {
@@ -374,6 +394,13 @@
       .trim();
   }
 
+  function escapeSelectorValue(value) {
+    if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
+      return CSS.escape(String(value || ""));
+    }
+    return String(value || "").replace(/"/g, '\\"');
+  }
+
   function cloneJson(value) {
     try {
       return JSON.parse(JSON.stringify(value));
@@ -410,6 +437,30 @@
       return window.crypto.randomUUID();
     }
     return `alert-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
+  }
+
+  function clampPage(page, totalPages) {
+    const parsed = Number.parseInt(String(page || ""), 10);
+    if (!Number.isFinite(parsed) || parsed < 1) return 1;
+    return Math.min(parsed, Math.max(totalPages, 1));
+  }
+
+  function paginateItems(items, page, pageSize) {
+    const safeItems = Array.isArray(items) ? items : [];
+    const safePageSize = Math.max(1, Number.parseInt(String(pageSize || ""), 10) || 1);
+    const totalItems = safeItems.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / safePageSize));
+    const currentPage = clampPage(page, totalPages);
+    const startIndex = totalItems ? (currentPage - 1) * safePageSize : 0;
+    const endIndex = Math.min(startIndex + safePageSize, totalItems);
+    return {
+      items: safeItems.slice(startIndex, endIndex),
+      totalItems,
+      totalPages,
+      currentPage,
+      startIndex,
+      endIndex
+    };
   }
 
   function normalizeScopeText(value, { pathLike = false, lower = false } = {}) {
@@ -592,6 +643,26 @@
     if (normalized === "windows_client") return "Windows client";
     if (normalized === "pushover") return "Pushover";
     return labelize(normalized || "destination");
+  }
+
+  function destinationIconPath(key) {
+    return DESTINATION_ICON_MAP[String(key || "").trim().toLowerCase()] || "";
+  }
+
+  function renderChip(label, { tone = "", extraClasses = "", iconPath = "" } = {}) {
+    const classes = ["ss-chip"];
+    if (tone) classes.push(`ss-chip-${tone}`);
+    if (extraClasses) classes.push(extraClasses);
+    const iconStyle = iconPath ? ` style="--ss-alerts-chip-icon:url('${iconPath}')"` : "";
+    const iconMarkup = iconPath ? '<span class="ss-alerts-chip-icon" aria-hidden="true"></span>' : "";
+    return `<span class="${classes.join(" ")}"${iconStyle}>${iconMarkup}${escapeHtml(label)}</span>`;
+  }
+
+  function renderDestinationChip(key, extraClasses = "") {
+    return renderChip(destinationLabel(key), {
+      extraClasses: [extraClasses, destinationIconPath(key) ? "ss-alerts-icon-chip" : ""].filter(Boolean).join(" "),
+      iconPath: destinationIconPath(key)
+    });
   }
 
   function targetStatusTone(status) {
@@ -904,6 +975,7 @@
     state.rules = Array.isArray(payload.rules)
       ? payload.rules.map((rule, index) => normalizeRuleForEditor(rule, index))
       : [];
+    state.rulesPage = 1;
     if (syncCleanState) {
       state.lastSavedConfigurationHash = getConfigurationHash();
       state.lastImportedSummary = "";
@@ -989,6 +1061,42 @@
     if (el.summaryHistory) el.summaryHistory.textContent = String(historyTotal);
     if (el.summarySubscribers) {
       el.summarySubscribers.textContent = `${Number(settings?.active_stream_subscribers) || 0} live subscribers`;
+    }
+  }
+
+  function renderCollapsibleSummaries() {
+    const enabledDefaults = getDestinationKeys().filter((key) => state.preferences?.destination_defaults?.[key]?.enabled !== false);
+    if (el.preferencesSummaryMeta) {
+      el.preferencesSummaryMeta.textContent = `${enabledDefaults.length} channel${enabledDefaults.length === 1 ? "" : "s"} enabled`;
+    }
+    if (el.preferencesSummaryDetail) {
+      const quietEnabled = state.preferences?.quiet_hours_enabled === true;
+      const quietRange = quietEnabled
+        ? `Quiet hours ${state.preferences?.quiet_hours_start || "22:00"}-${state.preferences?.quiet_hours_end || "07:00"}`
+        : "Quiet hours off";
+      el.preferencesSummaryDetail.textContent = `${quietRange} • Timezone ${state.preferences?.timezone || "UTC"}`;
+    }
+
+    const selectedTestDestinations = collectCheckedValues(
+      el.testDestinations,
+      "input[type='checkbox'][data-testDestination]",
+      "data-testDestination"
+    );
+    if (el.testSummaryMeta) {
+      el.testSummaryMeta.textContent = `${selectedTestDestinations.length || getDestinationKeys().length} destination${(selectedTestDestinations.length || getDestinationKeys().length) === 1 ? "" : "s"}`;
+    }
+    if (el.testSummaryDetail) {
+      const selectedEvent = getEventMeta(el.testEventType?.value)?.label || labelize(el.testEventType?.value || "runtime_error_spike");
+      const selectedSeverity = el.testSeverity?.value ? severityLabel(el.testSeverity.value) : "Default severity";
+      el.testSummaryDetail.textContent = `${selectedEvent} • ${selectedSeverity}`;
+    }
+
+    const activeTargets = state.targets.filter((target) => target?.enabled !== false);
+    if (el.targetsSummaryMeta) {
+      el.targetsSummaryMeta.textContent = `${state.targets.length} channel${state.targets.length === 1 ? "" : "s"} registered`;
+    }
+    if (el.targetsSummaryDetail) {
+      el.targetsSummaryDetail.textContent = `${activeTargets.length} enabled • Filters stay available inside the panel`;
     }
   }
 
@@ -1224,7 +1332,7 @@
       el.ruleDestinations,
       "input[type='checkbox'][data-ruleDestination]",
       "data-ruleDestination"
-    ).map(destinationLabel);
+    );
     const previewTitle = titleTemplate || ruleName || eventLabel || "Notification title preview";
     const previewMessage = bodyTemplate
       || adminNotes
@@ -1237,9 +1345,9 @@
     if (el.previewTitleText) el.previewTitleText.textContent = previewTitle;
     if (el.previewMessageText) el.previewMessageText.textContent = previewMessage;
     if (el.previewDestinations) {
-      el.previewDestinations.textContent = destinations.length
-        ? destinations.join(", ")
-        : "No destinations selected";
+      el.previewDestinations.innerHTML = destinations.length
+        ? destinations.map((item) => renderDestinationChip(item)).join("")
+        : '<span class="muted">No destinations selected</span>';
     }
     if (el.previewNote) {
       if (templateTokens.length) {
@@ -1359,6 +1467,12 @@
     el.ruleCancel?.classList.toggle("hidden", !isEditing);
   }
 
+  function ensureRulesPageForRule(ruleId) {
+    const ruleIndex = state.rules.findIndex((item) => item?.id === ruleId);
+    if (ruleIndex < 0) return;
+    state.rulesPage = Math.floor(ruleIndex / RULES_PAGE_SIZE) + 1;
+  }
+
   function applyRuleDefaultsFromEventType(eventTypeKey) {
     const meta = getEventMeta(eventTypeKey);
     if (!meta) return;
@@ -1392,6 +1506,9 @@
   function populateRuleForm(rule) {
     const next = rule && typeof rule === "object" ? rule : null;
     setRuleFormMode(next);
+    if (next?.id) {
+      ensureRulesPageForRule(next.id);
+    }
     state.ruleScopePassthrough = getPassthroughScope(next?.scope);
     if (el.ruleEventType) {
       el.ruleEventType.value = next?.event_type || state.eventTypes[0]?.key || "";
@@ -1466,14 +1583,78 @@
     el.ruleForm.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  function buildPaginationMarkup(target, pageInfo) {
+    if (!pageInfo || pageInfo.totalItems <= 0 || pageInfo.totalPages <= 1) return "";
+    const pageButtons = [];
+    const firstPage = Math.max(1, pageInfo.currentPage - 1);
+    const lastPage = Math.min(pageInfo.totalPages, firstPage + 2);
+    const normalizedFirst = Math.max(1, lastPage - 2);
+    for (let page = normalizedFirst; page <= lastPage; page += 1) {
+      pageButtons.push(`
+        <button
+          type="button"
+          class="ss-alerts-pagination-button${page === pageInfo.currentPage ? " is-active" : ""}"
+          data-pagination-target="${escapeHtml(target)}"
+          data-pagination-page="${escapeHtml(String(page))}"
+          aria-pressed="${page === pageInfo.currentPage ? "true" : "false"}"
+        >${escapeHtml(String(page))}</button>
+      `);
+    }
+    return `
+      <div class="ss-alerts-pagination-summary">
+        Showing ${escapeHtml(String(pageInfo.startIndex + 1))}-${escapeHtml(String(pageInfo.endIndex))} of ${escapeHtml(String(pageInfo.totalItems))}
+      </div>
+      <div class="ss-alerts-pagination-controls">
+        <button
+          type="button"
+          class="ss-alerts-pagination-button"
+          data-pagination-target="${escapeHtml(target)}"
+          data-pagination-page="${escapeHtml(String(pageInfo.currentPage - 1))}"
+          ${pageInfo.currentPage <= 1 ? "disabled" : ""}
+        >Prev</button>
+        ${pageButtons.join("")}
+        <button
+          type="button"
+          class="ss-alerts-pagination-button"
+          data-pagination-target="${escapeHtml(target)}"
+          data-pagination-page="${escapeHtml(String(pageInfo.currentPage + 1))}"
+          ${pageInfo.currentPage >= pageInfo.totalPages ? "disabled" : ""}
+        >Next</button>
+      </div>
+    `;
+  }
+
+  function renderPagination(container, target, pageInfo) {
+    if (!(container instanceof HTMLElement)) return;
+    const markup = buildPaginationMarkup(target, pageInfo);
+    container.innerHTML = markup;
+    container.classList.toggle("hidden", !markup);
+  }
+
   function renderRulesList() {
     if (!el.rulesList || !el.rulesEmpty) return;
+    const pageInfo = paginateItems(state.rules, state.rulesPage, RULES_PAGE_SIZE);
+    state.rulesPage = pageInfo.currentPage;
+    el.rulesList.classList.toggle("is-gallery", state.ruleView === "gallery");
+    el.rulesList.classList.toggle("is-list", state.ruleView !== "gallery");
+    el.rulesViewToggle?.querySelectorAll("[data-rules-view]").forEach((button) => {
+      if (!(button instanceof HTMLButtonElement)) return;
+      const isActive = button.getAttribute("data-rules-view") === state.ruleView;
+      button.classList.toggle("is-active", isActive);
+      button.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
+    if (el.rulesCountChip) {
+      el.rulesCountChip.textContent = state.rules.length
+        ? `${pageInfo.startIndex + 1}-${pageInfo.endIndex} of ${state.rules.length}`
+        : "0 rules";
+    }
     if (!state.rules.length) {
       el.rulesList.innerHTML = "";
       el.rulesEmpty.classList.remove("hidden");
       if (el.rulesRailSummary) {
         el.rulesRailSummary.textContent = "Create the first rule to start building alerts.";
       }
+      renderPagination(el.rulesPagination, "rules", pageInfo);
       return;
     }
     el.rulesEmpty.classList.add("hidden");
@@ -1481,15 +1662,17 @@
       const activeRule = state.rules.find((item) => item.id === state.activeRuleId);
       el.rulesRailSummary.textContent = activeRule
         ? `Editing "${activeRule.name || getEventMeta(activeRule.event_type)?.label || labelize(activeRule.event_type)}" below.`
-        : "Select a rule card to edit it in the workspace below.";
+        : state.ruleView === "gallery"
+          ? "Showing a gallery of alert rules. Select a card to edit it below."
+          : "Select a rule card to edit it in the workspace below.";
     }
-    el.rulesList.innerHTML = state.rules
+    el.rulesList.innerHTML = pageInfo.items
       .map((rule) => {
         const eventMeta = getEventMeta(rule.event_type);
         const isActive = state.activeRuleId === rule.id;
         const severity = severityTone(rule.severity);
         const destinations = (Array.isArray(rule.destinations) ? rule.destinations : [])
-          .map((item) => `<span class="ss-chip">${escapeHtml(destinationLabel(item))}</span>`)
+          .map((item) => renderDestinationChip(item, "ss-alerts-destination-chip"))
           .join("");
         const scopeSummary = formatScopeSummary(rule.scope);
         return `
@@ -1504,11 +1687,11 @@
               <div>
                 <h4 class="ss-analytics-alerts-rule-name">${escapeHtml(rule.name || eventMeta?.label || rule.event_type)}</h4>
                 <div class="ss-analytics-alerts-rule-chips">
-                  <span class="ss-chip">${escapeHtml(eventMeta?.label || labelize(rule.event_type))}</span>
-                  <span class="ss-chip ss-alerts-rule-severity-chip ss-alerts-rule-severity-chip--${escapeHtml(severity)}">${escapeHtml(severityLabel(rule.severity))}</span>
-                  <span class="ss-chip">${escapeHtml(labelize(rule.threshold_type))}</span>
-                  <span class="ss-chip">${escapeHtml(rule.enabled ? "Enabled" : "Disabled")}</span>
-                  ${isActive ? '<span class="ss-chip ss-chip-warning">Editing below</span>' : ""}
+                  ${renderChip(eventMeta?.label || labelize(rule.event_type), { extraClasses: "ss-alerts-compact-chip" })}
+                  ${renderChip(severityLabel(rule.severity), { extraClasses: `ss-alerts-rule-severity-chip ss-alerts-rule-severity-chip--${escapeHtml(severity)} ss-alerts-compact-chip` })}
+                  ${renderChip(labelize(rule.threshold_type), { extraClasses: "ss-alerts-compact-chip" })}
+                  ${renderChip(rule.enabled ? "Enabled" : "Disabled", { extraClasses: "ss-alerts-compact-chip" })}
+                  ${isActive ? renderChip("Editing below", { tone: "warning", extraClasses: "ss-alerts-compact-chip" }) : ""}
                 </div>
               </div>
               <div class="ss-analytics-alerts-rule-actions">
@@ -1533,12 +1716,14 @@
         `;
       })
       .join("");
+    renderPagination(el.rulesPagination, "rules", pageInfo);
   }
 
   function renderTargetsList() {
     if (!el.targetsList || !el.targetsEmpty) return;
     const filteredTargets = getFilteredTargets();
     renderTargetFilters();
+    renderCollapsibleSummaries();
     if (state.targetsLoading) {
       el.targetsList.innerHTML = "";
       el.targetsEmpty.classList.add("hidden");
@@ -1578,9 +1763,9 @@
               <div>
                 <h4 class="ss-analytics-alerts-target-name">${escapeHtml(target.display_name || destinationLabel(target.device_type))}</h4>
                 <div class="ss-analytics-alerts-target-chips">
-                  <span class="ss-chip">${escapeHtml(target.type_label || destinationLabel(target.device_type))}</span>
-                  <span class="ss-chip ss-chip-${escapeHtml(statusTone)}">${escapeHtml(target.status_label || labelize(target.status))}</span>
-                  <span class="ss-chip">${escapeHtml(target.enabled ? "Enabled" : "Disabled")}</span>
+                  ${renderDestinationChip(target.device_type, "ss-alerts-destination-chip")}
+                  ${renderChip(target.status_label || labelize(target.status), { tone: statusTone, extraClasses: "ss-alerts-compact-chip" })}
+                  ${renderChip(target.enabled ? "Enabled" : "Disabled", { extraClasses: "ss-alerts-compact-chip" })}
                 </div>
               </div>
               <div class="ss-analytics-alerts-target-actions">
@@ -1620,24 +1805,36 @@
 
   function renderHistoryList() {
     if (!el.historyList || !el.historyEmpty) return;
+    const limitedHistory = Array.isArray(state.history) ? state.history.slice(0, HISTORY_LIMIT) : [];
+    const pageInfo = paginateItems(limitedHistory, state.historyPage, HISTORY_PAGE_SIZE);
+    state.historyPage = pageInfo.currentPage;
+    if (el.historySummary) {
+      el.historySummary.textContent = limitedHistory.length
+        ? `Showing ${pageInfo.startIndex + 1}-${pageInfo.endIndex} of ${limitedHistory.length}`
+        : "Latest 50 entries";
+    }
     if (state.historyError) {
       el.historyList.innerHTML = "";
       el.historyEmpty.textContent = state.historyError;
       el.historyEmpty.classList.remove("hidden");
+      renderPagination(el.historyPagination, "history", pageInfo);
       return;
     }
-    if (!state.history.length) {
+    if (!limitedHistory.length) {
       el.historyList.innerHTML = "";
       el.historyEmpty.textContent = "No recent delivery history yet.";
       el.historyEmpty.classList.remove("hidden");
+      renderPagination(el.historyPagination, "history", pageInfo);
       return;
     }
     el.historyEmpty.classList.add("hidden");
-    el.historyList.innerHTML = state.history
+    el.historyList.innerHTML = pageInfo.items
       .map((entry) => {
         const status = buildHistoryStatus(entry);
+        const severity = severityTone(entry?.severity);
+        const statusTone = entry?.suppressed_reason ? "warning" : status === "Delivered" ? "success" : "muted";
         const destinations = (Array.isArray(entry.destinations_targeted) ? entry.destinations_targeted : [])
-          .map((item) => `<span class="ss-chip">${escapeHtml(destinationLabel(item))}</span>`)
+          .map((item) => renderDestinationChip(item, "ss-alerts-destination-chip"))
           .join("");
         const locationLabel = buildAlertLocationLabel(entry, { includeCountryWithCity: true });
         const clientIp = normalizeClientIp(
@@ -1648,14 +1845,14 @@
         const scopeSummary = entry?.metadata?.scope_summary
           || formatScopeSummary(entry?.metadata?.effective_scope || entry?.metadata?.rule_scope || {});
         return `
-          <article class="ss-analytics-alerts-history-card${entry.suppressed_reason ? " is-suppressed" : ""}">
+          <article class="ss-analytics-alerts-history-card ss-alerts-history-card--severity-${escapeHtml(severity)}${entry.suppressed_reason ? " is-suppressed" : ""}">
             <div class="ss-analytics-alerts-history-header">
               <div>
                 <h4 class="ss-analytics-alerts-history-title">${escapeHtml(entry.title || labelize(entry.event_type))}</h4>
                 <div class="ss-analytics-alerts-history-chips">
-                  <span class="ss-chip">${escapeHtml(labelize(entry.event_type))}</span>
-                  <span class="ss-chip">${escapeHtml(severityLabel(entry.severity))}</span>
-                  <span class="ss-chip ss-analytics-alerts-history-status">${escapeHtml(status)}</span>
+                  ${renderChip(labelize(entry.event_type), { extraClasses: "ss-alerts-compact-chip" })}
+                  ${renderChip(severityLabel(entry.severity), { extraClasses: "ss-alerts-compact-chip" })}
+                  ${renderChip(status, { tone: statusTone, extraClasses: "ss-analytics-alerts-history-status ss-alerts-compact-chip" })}
                 </div>
               </div>
             </div>
@@ -1673,6 +1870,7 @@
         `;
       })
       .join("");
+    renderPagination(el.historyPagination, "history", pageInfo);
   }
 
   function renderAll() {
@@ -1682,6 +1880,7 @@
     renderEventTypeSelects();
     renderTestRuleOptions();
     renderTestDestinations();
+    renderCollapsibleSummaries();
     renderTemplateBrowser();
     renderRulePreview();
     renderRulesList();
@@ -1747,7 +1946,7 @@
 
         const historyPayload = getSettledValue(historyResult);
         if (historyPayload) {
-          state.history = extractItems(historyPayload);
+          state.history = extractItems(historyPayload).slice(0, HISTORY_LIMIT);
           state.historyError = "";
         } else {
           state.history = [];
@@ -1868,7 +2067,7 @@
 
         const historyPayload = getSettledValue(historyResult);
         if (historyPayload) {
-          state.history = extractItems(historyPayload);
+          state.history = extractItems(historyPayload).slice(0, HISTORY_LIMIT);
           state.historyError = "";
         } else {
           state.history = [];
@@ -2017,6 +2216,7 @@
     state.preferences = normalizePreferences(readPreferencesPayload());
     renderPreferencesForm();
     renderSummary();
+    renderCollapsibleSummaries();
     renderPersistenceMeta();
     setStatus("Default delivery settings updated in the draft");
     setBanner("Default delivery changes are staged locally. Use Save changes to persist them to the backend.", "success");
@@ -2025,6 +2225,7 @@
   function handlePreferencesDraftChange() {
     state.preferences = normalizePreferences(readPreferencesPayload());
     renderSummary();
+    renderCollapsibleSummaries();
     renderPersistenceMeta();
     setStatus(hasUnsavedChanges() ? "Default delivery changes pending" : "Alerts synced");
   }
@@ -2037,8 +2238,10 @@
       const index = state.rules.findIndex((item) => item.id === payload.id);
       if (index >= 0) {
         state.rules.splice(index, 1, payload);
+        ensureRulesPageForRule(payload.id);
       } else {
         state.rules.unshift(payload);
+        state.rulesPage = 1;
       }
       populateRuleForm(null);
       renderRulesList();
@@ -2161,6 +2364,32 @@
     scrollRuleEditorIntoView();
   }
 
+  function handleRulesViewToggle(event) {
+    const button = event.target.closest("[data-rules-view]");
+    if (!(button instanceof HTMLButtonElement)) return;
+    const nextView = String(button.getAttribute("data-rules-view") || "").trim();
+    if (!nextView || state.ruleView === nextView) return;
+    state.ruleView = nextView === "gallery" ? "gallery" : "list";
+    renderRulesList();
+  }
+
+  function handlePaginationClick(event) {
+    const button = event.target.closest("[data-pagination-target][data-pagination-page]");
+    if (!(button instanceof HTMLButtonElement)) return;
+    const target = String(button.getAttribute("data-pagination-target") || "").trim();
+    const nextPage = Number.parseInt(String(button.getAttribute("data-pagination-page") || ""), 10);
+    if (!Number.isFinite(nextPage)) return;
+    if (target === "rules") {
+      state.rulesPage = nextPage;
+      renderRulesList();
+      return;
+    }
+    if (target === "history") {
+      state.historyPage = nextPage;
+      renderHistoryList();
+    }
+  }
+
   async function handleTargetsListClick(event) {
     const button = event.target.closest("[data-target-action][data-target-id]");
     if (!(button instanceof HTMLButtonElement)) return;
@@ -2170,7 +2399,7 @@
     if (!target) return;
 
     if (action === "rename-toggle" || action === "rename-cancel") {
-      const form = el.targetsList?.querySelector(`[data-target-rename-form="${CSS.escape(targetId)}"]`);
+      const form = el.targetsList?.querySelector(`[data-target-rename-form="${escapeSelectorValue(targetId)}"]`);
       if (form) {
         form.classList.toggle("hidden", action === "rename-cancel" ? true : !form.classList.contains("hidden"));
       }
@@ -2209,7 +2438,7 @@
 
     const targetId = String(form.getAttribute("data-target-rename-form") || "").trim();
     const target = state.targets.find((item) => item.id === targetId);
-    const input = form.querySelector(`[data-target-rename-input="${CSS.escape(targetId)}"]`);
+    const input = form.querySelector(`[data-target-rename-input="${escapeSelectorValue(targetId)}"]`);
     if (!target || !(input instanceof HTMLInputElement)) return;
 
     const nextName = String(input.value || "").trim();
@@ -2445,6 +2674,8 @@
     el.preferencesForm?.addEventListener("submit", handlePreferencesSubmit);
     el.preferencesForm?.addEventListener("change", handlePreferencesDraftChange);
     el.testForm?.addEventListener("submit", handleTestSubmit);
+    el.testForm?.addEventListener("input", renderCollapsibleSummaries);
+    el.testForm?.addEventListener("change", renderCollapsibleSummaries);
     el.rulesRefresh?.addEventListener("click", handleRefreshAll);
     el.rulesCreate?.addEventListener("click", handleNewRuleClick);
     el.ruleCancel?.addEventListener("click", handleCancelRuleEdit);
@@ -2458,14 +2689,17 @@
     el.ruleBodyTemplate?.addEventListener("focus", handleTemplateFieldFocus);
     el.templateTargets?.addEventListener("click", handleTemplateTargetClick);
     el.templateVariables?.addEventListener("click", handleTemplateVariableClick);
+    el.rulesViewToggle?.addEventListener("click", handleRulesViewToggle);
     el.rulesList?.addEventListener("click", handleRulesListClick);
     el.rulesList?.addEventListener("keydown", handleRulesListKeydown);
+    el.rulesPagination?.addEventListener("click", handlePaginationClick);
     el.targetsList?.addEventListener("click", handleTargetsListClick);
     el.targetsList?.addEventListener("submit", handleTargetRenameSubmit);
     el.targetsRefresh?.addEventListener("click", handleRefreshAll);
     el.targetsTypeFilter?.addEventListener("change", handleTargetFilterChange);
     el.targetsStatusFilter?.addEventListener("change", handleTargetFilterChange);
     el.historyRefresh?.addEventListener("click", handleRefreshAll);
+    el.historyPagination?.addEventListener("click", handlePaginationClick);
     window.addEventListener("beforeunload", handleBeforeUnload);
   }
 
@@ -2478,6 +2712,8 @@
     el.preferencesForm?.removeEventListener("submit", handlePreferencesSubmit);
     el.preferencesForm?.removeEventListener("change", handlePreferencesDraftChange);
     el.testForm?.removeEventListener("submit", handleTestSubmit);
+    el.testForm?.removeEventListener("input", renderCollapsibleSummaries);
+    el.testForm?.removeEventListener("change", renderCollapsibleSummaries);
     el.rulesRefresh?.removeEventListener("click", handleRefreshAll);
     el.rulesCreate?.removeEventListener("click", handleNewRuleClick);
     el.ruleCancel?.removeEventListener("click", handleCancelRuleEdit);
@@ -2491,14 +2727,17 @@
     el.ruleBodyTemplate?.removeEventListener("focus", handleTemplateFieldFocus);
     el.templateTargets?.removeEventListener("click", handleTemplateTargetClick);
     el.templateVariables?.removeEventListener("click", handleTemplateVariableClick);
+    el.rulesViewToggle?.removeEventListener("click", handleRulesViewToggle);
     el.rulesList?.removeEventListener("click", handleRulesListClick);
     el.rulesList?.removeEventListener("keydown", handleRulesListKeydown);
+    el.rulesPagination?.removeEventListener("click", handlePaginationClick);
     el.targetsList?.removeEventListener("click", handleTargetsListClick);
     el.targetsList?.removeEventListener("submit", handleTargetRenameSubmit);
     el.targetsRefresh?.removeEventListener("click", handleRefreshAll);
     el.targetsTypeFilter?.removeEventListener("change", handleTargetFilterChange);
     el.targetsStatusFilter?.removeEventListener("change", handleTargetFilterChange);
     el.historyRefresh?.removeEventListener("click", handleRefreshAll);
+    el.historyPagination?.removeEventListener("click", handlePaginationClick);
     window.removeEventListener("beforeunload", handleBeforeUnload);
   }
 
@@ -2591,16 +2830,27 @@
     el.ruleDestinations = $("analytics-alerts-rule-destinations");
     el.rulesList = $("analytics-alerts-rules-list");
     el.rulesRailSummary = $("analytics-alerts-rules-rail-summary");
+    el.rulesCountChip = $("analytics-alerts-rules-count-chip");
     el.rulesEmpty = $("analytics-alerts-rules-empty");
+    el.rulesPagination = $("analytics-alerts-rules-pagination");
+    el.rulesViewToggle = $("analytics-alerts-rules-view-toggle");
     el.targetsRefresh = $("analytics-alerts-targets-refresh");
     el.targetsTypeFilter = $("analytics-alerts-targets-type-filter");
     el.targetsStatusFilter = $("analytics-alerts-targets-status-filter");
     el.targetsState = $("analytics-alerts-targets-state");
     el.targetsList = $("analytics-alerts-targets-list");
     el.targetsEmpty = $("analytics-alerts-targets-empty");
+    el.targetsSummaryMeta = $("analytics-alerts-targets-summary-meta");
+    el.targetsSummaryDetail = $("analytics-alerts-targets-summary-detail");
     el.historyRefresh = $("analytics-alerts-history-refresh");
     el.historyList = $("analytics-alerts-history-list");
     el.historyEmpty = $("analytics-alerts-history-empty");
+    el.historyPagination = $("analytics-alerts-history-pagination");
+    el.historySummary = $("analytics-alerts-history-summary");
+    el.preferencesSummaryMeta = $("analytics-alerts-preferences-summary-meta");
+    el.preferencesSummaryDetail = $("analytics-alerts-preferences-summary-detail");
+    el.testSummaryMeta = $("analytics-alerts-test-summary-meta");
+    el.testSummaryDetail = $("analytics-alerts-test-summary-detail");
   }
 
   function clearElementReferences() {

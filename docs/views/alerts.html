@@ -129,11 +129,18 @@
                 <h3 id="analytics-alerts-current-rules-title">Current rules</h3>
                 <p id="analytics-alerts-rules-rail-summary" class="muted">Select a rule card to edit it in the workspace below.</p>
               </div>
-              <span class="ss-chip ss-chip-muted">Horizontal rule rail</span>
+              <div class="ss-alerts-rules-browser-tools">
+                <div id="analytics-alerts-rules-view-toggle" class="ss-alerts-view-toggle" role="group" aria-label="Choose how alert rules are displayed">
+                  <button type="button" id="analytics-alerts-rules-view-list" class="ss-alerts-view-toggle-button" data-rules-view="list" aria-pressed="true">List</button>
+                  <button type="button" id="analytics-alerts-rules-view-gallery" class="ss-alerts-view-toggle-button" data-rules-view="gallery" aria-pressed="false">Gallery</button>
+                </div>
+                <span id="analytics-alerts-rules-count-chip" class="ss-chip ss-chip-muted">0 rules</span>
+              </div>
             </div>
             <div class="ss-alerts-rules-feed-column">
               <div id="analytics-alerts-rules-list" class="ss-analytics-alerts-rules-list ss-alerts-rules-rail" aria-live="polite"></div>
               <div id="analytics-alerts-rules-empty" class="ss-empty-state hidden">No alert rules configured yet.</div>
+              <div id="analytics-alerts-rules-pagination" class="ss-alerts-pagination hidden" aria-label="Rule list pages"></div>
             </div>
           </section>
 
@@ -230,54 +237,52 @@
                   </label>
                 </div>
 
-                <div class="ss-alerts-message-assist">
-                  <section class="ss-analytics-alerts-template-panel ss-alerts-placeholders-panel ss-alerts-insert-variables-panel" aria-labelledby="analytics-alerts-template-title">
-                    <div class="ss-alerts-inline-summary">
-                      <div class="ss-alerts-collapsible-summary-copy">
-                        <h5 id="analytics-alerts-template-title">Insert variables</h5>
-                        <p id="analytics-alerts-template-help" class="muted">Loading available backend placeholders.</p>
-                      </div>
-                      <div class="ss-alerts-collapsible-summary-meta">
-                        <span class="ss-chip ss-chip-muted">Insert variables</span>
-                        <span class="muted">Click any variable to insert it nearby.</span>
-                      </div>
+                <section class="ss-alerts-editor-section ss-alerts-preview-panel" aria-labelledby="analytics-alerts-preview-title">
+                  <div class="ss-alerts-section-heading">
+                    <div>
+                      <h5 id="analytics-alerts-preview-title">Message preview</h5>
+                      <p class="muted">Shows how the current title and message map to an outbound notification.</p>
                     </div>
-                    <div class="ss-analytics-alerts-template-browser">
-                      <div class="ss-alerts-template-toolbar">
-                        <div id="analytics-alerts-template-targets" class="ss-alerts-template-targets" role="group" aria-label="Choose which field receives inserted placeholders">
-                          <button type="button" class="ss-alerts-template-target-button" data-template-target="title" aria-pressed="false">Title</button>
-                          <button type="button" class="ss-alerts-template-target-button" data-template-target="body" aria-pressed="true">Message</button>
-                        </div>
-                        <div id="analytics-alerts-template-focus" class="ss-analytics-alerts-template-focus muted">Click a message field, then choose a placeholder to insert.</div>
-                      </div>
-                      <div id="analytics-alerts-template-variables" class="ss-analytics-alerts-template-variables"></div>
+                  </div>
+                  <article class="ss-alerts-preview-card">
+                    <div class="ss-alerts-preview-topline">
+                      <span id="analytics-alerts-preview-event" class="ss-chip">Event</span>
+                      <span id="analytics-alerts-preview-severity" class="ss-chip">Severity</span>
                     </div>
-                  </section>
-
-                  <section class="ss-alerts-editor-section ss-alerts-preview-panel" aria-labelledby="analytics-alerts-preview-title">
-                    <div class="ss-alerts-section-heading">
-                      <div>
-                        <h5 id="analytics-alerts-preview-title">Message preview</h5>
-                        <p class="muted">Shows how the current title and message map to an outbound notification.</p>
-                      </div>
+                    <strong id="analytics-alerts-preview-title-text">Notification title preview</strong>
+                    <p id="analytics-alerts-preview-message-text">Notification message preview</p>
+                    <div class="ss-alerts-preview-meta">
+                      <span><strong>Destinations:</strong></span>
+                      <div id="analytics-alerts-preview-destinations" class="ss-alerts-preview-destination-list">Windows client</div>
                     </div>
-                    <article class="ss-alerts-preview-card">
-                      <div class="ss-alerts-preview-topline">
-                        <span id="analytics-alerts-preview-event" class="ss-chip">Event</span>
-                        <span id="analytics-alerts-preview-severity" class="ss-chip">Severity</span>
-                      </div>
-                      <strong id="analytics-alerts-preview-title-text">Notification title preview</strong>
-                      <p id="analytics-alerts-preview-message-text">Notification message preview</p>
-                      <div class="ss-alerts-preview-meta">
-                        <span><strong>Destinations:</strong> <span id="analytics-alerts-preview-destinations">Windows client</span></span>
-                      </div>
-                      <p id="analytics-alerts-preview-note" class="ss-alerts-preview-note muted">
-                        Placeholders wrapped in braces stay visible here and are filled by the backend when the alert sends.
-                      </p>
-                    </article>
-                  </section>
-                </div>
+                    <p id="analytics-alerts-preview-note" class="ss-alerts-preview-note muted">
+                      Placeholders wrapped in braces stay visible here and are filled by the backend when the alert sends.
+                    </p>
+                  </article>
+                </section>
               </div>
+              <section class="ss-analytics-alerts-template-panel ss-alerts-placeholders-panel ss-alerts-placeholders-panel--fullwidth" aria-labelledby="analytics-alerts-template-title">
+                <div class="ss-alerts-inline-summary">
+                  <div class="ss-alerts-collapsible-summary-copy">
+                    <h5 id="analytics-alerts-template-title">Insert variables</h5>
+                    <p id="analytics-alerts-template-help" class="muted">Loading available backend placeholders.</p>
+                  </div>
+                  <div class="ss-alerts-collapsible-summary-meta">
+                    <span class="ss-chip ss-chip-muted">Insert variables</span>
+                    <span class="muted">Click any variable to insert it into the focused field.</span>
+                  </div>
+                </div>
+                <div class="ss-analytics-alerts-template-browser">
+                  <div class="ss-alerts-template-toolbar">
+                    <div id="analytics-alerts-template-targets" class="ss-alerts-template-targets" role="group" aria-label="Choose which field receives inserted placeholders">
+                      <button type="button" class="ss-alerts-template-target-button" data-template-target="title" aria-pressed="false">Title</button>
+                      <button type="button" class="ss-alerts-template-target-button" data-template-target="body" aria-pressed="true">Message</button>
+                    </div>
+                    <div id="analytics-alerts-template-focus" class="ss-analytics-alerts-template-focus muted">Click a message field, then choose a placeholder to insert.</div>
+                  </div>
+                  <div id="analytics-alerts-template-variables" class="ss-analytics-alerts-template-variables"></div>
+                </div>
+              </section>
             </section>
 
             <section class="ss-alerts-editor-section" aria-labelledby="analytics-alerts-rule-behaviour-title">
@@ -369,15 +374,15 @@
 
   </section>
 
-  <section class="ss-alerts-support-grid">
+  <section class="ss-alerts-support-stack">
     <details class="ss-panel ss-analytics-alerts-subpanel ss-alerts-collapsible-panel" open>
       <summary class="ss-panel-header ss-alerts-collapsible-summary" aria-labelledby="analytics-alerts-preferences-title">
         <div class="ss-panel-header-main ss-alerts-collapsible-summary-copy">
           <h2 id="analytics-alerts-preferences-title">Delivery defaults</h2>
-          <p class="muted">Set overall delivery behavior and channel minimums without permanently shrinking the rule editor.</p>
+          <p id="analytics-alerts-preferences-summary-detail" class="muted">Set overall delivery behavior and channel minimums without permanently shrinking the rule editor.</p>
         </div>
         <div class="ss-alerts-collapsible-summary-meta">
-          <span class="ss-chip ss-chip-muted">Supporting settings</span>
+          <span id="analytics-alerts-preferences-summary-meta" class="ss-chip ss-chip-muted">Supporting settings</span>
           <span class="ss-alerts-collapsible-toggle" aria-hidden="true"></span>
         </div>
       </summary>
@@ -428,14 +433,18 @@
       </div>
     </details>
 
-    <section class="ss-panel ss-analytics-alerts-subpanel" aria-labelledby="analytics-alerts-test-title">
-      <header class="ss-panel-header">
-        <div class="ss-panel-header-main">
+    <details class="ss-panel ss-analytics-alerts-subpanel ss-alerts-collapsible-panel" open>
+      <summary class="ss-panel-header ss-alerts-collapsible-summary" aria-labelledby="analytics-alerts-test-title">
+        <div class="ss-panel-header-main ss-alerts-collapsible-summary-copy">
           <h2 id="analytics-alerts-test-title">Send test notification</h2>
-          <p class="muted">Trigger a safe admin test through the existing backend endpoint and confirm where it lands.</p>
+          <p id="analytics-alerts-test-summary-detail" class="muted">Trigger a safe admin test through the existing backend endpoint and confirm where it lands.</p>
         </div>
-      </header>
-      <div class="ss-panel-body">
+        <div class="ss-alerts-collapsible-summary-meta">
+          <span id="analytics-alerts-test-summary-meta" class="ss-chip ss-chip-muted">Safe backend test</span>
+          <span class="ss-alerts-collapsible-toggle" aria-hidden="true"></span>
+        </div>
+      </summary>
+      <div class="ss-panel-body ss-alerts-collapsible-body">
         <form id="analytics-alerts-test-form" class="ss-analytics-alerts-form">
           <div class="ss-analytics-alerts-form-grid">
             <label class="ss-form-row">
@@ -487,16 +496,22 @@
           </div>
         </form>
       </div>
-    </section>
+    </details>
   </section>
 
-  <section class="ss-alerts-operations-grid ss-analytics-alerts-bottom-grid">
-    <section class="ss-panel ss-analytics-alerts-subpanel" aria-labelledby="analytics-alerts-targets-title">
-      <header class="ss-panel-header">
-        <div class="ss-panel-header-main">
+  <section class="ss-alerts-operations-stack">
+    <details class="ss-panel ss-analytics-alerts-subpanel ss-alerts-collapsible-panel" open>
+      <summary class="ss-panel-header ss-alerts-collapsible-summary" aria-labelledby="analytics-alerts-targets-title">
+        <div class="ss-panel-header-main ss-alerts-collapsible-summary-copy">
           <h2 id="analytics-alerts-targets-title">Delivery channels</h2>
-          <p class="muted">Inspect registered destinations, toggle them on or off, and rename them without changing backend ownership.</p>
+          <p id="analytics-alerts-targets-summary-detail" class="muted">Inspect registered destinations, toggle them on or off, and rename them without changing backend ownership.</p>
         </div>
+        <div class="ss-alerts-collapsible-summary-meta">
+          <span id="analytics-alerts-targets-summary-meta" class="ss-chip ss-chip-muted">Registered targets</span>
+          <span class="ss-alerts-collapsible-toggle" aria-hidden="true"></span>
+        </div>
+      </summary>
+      <div class="ss-panel-body ss-alerts-collapsible-body">
         <div class="ss-analytics-alerts-header-actions">
           <label class="ss-analytics-alerts-filter">
             <span class="muted">Type</span>
@@ -516,13 +531,11 @@
           </label>
           <button type="button" id="analytics-alerts-targets-refresh" class="ss-btn ss-btn-secondary ss-btn-small">Reload channels</button>
         </div>
-      </header>
-      <div class="ss-panel-body">
         <div id="analytics-alerts-targets-state" class="ss-analytics-alerts-section-state muted">Loading registered targets...</div>
         <div id="analytics-alerts-targets-list" class="ss-analytics-alerts-targets-list" aria-live="polite"></div>
         <div id="analytics-alerts-targets-empty" class="ss-empty-state hidden">No registered delivery targets yet.</div>
       </div>
-    </section>
+    </details>
 
     <section class="ss-panel ss-analytics-alerts-subpanel" aria-labelledby="analytics-alerts-history-title">
       <header class="ss-panel-header">
@@ -531,12 +544,14 @@
           <p class="muted">Review recent sends, suppressed alerts, and the context the backend recorded for each delivery attempt.</p>
         </div>
         <div class="ss-analytics-alerts-header-actions">
+          <span id="analytics-alerts-history-summary" class="ss-chip ss-chip-muted">Latest 50 entries</span>
           <button type="button" id="analytics-alerts-history-refresh" class="ss-btn ss-btn-secondary ss-btn-small">Refresh activity</button>
         </div>
       </header>
       <div class="ss-panel-body">
         <div id="analytics-alerts-history-list" class="ss-analytics-alerts-history-list" aria-live="polite"></div>
         <div id="analytics-alerts-history-empty" class="ss-empty-state hidden">No recent alert deliveries yet.</div>
+        <div id="analytics-alerts-history-pagination" class="ss-alerts-pagination hidden" aria-label="Recent alert activity pages"></div>
       </div>
     </section>
   </section>
