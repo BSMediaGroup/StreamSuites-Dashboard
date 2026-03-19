@@ -40,6 +40,53 @@
     "Timing",
     "Other"
   ];
+  const TEMPLATE_CATEGORY_HELP = Object.freeze({
+    "General / Event": "Core alert identity and rule context.",
+    "Account / User": "Account, role, and auth-related details.",
+    "Request / Page": "Page, route, origin, and referrer context.",
+    "Session / Client": "Browser, device, and client environment.",
+    Geo: "Country, region, and city details from the request.",
+    "Destination / Delivery": "Where the alert is routed.",
+    Timing: "Timestamps, counts, and rule timing values.",
+    Other: "Additional runtime-provided context."
+  });
+  const TEMPLATE_VARIABLE_PRIORITY = Object.freeze([
+    "event_label",
+    "severity",
+    "rule_name",
+    "surface",
+    "page_path",
+    "page_title",
+    "page_url",
+    "route",
+    "auth_provider",
+    "user_type",
+    "display_name",
+    "user_code",
+    "browser",
+    "device",
+    "platform",
+    "geo.country",
+    "geo.region",
+    "geo.city",
+    "destination_type",
+    "triggered_at",
+    "count",
+    "window_minutes"
+  ]);
+  const TEMPLATE_VARIABLE_PRIORITY_MAP = TEMPLATE_VARIABLE_PRIORITY.reduce((acc, key, index) => {
+    acc[key] = index;
+    return acc;
+  }, Object.create(null));
+  const SURFACE_LABELS = Object.freeze({
+    public: "StreamSuites Public",
+    creator: "StreamSuites Creator",
+    admin: "StreamSuites Admin",
+    directory: "FindMeHere Directory",
+    desktop: "Desktop Admin",
+    "auth-controls": "Auth Controls",
+    self_service: "Self Service"
+  });
 
   const locationFormatting = (() => {
     const PLACEHOLDER_VALUES = new Set(["", "-", "--", "unknown", "n/a", "na", "null", "undefined"]);
@@ -395,6 +442,23 @@
       .trim();
   }
 
+  function surfaceLabel(value) {
+    const normalized = String(value || "").trim().toLowerCase();
+    if (!normalized) return "Unknown";
+    return SURFACE_LABELS[normalized] || labelize(normalized) || "Unknown";
+  }
+
+  function sortTemplateVariables(items) {
+    return (Array.isArray(items) ? items.slice() : []).sort((left, right) => {
+      const leftRank = TEMPLATE_VARIABLE_PRIORITY_MAP[left?.key] ?? Number.MAX_SAFE_INTEGER;
+      const rightRank = TEMPLATE_VARIABLE_PRIORITY_MAP[right?.key] ?? Number.MAX_SAFE_INTEGER;
+      if (leftRank !== rightRank) return leftRank - rightRank;
+      const leftLabel = String(left?.label || left?.key || "").trim();
+      const rightLabel = String(right?.label || right?.key || "").trim();
+      return leftLabel.localeCompare(rightLabel);
+    });
+  }
+
   function escapeSelectorValue(value) {
     if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
       return CSS.escape(String(value || ""));
@@ -514,8 +578,8 @@
     if (normalized.auth_provider) parts.push(`provider=${normalized.auth_provider}`);
     if (normalized.user_type) parts.push(`user_type=${normalized.user_type}`);
     if (normalized.admin_only) parts.push("admin_only");
-    if (normalized.surface) parts.push(`surface=${normalized.surface}`);
-    if (normalized.destination_type) parts.push(`destination=${normalized.destination_type}`);
+    if (normalized.surface) parts.push(`surface=${surfaceLabel(normalized.surface)}`);
+    if (normalized.destination_type) parts.push(`destination=${destinationLabel(normalized.destination_type)}`);
     return parts.join(" + ");
   }
 
@@ -569,6 +633,18 @@
     };
   }
 
+  function getAlertSurfaceCode(entry) {
+    const templateContext = entry?.metadata?.template_context || {};
+    const payload = entry?.payload_snapshot || {};
+    return String(templateContext.surface || payload.surface || "").trim().toLowerCase();
+  }
+
+  function renderAlertSurfaceContext(entry) {
+    const surface = getAlertSurfaceCode(entry);
+    if (!surface) return "";
+    return `<p class="ss-analytics-alerts-history-context">Surface: ${escapeHtml(surfaceLabel(surface))}</p>`;
+  }
+
   function renderAlertPageContext(entry) {
     const page = getAlertPageInfo(entry);
     if (!page.pagePath) return "";
@@ -604,7 +680,7 @@
     } else if (field === "user_type") {
       ["creator", "viewer", "admin"].forEach((item) => options.add(item));
     } else if (field === "surface") {
-      ["public", "admin", "auth-controls", "self_service"].forEach((item) => options.add(item));
+      ["public", "directory", "admin", "auth-controls", "self_service"].forEach((item) => options.add(item));
     } else if (field === "destination_type") {
       getDestinationKeys().forEach((item) => options.add(item));
     }
@@ -1214,15 +1290,27 @@
 
   function renderTemplateVariableGroup(title, items) {
     if (!items.length) return "";
+    const description = title === "Recommended for this alert type"
+      ? "Start with the values most likely to be useful for this event."
+      : (TEMPLATE_CATEGORY_HELP[title] || TEMPLATE_CATEGORY_HELP.Other);
+    const sortedItems = sortTemplateVariables(items);
     return `
       <section class="ss-analytics-alerts-template-group">
-        <h6>${escapeHtml(title)}</h6>
+        <div class="ss-analytics-alerts-template-group-header">
+          <div class="ss-analytics-alerts-template-group-copy">
+            <h6>${escapeHtml(title)}</h6>
+            <p>${escapeHtml(description)}</p>
+          </div>
+          <span class="ss-alerts-template-group-count">${escapeHtml(String(sortedItems.length))}</span>
+        </div>
         <div class="ss-analytics-alerts-template-grid">
-          ${items.map((item) => `
+          ${sortedItems.map((item) => `
             <button type="button" class="ss-analytics-alerts-template-button" data-template-token="${escapeHtml(item.token)}">
-              <strong>${escapeHtml(item.label || item.key || item.token)}</strong>
-              <code>${escapeHtml(item.token)}</code>
-              <span>${escapeHtml(item.description || "")}</span>
+              <span class="ss-analytics-alerts-template-button-topline">
+                <strong>${escapeHtml(item.label || item.key || item.token)}</strong>
+                <code>${escapeHtml(item.token)}</code>
+              </span>
+              <span class="ss-analytics-alerts-template-button-copy">${escapeHtml(item.description || "")}</span>
             </button>
           `).join("")}
         </div>
@@ -1437,7 +1525,12 @@
       const options = getScopeSelectOptions(field, value)
         .map((option) => {
           const selected = String(value || "").toLowerCase() === option.toLowerCase() ? "selected" : "";
-          return `<option value="${escapeHtml(option)}" ${selected}>${escapeHtml(labelize(option))}</option>`;
+          const optionLabel = field === "surface"
+            ? surfaceLabel(option)
+            : field === "destination_type"
+              ? destinationLabel(option)
+              : labelize(option);
+          return `<option value="${escapeHtml(option)}" ${selected}>${escapeHtml(optionLabel)}</option>`;
         })
         .join("");
       return `
@@ -1874,6 +1967,7 @@
         const destinations = (Array.isArray(entry.destinations_targeted) ? entry.destinations_targeted : [])
           .map((item) => renderDestinationChip(item, "ss-alerts-destination-chip"))
           .join("");
+        const surfaceContext = renderAlertSurfaceContext(entry);
         const locationLabel = buildAlertLocationLabel(entry, { includeCountryWithCity: true });
         const pageContext = renderAlertPageContext(entry);
         const clientIp = normalizeClientIp(
@@ -1897,6 +1991,7 @@
             </div>
             ${entry.message ? `<p class="ss-analytics-alerts-history-message">${escapeHtml(entry.message)}</p>` : ""}
             ${destinations ? `<div class="ss-analytics-alerts-history-chips">${destinations}</div>` : ""}
+            ${surfaceContext}
             ${pageContext}
             ${locationLabel ? `<p class="ss-analytics-alerts-history-context">Location: ${escapeHtml(locationLabel)}</p>` : ""}
             ${clientIp ? `<p class="ss-analytics-alerts-history-context">Client IP: ${escapeHtml(clientIp)}</p>` : ""}

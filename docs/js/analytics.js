@@ -25,6 +25,15 @@
 
   const LOCALHOST_HOSTNAMES = new Set(["localhost", "127.0.0.1", "0.0.0.0"]);
   const LOCATION_PLACEHOLDER_VALUES = new Set(["", "-", "--", "unknown", "n/a", "na", "null", "undefined"]);
+  const SURFACE_LABELS = Object.freeze({
+    public: "StreamSuites Public",
+    creator: "StreamSuites Creator",
+    admin: "StreamSuites Admin",
+    directory: "FindMeHere Directory",
+    desktop: "Desktop Admin",
+    "auth-controls": "Auth Controls",
+    self_service: "Self Service"
+  });
 
   const SOURCE_ID = "ss-analytics-country-points";
   const LAYERS = {
@@ -351,6 +360,12 @@
       const text = safeToText(undefined, fallback).trim();
       return text || fallback;
     }
+  }
+
+  function formatSurfaceLabel(value, fallback = "Unknown") {
+    const normalized = safeToText(value).trim().toLowerCase();
+    if (!normalized) return fallback;
+    return SURFACE_LABELS[normalized] || labelize(normalized, fallback);
   }
 
   function formatShare(value, total) {
@@ -2015,7 +2030,7 @@
     el.recentRequestsBody.innerHTML = items
       .map((entry) => {
         const locationLabel = entry.locationLabel || entry.countryCode || "Unknown";
-        const routeMeta = [labelize(entry.surface), entry.referrerHost ? `Referrer ${entry.referrerHost}` : ""]
+        const routeMeta = [formatSurfaceLabel(entry.surface), entry.referrerHost ? `Referrer ${entry.referrerHost}` : ""]
           .filter(Boolean)
           .join(" · ");
         return `
@@ -2162,11 +2177,15 @@
     el.surfacesList.innerHTML = rows
       .map((entry) => {
         const targetView = resolveSurfaceView(entry.key);
+        const surfaceLabel = formatSurfaceLabel(entry.key);
+        const surfaceMeta = surfaceLabel.localeCompare(entry.key, undefined, { sensitivity: "base" }) === 0
+          ? "API"
+          : `${entry.key} · API`;
         return `
           <li class="ss-analytics-surface-row">
             <div class="ss-analytics-surface-main">
-              <span>${escapeHtml(entry.key)}</span>
-              <span class="ss-analytics-surface-source">API</span>
+              <span>${escapeHtml(surfaceLabel)}</span>
+              <span class="ss-analytics-surface-source">${escapeHtml(surfaceMeta)}</span>
             </div>
             <div class="ss-analytics-surface-meta">
               <strong>${escapeHtml(formatNumber(entry.count))}</strong>

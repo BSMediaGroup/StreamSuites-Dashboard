@@ -25,6 +25,15 @@
       degradedMax: 1000
     }
   };
+  const SURFACE_LABELS = Object.freeze({
+    public: "StreamSuites Public",
+    creator: "StreamSuites Creator",
+    admin: "StreamSuites Admin",
+    directory: "FindMeHere Directory",
+    desktop: "Desktop Admin",
+    "auth-controls": "Auth Controls",
+    self_service: "Self Service"
+  });
 
   const state = {
     timer: null,
@@ -186,6 +195,20 @@
       .split(/\s+/)
       .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
       .join(" ");
+  }
+
+  function formatSurfaceLabel(value) {
+    const normalized = String(value || "").trim().toLowerCase();
+    if (!normalized) return "Unknown";
+    return SURFACE_LABELS[normalized] || toTitleCase(normalized);
+  }
+
+  function formatTableCellValue(key, value) {
+    if (value === undefined || value === null || value === "") return "--";
+    if (typeof value === "number") return formatDecimal(value, 2);
+    if (typeof value === "boolean") return value ? "true" : "false";
+    if (key === "surface") return formatSurfaceLabel(value);
+    return String(value);
   }
 
   function formatWindowLabel(windowValue) {
@@ -803,11 +826,8 @@
       .map((row) => {
         const cells = columns
           .map((key) => {
-            const value = row?.[key];
-            if (value === undefined || value === null || value === "") return "<td>--</td>";
-            if (typeof value === "number") return `<td>${escapeHtml(formatDecimal(value, 2))}</td>`;
-            if (typeof value === "boolean") return `<td>${value ? "true" : "false"}</td>`;
-            return `<td>${escapeHtml(String(value))}</td>`;
+            const formatted = formatTableCellValue(key, row?.[key]);
+            return `<td>${escapeHtml(formatted)}</td>`;
           })
           .join("");
         return `<tr>${cells}</tr>`;
