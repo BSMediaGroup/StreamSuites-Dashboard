@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-03-19T06:57:34.395154Z",
+  "generated_at": "2026-03-19T21:59:32.590031Z",
   "events": [
     {
       "timestamp_utc": "2026-01-22T05:45:05Z",
@@ -1163,6 +1163,20 @@
       "resend_message_id": null,
       "ip": "83.171.250.150",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp_utc": "2026-03-19T07:25:03Z",
+      "event_type": "session_issued",
+      "event_name": "github",
+      "action": "github",
+      "email_type": "github",
+      "account_id": "4TiOlvS",
+      "user_identifier": "user_code:4TiOlvS",
+      "email_redacted": null,
+      "result": "success",
+      "resend_message_id": null,
+      "ip": "135.196.82.7",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.3 Mobile/15E148 Safari/604.1"
     }
   ]
 }

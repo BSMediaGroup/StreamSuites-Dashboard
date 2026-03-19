@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-03-19T06:57:34.395154Z",
+  "generated_at": "2026-03-19T21:59:32.590031Z",
   "events": [
     {
       "timestamp": "2026-01-22T05:45:05Z",
@@ -894,12 +894,6 @@
       "result": "success"
     },
     {
-      "timestamp": "2026-03-19T04:41:20.219835Z",
-      "source": "system",
-      "severity": "info",
-      "message": "Runtime boot sequence started"
-    },
-    {
       "timestamp": "2026-03-19T04:45:11Z",
       "source": "auth",
       "severity": "info",
@@ -920,6 +914,23 @@
       "user_identifier": "user_code:4TiOlvS",
       "provider_message_id": null,
       "result": "success"
+    },
+    {
+      "timestamp": "2026-03-19T07:25:03Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
+      "event_type": "session_issued",
+      "email_type": "github",
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-03-19T16:45:51.134314Z",
+      "source": "system",
+      "severity": "info",
+      "message": "Runtime boot sequence started"
     }
   ]
 }
