@@ -935,6 +935,18 @@ const SIDEBAR_COLLAPSE_STORAGE_KEY = "ss_admin_sidebar_collapsed";
 const SIDEBAR_MOBILE_BREAKPOINT = 980;
 const SIDEBAR_COLLAPSED_CLASS = "ss-sidebar-collapsed";
 const SIDEBAR_ICON_FALLBACK = "/assets/icons/ui/cog.svg";
+const SIDEBAR_VIEW_ICON_ALIASES = Object.freeze({
+  inbox: "notifications",
+  notification: "notifications",
+  notifications: "notifications",
+  "rate-limit": "ratelimits",
+  "rate-limits": "ratelimits",
+  ratelimit: "ratelimits",
+  ratelimits: "ratelimits",
+  signals: "data-signals",
+  "data-signals": "data-signals",
+  "runtime-status": "bots"
+});
 
 const SIDEBAR_VIEW_ICON_MAP = Object.freeze({
   overview: "/assets/icons/ui/dashboard.svg",
@@ -996,8 +1008,61 @@ function readSidebarCollapsedPreference() {
   return null;
 }
 
+function isSidebarDevDiagnosticsEnabled() {
+  const hostname = String(window.location?.hostname || "").toLowerCase();
+  return (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname.endsWith(".local")
+  );
+}
+
+function normalizeSidebarViewKey(viewName) {
+  const raw = typeof viewName === "string" ? viewName.trim() : "";
+  if (!raw) return "";
+  if (SIDEBAR_VIEW_ICON_MAP[raw]) return raw;
+
+  const normalized = raw.toLowerCase();
+  if (SIDEBAR_VIEW_ICON_MAP[normalized]) return normalized;
+
+  return SIDEBAR_VIEW_ICON_ALIASES[normalized] || normalized;
+}
+
+function appendSidebarAssetVersion(path) {
+  const rawPath = typeof path === "string" ? path.trim() : "";
+  if (!rawPath) return SIDEBAR_ICON_FALLBACK;
+
+  const versionToken =
+    window.__STREAMSUITES_ASSET_VERSION__ ||
+    window.StreamSuitesVersion?.build ||
+    window.StreamSuitesVersion?.version ||
+    "";
+  if (!versionToken) return rawPath;
+
+  try {
+    const resolved = new URL(rawPath, window.location.origin);
+    if (!resolved.searchParams.has("v")) {
+      resolved.searchParams.set("v", versionToken);
+    }
+    return `${resolved.pathname}${resolved.search}${resolved.hash}`;
+  } catch (err) {
+    return rawPath;
+  }
+}
+
 function getSidebarIconForView(viewName) {
-  return SIDEBAR_VIEW_ICON_MAP[viewName] || SIDEBAR_ICON_FALLBACK;
+  const resolvedView = normalizeSidebarViewKey(viewName);
+  const rawIconPath = SIDEBAR_VIEW_ICON_MAP[resolvedView] || SIDEBAR_ICON_FALLBACK;
+
+  if (
+    rawIconPath === SIDEBAR_ICON_FALLBACK &&
+    viewName &&
+    isSidebarDevDiagnosticsEnabled()
+  ) {
+    console.warn(`[Dashboard] Missing sidebar icon mapping for view "${viewName}"`);
+  }
+
+  return appendSidebarAssetVersion(rawIconPath);
 }
 
 function ensurePlatformNavItems() {
@@ -1035,7 +1100,10 @@ function ensureSidebarNavDecorated() {
   const navItems = $all("#app-nav-list li[data-view]");
   navItems.forEach((item) => {
     const viewName = item.dataset.view || "";
-    const iconPath = item.dataset.navIcon || getSidebarIconForView(viewName);
+    const iconPath = getSidebarIconForView(viewName);
+    if (item.hasAttribute("data-nav-icon")) {
+      item.removeAttribute("data-nav-icon");
+    }
     const existingLabel = item.querySelector(".nav-label");
     if (!item.dataset.navBaseTitle && item.hasAttribute("title")) {
       item.dataset.navBaseTitle = item.getAttribute("title") || "";

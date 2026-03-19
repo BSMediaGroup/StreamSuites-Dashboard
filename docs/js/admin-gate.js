@@ -884,11 +884,76 @@
     return src;
   }
 
+  let assetVersionPromise = null;
+
+  function resolveVersionMetaUrl() {
+    const basePath =
+      typeof window.ADMIN_BASE_PATH === "string" ? window.ADMIN_BASE_PATH.replace(/\/+$/, "") : "";
+    return `${basePath}/runtime/exports/version.json`;
+  }
+
+  async function resolveAssetVersionToken() {
+    if (window.__STREAMSUITES_ASSET_VERSION__) {
+      return window.__STREAMSUITES_ASSET_VERSION__;
+    }
+    if (assetVersionPromise) {
+      return assetVersionPromise;
+    }
+
+    assetVersionPromise = (async () => {
+      try {
+        const response = await gate.fetch(resolveVersionMetaUrl(), {
+          method: "GET",
+          cache: "no-store",
+          credentials: "same-origin",
+          headers: {
+            Accept: "application/json"
+          }
+        });
+        if (!response.ok) {
+          return "";
+        }
+
+        const payload = await response.json();
+        const token =
+          payload?.build ||
+          payload?.generated_at ||
+          payload?.version ||
+          "";
+        window.__STREAMSUITES_ASSET_VERSION__ = token ? String(token).trim() : "";
+        return window.__STREAMSUITES_ASSET_VERSION__;
+      } catch (err) {
+        return "";
+      }
+    })();
+
+    return assetVersionPromise;
+  }
+
+  async function resolveVersionedScriptUrl(src) {
+    const normalized = normalizeScriptPath(src);
+    const token = await resolveAssetVersionToken();
+    if (!token || typeof normalized !== "string" || /^[a-z]+:\/\//i.test(normalized)) {
+      return normalized;
+    }
+
+    try {
+      const url = new URL(normalized, window.location.href);
+      if (!url.searchParams.has("v")) {
+        url.searchParams.set("v", token);
+      }
+      return url.toString();
+    } catch (err) {
+      return normalized;
+    }
+  }
+
   async function loadScript(src) {
     await ensureBodyReady();
+    const resolvedSrc = await resolveVersionedScriptUrl(src);
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = normalizeScriptPath(src);
+      script.src = resolvedSrc;
       script.async = false;
       script.onload = () => resolve();
       script.onerror = () => reject(new Error(`Failed to load ${src}`));
