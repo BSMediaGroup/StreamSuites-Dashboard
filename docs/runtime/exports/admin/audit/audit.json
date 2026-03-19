@@ -1,12 +1,230 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-03-09T13:59:37.899573Z",
+  "exported_at": "2026-03-19T06:57:35.035978Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.4.1-alpha",
-    "build": "2026.03.09+001"
+    "build": "2026.03.19+004"
   },
   "audit": [
+    {
+      "id": "1df2f142-752b-43d8-be11-422f1bceeee4",
+      "ts": "2026-03-19T04:55:51Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "alert_target_updated",
+      "metadata": {
+        "device_type": "windows_client",
+        "enabled": true,
+        "target_id": "e021e2d1-07d0-4e93-81b5-8f7d36c322e4"
+      }
+    },
+    {
+      "id": "fa7083cb-ba72-4420-b688-bcf7c27575fe",
+      "ts": "2026-03-19T04:55:29Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "eaa4b3f1-dd39-4389-baa3-fa2721c76820",
+      "ts": "2026-03-19T04:45:10Z",
+      "actor_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "actor_user_code": "7XaVoy7",
+      "actor_role": "admin",
+      "target_user_id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
+      "target_user_code": "7XaVoy7",
+      "action": "login_success",
+      "metadata": {
+        "provider": "google"
+      }
+    },
+    {
+      "id": "baca7711-a5c1-4875-8961-f5b7dd0aa160",
+      "ts": "2026-03-19T04:41:59Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "alert_target_updated",
+      "metadata": {
+        "device_type": "windows_client",
+        "enabled": true,
+        "target_id": "54a29f7f-f9c2-4745-bc05-24567f903afe"
+      }
+    },
+    {
+      "id": "8ba15253-8ec5-4af9-9f9f-45f4a7699c5e",
+      "ts": "2026-03-19T02:17:26Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "alert_target_updated",
+      "metadata": {
+        "device_type": "windows_client",
+        "enabled": true,
+        "target_id": "e021e2d1-07d0-4e93-81b5-8f7d36c322e4"
+      }
+    },
+    {
+      "id": "4c79e21b-cf76-4623-a330-2bf11ac244f8",
+      "ts": "2026-03-19T01:43:41Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "alert_configuration_updated",
+      "metadata": {
+        "rule_count": 11,
+        "timezone": "UTC"
+      }
+    },
+    {
+      "id": "e5db300b-4480-4546-81fa-ee8c1663ca5a",
+      "ts": "2026-03-19T01:43:14Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "alert_test_triggered",
+      "metadata": {
+        "event_type": "public_page_visit",
+        "force": false,
+        "history_ids": [
+          "d5200e29-dc44-4a38-983b-fa6ad8bc400e"
+        ],
+        "rule_id": null
+      }
+    },
+    {
+      "id": "99d9c3a4-f79a-469a-8e9d-7702cff8a59d",
+      "ts": "2026-03-19T01:41:49Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "alert_test_triggered",
+      "metadata": {
+        "event_type": "runtime_error_spike",
+        "force": false,
+        "history_ids": [
+          "1f0b5275-6853-44e5-aa65-f04576184e4a",
+          "ea76e7ac-3837-49c7-9de6-7e5413b2b4fc"
+        ],
+        "rule_id": null
+      }
+    },
+    {
+      "id": "16c46e6b-7330-4e6f-b1e0-4f1cd9448efc",
+      "ts": "2026-03-19T01:38:02Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "4da9f461-9f7d-40c8-9d57-e4a95fef95f4",
+      "ts": "2026-03-19T01:37:01Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "fallback"
+      }
+    },
+    {
+      "id": "04158761-8924-4648-8270-399a512cf122",
+      "ts": "2026-03-19T01:37:01Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "alert_target_registered",
+      "metadata": {
+        "device_type": "windows_client",
+        "owner_account_id": null,
+        "target_id": "e021e2d1-07d0-4e93-81b5-8f7d36c322e4"
+      }
+    },
+    {
+      "id": "37b787e6-6e2d-4c40-a200-550e5970fcf0",
+      "ts": "2026-03-19T01:33:20Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "alert_configuration_updated",
+      "metadata": {
+        "rule_count": 11,
+        "timezone": "UTC"
+      }
+    },
+    {
+      "id": "7c410edc-aa47-4c8c-8da8-bc45758ff8d9",
+      "ts": "2026-03-19T01:31:57Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "142637eb-ea3f-463f-abe2-c465389b43f4",
+      "ts": "2026-03-19T01:31:25Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "fallback"
+      }
+    },
+    {
+      "id": "055c7956-e46f-4374-a7df-2ea5812ab03f",
+      "ts": "2026-03-19T01:31:25Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "alert_target_registered",
+      "metadata": {
+        "device_type": "windows_client",
+        "owner_account_id": null,
+        "target_id": "54a29f7f-f9c2-4745-bc05-24567f903afe"
+      }
+    },
     {
       "id": "5dc13334-2c33-41de-9985-105de8749134",
       "ts": "2026-03-07T14:49:43Z",
