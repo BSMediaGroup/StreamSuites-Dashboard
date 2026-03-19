@@ -36,6 +36,7 @@ StreamSuites-Dashboard/
 ├── .vscode/
 │   ├── launch.json
 │   └── settings.json
+├── BUMP_NOTES.md
 ├── changelog/
 │   └── changelog.runtime.json
 ├── dev-notes/

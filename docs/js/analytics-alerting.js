@@ -6,6 +6,7 @@
   const HISTORY_LIMIT = 50;
   const HISTORY_PAGE_SIZE = 5;
   const SEVERITIES = ["info", "warning", "error", "critical"];
+  const TEMPLATE_TOKEN_PATTERN = /{{[a-z0-9_.]+}}/g;
   const DESTINATION_ICON_MAP = {
     windows_client: "/assets/icons/ui/win2.svg",
     pushover: "/assets/icons/ui/push2.svg"
@@ -27,7 +28,7 @@
     auth_provider: { label: "Auth provider", kind: "select" },
     user_type: { label: "User type", kind: "select" },
     admin_only: { label: "Admin only", kind: "checkbox" },
-    surface: { label: "Surface", kind: "select" },
+    surface: { label: "Surfaces", kind: "multi-checkbox" },
     destination_type: { label: "Destination type", kind: "select" }
   };
   const TEMPLATE_CATEGORY_ORDER = [
@@ -290,7 +291,11 @@
     targetsError: "",
     historyError: "",
     loadPromise: null,
-    panelsPromise: null
+    panelsPromise: null,
+    templateEditors: {
+      title: null,
+      body: null
+    }
   };
 
   const el = {
@@ -556,6 +561,20 @@
         if (text) normalized[field] = text;
         return;
       }
+      if (field === "surface") {
+        const values = Array.isArray(value) ? value : value ? [value] : [];
+        const surfaces = Array.from(
+          new Set(
+            values
+              .map((item) => normalizeScopeText(item, { lower: true }))
+              .filter(Boolean)
+          )
+        );
+        if (surfaces.length) {
+          normalized[field] = surfaces;
+        }
+        return;
+      }
       const text = normalizeScopeText(value, { lower: true });
       if (text) normalized[field] = text;
     });
@@ -578,7 +597,9 @@
     if (normalized.auth_provider) parts.push(`provider=${normalized.auth_provider}`);
     if (normalized.user_type) parts.push(`user_type=${normalized.user_type}`);
     if (normalized.admin_only) parts.push("admin_only");
-    if (normalized.surface) parts.push(`surface=${surfaceLabel(normalized.surface)}`);
+    if (Array.isArray(normalized.surface) && normalized.surface.length) {
+      parts.push(`surfaces=${normalized.surface.map((item) => surfaceLabel(item)).join(" + ")}`);
+    }
     if (normalized.destination_type) parts.push(`destination=${destinationLabel(normalized.destination_type)}`);
     return parts.join(" + ");
   }
@@ -660,14 +681,28 @@
     state.rules.forEach((rule) => {
       const scope = rule?.scope;
       if (scope && typeof scope === "object" && scope[field] !== undefined && scope[field] !== null && scope[field] !== "") {
-        values.add(String(scope[field]).trim());
+        if (field === "surface" && Array.isArray(scope[field])) {
+          scope[field].forEach((item) => {
+            const text = String(item || "").trim();
+            if (text) values.add(text);
+          });
+        } else {
+          values.add(String(scope[field]).trim());
+        }
       }
     });
     state.history.forEach((entry) => {
       const metadata = entry?.metadata;
       const scope = metadata?.effective_scope || metadata?.rule_scope;
       if (scope && typeof scope === "object" && scope[field] !== undefined && scope[field] !== null && scope[field] !== "") {
-        values.add(String(scope[field]).trim());
+        if (field === "surface" && Array.isArray(scope[field])) {
+          scope[field].forEach((item) => {
+            const text = String(item || "").trim();
+            if (text) values.add(text);
+          });
+        } else {
+          values.add(String(scope[field]).trim());
+        }
       }
     });
     return Array.from(values).filter(Boolean);
@@ -680,12 +715,16 @@
     } else if (field === "user_type") {
       ["creator", "viewer", "admin"].forEach((item) => options.add(item));
     } else if (field === "surface") {
-      ["public", "directory", "admin", "auth-controls", "self_service"].forEach((item) => options.add(item));
+      Object.keys(SURFACE_LABELS).forEach((item) => options.add(item));
     } else if (field === "destination_type") {
       getDestinationKeys().forEach((item) => options.add(item));
     }
     collectObservedScopeValues(field).forEach((item) => options.add(String(item).toLowerCase()));
-    if (currentValue) options.add(String(currentValue).trim().toLowerCase());
+    if (field === "surface" && Array.isArray(currentValue)) {
+      currentValue.forEach((item) => options.add(String(item || "").trim().toLowerCase()));
+    } else if (currentValue) {
+      options.add(String(currentValue).trim().toLowerCase());
+    }
     return Array.from(options).filter(Boolean).sort((a, b) => a.localeCompare(b));
   }
 
@@ -1288,6 +1327,432 @@
     });
   }
 
+  function templateTokenInfoMap() {
+    return state.templateVariables.reduce((acc, item) => {
+      const token = String(item?.token || "").trim();
+      if (token) {
+        acc[token] = item;
+      }
+      return acc;
+    }, Object.create(null));
+  }
+
+  function isSupportedTemplateToken(token) {
+    const normalized = String(token || "").trim();
+    return !!(normalized && templateTokenInfoMap()[normalized]);
+  }
+
+  function parseTemplateSegments(rawValue) {
+    const text = String(rawValue || "");
+    const segments = [];
+    let lastIndex = 0;
+    text.replace(TEMPLATE_TOKEN_PATTERN, (match, index) => {
+      if (index > lastIndex) {
+        segments.push({ type: "text", value: text.slice(lastIndex, index) });
+      }
+      if (isSupportedTemplateToken(match)) {
+        segments.push({ type: "token", value: match });
+      } else {
+        segments.push({ type: "text", value: match });
+      }
+      lastIndex = index + match.length;
+      return match;
+    });
+    if (lastIndex < text.length) {
+      segments.push({ type: "text", value: text.slice(lastIndex) });
+    }
+    if (!segments.length) {
+      segments.push({ type: "text", value: "" });
+    }
+    return segments;
+  }
+
+  function createTemplateTokenNode(token) {
+    const info = templateTokenInfoMap()[token] || {};
+    const chip = document.createElement("span");
+    chip.className = "ss-alerts-token-chip";
+    chip.dataset.templateTokenChip = token;
+    chip.dataset.tokenKey = String(info.key || "").trim() || token;
+    chip.contentEditable = "false";
+    chip.spellcheck = false;
+    chip.title = String(info.description || token).trim() || token;
+    chip.textContent = token;
+    return chip;
+  }
+
+  function updateTemplateEditorPlaceholder(editorState) {
+    if (!editorState?.editor) return;
+    const rawValue = String(editorState.textarea?.value || "");
+    editorState.editor.classList.toggle("is-empty", !rawValue);
+  }
+
+  function getTemplateEditorSelection(editorState) {
+    const editor = editorState?.editor;
+    const selection = window.getSelection();
+    if (!(editor instanceof HTMLElement) || !selection || !selection.rangeCount) return null;
+    const range = selection.getRangeAt(0);
+    if (!editor.contains(range.startContainer) || !editor.contains(range.endContainer)) return null;
+    const startRange = range.cloneRange();
+    startRange.selectNodeContents(editor);
+    startRange.setEnd(range.startContainer, range.startOffset);
+    const endRange = range.cloneRange();
+    endRange.selectNodeContents(editor);
+    endRange.setEnd(range.endContainer, range.endOffset);
+    return {
+      start: startRange.toString().length,
+      end: endRange.toString().length
+    };
+  }
+
+  function setTemplateEditorSelection(editorState, startOffset, endOffset = startOffset) {
+    const editor = editorState?.editor;
+    if (!(editor instanceof HTMLElement)) return;
+    const range = document.createRange();
+    const selection = window.getSelection();
+    const locatePoint = (targetOffset) => {
+      let remaining = Math.max(0, Number(targetOffset) || 0);
+      const children = Array.from(editor.childNodes);
+      for (const node of children) {
+        if (
+          node instanceof HTMLElement
+          && node.hasAttribute("data-template-token-chip")
+          && !node.classList.contains("is-editing")
+        ) {
+          const length = node.textContent?.length || 0;
+          if (remaining <= 0) return { type: "before", node };
+          if (remaining < length) return { type: "after", node };
+          if (remaining === length) return { type: "after", node };
+          remaining -= length;
+          continue;
+        }
+        const walkerRoot = node instanceof HTMLElement ? node : editor;
+        const walker = document.createTreeWalker(
+          walkerRoot,
+          NodeFilter.SHOW_TEXT,
+          node instanceof HTMLElement
+            ? null
+            : {
+                acceptNode(currentNode) {
+                  return currentNode === node ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+                }
+              }
+        );
+        let current = walker.nextNode();
+        while (current) {
+          const length = current.textContent?.length || 0;
+          if (remaining <= length) {
+            return { type: "text", node: current, offset: remaining };
+          }
+          remaining -= length;
+          current = walker.nextNode();
+        }
+      }
+      return { type: "end", node: editor };
+    };
+
+    const startPoint = locatePoint(startOffset);
+    const endPoint = locatePoint(endOffset);
+
+    if (startPoint.type === "text") {
+      range.setStart(startPoint.node, startPoint.offset);
+    } else if (startPoint.type === "before") {
+      range.setStartBefore(startPoint.node);
+    } else if (startPoint.type === "after") {
+      range.setStartAfter(startPoint.node);
+    } else {
+      range.setStart(editor, editor.childNodes.length);
+    }
+
+    if (endPoint.type === "text") {
+      range.setEnd(endPoint.node, endPoint.offset);
+    } else if (endPoint.type === "before") {
+      range.setEndBefore(endPoint.node);
+    } else if (endPoint.type === "after") {
+      range.setEndAfter(endPoint.node);
+    } else {
+      range.setEnd(editor, editor.childNodes.length);
+    }
+
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  }
+
+  function renderTemplateEditor(editorState, options = {}) {
+    const editor = editorState?.editor;
+    const textarea = editorState?.textarea;
+    if (!(editor instanceof HTMLElement) || !(textarea instanceof HTMLTextAreaElement)) return;
+    const rawValue = String(textarea.value || "");
+    const selection = options.restoreSelection && document.activeElement && editor.contains(document.activeElement)
+      ? getTemplateEditorSelection(editorState)
+      : null;
+    const fragment = document.createDocumentFragment();
+    parseTemplateSegments(rawValue).forEach((segment) => {
+      if (segment.type === "token") {
+        fragment.appendChild(createTemplateTokenNode(segment.value));
+      } else if (segment.value) {
+        fragment.appendChild(document.createTextNode(segment.value));
+      }
+    });
+    editor.replaceChildren(fragment);
+    updateTemplateEditorPlaceholder(editorState);
+    if (selection) {
+      setTemplateEditorSelection(editorState, selection.start, selection.end);
+    }
+  }
+
+  function syncTemplateEditorValue(editorState, options = {}) {
+    const editor = editorState?.editor;
+    const textarea = editorState?.textarea;
+    if (!(editor instanceof HTMLElement) || !(textarea instanceof HTMLTextAreaElement)) return;
+    const rawValue = editor.textContent || "";
+    textarea.value = rawValue;
+    updateTemplateEditorPlaceholder(editorState);
+    if (options.retokenize !== false) {
+      renderTemplateEditor(editorState, { restoreSelection: options.restoreSelection !== false });
+    }
+  }
+
+  function getTemplateEditorState(field) {
+    return field === "title" ? state.templateEditors.title : state.templateEditors.body;
+  }
+
+  function getTemplateEditorFieldFromNode(node) {
+    if (!(node instanceof Node)) return "";
+    const editor = node instanceof HTMLElement
+      ? node.closest("[data-template-editor]")
+      : node.parentElement?.closest?.("[data-template-editor]");
+    return String(editor?.getAttribute("data-template-editor") || "").trim();
+  }
+
+  function focusTemplateEditor(field) {
+    const editorState = getTemplateEditorState(field);
+    if (!(editorState?.editor instanceof HTMLElement)) return;
+    editorState.editor.focus();
+    const length = String(editorState.textarea?.value || "").length;
+    setTemplateEditorSelection(editorState, length, length);
+  }
+
+  function setTemplateEditorValue(field, value) {
+    const editorState = getTemplateEditorState(field);
+    if (!(editorState?.textarea instanceof HTMLTextAreaElement)) return;
+    editorState.textarea.value = String(value || "");
+    renderTemplateEditor(editorState);
+  }
+
+  function getTemplateEditorValue(field) {
+    const editorState = getTemplateEditorState(field);
+    return String(editorState?.textarea?.value || "");
+  }
+
+  function replaceTemplateEditorRange(editorState, replacementText) {
+    const editor = editorState?.editor;
+    if (!(editor instanceof HTMLElement)) return;
+    editor.focus();
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount) {
+      const textNode = document.createTextNode(String(replacementText || ""));
+      editor.appendChild(textNode);
+    } else {
+      const range = selection.getRangeAt(0);
+      if (!editor.contains(range.startContainer) || !editor.contains(range.endContainer)) {
+        const textNode = document.createTextNode(String(replacementText || ""));
+        editor.appendChild(textNode);
+        const nextRange = document.createRange();
+        nextRange.setStart(textNode, textNode.textContent?.length || 0);
+        nextRange.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(nextRange);
+      } else {
+        range.deleteContents();
+        const textNode = document.createTextNode(String(replacementText || ""));
+        range.insertNode(textNode);
+        range.setStart(textNode, textNode.textContent?.length || 0);
+        range.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+    }
+    syncTemplateEditorValue(editorState);
+  }
+
+  function findTemplateTokenBoundary(rawValue, offset, direction) {
+    const text = String(rawValue || "");
+    TEMPLATE_TOKEN_PATTERN.lastIndex = 0;
+    let match = TEMPLATE_TOKEN_PATTERN.exec(text);
+    while (match) {
+      if (isSupportedTemplateToken(match[0])) {
+        const start = match.index;
+        const end = start + match[0].length;
+        if (direction === "backward" && end === offset) {
+          return { start, end };
+        }
+        if (direction === "forward" && start === offset) {
+          return { start, end };
+        }
+      }
+      match = TEMPLATE_TOKEN_PATTERN.exec(text);
+    }
+    TEMPLATE_TOKEN_PATTERN.lastIndex = 0;
+    return null;
+  }
+
+  function handleTemplateEditorKeydown(event) {
+    const field = getTemplateEditorFieldFromNode(event.target);
+    const editorState = getTemplateEditorState(field);
+    if (!editorState) return;
+    const editingChip = event.target instanceof HTMLElement
+      ? event.target.closest(".ss-alerts-token-chip.is-editing")
+      : null;
+    if (editingChip instanceof HTMLElement) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        editingChip.blur();
+      }
+      return;
+    }
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      replaceTemplateEditorRange(editorState, "\n");
+      return;
+    }
+    const selection = getTemplateEditorSelection(editorState);
+    if (!selection || selection.start !== selection.end) return;
+    const rawValue = getTemplateEditorValue(field);
+    if (event.key === "Backspace") {
+      const token = findTemplateTokenBoundary(rawValue, selection.start, "backward");
+      if (!token) return;
+      event.preventDefault();
+      editorState.textarea.value = `${rawValue.slice(0, token.start)}${rawValue.slice(token.end)}`;
+      renderTemplateEditor(editorState);
+      editorState.editor.focus();
+      setTemplateEditorSelection(editorState, token.start, token.start);
+      renderRulePreview();
+      return;
+    }
+    if (event.key === "Delete") {
+      const token = findTemplateTokenBoundary(rawValue, selection.start, "forward");
+      if (!token) return;
+      event.preventDefault();
+      editorState.textarea.value = `${rawValue.slice(0, token.start)}${rawValue.slice(token.end)}`;
+      renderTemplateEditor(editorState);
+      editorState.editor.focus();
+      setTemplateEditorSelection(editorState, token.start, token.start);
+      renderRulePreview();
+      return;
+    }
+    if (event.key === "ArrowLeft") {
+      const token = findTemplateTokenBoundary(rawValue, selection.start, "backward");
+      if (!token) return;
+      event.preventDefault();
+      setTemplateEditorSelection(editorState, token.start, token.start);
+      return;
+    }
+    if (event.key === "ArrowRight") {
+      const token = findTemplateTokenBoundary(rawValue, selection.start, "forward");
+      if (!token) return;
+      event.preventDefault();
+      setTemplateEditorSelection(editorState, token.end, token.end);
+    }
+  }
+
+  function handleTemplateEditorInput(event) {
+    const field = getTemplateEditorFieldFromNode(event.target);
+    const editorState = getTemplateEditorState(field);
+    if (!editorState) return;
+    syncTemplateEditorValue(editorState);
+    renderRulePreview();
+  }
+
+  function handleTemplateEditorPaste(event) {
+    const field = getTemplateEditorFieldFromNode(event.target);
+    const editorState = getTemplateEditorState(field);
+    if (!editorState) return;
+    event.preventDefault();
+    const text = event.clipboardData?.getData("text/plain") || "";
+    replaceTemplateEditorRange(editorState, text);
+    renderRulePreview();
+  }
+
+  function handleTemplateTokenChipMouseDown(event) {
+    const chip = event.target.closest("[data-template-token-chip]");
+    if (!(chip instanceof HTMLElement) || chip.classList.contains("is-editing")) return;
+    const field = getTemplateEditorFieldFromNode(chip);
+    const editorState = getTemplateEditorState(field);
+    if (!editorState) return;
+    event.preventDefault();
+    const rawToken = chip.textContent || "";
+    const editableText = document.createTextNode(rawToken);
+    chip.replaceWith(editableText);
+    editorState.editor.focus();
+    const range = document.createRange();
+    const tokenEditOffset = Math.max((editableText.textContent?.length || 0) - 2, 0);
+    range.setStart(editableText, tokenEditOffset);
+    range.collapse(true);
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+    syncTemplateEditorValue(editorState, { retokenize: false });
+  }
+
+  function handleTemplateEditorFocusIn(event) {
+    const field = getTemplateEditorFieldFromNode(event.target);
+    if (!field) return;
+    setActiveTemplateField(field);
+  }
+
+  function finalizeEditingToken(editorState, editingChip) {
+    const nextValue = editingChip.textContent || "";
+    const offsetRange = document.createRange();
+    offsetRange.selectNodeContents(editorState.editor);
+    offsetRange.setEndBefore(editingChip);
+    const startOffset = offsetRange.toString().length;
+    const replacement = isSupportedTemplateToken(nextValue)
+      ? createTemplateTokenNode(nextValue)
+      : document.createTextNode(nextValue);
+    editingChip.replaceWith(replacement);
+    syncTemplateEditorValue(editorState);
+    editorState.editor.focus();
+    const caretOffset = Math.min(startOffset + nextValue.length, getTemplateEditorValue(editorState.field).length);
+    setTemplateEditorSelection(editorState, caretOffset, caretOffset);
+  }
+
+  function handleTemplateEditorFocusOut(event) {
+    const field = getTemplateEditorFieldFromNode(event.target);
+    const editorState = getTemplateEditorState(field);
+    if (!editorState) return;
+    const editingChip = event.target instanceof HTMLElement
+      ? event.target.closest(".ss-alerts-token-chip.is-editing")
+      : null;
+    if (!(editingChip instanceof HTMLElement)) return;
+    window.setTimeout(() => {
+      const activeElement = document.activeElement;
+      if (activeElement && editingChip.contains(activeElement)) return;
+      finalizeEditingToken(editorState, editingChip);
+      renderRulePreview();
+    }, 0);
+  }
+
+  function setupTemplateEditor(field, textarea) {
+    if (!(textarea instanceof HTMLTextAreaElement)) return;
+    if (getTemplateEditorState(field)?.editor) return;
+    const editor = document.createElement("div");
+    editor.className = `ss-alerts-token-editor ss-alerts-token-editor--${field}`;
+    editor.contentEditable = "true";
+    editor.spellcheck = true;
+    editor.dataset.templateEditor = field;
+    editor.dataset.placeholder = textarea.getAttribute("placeholder") || "";
+    editor.setAttribute("role", "textbox");
+    editor.setAttribute("aria-multiline", "true");
+    editor.setAttribute("aria-label", field === "title" ? "Notification title template" : "Notification message template");
+    textarea.classList.add("ss-alerts-token-source");
+    textarea.setAttribute("aria-hidden", "true");
+    textarea.tabIndex = -1;
+    textarea.insertAdjacentElement("beforebegin", editor);
+    const editorState = { field, textarea, editor };
+    state.templateEditors[field] = editorState;
+    renderTemplateEditor(editorState);
+  }
+
   function renderTemplateVariableGroup(title, items) {
     if (!items.length) return "";
     const description = title === "Recommended for this alert type"
@@ -1362,7 +1827,7 @@
   }
 
   function getActiveTemplateFieldElement() {
-    return state.activeTemplateField === "title" ? el.ruleTitleTemplate : el.ruleBodyTemplate;
+    return getTemplateEditorState(state.activeTemplateField)?.editor || null;
   }
 
   function updateTemplateFieldHighlight() {
@@ -1377,25 +1842,16 @@
   function setActiveTemplateField(field, options = {}) {
     state.activeTemplateField = field === "title" ? "title" : "body";
     if (options.focusField) {
-      const target = getActiveTemplateFieldElement();
-      if (target instanceof HTMLTextAreaElement) {
-        target.focus();
-      }
+      focusTemplateEditor(state.activeTemplateField);
     }
     updateTemplateFieldHighlight();
     renderTemplateBrowser();
   }
 
   function insertTokenIntoActiveTemplate(token) {
-    const target = getActiveTemplateFieldElement();
-    if (!(target instanceof HTMLTextAreaElement)) return;
-    const start = target.selectionStart ?? target.value.length;
-    const end = target.selectionEnd ?? start;
-    const value = target.value || "";
-    target.value = `${value.slice(0, start)}${token}${value.slice(end)}`;
-    const nextPos = start + token.length;
-    target.focus();
-    target.setSelectionRange(nextPos, nextPos);
+    const target = getTemplateEditorState(state.activeTemplateField);
+    if (!target) return;
+    replaceTemplateEditorRange(target, token);
     renderRulePreview();
   }
 
@@ -1450,8 +1906,8 @@
     const eventMeta = getEventMeta(el.ruleEventType?.value);
     const eventLabel = eventMeta?.label || labelize(el.ruleEventType?.value || "alert");
     const severity = severityLabel(el.ruleSeverity?.value || "info");
-    const titleTemplate = String(el.ruleTitleTemplate?.value || "").trim();
-    const bodyTemplate = String(el.ruleBodyTemplate?.value || "").trim();
+    const titleTemplate = getTemplateEditorValue("title").trim();
+    const bodyTemplate = getTemplateEditorValue("body").trim();
     const ruleName = String(el.ruleName?.value || "").trim();
     const adminNotes = String(el.ruleDescription?.value || "").trim();
     const destinations = collectCheckedValues(
@@ -1489,10 +1945,18 @@
   function readScopeInputs() {
     const scope = {};
     const fields = el.ruleScopeBody?.querySelectorAll("[data-scope-field]") || [];
+    const surfaceValues = [];
     fields.forEach((node) => {
       const field = String(node.getAttribute("data-scope-field") || "").trim();
       if (!field || !SCOPE_FIELD_ORDER.includes(field)) return;
       if (node instanceof HTMLInputElement && node.type === "checkbox") {
+        if (field === "surface") {
+          if (node.checked) {
+            const value = String(node.getAttribute("data-scope-value") || "").trim().toLowerCase();
+            if (value) surfaceValues.push(value);
+          }
+          return;
+        }
         if (node.checked) scope[field] = true;
         return;
       }
@@ -1502,6 +1966,9 @@
         scope[field] = normalized[field];
       }
     });
+    if (surfaceValues.length) {
+      scope.surface = Array.from(new Set(surfaceValues));
+    }
     return scope;
   }
 
@@ -1519,6 +1986,31 @@
           <input type="checkbox" data-scope-field="${escapeHtml(field)}" ${value === true ? "checked" : ""} />
           <span>${escapeHtml(config.label)}</span>
         </label>
+      `;
+    }
+    if (config.kind === "multi-checkbox") {
+      const selected = new Set(Array.isArray(value) ? value : []);
+      const options = getScopeSelectOptions(field, value)
+        .map((option) => `
+          <label class="ss-alerts-surface-checkbox">
+            <input
+              type="checkbox"
+              data-scope-field="${escapeHtml(field)}"
+              data-scope-value="${escapeHtml(option)}"
+              ${selected.has(option) ? "checked" : ""}
+            />
+            <span>${escapeHtml(surfaceLabel(option))}</span>
+          </label>
+        `)
+        .join("");
+      return `
+        <fieldset class="ss-form-row ss-alerts-surface-checkbox-group">
+          <legend>${escapeHtml(config.label)}</legend>
+          <div class="ss-alerts-surface-checkbox-grid">
+            ${options}
+          </div>
+          <span class="muted ss-alerts-field-help">Select one or more surfaces. Leave everything unchecked to match any surface.</span>
+        </fieldset>
       `;
     }
     if (config.kind === "select") {
@@ -1659,12 +2151,8 @@
     if (el.ruleDescription) {
       el.ruleDescription.value = next?.description || "";
     }
-    if (el.ruleTitleTemplate) {
-      el.ruleTitleTemplate.value = next?.title_template || "";
-    }
-    if (el.ruleBodyTemplate) {
-      el.ruleBodyTemplate.value = next?.body_template || "";
-    }
+    setTemplateEditorValue("title", next?.title_template || "");
+    setTemplateEditorValue("body", next?.body_template || "");
     if (el.ruleThresholdNumber) {
       el.ruleThresholdNumber.value = ["count", "rate"].includes(next?.threshold_type)
         ? String(next?.threshold_value ?? 1)
@@ -2331,8 +2819,8 @@
       enabled: el.ruleEnabled?.value !== "false",
       name,
       description: String(el.ruleDescription?.value || "").trim() || null,
-      title_template: String(el.ruleTitleTemplate?.value || "").trim() || null,
-      body_template: String(el.ruleBodyTemplate?.value || "").trim() || null,
+      title_template: getTemplateEditorValue("title").trim() || null,
+      body_template: getTemplateEditorValue("body").trim() || null,
       severity: String(el.ruleSeverity?.value || "info").trim(),
       threshold_type: thresholdType,
       threshold_value: thresholdValue,
@@ -2649,16 +3137,6 @@
     updateScopeVisibility();
   }
 
-  function handleTemplateFieldFocus(event) {
-    if (event.target === el.ruleTitleTemplate) {
-      setActiveTemplateField("title");
-    } else if (event.target === el.ruleBodyTemplate) {
-      setActiveTemplateField("body");
-    } else {
-      return;
-    }
-  }
-
   function handleTemplateTargetClick(event) {
     const button = event.target.closest("[data-template-target]");
     if (!(button instanceof HTMLButtonElement)) return;
@@ -2820,8 +3298,18 @@
     el.ruleThresholdType?.addEventListener("change", updateThresholdFieldVisibility);
     el.ruleEventType?.addEventListener("change", handleRuleEventTypeChange);
     el.ruleScopeEnabled?.addEventListener("change", handleRuleScopeToggle);
-    el.ruleTitleTemplate?.addEventListener("focus", handleTemplateFieldFocus);
-    el.ruleBodyTemplate?.addEventListener("focus", handleTemplateFieldFocus);
+    state.templateEditors.title?.editor?.addEventListener("focusin", handleTemplateEditorFocusIn);
+    state.templateEditors.title?.editor?.addEventListener("keydown", handleTemplateEditorKeydown);
+    state.templateEditors.title?.editor?.addEventListener("input", handleTemplateEditorInput);
+    state.templateEditors.title?.editor?.addEventListener("paste", handleTemplateEditorPaste);
+    state.templateEditors.title?.editor?.addEventListener("mousedown", handleTemplateTokenChipMouseDown);
+    state.templateEditors.title?.editor?.addEventListener("focusout", handleTemplateEditorFocusOut);
+    state.templateEditors.body?.editor?.addEventListener("focusin", handleTemplateEditorFocusIn);
+    state.templateEditors.body?.editor?.addEventListener("keydown", handleTemplateEditorKeydown);
+    state.templateEditors.body?.editor?.addEventListener("input", handleTemplateEditorInput);
+    state.templateEditors.body?.editor?.addEventListener("paste", handleTemplateEditorPaste);
+    state.templateEditors.body?.editor?.addEventListener("mousedown", handleTemplateTokenChipMouseDown);
+    state.templateEditors.body?.editor?.addEventListener("focusout", handleTemplateEditorFocusOut);
     el.templateTargets?.addEventListener("click", handleTemplateTargetClick);
     el.templateVariables?.addEventListener("click", handleTemplateVariableClick);
     el.rulesViewToggle?.addEventListener("click", handleRulesViewToggle);
@@ -2858,8 +3346,18 @@
     el.ruleThresholdType?.removeEventListener("change", updateThresholdFieldVisibility);
     el.ruleEventType?.removeEventListener("change", handleRuleEventTypeChange);
     el.ruleScopeEnabled?.removeEventListener("change", handleRuleScopeToggle);
-    el.ruleTitleTemplate?.removeEventListener("focus", handleTemplateFieldFocus);
-    el.ruleBodyTemplate?.removeEventListener("focus", handleTemplateFieldFocus);
+    state.templateEditors.title?.editor?.removeEventListener("focusin", handleTemplateEditorFocusIn);
+    state.templateEditors.title?.editor?.removeEventListener("keydown", handleTemplateEditorKeydown);
+    state.templateEditors.title?.editor?.removeEventListener("input", handleTemplateEditorInput);
+    state.templateEditors.title?.editor?.removeEventListener("paste", handleTemplateEditorPaste);
+    state.templateEditors.title?.editor?.removeEventListener("mousedown", handleTemplateTokenChipMouseDown);
+    state.templateEditors.title?.editor?.removeEventListener("focusout", handleTemplateEditorFocusOut);
+    state.templateEditors.body?.editor?.removeEventListener("focusin", handleTemplateEditorFocusIn);
+    state.templateEditors.body?.editor?.removeEventListener("keydown", handleTemplateEditorKeydown);
+    state.templateEditors.body?.editor?.removeEventListener("input", handleTemplateEditorInput);
+    state.templateEditors.body?.editor?.removeEventListener("paste", handleTemplateEditorPaste);
+    state.templateEditors.body?.editor?.removeEventListener("mousedown", handleTemplateTokenChipMouseDown);
+    state.templateEditors.body?.editor?.removeEventListener("focusout", handleTemplateEditorFocusOut);
     el.templateTargets?.removeEventListener("click", handleTemplateTargetClick);
     el.templateVariables?.removeEventListener("click", handleTemplateVariableClick);
     el.rulesViewToggle?.removeEventListener("click", handleRulesViewToggle);
@@ -2998,6 +3496,8 @@
     state.destroyed = false;
     bindElements();
     if (!el.root || !window.StreamSuitesApi) return;
+    setupTemplateEditor("title", el.ruleTitleTemplate);
+    setupTemplateEditor("body", el.ruleBodyTemplate);
     bindEvents();
     populateRuleForm(null);
     void loadAlerting({ forceRefresh: true, withLoader: false });
@@ -3006,6 +3506,7 @@
   function destroy() {
     state.destroyed = true;
     unbindEvents();
+    state.templateEditors = { title: null, body: null };
     clearElementReferences();
   }
 
