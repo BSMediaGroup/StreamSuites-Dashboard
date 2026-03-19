@@ -8,7 +8,7 @@
   const SEVERITIES = ["info", "warning", "error", "critical"];
   const DESTINATION_ICON_MAP = {
     windows_client: "/assets/icons/ui/win2.svg",
-    pushover: "/assets/icons/ui/mobilemsg.svg"
+    pushover: "/assets/icons/ui/celltower.svg"
   };
   const SCOPE_FIELD_ORDER = [
     "page_path",
