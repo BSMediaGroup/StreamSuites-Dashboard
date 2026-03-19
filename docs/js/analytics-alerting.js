@@ -67,6 +67,7 @@
     "browser",
     "device",
     "platform",
+    "country_flag",
     "geo.country",
     "geo.region",
     "geo.city",
@@ -658,6 +659,102 @@
     const templateContext = entry?.metadata?.template_context || {};
     const payload = entry?.payload_snapshot || {};
     return String(templateContext.surface || payload.surface || "").trim().toLowerCase();
+  }
+
+  function normalizeCountryCode(value) {
+    const letters = String(value || "")
+      .trim()
+      .replace(/[^A-Za-z]/g, "")
+      .toUpperCase();
+    if (!letters || letters === "ZZ" || letters.length > 8) {
+      return "";
+    }
+    return letters;
+  }
+
+  function countryCodeToFlagEmoji(countryCode) {
+    const normalized = normalizeCountryCode(countryCode);
+    if (normalized.length !== 2) return "";
+    return Array.from(normalized)
+      .map((char) => String.fromCodePoint(0x1f1e6 + char.charCodeAt(0) - 65))
+      .join("");
+  }
+
+  function buildCountryFlagToken(countryCode) {
+    const normalized = normalizeCountryCode(countryCode);
+    return normalized ? `fl-${normalized.toLowerCase()}` : "";
+  }
+
+  function buildCountryFlagPresentation(rawValue, countryCode) {
+    const rawText = String(rawValue || "").trim();
+    let normalizedCode = normalizeCountryCode(countryCode);
+    if (!normalizedCode && /^fl-/i.test(rawText)) {
+      normalizedCode = normalizeCountryCode(rawText.slice(3));
+    }
+    if (!normalizedCode && rawText) {
+      normalizedCode = normalizeCountryCode(rawText);
+    }
+
+    const emoji = countryCodeToFlagEmoji(normalizedCode);
+    if (emoji) {
+      return {
+        rawValue: rawText || emoji,
+        renderText: emoji,
+        token: buildCountryFlagToken(normalizedCode),
+        countryCode: normalizedCode,
+        rich: true
+      };
+    }
+
+    if (!rawText) return null;
+    return {
+      rawValue: rawText,
+      renderText: rawText,
+      token: /^fl-/i.test(rawText) ? rawText.toLowerCase() : "",
+      countryCode: normalizedCode,
+      rich: false
+    };
+  }
+
+  function renderCountryFlagBadge(presentation, options = {}) {
+    if (!presentation) return "";
+    const extraClass = String(options.extraClass || "").trim();
+    const classes = ["ss-country-flag-badge"];
+    if (extraClass) classes.push(extraClass);
+    if (presentation.rich) classes.push("is-rich");
+    const body = presentation.rich
+      ? `<span class="ss-country-flag-badge__emoji">${escapeHtml(presentation.renderText)}</span><span class="ss-country-flag-badge__code">${escapeHtml(presentation.countryCode || presentation.token || "")}</span>`
+      : `<span class="ss-country-flag-badge__token">${escapeHtml(presentation.renderText)}</span>`;
+    const label = presentation.countryCode
+      ? `Country flag ${presentation.countryCode}`
+      : "Country flag";
+    return `<span class="${classes.join(" ")}" role="img" aria-label="${escapeHtml(label)}">${body}</span>`;
+  }
+
+  function renderAlertTextHtml(text, options = {}) {
+    const rawText = String(text || "");
+    const marker = rawText.includes("{{country_flag}}")
+      ? "{{country_flag}}"
+      : (options.countryFlagValue && rawText.includes(options.countryFlagValue) ? options.countryFlagValue : "");
+    const presentation = buildCountryFlagPresentation(options.countryFlagValue, options.countryCode);
+    const renderPlain = (value) => escapeHtml(value).replace(/\n/g, "<br />");
+    if (!marker || !presentation) {
+      return renderPlain(rawText);
+    }
+    return rawText
+      .split(marker)
+      .map((segment) => renderPlain(segment))
+      .join(renderCountryFlagBadge(presentation));
+  }
+
+  function getEntryCountryFlagPresentation(entry) {
+    const templateContext = entry?.metadata?.template_context || {};
+    const payload = entry?.payload_snapshot || {};
+    const geo = payload?.geo || templateContext?.geo || {};
+    return buildCountryFlagPresentation(
+      templateContext.country_flag || payload.country_flag || "",
+      geo?.country_code || geo?.country || ""
+    );
   }
 
   function renderAlertSurfaceContext(entry) {
@@ -1921,11 +2018,22 @@
       || eventMeta?.description
       || "The backend default message will be used for this alert.";
     const templateTokens = extractTemplateTokens(`${titleTemplate}\n${bodyTemplate}`);
+    const previewCountryFlag = buildCountryFlagPresentation("{{country_flag}}", "AU");
 
     if (el.previewEvent) el.previewEvent.textContent = eventLabel;
     if (el.previewSeverity) el.previewSeverity.textContent = severity;
-    if (el.previewTitleText) el.previewTitleText.textContent = previewTitle;
-    if (el.previewMessageText) el.previewMessageText.textContent = previewMessage;
+    if (el.previewTitleText) {
+      el.previewTitleText.innerHTML = renderAlertTextHtml(previewTitle, {
+        countryFlagValue: previewCountryFlag?.rawValue || "",
+        countryCode: previewCountryFlag?.countryCode || "AU"
+      });
+    }
+    if (el.previewMessageText) {
+      el.previewMessageText.innerHTML = renderAlertTextHtml(previewMessage, {
+        countryFlagValue: previewCountryFlag?.rawValue || "",
+        countryCode: previewCountryFlag?.countryCode || "AU"
+      });
+    }
     if (el.previewDestinations) {
       el.previewDestinations.innerHTML = destinations.length
         ? destinations.map((item) => renderDestinationChip(item)).join("")
@@ -1933,7 +2041,10 @@
     }
     if (el.previewNote) {
       if (templateTokens.length) {
-        el.previewNote.textContent = `Placeholders used here will be filled by the backend: ${templateTokens.join(", ")}`;
+        const countryFlagNote = templateTokens.includes("{{country_flag}}")
+          ? " `{{country_flag}}` is optional and cosmetic."
+          : "";
+        el.previewNote.textContent = `Placeholders used here will be filled by the backend: ${templateTokens.join(", ")}.${countryFlagNote}`;
       } else if (!titleTemplate && !bodyTemplate) {
         el.previewNote.textContent = "Leave the title or message blank to fall back to the backend default wording for this event.";
       } else {
@@ -2452,6 +2563,7 @@
         const status = buildHistoryStatus(entry);
         const severity = severityTone(entry?.severity);
         const statusTone = entry?.suppressed_reason ? "warning" : status === "Delivered" ? "success" : "muted";
+        const countryFlag = getEntryCountryFlagPresentation(entry);
         const destinations = (Array.isArray(entry.destinations_targeted) ? entry.destinations_targeted : [])
           .map((item) => renderDestinationChip(item, "ss-alerts-destination-chip"))
           .join("");
@@ -2469,15 +2581,22 @@
           <article class="ss-analytics-alerts-history-card ss-alerts-history-card--severity-${escapeHtml(severity)}${entry.suppressed_reason ? " is-suppressed" : ""}">
             <div class="ss-analytics-alerts-history-header">
               <div>
-                <h4 class="ss-analytics-alerts-history-title">${escapeHtml(entry.title || labelize(entry.event_type))}</h4>
+                <h4 class="ss-analytics-alerts-history-title">${renderAlertTextHtml(entry.title || labelize(entry.event_type), {
+                  countryFlagValue: countryFlag?.rawValue || "",
+                  countryCode: countryFlag?.countryCode || ""
+                })}</h4>
                 <div class="ss-analytics-alerts-history-chips">
                   ${renderChip(labelize(entry.event_type), { extraClasses: "ss-alerts-compact-chip" })}
                   ${renderChip(severityLabel(entry.severity), { extraClasses: "ss-alerts-compact-chip" })}
+                  ${countryFlag ? renderCountryFlagBadge(countryFlag, { extraClass: "ss-alerts-compact-chip" }) : ""}
                   ${renderChip(status, { tone: statusTone, extraClasses: "ss-analytics-alerts-history-status ss-alerts-compact-chip" })}
                 </div>
               </div>
             </div>
-            ${entry.message ? `<p class="ss-analytics-alerts-history-message">${escapeHtml(entry.message)}</p>` : ""}
+            ${entry.message ? `<p class="ss-analytics-alerts-history-message">${renderAlertTextHtml(entry.message, {
+              countryFlagValue: countryFlag?.rawValue || "",
+              countryCode: countryFlag?.countryCode || ""
+            })}</p>` : ""}
             ${destinations ? `<div class="ss-analytics-alerts-history-chips">${destinations}</div>` : ""}
             ${surfaceContext}
             ${pageContext}
