@@ -152,12 +152,20 @@
     banner: null,
     status: null,
     windowSelect: null,
+    refreshButton: null,
     referrersList: null,
     referrersEmpty: null,
     totalRequests: null,
     totalSessions: null,
+    snapshotTotalRequests: null,
+    snapshotTotalSessions: null,
     windowLabel: null,
     generatedAt: null,
+    snapshotGeneratedAt: null,
+    summaryTopReferrer: null,
+    summaryTopPlatform: null,
+    summaryLocationDetail: null,
+    summaryActiveSurface: null,
     surfacesList: null,
     surfacesEmpty: null,
     countriesTable: null,
@@ -1803,7 +1811,8 @@
           count: Number.isFinite(count) ? Math.max(0, Math.round(count)) : 0
         };
       })
-      .filter((entry) => entry && entry.count > 0);
+      .filter((entry) => entry && entry.count > 0)
+      .sort((left, right) => right.count - left.count);
   }
 
   function renderNamedCountList(listEl, emptyEl, rows, keyNames) {
@@ -1922,6 +1931,27 @@
       .join("");
   }
 
+  function updateExecutiveSummary(payload) {
+    const safe = payload && typeof payload === "object" ? payload : {};
+    const surfaces = normalizeSurfaces(safe?.surfaces).filter((entry) => entry.count > 0);
+    const referrers = normalizeReferrers(safe?.top_referrers);
+    const platforms = normalizeNamedCountRows(safe?.clients?.platforms, ["platform", "label"]);
+    const detailRows = Math.max(0, Number(state.locationSupport.region || 0)) + Math.max(0, Number(state.locationSupport.city || 0));
+
+    if (el.summaryActiveSurface) {
+      el.summaryActiveSurface.textContent = formatNumber(surfaces.length);
+    }
+    if (el.summaryTopReferrer) {
+      el.summaryTopReferrer.textContent = referrers.length ? referrers[0].domain : "--";
+    }
+    if (el.summaryTopPlatform) {
+      el.summaryTopPlatform.textContent = platforms.length ? platforms[0].label : "--";
+    }
+    if (el.summaryLocationDetail) {
+      el.summaryLocationDetail.textContent = detailRows > 0 ? formatNumber(detailRows) : "--";
+    }
+  }
+
   function setSummary(payload) {
     const safe = payload && typeof payload === "object" ? payload : {};
     const totalRequests = Number(safe?.totals?.requests ?? 0);
@@ -1934,11 +1964,20 @@
     if (el.totalSessions) {
       el.totalSessions.textContent = formatNumber(totalSessions);
     }
+    if (el.snapshotTotalRequests) {
+      el.snapshotTotalRequests.textContent = formatNumber(totalRequests);
+    }
+    if (el.snapshotTotalSessions) {
+      el.snapshotTotalSessions.textContent = formatNumber(totalSessions);
+    }
     if (el.windowLabel) {
       el.windowLabel.textContent = windowLabel;
     }
     if (el.generatedAt) {
       el.generatedAt.textContent = formatTimestamp(generatedAt);
+    }
+    if (el.snapshotGeneratedAt) {
+      el.snapshotGeneratedAt.textContent = formatTimestamp(generatedAt);
     }
     setMapHeaderTimestamp(generatedAt);
     renderSurfaces(safe?.surfaces);
@@ -1982,6 +2021,7 @@
         setSummary(data);
         updateLocationBreakdown(data?.by_location, data?.location_support);
         await updateMap(data?.by_country);
+        updateExecutiveSummary(data);
 
         if (Number(data?.totals?.requests || 0) <= 0) {
           setStatus("No events in selected window.");
@@ -2018,6 +2058,10 @@
     const value = String(el.windowSelect?.value || "").trim();
     state.selectedWindow = value || DEFAULT_WINDOW;
     fetchAnalytics({ withLoader: true, forceRefresh: true });
+  }
+
+  function handleRefreshButtonClick() {
+    void fetchAnalytics({ withLoader: true, forceRefresh: true });
   }
 
   function init() {
@@ -2062,12 +2106,20 @@
     el.banner = $("analytics-banner");
     el.status = $("analytics-status");
     el.windowSelect = $("analytics-window-select");
+    el.refreshButton = $("analytics-refresh-button");
     el.referrersList = $("analytics-referrers-list");
     el.referrersEmpty = $("analytics-referrers-empty");
     el.totalRequests = $("analytics-total-requests");
     el.totalSessions = $("analytics-total-sessions");
+    el.snapshotTotalRequests = $("analytics-snapshot-total-requests");
+    el.snapshotTotalSessions = $("analytics-snapshot-total-sessions");
     el.windowLabel = $("analytics-window-label");
     el.generatedAt = $("analytics-generated-at");
+    el.snapshotGeneratedAt = $("analytics-snapshot-generated-at");
+    el.summaryTopReferrer = $("analytics-summary-top-referrer");
+    el.summaryTopPlatform = $("analytics-summary-top-platform");
+    el.summaryLocationDetail = $("analytics-summary-location-detail");
+    el.summaryActiveSurface = $("analytics-summary-active-surface");
     el.surfacesList = $("analytics-surfaces-list");
     el.surfacesEmpty = $("analytics-surfaces-empty");
     el.countriesTable = $("analytics-countries-table");
@@ -2094,6 +2146,9 @@
     }
     if (el.mapMarkerFilter) {
       el.mapMarkerFilter.addEventListener("click", handleMapMarkerFilterClick);
+    }
+    if (el.refreshButton) {
+      el.refreshButton.addEventListener("click", handleRefreshButtonClick);
     }
     if (el.surfacesList && !surfacesClickBound) {
       el.surfacesList.addEventListener("click", handleSurfaceViewClick);
@@ -2130,6 +2185,7 @@
     renderNamedCountList(el.devicesList, el.devicesEmpty, [], ["device", "label"]);
     renderNamedCountList(el.platformsList, el.platformsEmpty, [], ["platform", "label"]);
     renderLocationSupport(null);
+    updateExecutiveSummary(null);
     void updateMap([]);
     setMapCollapsed(readMapCollapsedPreference(), {
       persist: false,
@@ -2171,6 +2227,9 @@
     }
     if (el.mapMarkerFilter) {
       el.mapMarkerFilter.removeEventListener("click", handleMapMarkerFilterClick);
+    }
+    if (el.refreshButton) {
+      el.refreshButton.removeEventListener("click", handleRefreshButtonClick);
     }
     if (el.countriesTable) {
       el.countriesTable.removeEventListener("click", handleCountrySortClick);

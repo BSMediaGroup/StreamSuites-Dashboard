@@ -1,22 +1,15 @@
 <!-- ========================================================= -->
-<!-- StreamSuites - Analytics (scaffold) -->
+<!-- StreamSuites - Analytics -->
 <!-- ========================================================= -->
 
-<header class="ss-header">
-  <div class="ss-header-left">
+<header class="ss-header ss-analytics-page-header">
+  <div class="ss-header-left ss-analytics-page-heading">
+    <span class="ss-chip ss-analytics-page-chip">Admin reporting</span>
     <h1 class="ss-title">Analytics</h1>
-    <span class="ss-subtitle">Privacy-safe traffic snapshot, performance trends, and geographic reporting.</span>
+    <span class="ss-subtitle">Traffic, sources, platform mix, and geographic activity organized as a dedicated reporting workspace.</span>
   </div>
-  <div class="ss-header-right">
-    <button type="button" class="ss-btn ss-btn-secondary" data-view="alerts">Open Alerts</button>
-    <label class="muted" for="analytics-window-select">Window</label>
-    <select id="analytics-window-select" style="min-width: 110px;">
-      <option value="5m" selected>Last 5m</option>
-      <option value="15m">Last 15m</option>
-      <option value="1h">Last 1h</option>
-      <option value="24h">Last 24h</option>
-    </select>
-    <span id="analytics-status" class="muted">Loading...</span>
+  <div class="ss-header-right ss-analytics-page-header-actions">
+    <button type="button" class="ss-btn ss-btn-secondary ss-btn-small" data-view="alerts">Open Alerts</button>
   </div>
 </header>
 
@@ -25,107 +18,284 @@
     <div id="analytics-banner" class="ss-alert ss-alert-danger hidden" role="status" aria-live="polite"></div>
   </section>
 
-  <section class="ss-panel ss-analytics-map-panel">
-    <header class="ss-panel-header ss-analytics-map-header">
-      <div class="ss-panel-header-main">
-        <h2>Global Sessions Map</h2>
-        <p class="muted">Country-level request aggregates rendered on a 2D map.</p>
+  <section class="ss-panel ss-analytics-hero-panel">
+    <div class="ss-panel-body ss-analytics-hero-body">
+      <div class="ss-analytics-hero-copy">
+        <span class="ss-analytics-section-kicker">Reporting workspace</span>
+        <h2>Monitor how traffic is moving through the admin surface.</h2>
+        <p class="muted">Use the current window to compare request volume, inbound sources, platform mix, route load, and richer city or region coverage without leaving the Analytics page.</p>
       </div>
-      <div class="ss-panel-header-actions ss-analytics-map-header-actions">
-        <div class="ss-analytics-map-header-meta" aria-live="polite">
-          <span class="ss-analytics-live-pill">
-            <span class="ss-analytics-live-dot" aria-hidden="true"></span>
-            Live
-          </span>
-          <span class="ss-analytics-map-updated-label">
-            Updated
-            <time id="analytics-map-generated-at" datetime="">--</time>
-          </span>
+      <aside class="ss-analytics-controls-card" aria-label="Analytics controls">
+        <div class="ss-analytics-controls-heading">
+          <div>
+            <span class="ss-analytics-section-kicker">Controls</span>
+            <h3>Live reporting window</h3>
+          </div>
+          <span id="analytics-status" class="muted">Loading...</span>
         </div>
-        <div class="ss-analytics-map-marker-filter" role="group" aria-label="Map marker filter">
-          <button
-            type="button"
-            class="ss-btn ss-btn-secondary ss-btn-small is-active"
-            data-map-marker-filter="both"
-            aria-pressed="true"
-          >
-            Both
-          </button>
-          <button
-            type="button"
-            class="ss-btn ss-btn-secondary ss-btn-small"
-            data-map-marker-filter="sessions"
-            aria-pressed="false"
-          >
-            Sessions only
-          </button>
-          <button
-            type="button"
-            class="ss-btn ss-btn-secondary ss-btn-small"
-            data-map-marker-filter="requests"
-            aria-pressed="false"
-          >
-            Requests only
-          </button>
+        <div class="ss-analytics-controls-row">
+          <label class="muted ss-analytics-control-field" for="analytics-window-select">
+            <span>Window</span>
+            <select id="analytics-window-select">
+              <option value="5m" selected>Last 5m</option>
+              <option value="15m">Last 15m</option>
+              <option value="1h">Last 1h</option>
+              <option value="24h">Last 24h</option>
+            </select>
+          </label>
+          <button type="button" id="analytics-refresh-button" class="ss-btn ss-btn-secondary">Refresh now</button>
         </div>
-        <button
-          id="analytics-map-toggle"
-          class="ss-btn ss-btn-secondary ss-btn-small ss-analytics-map-toggle"
-          type="button"
-          aria-controls="analytics-map-panel-body"
-          aria-expanded="true"
-        >
-          <span class="ss-analytics-map-toggle-icon" aria-hidden="true">&#9660;</span>
-          <span id="analytics-map-toggle-label">Collapse</span>
-        </button>
-        <button
-          id="analytics-map-enlarge-toggle"
-          class="ss-btn ss-btn-secondary ss-btn-small ss-analytics-map-enlarge-toggle"
-          type="button"
-          aria-controls="analytics-map-panel-body"
-          aria-pressed="false"
-          hidden
-        >
-          <span id="analytics-map-enlarge-toggle-label">Enlarge</span>
-        </button>
+        <p class="ss-analytics-controls-note muted">Alerts are managed separately. This page stays focused on read-only reporting and live traffic visibility.</p>
+      </aside>
+    </div>
+  </section>
+
+  <section class="ss-analytics-summary-band" aria-label="Analytics overview">
+    <article class="ss-panel ss-analytics-summary-card ss-analytics-summary-card-primary">
+      <div class="ss-panel-body">
+        <span class="label">Total requests</span>
+        <strong id="analytics-total-requests">--</strong>
+        <span class="muted">Live request volume in the active reporting window.</span>
       </div>
-    </header>
-    <div id="analytics-map-panel-body" class="ss-panel-body ss-analytics-map-panel-body">
-      <div class="ss-analytics-map-stats-strip" aria-label="Map summary">
-        <article class="ss-analytics-map-stat-chip">
-          <span class="label">Countries plotted</span>
-          <strong id="analytics-map-country-count">0</strong>
-        </article>
-        <article class="ss-analytics-map-stat-chip">
-          <span class="label">Sessions on map</span>
-          <strong id="analytics-map-sessions">0</strong>
-        </article>
-        <article class="ss-analytics-map-stat-chip">
-          <span class="label">Top country</span>
-          <strong id="analytics-map-top-country">--</strong>
-        </article>
+    </article>
+    <article class="ss-panel ss-analytics-summary-card ss-analytics-summary-card-primary">
+      <div class="ss-panel-body">
+        <span class="label">Unique sessions</span>
+        <strong id="analytics-total-sessions">--</strong>
+        <span class="muted">Distinct sessions observed across the runtime path.</span>
       </div>
-      <div class="ss-analytics-map-shell">
-        <div id="analytics-world-map" class="ss-analytics-map" role="img" aria-label="Global session map"></div>
-        <div id="analytics-map-feedback" class="ss-analytics-map-feedback hidden" role="status" aria-live="polite"></div>
+    </article>
+    <article class="ss-panel ss-analytics-summary-card">
+      <div class="ss-panel-body">
+        <span class="label">Reporting window</span>
+        <strong id="analytics-window-label">--</strong>
+        <span id="analytics-generated-at" class="muted">--</span>
+      </div>
+    </article>
+    <article class="ss-panel ss-analytics-summary-card">
+      <div class="ss-panel-body">
+        <span class="label">Lead source</span>
+        <strong id="analytics-summary-top-referrer">--</strong>
+        <span class="muted">Top inbound referrer in the selected window.</span>
+      </div>
+    </article>
+    <article class="ss-panel ss-analytics-summary-card">
+      <div class="ss-panel-body">
+        <span class="label">Top platform</span>
+        <strong id="analytics-summary-top-platform">--</strong>
+        <span class="muted">Most active platform bucket from request headers.</span>
+      </div>
+    </article>
+    <article class="ss-panel ss-analytics-summary-card">
+      <div class="ss-panel-body">
+        <span class="label">Location coverage</span>
+        <strong id="analytics-summary-location-detail">--</strong>
+        <span class="muted">Rows carrying city or region detail in the location feed.</span>
+      </div>
+    </article>
+  </section>
+
+  <section class="ss-analytics-section">
+    <div class="ss-analytics-section-heading">
+      <div>
+        <span class="ss-analytics-section-kicker">Traffic and engagement</span>
+        <h2>Current volume, surfaces, and source mix</h2>
+      </div>
+      <p class="muted">Start with top-line demand, then drill into which surfaces and inbound domains are driving the current window.</p>
+    </div>
+    <div class="ss-analytics-traffic-grid">
+      <aside class="ss-panel ss-analytics-snapshot-panel" aria-labelledby="analytics-sessions-title">
+        <header class="ss-panel-header">
+          <div class="ss-panel-header-main">
+            <h2 id="analytics-sessions-title">Traffic snapshot</h2>
+            <p class="muted">High-level request context and surface distribution for the active range.</p>
+          </div>
+        </header>
+        <div class="ss-panel-body ss-analytics-snapshot-body">
+          <div class="ss-analytics-stats">
+            <article class="ss-analytics-stat">
+              <span class="label">Total requests</span>
+              <strong id="analytics-snapshot-total-requests">--</strong>
+            </article>
+            <article class="ss-analytics-stat">
+              <span class="label">Unique sessions</span>
+              <strong id="analytics-snapshot-total-sessions">--</strong>
+            </article>
+            <article class="ss-analytics-stat">
+              <span class="label">Surfaces active</span>
+              <strong id="analytics-summary-active-surface">--</strong>
+            </article>
+            <article class="ss-analytics-stat">
+              <span class="label">Last updated</span>
+              <strong id="analytics-snapshot-generated-at">--</strong>
+            </article>
+          </div>
+          <div id="analytics-surfaces-wrap" class="ss-analytics-surfaces-wrap">
+            <div class="ss-analytics-subsection-heading">
+              <h3 class="ss-analytics-subtitle">Surface activity</h3>
+              <span class="muted">Cross-links stay subtle and contextual.</span>
+            </div>
+            <ul id="analytics-surfaces-list" class="ss-analytics-list ss-analytics-surfaces-list"></ul>
+            <div id="analytics-surfaces-empty" class="ss-empty-state hidden">No events in this window.</div>
+          </div>
+        </div>
+      </aside>
+
+      <div class="ss-analytics-source-stack">
+        <aside class="ss-panel ss-analytics-referrers" aria-labelledby="analytics-referrers-title">
+          <header class="ss-panel-header">
+            <div class="ss-panel-header-main">
+              <h2 id="analytics-referrers-title">Inbound sources</h2>
+              <p class="muted">Top referrers arriving in the current reporting window.</p>
+            </div>
+          </header>
+          <div class="ss-panel-body ss-analytics-side-body">
+            <ol id="analytics-referrers-list" class="ss-analytics-list" aria-live="polite"></ol>
+            <div id="analytics-referrers-empty" class="ss-empty-state hidden">No referrer data yet.</div>
+          </div>
+        </aside>
+
+        <aside class="ss-panel ss-analytics-clients" aria-labelledby="analytics-clients-title">
+          <header class="ss-panel-header">
+            <div class="ss-panel-header-main">
+              <h2 id="analytics-clients-title">Platform and device mix</h2>
+              <p class="muted">Browser, device, and platform buckets derived from live request headers.</p>
+            </div>
+          </header>
+          <div class="ss-panel-body ss-analytics-clients-body">
+            <div class="ss-analytics-client-section">
+              <h3 class="ss-analytics-subtitle">Browsers</h3>
+              <ol id="analytics-browsers-list" class="ss-analytics-list" aria-live="polite"></ol>
+              <div id="analytics-browsers-empty" class="ss-empty-state hidden">No browser data yet.</div>
+            </div>
+            <div class="ss-analytics-client-section">
+              <h3 class="ss-analytics-subtitle">Devices</h3>
+              <ol id="analytics-devices-list" class="ss-analytics-list" aria-live="polite"></ol>
+              <div id="analytics-devices-empty" class="ss-empty-state hidden">No device data yet.</div>
+            </div>
+            <div class="ss-analytics-client-section">
+              <h3 class="ss-analytics-subtitle">Platforms</h3>
+              <ol id="analytics-platforms-list" class="ss-analytics-list" aria-live="polite"></ol>
+              <div id="analytics-platforms-empty" class="ss-empty-state hidden">No platform data yet.</div>
+            </div>
+          </div>
+        </aside>
       </div>
     </div>
   </section>
 
-  <section class="ss-analytics-lower-grid">
-    <div class="ss-analytics-primary-stack">
-      <aside class="ss-panel ss-analytics-side-panel ss-analytics-countries" aria-labelledby="analytics-countries-title">
+  <section class="ss-analytics-section">
+    <div class="ss-analytics-section-heading">
+      <div>
+        <span class="ss-analytics-section-kicker">Location analytics</span>
+        <h2>Geographic footprint and richer location detail</h2>
+      </div>
+      <p class="muted">Country coverage stays visual at the top while region and city detail becomes easier to scan lower in the section.</p>
+    </div>
+
+    <section class="ss-panel ss-analytics-map-panel">
+      <header class="ss-panel-header ss-analytics-map-header">
+        <div class="ss-panel-header-main">
+          <h2>Global sessions map</h2>
+          <p class="muted">Country-level aggregates rendered on a live map with focus support from the location table.</p>
+        </div>
+        <div class="ss-panel-header-actions ss-analytics-map-header-actions">
+          <div class="ss-analytics-map-header-meta" aria-live="polite">
+            <span class="ss-analytics-live-pill">
+              <span class="ss-analytics-live-dot" aria-hidden="true"></span>
+              Live
+            </span>
+            <span class="ss-analytics-map-updated-label">
+              Updated
+              <time id="analytics-map-generated-at" datetime="">--</time>
+            </span>
+          </div>
+          <div class="ss-analytics-map-marker-filter" role="group" aria-label="Map marker filter">
+            <button
+              type="button"
+              class="ss-btn ss-btn-secondary ss-btn-small is-active"
+              data-map-marker-filter="both"
+              aria-pressed="true"
+            >
+              Both
+            </button>
+            <button
+              type="button"
+              class="ss-btn ss-btn-secondary ss-btn-small"
+              data-map-marker-filter="sessions"
+              aria-pressed="false"
+            >
+              Sessions only
+            </button>
+            <button
+              type="button"
+              class="ss-btn ss-btn-secondary ss-btn-small"
+              data-map-marker-filter="requests"
+              aria-pressed="false"
+            >
+              Requests only
+            </button>
+          </div>
+          <button
+            id="analytics-map-toggle"
+            class="ss-btn ss-btn-secondary ss-btn-small ss-analytics-map-toggle"
+            type="button"
+            aria-controls="analytics-map-panel-body"
+            aria-expanded="true"
+          >
+            <span class="ss-analytics-map-toggle-icon" aria-hidden="true">&#9660;</span>
+            <span id="analytics-map-toggle-label">Collapse</span>
+          </button>
+          <button
+            id="analytics-map-enlarge-toggle"
+            class="ss-btn ss-btn-secondary ss-btn-small ss-analytics-map-enlarge-toggle"
+            type="button"
+            aria-controls="analytics-map-panel-body"
+            aria-pressed="false"
+            hidden
+          >
+            <span id="analytics-map-enlarge-toggle-label">Enlarge</span>
+          </button>
+        </div>
+      </header>
+      <div id="analytics-map-panel-body" class="ss-panel-body ss-analytics-map-panel-body">
+        <div class="ss-analytics-map-stats-strip" aria-label="Map summary">
+          <article class="ss-analytics-map-stat-chip">
+            <span class="label">Countries plotted</span>
+            <strong id="analytics-map-country-count">0</strong>
+          </article>
+          <article class="ss-analytics-map-stat-chip">
+            <span class="label">Sessions on map</span>
+            <strong id="analytics-map-sessions">0</strong>
+          </article>
+          <article class="ss-analytics-map-stat-chip">
+            <span class="label">Top country</span>
+            <strong id="analytics-map-top-country">--</strong>
+          </article>
+        </div>
+        <div class="ss-analytics-map-shell">
+          <div id="analytics-world-map" class="ss-analytics-map" role="img" aria-label="Global session map"></div>
+          <div id="analytics-map-feedback" class="ss-analytics-map-feedback hidden" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="ss-analytics-geo-grid">
+      <aside class="ss-panel ss-analytics-countries" aria-labelledby="analytics-countries-title">
         <header class="ss-panel-header">
           <div class="ss-panel-header-main">
-            <h2 id="analytics-countries-title">Geographic Breakdown</h2>
-            <p class="muted">Best-available country, region, and city aggregates from the runtime request path.</p>
+            <h2 id="analytics-countries-title">Location breakdown</h2>
+            <p class="muted">Standardized country, region, and city labels with stable sorting and direct map focus support.</p>
           </div>
         </header>
         <div class="ss-panel-body ss-analytics-countries-body">
-          <div id="analytics-geo-support" class="ss-analytics-geo-support" aria-live="polite">
-            <span class="ss-chip">Country-only <strong id="analytics-geo-country-only">0</strong></span>
-            <span class="ss-chip">Region detail <strong id="analytics-geo-region-detail">0</strong></span>
-            <span class="ss-chip">City detail <strong id="analytics-geo-city-detail">0</strong></span>
+          <div class="ss-analytics-location-summary">
+            <div id="analytics-geo-support" class="ss-analytics-geo-support" aria-live="polite">
+              <span class="ss-chip">Country-only <strong id="analytics-geo-country-only">0</strong></span>
+              <span class="ss-chip">Region detail <strong id="analytics-geo-region-detail">0</strong></span>
+              <span class="ss-chip">City detail <strong id="analytics-geo-city-detail">0</strong></span>
+            </div>
+            <p class="ss-analytics-location-summary-note muted">Search by country, region, city, or ISO code. Selecting a row keeps the map handoff intentional.</p>
           </div>
           <div class="ss-analytics-countries-toolbar">
             <input
@@ -157,11 +327,11 @@
         </div>
       </aside>
 
-      <aside class="ss-panel ss-analytics-side-panel ss-analytics-endpoints" aria-labelledby="analytics-endpoints-title">
+      <aside class="ss-panel ss-analytics-endpoints" aria-labelledby="analytics-endpoints-title">
         <header class="ss-panel-header">
           <div class="ss-panel-header-main">
-            <h2 id="analytics-endpoints-title">Top Routes / Resources</h2>
-            <p class="muted">Highest-volume runtime API routes in the selected window.</p>
+            <h2 id="analytics-endpoints-title">Recent route diagnostics</h2>
+            <p class="muted">Highest-volume runtime routes and resource paths in the selected window.</p>
           </div>
         </header>
         <div class="ss-panel-body ss-analytics-endpoints-body">
@@ -180,81 +350,6 @@
             </table>
           </div>
           <div id="analytics-endpoints-empty" class="ss-empty-state hidden">No route activity yet.</div>
-        </div>
-      </aside>
-    </div>
-
-    <div class="ss-analytics-secondary-stack">
-      <aside class="ss-panel ss-analytics-side-panel ss-analytics-sessions" aria-labelledby="analytics-sessions-title">
-        <header class="ss-panel-header">
-          <div class="ss-panel-header-main">
-            <h2 id="analytics-sessions-title">Requests Snapshot</h2>
-            <p class="muted">Live request summary from runtime analytics aggregates.</p>
-          </div>
-        </header>
-        <div class="ss-panel-body ss-analytics-side-body">
-          <div class="ss-analytics-stats">
-            <article class="ss-analytics-stat">
-              <span class="label">Total requests</span>
-              <strong id="analytics-total-requests">--</strong>
-            </article>
-            <article class="ss-analytics-stat">
-              <span class="label">Unique sessions</span>
-              <strong id="analytics-total-sessions">--</strong>
-            </article>
-            <article class="ss-analytics-stat">
-              <span class="label">Window</span>
-              <strong id="analytics-window-label">--</strong>
-            </article>
-            <article class="ss-analytics-stat">
-              <span class="label">Last updated</span>
-              <strong id="analytics-generated-at">--</strong>
-            </article>
-          </div>
-          <div id="analytics-surfaces-wrap" class="ss-analytics-surfaces-wrap">
-            <h3 class="ss-analytics-subtitle">Surfaces</h3>
-            <ul id="analytics-surfaces-list" class="ss-analytics-list ss-analytics-surfaces-list"></ul>
-            <div id="analytics-surfaces-empty" class="ss-empty-state hidden">No events in this window.</div>
-          </div>
-        </div>
-      </aside>
-
-      <aside class="ss-panel ss-analytics-side-panel ss-analytics-referrers" aria-labelledby="analytics-referrers-title">
-        <header class="ss-panel-header">
-          <div class="ss-panel-header-main">
-            <h2 id="analytics-referrers-title">Top Referrers</h2>
-            <p class="muted">Top inbound domains in the selected window.</p>
-          </div>
-        </header>
-        <div class="ss-panel-body ss-analytics-side-body">
-          <ol id="analytics-referrers-list" class="ss-analytics-list" aria-live="polite"></ol>
-          <div id="analytics-referrers-empty" class="ss-empty-state hidden">No referrer data yet.</div>
-        </div>
-      </aside>
-
-      <aside class="ss-panel ss-analytics-side-panel ss-analytics-clients" aria-labelledby="analytics-clients-title">
-        <header class="ss-panel-header">
-          <div class="ss-panel-header-main">
-            <h2 id="analytics-clients-title">Client Mix</h2>
-            <p class="muted">Browser, device, and platform buckets derived from live request headers.</p>
-          </div>
-        </header>
-        <div class="ss-panel-body ss-analytics-clients-body">
-          <div class="ss-analytics-client-section">
-            <h3 class="ss-analytics-subtitle">Browsers</h3>
-            <ol id="analytics-browsers-list" class="ss-analytics-list" aria-live="polite"></ol>
-            <div id="analytics-browsers-empty" class="ss-empty-state hidden">No browser data yet.</div>
-          </div>
-          <div class="ss-analytics-client-section">
-            <h3 class="ss-analytics-subtitle">Devices</h3>
-            <ol id="analytics-devices-list" class="ss-analytics-list" aria-live="polite"></ol>
-            <div id="analytics-devices-empty" class="ss-empty-state hidden">No device data yet.</div>
-          </div>
-          <div class="ss-analytics-client-section">
-            <h3 class="ss-analytics-subtitle">Platforms</h3>
-            <ol id="analytics-platforms-list" class="ss-analytics-list" aria-live="polite"></ol>
-            <div id="analytics-platforms-empty" class="ss-empty-state hidden">No platform data yet.</div>
-          </div>
         </div>
       </aside>
     </div>
