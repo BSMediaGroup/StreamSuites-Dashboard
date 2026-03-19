@@ -25,6 +25,178 @@
     destination_type: { label: "Destination type", kind: "select" }
   };
 
+  const locationFormatting = (() => {
+    const PLACEHOLDER_VALUES = new Set(["", "-", "--", "unknown", "n/a", "na", "null", "undefined"]);
+    let countryDisplayNames = null;
+
+    function collapseWhitespace(value) {
+      return String(value || "")
+        .replace(/\s+/g, " ")
+        .replace(/\s*,\s*/g, ", ")
+        .replace(/^,+|,+$/g, "")
+        .trim();
+    }
+
+    function isPlaceholderValue(value) {
+      return PLACEHOLDER_VALUES.has(String(value || "").trim().toLowerCase());
+    }
+
+    function normalizeCode(value) {
+      const text = collapseWhitespace(value).toUpperCase();
+      if (!text || isPlaceholderValue(text) || text === "ZZ") return "";
+      return text;
+    }
+
+    function normalizeName(value) {
+      const text = collapseWhitespace(value);
+      if (!text || isPlaceholderValue(text)) return "";
+      const alpha = text.replace(/[^A-Za-z]/g, "");
+      if (!alpha) return text;
+      const isAllLower = alpha === alpha.toLowerCase();
+      const isAllUpper = alpha === alpha.toUpperCase();
+      if ((isAllLower || isAllUpper) && alpha.length > 3) {
+        return text.toLowerCase().replace(/\b([a-z])/g, (match) => match.toUpperCase());
+      }
+      return text;
+    }
+
+    function dedupeAdjacent(parts) {
+      const normalized = [];
+      parts.forEach((part) => {
+        const text = collapseWhitespace(part);
+        if (!text) return;
+        const previous = normalized[normalized.length - 1];
+        if (previous && previous.localeCompare(text, undefined, { sensitivity: "base" }) === 0) {
+          return;
+        }
+        normalized.push(text);
+      });
+      return normalized;
+    }
+
+    function buildLabel(parts) {
+      return dedupeAdjacent(parts).join(", ");
+    }
+
+    function getCountryDisplayNames() {
+      if (countryDisplayNames !== null) {
+        return countryDisplayNames;
+      }
+
+      try {
+        countryDisplayNames = typeof Intl !== "undefined"
+          ? new Intl.DisplayNames(["en"], { type: "region" })
+          : false;
+      } catch {
+        countryDisplayNames = false;
+      }
+
+      return countryDisplayNames;
+    }
+
+    function resolveCountryName(countryCode, fallbackResolver) {
+      const code = normalizeCode(countryCode);
+      if (!code) return "";
+      if (typeof fallbackResolver === "function") {
+        const fallbackName = normalizeName(fallbackResolver(code));
+        if (fallbackName) return fallbackName;
+      }
+
+      const displayNames = getCountryDisplayNames();
+      if (displayNames) {
+        try {
+          const candidate = normalizeName(displayNames.of(code));
+          if (candidate) return candidate;
+        } catch {
+          return "";
+        }
+      }
+
+      return "";
+    }
+
+    function buildPresentation(rawLocation, options = {}) {
+      const city = normalizeName(rawLocation?.city);
+      const region = normalizeName(rawLocation?.region);
+      const regionCode = normalizeCode(rawLocation?.regionCode ?? rawLocation?.region_code);
+      const countryCode = normalizeCode(rawLocation?.countryCode ?? rawLocation?.country_code ?? rawLocation?.code);
+      const rawCountry = normalizeName(rawLocation?.country ?? rawLocation?.countryName ?? rawLocation?.name);
+      const countryName = rawCountry || resolveCountryName(countryCode, options.resolveCountryName);
+      const regionLabel = region || regionCode;
+      const detailedLabel = buildLabel(
+        city
+          ? [city, regionLabel, countryName || countryCode]
+          : regionLabel
+            ? [regionLabel, countryName || countryCode]
+            : [countryName || countryCode]
+      );
+
+      let primaryLabel = "";
+      let precision = "country";
+      if (city && regionLabel) {
+        primaryLabel = buildLabel([city, regionLabel]);
+        precision = "city";
+      } else if (city && (countryName || countryCode)) {
+        primaryLabel = buildLabel([city, countryName || countryCode]);
+        precision = "city";
+      } else if (city) {
+        primaryLabel = city;
+        precision = "city";
+      } else if (regionLabel && (countryName || countryCode)) {
+        primaryLabel = buildLabel([regionLabel, countryName || countryCode]);
+        precision = "region";
+      } else if (regionLabel) {
+        primaryLabel = regionLabel;
+        precision = "region";
+      } else {
+        primaryLabel = countryName || countryCode;
+        precision = "country";
+      }
+
+      const primaryOrFallback = primaryLabel || detailedLabel;
+      const secondaryLabel = detailedLabel && detailedLabel !== primaryOrFallback
+        ? detailedLabel
+        : (precision === "country" && primaryOrFallback ? "Country only" : "");
+      const sortSegments = [
+        normalizeName(countryName || countryCode || primaryOrFallback).toLowerCase(),
+        normalizeName(regionLabel).toLowerCase(),
+        normalizeName(city).toLowerCase(),
+        precision === "country" ? "0" : precision === "region" ? "1" : "2",
+        normalizeName(primaryOrFallback).toLowerCase()
+      ];
+
+      return {
+        city,
+        region,
+        regionCode,
+        countryCode,
+        countryName,
+        primaryLabel: primaryOrFallback,
+        detailedLabel: detailedLabel || primaryOrFallback,
+        secondaryLabel,
+        precision,
+        sortKey: sortSegments.join("|"),
+        filterText: [
+          primaryOrFallback,
+          detailedLabel,
+          city,
+          region,
+          regionCode,
+          countryName,
+          countryCode
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+      };
+    }
+
+    return {
+      buildPresentation
+    };
+  })();
+  window.StreamSuitesLocationFormatting = locationFormatting;
+
   const state = {
     destroyed: false,
     eventTypes: [],
@@ -278,28 +450,27 @@
     return parts.join(" + ");
   }
 
-  function firstNonEmptyLocationValue(...values) {
-    for (const value of values) {
-      const text = String(value || "").trim();
-      if (text) return text;
+  function buildAlertLocationPresentation(entry, options = {}) {
+    const includeCountryWithCity = options.includeCountryWithCity === true;
+    const geo = entry?.payload_snapshot?.geo || entry?.metadata?.template_context?.geo || entry?.geo || {};
+    const presentation = locationFormatting.buildPresentation({
+      city: geo?.city,
+      region: geo?.region,
+      regionCode: geo?.region_code,
+      country: geo?.country,
+      countryCode: geo?.country_code
+    });
+    if (includeCountryWithCity && presentation?.detailedLabel) {
+      return {
+        ...presentation,
+        primaryLabel: presentation.detailedLabel
+      };
     }
-    return "";
+    return presentation;
   }
 
   function buildAlertLocationLabel(entry, options = {}) {
-    const includeCountryWithCity = options.includeCountryWithCity === true;
-    const geo = entry?.payload_snapshot?.geo || entry?.metadata?.template_context?.geo || entry?.geo || {};
-    const city = firstNonEmptyLocationValue(geo?.city);
-    const region = firstNonEmptyLocationValue(geo?.region);
-    const regionCode = firstNonEmptyLocationValue(geo?.region_code);
-    const country = firstNonEmptyLocationValue(geo?.country, geo?.country_code);
-
-    if (city && region) return includeCountryWithCity && country ? `${city}, ${region}, ${country}` : `${city}, ${region}`;
-    if (city && regionCode) return includeCountryWithCity && country ? `${city}, ${regionCode}, ${country}` : `${city}, ${regionCode}`;
-    if (city) return country && includeCountryWithCity ? `${city}, ${country}` : city;
-    if (region) return country ? `${region}, ${country}` : region;
-    if (regionCode) return country ? `${regionCode}, ${country}` : regionCode;
-    return country;
+    return buildAlertLocationPresentation(entry, options)?.primaryLabel || "";
   }
 
   function collectObservedScopeValues(field) {

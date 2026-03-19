@@ -376,6 +376,21 @@
     return resolved;
   }
 
+  function buildLocationPresentation(entry) {
+    return window.StreamSuitesLocationFormatting.buildPresentation(
+      {
+        city: entry?.city,
+        region: entry?.region,
+        regionCode: entry?.regionCode ?? entry?.region_code,
+        country: entry?.countryName ?? entry?.country ?? entry?.name,
+        countryCode: entry?.countryCode ?? entry?.country_code ?? entry?.code
+      },
+      {
+        resolveCountryName
+      }
+    );
+  }
+
   function getFlagSvgUrl(code) {
     const iso2 = String(code || "").trim().toUpperCase();
     if (!/^[A-Z]{2}$/.test(iso2)) return null;
@@ -1202,20 +1217,22 @@
     normalizeLocationRows(locationRows).forEach((entry) => {
       const code = String(entry?.country_code || entry?.country || entry?.code || "").trim().toUpperCase();
       if (!code || code === "ZZ") return;
-      const region = String(entry?.region || "").trim();
-      const regionCode = String(entry?.region_code || entry?.regionCode || "").trim().toUpperCase();
-      const city = String(entry?.city || "").trim();
-      const precision = city
-        ? "city"
-        : (region || regionCode || String(entry?.precision || "").trim().toLowerCase() === "region")
-          ? "region"
-          : "country";
+      const location = buildLocationPresentation({
+        ...entry,
+        countryCode: code
+      });
+      const precision = location.precision;
       const requestsRaw = Number(entry?.requests ?? entry?.count ?? 0);
       const sessionsRaw = Number(entry?.sessions ?? entry?.count ?? requestsRaw);
       const requests = Number.isFinite(requestsRaw) ? Math.max(0, Math.round(requestsRaw)) : 0;
       const sessions = Number.isFinite(sessionsRaw) ? Math.max(0, Math.round(sessionsRaw)) : requests;
       if (requests <= 0 && sessions <= 0) return;
-      const key = [code, region, regionCode, city].join("|");
+      const key = [
+        location.countryCode || code,
+        location.region,
+        location.regionCode,
+        location.city
+      ].join("|");
       const existing = aggregate.get(key);
       if (existing) {
         existing.requests += requests;
@@ -1225,12 +1242,17 @@
       aggregate.set(key, {
         key,
         code,
-        countryCode: code,
-        countryName: resolveCountryName(code),
-        region,
-        regionCode,
-        city,
+        countryCode: location.countryCode || code,
+        countryName: location.countryName || resolveCountryName(code),
+        region: location.region,
+        regionCode: location.regionCode,
+        city: location.city,
         precision,
+        locationLabel: location.primaryLabel,
+        locationDetailLabel: location.detailedLabel,
+        locationMeta: location.secondaryLabel,
+        locationSortKey: location.sortKey,
+        locationFilterText: location.filterText,
         requests,
         sessions
       });
@@ -1300,40 +1322,11 @@
   }
 
   function resolveLocationLabel(entry) {
-    const city = String(entry?.city || "").trim();
-    const region = String(entry?.region || "").trim();
-    const regionCode = String(entry?.regionCode || entry?.region_code || "").trim();
-    const countryName = String(
-      entry?.countryName
-      || entry?.name
-      || resolveCountryName(entry?.countryCode || entry?.country_code || entry?.code)
-      || entry?.countryCode
-      || entry?.country_code
-      || entry?.code
-      || "Unknown"
-    ).trim() || "Unknown";
-    if (city && region) return `${city}, ${region}`;
-    if (city && regionCode) return `${city}, ${regionCode}`;
-    if (city) return city;
-    if (region) return `${region}, ${countryName}`;
-    if (regionCode) return `${regionCode}, ${countryName}`;
-    return countryName;
+    return buildLocationPresentation(entry).primaryLabel || "Unknown";
   }
 
   function resolveLocationMeta(entry) {
-    const precision = String(entry?.precision || "country").trim().toLowerCase() || "country";
-    const countryName = String(
-      entry?.countryName
-      || entry?.name
-      || resolveCountryName(entry?.countryCode || entry?.country_code || entry?.code)
-      || entry?.countryCode
-      || entry?.country_code
-      || entry?.code
-      || ""
-    ).trim();
-    if (precision === "city") return countryName ? `City detail - ${countryName}` : "City detail";
-    if (precision === "region") return countryName ? `Region detail - ${countryName}` : "Region detail";
-    return "Country only";
+    return buildLocationPresentation(entry).secondaryLabel;
   }
 
   function updateMapStatsStrip() {
@@ -1363,7 +1356,7 @@
 
   function resolveCountrySortValue(entry, key, totals) {
     if (key === "location") {
-      return `${resolveLocationLabel(entry).toLowerCase()}|${String(entry?.code || "").toLowerCase()}`;
+      return String(entry?.locationSortKey || buildLocationPresentation(entry).sortKey || "").toLowerCase();
     }
     if (key === "country") {
       return `${String(entry?.countryName || resolveCountryName(entry?.code) || "").toLowerCase()}|${String(entry?.code || "").toLowerCase()}`;
@@ -1407,6 +1400,15 @@
       if (compare !== 0) return compare * factor;
       const sessionsFallback = Number(right?.sessions ?? 0) - Number(left?.sessions ?? 0);
       if (sessionsFallback !== 0) return sessionsFallback;
+      const locationFallback = String(resolveCountrySortValue(left, "location", totals)).localeCompare(
+        String(resolveCountrySortValue(right, "location", totals)),
+        undefined,
+        {
+          sensitivity: "base",
+          numeric: true
+        }
+      );
+      if (locationFallback !== 0) return locationFallback;
       return String(left?.code || "").localeCompare(String(right?.code || ""), undefined, {
         sensitivity: "base"
       });
@@ -1430,14 +1432,14 @@
   function renderCountryTable() {
     const allRows = Array.isArray(state.locationRows) && state.locationRows.length ? state.locationRows : state.countryRows;
     const filterText = String(state.countryFilter || "").trim().toLowerCase();
-    const filteredRows = filterText
+      const filteredRows = filterText
       ? allRows.filter((entry) => {
           const code = String(entry?.code || "").toLowerCase();
           const countryName = String(entry?.countryName || entry?.name || "").toLowerCase();
           const region = String(entry?.region || "").toLowerCase();
           const regionCode = String(entry?.regionCode || entry?.region_code || "").toLowerCase();
           const city = String(entry?.city || "").toLowerCase();
-          const label = resolveLocationLabel(entry).toLowerCase();
+          const label = String(entry?.locationFilterText || buildLocationPresentation(entry).filterText || "").toLowerCase();
           return (
             code.includes(filterText) ||
             countryName.includes(filterText) ||
@@ -1493,10 +1495,15 @@
       const locationEl = document.createElement("span");
       locationEl.className = "ss-analytics-location-name";
       locationEl.textContent = locationName;
-      const locationMetaEl = document.createElement("span");
-      locationMetaEl.className = "ss-analytics-location-meta";
-      locationMetaEl.textContent = locationMeta;
-      locationCell.append(locationEl, locationMetaEl);
+      const locationDetail = String(entry?.locationDetailLabel || buildLocationPresentation(entry).detailedLabel || "").trim();
+      locationEl.title = locationDetail || locationName;
+      locationCell.appendChild(locationEl);
+      if (locationMeta) {
+        const locationMetaEl = document.createElement("span");
+        locationMetaEl.className = "ss-analytics-location-meta";
+        locationMetaEl.textContent = locationMeta;
+        locationCell.appendChild(locationMetaEl);
+      }
       row.appendChild(locationCell);
 
       const countryCell = document.createElement("td");
