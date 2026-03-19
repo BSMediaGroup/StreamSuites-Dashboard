@@ -12,12 +12,12 @@ Admin-facing StreamSuites surface deployed to Cloudflare Pages at `https://admin
 ## Current Admin Surface Model
 
 - Clean path-based admin routes are the primary navigation model, replacing older hash-fragment and partial-only dependence for normal use.
-- Root and `docs/` rewrite manifests preserve deep links for routes such as `/overview`, `/accounts`, `/profiles`, `/analytics`, `/alerts`, `/settings`, `/creator-stats`, `/integrations/...`, and other admin views.
+- Root and `docs/` rewrite manifests preserve deep links for routes such as `/overview`, `/accounts`, `/profiles`, `/analytics`, `/alerts`, `/notifications`, `/settings`, `/creator-stats`, `/integrations/...`, and other admin views.
 - Admin account inspection now exposes authoritative public-profile state, including canonical slug, creator-capable vs viewer-only posture, StreamSuites and FindMeHere visibility or eligibility, slug aliases, canonical URLs, and reserved media fields including background image URL.
 - The current routing and auth cutover work is reflected in fail-closed Auth API session gating, Cloudflare Pages-safe login routing, and current route compatibility handling.
-- Analytics alerting, creator stats, telemetry, bot visibility, and account operations remain consumers or controllers over backend-owned state rather than independent authorities.
-- Analytics alert rules now expose backend-authored title/body template fields plus a backend-driven variable picker so admins can insert supported `{{variable}}` tokens without duplicating rendering logic in the dashboard.
-- Analytics alert preferences now manage backend-authored quiet hours, timezone-aware overnight suppression, and per-destination enabled/minimum-severity controls from the existing alerting workspace.
+- Alerts now live in a dedicated admin route and sidebar destination, separate from Analytics, while still consuming the same backend-owned alert settings, rules, targets, and history APIs.
+- The Alerts workspace exposes backend-authored notification title/message fields, a backend-driven placeholder picker, a local live preview, and clearer delivery/status terminology without changing backend contracts.
+- Alert preferences continue to manage backend-authored quiet hours, timezone-aware overnight suppression, and per-destination enabled/minimum-severity controls from the dedicated Alerts workspace.
 
 ## Hosting and Routing
 
@@ -88,6 +88,7 @@ StreamSuites-Dashboard/
 │   │   ├── admin-gate.js
 │   │   ├── admin-login.js
 │   │   ├── admin-routes.js
+│   │   ├── alerts.js
 │   │   ├── analytics.js
 │   │   ├── analytics-alerting.js
 │   │   ├── api.js
@@ -125,6 +126,7 @@ StreamSuites-Dashboard/
 │   │   └── views/
 │   └── views/
 │       ├── accounts.html
+│       ├── alerts.html
 │       ├── analytics.html
 │       ├── api-usage.html
 │       ├── approvals.html

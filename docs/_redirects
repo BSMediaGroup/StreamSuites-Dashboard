@@ -12,8 +12,10 @@
 /approvals             /index.html              200
 /audit                 /index.html              200
 /analytics             /index.html              200
+/analytics-alerts      /index.html              200
 /alerts                /index.html              200
 /notifications         /index.html              200
+/inbox                 /index.html              200
 /ratelimits            /index.html              200
 /rate-limits           /index.html              200
 /api-usage             /index.html              200

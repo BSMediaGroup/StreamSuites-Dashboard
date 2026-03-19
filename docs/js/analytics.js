@@ -2141,7 +2141,6 @@
     if (!state.mapCollapsed) {
       scheduleMapResize();
     }
-    window.StreamSuitesAnalyticsAlerting?.init?.();
     void fetchAnalytics({ withLoader: true });
     if (state.refreshHandle) {
       clearInterval(state.refreshHandle);
@@ -2249,7 +2248,6 @@
       el[key] = null;
     });
 
-    window.StreamSuitesAnalyticsAlerting?.destroy?.();
   }
 
   window.AnalyticsView = {

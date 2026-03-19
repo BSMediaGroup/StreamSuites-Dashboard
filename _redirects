@@ -36,8 +36,10 @@
 /approvals              /docs/index.html             200
 /audit                  /docs/index.html             200
 /analytics              /docs/index.html             200
+/analytics-alerts       /docs/index.html             200
 /alerts                 /docs/index.html             200
 /notifications          /docs/index.html             200
+/inbox                  /docs/index.html             200
 /ratelimits             /docs/index.html             200
 /rate-limits            /docs/index.html             200
 /api-usage              /docs/index.html             200

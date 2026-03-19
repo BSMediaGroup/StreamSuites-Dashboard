@@ -444,11 +444,12 @@
 
           <li class="nav-section nav-group-label" aria-hidden="true">Operations</li>
           <li data-view="audit">Audit</li>
-          <li data-view="analytics">Alerts & Analytics</li>
+          <li data-view="alerts">Alerts</li>
+          <li data-view="analytics">Analytics</li>
           <li data-view="ratelimits">Rate Limits</li>
           <li data-view="api-usage">API Usage</li>
           <li data-view="data-signals">Data &amp; Signals</li>
-          <li data-view="notifications">Notifications</li>
+          <li data-view="notifications">Inbox</li>
 
           <li class="nav-section nav-group-label" aria-hidden="true">Automation / Jobs</li>
           <li data-view="jobs">Jobs</li>
@@ -536,7 +537,7 @@
               <div id="notifications-list" class="ss-notifications-list">
                 <div class="ss-notifications-empty">No notifications available.</div>
               </div>
-              <a id="notifications-view-all" class="ss-notifications-footer" href="/alerts">
+              <a id="notifications-view-all" class="ss-notifications-footer" href="/notifications">
                 View all notifications
               </a>
             </div>
@@ -718,6 +719,7 @@
         "js/audit.js",
         "js/api-usage.js",
         "js/analytics-alerting.js",
+        "js/alerts.js",
         "js/analytics.js",
         "js/data-signals.js",
         "js/bots.js",

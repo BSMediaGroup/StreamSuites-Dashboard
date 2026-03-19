@@ -945,6 +945,7 @@ const SIDEBAR_VIEW_ICON_MAP = Object.freeze({
   audit: "/assets/icons/ui/admin.svg",
   approvals: "/assets/icons/ui/switch.svg",
   "api-usage": "/assets/icons/ui/api.svg",
+  alerts: "/assets/icons/ui/bell.svg",
   analytics: "/assets/icons/ui/globe.svg",
   triggers: "/assets/icons/ui/tune.svg",
   jobs: "/assets/icons/ui/automation.svg",
@@ -1628,6 +1629,14 @@ registerView("api-usage", {
   },
   onUnload: () => {
     window.ApiUsageView?.destroy?.();
+  }
+});
+registerView("alerts", {
+  onLoad: () => {
+    window.StreamSuitesAlertsView?.init?.();
+  },
+  onUnload: () => {
+    window.StreamSuitesAlertsView?.destroy?.();
   }
 });
 registerView("analytics", {

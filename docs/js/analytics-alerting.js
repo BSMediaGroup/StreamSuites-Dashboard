@@ -245,14 +245,14 @@
     configImported: null,
     configWorkingRules: null,
     configWorkingPreferences: null,
+    summaryStatus: null,
+    summaryStatusDetail: null,
     summaryRules: null,
     summaryEnabledRules: null,
     summaryTargets: null,
     summaryTargetsEnabled: null,
     summaryHistory: null,
     summarySubscribers: null,
-    summaryTimezone: null,
-    summaryGenerated: null,
     preferencesForm: null,
     masterEnabled: null,
     quietHoursEnabled: null,
@@ -288,6 +288,12 @@
     templateHelp: null,
     templateFocus: null,
     templateVariables: null,
+    previewEvent: null,
+    previewSeverity: null,
+    previewTitleText: null,
+    previewMessageText: null,
+    previewDestinations: null,
+    previewNote: null,
     ruleThresholdNumberRow: null,
     ruleThresholdNumber: null,
     ruleThresholdStateRow: null,
@@ -837,16 +843,16 @@
   function updateDirtyStateUi() {
     const dirty = hasUnsavedChanges();
     if (el.dirtyIndicator) {
-      el.dirtyIndicator.textContent = dirty ? "Unsaved changes" : "Clean";
+      el.dirtyIndicator.textContent = dirty ? "Unsaved changes" : "Synced";
       el.dirtyIndicator.classList.toggle("is-dirty", dirty);
     }
     if (el.configState) {
-      el.configState.textContent = dirty ? "Unsaved edits" : "Clean";
+      el.configState.textContent = dirty ? "Unsaved edits" : "Synced";
     }
     if (el.configDetail) {
       el.configDetail.textContent = dirty
-        ? "Reloading will discard the current working copy until you save/apply it."
-        : "Working copy matches the backend-authored configuration.";
+        ? "Reloading will discard the current draft until you save it."
+        : "Working copy matches the backend configuration.";
     }
     if (el.configWorkingRules) {
       el.configWorkingRules.textContent = `${state.rules.length} rule${state.rules.length === 1 ? "" : "s"}`;
@@ -933,7 +939,21 @@
     const summaryTargets = Number(settings?.registered_devices_total) || state.targets.length;
     const historyTotal = Number(settings?.delivery_history_total) || state.history.length;
     const timezone = state.preferences?.timezone || "UTC";
+    const masterEnabled = state.preferences?.master_enabled !== false;
+    const quietEnabled = state.preferences?.quiet_hours_enabled === true;
+    const quietStart = state.preferences?.quiet_hours_start || "22:00";
+    const quietEnd = state.preferences?.quiet_hours_end || "07:00";
 
+    if (el.summaryStatus) {
+      el.summaryStatus.textContent = masterEnabled ? "Enabled" : "Paused";
+    }
+    if (el.summaryStatusDetail) {
+      el.summaryStatusDetail.textContent = masterEnabled
+        ? quietEnabled
+          ? `Quiet hours ${quietStart} to ${quietEnd} (${timezone})`
+          : `All enabled channels can send (${timezone})`
+        : "Alerts are currently paused by the global setting.";
+    }
     if (el.summaryRules) el.summaryRules.textContent = String(state.rules.length);
     if (el.summaryEnabledRules) el.summaryEnabledRules.textContent = `${enabledRules} enabled`;
     if (el.summaryTargets) el.summaryTargets.textContent = String(summaryTargets);
@@ -941,10 +961,6 @@
     if (el.summaryHistory) el.summaryHistory.textContent = String(historyTotal);
     if (el.summarySubscribers) {
       el.summarySubscribers.textContent = `${Number(settings?.active_stream_subscribers) || 0} live subscribers`;
-    }
-    if (el.summaryTimezone) el.summaryTimezone.textContent = timezone;
-    if (el.summaryGenerated) {
-      el.summaryGenerated.textContent = formatTimestamp(settings?.generated_at || null);
     }
   }
 
@@ -954,7 +970,7 @@
     }
     if (el.configSource) {
       el.configSource.textContent = state.configuration?.source
-        ? `Source: ${state.configuration.source}`
+        ? String(state.configuration.source)
         : "Awaiting backend config";
     }
     if (el.configSynced) {
@@ -1044,12 +1060,12 @@
     if (!el.templateVariables || !el.templateHelp || !el.templateFocus) return;
     const syntax = state.templateSyntax || "{{variable_name}}";
     const missingText = state.templateMissingValuePolicy === "blank"
-      ? "Missing payload values render blank."
+      ? "Missing values render blank."
       : "Missing payload values follow the backend missing-value policy.";
-    el.templateHelp.textContent = `Use ${syntax} tokens. ${missingText}`;
+    el.templateHelp.textContent = `Use placeholders like ${syntax}. The backend fills them when the notification sends. ${missingText}`;
     el.templateFocus.textContent = state.activeTemplateField === "title"
-      ? "Variables will insert into the title template field."
-      : "Variables will insert into the body template field.";
+      ? "Placeholders will insert into the notification title."
+      : "Placeholders will insert into the notification message.";
 
     const recommended = recommendedTemplateVariables(el.ruleEventType?.value);
     const recommendedKeys = new Set(recommended.map((item) => item.key));
@@ -1057,13 +1073,13 @@
     const categories = Array.from(new Set(remaining.map((item) => item.category || "Other")));
     const sections = [];
     if (recommended.length) {
-      sections.push(renderTemplateVariableGroup("Recommended for this event type", recommended));
+      sections.push(renderTemplateVariableGroup("Recommended for this alert type", recommended));
     }
     categories.forEach((category) => {
       const items = remaining.filter((item) => (item.category || "Other") === category);
       sections.push(renderTemplateVariableGroup(category, items));
     });
-    el.templateVariables.innerHTML = sections.join("") || "<p class=\"muted\">No template variables available from the backend.</p>";
+    el.templateVariables.innerHTML = sections.join("") || "<p class=\"muted\">No placeholders are currently available from the backend.</p>";
   }
 
   function insertTokenIntoActiveTemplate(token) {
@@ -1076,6 +1092,7 @@
     const nextPos = start + token.length;
     target.focus();
     target.setSelectionRange(nextPos, nextPos);
+    renderRulePreview();
   }
 
   function renderPreferencesForm() {
@@ -1117,6 +1134,52 @@
     const defaults = state.preferences?.destination_defaults || {};
     const selected = getDestinationKeys().filter((key) => defaults[key]?.enabled !== false);
     renderDestinationCheckboxGroup(el.testDestinations, selected, "testDestination");
+  }
+
+  function extractTemplateTokens(text) {
+    return Array.from(
+      new Set(String(text || "").match(/{{\s*[^}]+\s*}}/g) || [])
+    );
+  }
+
+  function renderRulePreview() {
+    const eventMeta = getEventMeta(el.ruleEventType?.value);
+    const eventLabel = eventMeta?.label || labelize(el.ruleEventType?.value || "alert");
+    const severity = severityLabel(el.ruleSeverity?.value || "info");
+    const titleTemplate = String(el.ruleTitleTemplate?.value || "").trim();
+    const bodyTemplate = String(el.ruleBodyTemplate?.value || "").trim();
+    const ruleName = String(el.ruleName?.value || "").trim();
+    const adminNotes = String(el.ruleDescription?.value || "").trim();
+    const destinations = collectCheckedValues(
+      el.ruleDestinations,
+      "input[type='checkbox'][data-ruleDestination]",
+      "data-ruleDestination"
+    ).map(destinationLabel);
+    const previewTitle = titleTemplate || ruleName || eventLabel || "Notification title preview";
+    const previewMessage = bodyTemplate
+      || adminNotes
+      || eventMeta?.description
+      || "The backend default message will be used for this alert.";
+    const templateTokens = extractTemplateTokens(`${titleTemplate}\n${bodyTemplate}`);
+
+    if (el.previewEvent) el.previewEvent.textContent = eventLabel;
+    if (el.previewSeverity) el.previewSeverity.textContent = severity;
+    if (el.previewTitleText) el.previewTitleText.textContent = previewTitle;
+    if (el.previewMessageText) el.previewMessageText.textContent = previewMessage;
+    if (el.previewDestinations) {
+      el.previewDestinations.textContent = destinations.length
+        ? destinations.join(", ")
+        : "No destinations selected";
+    }
+    if (el.previewNote) {
+      if (templateTokens.length) {
+        el.previewNote.textContent = `Placeholders used here will be filled by the backend: ${templateTokens.join(", ")}`;
+      } else if (!titleTemplate && !bodyTemplate) {
+        el.previewNote.textContent = "Leave the title or message blank to fall back to the backend default wording for this event.";
+      } else {
+        el.previewNote.textContent = "This preview reflects the current text fields. The backend will still attach live event values when the alert sends.";
+      }
+    }
   }
 
   function readScopeInputs() {
@@ -1322,6 +1385,8 @@
       applyScopeDefaultsFromEventType(el.ruleEventType?.value);
     }
     renderTemplateBrowser();
+    renderRulePreview();
+    renderRulesList();
   }
 
   function renderRulesList() {
@@ -1335,12 +1400,13 @@
     el.rulesList.innerHTML = state.rules
       .map((rule) => {
         const eventMeta = getEventMeta(rule.event_type);
+        const isActive = state.activeRuleId === rule.id;
         const destinations = (Array.isArray(rule.destinations) ? rule.destinations : [])
           .map((item) => `<span class="ss-chip">${escapeHtml(destinationLabel(item))}</span>`)
           .join("");
         const scopeSummary = formatScopeSummary(rule.scope);
         return `
-          <article class="ss-analytics-alerts-rule-card${rule.enabled ? "" : " is-disabled"}">
+          <article class="ss-analytics-alerts-rule-card${rule.enabled ? "" : " is-disabled"}${isActive ? " is-active" : ""}">
             <div class="ss-analytics-alerts-rule-header">
               <div>
                 <h4 class="ss-analytics-alerts-rule-name">${escapeHtml(rule.name || eventMeta?.label || rule.event_type)}</h4>
@@ -1349,6 +1415,7 @@
                   <span class="ss-chip">${escapeHtml(severityLabel(rule.severity))}</span>
                   <span class="ss-chip">${escapeHtml(labelize(rule.threshold_type))}</span>
                   <span class="ss-chip">${escapeHtml(rule.enabled ? "Enabled" : "Disabled")}</span>
+                  ${isActive ? '<span class="ss-chip ss-chip-warning">Editing</span>' : ""}
                 </div>
               </div>
               <div class="ss-analytics-alerts-rule-actions">
@@ -1361,12 +1428,12 @@
             </div>
             ${destinations ? `<div class="ss-analytics-alerts-rule-chips">${destinations}</div>` : ""}
             ${rule.description ? `<p class="ss-analytics-alerts-rule-description">${escapeHtml(rule.description)}</p>` : ""}
-            <p class="ss-analytics-alerts-rule-scope">Scope: ${escapeHtml(scopeSummary)}</p>
+            <p class="ss-analytics-alerts-rule-scope">Filters: ${escapeHtml(scopeSummary)}</p>
             <div class="ss-analytics-alerts-rule-meta">
-              <span>Threshold: ${escapeHtml(String(rule.threshold_value))}</span>
-              <span>Window: ${escapeHtml(String(rule.window_minutes))}m</span>
-              <span>Cooldown: ${escapeHtml(String(rule.cooldown_minutes))}m</span>
-              <span>Dedupe: ${escapeHtml(String(rule.dedupe_window_minutes ?? 0))}m</span>
+              <span>Trigger: ${escapeHtml(String(rule.threshold_value))}</span>
+              <span>Checks over: ${escapeHtml(String(rule.window_minutes))}m</span>
+              <span>Re-alert after: ${escapeHtml(String(rule.cooldown_minutes))}m</span>
+              <span>Duplicate window: ${escapeHtml(String(rule.dedupe_window_minutes ?? 0))}m</span>
               <span>Updated: ${escapeHtml(formatTimestamp(rule.updated_at))}</span>
             </div>
           </article>
@@ -1517,6 +1584,7 @@
     renderTestRuleOptions();
     renderTestDestinations();
     renderTemplateBrowser();
+    renderRulePreview();
     renderRulesList();
     renderTargetsList();
     renderHistoryList();
@@ -1529,7 +1597,7 @@
 
   async function runWithLoader(task, reason, withLoader) {
     if (withLoader && window.StreamSuitesGlobalLoader?.trackAsync) {
-      return window.StreamSuitesGlobalLoader.trackAsync(task, reason || "Loading alerting...");
+      return window.StreamSuitesGlobalLoader.trackAsync(task, reason || "Loading alerts...");
     }
     return task();
   }
@@ -1606,7 +1674,7 @@
     const token = ++state.loadToken;
     const task = async () => {
       clearBanner();
-      setStatus("Loading alerting...");
+      setStatus("Loading alerts...");
       state.targetsLoading = true;
       state.targetsError = "";
       state.historyError = "";
@@ -1718,10 +1786,10 @@
           state.historyError
         ].filter(Boolean);
         if (failureMessages.length) {
-          setStatus("Alerting partially loaded");
+          setStatus("Alerts partially loaded");
           setBanner(failureMessages[0]);
         } else {
-          setStatus("Alerting synced");
+          setStatus("Alerts synced");
         }
       } finally {
         state.targetsLoading = false;
@@ -1729,7 +1797,7 @@
         renderHistoryList();
       }
     };
-    state.loadPromise = runWithLoader(task, "Hydrating alerting controls...", options.withLoader === true)
+    state.loadPromise = runWithLoader(task, "Hydrating alerts...", options.withLoader === true)
       .finally(() => {
         state.loadPromise = null;
       });
@@ -1851,15 +1919,15 @@
     renderPreferencesForm();
     renderSummary();
     renderPersistenceMeta();
-    setStatus("Preferences updated in working copy");
-    setBanner("Preference edits are staged locally. Use Save / Apply to persist them to the backend.", "success");
+    setStatus("Default delivery settings updated in the draft");
+    setBanner("Default delivery changes are staged locally. Use Save changes to persist them to the backend.", "success");
   }
 
   function handlePreferencesDraftChange() {
     state.preferences = normalizePreferences(readPreferencesPayload());
     renderSummary();
     renderPersistenceMeta();
-    setStatus(hasUnsavedChanges() ? "Preference edits pending" : "Alerting synced");
+    setStatus(hasUnsavedChanges() ? "Default delivery changes pending" : "Alerts synced");
   }
 
   async function handleRuleSubmit(event) {
@@ -1878,8 +1946,8 @@
       renderTestRuleOptions();
       renderSummary();
       renderPersistenceMeta();
-      setStatus(index >= 0 ? "Rule updated in working copy" : "Rule added to working copy");
-      setBanner("Rule edits are staged locally. Use Save / Apply to persist them to the backend.", "success");
+      setStatus(index >= 0 ? "Rule updated in the draft" : "Rule added to the draft");
+      setBanner("Rule changes are staged locally. Use Save changes to persist them to the backend.", "success");
     } catch (err) {
       setStatus("Rule draft failed");
       setBanner(err?.message || "Unable to stage alert rule changes.");
@@ -1889,7 +1957,7 @@
   async function handleTestSubmit(event) {
     event.preventDefault();
     clearBanner();
-    setStatus("Sending test alert...");
+    setStatus("Sending test notification...");
     el.testSubmit.disabled = true;
     try {
       const selectedDestinations = collectCheckedValues(
@@ -1912,11 +1980,11 @@
       const response = await window.StreamSuitesApi.triggerAdminTestAlert(payload);
       const result = response?.result && typeof response.result === "object" ? response.result : {};
       const matchedRules = Number(result.matched_rules) || 0;
-      setStatus(`Test alert sent (${matchedRules} rule match${matchedRules === 1 ? "" : "es"})`);
+      setStatus(`Test notification sent (${matchedRules} rule match${matchedRules === 1 ? "" : "es"})`);
       await refreshOperationalPanels({ forceRefresh: true });
     } catch (err) {
-      setStatus("Test alert failed");
-      setBanner(err?.message || "Unable to trigger test alert.");
+      setStatus("Test notification failed");
+      setBanner(err?.message || "Unable to trigger the test notification.");
     } finally {
       el.testSubmit.disabled = false;
     }
@@ -1943,8 +2011,8 @@
         renderRulesList();
         renderSummary();
         renderPersistenceMeta();
-        setStatus("Rule enabled state updated in working copy");
-        setBanner("Rule toggle is staged locally. Use Save / Apply to persist it to the backend.", "success");
+        setStatus("Rule status updated in the draft");
+        setBanner("Rule status is staged locally. Use Save changes to persist it to the backend.", "success");
         return;
       }
       if (action === "delete") {
@@ -1959,8 +2027,8 @@
         renderTestRuleOptions();
         renderSummary();
         renderPersistenceMeta();
-        setStatus("Rule removed from working copy");
-        setBanner("Rule removal is staged locally. Use Save / Apply to persist it to the backend.", "success");
+        setStatus("Rule removed from the draft");
+        setBanner("Rule removal is staged locally. Use Save changes to persist it to the backend.", "success");
       }
     } catch (err) {
       setStatus("Rule action failed");
@@ -2119,7 +2187,7 @@
   }
 
   function handleRefreshAll() {
-    if (!confirmDiscardUnsavedChanges("Reloading from backend")) {
+    if (!confirmDiscardUnsavedChanges("Reloading the backend copy")) {
       setStatus("Reload cancelled");
       return;
     }
@@ -2128,7 +2196,7 @@
 
   function handleNewRuleClick() {
     populateRuleForm(null);
-    setStatus("Creating new rule");
+    setStatus("Creating rule");
     el.ruleName?.focus();
   }
 
@@ -2139,7 +2207,7 @@
 
   async function handleConfigurationSave() {
     if (!hasUnsavedChanges()) {
-      setStatus("No alert config changes to save");
+      setStatus("No alert changes to save");
       return;
     }
     clearBanner();
@@ -2155,12 +2223,12 @@
         exported_at: response?.generated_at || configuration?.exported_at || new Date().toISOString()
       }, { syncCleanState: true });
       renderAll();
-      setStatus("Alert configuration saved");
-      setBanner("Alert ruleset saved to the backend successfully.", "success");
+      setStatus("Alert changes saved");
+      setBanner("Alert draft saved to the backend successfully.", "success");
       await loadAlerting({ forceRefresh: true, withLoader: false });
     } catch (err) {
-      setStatus("Alert configuration save failed");
-      setBanner(err?.message || "Unable to save the alert ruleset to the backend.");
+      setStatus("Alert save failed");
+      setBanner(err?.message || "Unable to save the alert draft to the backend.");
     } finally {
       updateDirtyStateUi();
     }
@@ -2183,11 +2251,11 @@
       anchor.click();
       anchor.remove();
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-      setStatus("Alert configuration exported");
-      setBanner("Alert ruleset JSON exported successfully.", "success");
+      setStatus("Alert backup exported");
+      setBanner("Alert backup exported successfully.", "success");
     } catch (err) {
-      setStatus("Alert configuration export failed");
-      setBanner(err?.message || "Unable to export the alert ruleset JSON.");
+      setStatus("Alert export failed");
+      setBanner(err?.message || "Unable to export the alert backup JSON.");
     }
   }
 
@@ -2201,7 +2269,7 @@
     const file = input.files[0];
     clearBanner();
     try {
-      if (!confirmDiscardUnsavedChanges("Importing a ruleset")) {
+      if (!confirmDiscardUnsavedChanges("Importing a backup")) {
         input.value = "";
         setStatus("Import cancelled");
         return;
@@ -2210,7 +2278,7 @@
       const parsed = JSON.parse(text);
       const configuration = normalizeImportedConfigurationDocument(parsed);
       const summary = `${file.name}: ${configuration.rules.length} rule${configuration.rules.length === 1 ? "" : "s"}, timezone ${configuration.preferences.timezone || "UTC"}`;
-      if (!window.confirm(`Stage imported ruleset?\n\n${summary}\n\nUse Save / Apply to persist it to the backend.`)) {
+      if (!window.confirm(`Stage imported ruleset?\n\n${summary}\n\nUse Save changes to persist it to the backend.`)) {
         input.value = "";
         setStatus("Import cancelled");
         return;
@@ -2220,11 +2288,11 @@
         exported_at: state.configuration?.exported_at || state.settings?.generated_at || null
       }, { importedSummary: summary });
       renderAll();
-      setStatus("Alert ruleset imported into working copy");
-      setBanner("Imported alert ruleset staged locally. Review it, then use Save / Apply to persist it.", "success");
+      setStatus("Alert backup imported into draft");
+      setBanner("Imported alert draft staged locally. Review it, then use Save changes to persist it.", "success");
     } catch (err) {
-      setStatus("Alert ruleset import failed");
-      setBanner(err?.message || "Unable to import the alert ruleset JSON.");
+      setStatus("Alert import failed");
+      setBanner(err?.message || "Unable to import the alert backup JSON.");
     } finally {
       input.value = "";
     }
@@ -2249,6 +2317,8 @@
     el.rulesCreate?.addEventListener("click", handleNewRuleClick);
     el.ruleCancel?.addEventListener("click", handleCancelRuleEdit);
     el.ruleForm?.addEventListener("submit", handleRuleSubmit);
+    el.ruleForm?.addEventListener("input", renderRulePreview);
+    el.ruleForm?.addEventListener("change", renderRulePreview);
     el.ruleThresholdType?.addEventListener("change", updateThresholdFieldVisibility);
     el.ruleEventType?.addEventListener("change", handleRuleEventTypeChange);
     el.ruleScopeEnabled?.addEventListener("change", handleRuleScopeToggle);
@@ -2278,6 +2348,8 @@
     el.rulesCreate?.removeEventListener("click", handleNewRuleClick);
     el.ruleCancel?.removeEventListener("click", handleCancelRuleEdit);
     el.ruleForm?.removeEventListener("submit", handleRuleSubmit);
+    el.ruleForm?.removeEventListener("input", renderRulePreview);
+    el.ruleForm?.removeEventListener("change", renderRulePreview);
     el.ruleThresholdType?.removeEventListener("change", updateThresholdFieldVisibility);
     el.ruleEventType?.removeEventListener("change", handleRuleEventTypeChange);
     el.ruleScopeEnabled?.removeEventListener("change", handleRuleScopeToggle);
@@ -2295,7 +2367,9 @@
   }
 
   function bindElements() {
-    el.root = document.getElementById("analytics-alerting-title")?.closest(".ss-analytics-alerts-panel") || null;
+    el.root = document.getElementById("alerts-page-root")
+      || document.getElementById("analytics-alerting-title")?.closest(".ss-analytics-alerts-panel")
+      || null;
     el.dirtyIndicator = $("analytics-alerts-dirty-indicator");
     el.status = $("analytics-alerts-status");
     el.banner = $("analytics-alerts-banner");
@@ -2312,14 +2386,14 @@
     el.configImported = $("analytics-alerts-config-imported");
     el.configWorkingRules = $("analytics-alerts-config-working-rules");
     el.configWorkingPreferences = $("analytics-alerts-config-working-preferences");
+    el.summaryStatus = $("analytics-alerts-summary-status");
+    el.summaryStatusDetail = $("analytics-alerts-summary-status-detail");
     el.summaryRules = $("analytics-alerts-summary-rules");
     el.summaryEnabledRules = $("analytics-alerts-summary-enabled-rules");
     el.summaryTargets = $("analytics-alerts-summary-targets");
     el.summaryTargetsEnabled = $("analytics-alerts-summary-targets-enabled");
     el.summaryHistory = $("analytics-alerts-summary-history");
     el.summarySubscribers = $("analytics-alerts-summary-subscribers");
-    el.summaryTimezone = $("analytics-alerts-summary-timezone");
-    el.summaryGenerated = $("analytics-alerts-summary-generated");
     el.preferencesForm = $("analytics-alerts-preferences-form");
     el.masterEnabled = $("analytics-alerts-master-enabled");
     el.quietHoursEnabled = $("analytics-alerts-quiet-hours-enabled");
@@ -2355,6 +2429,12 @@
     el.templateHelp = $("analytics-alerts-template-help");
     el.templateFocus = $("analytics-alerts-template-focus");
     el.templateVariables = $("analytics-alerts-template-variables");
+    el.previewEvent = $("analytics-alerts-preview-event");
+    el.previewSeverity = $("analytics-alerts-preview-severity");
+    el.previewTitleText = $("analytics-alerts-preview-title-text");
+    el.previewMessageText = $("analytics-alerts-preview-message-text");
+    el.previewDestinations = $("analytics-alerts-preview-destinations");
+    el.previewNote = $("analytics-alerts-preview-note");
     el.ruleThresholdNumberRow = $("analytics-alerts-rule-threshold-number-row");
     el.ruleThresholdNumber = $("analytics-alerts-rule-threshold-number");
     el.ruleThresholdStateRow = $("analytics-alerts-rule-threshold-state-row");
