@@ -17,6 +17,9 @@
   let quotaRefreshHandle = null;
   let telemetryHandle = null;
   let adminActivityHandle = null;
+  let refreshDiscordPromise = null;
+  let refreshAdminActivityPromise = null;
+  let refreshTelemetryPromise = null;
 
   const el = {};
 
@@ -404,64 +407,70 @@
   }
 
   async function refreshDiscord() {
-    try {
-      const payload = (await fetchDiscordBotStatus()) || {};
-      const payloadError = normalizeText(payload?.error || payload?.message || "", "");
-      if (payload?.success === false) {
-        renderDiscordUnavailable(payloadError || "Discord unavailable (Auth API returned success=false).");
-        return;
+    if (refreshDiscordPromise) return refreshDiscordPromise;
+    refreshDiscordPromise = (async () => {
+      try {
+        const payload = (await fetchDiscordBotStatus()) || {};
+        const payloadError = normalizeText(payload?.error || payload?.message || "", "");
+        if (payload?.success === false) {
+          renderDiscordUnavailable(payloadError || "Discord unavailable (Auth API returned success=false).");
+          return;
+        }
+
+        const admin = payload?.profiles?.admin || {};
+        const publicProfile = payload?.profiles?.public || {};
+        const hasAdminProfile = Boolean(payload?.profiles?.admin && typeof payload?.profiles?.admin === "object");
+        const hasPublicProfile = Boolean(payload?.profiles?.public && typeof payload?.profiles?.public === "object");
+        if (!hasAdminProfile || !hasPublicProfile) {
+          renderDiscordUnavailable(payloadError || "Discord unavailable (missing profile data).");
+          return;
+        }
+
+        const officialGuild = normalizeText(
+          payload?.official_guild_id ||
+            admin?.verification?.guild_id ||
+            publicProfile?.verification?.guild_id,
+          DISCORD_OFFICIAL_GUILD_FALLBACK
+        );
+
+        const adminError = parseVerifyError(admin?.verification);
+        const publicError = parseVerifyError(publicProfile?.verification);
+        const healthy =
+          admin?.verification?.is_installed === true &&
+          admin?.verification?.success === true &&
+          publicProfile?.verification?.success === true &&
+          !adminError &&
+          !publicError;
+
+        setText(el.discordOfficialGuild, officialGuild);
+        setText(el.discordAdminStatus, formatProfileStatus(admin));
+        setText(el.discordAdminLast, formatDiscordTimestamp(admin?.verification?.last_verified_at));
+        setText(el.discordAdminError, formatErrorIndicator(admin));
+        setText(el.discordPublicStatus, formatProfileStatus(publicProfile));
+        setText(
+          el.discordPublicLast,
+          formatDiscordTimestamp(publicProfile?.verification?.last_verified_at)
+        );
+        setText(el.discordPublicError, formatErrorIndicator(publicProfile));
+        setDiscordNote("");
+
+        setStatusBadge(el.discordBotStatus, healthy ? "healthy" : "attention");
+        if (el.badgeDiscord) {
+          el.badgeDiscord.textContent = healthy ? "Verified" : "Needs Attention";
+        }
+      } catch (err) {
+        const isAuthError = err?.isAuthError || err?.status === 401 || err?.status === 403;
+        if (isAuthError) {
+          promptAdminReauth();
+          renderDiscordUnavailable("Unable to load Discord status: admin session expired.");
+          return;
+        }
+        renderDiscordUnavailable("Unable to load Discord status (network/API error).");
+      } finally {
+        refreshDiscordPromise = null;
       }
-
-      const admin = payload?.profiles?.admin || {};
-      const publicProfile = payload?.profiles?.public || {};
-      const hasAdminProfile = Boolean(payload?.profiles?.admin && typeof payload?.profiles?.admin === "object");
-      const hasPublicProfile = Boolean(payload?.profiles?.public && typeof payload?.profiles?.public === "object");
-      if (!hasAdminProfile || !hasPublicProfile) {
-        renderDiscordUnavailable(payloadError || "Discord unavailable (missing profile data).");
-        return;
-      }
-
-      const officialGuild = normalizeText(
-        payload?.official_guild_id ||
-          admin?.verification?.guild_id ||
-          publicProfile?.verification?.guild_id,
-        DISCORD_OFFICIAL_GUILD_FALLBACK
-      );
-
-      const adminError = parseVerifyError(admin?.verification);
-      const publicError = parseVerifyError(publicProfile?.verification);
-      const healthy =
-        admin?.verification?.is_installed === true &&
-        admin?.verification?.success === true &&
-        publicProfile?.verification?.success === true &&
-        !adminError &&
-        !publicError;
-
-      setText(el.discordOfficialGuild, officialGuild);
-      setText(el.discordAdminStatus, formatProfileStatus(admin));
-      setText(el.discordAdminLast, formatDiscordTimestamp(admin?.verification?.last_verified_at));
-      setText(el.discordAdminError, formatErrorIndicator(admin));
-      setText(el.discordPublicStatus, formatProfileStatus(publicProfile));
-      setText(
-        el.discordPublicLast,
-        formatDiscordTimestamp(publicProfile?.verification?.last_verified_at)
-      );
-      setText(el.discordPublicError, formatErrorIndicator(publicProfile));
-      setDiscordNote("");
-
-      setStatusBadge(el.discordBotStatus, healthy ? "healthy" : "attention");
-      if (el.badgeDiscord) {
-        el.badgeDiscord.textContent = healthy ? "Verified" : "Needs Attention";
-      }
-    } catch (err) {
-      const isAuthError = err?.isAuthError || err?.status === 401 || err?.status === 403;
-      if (isAuthError) {
-        promptAdminReauth();
-        renderDiscordUnavailable("Unable to load Discord status: admin session expired.");
-        return;
-      }
-      renderDiscordUnavailable("Unable to load Discord status (network/API error).");
-    }
+    })();
+    return refreshDiscordPromise;
   }
 
   /* ============================================================
@@ -516,16 +525,22 @@
     if (window.__RUNTIME_AVAILABLE__ !== true) {
       return;
     }
-    try {
-      const activity =
-        (await window.StreamSuitesState?.loadAdminActivity?.({
-          forceReload: true
-        })) || null;
-      renderAdminActivity(activity);
-    } catch (err) {
-      console.warn("[Overview] Admin activity refresh failed", err);
-      renderAdminActivity(null);
-    }
+    if (refreshAdminActivityPromise) return refreshAdminActivityPromise;
+    refreshAdminActivityPromise = (async () => {
+      try {
+        const activity =
+          (await window.StreamSuitesState?.loadAdminActivity?.({
+            forceReload: true
+          })) || null;
+        renderAdminActivity(activity);
+      } catch (err) {
+        console.warn("[Overview] Admin activity refresh failed", err);
+        renderAdminActivity(null);
+      } finally {
+        refreshAdminActivityPromise = null;
+      }
+    })();
+    return refreshAdminActivityPromise;
   }
 
   /* ============================================================
@@ -1003,45 +1018,62 @@
       if (window.__RUNTIME_AVAILABLE__ !== true) {
         return;
       }
-      try {
-        const [snapshot, events, rates, errors, authEvents] = await Promise.all([
-          window.Telemetry?.loadSnapshot?.(true),
-          window.Telemetry?.loadEvents?.({ forceReload: true }),
-          window.Telemetry?.loadRates?.({ forceReload: true }),
-          window.Telemetry?.loadErrors?.({ forceReload: true }),
-          window.Telemetry?.loadAuthEvents?.({ forceReload: true })
-        ]);
+      const [snapshotResult, eventsResult, ratesResult, errorsResult, authEventsResult] = await Promise.allSettled([
+        window.Telemetry?.loadSnapshot?.(true),
+        window.Telemetry?.loadEvents?.({ forceReload: true }),
+        window.Telemetry?.loadRates?.({ forceReload: true }),
+        window.Telemetry?.loadErrors?.({ forceReload: true }),
+        window.Telemetry?.loadAuthEvents?.({ forceReload: true })
+      ]);
 
-        const [eventsHealth, ratesHealth, errorsHealth, authHealth] = await Promise.all([
-          window.Telemetry?.evaluateSnapshotHealth?.(events),
-          window.Telemetry?.evaluateSnapshotHealth?.(rates),
-          window.Telemetry?.evaluateSnapshotHealth?.(errors),
-          window.Telemetry?.evaluateSnapshotHealth?.(authEvents)
-        ]);
+      const snapshot = snapshotResult.status === "fulfilled" ? snapshotResult.value : null;
+      const events = eventsResult.status === "fulfilled" ? eventsResult.value : null;
+      const rates = ratesResult.status === "fulfilled" ? ratesResult.value : null;
+      const errors = errorsResult.status === "fulfilled" ? errorsResult.value : null;
+      const authEvents = authEventsResult.status === "fulfilled" ? authEventsResult.value : null;
 
-        renderTelemetry(snapshot);
-        renderTelemetryEvents(events, eventsHealth);
-        renderTelemetryRates(rates, ratesHealth);
-        renderTelemetryErrors(errors, errorsHealth);
-        renderTelemetryAuthEvents(authEvents, authHealth);
-      } catch (err) {
-        console.warn("[Overview] Telemetry refresh failed", err);
-        renderTelemetry(null);
-        renderTelemetryEvents(null, null);
-        renderTelemetryRates(null, null);
-        renderTelemetryErrors(null, null);
-        renderTelemetryAuthEvents(null, null);
+      const [eventsHealthResult, ratesHealthResult, errorsHealthResult, authHealthResult] = await Promise.allSettled([
+        events ? window.Telemetry?.evaluateSnapshotHealth?.(events) : null,
+        rates ? window.Telemetry?.evaluateSnapshotHealth?.(rates) : null,
+        errors ? window.Telemetry?.evaluateSnapshotHealth?.(errors) : null,
+        authEvents ? window.Telemetry?.evaluateSnapshotHealth?.(authEvents) : null
+      ]);
+
+      if (
+        snapshotResult.status === "rejected" ||
+        eventsResult.status === "rejected" ||
+        ratesResult.status === "rejected" ||
+        errorsResult.status === "rejected" ||
+        authEventsResult.status === "rejected"
+      ) {
+        console.warn("[Overview] Telemetry refresh partially failed", {
+          snapshot: snapshotResult.status,
+          events: eventsResult.status,
+          rates: ratesResult.status,
+          errors: errorsResult.status,
+          authEvents: authEventsResult.status
+        });
       }
+
+      renderTelemetry(snapshot);
+      renderTelemetryEvents(events, eventsHealthResult.status === "fulfilled" ? eventsHealthResult.value : null);
+      renderTelemetryRates(rates, ratesHealthResult.status === "fulfilled" ? ratesHealthResult.value : null);
+      renderTelemetryErrors(errors, errorsHealthResult.status === "fulfilled" ? errorsHealthResult.value : null);
+      renderTelemetryAuthEvents(authEvents, authHealthResult.status === "fulfilled" ? authHealthResult.value : null);
     };
 
-    if (options.trackLoader === true && window.StreamSuitesGlobalLoader?.trackAsync) {
-      return window.StreamSuitesGlobalLoader.trackAsync(
-        runRefresh,
-        "Hydrating telemetry..."
-      );
-    }
+    if (refreshTelemetryPromise) return refreshTelemetryPromise;
+    const execution = options.trackLoader === true && window.StreamSuitesGlobalLoader?.trackAsync
+      ? window.StreamSuitesGlobalLoader.trackAsync(
+          runRefresh,
+          "Hydrating telemetry..."
+        )
+      : runRefresh();
 
-    return runRefresh();
+    refreshTelemetryPromise = Promise.resolve(execution).finally(() => {
+      refreshTelemetryPromise = null;
+    });
+    return refreshTelemetryPromise;
   }
 
   /* ============================================================

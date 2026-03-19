@@ -1982,6 +1982,9 @@
           setStatus(`Live analytics (${String(data?.window || selectedWindow)})`);
         }
       } catch (err) {
+        if (err?.isAbort || controller.signal.aborted) {
+          return;
+        }
         setMapFeedback("Map data unavailable while analytics endpoint is offline.", { isError: true });
         if (err?.status === 401 || err?.status === 403 || err?.isAuthError) {
           promptAdminReauth();

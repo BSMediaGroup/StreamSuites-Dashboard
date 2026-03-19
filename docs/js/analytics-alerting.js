@@ -49,7 +49,10 @@
     },
     targetActionIds: new Set(),
     targetsLoading: false,
-    targetsError: ""
+    targetsError: "",
+    historyError: "",
+    loadPromise: null,
+    panelsPromise: null
   };
 
   const el = {
@@ -542,6 +545,19 @@
 
   function extractPreferences(payload) {
     return payload?.preferences && typeof payload.preferences === "object" ? payload.preferences : null;
+  }
+
+  function isAuthError(error) {
+    return error?.status === 401 || error?.status === 403 || error?.isAuthError === true;
+  }
+
+  function getSettledValue(result, fallback = null) {
+    return result?.status === "fulfilled" ? result.value : fallback;
+  }
+
+  function getSettledError(result, fallback) {
+    if (result?.status !== "rejected") return "";
+    return String(result.reason?.message || fallback || "").trim();
   }
 
   function normalizePreferences(preferences) {
@@ -1273,8 +1289,15 @@
 
   function renderHistoryList() {
     if (!el.historyList || !el.historyEmpty) return;
+    if (state.historyError) {
+      el.historyList.innerHTML = "";
+      el.historyEmpty.textContent = state.historyError;
+      el.historyEmpty.classList.remove("hidden");
+      return;
+    }
     if (!state.history.length) {
       el.historyList.innerHTML = "";
+      el.historyEmpty.textContent = "No recent delivery history yet.";
       el.historyEmpty.classList.remove("hidden");
       return;
     }
@@ -1341,107 +1364,205 @@
   }
 
   async function refreshOperationalPanels(options = {}) {
-    state.targetsLoading = true;
-    state.targetsError = "";
-    renderTargetsList();
-    try {
-      const [settingsPayload, targetsPayload, historyPayload] = await Promise.all([
-        window.StreamSuitesApi.getAdminAlertSettings({
-          forceRefresh: options.forceRefresh === true
-        }),
-        window.StreamSuitesApi.getAdminAlertTargets({
-          forceRefresh: options.forceRefresh === true
-        }),
-        window.StreamSuitesApi.getAdminAlertHistory(
-          { limit: HISTORY_LIMIT },
-          { forceRefresh: options.forceRefresh === true }
-        )
-      ]);
-      state.settings = extractSettings(settingsPayload);
-      state.targets = extractItems(targetsPayload).map(normalizeTarget);
-      state.history = extractItems(historyPayload);
-      renderSummary();
+    if (state.panelsPromise) return state.panelsPromise;
+    state.panelsPromise = (async () => {
+      state.targetsLoading = true;
+      state.targetsError = "";
+      state.historyError = "";
       renderTargetsList();
       renderHistoryList();
-      renderPersistenceMeta();
-    } catch (err) {
-      state.targetsError = err?.message || "Unable to load alert targets.";
-      renderTargetsList();
-      throw err;
-    } finally {
-      state.targetsLoading = false;
-      renderTargetsList();
-    }
+      try {
+        const [settingsResult, targetsResult, historyResult] = await Promise.allSettled([
+          window.StreamSuitesApi.getAdminAlertSettings({
+            forceRefresh: options.forceRefresh === true
+          }),
+          window.StreamSuitesApi.getAdminAlertTargets({
+            forceRefresh: options.forceRefresh === true
+          }),
+          window.StreamSuitesApi.getAdminAlertHistory(
+            { limit: HISTORY_LIMIT },
+            { forceRefresh: options.forceRefresh === true }
+          )
+        ]);
+
+        const authError = [settingsResult, targetsResult, historyResult]
+          .find((result) => result?.status === "rejected" && isAuthError(result.reason))
+          ?.reason;
+        if (authError) {
+          state.targetsError = "Admin session required.";
+          state.historyError = "Admin session required.";
+          throw authError;
+        }
+
+        const settingsPayload = getSettledValue(settingsResult);
+        if (settingsPayload) {
+          state.settings = extractSettings(settingsPayload);
+        }
+
+        const targetsPayload = getSettledValue(targetsResult);
+        if (targetsPayload) {
+          state.targets = extractItems(targetsPayload).map(normalizeTarget);
+          state.targetsError = "";
+        } else {
+          state.targetsError = getSettledError(targetsResult, "Unable to load alert targets.") || "Unable to load alert targets.";
+        }
+
+        const historyPayload = getSettledValue(historyResult);
+        if (historyPayload) {
+          state.history = extractItems(historyPayload);
+          state.historyError = "";
+        } else {
+          state.history = [];
+          state.historyError = getSettledError(historyResult, "Unable to load alert history.") || "Unable to load alert history.";
+        }
+
+        renderSummary();
+        renderTargetsList();
+        renderHistoryList();
+        renderPersistenceMeta();
+      } finally {
+        state.targetsLoading = false;
+        state.panelsPromise = null;
+        renderTargetsList();
+        renderHistoryList();
+      }
+    })();
+    return state.panelsPromise;
   }
 
   async function loadAlerting(options = {}) {
+    if (state.loadPromise) return state.loadPromise;
     const token = ++state.loadToken;
     const task = async () => {
       clearBanner();
       setStatus("Loading alerting...");
       state.targetsLoading = true;
       state.targetsError = "";
+      state.historyError = "";
       renderTargetsList();
+      renderHistoryList();
       try {
-        const [settingsPayload, eventTypesPayload, templateVariablesPayload, configurationPayload, targetsPayload, historyPayload] =
-          await Promise.all([
-            window.StreamSuitesApi.getAdminAlertSettings({
-              forceRefresh: options.forceRefresh === true
-            }),
-            window.StreamSuitesApi.getAdminAlertEventTypes({
-              forceRefresh: options.forceRefresh === true
-            }),
-            window.StreamSuitesApi.getAdminAlertTemplateVariables({
-              forceRefresh: options.forceRefresh === true
-            }),
-            window.StreamSuitesApi.getAdminAlertConfiguration({
-              forceRefresh: options.forceRefresh === true
-            }),
-            window.StreamSuitesApi.getAdminAlertTargets({
-              forceRefresh: options.forceRefresh === true
-            }),
-            window.StreamSuitesApi.getAdminAlertHistory(
-              { limit: HISTORY_LIMIT },
-              { forceRefresh: options.forceRefresh === true }
-            )
-          ]);
+        const [
+          settingsResult,
+          eventTypesResult,
+          templateVariablesResult,
+          configurationResult,
+          targetsResult,
+          historyResult
+        ] = await Promise.allSettled([
+          window.StreamSuitesApi.getAdminAlertSettings({
+            forceRefresh: options.forceRefresh === true
+          }),
+          window.StreamSuitesApi.getAdminAlertEventTypes({
+            forceRefresh: options.forceRefresh === true
+          }),
+          window.StreamSuitesApi.getAdminAlertTemplateVariables({
+            forceRefresh: options.forceRefresh === true
+          }),
+          window.StreamSuitesApi.getAdminAlertConfiguration({
+            forceRefresh: options.forceRefresh === true
+          }),
+          window.StreamSuitesApi.getAdminAlertTargets({
+            forceRefresh: options.forceRefresh === true
+          }),
+          window.StreamSuitesApi.getAdminAlertHistory(
+            { limit: HISTORY_LIMIT },
+            { forceRefresh: options.forceRefresh === true }
+          )
+        ]);
 
         if (state.destroyed || token !== state.loadToken) return;
 
-        state.settings = extractSettings(settingsPayload);
-        state.eventTypes = extractItems(eventTypesPayload);
-        state.templateVariables = extractItems(templateVariablesPayload);
-        state.templateSyntax = String(templateVariablesPayload?.syntax || "{{variable_name}}").trim() || "{{variable_name}}";
-        state.templateMissingValuePolicy = String(templateVariablesPayload?.missing_value_policy || "blank").trim() || "blank";
-        const configuration = configurationPayload?.configuration && typeof configurationPayload.configuration === "object"
-          ? configurationPayload.configuration
-          : configurationPayload;
-        setWorkingConfiguration({
-          ...(configuration && typeof configuration === "object" ? configuration : {}),
-          exported_at: configurationPayload?.generated_at || configuration?.exported_at || state.settings?.generated_at || null
-        }, { syncCleanState: true });
-        state.targets = extractItems(targetsPayload).map(normalizeTarget);
-        state.targetsLoading = false;
-        state.history = extractItems(historyPayload);
-        renderAll();
-        setStatus("Alerting synced");
-      } catch (err) {
-        state.targetsLoading = false;
-        if (err?.status === 401 || err?.status === 403 || err?.isAuthError) {
+        const authError = [
+          settingsResult,
+          eventTypesResult,
+          templateVariablesResult,
+          configurationResult,
+          targetsResult,
+          historyResult
+        ].find((result) => result?.status === "rejected" && isAuthError(result.reason))?.reason;
+        if (authError) {
           state.targetsError = "Admin session required.";
+          state.historyError = "Admin session required.";
           renderTargetsList();
+          renderHistoryList();
           promptAdminReauth();
           setStatus("Admin session required");
           setBanner("Admin session required. Redirecting to login...");
           return;
         }
-        state.targetsError = err?.message || "Unable to load alert targets.";
+
+        const settingsPayload = getSettledValue(settingsResult);
+        if (settingsPayload) {
+          state.settings = extractSettings(settingsPayload);
+        }
+
+        const eventTypesPayload = getSettledValue(eventTypesResult);
+        if (eventTypesPayload) {
+          state.eventTypes = extractItems(eventTypesPayload);
+        }
+
+        const templateVariablesPayload = getSettledValue(templateVariablesResult);
+        if (templateVariablesPayload) {
+          state.templateVariables = extractItems(templateVariablesPayload);
+          state.templateSyntax = String(templateVariablesPayload?.syntax || "{{variable_name}}").trim() || "{{variable_name}}";
+          state.templateMissingValuePolicy = String(templateVariablesPayload?.missing_value_policy || "blank").trim() || "blank";
+        }
+
+        const configurationPayload = getSettledValue(configurationResult);
+        if (configurationPayload) {
+          const configuration = configurationPayload?.configuration && typeof configurationPayload.configuration === "object"
+            ? configurationPayload.configuration
+            : configurationPayload;
+          setWorkingConfiguration({
+            ...(configuration && typeof configuration === "object" ? configuration : {}),
+            exported_at: configurationPayload?.generated_at || configuration?.exported_at || state.settings?.generated_at || null
+          }, { syncCleanState: true });
+        }
+
+        const targetsPayload = getSettledValue(targetsResult);
+        if (targetsPayload) {
+          state.targets = extractItems(targetsPayload).map(normalizeTarget);
+          state.targetsError = "";
+        } else {
+          state.targetsError = getSettledError(targetsResult, "Unable to load alert targets.") || "Unable to load alert targets.";
+        }
+
+        const historyPayload = getSettledValue(historyResult);
+        if (historyPayload) {
+          state.history = extractItems(historyPayload);
+          state.historyError = "";
+        } else {
+          state.history = [];
+          state.historyError = getSettledError(historyResult, "Unable to load alert history.") || "Unable to load alert history.";
+        }
+
+        renderAll();
+        const failureMessages = [
+          getSettledError(settingsResult, "Unable to load alert settings."),
+          getSettledError(eventTypesResult, "Unable to load alert event types."),
+          getSettledError(templateVariablesResult, "Unable to load template variables."),
+          getSettledError(configurationResult, "Unable to load alert configuration."),
+          state.targetsError,
+          state.historyError
+        ].filter(Boolean);
+        if (failureMessages.length) {
+          setStatus("Alerting partially loaded");
+          setBanner(failureMessages[0]);
+        } else {
+          setStatus("Alerting synced");
+        }
+      } finally {
+        state.targetsLoading = false;
         renderTargetsList();
-        setStatus("Alerting unavailable");
-        setBanner(err?.message || "Unable to load alerting controls.");
+        renderHistoryList();
       }
     };
-    return runWithLoader(task, "Hydrating alerting controls...", options.withLoader === true);
+    state.loadPromise = runWithLoader(task, "Hydrating alerting controls...", options.withLoader === true)
+      .finally(() => {
+        state.loadPromise = null;
+      });
+    return state.loadPromise;
   }
 
   function collectCheckedValues(container, selector, attributeName) {

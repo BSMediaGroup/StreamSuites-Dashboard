@@ -3,6 +3,7 @@
 
   const DEFAULT_API_BASE = "https://api.streamsuites.app";
   const responseCache = new Map();
+  const inflightRequests = new Map();
 
   function clone(value) {
     return value === undefined ? undefined : JSON.parse(JSON.stringify(value));
@@ -87,10 +88,36 @@
       }
     }
 
+    const method = String(fetchOptions.method || "GET").trim().toUpperCase() || "GET";
+    const isShareableRequest = method === "GET" && parseJson !== false && !fetchOptions.body;
+    if (isShareableRequest && inflightRequests.has(resolvedCacheKey)) {
+      const inflightValue = await inflightRequests.get(resolvedCacheKey);
+      return clone(inflightValue);
+    }
+
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    const upstreamSignal = fetchOptions.signal;
+    let removeAbortListener = null;
+    let requestSignal = controller.signal;
 
-    try {
+    if (upstreamSignal) {
+      if (typeof AbortSignal !== "undefined" && typeof AbortSignal.any === "function") {
+        requestSignal = AbortSignal.any([upstreamSignal, controller.signal]);
+      } else {
+        const abortUpstream = () => controller.abort();
+        if (upstreamSignal.aborted) {
+          abortUpstream();
+        } else if (typeof upstreamSignal.addEventListener === "function") {
+          upstreamSignal.addEventListener("abort", abortUpstream, { once: true });
+          removeAbortListener = () => {
+            upstreamSignal.removeEventListener("abort", abortUpstream);
+          };
+        }
+      }
+    }
+
+    const requestPromise = (async () => {
       const response = await fetch(requestUrl, {
         cache: "no-store",
         credentials: "include",
@@ -99,7 +126,8 @@
           Accept: "application/json",
           ...headers
         },
-        signal: fetchOptions.signal || controller.signal
+        signal: requestSignal,
+        timeoutMs
       });
 
       if (!response.ok) {
@@ -126,16 +154,32 @@
         });
       }
       return payload;
+    })();
+
+    if (isShareableRequest) {
+      inflightRequests.set(resolvedCacheKey, requestPromise);
+    }
+
+    try {
+      const payload = await requestPromise;
+      return isShareableRequest ? clone(payload) : payload;
     } catch (err) {
       if (err?.name === "AbortError") {
-        const timeoutError = new Error("Request timed out");
+        const timeoutError = new Error(upstreamSignal?.aborted ? "Request was aborted" : "Request timed out");
         timeoutError.status = 0;
         timeoutError.url = requestUrl;
         timeoutError.isAuthError = false;
+        timeoutError.isAbort = upstreamSignal?.aborted === true;
         throw timeoutError;
       }
       throw err;
     } finally {
+      if (isShareableRequest && inflightRequests.get(resolvedCacheKey) === requestPromise) {
+        inflightRequests.delete(resolvedCacheKey);
+      }
+      if (typeof removeAbortListener === "function") {
+        removeAbortListener();
+      }
       clearTimeout(timeout);
     }
   }
