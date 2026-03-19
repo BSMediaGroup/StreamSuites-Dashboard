@@ -370,7 +370,7 @@
     previewEvent: null,
     previewSeverity: null,
     previewSurfaceToggle: null,
-    previewMatrix: null,
+    previewStage: null,
     previewNote: null,
     ruleThresholdNumberRow: null,
     ruleThresholdNumber: null,
@@ -826,12 +826,7 @@
       const key = String(button.getAttribute("data-preview-surface-toggle") || "").trim();
       const isActive = key === state.activePreviewSurface;
       button.classList.toggle("is-active", isActive);
-      button.setAttribute("aria-selected", isActive ? "true" : "false");
-      button.setAttribute("tabindex", isActive ? "0" : "-1");
-    });
-    el.previewMatrix?.querySelectorAll("[data-preview-surface]").forEach((panel) => {
-      const key = String(panel.getAttribute("data-preview-surface") || "").trim();
-      panel.classList.toggle("is-active", key === state.activePreviewSurface);
+      button.setAttribute("aria-pressed", isActive ? "true" : "false");
     });
   }
 
@@ -933,6 +928,18 @@
         </section>
       </article>
     `;
+  }
+
+  function renderActivePreviewSurface(model) {
+    switch (state.activePreviewSurface) {
+      case "browser":
+        return renderBrowserPreviewCard(model);
+      case "plain":
+        return renderPlainTextPreviewCard(model);
+      case "desktop":
+      default:
+        return renderDesktopPreviewCard(model);
+    }
   }
 
   function getEntryCountryFlagPresentation(entry) {
@@ -2191,12 +2198,8 @@
     const model = buildRulePreviewModel();
     if (el.previewEvent) el.previewEvent.textContent = model.eventLabel;
     if (el.previewSeverity) el.previewSeverity.textContent = model.severityText;
-    if (el.previewMatrix) {
-      el.previewMatrix.innerHTML = [
-        renderDesktopPreviewCard(model),
-        renderBrowserPreviewCard(model),
-        renderPlainTextPreviewCard(model)
-      ].join("");
+    if (el.previewStage) {
+      el.previewStage.innerHTML = renderActivePreviewSurface(model);
     }
     if (el.previewNote) {
       el.previewNote.textContent = model.noteText;
@@ -2209,8 +2212,9 @@
     if (!(button instanceof HTMLElement)) return;
     const nextSurface = String(button.getAttribute("data-preview-surface-toggle") || "").trim();
     if (!PREVIEW_SURFACES.some((item) => item.key === nextSurface)) return;
+    if (nextSurface === state.activePreviewSurface) return;
     state.activePreviewSurface = nextSurface;
-    renderPreviewSurfaceToggle();
+    renderRulePreview();
   }
 
   function readScopeInputs() {
@@ -3722,7 +3726,7 @@
     el.previewEvent = $("analytics-alerts-preview-event");
     el.previewSeverity = $("analytics-alerts-preview-severity");
     el.previewSurfaceToggle = $("analytics-alerts-preview-surface-toggle");
-    el.previewMatrix = $("analytics-alerts-preview-matrix");
+    el.previewStage = $("analytics-alerts-preview-stage");
     el.previewNote = $("analytics-alerts-preview-note");
     el.ruleThresholdNumberRow = $("analytics-alerts-rule-threshold-number-row");
     el.ruleThresholdNumber = $("analytics-alerts-rule-threshold-number");

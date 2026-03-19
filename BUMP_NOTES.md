@@ -2,6 +2,18 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= none
 
+## Alerts Preview Regression Fix - 2026-03-20
+
+- Restored the Alerts editor preview back to the earlier single-surface footprint so the editor column and preview column keep the readable balance that existed before the multi-preview regression.
+- Replaced the cramped three-up preview matrix with a compact Desktop / Browser / Plain text segmented toggle that swaps one live preview surface inside the same stable card area.
+- Kept the existing live preview data path, placeholder rendering behavior, and backend-compatible template flow intact so switching surfaces does not change stored content or hydration behavior.
+
+### Files / Areas Touched
+
+- `docs/views/alerts.html`
+- `docs/js/analytics-alerting.js`
+- `docs/css/components.css`
+
 ## Release Prep Completion - v0.4.2-alpha
 
 - The repo-local runtime/version mirrors used by this admin surface now report `0.4.2-alpha` in `runtime/version.py`, `runtime/exports/version.json`, and `docs/runtime/exports/version.json`.

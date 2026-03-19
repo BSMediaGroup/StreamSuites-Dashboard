@@ -241,7 +241,7 @@
                   <div class="ss-alerts-section-heading">
                     <div>
                       <h5 id="analytics-alerts-preview-title">Message preview</h5>
-                      <p class="muted">Compare the same live alert content across desktop, browser, and plain-text surfaces.</p>
+                      <p class="muted">Switch between desktop, browser, and plain-text renderings of the same live alert content.</p>
                     </div>
                   </div>
                   <div class="ss-alerts-preview-shell">
@@ -250,13 +250,13 @@
                         <span id="analytics-alerts-preview-event" class="ss-chip">Event</span>
                         <span id="analytics-alerts-preview-severity" class="ss-chip">Severity</span>
                       </div>
-                      <div id="analytics-alerts-preview-surface-toggle" class="ss-alerts-preview-surface-toggle" role="tablist" aria-label="Preview surfaces">
-                        <button type="button" class="ss-alerts-preview-surface-button" data-preview-surface-toggle="desktop" role="tab" aria-selected="true">Desktop</button>
-                        <button type="button" class="ss-alerts-preview-surface-button" data-preview-surface-toggle="browser" role="tab" aria-selected="false">Browser</button>
-                        <button type="button" class="ss-alerts-preview-surface-button" data-preview-surface-toggle="plain" role="tab" aria-selected="false">Plain text</button>
+                      <div id="analytics-alerts-preview-surface-toggle" class="ss-alerts-preview-surface-toggle" role="group" aria-label="Preview surfaces">
+                        <button type="button" class="ss-alerts-preview-surface-button" data-preview-surface-toggle="desktop" aria-pressed="true">Desktop</button>
+                        <button type="button" class="ss-alerts-preview-surface-button" data-preview-surface-toggle="browser" aria-pressed="false">Browser</button>
+                        <button type="button" class="ss-alerts-preview-surface-button" data-preview-surface-toggle="plain" aria-pressed="false">Plain text</button>
                       </div>
                     </div>
-                    <div id="analytics-alerts-preview-matrix" class="ss-alerts-preview-matrix" aria-live="polite"></div>
+                    <div id="analytics-alerts-preview-stage" class="ss-alerts-preview-stage" aria-live="polite"></div>
                     <p id="analytics-alerts-preview-note" class="ss-alerts-preview-note muted">
                       Placeholders wrapped in braces stay visible here and are filled by the backend when the alert sends.
                     </p>
