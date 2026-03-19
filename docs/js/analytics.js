@@ -183,7 +183,9 @@
     devicesList: null,
     devicesEmpty: null,
     platformsList: null,
-    platformsEmpty: null
+    platformsEmpty: null,
+    recentRequestsBody: null,
+    recentRequestsEmpty: null
   };
   let surfacesClickBound = false;
 
@@ -1797,6 +1799,74 @@
       .join("");
   }
 
+  function normalizeRecentRequests(rows) {
+    return (Array.isArray(rows) ? rows : [])
+      .map((entry) => {
+        const occurredAt = String(entry?.occurred_at || entry?.timestamp || "").trim();
+        const path = String(entry?.path || entry?.route || "").trim();
+        if (!occurredAt || !path) return null;
+        const method = String(entry?.method || "GET").trim().toUpperCase() || "GET";
+        const statusCode = Number(entry?.status_code ?? 0);
+        const latencyMs = Number(entry?.latency_ms ?? 0);
+        return {
+          occurredAt,
+          path,
+          method,
+          surface: String(entry?.surface || "").trim() || "api",
+          statusCode: Number.isFinite(statusCode) ? Math.max(0, Math.round(statusCode)) : 0,
+          latencyMs: Number.isFinite(latencyMs) ? Math.max(0, Math.round(latencyMs)) : 0,
+          locationLabel: String(entry?.location_label || "").trim(),
+          countryCode: String(entry?.country_code || "").trim(),
+          sessionId: String(entry?.session_id || "").trim(),
+          clientIp: String(entry?.client_ip || "").trim(),
+          referrerHost: String(entry?.referrer_host || "").trim()
+        };
+      })
+      .filter(Boolean);
+  }
+
+  function renderRecentRequests(rows) {
+    if (!el.recentRequestsBody || !el.recentRequestsEmpty) return;
+    const items = normalizeRecentRequests(rows);
+    if (!items.length) {
+      el.recentRequestsBody.innerHTML = "";
+      el.recentRequestsEmpty.classList.remove("hidden");
+      return;
+    }
+
+    el.recentRequestsEmpty.classList.add("hidden");
+    el.recentRequestsBody.innerHTML = items
+      .map((entry) => {
+        const locationLabel = entry.locationLabel || entry.countryCode || "Unknown";
+        const routeMeta = [labelize(entry.surface), entry.referrerHost ? `Referrer ${entry.referrerHost}` : ""]
+          .filter(Boolean)
+          .join(" · ");
+        return `
+          <tr>
+            <td class="align-right">${escapeHtml(formatTimestamp(entry.occurredAt))}</td>
+            <td>
+              <div class="ss-analytics-request-route">
+                <span class="ss-analytics-endpoint-method">${escapeHtml(entry.method)}</span>
+                <code>${escapeHtml(entry.path)}</code>
+              </div>
+              <span class="ss-analytics-request-meta">${escapeHtml(routeMeta || "API request")}</span>
+            </td>
+            <td class="ss-analytics-request-status">
+              <strong>${escapeHtml(formatNumber(entry.statusCode))}</strong>
+              <span>${escapeHtml(formatNumber(entry.latencyMs))} ms</span>
+            </td>
+            <td class="ss-analytics-request-location">
+              <strong>${escapeHtml(locationLabel)}</strong>
+              <span>${escapeHtml(entry.countryCode || "No country code")}</span>
+            </td>
+            <td class="ss-analytics-request-identifier"><code>${escapeHtml(entry.sessionId || "—")}</code></td>
+            <td class="ss-analytics-request-identifier"><code>${escapeHtml(entry.clientIp || "—")}</code></td>
+          </tr>
+        `;
+      })
+      .join("");
+  }
+
   function normalizeNamedCountRows(rows, keyNames) {
     const list = Array.isArray(rows) ? rows : [];
     return list
@@ -2018,6 +2088,7 @@
         renderNamedCountList(el.browsersList, el.browsersEmpty, data?.clients?.browsers, ["browser", "label"]);
         renderNamedCountList(el.devicesList, el.devicesEmpty, data?.clients?.devices, ["device", "label"]);
         renderNamedCountList(el.platformsList, el.platformsEmpty, data?.clients?.platforms, ["platform", "label"]);
+        renderRecentRequests(data?.recent_requests);
         setSummary(data);
         updateLocationBreakdown(data?.by_location, data?.location_support);
         await updateMap(data?.by_country);
@@ -2138,6 +2209,8 @@
     el.devicesEmpty = $("analytics-devices-empty");
     el.platformsList = $("analytics-platforms-list");
     el.platformsEmpty = $("analytics-platforms-empty");
+    el.recentRequestsBody = $("analytics-recent-requests-body");
+    el.recentRequestsEmpty = $("analytics-recent-requests-empty");
     if (el.mapToggle) {
       el.mapToggle.addEventListener("click", handleMapToggleClick);
     }
@@ -2184,6 +2257,7 @@
     renderNamedCountList(el.browsersList, el.browsersEmpty, [], ["browser", "label"]);
     renderNamedCountList(el.devicesList, el.devicesEmpty, [], ["device", "label"]);
     renderNamedCountList(el.platformsList, el.platformsEmpty, [], ["platform", "label"]);
+    renderRecentRequests([]);
     renderLocationSupport(null);
     updateExecutiveSummary(null);
     void updateMap([]);

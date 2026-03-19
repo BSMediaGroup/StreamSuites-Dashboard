@@ -117,6 +117,7 @@
           result: evt.result || evt.status || meta.result || "",
           account_id: evt.account_id || meta.account_id || "",
           user_identifier: evt.user_identifier || evt.actor || meta.user_identifier || "",
+          client_ip: evt.client_ip || meta.client_ip || meta.ip || "",
           email_redacted: evt.email_redacted || evt.email || meta.email_redacted || meta.email || ""
         };
       })

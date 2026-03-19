@@ -833,6 +833,7 @@
           timestamp,
           source: pickString(event.source, event.origin, event.channel, event.type),
           user: pickString(event.user, event.actor, event.username, meta.user, meta.actor),
+          client_ip: pickString(event.client_ip, event.ip, meta.client_ip, meta.ip),
           action: pickString(
             event.action,
             event.description,

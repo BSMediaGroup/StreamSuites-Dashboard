@@ -123,10 +123,19 @@
       </header>
       <div class="ss-panel-body">
         <div class="ss-alerts-rules-stage ss-analytics-alerts-rules-stage">
-          <div class="ss-alerts-rules-feed-column">
-            <div id="analytics-alerts-rules-list" class="ss-analytics-alerts-rules-list" aria-live="polite"></div>
-            <div id="analytics-alerts-rules-empty" class="ss-empty-state hidden">No alert rules configured yet.</div>
-          </div>
+          <section class="ss-alerts-rules-browser" aria-labelledby="analytics-alerts-current-rules-title">
+            <div class="ss-alerts-rules-browser-head">
+              <div>
+                <h3 id="analytics-alerts-current-rules-title">Current rules</h3>
+                <p id="analytics-alerts-rules-rail-summary" class="muted">Select a rule card to edit it in the workspace below.</p>
+              </div>
+              <span class="ss-chip ss-chip-muted">Horizontal rule rail</span>
+            </div>
+            <div class="ss-alerts-rules-feed-column">
+              <div id="analytics-alerts-rules-list" class="ss-analytics-alerts-rules-list ss-alerts-rules-rail" aria-live="polite"></div>
+              <div id="analytics-alerts-rules-empty" class="ss-empty-state hidden">No alert rules configured yet.</div>
+            </div>
+          </section>
 
           <form id="analytics-alerts-rule-form" class="ss-analytics-alerts-form ss-alerts-rules-editor">
             <div class="ss-analytics-alerts-form-topline">
@@ -203,30 +212,36 @@
               </div>
               <div class="ss-alerts-message-workspace">
                 <div class="ss-alerts-message-fields">
-                  <label class="ss-form-row">
-                    <span>Notification title</span>
+                  <label class="ss-form-row ss-alerts-template-field" data-template-field-wrapper="title">
+                    <div class="ss-alerts-template-field-header">
+                      <span>Notification title</span>
+                      <span class="ss-alerts-template-field-chip">Title target</span>
+                    </div>
                     <textarea id="analytics-alerts-rule-title-template" rows="2" placeholder="Optional heading shown in supported notification surfaces."></textarea>
                     <span class="muted ss-alerts-field-help">Shown as the notification heading when a title is supported. Leave blank to use the backend default for the event.</span>
                   </label>
-                  <label class="ss-form-row">
-                    <span>Notification message</span>
+                  <label class="ss-form-row ss-alerts-template-field" data-template-field-wrapper="body">
+                    <div class="ss-alerts-template-field-header">
+                      <span>Notification message</span>
+                      <span class="ss-alerts-template-field-chip">Message target</span>
+                    </div>
                     <textarea id="analytics-alerts-rule-body-template" rows="6" placeholder="Optional message body shown to recipients."></textarea>
                     <span class="muted ss-alerts-field-help">Use plain language. Placeholders stay readable in preview and are filled by the backend when the alert sends.</span>
                   </label>
                 </div>
 
                 <div class="ss-alerts-message-assist">
-                  <details class="ss-analytics-alerts-template-panel ss-alerts-placeholders-panel" open>
-                    <summary class="ss-alerts-collapsible-summary ss-alerts-inline-summary" aria-labelledby="analytics-alerts-template-title">
+                  <section class="ss-analytics-alerts-template-panel ss-alerts-placeholders-panel ss-alerts-insert-variables-panel" aria-labelledby="analytics-alerts-template-title">
+                    <div class="ss-alerts-inline-summary">
                       <div class="ss-alerts-collapsible-summary-copy">
-                        <h5 id="analytics-alerts-template-title">Placeholders</h5>
+                        <h5 id="analytics-alerts-template-title">Insert variables</h5>
                         <p id="analytics-alerts-template-help" class="muted">Loading available backend placeholders.</p>
                       </div>
                       <div class="ss-alerts-collapsible-summary-meta">
                         <span class="ss-chip ss-chip-muted">Insert variables</span>
-                        <span class="ss-alerts-collapsible-toggle" aria-hidden="true"></span>
+                        <span class="muted">Click any variable to insert it nearby.</span>
                       </div>
-                    </summary>
+                    </div>
                     <div class="ss-analytics-alerts-template-browser">
                       <div class="ss-alerts-template-toolbar">
                         <div id="analytics-alerts-template-targets" class="ss-alerts-template-targets" role="group" aria-label="Choose which field receives inserted placeholders">
@@ -237,7 +252,7 @@
                       </div>
                       <div id="analytics-alerts-template-variables" class="ss-analytics-alerts-template-variables"></div>
                     </div>
-                  </details>
+                  </section>
 
                   <section class="ss-alerts-editor-section ss-alerts-preview-panel" aria-labelledby="analytics-alerts-preview-title">
                     <div class="ss-alerts-section-heading">

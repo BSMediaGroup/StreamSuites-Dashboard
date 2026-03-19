@@ -517,6 +517,10 @@
       actionCell.textContent = event.action || "—";
       row.appendChild(actionCell);
 
+      const ipCell = document.createElement("td");
+      ipCell.textContent = event.client_ip || "—";
+      row.appendChild(ipCell);
+
       body.appendChild(row);
     });
   }
@@ -1004,6 +1008,10 @@
       accountCell.textContent =
         evt.account_id || evt.user_identifier || "—";
       row.appendChild(accountCell);
+
+      const ipCell = document.createElement("td");
+      ipCell.textContent = evt.client_ip || "—";
+      row.appendChild(ipCell);
 
       const emailCell = document.createElement("td");
       emailCell.textContent = evt.email_redacted || "—";

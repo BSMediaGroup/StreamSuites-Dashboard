@@ -24,6 +24,15 @@
     surface: { label: "Surface", kind: "select" },
     destination_type: { label: "Destination type", kind: "select" }
   };
+  const TEMPLATE_CATEGORY_ORDER = [
+    "General",
+    "User",
+    "Geo",
+    "Request",
+    "Destination",
+    "Timing & thresholds",
+    "Other"
+  ];
 
   const locationFormatting = (() => {
     const PLACEHOLDER_VALUES = new Set(["", "-", "--", "unknown", "n/a", "na", "null", "undefined"]);
@@ -313,6 +322,7 @@
     ruleScopeAdvanced: null,
     ruleDestinations: null,
     rulesList: null,
+    rulesRailSummary: null,
     rulesEmpty: null,
     targetsRefresh: null,
     targetsTypeFilter: null,
@@ -654,6 +664,23 @@
   function severityLabel(value) {
     const normalized = String(value || "").trim().toLowerCase();
     return normalized === "warning" ? "Warning" : labelize(normalized || "info");
+  }
+
+  function severityTone(value) {
+    const normalized = String(value || "").trim().toLowerCase();
+    if (normalized === "critical") return "critical";
+    if (normalized === "error") return "error";
+    if (normalized === "warning") return "warning";
+    return "info";
+  }
+
+  function normalizeClientIp(value) {
+    const text = String(value || "").trim();
+    if (!text) return "";
+    if (["unknown", "n/a", "na", "none", "null", "(none)", "-"].includes(text.toLowerCase())) {
+      return "";
+    }
+    return text;
   }
 
   function promptAdminReauth() {
@@ -1080,7 +1107,15 @@
     const recommended = recommendedTemplateVariables(el.ruleEventType?.value);
     const recommendedKeys = new Set(recommended.map((item) => item.key));
     const remaining = state.templateVariables.filter((item) => !recommendedKeys.has(item.key));
-    const categories = Array.from(new Set(remaining.map((item) => item.category || "Other")));
+    const categories = Array.from(new Set(remaining.map((item) => item.category || "Other")))
+      .sort((left, right) => {
+        const leftIndex = TEMPLATE_CATEGORY_ORDER.indexOf(left);
+        const rightIndex = TEMPLATE_CATEGORY_ORDER.indexOf(right);
+        const normalizedLeft = leftIndex === -1 ? TEMPLATE_CATEGORY_ORDER.length : leftIndex;
+        const normalizedRight = rightIndex === -1 ? TEMPLATE_CATEGORY_ORDER.length : rightIndex;
+        if (normalizedLeft !== normalizedRight) return normalizedLeft - normalizedRight;
+        return left.localeCompare(right);
+      });
     const sections = [];
     if (recommended.length) {
       sections.push(renderTemplateVariableGroup("Recommended for this alert type", recommended));
@@ -1096,6 +1131,15 @@
     return state.activeTemplateField === "title" ? el.ruleTitleTemplate : el.ruleBodyTemplate;
   }
 
+  function updateTemplateFieldHighlight() {
+    ["title", "body"].forEach((field) => {
+      const wrapper = document.querySelector(`[data-template-field-wrapper="${field}"]`);
+      if (!(wrapper instanceof HTMLElement)) return;
+      const isActive = field === state.activeTemplateField;
+      wrapper.classList.toggle("is-active-template-target", isActive);
+    });
+  }
+
   function setActiveTemplateField(field, options = {}) {
     state.activeTemplateField = field === "title" ? "title" : "body";
     if (options.focusField) {
@@ -1104,6 +1148,7 @@
         target.focus();
       }
     }
+    updateTemplateFieldHighlight();
     renderTemplateBrowser();
   }
 
@@ -1409,9 +1454,16 @@
       applyRuleDefaultsFromEventType(el.ruleEventType?.value);
       applyScopeDefaultsFromEventType(el.ruleEventType?.value);
     }
+    updateTemplateFieldHighlight();
     renderTemplateBrowser();
     renderRulePreview();
     renderRulesList();
+  }
+
+  function scrollRuleEditorIntoView() {
+    if (!(el.ruleForm instanceof HTMLElement)) return;
+    if (window.innerWidth > 1180) return;
+    el.ruleForm.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function renderRulesList() {
@@ -1419,36 +1471,52 @@
     if (!state.rules.length) {
       el.rulesList.innerHTML = "";
       el.rulesEmpty.classList.remove("hidden");
+      if (el.rulesRailSummary) {
+        el.rulesRailSummary.textContent = "Create the first rule to start building alerts.";
+      }
       return;
     }
     el.rulesEmpty.classList.add("hidden");
+    if (el.rulesRailSummary) {
+      const activeRule = state.rules.find((item) => item.id === state.activeRuleId);
+      el.rulesRailSummary.textContent = activeRule
+        ? `Editing "${activeRule.name || getEventMeta(activeRule.event_type)?.label || labelize(activeRule.event_type)}" below.`
+        : "Select a rule card to edit it in the workspace below.";
+    }
     el.rulesList.innerHTML = state.rules
       .map((rule) => {
         const eventMeta = getEventMeta(rule.event_type);
         const isActive = state.activeRuleId === rule.id;
+        const severity = severityTone(rule.severity);
         const destinations = (Array.isArray(rule.destinations) ? rule.destinations : [])
           .map((item) => `<span class="ss-chip">${escapeHtml(destinationLabel(item))}</span>`)
           .join("");
         const scopeSummary = formatScopeSummary(rule.scope);
         return `
-          <article class="ss-analytics-alerts-rule-card${rule.enabled ? "" : " is-disabled"}${isActive ? " is-active" : ""}">
+          <article
+            class="ss-analytics-alerts-rule-card ss-alerts-rule-card--severity-${escapeHtml(severity)}${rule.enabled ? "" : " is-disabled"}${isActive ? " is-active" : ""}"
+            data-rule-card-id="${escapeHtml(rule.id)}"
+            role="button"
+            tabindex="0"
+            aria-pressed="${isActive ? "true" : "false"}"
+          >
             <div class="ss-analytics-alerts-rule-header">
               <div>
                 <h4 class="ss-analytics-alerts-rule-name">${escapeHtml(rule.name || eventMeta?.label || rule.event_type)}</h4>
                 <div class="ss-analytics-alerts-rule-chips">
                   <span class="ss-chip">${escapeHtml(eventMeta?.label || labelize(rule.event_type))}</span>
-                  <span class="ss-chip">${escapeHtml(severityLabel(rule.severity))}</span>
+                  <span class="ss-chip ss-alerts-rule-severity-chip ss-alerts-rule-severity-chip--${escapeHtml(severity)}">${escapeHtml(severityLabel(rule.severity))}</span>
                   <span class="ss-chip">${escapeHtml(labelize(rule.threshold_type))}</span>
                   <span class="ss-chip">${escapeHtml(rule.enabled ? "Enabled" : "Disabled")}</span>
-                  ${isActive ? '<span class="ss-chip ss-chip-warning">Editing</span>' : ""}
+                  ${isActive ? '<span class="ss-chip ss-chip-warning">Editing below</span>' : ""}
                 </div>
               </div>
               <div class="ss-analytics-alerts-rule-actions">
-                <button type="button" class="ss-btn ss-btn-secondary ss-btn-small" data-rule-action="toggle" data-rule-id="${escapeHtml(rule.id)}">
+                <button type="button" class="ss-btn ss-btn-small ss-alerts-rule-action ss-alerts-rule-action-${rule.enabled ? "disable" : "enable"}" data-rule-action="toggle" data-rule-id="${escapeHtml(rule.id)}">
                   ${rule.enabled ? "Disable" : "Enable"}
                 </button>
-                <button type="button" class="ss-btn ss-btn-secondary ss-btn-small" data-rule-action="edit" data-rule-id="${escapeHtml(rule.id)}">Edit</button>
-                <button type="button" class="ss-btn ss-btn-secondary ss-btn-small" data-rule-action="delete" data-rule-id="${escapeHtml(rule.id)}">Delete</button>
+                <button type="button" class="ss-btn ss-btn-small ss-alerts-rule-action ss-alerts-rule-action-edit" data-rule-action="edit" data-rule-id="${escapeHtml(rule.id)}">Edit</button>
+                <button type="button" class="ss-btn ss-btn-small ss-alerts-rule-action ss-alerts-rule-action-delete" data-rule-action="delete" data-rule-id="${escapeHtml(rule.id)}">Delete</button>
               </div>
             </div>
             ${destinations ? `<div class="ss-analytics-alerts-rule-chips">${destinations}</div>` : ""}
@@ -1572,6 +1640,11 @@
           .map((item) => `<span class="ss-chip">${escapeHtml(destinationLabel(item))}</span>`)
           .join("");
         const locationLabel = buildAlertLocationLabel(entry, { includeCountryWithCity: true });
+        const clientIp = normalizeClientIp(
+          entry?.metadata?.template_context?.client_ip
+          || entry?.payload_snapshot?.client_ip
+          || entry?.payload_snapshot?.ip
+        );
         const scopeSummary = entry?.metadata?.scope_summary
           || formatScopeSummary(entry?.metadata?.effective_scope || entry?.metadata?.rule_scope || {});
         return `
@@ -1589,6 +1662,7 @@
             ${entry.message ? `<p class="ss-analytics-alerts-history-message">${escapeHtml(entry.message)}</p>` : ""}
             ${destinations ? `<div class="ss-analytics-alerts-history-chips">${destinations}</div>` : ""}
             ${locationLabel ? `<p class="ss-analytics-alerts-history-context">Location: ${escapeHtml(locationLabel)}</p>` : ""}
+            ${clientIp ? `<p class="ss-analytics-alerts-history-context">Client IP: ${escapeHtml(clientIp)}</p>` : ""}
             ${scopeSummary ? `<p class="ss-analytics-alerts-history-context">Scope: ${escapeHtml(scopeSummary)}</p>` : ""}
             <div class="ss-analytics-alerts-history-meta">
               <span>Triggered: ${escapeHtml(formatTimestamp(entry.triggered_at))}</span>
@@ -2017,48 +2091,74 @@
 
   function handleRulesListClick(event) {
     const button = event.target.closest("[data-rule-action][data-rule-id]");
-    if (!(button instanceof HTMLButtonElement)) return;
-    const ruleId = String(button.getAttribute("data-rule-id") || "").trim();
-    const action = String(button.getAttribute("data-rule-action") || "").trim();
-    const rule = state.rules.find((item) => item.id === ruleId);
-    if (!rule) return;
+    if (button instanceof HTMLButtonElement) {
+      const ruleId = String(button.getAttribute("data-rule-id") || "").trim();
+      const action = String(button.getAttribute("data-rule-action") || "").trim();
+      const rule = state.rules.find((item) => item.id === ruleId);
+      if (!rule) return;
 
-    clearBanner();
-    try {
-      if (action === "edit") {
-        populateRuleForm(rule);
-        el.ruleName?.focus();
-        setStatus("Editing working-copy rule");
-        return;
-      }
-      if (action === "toggle") {
-        rule.enabled = !rule.enabled;
-        renderRulesList();
-        renderSummary();
-        renderPersistenceMeta();
-        setStatus("Rule status updated in the draft");
-        setBanner("Rule status is staged locally. Use Save changes to persist it to the backend.", "success");
-        return;
-      }
-      if (action === "delete") {
-        if (!window.confirm(`Delete alert rule "${rule.name || rule.event_type}"?`)) {
+      clearBanner();
+      try {
+        if (action === "edit") {
+          populateRuleForm(rule);
+          el.ruleName?.focus();
+          scrollRuleEditorIntoView();
+          setStatus("Editing working-copy rule");
           return;
         }
-        state.rules = state.rules.filter((item) => item.id !== ruleId);
-        if (state.activeRuleId === ruleId) {
-          populateRuleForm(null);
+        if (action === "toggle") {
+          rule.enabled = !rule.enabled;
+          renderRulesList();
+          renderSummary();
+          renderPersistenceMeta();
+          setStatus("Rule status updated in the draft");
+          setBanner("Rule status is staged locally. Use Save changes to persist it to the backend.", "success");
+          return;
         }
-        renderRulesList();
-        renderTestRuleOptions();
-        renderSummary();
-        renderPersistenceMeta();
-        setStatus("Rule removed from the draft");
-        setBanner("Rule removal is staged locally. Use Save changes to persist it to the backend.", "success");
+        if (action === "delete") {
+          if (!window.confirm(`Delete alert rule "${rule.name || rule.event_type}"?`)) {
+            return;
+          }
+          state.rules = state.rules.filter((item) => item.id !== ruleId);
+          if (state.activeRuleId === ruleId) {
+            populateRuleForm(null);
+          }
+          renderRulesList();
+          renderTestRuleOptions();
+          renderSummary();
+          renderPersistenceMeta();
+          setStatus("Rule removed from the draft");
+          setBanner("Rule removal is staged locally. Use Save changes to persist it to the backend.", "success");
+        }
+      } catch (err) {
+        setStatus("Rule action failed");
+        setBanner(err?.message || "Unable to update working-copy rule.");
       }
-    } catch (err) {
-      setStatus("Rule action failed");
-      setBanner(err?.message || "Unable to update working-copy rule.");
+      return;
     }
+
+    const card = event.target.closest("[data-rule-card-id]");
+    if (!(card instanceof HTMLElement)) return;
+    const ruleId = String(card.getAttribute("data-rule-card-id") || "").trim();
+    const rule = state.rules.find((item) => item.id === ruleId);
+    if (!rule) return;
+    populateRuleForm(rule);
+    setStatus("Editing working-copy rule");
+    scrollRuleEditorIntoView();
+  }
+
+  function handleRulesListKeydown(event) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    if (event.target.closest("[data-rule-action]")) return;
+    const card = event.target.closest("[data-rule-card-id]");
+    if (!(card instanceof HTMLElement)) return;
+    event.preventDefault();
+    const ruleId = String(card.getAttribute("data-rule-card-id") || "").trim();
+    const rule = state.rules.find((item) => item.id === ruleId);
+    if (!rule) return;
+    populateRuleForm(rule);
+    setStatus("Editing working-copy rule");
+    scrollRuleEditorIntoView();
   }
 
   async function handleTargetsListClick(event) {
@@ -2359,6 +2459,7 @@
     el.templateTargets?.addEventListener("click", handleTemplateTargetClick);
     el.templateVariables?.addEventListener("click", handleTemplateVariableClick);
     el.rulesList?.addEventListener("click", handleRulesListClick);
+    el.rulesList?.addEventListener("keydown", handleRulesListKeydown);
     el.targetsList?.addEventListener("click", handleTargetsListClick);
     el.targetsList?.addEventListener("submit", handleTargetRenameSubmit);
     el.targetsRefresh?.addEventListener("click", handleRefreshAll);
@@ -2391,6 +2492,7 @@
     el.templateTargets?.removeEventListener("click", handleTemplateTargetClick);
     el.templateVariables?.removeEventListener("click", handleTemplateVariableClick);
     el.rulesList?.removeEventListener("click", handleRulesListClick);
+    el.rulesList?.removeEventListener("keydown", handleRulesListKeydown);
     el.targetsList?.removeEventListener("click", handleTargetsListClick);
     el.targetsList?.removeEventListener("submit", handleTargetRenameSubmit);
     el.targetsRefresh?.removeEventListener("click", handleRefreshAll);
@@ -2488,6 +2590,7 @@
     el.ruleScopeAdvanced = $("analytics-alerts-rule-scope-advanced");
     el.ruleDestinations = $("analytics-alerts-rule-destinations");
     el.rulesList = $("analytics-alerts-rules-list");
+    el.rulesRailSummary = $("analytics-alerts-rules-rail-summary");
     el.rulesEmpty = $("analytics-alerts-rules-empty");
     el.targetsRefresh = $("analytics-alerts-targets-refresh");
     el.targetsTypeFilter = $("analytics-alerts-targets-type-filter");

@@ -260,4 +260,35 @@
       </aside>
     </div>
   </section>
+
+  <section class="ss-panel ss-analytics-request-panel" aria-labelledby="analytics-recent-requests-title">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2 id="analytics-recent-requests-title">Recent Request Activity</h2>
+        <p class="muted">Admin-only request samples expose trusted request IP and a stable session fingerprint when the runtime has them.</p>
+      </div>
+    </header>
+    <div class="ss-panel-body ss-analytics-recent-requests-body">
+      <div class="ss-table-scroll ss-analytics-recent-requests-wrap">
+        <table class="ss-table ss-table-compact" id="analytics-recent-requests-table">
+          <thead>
+            <tr>
+              <th class="align-right">Time</th>
+              <th>Route</th>
+              <th class="ss-analytics-num-col">Status</th>
+              <th>Location</th>
+              <th>Session</th>
+              <th>Client IP</th>
+            </tr>
+          </thead>
+          <tbody id="analytics-recent-requests-body">
+            <tr>
+              <td colspan="6" class="muted">Awaiting live request activity...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="analytics-recent-requests-empty" class="ss-empty-state hidden">No recent request samples in this window.</div>
+    </div>
+  </section>
 </main>
