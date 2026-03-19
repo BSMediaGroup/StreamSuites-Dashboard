@@ -201,54 +201,68 @@
                   <p class="muted">Set what the alert should say and use backend placeholders when you want live event values inserted.</p>
                 </div>
               </div>
-              <div class="ss-analytics-alerts-form-grid">
-                <label class="ss-form-row ss-analytics-alerts-form-grid-wide">
-                  <span>Notification title</span>
-                  <textarea id="analytics-alerts-rule-title-template" rows="2" placeholder="Optional heading shown in supported notification surfaces."></textarea>
-                  <span class="muted ss-alerts-field-help">Shown as the notification heading when a title is supported. Leave blank to use the backend default for the event.</span>
-                </label>
-                <label class="ss-form-row ss-analytics-alerts-form-grid-wide">
-                  <span>Notification message</span>
-                  <textarea id="analytics-alerts-rule-body-template" rows="4" placeholder="Optional message body shown to recipients."></textarea>
-                  <span class="muted ss-alerts-field-help">Use plain language. Placeholders stay readable in preview and are filled by the backend when the alert sends.</span>
-                </label>
+              <div class="ss-alerts-message-workspace">
+                <div class="ss-alerts-message-fields">
+                  <label class="ss-form-row">
+                    <span>Notification title</span>
+                    <textarea id="analytics-alerts-rule-title-template" rows="2" placeholder="Optional heading shown in supported notification surfaces."></textarea>
+                    <span class="muted ss-alerts-field-help">Shown as the notification heading when a title is supported. Leave blank to use the backend default for the event.</span>
+                  </label>
+                  <label class="ss-form-row">
+                    <span>Notification message</span>
+                    <textarea id="analytics-alerts-rule-body-template" rows="6" placeholder="Optional message body shown to recipients."></textarea>
+                    <span class="muted ss-alerts-field-help">Use plain language. Placeholders stay readable in preview and are filled by the backend when the alert sends.</span>
+                  </label>
+                </div>
+
+                <div class="ss-alerts-message-assist">
+                  <details class="ss-analytics-alerts-template-panel ss-alerts-placeholders-panel" open>
+                    <summary class="ss-alerts-collapsible-summary ss-alerts-inline-summary" aria-labelledby="analytics-alerts-template-title">
+                      <div class="ss-alerts-collapsible-summary-copy">
+                        <h5 id="analytics-alerts-template-title">Placeholders</h5>
+                        <p id="analytics-alerts-template-help" class="muted">Loading available backend placeholders.</p>
+                      </div>
+                      <div class="ss-alerts-collapsible-summary-meta">
+                        <span class="ss-chip ss-chip-muted">Insert variables</span>
+                        <span class="ss-alerts-collapsible-toggle" aria-hidden="true"></span>
+                      </div>
+                    </summary>
+                    <div class="ss-analytics-alerts-template-browser">
+                      <div class="ss-alerts-template-toolbar">
+                        <div id="analytics-alerts-template-targets" class="ss-alerts-template-targets" role="group" aria-label="Choose which field receives inserted placeholders">
+                          <button type="button" class="ss-alerts-template-target-button" data-template-target="title" aria-pressed="false">Title</button>
+                          <button type="button" class="ss-alerts-template-target-button" data-template-target="body" aria-pressed="true">Message</button>
+                        </div>
+                        <div id="analytics-alerts-template-focus" class="ss-analytics-alerts-template-focus muted">Click a message field, then choose a placeholder to insert.</div>
+                      </div>
+                      <div id="analytics-alerts-template-variables" class="ss-analytics-alerts-template-variables"></div>
+                    </div>
+                  </details>
+
+                  <section class="ss-alerts-editor-section ss-alerts-preview-panel" aria-labelledby="analytics-alerts-preview-title">
+                    <div class="ss-alerts-section-heading">
+                      <div>
+                        <h5 id="analytics-alerts-preview-title">Message preview</h5>
+                        <p class="muted">Shows how the current title and message map to an outbound notification.</p>
+                      </div>
+                    </div>
+                    <article class="ss-alerts-preview-card">
+                      <div class="ss-alerts-preview-topline">
+                        <span id="analytics-alerts-preview-event" class="ss-chip">Event</span>
+                        <span id="analytics-alerts-preview-severity" class="ss-chip">Severity</span>
+                      </div>
+                      <strong id="analytics-alerts-preview-title-text">Notification title preview</strong>
+                      <p id="analytics-alerts-preview-message-text">Notification message preview</p>
+                      <div class="ss-alerts-preview-meta">
+                        <span><strong>Destinations:</strong> <span id="analytics-alerts-preview-destinations">Windows client</span></span>
+                      </div>
+                      <p id="analytics-alerts-preview-note" class="ss-alerts-preview-note muted">
+                        Placeholders wrapped in braces stay visible here and are filled by the backend when the alert sends.
+                      </p>
+                    </article>
+                  </section>
+                </div>
               </div>
-
-              <section class="ss-alerts-editor-section ss-alerts-preview-panel" aria-labelledby="analytics-alerts-preview-title">
-                <div class="ss-alerts-section-heading">
-                  <div>
-                    <h5 id="analytics-alerts-preview-title">Live preview</h5>
-                    <p class="muted">Shows how the current title and message map to an outbound notification.</p>
-                  </div>
-                </div>
-                <article class="ss-alerts-preview-card">
-                  <div class="ss-alerts-preview-topline">
-                    <span id="analytics-alerts-preview-event" class="ss-chip">Event</span>
-                    <span id="analytics-alerts-preview-severity" class="ss-chip">Severity</span>
-                  </div>
-                  <strong id="analytics-alerts-preview-title-text">Notification title preview</strong>
-                  <p id="analytics-alerts-preview-message-text">Notification message preview</p>
-                  <div class="ss-alerts-preview-meta">
-                    <span><strong>Destinations:</strong> <span id="analytics-alerts-preview-destinations">Windows client</span></span>
-                  </div>
-                  <p id="analytics-alerts-preview-note" class="ss-alerts-preview-note muted">
-                    Placeholders wrapped in braces stay visible here and are filled by the backend when the alert sends.
-                  </p>
-                </article>
-              </section>
-
-              <section class="ss-analytics-alerts-template-panel" aria-labelledby="analytics-alerts-template-title">
-                <div class="ss-alerts-section-heading">
-                  <div>
-                    <h5 id="analytics-alerts-template-title">Placeholders</h5>
-                    <p id="analytics-alerts-template-help" class="muted">Loading available backend placeholders.</p>
-                  </div>
-                </div>
-                <div class="ss-analytics-alerts-template-browser">
-                  <div id="analytics-alerts-template-focus" class="ss-analytics-alerts-template-focus muted">Click a message field, then choose a placeholder to insert.</div>
-                  <div id="analytics-alerts-template-variables" class="ss-analytics-alerts-template-variables"></div>
-                </div>
-              </section>
             </section>
 
             <section class="ss-alerts-editor-section" aria-labelledby="analytics-alerts-rule-behaviour-title">
@@ -338,122 +352,127 @@
       </div>
     </section>
 
-    <div class="ss-alerts-side-stack ss-analytics-alerts-rail">
-      <section class="ss-panel ss-analytics-alerts-subpanel" aria-labelledby="analytics-alerts-preferences-title">
-        <header class="ss-panel-header">
-          <div class="ss-panel-header-main">
-            <h2 id="analytics-alerts-preferences-title">Delivery defaults</h2>
-            <p class="muted">Set overall delivery behavior before any individual rule sends.</p>
-          </div>
-        </header>
-        <div class="ss-panel-body">
-          <form id="analytics-alerts-preferences-form" class="ss-analytics-alerts-form">
-            <div class="ss-analytics-alerts-toggle-grid">
-              <label class="ss-analytics-alerts-inline-toggle">
-                <input type="checkbox" id="analytics-alerts-master-enabled" />
-                <span>Alerts enabled</span>
-              </label>
-              <label class="ss-analytics-alerts-inline-toggle">
-                <input type="checkbox" id="analytics-alerts-quiet-hours-enabled" />
-                <span>Quiet hours enabled</span>
-              </label>
-            </div>
+  </section>
 
-            <div class="ss-analytics-alerts-form-grid">
-              <label class="ss-form-row">
-                <span>Quiet hours start</span>
-                <input type="time" id="analytics-alerts-quiet-start" />
-                <span class="muted ss-alerts-field-help">Start time for backend quiet-hour suppression.</span>
-              </label>
-              <label class="ss-form-row">
-                <span>Quiet hours end</span>
-                <input type="time" id="analytics-alerts-quiet-end" />
-                <span class="muted ss-alerts-field-help">If this crosses midnight, quiet hours continue into the next day.</span>
-              </label>
-              <label class="ss-form-row ss-analytics-alerts-form-grid-wide">
-                <span>Timezone</span>
-                <input type="text" id="analytics-alerts-timezone" placeholder="UTC" autocomplete="off" />
-                <span class="muted ss-alerts-field-help">Used by the backend when evaluating quiet hours and timestamps.</span>
-              </label>
-            </div>
-
-            <p class="muted">
-              Destination defaults are applied per channel before any send attempt. Use the rule editor when a specific alert needs narrower targeting.
-            </p>
-
-            <fieldset class="ss-fieldset">
-              <legend>Channel defaults</legend>
-              <div id="analytics-alerts-destination-defaults" class="ss-analytics-alerts-destination-defaults"></div>
-            </fieldset>
-
-            <div class="ss-analytics-alerts-form-actions">
-              <button type="submit" id="analytics-alerts-preferences-save" class="ss-btn ss-btn-secondary">Stage default changes</button>
-            </div>
-          </form>
+  <section class="ss-alerts-support-grid">
+    <details class="ss-panel ss-analytics-alerts-subpanel ss-alerts-collapsible-panel" open>
+      <summary class="ss-panel-header ss-alerts-collapsible-summary" aria-labelledby="analytics-alerts-preferences-title">
+        <div class="ss-panel-header-main ss-alerts-collapsible-summary-copy">
+          <h2 id="analytics-alerts-preferences-title">Delivery defaults</h2>
+          <p class="muted">Set overall delivery behavior and channel minimums without permanently shrinking the rule editor.</p>
         </div>
-      </section>
-
-      <section class="ss-panel ss-analytics-alerts-subpanel" aria-labelledby="analytics-alerts-test-title">
-        <header class="ss-panel-header">
-          <div class="ss-panel-header-main">
-            <h2 id="analytics-alerts-test-title">Send test notification</h2>
-            <p class="muted">Trigger a safe admin test through the existing backend endpoint and confirm where it lands.</p>
-          </div>
-        </header>
-        <div class="ss-panel-body">
-          <form id="analytics-alerts-test-form" class="ss-analytics-alerts-form">
-            <div class="ss-analytics-alerts-form-grid">
-              <label class="ss-form-row">
-                <span>Event type</span>
-                <select id="analytics-alerts-test-event-type"></select>
-              </label>
-              <label class="ss-form-row">
-                <span>Severity override</span>
-                <select id="analytics-alerts-test-severity">
-                  <option value="">Default</option>
-                  <option value="info">Info</option>
-                  <option value="warning">Warning</option>
-                  <option value="error">Error</option>
-                  <option value="critical">Critical</option>
-                </select>
-              </label>
-              <label class="ss-form-row">
-                <span>Sample metric value</span>
-                <input type="number" id="analytics-alerts-test-metric-value" min="0" step="1" value="9999" />
-              </label>
-              <label class="ss-form-row">
-                <span>Specific rule</span>
-                <select id="analytics-alerts-test-rule">
-                  <option value="">Use matching rules</option>
-                </select>
-              </label>
-              <label class="ss-form-row ss-analytics-alerts-form-grid-wide">
-                <span>Test notification title</span>
-                <input type="text" id="analytics-alerts-test-title-input" placeholder="Optional test title" autocomplete="off" />
-              </label>
-              <label class="ss-form-row ss-analytics-alerts-form-grid-wide">
-                <span>Test notification message</span>
-                <textarea id="analytics-alerts-test-message" rows="2" placeholder="Optional message"></textarea>
-              </label>
-            </div>
-
-            <fieldset class="ss-fieldset">
-              <legend>Send test to</legend>
-              <div id="analytics-alerts-test-destinations" class="ss-analytics-alerts-destination-defaults"></div>
-            </fieldset>
-
+        <div class="ss-alerts-collapsible-summary-meta">
+          <span class="ss-chip ss-chip-muted">Supporting settings</span>
+          <span class="ss-alerts-collapsible-toggle" aria-hidden="true"></span>
+        </div>
+      </summary>
+      <div class="ss-panel-body ss-alerts-collapsible-body">
+        <form id="analytics-alerts-preferences-form" class="ss-analytics-alerts-form">
+          <div class="ss-analytics-alerts-toggle-grid">
             <label class="ss-analytics-alerts-inline-toggle">
-              <input type="checkbox" id="analytics-alerts-test-force" />
-              <span>Bypass quiet hours and suppression checks</span>
+              <input type="checkbox" id="analytics-alerts-master-enabled" />
+              <span>Alerts enabled</span>
             </label>
+            <label class="ss-analytics-alerts-inline-toggle">
+              <input type="checkbox" id="analytics-alerts-quiet-hours-enabled" />
+              <span>Quiet hours enabled</span>
+            </label>
+          </div>
 
-            <div class="ss-analytics-alerts-form-actions">
-              <button type="submit" id="analytics-alerts-test-submit" class="ss-btn ss-btn-primary">Send test notification</button>
-            </div>
-          </form>
+          <div class="ss-analytics-alerts-form-grid">
+            <label class="ss-form-row">
+              <span>Quiet hours start</span>
+              <input type="time" id="analytics-alerts-quiet-start" />
+              <span class="muted ss-alerts-field-help">Start time for backend quiet-hour suppression.</span>
+            </label>
+            <label class="ss-form-row">
+              <span>Quiet hours end</span>
+              <input type="time" id="analytics-alerts-quiet-end" />
+              <span class="muted ss-alerts-field-help">If this crosses midnight, quiet hours continue into the next day.</span>
+            </label>
+            <label class="ss-form-row ss-analytics-alerts-form-grid-wide">
+              <span>Timezone</span>
+              <input type="text" id="analytics-alerts-timezone" placeholder="UTC" autocomplete="off" />
+              <span class="muted ss-alerts-field-help">Used by the backend when evaluating quiet hours and timestamps.</span>
+            </label>
+          </div>
+
+          <p class="muted">
+            Destination defaults are applied per channel before any send attempt. Use the rule editor when a specific alert needs narrower targeting.
+          </p>
+
+          <fieldset class="ss-fieldset">
+            <legend>Channel defaults</legend>
+            <div id="analytics-alerts-destination-defaults" class="ss-analytics-alerts-destination-defaults"></div>
+          </fieldset>
+
+          <div class="ss-analytics-alerts-form-actions">
+            <button type="submit" id="analytics-alerts-preferences-save" class="ss-btn ss-btn-secondary">Stage default changes</button>
+          </div>
+        </form>
+      </div>
+    </details>
+
+    <section class="ss-panel ss-analytics-alerts-subpanel" aria-labelledby="analytics-alerts-test-title">
+      <header class="ss-panel-header">
+        <div class="ss-panel-header-main">
+          <h2 id="analytics-alerts-test-title">Send test notification</h2>
+          <p class="muted">Trigger a safe admin test through the existing backend endpoint and confirm where it lands.</p>
         </div>
-      </section>
-    </div>
+      </header>
+      <div class="ss-panel-body">
+        <form id="analytics-alerts-test-form" class="ss-analytics-alerts-form">
+          <div class="ss-analytics-alerts-form-grid">
+            <label class="ss-form-row">
+              <span>Event type</span>
+              <select id="analytics-alerts-test-event-type"></select>
+            </label>
+            <label class="ss-form-row">
+              <span>Severity override</span>
+              <select id="analytics-alerts-test-severity">
+                <option value="">Default</option>
+                <option value="info">Info</option>
+                <option value="warning">Warning</option>
+                <option value="error">Error</option>
+                <option value="critical">Critical</option>
+              </select>
+            </label>
+            <label class="ss-form-row">
+              <span>Sample metric value</span>
+              <input type="number" id="analytics-alerts-test-metric-value" min="0" step="1" value="9999" />
+            </label>
+            <label class="ss-form-row">
+              <span>Specific rule</span>
+              <select id="analytics-alerts-test-rule">
+                <option value="">Use matching rules</option>
+              </select>
+            </label>
+            <label class="ss-form-row ss-analytics-alerts-form-grid-wide">
+              <span>Test notification title</span>
+              <input type="text" id="analytics-alerts-test-title-input" placeholder="Optional test title" autocomplete="off" />
+            </label>
+            <label class="ss-form-row ss-analytics-alerts-form-grid-wide">
+              <span>Test notification message</span>
+              <textarea id="analytics-alerts-test-message" rows="2" placeholder="Optional message"></textarea>
+            </label>
+          </div>
+
+          <fieldset class="ss-fieldset">
+            <legend>Send test to</legend>
+            <div id="analytics-alerts-test-destinations" class="ss-analytics-alerts-destination-defaults"></div>
+          </fieldset>
+
+          <label class="ss-analytics-alerts-inline-toggle">
+            <input type="checkbox" id="analytics-alerts-test-force" />
+            <span>Bypass quiet hours and suppression checks</span>
+          </label>
+
+          <div class="ss-analytics-alerts-form-actions">
+            <button type="submit" id="analytics-alerts-test-submit" class="ss-btn ss-btn-primary">Send test notification</button>
+          </div>
+        </form>
+      </div>
+    </section>
   </section>
 
   <section class="ss-alerts-operations-grid ss-analytics-alerts-bottom-grid">

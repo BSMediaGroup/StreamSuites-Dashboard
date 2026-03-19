@@ -287,6 +287,7 @@
     ruleBodyTemplate: null,
     templateHelp: null,
     templateFocus: null,
+    templateTargets: null,
     templateVariables: null,
     previewEvent: null,
     previewSeverity: null,
@@ -1062,10 +1063,19 @@
     const missingText = state.templateMissingValuePolicy === "blank"
       ? "Missing values render blank."
       : "Missing payload values follow the backend missing-value policy.";
+    const insertingIntoTitle = state.activeTemplateField === "title";
     el.templateHelp.textContent = `Use placeholders like ${syntax}. The backend fills them when the notification sends. ${missingText}`;
-    el.templateFocus.textContent = state.activeTemplateField === "title"
-      ? "Placeholders will insert into the notification title."
-      : "Placeholders will insert into the notification message.";
+    el.templateFocus.textContent = insertingIntoTitle
+      ? "Insert variables into the notification title while the title field stays in view."
+      : "Insert variables into the notification message while the editor and placeholders stay side by side.";
+    if (el.templateTargets) {
+      el.templateTargets.querySelectorAll("[data-template-target]").forEach((button) => {
+        if (!(button instanceof HTMLButtonElement)) return;
+        const isActive = button.getAttribute("data-template-target") === state.activeTemplateField;
+        button.classList.toggle("is-active", isActive);
+        button.setAttribute("aria-pressed", isActive ? "true" : "false");
+      });
+    }
 
     const recommended = recommendedTemplateVariables(el.ruleEventType?.value);
     const recommendedKeys = new Set(recommended.map((item) => item.key));
@@ -1082,8 +1092,23 @@
     el.templateVariables.innerHTML = sections.join("") || "<p class=\"muted\">No placeholders are currently available from the backend.</p>";
   }
 
+  function getActiveTemplateFieldElement() {
+    return state.activeTemplateField === "title" ? el.ruleTitleTemplate : el.ruleBodyTemplate;
+  }
+
+  function setActiveTemplateField(field, options = {}) {
+    state.activeTemplateField = field === "title" ? "title" : "body";
+    if (options.focusField) {
+      const target = getActiveTemplateFieldElement();
+      if (target instanceof HTMLTextAreaElement) {
+        target.focus();
+      }
+    }
+    renderTemplateBrowser();
+  }
+
   function insertTokenIntoActiveTemplate(token) {
-    const target = state.activeTemplateField === "title" ? el.ruleTitleTemplate : el.ruleBodyTemplate;
+    const target = getActiveTemplateFieldElement();
     if (!(target instanceof HTMLTextAreaElement)) return;
     const start = target.selectionStart ?? target.value.length;
     const end = target.selectionEnd ?? start;
@@ -2162,13 +2187,20 @@
 
   function handleTemplateFieldFocus(event) {
     if (event.target === el.ruleTitleTemplate) {
-      state.activeTemplateField = "title";
+      setActiveTemplateField("title");
     } else if (event.target === el.ruleBodyTemplate) {
-      state.activeTemplateField = "body";
+      setActiveTemplateField("body");
     } else {
       return;
     }
-    renderTemplateBrowser();
+  }
+
+  function handleTemplateTargetClick(event) {
+    const button = event.target.closest("[data-template-target]");
+    if (!(button instanceof HTMLButtonElement)) return;
+    const field = String(button.getAttribute("data-template-target") || "").trim();
+    if (!field) return;
+    setActiveTemplateField(field, { focusField: true });
   }
 
   function handleTemplateVariableClick(event) {
@@ -2324,6 +2356,7 @@
     el.ruleScopeEnabled?.addEventListener("change", handleRuleScopeToggle);
     el.ruleTitleTemplate?.addEventListener("focus", handleTemplateFieldFocus);
     el.ruleBodyTemplate?.addEventListener("focus", handleTemplateFieldFocus);
+    el.templateTargets?.addEventListener("click", handleTemplateTargetClick);
     el.templateVariables?.addEventListener("click", handleTemplateVariableClick);
     el.rulesList?.addEventListener("click", handleRulesListClick);
     el.targetsList?.addEventListener("click", handleTargetsListClick);
@@ -2355,6 +2388,7 @@
     el.ruleScopeEnabled?.removeEventListener("change", handleRuleScopeToggle);
     el.ruleTitleTemplate?.removeEventListener("focus", handleTemplateFieldFocus);
     el.ruleBodyTemplate?.removeEventListener("focus", handleTemplateFieldFocus);
+    el.templateTargets?.removeEventListener("click", handleTemplateTargetClick);
     el.templateVariables?.removeEventListener("click", handleTemplateVariableClick);
     el.rulesList?.removeEventListener("click", handleRulesListClick);
     el.targetsList?.removeEventListener("click", handleTargetsListClick);
@@ -2428,6 +2462,7 @@
     el.ruleBodyTemplate = $("analytics-alerts-rule-body-template");
     el.templateHelp = $("analytics-alerts-template-help");
     el.templateFocus = $("analytics-alerts-template-focus");
+    el.templateTargets = $("analytics-alerts-template-targets");
     el.templateVariables = $("analytics-alerts-template-variables");
     el.previewEvent = $("analytics-alerts-preview-event");
     el.previewSeverity = $("analytics-alerts-preview-severity");
