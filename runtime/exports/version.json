@@ -1,7 +1,7 @@
 {
   "project": "StreamSuites Runtime",
-  "version": "0.4.1-alpha",
-  "build": "local",
+  "version": "0.4.2-alpha",
+  "build": "2026.03.19+018",
   "generated_at": "",
   "source": "dashboard-static"
 }

@@ -1,10 +1,34 @@
 {
   "meta": {
     "project": "StreamSuites",
-    "version": "0.2.2-alpha",
-    "last_updated": "2026-01-02"
+    "version": "0.4.2-alpha",
+    "last_updated": "2026-03-20"
   },
   "entries": [
+    {
+      "id": "2026-03-20-dashboard-v0-4-2-alpha",
+      "date": "2026-03-20",
+      "version": "0.4.2-alpha",
+      "scope": "dashboard",
+      "title": "StreamSuites Dashboard v0.4.2-alpha",
+      "summary": "Separated Alerts from Analytics, hardened admin hydration after the geo rollout, and expanded alert authoring to match the newer backend contract.",
+      "details": [
+        "Split Alerts into its own dedicated admin route and preserved Analytics as a separate reporting page with the geo map restored.",
+        "Improved admin hydration resilience through state-loader hardening, safer partial-settlement behavior, and reduced retry-storm overlap when some sections fail.",
+        "Expanded alert authoring with tokenized placeholders, richer geo and request variables, user_code and visitor-IP support, page-path deep links, and backward-compatible multi-surface rule filtering.",
+        "Added the FindMeHere Directory surface to analytics and alerting views so directory traffic is no longer merged into generic public activity.",
+        "Added a live multi-surface preview matrix so Desktop, Browser, and Plain alert renders can be compared without changing stored template syntax.",
+        "Compare: v0.4.0-alpha...v0.4.2-alpha"
+      ],
+      "tags": [
+        "alerts",
+        "analytics",
+        "hydration",
+        "geo",
+        "admin"
+      ],
+      "is_latest": true
+    },
     {
       "id": "2026-01-alpha-version-sync",
       "date": "2026-01-01",
@@ -22,7 +46,7 @@
         "metadata",
         "dashboard"
       ],
-      "is_latest": true
+      "is_latest": false
     },
     {
       "id": "2025-12-project-resumed",

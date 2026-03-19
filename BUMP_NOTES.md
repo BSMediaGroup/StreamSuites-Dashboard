@@ -1,6 +1,12 @@
 # Bump Notes
 
-## CURRENT VER= 0.4.1-alpha / PENDING VER= 0.4.2-alpha
+## CURRENT VER= 0.4.2-alpha / PENDING VER= none
+
+## Release Prep Completion - v0.4.2-alpha
+
+- The repo-local runtime/version mirrors used by this admin surface now report `0.4.2-alpha` in `runtime/version.py`, `runtime/exports/version.json`, and `docs/runtime/exports/version.json`.
+- Release-note source material for this bump now lives in `docs/data/changelog.dashboard.json`, using the compare range `v0.4.0-alpha...v0.4.2-alpha`.
+- Earlier notes below remain as the cumulative milestone record, but the previous `0.4.1-alpha` versus `0.4.2-alpha` mirror mismatch for this repo has now been reconciled.
 
 ### Technical Notes
 
