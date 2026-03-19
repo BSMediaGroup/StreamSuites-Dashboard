@@ -2025,6 +2025,22 @@
   color: var(--text-secondary);
 }
 
+.ss-analytics-alerts-history-link {
+  color: var(--accent-primary);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.16em;
+}
+
+.ss-analytics-alerts-history-link:hover,
+.ss-analytics-alerts-history-link:focus-visible {
+  color: color-mix(in srgb, var(--accent-primary) 82%, white 18%);
+}
+
+.ss-analytics-alerts-history-context-meta {
+  color: var(--text-muted);
+}
+
 .ss-analytics-alerts-rule-chips,
 .ss-analytics-alerts-target-chips,
 .ss-analytics-alerts-history-chips {

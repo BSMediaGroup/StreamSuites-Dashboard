@@ -7,8 +7,8 @@
   const HISTORY_PAGE_SIZE = 5;
   const SEVERITIES = ["info", "warning", "error", "critical"];
   const DESTINATION_ICON_MAP = {
-    windows_client: "/assets/icons/ui/windows.svg",
-    pushover: "/assets/icons/ui/bell.svg"
+    windows_client: "/assets/icons/ui/win2.svg",
+    pushover: "/assets/icons/ui/mobilemsg.svg"
   };
   const SCOPE_FIELD_ORDER = [
     "page_path",
@@ -31,12 +31,13 @@
     destination_type: { label: "Destination type", kind: "select" }
   };
   const TEMPLATE_CATEGORY_ORDER = [
-    "General",
-    "User",
+    "General / Event",
+    "Account / User",
+    "Request / Page",
+    "Session / Client",
     "Geo",
-    "Request",
-    "Destination",
-    "Timing & thresholds",
+    "Destination / Delivery",
+    "Timing",
     "Other"
   ];
 
@@ -539,6 +540,43 @@
 
   function buildAlertLocationLabel(entry, options = {}) {
     return buildAlertLocationPresentation(entry, options)?.primaryLabel || "";
+  }
+
+  function normalizeExternalUrl(value) {
+    const text = String(value || "").trim();
+    if (!text) return "";
+    try {
+      const parsed = new URL(text);
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+        return "";
+      }
+      return parsed.toString();
+    } catch {
+      return "";
+    }
+  }
+
+  function getAlertPageInfo(entry) {
+    const templateContext = entry?.metadata?.template_context || {};
+    const payload = entry?.payload_snapshot || {};
+    const pagePath = String(templateContext.page_path || payload.page_path || "").trim();
+    const pageUrl = normalizeExternalUrl(templateContext.page_url || payload.page_url);
+    const pageTitle = String(templateContext.page_title || payload.page_title || "").trim();
+    return {
+      pagePath,
+      pageUrl,
+      pageTitle
+    };
+  }
+
+  function renderAlertPageContext(entry) {
+    const page = getAlertPageInfo(entry);
+    if (!page.pagePath) return "";
+    const pageMarkup = page.pageUrl
+      ? `<a class="ss-analytics-alerts-history-link" href="${escapeHtml(page.pageUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(page.pagePath)}</a>`
+      : escapeHtml(page.pagePath);
+    const suffix = page.pageTitle ? ` <span class="ss-analytics-alerts-history-context-meta">(${escapeHtml(page.pageTitle)})</span>` : "";
+    return `<p class="ss-analytics-alerts-history-context">Page: ${pageMarkup}${suffix}</p>`;
   }
 
   function collectObservedScopeValues(field) {
@@ -1837,6 +1875,7 @@
           .map((item) => renderDestinationChip(item, "ss-alerts-destination-chip"))
           .join("");
         const locationLabel = buildAlertLocationLabel(entry, { includeCountryWithCity: true });
+        const pageContext = renderAlertPageContext(entry);
         const clientIp = normalizeClientIp(
           entry?.metadata?.template_context?.client_ip
           || entry?.payload_snapshot?.client_ip
@@ -1858,6 +1897,7 @@
             </div>
             ${entry.message ? `<p class="ss-analytics-alerts-history-message">${escapeHtml(entry.message)}</p>` : ""}
             ${destinations ? `<div class="ss-analytics-alerts-history-chips">${destinations}</div>` : ""}
+            ${pageContext}
             ${locationLabel ? `<p class="ss-analytics-alerts-history-context">Location: ${escapeHtml(locationLabel)}</p>` : ""}
             ${clientIp ? `<p class="ss-analytics-alerts-history-context">Client IP: ${escapeHtml(clientIp)}</p>` : ""}
             ${scopeSummary ? `<p class="ss-analytics-alerts-history-context">Scope: ${escapeHtml(scopeSummary)}</p>` : ""}
