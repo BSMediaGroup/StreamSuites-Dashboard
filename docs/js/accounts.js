@@ -958,6 +958,14 @@ function normalizeUser(raw = {}) {
         <button
           type="button"
           class="ss-btn ss-btn-small ss-btn-secondary"
+          data-account-open-integrations
+          data-account-id="${escapeHtml(accountId)}"
+        >
+          Integrations
+        </button>
+        <button
+          type="button"
+          class="ss-btn ss-btn-small ss-btn-secondary"
           data-account-open-stats
           data-account-id="${escapeHtml(accountId)}"
         >
@@ -1030,6 +1038,27 @@ function normalizeUser(raw = {}) {
       return;
     }
     window.location.hash = `#creator-stats?account_id=${encodeURIComponent(normalizedId)}`;
+  }
+
+  function openCreatorIntegrations(accountId) {
+    const normalizedId = normalizeAccountId(accountId);
+    if (!normalizedId || normalizedId === "—") return;
+    if (
+      !window.StreamSuitesCreatorIntegrationsNav ||
+      typeof window.StreamSuitesCreatorIntegrationsNav !== "object"
+    ) {
+      window.StreamSuitesCreatorIntegrationsNav = {};
+    }
+    window.StreamSuitesCreatorIntegrationsNav.accountId = normalizedId;
+    window.StreamSuitesCreatorIntegrationsNav.from = "accounts";
+    window.StreamSuitesCreatorIntegrationsNav.ts = Date.now();
+    if (window.StreamSuitesAdminRoutes?.navigateToView) {
+      window.StreamSuitesAdminRoutes.navigateToView("creator-integrations", {
+        params: { account_id: normalizedId }
+      });
+      return;
+    }
+    window.location.hash = `#creator-integrations?account_id=${encodeURIComponent(normalizedId)}`;
   }
 
   function getBaseRowByAccountId(accountId) {
@@ -2185,6 +2214,14 @@ function normalizeUser(raw = {}) {
         clearRowClickTimer();
         const accountId = normalizeAccountId(statsButton.getAttribute("data-account-id"));
         openCreatorStats(accountId);
+        return;
+      }
+      const integrationsButton = target.closest("[data-account-open-integrations]");
+      if (integrationsButton) {
+        event.preventDefault();
+        clearRowClickTimer();
+        const accountId = normalizeAccountId(integrationsButton.getAttribute("data-account-id"));
+        openCreatorIntegrations(accountId);
         return;
       }
       if (isInteractiveRowTarget(target)) return;

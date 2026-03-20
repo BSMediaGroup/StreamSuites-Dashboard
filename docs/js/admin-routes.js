@@ -17,6 +17,7 @@
     approvals: { canonical: "/approvals" },
     accounts: { canonical: "/users", aliases: ["/accounts"] },
     creators: { canonical: "/profiles", aliases: ["/creators"] },
+    "creator-integrations": { canonical: "/profiles/integrations", aliases: ["/creator-integrations"] },
     "creator-stats": { canonical: "/profiles/stats", aliases: ["/creator-stats"] },
     audit: { canonical: "/audit" },
     alerts: { canonical: "/alerts", aliases: ["/analytics-alerts"] },

@@ -1,0 +1,133 @@
+<!-- ========================================================= -->
+<!-- StreamSuites - Creator Integrations (Admin) -->
+<!-- ========================================================= -->
+
+<header class="ss-header">
+  <div class="ss-header-left">
+    <h1 class="ss-title">Creator Integrations</h1>
+    <span class="ss-subtitle">Admin inspection of creator linkage, trigger readiness, and deploy eligibility</span>
+  </div>
+</header>
+
+<main class="ss-main creator-integrations-main">
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Creator Integration Summary</h2>
+        <p class="muted" style="margin:6px 0 0;">
+          Runtime/Auth remains authoritative. This admin view inspects creator-capable posture, linked platforms,
+          trigger foundation, and bot deploy readiness without owning provider state.
+        </p>
+      </div>
+      <div class="ss-panel-header-actions">
+        <button id="creator-integrations-refresh-list" type="button" class="ss-btn ss-btn-secondary">Refresh list</button>
+      </div>
+    </header>
+    <div class="ss-panel-body">
+      <div class="ss-toolbar creator-integrations-toolbar">
+        <div class="ss-toolbar-left">
+          <input
+            type="search"
+            id="creator-integrations-search"
+            class="ss-input"
+            placeholder="Search by account, user code, display name, or readiness"
+          />
+          <select id="creator-integrations-readiness-filter" class="ss-input">
+            <option value="">All readiness states</option>
+            <option value="ready">Ready</option>
+            <option value="linked">Linked but limited</option>
+            <option value="attention">Needs attention</option>
+            <option value="not-deployable">Not deployable</option>
+          </select>
+        </div>
+        <div class="ss-toolbar-right">
+          <span id="creator-integrations-status" class="muted">Loading creator integrations...</span>
+        </div>
+      </div>
+
+      <div id="creator-integrations-banner" class="ss-alert hidden" role="status" aria-live="polite"></div>
+
+      <div class="creator-integrations-grid">
+        <section class="creator-integrations-summary-panel">
+          <div class="ss-meta-row">
+            <div><strong>Visible creators:</strong> <span id="creator-integrations-count">-</span></div>
+            <div><strong>Source:</strong> <span>Runtime/Auth admin endpoints</span></div>
+          </div>
+
+          <div class="ss-table-scroll">
+            <table class="ss-table ss-table-compact">
+              <thead>
+                <tr>
+                  <th>Creator</th>
+                  <th>Creator-capable</th>
+                  <th>Linked</th>
+                  <th>Deployable</th>
+                  <th>Foundation</th>
+                  <th>Eligibility</th>
+                  <th class="align-right">Inspect</th>
+                </tr>
+              </thead>
+              <tbody id="creator-integrations-body"></tbody>
+            </table>
+          </div>
+          <div id="creator-integrations-empty" class="ss-empty-state hidden">No creator integration rows match the current filters.</div>
+        </section>
+
+        <section class="ss-panel creator-integrations-detail-panel">
+          <header class="ss-panel-header">
+            <div class="ss-panel-header-main">
+              <h2 id="creator-integrations-detail-heading">Select a creator</h2>
+              <p class="muted">Last updated: <span id="creator-integrations-generated-at">-</span></p>
+            </div>
+            <div class="ss-panel-header-actions">
+              <button id="creator-integrations-refresh-detail" type="button" class="ss-btn ss-btn-secondary" disabled>Refresh detail</button>
+            </div>
+          </header>
+          <div class="ss-panel-body creator-integrations-detail-body">
+            <div id="creator-integrations-detail-empty" class="ss-empty-state">
+              Choose a creator to inspect per-platform readiness and trigger registry state.
+            </div>
+            <div id="creator-integrations-detail-sections" class="hidden">
+              <section id="creator-integrations-summary-cards" class="creator-integrations-kpi-grid"></section>
+
+              <section class="ss-panel creator-integrations-inner-card">
+                <header class="ss-panel-header">
+                  <div class="ss-panel-header-main">
+                    <h3>Platform Breakdown</h3>
+                    <p class="muted">Safe admin inspection only. Rumble credentials remain masked.</p>
+                  </div>
+                </header>
+                <div id="creator-integrations-platforms" class="ss-panel-body creator-integrations-platforms"></div>
+              </section>
+
+              <section class="ss-panel creator-integrations-inner-card">
+                <header class="ss-panel-header">
+                  <div class="ss-panel-header-main">
+                    <h3>Trigger Foundation</h3>
+                    <p class="muted">Built-in trigger presence and enabled state, scoped by platform applicability.</p>
+                  </div>
+                </header>
+                <div class="ss-panel-body">
+                  <div class="ss-table-scroll">
+                    <table class="ss-table ss-table-compact">
+                      <thead>
+                        <tr>
+                          <th>Trigger</th>
+                          <th>Scope</th>
+                          <th>Status</th>
+                          <th>Readiness contribution</th>
+                          <th class="align-right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody id="creator-integrations-triggers-body"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
+</main>

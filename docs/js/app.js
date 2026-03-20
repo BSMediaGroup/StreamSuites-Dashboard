@@ -951,6 +951,7 @@ const SIDEBAR_VIEW_ICON_ALIASES = Object.freeze({
 const SIDEBAR_VIEW_ICON_MAP = Object.freeze({
   overview: "/assets/icons/ui/dashboard.svg",
   creators: "/assets/icons/ui/profile.svg",
+  "creator-integrations": "/assets/icons/ui/automation.svg",
   "creator-stats": "/assets/icons/ui/statgraph.svg",
   accounts: "/assets/icons/ui/identity.svg",
   tiers: "/assets/icons/ui/cards.svg",
@@ -1655,6 +1656,14 @@ registerView("creators", {
   },
   onUnload: () => {
     window.CreatorsView?.destroy?.();
+  }
+});
+registerView("creator-integrations", {
+  onLoad: () => {
+    window.CreatorIntegrationsView?.init?.();
+  },
+  onUnload: () => {
+    window.CreatorIntegrationsView?.destroy?.();
   }
 });
 registerView("creator-stats", {

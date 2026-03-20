@@ -296,6 +296,11 @@
         <td>${escapeHtml(formatTimestamp(creator.activated_at))}</td>
         <td>${escapeHtml(formatTimestamp(creator.created_at))}</td>
         <td class="align-right">
+          <button class="ss-btn ss-btn-small ss-btn-secondary" data-open-creator-integrations="${escapeHtml(
+            creator.account_id || ""
+          )}">
+            Integrations
+          </button>
           <button class="ss-btn ss-btn-small ss-btn-secondary" data-copy-creator-id="${escapeHtml(
             creator.user_code
           )}">
@@ -413,6 +418,31 @@
     navigateToView("accounts");
   }
 
+  function openCreatorIntegrations(accountId) {
+    const normalizedId = String(accountId || "").trim();
+    if (!normalizedId) {
+      setLinkNote("Creator integration inspection requires a linked account.");
+      return;
+    }
+    setLinkNote("");
+    if (
+      !window.StreamSuitesCreatorIntegrationsNav ||
+      typeof window.StreamSuitesCreatorIntegrationsNav !== "object"
+    ) {
+      window.StreamSuitesCreatorIntegrationsNav = {};
+    }
+    window.StreamSuitesCreatorIntegrationsNav.accountId = normalizedId;
+    window.StreamSuitesCreatorIntegrationsNav.from = "creators";
+    window.StreamSuitesCreatorIntegrationsNav.ts = Date.now();
+    if (window.StreamSuitesAdminRoutes?.navigateToView) {
+      window.StreamSuitesAdminRoutes.navigateToView("creator-integrations", {
+        params: { account_id: normalizedId }
+      });
+      return;
+    }
+    window.location.hash = `#creator-integrations?account_id=${encodeURIComponent(normalizedId)}`;
+  }
+
   function wireReadOnlyUi() {
     [el.btnAddCreator, el.btnImport, el.btnExport].forEach((button) => {
       if (!button) return;
@@ -456,6 +486,12 @@
       if (copyButton instanceof HTMLButtonElement) {
         const creatorId = copyButton.getAttribute("data-copy-creator-id") || "";
         void copyCreatorId(creatorId);
+        return;
+      }
+      const integrationsButton = event.target.closest("[data-open-creator-integrations]");
+      if (integrationsButton instanceof HTMLButtonElement) {
+        const accountId = integrationsButton.getAttribute("data-open-creator-integrations") || "";
+        openCreatorIntegrations(accountId);
         return;
       }
       const openAccountButton = event.target.closest("[data-creator-open-account]");

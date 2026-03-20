@@ -112,16 +112,32 @@ Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into t
 
 ### Technical Notes
 
+- Added a dedicated admin `Creator Integrations` route and inspection workspace that reads runtime/Auth-admin creator integration summaries and per-account detail rather than inventing a second dashboard-owned provider model.
+- The new admin view surfaces creator-capable posture, linked-platform counts, deployable-platform counts, foundational trigger readiness, per-platform limitation reasons, and safe masked Rumble credential presence from authoritative backend payloads.
+- Accounts and Creators now include direct drill-in actions into the creator-integrations workflow so admins can move from identity/account inspection into platform-readiness troubleshooting without changing the surrounding shell or route model.
 - Pending entries for `0.4.8-alpha` go here.
 
 ### Human-Readable Notes
 
+- Admins can now inspect whether a creator is actually ready for bot-trigger usage, which platforms are only linked versus truly deployable, and whether the foundation triggers are what is blocking readiness.
+- Rumble remains secret-safe in the admin UI: only presence and masked-state information is shown, never the raw backend-owned credential.
 - Pending entries for `0.4.8-alpha` go here.
 
 ### Files / Areas Touched
 
+- `docs/views/creator-integrations.html`
+- `docs/js/creator-integrations.js`
+- `docs/js/accounts.js`
+- `docs/js/creators.js`
+- `docs/js/admin-routes.js`
+- `docs/js/app.js`
+- `docs/css/components.css`
+- `docs/index.html`
+- `README.md`
 - Pending entries for `0.4.8-alpha` go here.
 
 ### Risks / Follow-Ups
 
+- The dashboard now reflects truthful backend readiness posture, but actual provider depth is still bounded by the current runtime/Auth foundation: Twitch remains identity-only, and YouTube, Kick, and Pilled remain planned or unavailable until backend capability expands.
+- No admin-side connect or override actions were added beyond trigger enabled-state toggles because the backend does not yet expose safe broader integration mutation paths for those providers.
 - Pending entries for `0.4.8-alpha` go here.
