@@ -1,6 +1,21 @@
 # Bump Notes
 
-## CURRENT VER= 0.4.2-alpha / PENDING VER= none
+## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.8-alpha
+
+## Alerts Flag Rendering Tightening - 2026-03-20
+
+- Alerts preview and retained-history rendering now reuse the same country-code driven flag asset path already used by Analytics, via a shared browser helper in `docs/js/utils/country-flags.js` instead of the older alert-specific emoji/token badge branch.
+- `{{country_flag}}` remains stored and transported as the same logical placeholder/value, but the admin render layer now upgrades valid country context into flagcdn-backed SVG icons in preview/history surfaces and keeps compact text fallback when a flag cannot be resolved.
+- The restored single-preview layout remains intact while Desktop / Browser / Plain text modes now get a restrained styling distinction through chrome, borders, and text treatment rather than a broader layout redesign.
+
+### Files / Areas Touched
+
+- `docs/js/utils/country-flags.js`
+- `docs/js/analytics.js`
+- `docs/js/analytics-alerting.js`
+- `docs/css/components.css`
+- `docs/index.html`
+- `README.md`
 
 ## Alerts Preview Regression Fix - 2026-03-20
 

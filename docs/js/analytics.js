@@ -18,7 +18,6 @@
   const COUNTRY_DEFAULT_SORT_KEY = "sessions";
   const COUNTRY_DEFAULT_SORT_DIRECTION = "desc";
   const COUNTRY_FOCUS_ZOOM = 3;
-  const FLAG_SVG_BASE = "https://flagcdn.com";
 
   const DEFAULT_MAP_STYLE_URL =
     "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
@@ -593,79 +592,20 @@
     return buildFallbackLocationPresentation(payload);
   }
 
-  function getFlagSvgUrl(code) {
-    const iso2 = String(code || "").trim().toUpperCase();
-    if (!/^[A-Z]{2}$/.test(iso2)) return null;
-    return `${FLAG_SVG_BASE}/${iso2.toLowerCase()}.svg`;
-  }
-
-  function buildFallbackRegionIcon() {
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("viewBox", "0 0 16 12");
-    svg.setAttribute("aria-hidden", "true");
-    svg.setAttribute("focusable", "false");
-    svg.setAttribute("class", "flag-icon flag-icon-fallback");
-
-    const bg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    bg.setAttribute("x", "0.5");
-    bg.setAttribute("y", "0.5");
-    bg.setAttribute("width", "15");
-    bg.setAttribute("height", "11");
-    bg.setAttribute("rx", "2");
-    bg.setAttribute("fill", "rgba(19, 28, 43, 0.9)");
-    bg.setAttribute("stroke", "rgba(149, 183, 218, 0.5)");
-    bg.setAttribute("stroke-width", "1");
-    svg.appendChild(bg);
-
-    const globe = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    globe.setAttribute("cx", "8");
-    globe.setAttribute("cy", "6");
-    globe.setAttribute("r", "3");
-    globe.setAttribute("fill", "none");
-    globe.setAttribute("stroke", "rgba(205, 226, 255, 0.95)");
-    globe.setAttribute("stroke-width", "0.9");
-    svg.appendChild(globe);
-
-    const lat = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    lat.setAttribute("d", "M5.5 6h5");
-    lat.setAttribute("fill", "none");
-    lat.setAttribute("stroke", "rgba(205, 226, 255, 0.95)");
-    lat.setAttribute("stroke-width", "0.8");
-    lat.setAttribute("stroke-linecap", "round");
-    svg.appendChild(lat);
-
-    const lon = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    lon.setAttribute("d", "M8 3.2c-1.1 0-2 1.2-2 2.8s0.9 2.8 2 2.8 2-1.2 2-2.8-0.9-2.8-2-2.8z");
-    lon.setAttribute("fill", "none");
-    lon.setAttribute("stroke", "rgba(205, 226, 255, 0.95)");
-    lon.setAttribute("stroke-width", "0.7");
-    lon.setAttribute("stroke-linecap", "round");
-    lon.setAttribute("stroke-linejoin", "round");
-    svg.appendChild(lon);
-
-    return svg;
-  }
-
   function buildRegionLabelNode({ code, name }) {
     const iso2 = String(code || "").trim().toUpperCase();
     const labelName = String(name || resolveCountryName(iso2) || iso2 || "Unknown").trim() || "Unknown";
     const container = document.createElement("span");
     container.className = "region-label";
-
-    const flagUrl = getFlagSvgUrl(iso2);
-    if (flagUrl) {
-      const img = document.createElement("img");
-      img.className = "flag-icon";
-      img.decoding = "async";
-      img.loading = "lazy";
-      img.src = flagUrl;
-      img.alt = `${iso2} flag`;
-      img.onerror = () => {
-        img.replaceWith(buildFallbackRegionIcon());
-      };
-      container.appendChild(img);
-    } else {
-      container.appendChild(buildFallbackRegionIcon());
+    const countryFlags = window.StreamSuitesCountryFlags;
+    if (countryFlags?.createFlagVisualNode) {
+      container.appendChild(
+        countryFlags.createFlagVisualNode(iso2, {
+          imageClassName: "flag-icon",
+          fallbackClassName: "flag-icon flag-icon-fallback",
+          alt: `${iso2} flag`
+        })
+      );
     }
 
     const nameEl = document.createElement("span");

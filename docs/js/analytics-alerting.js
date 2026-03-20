@@ -686,11 +686,19 @@
   }
 
   function buildCountryFlagToken(countryCode) {
+    const helper = window.StreamSuitesCountryFlags;
+    if (helper?.buildCountryFlagToken) {
+      return helper.buildCountryFlagToken(countryCode);
+    }
     const normalized = normalizeCountryCode(countryCode);
     return normalized ? `fl-${normalized.toLowerCase()}` : "";
   }
 
   function buildCountryFlagPresentation(rawValue, countryCode) {
+    const helper = window.StreamSuitesCountryFlags;
+    if (helper?.buildPresentation) {
+      return helper.buildPresentation(rawValue, countryCode);
+    }
     const rawText = String(rawValue || "").trim();
     let normalizedCode = normalizeCountryCode(countryCode);
     if (!normalizedCode && /^fl-/i.test(rawText)) {
@@ -727,8 +735,11 @@
     const classes = ["ss-country-flag-badge"];
     if (extraClass) classes.push(extraClass);
     if (presentation.rich) classes.push("is-rich");
+    const helper = window.StreamSuitesCountryFlags;
     const body = presentation.rich
-      ? `<span class="ss-country-flag-badge__emoji">${escapeHtml(presentation.renderText)}</span><span class="ss-country-flag-badge__code">${escapeHtml(presentation.countryCode || presentation.token || "")}</span>`
+      ? `${helper?.renderFlagSlotHtml
+          ? helper.renderFlagSlotHtml(presentation.countryCode, { className: "ss-country-flag-badge__flag" })
+          : `<span class="ss-country-flag-badge__token">${escapeHtml(presentation.renderText)}</span>`}<span class="ss-country-flag-badge__code">${escapeHtml(presentation.countryCode || presentation.token || "")}</span>`
       : `<span class="ss-country-flag-badge__token">${escapeHtml(presentation.renderText)}</span>`;
     const label = presentation.countryCode
       ? `Country flag ${presentation.countryCode}`
@@ -2200,6 +2211,7 @@
     if (el.previewSeverity) el.previewSeverity.textContent = model.severityText;
     if (el.previewStage) {
       el.previewStage.innerHTML = renderActivePreviewSurface(model);
+      window.StreamSuitesCountryFlags?.upgradeFlagSlots?.(el.previewStage);
     }
     if (el.previewNote) {
       el.previewNote.textContent = model.noteText;
@@ -2776,6 +2788,7 @@
         `;
       })
       .join("");
+    window.StreamSuitesCountryFlags?.upgradeFlagSlots?.(el.historyList);
     renderPagination(el.historyPagination, "history", pageInfo);
   }
 

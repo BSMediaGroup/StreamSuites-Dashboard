@@ -1704,6 +1704,7 @@
     linear-gradient(180deg, rgba(89, 212, 255, 0.07), rgba(255, 255, 255, 0.01)),
     rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(89, 212, 255, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .ss-alerts-preview-topline,
@@ -1715,16 +1716,27 @@
 
 .ss-alerts-preview-card--browser {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(10, 18, 34, 0.12)),
-    rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.09);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(10, 18, 34, 0.08)),
+    rgba(255, 255, 255, 0.035);
+  border-color: rgba(196, 220, 255, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 10px 24px rgba(4, 11, 19, 0.12);
 }
 
 .ss-alerts-preview-card--plain {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(8, 14, 24, 0.3)),
     rgba(9, 12, 18, 0.48);
-  border-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(103, 124, 148, 0.14);
+}
+
+.ss-alerts-preview-card--desktop {
+  background:
+    linear-gradient(180deg, rgba(73, 162, 214, 0.1), rgba(10, 18, 34, 0.1)),
+    rgba(15, 22, 34, 0.34);
+  border-color: rgba(97, 176, 228, 0.18);
 }
 
 .ss-alerts-preview-card-head,
@@ -1782,6 +1794,8 @@
 .ss-alerts-preview-browser-bar {
   align-items: center;
   justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .ss-alerts-preview-browser-body {
@@ -1810,6 +1824,31 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.ss-alerts-preview-window {
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(6, 12, 20, 0.76), rgba(9, 17, 29, 0.48));
+  border: 1px solid rgba(122, 157, 190, 0.18);
+  padding: 10px;
+}
+
+.ss-alerts-preview-surface--desktop .ss-alerts-preview-surface-badge {
+  background: rgba(87, 197, 132, 0.12);
+  border-color: rgba(87, 197, 132, 0.26);
+  color: #d8f5df;
+}
+
+.ss-alerts-preview-surface--browser .ss-alerts-preview-surface-badge {
+  background: rgba(92, 160, 255, 0.12);
+  border-color: rgba(92, 160, 255, 0.24);
+  color: #dbeaff;
+}
+
+.ss-alerts-preview-surface--plain .ss-alerts-preview-surface-badge {
+  background: rgba(109, 123, 146, 0.14);
+  border-color: rgba(109, 123, 146, 0.24);
+  color: #d9e2ef;
 }
 
 .ss-alerts-preview-card-title {
@@ -1844,9 +1883,23 @@
   background: linear-gradient(135deg, rgba(36, 53, 76, 0.92), rgba(19, 30, 46, 0.88));
 }
 
-.ss-country-flag-badge__emoji {
-  font-size: 0.95rem;
-  line-height: 1;
+.ss-country-flag-badge__flag,
+.ss-country-flag-slot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  min-width: 1rem;
+  height: 0.78rem;
+  flex: 0 0 auto;
+}
+
+.ss-country-flag-slot__img {
+  width: 100%;
+  height: 100%;
+  border-radius: 2px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgba(223, 234, 246, 0.12);
 }
 
 .ss-country-flag-badge__code,
@@ -1879,6 +1932,7 @@
   font-size: 12px;
   line-height: 1.6;
   color: #edf5ff;
+  padding: 2px 0;
 }
 
 .ss-alerts-preview-note {
