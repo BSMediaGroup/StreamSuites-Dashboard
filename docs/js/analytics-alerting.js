@@ -9,7 +9,7 @@
   const TEMPLATE_TOKEN_PATTERN = /{{[a-z0-9_.]+}}/g;
   const DESTINATION_ICON_MAP = {
     windows_client: "/assets/icons/ui/win2.svg",
-    pushover: "/assets/icons/ui/push2.svg"
+    pushover: "/assets/icons/ui/push3.svg"
   };
   const PREVIEW_SURFACES = Object.freeze([
     { key: "desktop", label: "Desktop" },
