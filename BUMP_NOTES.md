@@ -1,6 +1,8 @@
 # Bump Notes
 
-## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.8-alpha
+## RELEASED / PACKAGED: 0.4.2-alpha
+
+Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
 ## Alerts Flag Rendering Tightening - 2026-03-20
 
@@ -103,3 +105,23 @@
 
 - Sidebar/admin shell icon mapping was updated so the current `SIDEBAR_VIEW_ICON_MAP` is the actual source of truth and swapped SVG assets refresh reliably without route or declared asset-path changes.
 - Repo-visible validation for this milestone is primarily state/history-backed hotfix work rather than a new automated dashboard test suite; no dedicated dashboard test harness was added in this repo-visible slice.
+
+## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.8-alpha
+
+Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into the released `0.4.2-alpha` section above.
+
+### Technical Notes
+
+- Pending entries for `0.4.8-alpha` go here.
+
+### Human-Readable Notes
+
+- Pending entries for `0.4.8-alpha` go here.
+
+### Files / Areas Touched
+
+- Pending entries for `0.4.8-alpha` go here.
+
+### Risks / Follow-Ups
+
+- Pending entries for `0.4.8-alpha` go here.
