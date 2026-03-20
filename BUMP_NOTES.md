@@ -17,7 +17,8 @@
 ## Release Prep Completion - v0.4.2-alpha
 
 - The repo-local runtime/version mirrors used by this admin surface now report `0.4.2-alpha` in `runtime/version.py`, `runtime/exports/version.json`, and `docs/runtime/exports/version.json`.
-- Release-note source material for this bump now lives in `docs/data/changelog.dashboard.json`, using the compare range `v0.4.0-alpha...v0.4.2-alpha`.
+- Release-note source material for this bump now lives in `changelog/v0.4.2-alpha.md`, using the compare range `v0.4.0-alpha...v0.4.2-alpha`.
+- The existing `docs/data/changelog.dashboard.json` entry remains in place for dashboard changelog-page hydration and is not the GitHub-release markdown artifact.
 - Earlier notes below remain as the cumulative milestone record, but the previous `0.4.1-alpha` versus `0.4.2-alpha` mirror mismatch for this repo has now been reconciled.
 
 ### Technical Notes

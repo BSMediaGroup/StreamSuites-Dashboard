@@ -38,7 +38,8 @@ StreamSuites-Dashboard/
 │   └── settings.json
 ├── BUMP_NOTES.md
 ├── changelog/
-│   └── changelog.runtime.json
+│   ├── changelog.runtime.json
+│   └── v0.4.2-alpha.md
 ├── dev-notes/
 │   ├── compatibility.md
 │   ├── decisions.md
