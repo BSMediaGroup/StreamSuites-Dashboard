@@ -9,6 +9,37 @@ Admin-facing StreamSuites surface deployed to Cloudflare Pages at `https://admin
 - The static app source still lives under `docs/`, with repo-root compatibility files forwarding root-published Pages projects into the same app.
 - This repo consumes runtime exports for visibility and uses Auth API/runtime endpoints for privileged operations; it does not own runtime execution.
 
+## Scope & Authority
+
+- This repo is the admin/operator web shell, not the runtime itself.
+- Admin access is privileged, but runtime execution, Auth decisions, version/build ownership, and exported state remain runtime-owned in `StreamSuites`.
+- The dashboard is allowed to call privileged runtime/Auth endpoints, yet it still consumes those contracts rather than redefining them.
+- Runtime-exported version/build files are mirrored under `docs/runtime/exports/`, while published state snapshots land under `docs/shared/state/`.
+
+## Repo-Scoped Flowchart
+
+```mermaid
+flowchart TD
+    Admin["Admin operator"] --> Gate["Admin session gate<br/>docs/auth + admin-gate.js"]
+    Gate --> Shell["Dashboard shell and routes<br/>/overview /accounts /alerts /analytics /bots /settings /profiles/integrations"]
+
+    Shell --> Accounts["Accounts and creators views"]
+    Shell --> Alerts["Alerts workspace<br/>rules, targets, preferences, history"]
+    Shell --> Analytics["Analytics, activity, auth-events"]
+    Shell --> Bots["Bots, jobs, runtime status"]
+    Shell --> Integrations["Creator integrations inspection"]
+    Shell --> Settings["Tier, auth, and admin settings"]
+
+    Shell --> RuntimeExports["Published runtime exports<br/>docs/runtime/exports + docs/shared/state"]
+    Shell --> Auth["Runtime/Auth API<br/>admin session and privileged endpoints"]
+    RuntimeExports --> Runtime["StreamSuites runtime authority"]
+    Auth --> Runtime
+
+    Accounts -. public profile visibility .-> Public["StreamSuites-Public"]
+    Accounts -. FindMeHere eligibility .-> Members["StreamSuites-Members / FindMeHere"]
+    Integrations -. creator readiness inspection .-> Creator["StreamSuites-Creator"]
+```
+
 ## Current Admin Surface Model
 
 - Clean path-based admin routes are the primary navigation model, replacing older hash-fragment and partial-only dependence for normal use.
@@ -26,18 +57,27 @@ Admin-facing StreamSuites surface deployed to Cloudflare Pages at `https://admin
 - `docs/_redirects` defines the admin clean-route rewrites used by the static app itself.
 - Runtime export metadata is consumed from local published copies under `docs/runtime/exports/`.
 
+## Cross-Repo Orientation
+
+- Top-level authority map: [StreamSuites runtime README](https://github.com/BSMediaGroup/StreamSuites)
+- Creator-surface detail: [StreamSuites-Creator README](https://github.com/BSMediaGroup/StreamSuites-Creator)
+- Public-surface detail: [StreamSuites-Public README](https://github.com/BSMediaGroup/StreamSuites-Public)
+- FindMeHere detail: [StreamSuites-Members README](https://github.com/BSMediaGroup/StreamSuites-Members)
+
 ## Repo Tree (Abridged, Accurate)
 
 ```text
 StreamSuites-Dashboard/
-├── _redirects
 ├── .github/
 │   └── workflows/
 │       └── pages.yml
 ├── .vscode/
 │   ├── launch.json
 │   └── settings.json
+├── _redirects
 ├── BUMP_NOTES.md
+├── DASHBOARD_AUDIT_REPORT.md
+├── README.md
 ├── changelog/
 │   ├── changelog.runtime.json
 │   └── v0.4.2-alpha.md
@@ -48,17 +88,6 @@ StreamSuites-Dashboard/
 ├── docs/
 │   ├── _redirects
 │   ├── index.html
-│   ├── 404.html
-│   ├── about.html
-│   ├── accessibility.html
-│   ├── changelog.html
-│   ├── clips.html
-│   ├── home.html
-│   ├── polls.html
-│   ├── postmortem.html
-│   ├── privacy.html
-│   ├── scoreboards.html
-│   ├── tallies.html
 │   ├── auth/
 │   │   ├── index.html
 │   │   ├── login.html
@@ -94,18 +123,14 @@ StreamSuites-Dashboard/
 │   │   ├── alerts.js
 │   │   ├── analytics.js
 │   │   ├── analytics-alerting.js
-│   │   ├── api.js
 │   │   ├── app.js
-│   │   ├── toast.js
 │   │   ├── bots.js
 │   │   ├── creator-integrations.js
-│   │   ├── creator-stats.js
 │   │   ├── creators.js
 │   │   ├── notifications.js
 │   │   ├── overview.js
 │   │   ├── settings.js
 │   │   ├── state.js
-│   │   ├── telemetry.js
 │   │   └── utils/
 │   │       └── country-flags.js
 │   ├── runtime/
@@ -133,19 +158,13 @@ StreamSuites-Dashboard/
 │       ├── accounts.html
 │       ├── alerts.html
 │       ├── analytics.html
-│       ├── api-usage.html
-│       ├── approvals.html
-│       ├── audit.html
 │       ├── bots.html
 │       ├── creator-integrations.html
-│       ├── creator-stats.html
 │       ├── creators.html
-│       ├── data-signals.html
 │       ├── jobs.html
 │       ├── notifications.html
 │       ├── overview.html
 │       ├── settings.html
-│       ├── triggers.html
 │       └── platforms/
 ├── runtime/
 │   ├── version.py
@@ -156,17 +175,11 @@ StreamSuites-Dashboard/
 │       └── admin/
 │           └── donations/
 ├── schemas/
-│   ├── chat_behaviour.schema.json
-│   ├── chat_log.schema.json
-│   ├── clip_schema.json
 │   ├── creators.schema.json
 │   ├── jobs.schema.json
 │   ├── permissions.schema.json
 │   ├── quotas.schema.json
-│   ├── ratelimits.schema.json
 │   ├── services.schema.json
-│   ├── system.schema.json
-│   ├── tiers.schema.json
 │   ├── triggers.schema.json
 │   └── platform/
 ├── shared/
@@ -175,7 +188,5 @@ StreamSuites-Dashboard/
 │       └── telemetry/
 ├── tmp/
 │   └── [temp output]
-├── DASHBOARD_AUDIT_REPORT.md
-├── index.html
-└── README.md
+└── index.html
 ```
