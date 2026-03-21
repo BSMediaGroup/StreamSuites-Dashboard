@@ -1,0 +1,127 @@
+<!-- ========================================================= -->
+<!-- StreamSuites - User Detail (Admin) -->
+<!-- ========================================================= -->
+
+<header class="ss-header">
+  <div class="ss-header-left">
+    <h1 class="ss-title">StreamSuites</h1>
+    <span class="ss-subtitle">User Detail</span>
+  </div>
+</header>
+
+<main class="ss-main user-detail-main">
+  <section class="ss-panel" data-user-detail-root="true">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2 data-user-detail-heading="true">User detail</h2>
+        <p class="muted" data-user-detail-subheading="true">
+          Loading authoritative account, creator posture, and integration readiness.
+        </p>
+      </div>
+      <div class="ss-panel-header-actions">
+        <span class="muted">Generated: <span data-user-detail-generated-at="true">-</span></span>
+        <button id="user-detail-refresh" type="button" class="ss-btn ss-btn-secondary">Refresh</button>
+      </div>
+    </header>
+
+    <div class="ss-panel-body user-detail-body">
+      <div id="user-detail-banner" class="ss-alert hidden" role="status" aria-live="polite"></div>
+
+      <div class="user-detail-toolbar">
+        <div class="user-detail-toolbar-copy">
+          <span class="status-pill subtle" data-user-detail-status-pill="true"><span class="status-dot"></span>Loading</span>
+          <span class="muted" data-user-detail-route-label="true">Waiting for route user code</span>
+        </div>
+        <div class="user-detail-toolbar-actions">
+          <a class="ss-btn ss-btn-secondary" href="/users" data-view="accounts">Back to accounts</a>
+          <a class="ss-btn ss-btn-secondary" href="/profiles/integrations" data-view="creator-integrations">Creator integrations list</a>
+        </div>
+      </div>
+
+      <div class="creator-integrations-kpi-grid" id="user-detail-kpis"></div>
+
+      <div class="user-detail-grid">
+        <section class="ss-panel user-detail-card">
+          <header class="ss-panel-header">
+            <div class="ss-panel-header-main">
+              <h3>Identity & Account Posture</h3>
+              <p class="muted">Authoritative account payload and public-surface posture.</p>
+            </div>
+          </header>
+          <div class="ss-panel-body" id="user-detail-identity"></div>
+        </section>
+
+        <section class="ss-panel user-detail-card">
+          <header class="ss-panel-header">
+            <div class="ss-panel-header-main">
+              <h3>Auth Overview</h3>
+              <p class="muted">Provider linkage, verification, and safe account-state context.</p>
+            </div>
+          </header>
+          <div class="ss-panel-body" id="user-detail-auth"></div>
+        </section>
+      </div>
+
+      <div class="user-detail-grid">
+        <section class="ss-panel user-detail-card">
+          <header class="ss-panel-header">
+            <div class="ss-panel-header-main">
+              <h3>Creator Posture</h3>
+              <p class="muted">Creator capability, public visibility, and deployment boundary posture.</p>
+            </div>
+          </header>
+          <div class="ss-panel-body" id="user-detail-creator-posture"></div>
+        </section>
+
+        <section class="ss-panel user-detail-card">
+          <header class="ss-panel-header">
+            <div class="ss-panel-header-main">
+              <h3>Supported Actions</h3>
+              <p class="muted">Only backend-supported navigation and safe admin actions are exposed.</p>
+            </div>
+          </header>
+          <div class="ss-panel-body" id="user-detail-management"></div>
+        </section>
+      </div>
+
+      <section class="ss-panel user-detail-card">
+        <header class="ss-panel-header">
+          <div class="ss-panel-header-main">
+            <h3>Platform Integrations</h3>
+            <p class="muted">Safe inspection only. Provider secrets remain masked.</p>
+          </div>
+        </header>
+        <div class="ss-panel-body creator-integrations-platforms" id="user-detail-platforms"></div>
+      </section>
+
+      <section class="ss-panel user-detail-card">
+        <header class="ss-panel-header">
+          <div class="ss-panel-header-main">
+            <h3>Trigger Foundation</h3>
+            <p class="muted">Built-in trigger scope and readiness contribution for this single account.</p>
+          </div>
+        </header>
+        <div class="ss-panel-body">
+          <div class="ss-table-scroll">
+            <table class="ss-table ss-table-compact">
+              <thead>
+                <tr>
+                  <th>Trigger</th>
+                  <th>Scope</th>
+                  <th>Status</th>
+                  <th>Readiness contribution</th>
+                  <th class="align-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="user-detail-triggers-body">
+                <tr>
+                  <td colspan="5" class="muted">Loading trigger rows...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  </section>
+</main>

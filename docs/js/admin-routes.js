@@ -10,12 +10,14 @@
 
   const REDIRECT_QUERY_KEY = "__ss_route";
   const ROUTE_CHANGE_EVENT = "streamsuites:routechange";
+  const USER_DETAIL_PREFIX = "/users/";
 
   const VIEW_ROUTE_DEFINITIONS = Object.freeze({
     overview: { canonical: "/overview", aliases: ["/", "/index.html", "/home"] },
     bots: { canonical: "/telemetry", aliases: ["/bots", "/runtime-status"] },
     approvals: { canonical: "/approvals" },
     accounts: { canonical: "/users", aliases: ["/accounts"] },
+    "user-detail": { canonical: "/users/:user_code" },
     creators: { canonical: "/profiles", aliases: ["/creators"] },
     "creator-integrations": { canonical: "/profiles/integrations", aliases: ["/creator-integrations"] },
     "creator-stats": { canonical: "/profiles/stats", aliases: ["/creator-stats"] },
@@ -89,7 +91,7 @@
     const entries = Object.entries(VIEW_ROUTE_DEFINITIONS);
     const pathToView = new Map();
     entries.forEach(([viewName, config]) => {
-      const candidates = [config.canonical, ...(config.aliases || [])];
+      const candidates = [config.canonical, ...(config.aliases || [])].filter((candidate) => !String(candidate || "").includes("/:"));
       candidates.forEach((candidate) => {
         pathToView.set(normalizePathname(candidate), viewName);
       });
@@ -98,6 +100,22 @@
   }
 
   const PATH_TO_VIEW = buildPathIndex();
+
+  function resolveDynamicViewFromPath(normalizedPath) {
+    if (
+      normalizedPath.startsWith(USER_DETAIL_PREFIX) &&
+      normalizedPath.length > USER_DETAIL_PREFIX.length
+    ) {
+      const userCode = decodeURIComponent(normalizedPath.slice(USER_DETAIL_PREFIX.length)).trim();
+      if (userCode && userCode.toLowerCase() !== "detail") {
+        return {
+          view: "user-detail",
+          params: { user_code: userCode }
+        };
+      }
+    }
+    return null;
+  }
 
   function splitRouteToken(token) {
     const raw = typeof token === "string" ? token.trim() : "";
@@ -133,18 +151,22 @@
 
     const normalizedPath = normalizePathname(parsed.token);
     const aliasView = PATH_TO_VIEW.get(normalizedPath) || "";
+    const dynamic = aliasView ? null : resolveDynamicViewFromPath(normalizedPath);
     return {
       mode: "hash",
-      view: aliasView,
+      view: dynamic?.view || aliasView,
       query: parsed.query,
       queryString: parsed.queryString,
-      legacyHash: rawHash
+      legacyHash: rawHash,
+      params: dynamic?.params || {}
     };
   }
 
   function resolveViewFromPath(pathname = window.location.pathname, search = window.location.search) {
     const normalizedPath = normalizePathname(pathname);
-    const view = PATH_TO_VIEW.get(normalizedPath) || "";
+    const exactView = PATH_TO_VIEW.get(normalizedPath) || "";
+    const dynamic = exactView ? null : resolveDynamicViewFromPath(normalizedPath);
+    const view = dynamic?.view || exactView;
     const queryString =
       typeof search === "string" ? search.replace(/^\?/, "").trim() : "";
     return {
@@ -152,7 +174,8 @@
       view,
       pathname: normalizedPath,
       query: queryString ? `?${queryString}` : "",
-      queryString
+      queryString,
+      params: dynamic?.params || {}
     };
   }
 
@@ -164,10 +187,19 @@
 
   function buildDashboardUrl(viewName, options = {}) {
     const basePath = resolveBasePath();
-    const canonicalPath = getCanonicalPathForView(viewName);
     const params = options.params instanceof URLSearchParams
       ? options.params
       : new URLSearchParams(options.params || "");
+    let canonicalPath = getCanonicalPathForView(viewName);
+    if (viewName === "user-detail") {
+      const userCode = String(params.get("user_code") || options.userCode || "").trim();
+      if (!userCode) {
+        canonicalPath = getCanonicalPathForView("accounts");
+      } else {
+        canonicalPath = `${USER_DETAIL_PREFIX}${encodeURIComponent(userCode)}`;
+        params.delete("user_code");
+      }
+    }
     const queryString = params.toString();
     const path = canonicalPath === "/" ? "/" : canonicalPath;
     const prefix = basePath || "";

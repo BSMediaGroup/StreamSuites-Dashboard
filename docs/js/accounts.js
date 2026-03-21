@@ -37,6 +37,7 @@
     donationsLoaded: false,
     openDrawerId: "",
     pendingNavAccountId: "",
+    drawerDetailToken: 0,
     columnResize: null,
     columnResizeHydrated: false,
     escapeBound: false,
@@ -173,6 +174,13 @@
     } catch (_err) {
       return "";
     }
+  }
+
+  function escapeSelectorValue(value) {
+    if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
+      return CSS.escape(String(value || ""));
+    }
+    return String(value || "").replace(/"/g, '\\"');
   }
 
   function resolveAccountType(raw = {}) {
@@ -953,6 +961,7 @@ function normalizeUser(raw = {}) {
 
   function renderActionsToggle(user) {
     const accountId = normalizeAccountId(user.id);
+    const userCode = escapeHtml(user.userCode || "");
     return `
       <div class="accounts-inline-actions">
         <button
@@ -960,6 +969,7 @@ function normalizeUser(raw = {}) {
           class="ss-btn ss-btn-small ss-btn-secondary"
           data-account-open-integrations
           data-account-id="${escapeHtml(accountId)}"
+          data-account-user-code="${userCode}"
         >
           Integrations
         </button>
@@ -1040,9 +1050,22 @@ function normalizeUser(raw = {}) {
     window.location.hash = `#creator-stats?account_id=${encodeURIComponent(normalizedId)}`;
   }
 
-  function openCreatorIntegrations(accountId) {
+  function openUserDetail(userCode) {
+    const normalizedUserCode = String(userCode || "").trim();
+    if (!normalizedUserCode || normalizedUserCode === "—") return;
+    if (window.StreamSuitesAdminRoutes?.navigateToView) {
+      window.StreamSuitesAdminRoutes.navigateToView("user-detail", {
+        params: { user_code: normalizedUserCode }
+      });
+      return;
+    }
+    window.location.hash = `#users/${encodeURIComponent(normalizedUserCode)}`;
+  }
+
+  function openCreatorIntegrations(accountId, userCode) {
     const normalizedId = normalizeAccountId(accountId);
-    if (!normalizedId || normalizedId === "—") return;
+    const normalizedUserCode = String(userCode || "").trim();
+    if ((!normalizedId || normalizedId === "—") && !normalizedUserCode) return;
     if (
       !window.StreamSuitesCreatorIntegrationsNav ||
       typeof window.StreamSuitesCreatorIntegrationsNav !== "object"
@@ -1050,15 +1073,18 @@ function normalizeUser(raw = {}) {
       window.StreamSuitesCreatorIntegrationsNav = {};
     }
     window.StreamSuitesCreatorIntegrationsNav.accountId = normalizedId;
+    window.StreamSuitesCreatorIntegrationsNav.userCode = normalizedUserCode;
     window.StreamSuitesCreatorIntegrationsNav.from = "accounts";
     window.StreamSuitesCreatorIntegrationsNav.ts = Date.now();
     if (window.StreamSuitesAdminRoutes?.navigateToView) {
       window.StreamSuitesAdminRoutes.navigateToView("creator-integrations", {
-        params: { account_id: normalizedId }
+        params: normalizedUserCode ? { user_code: normalizedUserCode } : { account_id: normalizedId }
       });
       return;
     }
-    window.location.hash = `#creator-integrations?account_id=${encodeURIComponent(normalizedId)}`;
+    window.location.hash = normalizedUserCode
+      ? `#creator-integrations?user_code=${encodeURIComponent(normalizedUserCode)}`
+      : `#creator-integrations?account_id=${encodeURIComponent(normalizedId)}`;
   }
 
   function getBaseRowByAccountId(accountId) {
@@ -1415,6 +1441,45 @@ function normalizeUser(raw = {}) {
             </div>
           </div>
         </section>
+        <section class="accounts-details-group">
+          <h5 class="accounts-details-group-title">Creator Readiness</h5>
+          <div class="accounts-details-kpi-row">
+            ${renderBooleanBadge(user.creatorCapable, "Creator-capable", "Not creator-capable", "ss-badge-danger")}
+            ${renderBadge(user.userCode || "No user code")}
+          </div>
+          <div class="accounts-details-keyline">
+            <span class="accounts-details-keyline-label">Integration snapshot</span>
+            <div class="accounts-details-keyline-value" data-account-creator-detail="${escapeHtml(user.userCode || "")}">
+              Loading creator integration posture...
+            </div>
+          </div>
+          <div class="accounts-inline-actions">
+            <button
+              type="button"
+              class="ss-btn ss-btn-small ss-btn-secondary"
+              data-account-open-user-detail="${escapeHtml(user.userCode || "")}"
+            >
+              Open user page
+            </button>
+            <button
+              type="button"
+              class="ss-btn ss-btn-small ss-btn-secondary"
+              data-account-open-integrations
+              data-account-id="${escapeHtml(normalizeAccountId(user.id))}"
+              data-account-user-code="${escapeHtml(user.userCode || "")}"
+            >
+              Open integrations
+            </button>
+            <button
+              type="button"
+              class="ss-btn ss-btn-small ss-btn-secondary"
+              data-account-open-stats
+              data-account-id="${escapeHtml(normalizeAccountId(user.id))}"
+            >
+              View stats
+            </button>
+          </div>
+        </section>
       </div>
       <div class="accounts-details-placeholder-group">
         <div class="accounts-details-placeholder-block">
@@ -1433,6 +1498,60 @@ function normalizeUser(raw = {}) {
     `;
   }
 
+  function renderDrawerCreatorSnapshotLoading(user) {
+    const container = document.querySelector(`[data-account-creator-detail="${escapeSelectorValue(user.userCode || "")}"]`);
+    if (!(container instanceof HTMLElement)) return;
+    container.innerHTML = '<span class="muted">Loading creator integration posture...</span>';
+  }
+
+  function renderDrawerCreatorSnapshot(user, payload) {
+    const container = document.querySelector(`[data-account-creator-detail="${escapeSelectorValue(user.userCode || "")}"]`);
+    if (!(container instanceof HTMLElement)) return;
+    const summary = payload?.creator_integrations?.summary || {};
+    const integrations = Array.isArray(payload?.creator_integrations?.integrations)
+      ? payload.creator_integrations.integrations
+      : [];
+    const linked = integrations.filter((item) => item?.status === "linked").length;
+    const deployable = integrations.filter((item) => item?.deployment?.can_deploy).length;
+    container.innerHTML = `
+      <div class="accounts-details-kpi-row">
+        ${renderBadge(summary?.readiness_label || "Unknown", summary?.bot_deploy_eligible ? "ss-badge-success" : "ss-badge-warning")}
+        ${renderBooleanBadge(summary?.foundational_trigger_ready, "Foundation ready", "Foundation missing")}
+      </div>
+      <div class="accounts-details-meta-grid">
+        <div><span class="label">Linked platforms</span><span class="value">${escapeHtml(`${linked}/${Number(summary?.total_platform_count || integrations.length || 0)}`)}</span></div>
+        <div><span class="label">Deployable</span><span class="value">${escapeHtml(String(deployable))}</span></div>
+        <div><span class="label">Limited</span><span class="value">${escapeHtml(String(summary?.limited_platform_count || 0))}</span></div>
+      </div>
+    `;
+  }
+
+  async function hydrateDrawerCreatorDetail(user) {
+    const userCode = String(user?.userCode || "").trim();
+    const currentDrawerId = normalizeAccountId(state.openDrawerId);
+    if (!userCode) return;
+    const token = ++state.drawerDetailToken;
+    renderDrawerCreatorSnapshotLoading(user);
+    try {
+      const response = await fetchJson(
+        buildApiUrl(`/api/admin/users/${encodeURIComponent(userCode)}`),
+        { timeoutMs: 6500 }
+      );
+      if (!response.ok) {
+        const message = await readErrorMessage(response);
+        throw new Error(message || `Request failed (${response.status})`);
+      }
+      const payload = await response.json();
+      if (token !== state.drawerDetailToken || normalizeAccountId(state.openDrawerId) !== currentDrawerId) return;
+      renderDrawerCreatorSnapshot(user, payload);
+    } catch (_err) {
+      const container = document.querySelector(`[data-account-creator-detail="${escapeSelectorValue(user.userCode || "")}"]`);
+      if (container instanceof HTMLElement) {
+        container.innerHTML = '<span class="muted">Unable to load creator integration posture.</span>';
+      }
+    }
+  }
+
   function renderDrawerForAccount(user) {
     if (!el.detailsDrawer) return;
     const title = user.displayName || user.userCode || user.email || "Account";
@@ -1449,6 +1568,7 @@ function normalizeUser(raw = {}) {
     if (el.detailsActions) {
       el.detailsActions.innerHTML = renderActions(user);
     }
+    void hydrateDrawerCreatorDetail(user);
   }
 
   function closeOpenDrawer(options = {}) {
@@ -1578,12 +1698,14 @@ function normalizeUser(raw = {}) {
 
   async function fetchJson(url, options = {}) {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 2000);
+    const timeoutMs = typeof options.timeoutMs === "number" ? options.timeoutMs : 2000;
+    const { timeoutMs: _timeoutMs, ...requestOptions } = options;
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
       const res = await fetch(url, {
         cache: "no-store",
         credentials: "include",
-        ...options,
+        ...requestOptions,
         signal: controller.signal
       });
       if (res.status === 401 || res.status === 403) {
@@ -2221,7 +2343,8 @@ function normalizeUser(raw = {}) {
         event.preventDefault();
         clearRowClickTimer();
         const accountId = normalizeAccountId(integrationsButton.getAttribute("data-account-id"));
-        openCreatorIntegrations(accountId);
+        const userCode = integrationsButton.getAttribute("data-account-user-code") || "";
+        openCreatorIntegrations(accountId, userCode);
         return;
       }
       if (isInteractiveRowTarget(target)) return;
@@ -2254,6 +2377,31 @@ function normalizeUser(raw = {}) {
       if (closeButton) {
         event.preventDefault();
         closeOpenDrawer();
+        return;
+      }
+
+      const userDetailButton = target.closest("[data-account-open-user-detail]");
+      if (userDetailButton) {
+        event.preventDefault();
+        const userCode = userDetailButton.getAttribute("data-account-open-user-detail") || "";
+        openUserDetail(userCode);
+        return;
+      }
+
+      const integrationsButton = target.closest("[data-account-open-integrations]");
+      if (integrationsButton) {
+        event.preventDefault();
+        const accountId = normalizeAccountId(integrationsButton.getAttribute("data-account-id"));
+        const userCode = integrationsButton.getAttribute("data-account-user-code") || "";
+        openCreatorIntegrations(accountId, userCode);
+        return;
+      }
+
+      const statsButton = target.closest("[data-account-open-stats]");
+      if (statsButton) {
+        event.preventDefault();
+        const accountId = normalizeAccountId(statsButton.getAttribute("data-account-id"));
+        openCreatorStats(accountId);
         return;
       }
 

@@ -11,7 +11,7 @@
   const state = {
     summaries: [],
     filtered: [],
-    accountId: "",
+    userCode: "",
     detail: null,
     listToken: 0,
     detailToken: 0,
@@ -30,6 +30,7 @@
     empty: null,
     heading: null,
     generatedAt: null,
+    openUser: null,
     detailEmpty: null,
     detailSections: null,
     summaryCards: null,
@@ -64,6 +65,25 @@
     if (!base) return path;
     const normalized = path.startsWith("/") ? path : `/${path}`;
     return `${base}${normalized}`;
+  }
+
+  async function requestJson(path, options = {}) {
+    const response = await fetch(buildApiUrl(path), {
+      cache: "no-store",
+      credentials: "include",
+      timeoutMs: options.timeoutMs || 6500,
+      ...options,
+      headers: {
+        Accept: "application/json",
+        ...(options.body ? { "Content-Type": "application/json" } : {}),
+        ...(options.headers || {})
+      }
+    });
+    const payload = await readJsonSafe(response);
+    if (!response.ok || payload?.success === false) {
+      throw new Error(payload?.error || payload?.message || `Request failed (${response.status})`);
+    }
+    return payload || {};
   }
 
   async function readJsonSafe(response) {
@@ -158,40 +178,53 @@
     return window.StreamSuitesAdminRoutes?.resolveLocation?.() || null;
   }
 
-  function parseAccountIdFromRoute() {
+  function parseUserCodeFromRoute() {
     const route = resolveCurrentRoute();
     if (route?.mode === "path") {
       const params = new URLSearchParams(window.location.search || "");
-      return String(params.get("account_id") || "").trim();
+      return String(route?.params?.user_code || params.get("user_code") || "").trim();
     }
     const hash = String(window.location.hash || "").replace(/^#/, "");
     const queryIndex = hash.indexOf("?");
-    if (queryIndex === -1) return "";
+    if (queryIndex === -1) return String(route?.params?.user_code || "").trim();
     const params = new URLSearchParams(hash.slice(queryIndex + 1));
-    return String(params.get("account_id") || "").trim();
+    return String(route?.params?.user_code || params.get("user_code") || "").trim();
   }
 
-  function consumePendingAccountId() {
+  function consumePendingUserCode() {
     const pending = window.StreamSuitesCreatorIntegrationsNav;
-    const accountId = String(pending?.accountId || "").trim();
+    const userCode = String(pending?.userCode || "").trim();
     if (pending && typeof pending === "object") {
       pending.accountId = "";
+      pending.userCode = "";
       pending.from = "";
     }
-    return accountId;
+    return userCode;
   }
 
-  function navigateToAccount(accountId) {
-    const normalizedId = String(accountId || "").trim();
-    if (!normalizedId) return;
-    state.accountId = normalizedId;
+  function openUserPage(userCode) {
+    const normalized = String(userCode || "").trim();
+    if (!normalized) return;
     if (window.StreamSuitesAdminRoutes?.navigateToView) {
-      window.StreamSuitesAdminRoutes.navigateToView("creator-integrations", {
-        params: { account_id: normalizedId }
+      window.StreamSuitesAdminRoutes.navigateToView("user-detail", {
+        params: { user_code: normalized }
       });
       return;
     }
-    window.location.hash = `#creator-integrations?account_id=${encodeURIComponent(normalizedId)}`;
+    window.location.hash = `#users/${encodeURIComponent(normalized)}`;
+  }
+
+  function navigateToUser(userCode) {
+    const normalized = String(userCode || "").trim();
+    if (!normalized) return;
+    state.userCode = normalized;
+    if (window.StreamSuitesAdminRoutes?.navigateToView) {
+      window.StreamSuitesAdminRoutes.navigateToView("creator-integrations", {
+        params: { user_code: normalized }
+      });
+      return;
+    }
+    window.location.hash = `#creator-integrations?user_code=${encodeURIComponent(normalized)}`;
   }
 
   function passesReadinessFilter(item, filterValue) {
@@ -237,7 +270,7 @@
     }
     el.empty?.classList.add("hidden");
     items.forEach((item) => {
-      const selected = state.accountId && item.account_id === state.accountId;
+      const selected = state.userCode && item.user_code === state.userCode;
       const row = document.createElement("tr");
       if (selected) row.classList.add("accounts-row-selected");
       row.setAttribute("data-account-id", item.account_id || "");
@@ -254,8 +287,8 @@
         <td>${renderBooleanBadge(item.foundational_trigger_ready, "Ready", "Missing")}</td>
         <td>${renderBadge(item.readiness_label || "Unknown", readinessTone(item.readiness_label))}</td>
         <td class="align-right">
-          <button type="button" class="ss-btn ss-btn-small ss-btn-secondary" data-open-account="${escapeHtml(
-            item.account_id || ""
+          <button type="button" class="ss-btn ss-btn-small ss-btn-secondary" data-open-user="${escapeHtml(
+            item.user_code || ""
           )}">
             Inspect
           </button>
@@ -407,16 +440,19 @@
 
   function renderDetail(payload) {
     state.detail = payload && typeof payload === "object" ? payload : null;
-    const summary = state.detail?.summary || {};
+    const summary = state.detail?.creator_integrations?.summary || {};
     const account = state.detail?.account || {};
     if (el.heading) {
-      el.heading.textContent = summary.display_name || account.display_name || account.user_code || "Creator detail";
+      el.heading.textContent = account.display_name || account.user_code || "Creator detail";
     }
     if (el.generatedAt) {
       el.generatedAt.textContent = formatTimestamp(state.detail?.generated_at);
     }
     if (el.refreshDetail) {
-      el.refreshDetail.disabled = !state.accountId;
+      el.refreshDetail.disabled = !state.userCode;
+    }
+    if (el.openUser) {
+      el.openUser.disabled = !state.userCode;
     }
     if (!state.detail) {
       el.detailEmpty?.classList.remove("hidden");
@@ -426,8 +462,8 @@
     el.detailEmpty?.classList.add("hidden");
     el.detailSections?.classList.remove("hidden");
     renderSummaryCards(summary, account);
-    renderPlatformCards(state.detail.integrations);
-    renderTriggers(state.detail.triggers);
+    renderPlatformCards(state.detail?.creator_integrations?.integrations);
+    renderTriggers(state.detail?.creator_integrations?.triggers);
   }
 
   async function fetchList() {
@@ -435,23 +471,15 @@
     setStatus("Loading creator integration summaries...");
     setBanner("");
     try {
-      const response = await fetch(buildApiUrl(LIST_ENDPOINT), {
-        cache: "no-store",
-        credentials: "include",
-        headers: { Accept: "application/json" }
-      });
-      const payload = await readJsonSafe(response);
+      const payload = await requestJson(LIST_ENDPOINT);
       if (token !== state.listToken) return;
-      if (!response.ok || payload?.success === false) {
-        throw new Error(payload?.error || payload?.message || `Request failed (${response.status})`);
-      }
       state.summaries = Array.isArray(payload?.items) ? payload.items : [];
       applyFilters();
       setStatus(`Loaded ${state.summaries.length} creator integration summaries.`);
-      if (!state.accountId && state.filtered[0]?.account_id) {
-        navigateToAccount(state.filtered[0].account_id);
-      } else if (state.accountId) {
-        const stillVisible = state.summaries.some((item) => item.account_id === state.accountId);
+      if (!state.userCode && state.filtered[0]?.user_code) {
+        navigateToUser(state.filtered[0].user_code);
+      } else if (state.userCode) {
+        const stillVisible = state.summaries.some((item) => item.user_code === state.userCode);
         if (!stillVisible) {
           renderDetail(null);
         }
@@ -465,29 +493,21 @@
     }
   }
 
-  async function fetchDetail(accountId) {
-    const normalizedId = String(accountId || "").trim();
-    if (!normalizedId) {
+  async function fetchDetail(userCode) {
+    const normalizedUserCode = String(userCode || "").trim();
+    if (!normalizedUserCode) {
       renderDetail(null);
       return;
     }
     const token = ++state.detailToken;
-    state.accountId = normalizedId;
-    setStatus(`Loading creator detail for ${normalizedId}...`);
+    state.userCode = normalizedUserCode;
+    setStatus(`Loading creator detail for ${normalizedUserCode}...`);
     try {
-      const response = await fetch(buildApiUrl(`/api/admin/accounts/${encodeURIComponent(normalizedId)}/creator-integrations`), {
-        cache: "no-store",
-        credentials: "include",
-        headers: { Accept: "application/json" }
-      });
-      const payload = await readJsonSafe(response);
+      const payload = await requestJson(`/api/admin/users/${encodeURIComponent(normalizedUserCode)}`);
       if (token !== state.detailToken) return;
-      if (!response.ok || payload?.success === false) {
-        throw new Error(payload?.error || payload?.message || `Request failed (${response.status})`);
-      }
       renderDetail(payload);
       applyFilters();
-      setStatus(`Loaded creator integration detail for ${normalizedId}.`);
+      setStatus(`Loaded creator integration detail for ${normalizedUserCode}.`);
     } catch (err) {
       renderDetail(null);
       setStatus("Failed to load creator integration detail.");
@@ -496,27 +516,16 @@
   }
 
   async function updateTrigger(triggerId, enabled) {
-    if (!state.accountId || !triggerId) return;
+    const accountId = String(state.detail?.account?.id || "").trim();
+    if (!accountId || !triggerId) return;
     setStatus(`Updating trigger ${triggerId}...`);
     try {
-      const response = await fetch(
-        buildApiUrl(`/api/admin/accounts/${encodeURIComponent(state.accountId)}/creator-triggers/${encodeURIComponent(triggerId)}`),
-        {
-          method: "PATCH",
-          cache: "no-store",
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ enabled })
-        }
-      );
-      const payload = await readJsonSafe(response);
-      if (!response.ok || payload?.success === false) {
-        throw new Error(payload?.error || payload?.message || `Request failed (${response.status})`);
-      }
-      await fetchDetail(state.accountId);
+      await requestJson(`/api/admin/accounts/${encodeURIComponent(accountId)}/creator-triggers/${encodeURIComponent(triggerId)}`, {
+        method: "PATCH",
+        timeoutMs: 7000,
+        body: JSON.stringify({ enabled })
+      });
+      await fetchDetail(state.userCode);
       await fetchList();
       setStatus(`Updated trigger ${triggerId}.`);
     } catch (err) {
@@ -528,10 +537,10 @@
   function handleRouteSelection() {
     const route = resolveCurrentRoute();
     if (route?.view !== "creator-integrations") return;
-    const accountId = parseAccountIdFromRoute() || consumePendingAccountId();
-    if (!accountId) return;
-    if (accountId !== state.accountId || !state.detail) {
-      void fetchDetail(accountId);
+    const userCode = parseUserCodeFromRoute() || consumePendingUserCode();
+    if (!userCode) return;
+    if (userCode !== state.userCode || !state.detail) {
+      void fetchDetail(userCode);
     }
   }
 
@@ -542,14 +551,17 @@
       void fetchList();
     });
     el.refreshDetail?.addEventListener("click", () => {
-      void fetchDetail(state.accountId);
+      void fetchDetail(state.userCode);
+    });
+    el.openUser?.addEventListener("click", () => {
+      openUserPage(state.userCode);
     });
     el.body?.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-open-account]");
+      const button = event.target.closest("[data-open-user]");
       if (!(button instanceof HTMLButtonElement)) return;
-      const accountId = button.getAttribute("data-open-account") || "";
-      navigateToAccount(accountId);
-      void fetchDetail(accountId);
+      const userCode = button.getAttribute("data-open-user") || "";
+      navigateToUser(userCode);
+      void fetchDetail(userCode);
     });
     el.triggersBody?.addEventListener("click", (event) => {
       const button = event.target.closest("[data-trigger-toggle]");
@@ -583,6 +595,7 @@
     el.empty = $("creator-integrations-empty");
     el.heading = $("creator-integrations-detail-heading");
     el.generatedAt = $("creator-integrations-generated-at");
+    el.openUser = $("creator-integrations-open-user");
     el.detailEmpty = $("creator-integrations-detail-empty");
     el.detailSections = $("creator-integrations-detail-sections");
     el.summaryCards = $("creator-integrations-summary-cards");
@@ -598,7 +611,7 @@
     unbindEvents();
     state.summaries = [];
     state.filtered = [];
-    state.accountId = "";
+    state.userCode = "";
     state.detail = null;
   }
 

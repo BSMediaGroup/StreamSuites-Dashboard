@@ -45,6 +45,7 @@ flowchart TD
 - Clean path-based admin routes are the primary navigation model, replacing older hash-fragment and partial-only dependence for normal use.
 - Root and `docs/` rewrite manifests preserve deep links for routes such as `/overview`, `/accounts`, `/profiles`, `/analytics`, `/alerts`, `/notifications`, `/settings`, `/creator-stats`, `/integrations/...`, and other admin views.
 - Creator integrations now have a dedicated admin route at `/profiles/integrations`, backed by runtime/Auth-admin inspection endpoints for creator-capable posture, platform readiness, trigger foundation, and bot deploy eligibility.
+- Admin account investigation now also supports a dedicated `user_code` route at `/users/{user_code}` for exhaustive single-account inspection across identity, auth posture, creator readiness, integrations, and trigger footing.
 - Admin account inspection now exposes authoritative public-profile state, including canonical slug, creator-capable vs viewer-only posture, StreamSuites and FindMeHere visibility or eligibility, slug aliases, canonical URLs, and reserved media fields including background image URL.
 - The current routing and auth cutover work is reflected in fail-closed Auth API session gating, Cloudflare Pages-safe login routing, and current route compatibility handling.
 - Alerts now live in a dedicated admin route and sidebar destination, separate from Analytics, while still consuming the same backend-owned alert settings, rules, targets, and history APIs.
@@ -131,6 +132,7 @@ StreamSuites-Dashboard/
 │   │   ├── overview.js
 │   │   ├── settings.js
 │   │   ├── state.js
+│   │   ├── user-detail.js
 │   │   └── utils/
 │   │       └── country-flags.js
 │   ├── runtime/
@@ -165,6 +167,7 @@ StreamSuites-Dashboard/
 │       ├── notifications.html
 │       ├── overview.html
 │       ├── settings.html
+│       ├── user-detail.html
 │       └── platforms/
 ├── runtime/
 │   ├── version.py

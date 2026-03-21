@@ -125,12 +125,14 @@ Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into t
 
 - Added a dedicated admin `Creator Integrations` route and inspection workspace that reads runtime/Auth-admin creator integration summaries and per-account detail rather than inventing a second dashboard-owned provider model.
 - The new admin view surfaces creator-capable posture, linked-platform counts, deployable-platform counts, foundational trigger readiness, per-platform limitation reasons, and safe masked Rumble credential presence from authoritative backend payloads.
-- Accounts and Creators now include direct drill-in actions into the creator-integrations workflow so admins can move from identity/account inspection into platform-readiness troubleshooting without changing the surrounding shell or route model.
+- Added a dedicated `user-detail` route at `/users/{user_code}` so exhaustive account inspection can deep-link by `user_code` instead of staying trapped inside the accounts drawer.
+- Accounts and Creators now include direct drill-in actions into the creator-integrations workflow and the new per-user page so admins can move from identity/account inspection into platform-readiness troubleshooting without changing the surrounding shell or route model.
 - Pending entries for `0.4.8-alpha` go here.
 
 ### Human-Readable Notes
 
 - Admins can now inspect whether a creator is actually ready for bot-trigger usage, which platforms are only linked versus truly deployable, and whether the foundation triggers are what is blocking readiness.
+- The new per-user admin page turns `user_code` into a real support/deep-link surface, so one account can be inspected end-to-end without depending on the transient sidebar drawer state.
 - Rumble remains secret-safe in the admin UI: only presence and masked-state information is shown, never the raw backend-owned credential.
 - Pending entries for `0.4.8-alpha` go here.
 
@@ -142,6 +144,8 @@ Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into t
 - `docs/js/creators.js`
 - `docs/js/admin-routes.js`
 - `docs/js/app.js`
+- `docs/views/user-detail.html`
+- `docs/js/user-detail.js`
 - `docs/css/components.css`
 - `docs/index.html`
 - `README.md`

@@ -1429,8 +1429,9 @@ function initAdminUserMenu() {
 }
 
 function updateNavActiveState(viewName) {
+  const normalizedView = viewName === "user-detail" ? "accounts" : viewName;
   $all("[data-view]").forEach((el) => {
-    if (el.dataset.view === viewName) {
+    if (el.dataset.view === normalizedView) {
       el.classList.add("active");
     } else {
       el.classList.remove("active");
@@ -1664,6 +1665,14 @@ registerView("creator-integrations", {
   },
   onUnload: () => {
     window.CreatorIntegrationsView?.destroy?.();
+  }
+});
+registerView("user-detail", {
+  onLoad: () => {
+    window.UserDetailView?.init?.();
+  },
+  onUnload: () => {
+    window.UserDetailView?.destroy?.();
   }
 });
 registerView("creator-stats", {
