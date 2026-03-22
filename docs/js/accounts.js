@@ -338,6 +338,8 @@ function normalizeUser(raw = {}) {
     );
     const backgroundImageUrl = coerceText(raw.background_image_url || publicProfile.background_image_url);
     const avatarUrl = coerceText(raw.avatar_url || publicProfile.avatar_url);
+    const avatarMedia = normalizeMediaMeta(raw.avatar_media || publicProfile.avatar_media, avatarUrl, "avatar");
+    const coverMedia = normalizeMediaMeta(raw.cover_media || publicProfile.cover_media, coverImageUrl, "cover");
     const bio = coerceText(raw.bio || publicProfile.bio);
     const socialLinks =
       raw.social_links && typeof raw.social_links === "object"
@@ -403,6 +405,8 @@ function normalizeUser(raw = {}) {
       bannerImageUrl: coverImageUrl,
       backgroundImageUrl,
       avatarUrl,
+      avatarMedia,
+      coverMedia,
       bio,
       socialLinks,
       badges: badgeItems,
@@ -1203,6 +1207,54 @@ function normalizeUser(raw = {}) {
     `;
   }
 
+  function isInlineDataUrl(value) {
+    return String(value || "").trim().toLowerCase().startsWith("data:");
+  }
+
+  function truncateMiddle(value, max = 72) {
+    const text = coerceText(value);
+    if (!text || text.length <= max) return text;
+    const lead = Math.max(16, Math.floor((max - 3) / 2));
+    const tail = Math.max(12, max - lead - 3);
+    return `${text.slice(0, lead)}...${text.slice(text.length - tail)}`;
+  }
+
+  function normalizeMediaMeta(rawMedia, fallbackUrl, slot) {
+    if (!rawMedia || typeof rawMedia !== "object") return null;
+    const normalizedSlot = coerceText(rawMedia.slot || slot).toLowerCase();
+    if (!normalizedSlot) return null;
+    return {
+      slot: normalizedSlot,
+      sourceType: coerceText(rawMedia.source_type || rawMedia.sourceType || "uploaded").toLowerCase(),
+      storageBackend: coerceText(rawMedia.storage_backend || rawMedia.storageBackend),
+      assetKey: coerceText(rawMedia.asset_key || rawMedia.assetKey),
+      publicUrl: coerceText(rawMedia.public_url || rawMedia.publicUrl || fallbackUrl),
+      mimeType: coerceText(rawMedia.mime_type || rawMedia.mimeType),
+      version: rawMedia.version ?? null,
+      width: rawMedia.width ?? null,
+      height: rawMedia.height ?? null,
+      fileSize: rawMedia.file_size ?? rawMedia.fileSize ?? null,
+      uploadedAt: coerceText(rawMedia.uploaded_at || rawMedia.uploadedAt),
+    };
+  }
+
+  function renderMediaReference(url, media, emptyLabel) {
+    const safeUrl = coerceText(url);
+    if (!safeUrl) {
+      return `<span class="accounts-details-keyline-value accounts-system-text is-muted">${escapeHtml(
+        emptyLabel
+      )}</span>`;
+    }
+    if (isInlineDataUrl(safeUrl)) {
+      return `<span class="accounts-details-keyline-value accounts-system-text">${escapeHtml(
+        `Legacy inline data URL (${safeUrl.length} chars)`
+      )}</span>`;
+    }
+    const href = escapeHtml(safeUrl);
+    const label = escapeHtml(truncateMiddle(media?.assetKey || safeUrl));
+    return `<a class="ss-link accounts-details-keyline-value accounts-system-text" href="${href}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+  }
+
   function renderDrawerProfileSummary(user) {
     const title = user.displayName || user.userCode || user.email || "Account";
     const subtitle = user.userCode || "—";
@@ -1347,9 +1399,11 @@ function normalizeUser(raw = {}) {
             <div><span class="label">Slug Aliases</span><span class="value accounts-system-text">${escapeHtml(
               user.slugAliases.length ? user.slugAliases.join(", ") : "—"
             )}</span></div>
-            <div><span class="label">Avatar URL</span><span class="value accounts-system-text">${escapeHtml(
-              user.avatarUrl || "—"
-            )}</span></div>
+            <div><span class="label">Avatar Reference</span>${renderMediaReference(
+              user.avatarUrl,
+              user.avatarMedia,
+              "No avatar URL"
+            )}</div>
             <div><span class="label">User Code</span><span class="value accounts-system-text">${escapeHtml(
               user.userCode || "—"
             )}</span></div>
@@ -1428,16 +1482,44 @@ function normalizeUser(raw = {}) {
           <h5 class="accounts-details-group-title">Media Fields</h5>
           <div class="accounts-details-media-grid">
             <div class="accounts-details-keyline">
-              <span class="accounts-details-keyline-label">Avatar URL</span>
-              ${renderUrlValue(user.avatarUrl, "No avatar URL")}
+              <span class="accounts-details-keyline-label">Avatar</span>
+              ${renderMediaReference(user.avatarUrl, user.avatarMedia, "No avatar URL")}
             </div>
             <div class="accounts-details-keyline">
-              <span class="accounts-details-keyline-label">Cover / banner image URL</span>
-              ${renderUrlValue(user.coverImageUrl, "No cover image URL")}
+              <span class="accounts-details-keyline-label">Avatar asset key</span>
+              <div class="accounts-details-keyline-value accounts-system-text">${escapeHtml(
+                user.avatarMedia?.assetKey || "—"
+              )}</div>
+            </div>
+            <div class="accounts-details-keyline">
+              <span class="accounts-details-keyline-label">Avatar backend / version</span>
+              <div class="accounts-details-keyline-value accounts-system-text">${escapeHtml(
+                user.avatarMedia
+                  ? `${user.avatarMedia.storageBackend || "local"} / v${user.avatarMedia.version || "?"}`
+                  : "—"
+              )}</div>
+            </div>
+            <div class="accounts-details-keyline">
+              <span class="accounts-details-keyline-label">Cover / banner image</span>
+              ${renderMediaReference(user.coverImageUrl, user.coverMedia, "No cover image URL")}
+            </div>
+            <div class="accounts-details-keyline">
+              <span class="accounts-details-keyline-label">Cover asset key</span>
+              <div class="accounts-details-keyline-value accounts-system-text">${escapeHtml(
+                user.coverMedia?.assetKey || "—"
+              )}</div>
+            </div>
+            <div class="accounts-details-keyline">
+              <span class="accounts-details-keyline-label">Cover backend / version</span>
+              <div class="accounts-details-keyline-value accounts-system-text">${escapeHtml(
+                user.coverMedia
+                  ? `${user.coverMedia.storageBackend || "local"} / v${user.coverMedia.version || "?"}`
+                  : "—"
+              )}</div>
             </div>
             <div class="accounts-details-keyline">
               <span class="accounts-details-keyline-label">Background image URL</span>
-              ${renderUrlValue(user.backgroundImageUrl, "No background image URL")}
+              ${renderMediaReference(user.backgroundImageUrl, null, "No background image URL")}
             </div>
           </div>
         </section>
