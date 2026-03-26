@@ -6,9 +6,6 @@
   "use strict";
 
   const RUNTIME_ENDPOINT = "/admin/accounts";
-  const DONATIONS_ENDPOINT = "/api/admin/donations";
-  const DONATIONS_WINDOW = "30d";
-  const ANALYTICS_CACHE_TTL_MS = 8000;
   const COLUMN_WIDTH_STORAGE_KEY = "ss_admin_accounts_colwidths_v3";
   const ROW_CLICK_DELAY_MS = 240;
   const SEARCH_FIELDS = [
@@ -21,7 +18,9 @@
     "accountStatus",
     "onboardingStatus",
     "emailVerifiedLabel",
-    "supporterLabel"
+    "supporterLabel",
+    "lifetimeTotalPaidLabel",
+    "lastPaymentDateLabel"
   ];
 
   const state = {
@@ -33,8 +32,6 @@
     canManage: false,
     sourceMode: "runtime",
     exportLoading: false,
-    donationStats: new Map(),
-    donationsLoaded: false,
     openDrawerId: "",
     pendingNavAccountId: "",
     drawerDetailToken: 0,
@@ -245,6 +242,110 @@
     return date.toISOString().replace("T", " ").replace("Z", " UTC");
   }
 
+  function formatCurrencyCents(cents, currency, fallback = "—") {
+    const parsed = Number(cents);
+    if (!Number.isFinite(parsed)) return fallback;
+    const amount = parsed / 100;
+    const currencyCode = coerceText(currency || "USD").toUpperCase() || "USD";
+    try {
+      return new Intl.NumberFormat(undefined, {
+        style: "currency",
+        currency: currencyCode,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(amount);
+    } catch (_err) {
+      return `${currencyCode} ${amount.toFixed(2)}`.trim();
+    }
+  }
+
+  function coerceInteger(value) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return null;
+    return Math.trunc(parsed);
+  }
+
+  function humanizeSummaryToken(value, fallback = "—") {
+    const normalized = coerceText(value).replace(/_/g, " ").trim();
+    if (!normalized) return fallback;
+    return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+  }
+
+  function supporterLabelFromSource(source, isSupporter) {
+    const normalized = coerceText(source).toLowerCase();
+    if (normalized === "subscription_and_donation") return "Both";
+    if (normalized === "subscription") return "Subscription";
+    if (normalized === "donation") return "Donation";
+    return isSupporter ? "Yes" : "No";
+  }
+
+  function supporterToneFromSource(source, isSupporter) {
+    return isSupporter ? "ss-badge-success" : "";
+  }
+
+  function normalizePaymentSummary(raw, fallbackTier) {
+    if (!raw || typeof raw !== "object") {
+      return {
+        planName: normalizeTierLabel(fallbackTier || "Core"),
+        planTier: coerceText(fallbackTier || "core").toLowerCase(),
+        planStatus: "",
+        recurringStatus: "not_tracked",
+        billingInterval: "",
+        nextDueAt: "",
+        currency: "",
+        isSupporter: false,
+        supporterSource: "none",
+        hasAnyPayment: false,
+        hasOneoffDonation: false,
+        hasActiveSubscription: false,
+        lifetimeTotalPaidCents: 0,
+        subscriptionTotalPaidCents: null,
+        donationTotalPaidCents: 0,
+        lastPaymentAmountCents: null,
+        lastPaymentAt: "",
+        lastPaymentSource: "",
+        donationCount: 0,
+      };
+    }
+    return {
+      planName: coerceText(raw.plan_name || raw.planName) || normalizeTierLabel(fallbackTier || "Core"),
+      planTier: coerceText(raw.plan_tier || raw.planTier).toLowerCase() || coerceText(fallbackTier || "core").toLowerCase(),
+      planStatus: coerceText(raw.plan_status || raw.planStatus).toLowerCase(),
+      recurringStatus: coerceText(raw.recurring_status || raw.recurringStatus).toLowerCase(),
+      billingInterval: coerceText(raw.billing_interval || raw.billingInterval).toLowerCase(),
+      nextDueAt: coerceText(raw.next_due_at || raw.nextDueAt),
+      currency: coerceText(raw.currency).toLowerCase(),
+      isSupporter: raw.is_supporter === true || raw.isSupporter === true,
+      supporterSource: coerceText(raw.supporter_source || raw.supporterSource).toLowerCase() || "none",
+      hasAnyPayment: raw.has_any_payment === true || raw.hasAnyPayment === true,
+      hasOneoffDonation: raw.has_oneoff_donation === true || raw.hasOneoffDonation === true,
+      hasActiveSubscription: raw.has_active_subscription === true || raw.hasActiveSubscription === true,
+      lifetimeTotalPaidCents: coerceInteger(raw.lifetime_total_paid_cents ?? raw.lifetimeTotalPaidCents) || 0,
+      subscriptionTotalPaidCents: coerceInteger(raw.subscription_total_paid_cents ?? raw.subscriptionTotalPaidCents),
+      donationTotalPaidCents: coerceInteger(raw.donation_total_paid_cents ?? raw.donationTotalPaidCents) || 0,
+      lastPaymentAmountCents: coerceInteger(raw.last_payment_amount_cents ?? raw.lastPaymentAmountCents),
+      lastPaymentAt: coerceText(raw.last_payment_at || raw.lastPaymentAt),
+      lastPaymentSource: coerceText(raw.last_payment_source || raw.lastPaymentSource).toLowerCase(),
+      donationCount: coerceInteger(raw.donation_count ?? raw.donationCount) || 0,
+    };
+  }
+
+  function describeSupporterState(summary) {
+    const source = coerceText(summary?.supporterSource).toLowerCase();
+    if (source === "subscription_and_donation") return "Subscription + donation";
+    if (source === "subscription") return "Subscription supporter";
+    if (source === "donation") return "One-off donation";
+    return "No supporter history";
+  }
+
+  function describeRecurringState(summary) {
+    const status = coerceText(summary?.recurringStatus).toLowerCase();
+    if (!status || status === "not_tracked") return "No recurring renewal tracked";
+    if (status === "active") return "Active recurring billing";
+    if (status === "trialing") return "Trialing recurring billing";
+    return humanizeSummaryToken(status, "No recurring renewal tracked");
+  }
+
   function redactId(value) {
     if (!value) return "";
     const text = String(value);
@@ -376,6 +477,9 @@ function normalizeUser(raw = {}) {
         : typeof raw.emailVerified === "number"
         ? raw.emailVerified === 1
         : null;
+    const paymentSummary = normalizePaymentSummary(raw.payment_summary || raw.paymentSummary, raw.tier || raw.account_tier || raw.plan);
+    const supporterLabel = supporterLabelFromSource(paymentSummary.supporterSource, paymentSummary.isSupporter);
+    const lastPaymentAtSort = paymentSummary.lastPaymentAt ? Date.parse(paymentSummary.lastPaymentAt) || 0 : 0;
     return {
       id: internalId,
       userCode: raw.user_code || raw.userCode || raw.code || raw.handle || "—",
@@ -418,6 +522,18 @@ function normalizeUser(raw = {}) {
       accountType,
       role: raw.role || raw.account_role || accountType || "—",
       tier: normalizeTierLabel(raw.tier || raw.account_tier || raw.plan || "Core"),
+      paymentSummary,
+      supporterLabel,
+      supporterTone: supporterToneFromSource(paymentSummary.supporterSource, paymentSummary.isSupporter),
+      lifetimeTotalPaidCents: paymentSummary.lifetimeTotalPaidCents || 0,
+      lifetimeTotalPaidLabel: formatCurrencyCents(
+        paymentSummary.lifetimeTotalPaidCents,
+        paymentSummary.currency,
+        paymentSummary.hasAnyPayment ? "—" : "No payments"
+      ),
+      lastPaymentAt: paymentSummary.lastPaymentAt || "",
+      lastPaymentAtSort,
+      lastPaymentDateLabel: paymentSummary.lastPaymentAt ? formatTimestamp(paymentSummary.lastPaymentAt) : "—",
       accountStatus: raw.account_status || raw.accountStatus || raw.status || "—",
       onboardingStatus: raw.onboarding_status || raw.onboardingStatus || raw.onboarding || "—",
       providers,
@@ -435,10 +551,7 @@ function normalizeUser(raw = {}) {
         raw.last_login ||
         raw.lastLogin ||
         raw.last_seen ||
-        null,
-      donationCount: 0,
-      donationTotal: 0,
-      supporterLabel: "No"
+        null
     };
   }
 
@@ -1010,7 +1123,9 @@ function normalizeUser(raw = {}) {
       <td>${renderDisplayNameValue(user)}</td>
       <td>${renderBadge(user.role)}</td>
       <td>${renderBadge(user.tier)}</td>
-      <td>${renderBadge(user.supporterLabel, user.supporterLabel === "Yes" ? "ss-badge-success" : "")}</td>
+      <td>${renderBadge(user.supporterLabel, user.supporterTone)}</td>
+      <td>${renderTextValue(user.lifetimeTotalPaidLabel)}</td>
+      <td>${renderTextValue(user.lastPaymentDateLabel)}</td>
       <td>${renderBadge(user.accountStatus, badgeToneForStatus(user.accountStatus))}</td>
       <td>${renderBadge(user.onboardingStatus, badgeToneForStatus(user.onboardingStatus))}</td>
       <td>${renderTextValue(user.providersLabel)}</td>
@@ -1258,6 +1373,9 @@ function normalizeUser(raw = {}) {
   function renderDrawerProfileSummary(user) {
     const title = user.displayName || user.userCode || user.email || "Account";
     const subtitle = user.userCode || "—";
+    const paymentSummary = user.paymentSummary && typeof user.paymentSummary === "object"
+      ? user.paymentSummary
+      : normalizePaymentSummary(null, user.tier);
     const previewHref = user.streamsuitesProfileUrl || `https://streamsuites.app/u/${encodeURIComponent(user.publicSlug || user.userCode || "")}`;
     const roleBadges = [
       ...resolveRoleList(user.role).map((role) => renderBadge(role)),
@@ -1289,6 +1407,25 @@ function normalizeUser(raw = {}) {
       : user.findMeHereEligible
       ? "Not listed"
       : "Ineligible";
+    const supporterState = describeSupporterState(paymentSummary);
+    const recurringState = describeRecurringState(paymentSummary);
+    const lifetimePaidLabel = formatCurrencyCents(
+      paymentSummary.lifetimeTotalPaidCents,
+      paymentSummary.currency,
+      paymentSummary.hasAnyPayment ? "—" : "No payments"
+    );
+    const donationPaidLabel = formatCurrencyCents(
+      paymentSummary.donationTotalPaidCents,
+      paymentSummary.currency,
+      paymentSummary.hasOneoffDonation ? "—" : "No donation history"
+    );
+    const lastPaymentAmountLabel = formatCurrencyCents(
+      paymentSummary.lastPaymentAmountCents,
+      paymentSummary.currency,
+      "Not captured"
+    );
+    const lastPaymentDateLabel = paymentSummary.lastPaymentAt ? formatTimestamp(paymentSummary.lastPaymentAt) : "No payment recorded";
+    const nextDueLabel = paymentSummary.nextDueAt ? formatTimestamp(paymentSummary.nextDueAt) : "Not scheduled";
     const badgeIcons = (Array.isArray(user.badges) ? user.badges : [])
       .map((badge) => {
         const kind = String(badge?.kind || "").trim().toLowerCase();
@@ -1562,6 +1699,32 @@ function normalizeUser(raw = {}) {
             </button>
           </div>
         </section>
+        <section class="accounts-details-group">
+          <h5 class="accounts-details-group-title">Billing &amp; Supporter</h5>
+          <div class="accounts-details-kpi-row">
+            ${renderBadge(paymentSummary.planName || user.tier || "Plan")}
+            ${renderBadge(
+              supporterState,
+              paymentSummary.isSupporter ? "ss-badge-success" : "ss-badge-warning"
+            )}
+            ${renderBadge(
+              recurringState,
+              paymentSummary.hasActiveSubscription ? "ss-badge-success" : ""
+            )}
+          </div>
+          <div class="accounts-details-meta-grid">
+            <div><span class="label">Plan status</span><span class="value">${escapeHtml(
+              humanizeSummaryToken(paymentSummary.planStatus, "Active")
+            )}</span></div>
+            <div><span class="label">Supporter source</span><span class="value">${escapeHtml(supporterState)}</span></div>
+            <div><span class="label">Lifetime paid</span><span class="value">${escapeHtml(lifetimePaidLabel)}</span></div>
+            <div><span class="label">Donation total</span><span class="value">${escapeHtml(donationPaidLabel)}</span></div>
+            <div><span class="label">Last payment amount</span><span class="value">${escapeHtml(lastPaymentAmountLabel)}</span></div>
+            <div><span class="label">Last payment date</span><span class="value">${escapeHtml(lastPaymentDateLabel)}</span></div>
+            <div><span class="label">Next renewal</span><span class="value">${escapeHtml(nextDueLabel)}</span></div>
+            <div><span class="label">Recurring status</span><span class="value">${escapeHtml(recurringState)}</span></div>
+          </div>
+        </section>
       </div>
       <div class="accounts-details-placeholder-group">
         <div class="accounts-details-placeholder-block">
@@ -1571,10 +1734,6 @@ function normalizeUser(raw = {}) {
         <div class="accounts-details-placeholder-block">
           <div class="accounts-details-placeholder-title">Security Flags</div>
           <div class="accounts-details-placeholder-value">No risk flags captured.</div>
-        </div>
-        <div class="accounts-details-placeholder-block">
-          <div class="accounts-details-placeholder-title">Billing Snapshot</div>
-          <div class="accounts-details-placeholder-value">No billing snapshot attached.</div>
         </div>
       </div>
     `;
@@ -1823,7 +1982,6 @@ function normalizeUser(raw = {}) {
       state.raw = normalized;
       state.canManage = true;
       state.sourceMode = "runtime";
-      applyDonationStats();
       updateFilterOptions(normalized);
       applyFilters();
       setBanner("", false);
@@ -1838,221 +1996,13 @@ function normalizeUser(raw = {}) {
       state.sourceMode = "unavailable";
       state.manager?.setData([]);
       updateEmptyStateMessage(0);
-      setBanner("Runtime API unavailable. Retry or check runtime connectivity.", true);
-    }
-  }
-
-  function coerceNumber(value) {
-    if (typeof value === "number" && Number.isFinite(value)) return value;
-    if (typeof value !== "string") return null;
-    const cleaned = value.replace(/[^0-9.-]/g, "");
-    if (!cleaned) return null;
-    const parsed = Number(cleaned);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-
-  function resolveDonationAmountCents(entry) {
-    if (!entry || typeof entry !== "object") return 0;
-    const meta = entry.meta && typeof entry.meta === "object" ? entry.meta : {};
-    const metadata = entry.metadata && typeof entry.metadata === "object" ? entry.metadata : {};
-    const explicitCents = coerceNumber(
-      entry.amount_total ??
-        entry.amountTotal ??
-        entry.amount_cents ??
-        entry.amountCents ??
-        meta.amount_total ??
-        meta.amount_cents ??
-        metadata.amount_total ??
-        metadata.amount_cents
-    );
-    if (explicitCents !== null) return Math.round(explicitCents);
-    const amount = coerceNumber(
-      entry.amount ??
-        entry.total_amount ??
-        entry.totalAmount ??
-        meta.amount ??
-        meta.total_amount ??
-        metadata.amount ??
-        metadata.total_amount
-    );
-    if (amount === null) return 0;
-    if (amount >= 1000) return Math.round(amount);
-    return Math.round(amount * 100);
-  }
-
-  function collectDonationKeys(entry) {
-    const keys = [];
-    if (!entry || typeof entry !== "object") return keys;
-    const meta = entry.meta && typeof entry.meta === "object" ? entry.meta : {};
-    const metadata = entry.metadata && typeof entry.metadata === "object" ? entry.metadata : {};
-    [
-      entry.customer_email,
-      entry.customerEmail,
-      entry.email,
-      entry.email_address,
-      entry.actor,
-      meta.email,
-      meta.customer_email,
-      meta.actor,
-      meta.account_id,
-      meta.user_id,
-      meta.user_code,
-      metadata.email,
-      metadata.customer_email,
-      entry.account_id,
-      entry.accountId,
-      entry.user_id,
-      entry.userId,
-      entry.internal_id,
-      entry.internalId,
-      metadata.account_id,
-      metadata.user_id,
-      entry.user_code,
-      entry.userCode,
-      metadata.user_code,
-      metadata.userCode
-    ].forEach((value) => {
-      if (!value) return;
-      const normalized = String(value).trim().toLowerCase();
-      if (normalized) keys.push(normalized);
-    });
-    return keys;
-  }
-
-  function buildDonationStats(entries) {
-    const stats = new Map();
-    if (!Array.isArray(entries)) return stats;
-    entries.forEach((entry) => {
-      if (!entry || typeof entry !== "object") return;
-      const amountCents = resolveDonationAmountCents(entry);
-      const keys = collectDonationKeys(entry);
-      if (keys.length === 0) return;
-      const uniqueKeys = new Set(keys);
-      uniqueKeys.forEach((key) => {
-        const current = stats.get(key) || { donationCount: 0, donationTotalCents: 0 };
-        current.donationCount += 1;
-        current.donationTotalCents += amountCents;
-        stats.set(key, current);
-      });
-    });
-    return stats;
-  }
-
-  function resolveDonationStatsForUser(user) {
-    if (!user) return null;
-    const emailKey = String(user.email || "").trim().toLowerCase();
-    if (emailKey && state.donationStats.has(emailKey)) {
-      return state.donationStats.get(emailKey);
-    }
-    const idKey = String(user.id || "").trim().toLowerCase();
-    if (idKey && state.donationStats.has(idKey)) {
-      return state.donationStats.get(idKey);
-    }
-    const codeKey = String(user.userCode || "").trim().toLowerCase();
-    if (codeKey && state.donationStats.has(codeKey)) {
-      return state.donationStats.get(codeKey);
-    }
-    return null;
-  }
-
-  function applyDonationStats() {
-    if (!Array.isArray(state.raw) || state.raw.length === 0) return;
-    state.raw = state.raw.map((user) => {
-      const stats = resolveDonationStatsForUser(user);
-      const donationCount = stats?.donationCount || 0;
-      const donationTotalCents = stats?.donationTotalCents || 0;
-      const donationTotal = donationTotalCents / 100;
-      return {
-        ...user,
-        donationCount,
-        donationTotal,
-        supporterLabel: donationCount > 0 ? "Yes" : "No"
-      };
-    });
-  }
-
-  async function loadDonations(options = {}) {
-    try {
-      let payload = null;
-      if (window.StreamSuitesApi?.getAdminDonations) {
-        payload = await window.StreamSuitesApi.getAdminDonations(DONATIONS_WINDOW, {
-          ttlMs: ANALYTICS_CACHE_TTL_MS,
-          limit: options.limit,
-          forceRefresh: options.forceReload === true
-        });
-      } else {
-        const endpoint = `${DONATIONS_ENDPOINT}?window=${encodeURIComponent(DONATIONS_WINDOW)}`;
-        payload = await window.StreamSuitesApi?.apiFetch?.(endpoint, {
-          cacheTtlMs: ANALYTICS_CACHE_TTL_MS,
-          cacheKey: `admin-donations:${DONATIONS_WINDOW}`,
-          forceRefresh: options.forceReload === true
-        });
-      }
-      const dataset = Array.isArray(payload?.items)
-        ? payload.items
-        : Array.isArray(payload?.data?.donations)
-          ? payload.data.donations
-          : [];
-      const notConfigured =
-        payload?.not_configured === true || payload?.summary?.not_configured === true;
-      state.donationStats = buildDonationStats(dataset);
-      state.donationsLoaded = true;
-      applyDonationStats();
-      applyFilters();
-      if (notConfigured) {
-        setBanner("Donations telemetry is not configured yet.", true);
-        setStatus("Donations telemetry not configured.");
-      } else {
-        setBanner("", false);
-        if (!dataset.length) {
-          setStatus("No events in this window.");
-        }
-      }
-    } catch (err) {
-      if (err?.status === 401 || err?.status === 403 || err?.isAuthError) {
-        promptAdminReauth();
-        setInlineError("Admin session expired. Sign in again to continue.", {
-          tone: "error",
-          key: "accounts-session-expired",
-          title: "Session expired",
-          autoDismissMs: 6800
-        });
-        return;
-      }
-      console.warn("[Accounts] Failed to load donation analytics", err);
-      state.donationStats = new Map();
-      state.donationsLoaded = false;
-      applyDonationStats();
-      applyFilters();
-      setInlineError("Donations API unavailable for donation stats.", {
-        retryAction: "donations",
+      setBanner("Runtime API unavailable. Retry or check runtime connectivity.", true, {
+        retryAction: "accounts",
         tone: "warning",
-        key: "accounts-donations-unavailable",
-        title: "Refresh failed",
+        key: "accounts-runtime-unavailable",
+        title: "Accounts unavailable",
         autoDismissMs: 6800
       });
-    }
-  }
-
-  function ensureSupporterColumn() {
-    if (!el.table) return;
-    const headerRow = el.table.querySelector("thead tr");
-    if (!headerRow || headerRow.querySelector("[data-supporter-column]")) return;
-    const th = document.createElement("th");
-    th.textContent = "Supporter";
-    th.setAttribute("data-sort", "supporterLabel");
-    th.setAttribute("data-col-key", "supporter");
-    th.setAttribute("data-supporter-column", "true");
-    const statusHeader = headerRow.querySelector('th[data-sort="accountStatus"]');
-    if (statusHeader) {
-      headerRow.insertBefore(th, statusHeader);
-    } else {
-      const actionHeader = headerRow.querySelector("th.align-right");
-      if (actionHeader) {
-        headerRow.insertBefore(th, actionHeader);
-      } else {
-        headerRow.appendChild(th);
-      }
     }
   }
 
@@ -2366,8 +2316,8 @@ function normalizeUser(raw = {}) {
       const retryButton = event.target.closest("[data-accounts-retry]");
       if (!retryButton) return;
       const action = retryButton.getAttribute("data-accounts-retry");
-      if (action === "donations") {
-        void loadDonations({ forceReload: true });
+      if (action === "accounts") {
+        void loadUsers();
       }
     });
 
@@ -2596,7 +2546,6 @@ function normalizeUser(raw = {}) {
     clearRowClickTimer();
     closeOpenDrawer({ keepState: true });
 
-    ensureSupporterColumn();
     initTable();
     if (state.columnResize?.destroy) {
       state.columnResize.destroy();
@@ -2607,13 +2556,13 @@ function normalizeUser(raw = {}) {
     toggleIdColumn(true);
     if (window.StreamSuitesGlobalLoader?.trackAsync) {
       await window.StreamSuitesGlobalLoader.trackAsync(
-        () => Promise.all([loadAdminIdentity(), loadUsers(), loadDonations()]),
+        () => Promise.all([loadAdminIdentity(), loadUsers()]),
         "Hydrating accounts..."
       );
       return;
     }
 
-    await Promise.all([loadAdminIdentity(), loadUsers(), loadDonations()]);
+    await Promise.all([loadAdminIdentity(), loadUsers()]);
   }
 
   window.AccountsView = {
