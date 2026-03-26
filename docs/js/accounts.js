@@ -6,6 +6,9 @@
   "use strict";
 
   const RUNTIME_ENDPOINT = "/admin/accounts";
+  const BADGE_GOVERNANCE_ENDPOINT = "/admin/badge-governance";
+  const BADGE_RECONCILE_ENDPOINT = "/admin/badge-governance/reconcile-founder";
+  const BADGE_ORDER = ["admin", "core", "gold", "pro", "founder", "moderator", "developer"];
   const COLUMN_WIDTH_STORAGE_KEY = "ss_admin_accounts_colwidths_v3";
   const ROW_CLICK_DELAY_MS = 240;
   const SEARCH_FIELDS = [
@@ -35,6 +38,8 @@
     openDrawerId: "",
     pendingNavAccountId: "",
     drawerDetailToken: 0,
+    badgeGovernance: null,
+    badgeGovernanceLoading: false,
     columnResize: null,
     columnResizeHydrated: false,
     escapeBound: false,
@@ -62,6 +67,9 @@
     exportJson: null,
     exportCsv: null,
     exportStatus: null,
+    badgeGovernanceBanner: null,
+    badgeGovernanceStatus: null,
+    badgeGovernancePanel: null,
     detailsBackdrop: null,
     detailsDrawer: null,
     detailsContent: null,
@@ -218,6 +226,52 @@
     const tier = resolveTierData(value);
     const tierAttr = tier ? ` data-tier="${tier}"` : "";
     return `<span class="${classes}"${tierAttr}>${escapeHtml(formatBadgeLabel(value))}</span>`;
+  }
+
+  function badgeIconPath(key) {
+    const normalized = String(key || "").trim().toLowerCase();
+    const map = {
+      admin: "/assets/icons/tierbadge-admin.svg",
+      core: "/assets/icons/tierbadge-core.svg",
+      gold: "/assets/icons/tierbadge-gold.svg",
+      pro: "/assets/icons/tierbadge-pro.svg",
+      founder: "/assets/icons/founder-gold.svg",
+      moderator: "/assets/icons/modgavel-blue.svg",
+      developer: "/assets/icons/dev-green.svg"
+    };
+    return map[normalized] || "";
+  }
+
+  function normalizeBadgeItems(items) {
+    return (Array.isArray(items) ? items : [])
+      .map((badge) => {
+        if (!badge || typeof badge !== "object") return null;
+        const key = String(badge.key || badge.icon_key || badge.iconKey || badge.value || "").trim().toLowerCase();
+        if (!badgeIconPath(key)) return null;
+        return {
+          key,
+          kind: String(badge.kind || "").trim().toLowerCase(),
+          label: String(badge.label || badge.title || key).trim() || key,
+          title: String(badge.title || badge.label || key).trim() || key,
+          visible: badge.visible !== false
+        };
+      })
+      .filter(Boolean)
+      .sort((left, right) => BADGE_ORDER.indexOf(left.key) - BADGE_ORDER.indexOf(right.key));
+  }
+
+  function renderBadgeIconStrip(items, emptyLabel = "No enabled badges") {
+    const badges = normalizeBadgeItems(items);
+    if (!badges.length) return `<span class="muted">${escapeHtml(emptyLabel)}</span>`;
+    return badges
+      .map((badge) => {
+        const src = badgeIconPath(badge.key);
+        return src
+          ? `<img class="accounts-details-preview-badge" src="${escapeHtml(src)}" alt="${escapeHtml(badge.label)}" title="${escapeHtml(badge.title)}" />`
+          : "";
+      })
+      .filter(Boolean)
+      .join("");
   }
 
   function resolveEmailVerifiedLabel(value) {
@@ -453,6 +507,17 @@ function normalizeUser(raw = {}) {
       : Array.isArray(publicProfile.badges)
       ? publicProfile.badges
       : [];
+    const findmehereBadgeItems = Array.isArray(raw.findmehere_badges || raw.findmehereBadges)
+      ? raw.findmehere_badges || raw.findmehereBadges
+      : Array.isArray(publicProfile.findmehere_badges || publicProfile.findmehereBadges)
+      ? publicProfile.findmehere_badges || publicProfile.findmehereBadges
+      : [];
+    const badgeState =
+      raw.badge_state && typeof raw.badge_state === "object"
+        ? raw.badge_state
+        : raw.badgeState && typeof raw.badgeState === "object"
+        ? raw.badgeState
+        : {};
     let internalId =
       raw.internal_id || raw.internalId || raw.id || raw.uuid || raw.user_id || raw.userId || "";
     if (!String(internalId || "").trim() || String(internalId).trim() === "—") {
@@ -514,6 +579,8 @@ function normalizeUser(raw = {}) {
       bio,
       socialLinks,
       badges: badgeItems,
+      findmehereBadges: findmehereBadgeItems,
+      badgeState,
       isAnonymous: coerceBoolean(raw.is_anonymous ?? publicProfile.is_anonymous, false),
       isListed: coerceBoolean(raw.is_listed ?? publicProfile.is_listed, true),
       slugAliases: Array.isArray(raw.slug_aliases || publicProfile.slug_aliases)
@@ -805,6 +872,154 @@ function normalizeUser(raw = {}) {
         <div class="accounts-row-actions-buttons">
         ${actions.join("")}
         </div>
+        ${renderAccountBadgeGovernance(user)}
+      </div>
+    `;
+  }
+
+  function renderBadgeKeyLabel(key) {
+    return formatBadgeLabel(key);
+  }
+
+  function sortBadgeKeys(keys = []) {
+    return [...new Set((Array.isArray(keys) ? keys : []).map((item) => String(item || "").trim().toLowerCase()).filter(Boolean))]
+      .sort((left, right) => {
+        const leftIndex = BADGE_ORDER.indexOf(left);
+        const rightIndex = BADGE_ORDER.indexOf(right);
+        return (leftIndex === -1 ? 999 : leftIndex) - (rightIndex === -1 ? 999 : rightIndex);
+      });
+  }
+
+  function getGovernedBadgeKeys(user) {
+    const badgeState = user?.badgeState && typeof user.badgeState === "object" ? user.badgeState : {};
+    const governanceCatalog = Array.isArray(state.badgeGovernance?.catalog) ? state.badgeGovernance.catalog : [];
+    return sortBadgeKeys([
+      ...Object.keys(badgeState.default_visibility || {}),
+      ...Object.keys(badgeState.visibility_overrides || {}),
+      ...Object.keys(badgeState.entitlements || {}),
+      ...governanceCatalog.map((item) => item?.key)
+    ]);
+  }
+
+  function renderBadgeStateSummary(items, emptyLabel) {
+    return renderBadgeIconStrip(items, emptyLabel);
+  }
+
+  function renderAccountBadgeGovernance(user) {
+    const badgeState = user?.badgeState && typeof user.badgeState === "object" ? user.badgeState : {};
+    const entitlements = badgeState.entitlements && typeof badgeState.entitlements === "object" ? badgeState.entitlements : {};
+    const visibilityOverrides =
+      badgeState.visibility_overrides && typeof badgeState.visibility_overrides === "object"
+        ? badgeState.visibility_overrides
+        : {};
+    const managedKeys = ["founder", "moderator", "developer"];
+    const visibilityKeys = getGovernedBadgeKeys(user);
+    const accountId = normalizeAccountId(user?.id);
+    const entitlementRows = managedKeys
+      .map((key) => {
+        const enabled = entitlements[key]?.enabled === true;
+        return `
+          <label class="muted" style="display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" data-account-badge-entitlement="${escapeHtml(key)}" data-account-id="${escapeHtml(accountId)}"${enabled ? " checked" : ""} />
+            <span>${escapeHtml(renderBadgeKeyLabel(key))}</span>
+          </label>
+        `;
+      })
+      .join("");
+    const visibilityRows = visibilityKeys
+      .map((key) => {
+        const override = visibilityOverrides[key];
+        const value =
+          override && typeof override === "object" && override.visible === true
+            ? "show"
+            : override && typeof override === "object" && override.visible === false
+            ? "hide"
+            : "default";
+        return `
+          <label class="muted" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <span>${escapeHtml(renderBadgeKeyLabel(key))}</span>
+            <select class="ss-input" data-account-badge-visibility="${escapeHtml(key)}" data-account-id="${escapeHtml(accountId)}" style="max-width:180px;">
+              <option value="default"${value === "default" ? " selected" : ""}>Use system default</option>
+              <option value="show"${value === "show" ? " selected" : ""}>Force visible</option>
+              <option value="hide"${value === "hide" ? " selected" : ""}>Hide</option>
+            </select>
+          </label>
+        `;
+      })
+      .join("");
+    return `
+      <section class="accounts-details-group" style="margin-top:18px;">
+        <h5 class="accounts-details-group-title">Badge Governance</h5>
+        <div class="accounts-details-kpi-row">
+          ${renderBadge("Visible", "ss-badge-success")}
+          <span>${renderBadgeStateSummary(badgeState.visible, "No visible badges")}</span>
+        </div>
+        <div class="accounts-details-kpi-row">
+          ${renderBadge("Hidden", "ss-badge-warning")}
+          <span>${renderBadgeStateSummary(badgeState.hidden, "No hidden badges")}</span>
+        </div>
+        <div class="accounts-details-kpi-row">
+          ${renderBadge("FindMeHere", "")}
+          <span>${renderBadgeStateSummary(user.findmehereBadges, "No FindMeHere badges")}</span>
+        </div>
+        <div class="accounts-details-placeholder-group" style="margin-top:12px;">
+          <div class="accounts-details-placeholder-block">
+            <div class="accounts-details-placeholder-title">Manual entitlements</div>
+            <div class="accounts-details-placeholder-value">${entitlementRows}</div>
+          </div>
+          <div class="accounts-details-placeholder-block">
+            <div class="accounts-details-placeholder-title">Per-user visibility</div>
+            <div class="accounts-details-placeholder-value">${visibilityRows}</div>
+          </div>
+        </div>
+        <div class="accounts-inline-actions" style="margin-top:12px;">
+          <button type="button" class="ss-btn ss-btn-small ss-btn-primary" data-account-badge-governance-save data-account-id="${escapeHtml(accountId)}">Save badge settings</button>
+        </div>
+      </section>
+    `;
+  }
+
+  function renderSystemBadgeGovernancePanel() {
+    if (!el.badgeGovernancePanel) return;
+    const governance = state.badgeGovernance;
+    if (!governance) {
+      el.badgeGovernancePanel.innerHTML = '<div class="muted">Badge governance is unavailable.</div>';
+      return;
+    }
+    const defaultVisibility = governance.default_visibility && typeof governance.default_visibility === "object" ? governance.default_visibility : {};
+    const founder = governance.founder_reconcile || {};
+    const visibilityRows = sortBadgeKeys(Object.keys(defaultVisibility))
+      .map((key) => `
+        <label class="muted" style="display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" data-system-badge-visibility="${escapeHtml(key)}"${defaultVisibility[key] ? " checked" : ""} />
+          <span>${escapeHtml(renderBadgeKeyLabel(key))}</span>
+        </label>
+      `)
+      .join("");
+    el.badgeGovernancePanel.innerHTML = `
+      <div class="accounts-details-group-grid">
+        <section class="accounts-details-group">
+          <h5 class="accounts-details-group-title">Founder cutoff</h5>
+          <div class="accounts-details-meta-grid">
+            <label>
+              <span class="label">Cutoff date</span>
+              <input id="accounts-founder-cutoff-date" class="ss-input" type="date" value="${escapeHtml(governance.founder_cutoff_date || "")}" />
+            </label>
+            <div><span class="label">Eligible existing accounts</span><span class="value">${escapeHtml(String(founder.eligible_existing_accounts || 0))}</span></div>
+            <div><span class="label">Founder enabled</span><span class="value">${escapeHtml(String(founder.enabled_accounts || 0))}</span></div>
+            <div><span class="label">Pending reconcile</span><span class="value">${escapeHtml(String(founder.pending_accounts || 0))}</span></div>
+          </div>
+          <div class="accounts-inline-actions" style="margin-top:12px;">
+            <button type="button" id="accounts-badge-governance-save" class="ss-btn ss-btn-primary">Save governance</button>
+            <button type="button" id="accounts-founder-reconcile" class="ss-btn ss-btn-secondary">Reconcile founder</button>
+          </div>
+        </section>
+        <section class="accounts-details-group">
+          <h5 class="accounts-details-group-title">System default visibility</h5>
+          <div class="accounts-details-placeholder-value" style="display:grid;gap:10px;">
+            ${visibilityRows}
+          </div>
+        </section>
       </div>
     `;
   }
@@ -1426,22 +1641,7 @@ function normalizeUser(raw = {}) {
     );
     const lastPaymentDateLabel = paymentSummary.lastPaymentAt ? formatTimestamp(paymentSummary.lastPaymentAt) : "No payment recorded";
     const nextDueLabel = paymentSummary.nextDueAt ? formatTimestamp(paymentSummary.nextDueAt) : "Not scheduled";
-    const badgeIcons = (Array.isArray(user.badges) ? user.badges : [])
-      .map((badge) => {
-        const kind = String(badge?.kind || "").trim().toLowerCase();
-        const value = String(badge?.value || "").trim().toLowerCase();
-        const icon =
-          kind.includes("role") && value === "admin"
-            ? "/assets/icons/tierbadge-admin.svg"
-            : kind.includes("tier") && ["core", "gold", "pro"].includes(value)
-            ? `/assets/icons/tierbadge-${value}.svg`
-            : "";
-        return icon
-          ? `<img class="accounts-details-preview-badge" src="${escapeHtml(icon)}" alt="${escapeHtml(value || kind)}" />`
-          : "";
-      })
-      .filter(Boolean)
-      .join("");
+    const badgeIcons = renderBadgeIconStrip(user.badges);
     const socialLinks = user.socialLinks && typeof user.socialLinks === "object" ? user.socialLinks : {};
     const socialMarkup = Object.entries(socialLinks)
       .filter(([, url]) => coerceText(url))
@@ -2006,6 +2206,102 @@ function normalizeUser(raw = {}) {
     }
   }
 
+  function setBadgeGovernanceStatus(message) {
+    if (el.badgeGovernanceStatus) el.badgeGovernanceStatus.textContent = message;
+  }
+
+  function setBadgeGovernanceBanner(message, visible, options = {}) {
+    if (!el.badgeGovernanceBanner) return;
+    el.badgeGovernanceBanner.innerHTML = visible ? escapeHtml(message) : "";
+    el.badgeGovernanceBanner.classList.toggle("hidden", !visible);
+    if (visible && message) {
+      window.StreamSuitesToast?.[options.tone || "info"]?.(message, {
+        key: options.key || "accounts-badge-governance",
+        title: options.title || "Badge Governance",
+        autoDismissMs: options.autoDismissMs
+      });
+    } else if (!visible) {
+      window.StreamSuitesToast?.dismiss?.(options.key || "accounts-badge-governance");
+    }
+  }
+
+  async function loadBadgeGovernance() {
+    setBadgeGovernanceStatus("Loading...");
+    try {
+      const res = await fetchJson(buildApiUrl(BADGE_GOVERNANCE_ENDPOINT));
+      if (res.status === 401 || res.status === 403) {
+        state.badgeGovernance = null;
+        renderSystemBadgeGovernancePanel();
+        setBadgeGovernanceStatus("Admin session required");
+        return;
+      }
+      if (!res.ok) throw new Error(`Badge governance error ${res.status}`);
+      state.badgeGovernance = await res.json();
+      renderSystemBadgeGovernancePanel();
+      setBadgeGovernanceStatus("Live runtime data");
+      setBadgeGovernanceBanner("", false);
+    } catch (err) {
+      console.warn("[Accounts] Failed to load badge governance", err);
+      state.badgeGovernance = null;
+      renderSystemBadgeGovernancePanel();
+      setBadgeGovernanceStatus("Unavailable");
+      setBadgeGovernanceBanner("Badge governance data is unavailable. Retry after runtime recovery.", true, {
+        tone: "warning",
+        title: "Badge governance unavailable",
+        autoDismissMs: 6800
+      });
+    }
+  }
+
+  async function saveSystemBadgeGovernance() {
+    const cutoffInput = document.getElementById("accounts-founder-cutoff-date");
+    const payload = {
+      founder_cutoff_date: cutoffInput instanceof HTMLInputElement ? cutoffInput.value : "",
+      default_visibility: {}
+    };
+    document.querySelectorAll("[data-system-badge-visibility]").forEach((input) => {
+      if (!(input instanceof HTMLInputElement)) return;
+      const key = input.getAttribute("data-system-badge-visibility") || "";
+      if (!key) return;
+      payload.default_visibility[key] = input.checked;
+    });
+    setBadgeGovernanceStatus("Saving...");
+    const res = await fetchJson(buildApiUrl(BADGE_GOVERNANCE_ENDPOINT), {
+      method: "PUT",
+      body: JSON.stringify(payload),
+      headers: { "Content-Type": "application/json" }
+    });
+    if (!res.ok) {
+      throw new Error((await readErrorMessage(res)) || `Save failed (${res.status})`);
+    }
+    state.badgeGovernance = await res.json();
+    renderSystemBadgeGovernancePanel();
+    setBadgeGovernanceStatus("Saved");
+    setBadgeGovernanceBanner("Badge governance saved.", true, {
+      tone: "success",
+      title: "Saved",
+      autoDismissMs: 3200
+    });
+  }
+
+  async function reconcileFounderBadges() {
+    setBadgeGovernanceStatus("Reconciling founder badges...");
+    const res = await fetchJson(buildApiUrl(BADGE_RECONCILE_ENDPOINT), {
+      method: "POST"
+    });
+    if (!res.ok) {
+      throw new Error((await readErrorMessage(res)) || `Reconcile failed (${res.status})`);
+    }
+    const payload = await res.json();
+    await Promise.all([loadBadgeGovernance(), loadUsers()]);
+    setBadgeGovernanceStatus("Founder reconcile complete");
+    setBadgeGovernanceBanner(
+      `Founder reconcile applied to ${payload.updated_accounts || 0} eligible account(s).`,
+      true,
+      { tone: "success", title: "Founder reconcile", autoDismissMs: 4200 }
+    );
+  }
+
   function getActionPrompt(action, user) {
     const name = user.displayName || user.email || user.userCode || "this account";
     if (action === "suspend") {
@@ -2052,6 +2348,10 @@ function normalizeUser(raw = {}) {
     const index = state.raw.findIndex((item) => item.id === userId);
     if (index === -1) return;
     const current = state.raw[index];
+    if (payload?.account && typeof payload.account === "object") {
+      state.raw[index] = normalizeUser(payload.account);
+      return;
+    }
     const next = { ...current };
 
     if (action === "suspend") {
@@ -2112,6 +2412,42 @@ function normalizeUser(raw = {}) {
         tierSelect.disabled = tierSelect.dataset.originalDisabled === "true";
         delete tierSelect.dataset.originalDisabled;
       }
+    }
+  }
+
+  async function saveAccountBadgeGovernance(user, scope, button) {
+    if (!user) return;
+    const accountId = normalizeAccountId(user.id);
+    const entitlements = {};
+    const visibility_overrides = {};
+    document.querySelectorAll(`[data-account-badge-entitlement][data-account-id="${escapeSelectorValue(accountId)}"]`).forEach((input) => {
+      if (!(input instanceof HTMLInputElement)) return;
+      const key = input.getAttribute("data-account-badge-entitlement") || "";
+      if (!key) return;
+      entitlements[key] = input.checked;
+    });
+    document.querySelectorAll(`[data-account-badge-visibility][data-account-id="${escapeSelectorValue(accountId)}"]`).forEach((select) => {
+      const key = select.getAttribute("data-account-badge-visibility") || "";
+      const value = select instanceof HTMLSelectElement ? select.value : "default";
+      if (!key) return;
+      visibility_overrides[key] = value === "default" ? null : value === "show";
+    });
+
+    setStatus("Saving badge governance...");
+    setRowActionLoading(scope, button, true);
+    try {
+      const res = await fetchJson(buildApiUrl(`/admin/accounts/${encodeURIComponent(accountId)}/badges`), {
+        method: "PATCH",
+        body: JSON.stringify({ entitlements, visibility_overrides }),
+        headers: { "Content-Type": "application/json" }
+      });
+      if (!res.ok) {
+        throw new Error((await readErrorMessage(res)) || `Badge save failed (${res.status})`);
+      }
+      await Promise.all([loadUsers(), loadBadgeGovernance()]);
+      setStatus("Badge governance saved.");
+    } finally {
+      setRowActionLoading(scope, button, false);
     }
   }
 
@@ -2312,6 +2648,38 @@ function normalizeUser(raw = {}) {
     });
     el.exportJson?.addEventListener("click", () => triggerExport("json"));
     el.exportCsv?.addEventListener("click", () => triggerExport("csv"));
+    el.badgeGovernancePanel?.addEventListener("click", (event) => {
+      const target = getEventTargetElement(event);
+      if (!target) return;
+      if (target.id === "accounts-badge-governance-save") {
+        event.preventDefault();
+        void saveSystemBadgeGovernance().catch((err) => {
+          console.warn("[Accounts] Badge governance save failed", err);
+          setBadgeGovernanceBanner(err?.message || "Failed to save badge governance.", true, {
+            tone: "error",
+            title: "Save failed",
+            autoDismissMs: 6800
+          });
+          setBadgeGovernanceStatus("Save failed");
+        });
+        return;
+      }
+      if (target.id === "accounts-founder-reconcile") {
+        event.preventDefault();
+        if (!window.confirm("Apply founder entitlement to existing eligible accounts that do not already have an explicit founder decision?")) {
+          return;
+        }
+        void reconcileFounderBadges().catch((err) => {
+          console.warn("[Accounts] Founder reconcile failed", err);
+          setBadgeGovernanceBanner(err?.message || "Founder reconcile failed.", true, {
+            tone: "error",
+            title: "Founder reconcile failed",
+            autoDismissMs: 6800
+          });
+          setBadgeGovernanceStatus("Reconcile failed");
+        });
+      }
+    });
     el.banner?.addEventListener("click", (event) => {
       const retryButton = event.target.closest("[data-accounts-retry]");
       if (!retryButton) return;
@@ -2438,6 +2806,23 @@ function normalizeUser(raw = {}) {
       }
 
       const button = target.closest("[data-account-action]");
+      const badgeSave = target.closest("[data-account-badge-governance-save]");
+      if (badgeSave) {
+        event.preventDefault();
+        const accountId = normalizeAccountId(badgeSave.getAttribute("data-account-id"));
+        const user = getUserById(accountId);
+        if (!user) return;
+        void saveAccountBadgeGovernance(user, el.detailsActions || el.detailsDrawer, badgeSave).catch((err) => {
+          console.warn("[Accounts] Account badge governance save failed", err);
+          setInlineError(err?.message || "Failed to save account badge governance.", {
+            tone: "error",
+            key: "accounts-badge-save-failed",
+            title: "Badge save failed",
+            autoDismissMs: 6800
+          });
+        });
+        return;
+      }
       if (!button) return;
       if (button.disabled) return;
       const action = button.getAttribute("data-account-action") || "";
@@ -2529,6 +2914,9 @@ function normalizeUser(raw = {}) {
     el.exportJson = $("accounts-export-json");
     el.exportCsv = $("accounts-export-csv");
     el.exportStatus = $("accounts-export-status");
+    el.badgeGovernanceBanner = $("accounts-badge-governance-banner");
+    el.badgeGovernanceStatus = $("accounts-badge-governance-status");
+    el.badgeGovernancePanel = $("accounts-badge-governance-panel");
     el.detailsBackdrop = $("accounts-details-backdrop");
     el.detailsDrawer = $("accounts-details-drawer");
     el.detailsContent = $("accounts-details-content");
@@ -2556,13 +2944,13 @@ function normalizeUser(raw = {}) {
     toggleIdColumn(true);
     if (window.StreamSuitesGlobalLoader?.trackAsync) {
       await window.StreamSuitesGlobalLoader.trackAsync(
-        () => Promise.all([loadAdminIdentity(), loadUsers()]),
+        () => Promise.all([loadAdminIdentity(), loadUsers(), loadBadgeGovernance()]),
         "Hydrating accounts..."
       );
       return;
     }
 
-    await Promise.all([loadAdminIdentity(), loadUsers()]);
+    await Promise.all([loadAdminIdentity(), loadUsers(), loadBadgeGovernance()]);
   }
 
   window.AccountsView = {
