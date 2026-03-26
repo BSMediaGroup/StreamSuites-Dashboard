@@ -263,8 +263,15 @@
       })
       .filter(Boolean);
     const hasAdminBadge = normalized.some((badge) => badge?.key === "admin");
+    const hasDeveloperBadge = normalized.some((badge) => badge?.key === "developer");
     return normalized
-      .filter((badge) => !(hasAdminBadge && ["core", "gold", "pro"].includes(badge?.key)))
+      .filter(
+        (badge) =>
+          !(
+            (hasAdminBadge && ["core", "gold", "pro"].includes(badge?.key)) ||
+            (hasDeveloperBadge && badge?.key === "pro")
+          )
+      )
       .sort((left, right) => BADGE_ORDER.indexOf(left.key) - BADGE_ORDER.indexOf(right.key));
   }
 

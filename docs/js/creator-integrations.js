@@ -118,6 +118,10 @@
     return `<span class="${classes}">${escapeHtml(label)}</span>`;
   }
 
+  function isRestrictedAdminSession() {
+    return window.StreamSuitesDashboardGuard?.adminAccess?.restricted === true;
+  }
+
   function renderBooleanBadge(value, trueLabel, falseLabel) {
     return value
       ? renderBadge(trueLabel, "ss-badge-success")
@@ -287,11 +291,13 @@
         <td>${renderBooleanBadge(item.foundational_trigger_ready, "Ready", "Missing")}</td>
         <td>${renderBadge(item.readiness_label || "Unknown", readinessTone(item.readiness_label))}</td>
         <td class="align-right">
-          <button type="button" class="ss-btn ss-btn-small ss-btn-secondary" data-open-user="${escapeHtml(
-            item.user_code || ""
-          )}">
-            Inspect
-          </button>
+          ${
+            isRestrictedAdminSession()
+              ? '<span class="muted">Restricted</span>'
+              : `<button type="button" class="ss-btn ss-btn-small ss-btn-secondary" data-open-user="${escapeHtml(
+                  item.user_code || ""
+                )}">Inspect</button>`
+          }
         </td>
       `;
       el.body.appendChild(row);
@@ -423,14 +429,18 @@
             <td>${trigger.enabled ? renderBadge("Enabled", "ss-badge-success") : renderBadge("Disabled", "ss-badge-warning")}</td>
             <td>${escapeHtml(summarizeTriggerContribution(trigger))}</td>
             <td class="align-right">
-              <button
-                type="button"
-                class="ss-btn ss-btn-small ss-btn-secondary"
-                data-trigger-toggle="${escapeHtml(trigger.trigger_id || "")}"
-                data-next-enabled="${trigger.enabled ? "false" : "true"}"
-              >
-                ${escapeHtml(toggleLabel)}
-              </button>
+              ${
+                isRestrictedAdminSession()
+                  ? '<span class="muted">Restricted</span>'
+                  : `<button
+                      type="button"
+                      class="ss-btn ss-btn-small ss-btn-secondary"
+                      data-trigger-toggle="${escapeHtml(trigger.trigger_id || "")}"
+                      data-next-enabled="${trigger.enabled ? "false" : "true"}"
+                    >
+                      ${escapeHtml(toggleLabel)}
+                    </button>`
+              }
             </td>
           </tr>
         `;
@@ -452,7 +462,7 @@
       el.refreshDetail.disabled = !state.userCode;
     }
     if (el.openUser) {
-      el.openUser.disabled = !state.userCode;
+      el.openUser.disabled = !state.userCode || isRestrictedAdminSession();
     }
     if (!state.detail) {
       el.detailEmpty?.classList.remove("hidden");
@@ -494,6 +504,12 @@
   }
 
   async function fetchDetail(userCode) {
+    if (isRestrictedAdminSession()) {
+      renderDetail(null);
+      setBanner("Developer admin-lite sessions can review integration summaries but cannot open account detail.");
+      setStatus("Detail view restricted.");
+      return;
+    }
     const normalizedUserCode = String(userCode || "").trim();
     if (!normalizedUserCode) {
       renderDetail(null);
@@ -516,6 +532,11 @@
   }
 
   async function updateTrigger(triggerId, enabled) {
+    if (isRestrictedAdminSession()) {
+      setBanner("Developer admin-lite sessions cannot mutate creator triggers from Dashboard.");
+      setStatus("Trigger controls restricted.");
+      return;
+    }
     const accountId = String(state.detail?.account?.id || "").trim();
     if (!accountId || !triggerId) return;
     setStatus(`Updating trigger ${triggerId}...`);

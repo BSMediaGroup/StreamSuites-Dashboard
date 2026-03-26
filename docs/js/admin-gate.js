@@ -293,6 +293,33 @@
         payload.user?.auth_provider
     );
     const role = normalizeRole(payload);
+    const adminAccessSource =
+      payload.admin_access ||
+      payload.adminAccess ||
+      payload.user?.admin_access ||
+      payload.user?.adminAccess ||
+      {};
+    const adminAccess = {
+      allowed: adminAccessSource?.allowed === true,
+      level: coerceText(adminAccessSource?.level).toLowerCase(),
+      restricted: adminAccessSource?.restricted === true,
+      allowedViews: Array.isArray(adminAccessSource?.allowed_views || adminAccessSource?.allowedViews)
+        ? (adminAccessSource.allowed_views || adminAccessSource.allowedViews)
+            .map((item) => coerceText(item).toLowerCase())
+            .filter(Boolean)
+        : [],
+      restrictedViews: Array.isArray(
+        adminAccessSource?.restricted_views || adminAccessSource?.restrictedViews
+      )
+        ? (adminAccessSource.restricted_views || adminAccessSource.restrictedViews)
+            .map((item) => coerceText(item).toLowerCase())
+            .filter(Boolean)
+        : [],
+      features:
+        adminAccessSource?.features && typeof adminAccessSource.features === "object"
+          ? { ...adminAccessSource.features }
+          : {}
+    };
 
     return {
       authenticated: Boolean(role),
@@ -301,7 +328,8 @@
       role: role || "",
       provider: provider || getLastOauthProvider(),
       tier: coerceText(payload.tier || payload.session?.tier || payload.user?.tier || payload.plan),
-      avatarUrl: coerceText(payload.avatar_url || payload.avatarUrl || payload.user?.avatar_url)
+      avatarUrl: coerceText(payload.avatar_url || payload.avatarUrl || payload.user?.avatar_url),
+      adminAccess
     };
   }
 
@@ -499,7 +527,8 @@
       role: payload?.role || "",
       provider: payload?.provider || "",
       tier: payload?.tier || "",
-      avatarUrl: payload?.avatarUrl || ""
+      avatarUrl: payload?.avatarUrl || "",
+      adminAccess: payload?.adminAccess || null
     };
     if (gate.admin.provider) {
       persistLastOauthProvider(gate.admin.provider);
@@ -508,7 +537,8 @@
       shouldBlock: false,
       adminGateStatus: "authorized",
       adminEmail: gate.admin.email,
-      adminRole: gate.admin.role
+      adminRole: gate.admin.role,
+      adminAccess: gate.admin.adminAccess || null
     });
     setHtmlState("admin-gate-ready");
     if (gate.overlay) {
@@ -716,7 +746,11 @@
     const authenticated = isAuthenticatedSession(payload) || Boolean(role);
 
     if (role === AUTHORIZED_ROLE) {
-      return { status: "authorized", payload: { ...normalized, role: AUTHORIZED_ROLE } };
+      return { status: "authorized", payload: normalized };
+    }
+
+    if (normalized.adminAccess?.allowed === true) {
+      return { status: "authorized", payload: normalized };
     }
 
     if (authenticated) {

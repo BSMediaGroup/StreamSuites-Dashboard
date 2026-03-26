@@ -192,6 +192,39 @@ async function probeRuntimeAvailability() {
   return false;
 }
 
+function getAdminAccessState() {
+  return window.StreamSuitesDashboardGuard?.adminAccess || window.StreamSuitesAdminSession?.adminAccess || null;
+}
+
+function isDashboardViewAllowed(viewName) {
+  const normalized = String(viewName || "").trim().toLowerCase();
+  if (!normalized) return false;
+  const access = getAdminAccessState();
+  if (!access || access.restricted !== true) {
+    return true;
+  }
+  const allowedViews = Array.isArray(access.allowedViews) ? access.allowedViews : [];
+  if (!allowedViews.length) {
+    return true;
+  }
+  return allowedViews.includes(normalized);
+}
+
+function renderRestrictedDashboardView(container, viewName) {
+  if (!container) return;
+  container.innerHTML = `
+    <section class="ss-panel">
+      <div class="ss-panel-header">
+        <h2>Restricted view</h2>
+        <p>This area is unavailable in the current developer admin-lite session.</p>
+      </div>
+      <div class="ss-empty-state">
+        <p><code>${String(viewName || "view").replace(/</g, "&lt;")}</code> is restricted.</p>
+      </div>
+    </section>
+  `;
+}
+
 const App = {
   currentView: null,
   currentRoute: null,
@@ -853,6 +886,11 @@ async function loadView(name) {
     console.error(`[Dashboard] Missing container: #${view.containerId}`);
     return;
   }
+  if (!isDashboardViewAllowed(name)) {
+    App.currentView = name;
+    renderRestrictedDashboardView(container, name);
+    return;
+  }
 
   const viewPath = `${window.ADMIN_BASE_PATH}/views/${view.templatePath}.html`;
   const viewUrl = new URL(viewPath, window.location.origin);
@@ -1138,6 +1176,24 @@ function ensureSidebarNavDecorated() {
   });
 }
 
+function applySidebarAccessState() {
+  const access = getAdminAccessState();
+  const restricted = access?.restricted === true;
+  $all("#app-nav-list li[data-view]").forEach((item) => {
+    const viewName = String(item.dataset.view || "").trim().toLowerCase();
+    if (!viewName) return;
+    const allowed = !restricted || isDashboardViewAllowed(viewName);
+    item.hidden = !allowed;
+    item.classList.toggle("is-disabled", !allowed);
+    item.setAttribute("aria-hidden", allowed ? "false" : "true");
+    if (!allowed) {
+      item.removeAttribute("tabindex");
+    } else if (!item.hasAttribute("tabindex")) {
+      item.setAttribute("tabindex", "0");
+    }
+  });
+}
+
 function isSidebarCollapsed() {
   return document.documentElement.classList.contains(SIDEBAR_COLLAPSED_CLASS);
 }
@@ -1207,6 +1263,7 @@ function initSidebarShell() {
   disableLegacyNavOverflowUi();
   ensurePlatformNavItems();
   ensureSidebarNavDecorated();
+  applySidebarAccessState();
   const storedPreference = readSidebarCollapsedPreference();
   sidebarShell.hasStoredPreference = storedPreference !== null;
   const initialCollapsed =
@@ -1228,6 +1285,10 @@ function initSidebarShell() {
     );
   }
 }
+
+window.addEventListener("streamsuites:admin-auth", () => {
+  applySidebarAccessState();
+});
 
 const navOverflow = {
   list: null,

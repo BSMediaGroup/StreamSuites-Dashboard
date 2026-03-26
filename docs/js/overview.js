@@ -334,6 +334,23 @@
     return false;
   }
 
+  function isRestrictedDeveloperSession() {
+    return window.StreamSuitesDashboardGuard?.adminAccess?.restricted === true;
+  }
+
+  function applyOverviewSessionRestrictions() {
+    const restricted = isRestrictedDeveloperSession();
+    const adminActivityPanel = el.adminActivityBody?.closest(".ss-panel, .ss-card, section");
+    const telemetryAuthPanel =
+      el.telemetryAuthEventsBody?.closest(".ss-panel, .ss-card, section");
+    if (adminActivityPanel) {
+      adminActivityPanel.hidden = restricted;
+    }
+    if (telemetryAuthPanel) {
+      telemetryAuthPanel.hidden = restricted;
+    }
+  }
+
   async function fetchDiscordBotStatus() {
     if (typeof window.StreamSuitesApi?.apiFetch === "function") {
       return window.StreamSuitesApi.apiFetch(DISCORD_STATUS_ENDPOINT, {
@@ -526,6 +543,10 @@
   }
 
   async function refreshAdminActivity() {
+    if (isRestrictedDeveloperSession()) {
+      renderAdminActivity(null);
+      return null;
+    }
     if (window.__RUNTIME_AVAILABLE__ !== true) {
       return;
     }
@@ -1031,7 +1052,9 @@
         window.Telemetry?.loadEvents?.({ forceReload: true }),
         window.Telemetry?.loadRates?.({ forceReload: true }),
         window.Telemetry?.loadErrors?.({ forceReload: true }),
-        window.Telemetry?.loadAuthEvents?.({ forceReload: true })
+        isRestrictedDeveloperSession()
+          ? Promise.resolve(null)
+          : window.Telemetry?.loadAuthEvents?.({ forceReload: true })
       ]);
 
       const snapshot = snapshotResult.status === "fulfilled" ? snapshotResult.value : null;
@@ -1090,6 +1113,7 @@
 
   function init() {
     cacheElements();
+    applyOverviewSessionRestrictions();
     updateSystemStatus();
 
     setText(el.rumbleRuntime, "offline / unknown");

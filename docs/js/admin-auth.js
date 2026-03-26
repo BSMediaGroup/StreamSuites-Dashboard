@@ -669,13 +669,20 @@
           payload?.is_admin ??
           payload?.isAdmin
       );
+      const adminAccessSource =
+        payload?.admin_access ??
+        payload?.adminAccess ??
+        payload?.user?.admin_access ??
+        payload?.user?.adminAccess ??
+        null;
+      const adminAccessAllowed = adminAccessSource?.allowed === true;
 
       const normalizedEmail = normalizeEmail(email);
       const emailAllowed = adminEmails.length
         ? adminEmails.includes(normalizedEmail)
-        : serverAuthorized;
+        : serverAuthorized || adminAccessAllowed;
 
-      const authorized = authenticated && role === "admin" && emailAllowed;
+      const authorized = authenticated && (role === "admin" || adminAccessAllowed) && emailAllowed;
 
       return {
         authenticated,
@@ -685,6 +692,7 @@
         displayName,
         avatarUrl,
         tier,
+        adminAccess: adminAccessSource || null,
         error: ""
       };
     },
