@@ -8,6 +8,7 @@
   const RUNTIME_ENDPOINT = "/admin/accounts";
   const BADGE_GOVERNANCE_ENDPOINT = "/admin/badge-governance";
   const BADGE_RECONCILE_ENDPOINT = "/admin/badge-governance/reconcile-founder";
+  const BILLING_DISCOUNT_CODES_ENDPOINT = "/api/admin/billing-discount-codes";
   const BADGE_ORDER = ["admin", "core", "gold", "pro", "founder", "moderator", "developer"];
   const COLUMN_WIDTH_STORAGE_KEY = "ss_admin_accounts_colwidths_v3";
   const ROW_CLICK_DELAY_MS = 240;
@@ -40,6 +41,7 @@
     drawerDetailToken: 0,
     badgeGovernance: null,
     badgeGovernanceLoading: false,
+    billingDiscountCodes: [],
     columnResize: null,
     columnResizeHydrated: false,
     escapeBound: false,
@@ -70,6 +72,9 @@
     badgeGovernanceBanner: null,
     badgeGovernanceStatus: null,
     badgeGovernancePanel: null,
+    billingCodesBanner: null,
+    billingCodesStatus: null,
+    billingCodesPanel: null,
     detailsBackdrop: null,
     detailsDrawer: null,
     detailsContent: null,
@@ -359,6 +364,18 @@
         lastPaymentAt: "",
         lastPaymentSource: "",
         donationCount: 0,
+        effectiveTierSource: "account_tier",
+        isAdminGrantedTier: false,
+        adminGrantIsLifetime: false,
+        adminGrantStartedAt: "",
+        adminGrantExpiresAt: "",
+        adminGrantDurationUnit: "",
+        adminGrantDurationValue: null,
+        hasDiscount: false,
+        activeDiscounts: [],
+        creditTotalCents: 0,
+        writeoffTotalCents: 0,
+        balanceReliefTotalCents: 0,
       };
     }
     return {
@@ -381,7 +398,77 @@
       lastPaymentAt: coerceText(raw.last_payment_at || raw.lastPaymentAt),
       lastPaymentSource: coerceText(raw.last_payment_source || raw.lastPaymentSource).toLowerCase(),
       donationCount: coerceInteger(raw.donation_count ?? raw.donationCount) || 0,
+      effectiveTierSource: coerceText(raw.effective_tier_source || raw.effectiveTierSource).toLowerCase() || "account_tier",
+      isAdminGrantedTier: raw.is_admin_granted_tier === true || raw.isAdminGrantedTier === true,
+      adminGrantIsLifetime: raw.admin_grant_is_lifetime === true || raw.adminGrantIsLifetime === true,
+      adminGrantStartedAt: coerceText(raw.admin_grant_started_at || raw.adminGrantStartedAt),
+      adminGrantExpiresAt: coerceText(raw.admin_grant_expires_at || raw.adminGrantExpiresAt),
+      adminGrantDurationUnit: coerceText(raw.admin_grant_duration_unit || raw.adminGrantDurationUnit).toLowerCase(),
+      adminGrantDurationValue: coerceInteger(raw.admin_grant_duration_value ?? raw.adminGrantDurationValue),
+      hasDiscount: raw.has_discount === true || raw.hasDiscount === true,
+      activeDiscounts: Array.isArray(raw.active_discounts || raw.activeDiscounts)
+        ? (raw.active_discounts || raw.activeDiscounts)
+        : [],
+      creditTotalCents: coerceInteger(raw.credit_total_cents ?? raw.creditTotalCents) || 0,
+      writeoffTotalCents: coerceInteger(raw.writeoff_total_cents ?? raw.writeoffTotalCents) || 0,
+      balanceReliefTotalCents: coerceInteger(raw.balance_relief_total_cents ?? raw.balanceReliefTotalCents) || 0,
     };
+  }
+
+  function normalizeBillingAdminSummary(raw) {
+    if (!raw || typeof raw !== "object") {
+      return { interventions: [], discountCodes: [] };
+    }
+    const interventions = Array.isArray(raw.interventions)
+      ? raw.interventions
+          .map((item) => {
+            if (!item || typeof item !== "object") return null;
+            return {
+              id: coerceText(item.id),
+              kind: coerceText(item.kind).toLowerCase(),
+              status: coerceText(item.status).toLowerCase(),
+              tierId: coerceText(item.tier_id || item.tierId).toLowerCase(),
+              durationUnit: coerceText(item.duration_unit || item.durationUnit).toLowerCase(),
+              durationValue: coerceInteger(item.duration_value ?? item.durationValue),
+              startsAt: coerceText(item.starts_at || item.startsAt),
+              endsAt: coerceText(item.ends_at || item.endsAt),
+              reason: coerceText(item.reason),
+              reasonCode: coerceText(item.reason_code || item.reasonCode),
+              createdAt: coerceText(item.created_at || item.createdAt),
+              createdBy: item.created_by && typeof item.created_by === "object" ? item.created_by : {},
+              revokedAt: coerceText(item.revoked_at || item.revokedAt),
+              revokedBy: item.revoked_by && typeof item.revoked_by === "object" ? item.revoked_by : {},
+              discount: item.discount && typeof item.discount === "object" ? item.discount : {},
+              ledger: item.ledger && typeof item.ledger === "object" ? item.ledger : {},
+              code: coerceText(item.code).toUpperCase(),
+              label: coerceText(item.label),
+            };
+          })
+          .filter(Boolean)
+      : [];
+    const discountCodes = Array.isArray(raw.discount_codes || raw.discountCodes)
+      ? (raw.discount_codes || raw.discountCodes)
+          .map((item) => {
+            if (!item || typeof item !== "object") return null;
+            return {
+              id: coerceText(item.id),
+              code: coerceText(item.code).toUpperCase(),
+              label: coerceText(item.label),
+              scope: coerceText(item.scope).toLowerCase(),
+              status: coerceText(item.status).toLowerCase(),
+              discountType: coerceText(item.discount_type || item.discountType).toLowerCase(),
+              discountValue: coerceInteger(item.discount_value ?? item.discountValue),
+              currency: coerceText(item.currency).toLowerCase(),
+              startsAt: coerceText(item.starts_at || item.startsAt),
+              endsAt: coerceText(item.ends_at || item.endsAt),
+              reason: coerceText(item.reason),
+              createdAt: coerceText(item.created_at || item.createdAt),
+              createdBy: item.created_by && typeof item.created_by === "object" ? item.created_by : {},
+            };
+          })
+          .filter(Boolean)
+      : [];
+    return { interventions, discountCodes };
   }
 
   function describeSupporterState(summary) {
@@ -543,6 +630,7 @@ function normalizeUser(raw = {}) {
         ? raw.emailVerified === 1
         : null;
     const paymentSummary = normalizePaymentSummary(raw.payment_summary || raw.paymentSummary, raw.tier || raw.account_tier || raw.plan);
+    const billingAdminSummary = normalizeBillingAdminSummary(raw.billing_admin_summary || raw.billingAdminSummary);
     const supporterLabel = supporterLabelFromSource(paymentSummary.supporterSource, paymentSummary.isSupporter);
     const lastPaymentAtSort = paymentSummary.lastPaymentAt ? Date.parse(paymentSummary.lastPaymentAt) || 0 : 0;
     return {
@@ -590,6 +678,7 @@ function normalizeUser(raw = {}) {
       role: raw.role || raw.account_role || accountType || "—",
       tier: normalizeTierLabel(raw.tier || raw.account_tier || raw.plan || "Core"),
       paymentSummary,
+      billingAdminSummary,
       supporterLabel,
       supporterTone: supporterToneFromSource(paymentSummary.supporterSource, paymentSummary.isSupporter),
       lifetimeTotalPaidCents: paymentSummary.lifetimeTotalPaidCents || 0,
@@ -728,6 +817,168 @@ function normalizeUser(raw = {}) {
        ${disabledAttr}
        ${titleAttr}
       >${escapeHtml(label)}</button>
+    `;
+  }
+
+  function formatDiscountValue(discountType, discountValue, currency = "usd") {
+    const value = Number(discountValue);
+    if (!Number.isFinite(value) || value <= 0) return "Unknown discount";
+    if (String(discountType || "").trim().toLowerCase() === "percent") {
+      return `${value}% off`;
+    }
+    return `${formatCurrencyCents(value, currency, "—")} off`;
+  }
+
+  function formatActorSummary(actor = {}) {
+    const display = coerceText(actor.display_name || actor.displayName);
+    const userCode = coerceText(actor.user_code || actor.userCode);
+    const email = coerceText(actor.email);
+    return display || userCode || email || "System";
+  }
+
+  function describeGrantDuration(summary) {
+    if (!summary?.isAdminGrantedTier) return "No admin grant";
+    if (summary.adminGrantIsLifetime) return "Lifetime";
+    if (summary.adminGrantExpiresAt) return `Ends ${formatTimestamp(summary.adminGrantExpiresAt)}`;
+    if (summary.adminGrantDurationUnit && summary.adminGrantDurationValue) {
+      return `${summary.adminGrantDurationValue} ${summary.adminGrantDurationUnit}`;
+    }
+    return "Timed grant";
+  }
+
+  function renderBillingAdminHistory(user) {
+    const interventions = Array.isArray(user?.billingAdminSummary?.interventions)
+      ? user.billingAdminSummary.interventions
+      : [];
+    const codes = Array.isArray(user?.billingAdminSummary?.discountCodes)
+      ? user.billingAdminSummary.discountCodes
+      : [];
+    const interventionMarkup = interventions.length
+      ? interventions.slice(0, 8).map((item) => {
+          let summary = humanizeSummaryToken(item.kind, "Intervention");
+          if (item.kind === "gifted_tier") {
+            summary = `${String(item.tierId || "core").toUpperCase()} grant`;
+          } else if (item.kind === "discount" || item.kind === "discount_code_assignment") {
+            summary = `${item.code ? `${item.code} · ` : ""}${formatDiscountValue(item.discount?.type || item.discountType, item.discount?.value || item.discountValue, item.discount?.currency || item.currency)}`;
+          } else if (item.kind === "credit" || item.kind === "writeoff") {
+            summary = `${formatCurrencyCents(item.ledger?.amount_cents || item.ledger?.amountCents, item.ledger?.currency || "usd", "—")} ${item.kind}`;
+          }
+          const revokeButton = item.status === "active"
+            ? `<button type="button" class="ss-btn ss-btn-small ss-btn-secondary" data-account-billing-revoke="${escapeHtml(item.id)}" data-account-id="${escapeHtml(normalizeAccountId(user.id))}">Revoke</button>`
+            : "";
+          return `
+            <div class="accounts-details-placeholder-block">
+              <div class="accounts-details-placeholder-title">${escapeHtml(summary)}</div>
+              <div class="accounts-details-placeholder-value">
+                ${escapeHtml(`${humanizeSummaryToken(item.status, "Active")} · ${item.reason || item.reasonCode || "No reason recorded"}`)}
+                <br />
+                ${escapeHtml(`Created ${item.createdAt ? formatTimestamp(item.createdAt) : "—"} by ${formatActorSummary(item.createdBy)}`)}
+                ${item.endsAt ? `<br />${escapeHtml(`Ends ${formatTimestamp(item.endsAt)}`)}` : ""}
+              </div>
+              ${revokeButton}
+            </div>
+          `;
+        }).join("")
+      : '<div class="accounts-details-placeholder-block"><div class="accounts-details-placeholder-title">No billing interventions</div><div class="accounts-details-placeholder-value">No account-specific billing overrides recorded yet.</div></div>';
+    const codeMarkup = codes.length
+      ? codes.slice(0, 6).map((item) => `
+          <div class="accounts-details-placeholder-block">
+            <div class="accounts-details-placeholder-title">${escapeHtml(item.code || "Code")}</div>
+            <div class="accounts-details-placeholder-value">
+              ${escapeHtml(`${formatDiscountValue(item.discountType, item.discountValue, item.currency)} · ${humanizeSummaryToken(item.status, "Active")}`)}
+              <br />
+              ${escapeHtml(`${humanizeSummaryToken(item.scope, "Global")} · ${item.reason || "No reason recorded"}`)}
+            </div>
+          </div>
+        `).join("")
+      : '<div class="accounts-details-placeholder-block"><div class="accounts-details-placeholder-title">No attached codes</div><div class="accounts-details-placeholder-value">No active or historical discount codes on this account.</div></div>';
+    return `
+      <div class="accounts-details-placeholder-group" style="margin-top:14px;">
+        ${interventionMarkup}
+      </div>
+      <div class="accounts-details-placeholder-group" style="margin-top:14px;">
+        ${codeMarkup}
+      </div>
+    `;
+  }
+
+  function renderBillingInterventionControls(user, { manageDisabled = false, isDeleted = false } = {}) {
+    const accountId = normalizeAccountId(user?.id);
+    const disabledAttr = manageDisabled || isDeleted ? "disabled" : "";
+    return `
+      <section class="accounts-details-group" style="margin-top:18px;">
+        <h5 class="accounts-details-group-title">Billing Interventions</h5>
+        <div class="accounts-details-group-grid">
+          <div class="accounts-details-group" data-billing-form-kind="gifted_tier">
+            <h5 class="accounts-details-group-title">Gift Paid Tier</h5>
+            <div style="display:grid;gap:10px;">
+              <select class="ss-input" data-billing-tier ${disabledAttr}>
+                <option value="GOLD">GOLD</option>
+                <option value="PRO">PRO</option>
+              </select>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <select class="ss-input" data-billing-duration-unit ${disabledAttr}>
+                  <option value="days">Days</option>
+                  <option value="months">Months</option>
+                  <option value="years">Years</option>
+                  <option value="lifetime">Lifetime</option>
+                </select>
+                <input class="ss-input" type="number" min="1" value="30" data-billing-duration-value ${disabledAttr} />
+              </div>
+              <textarea class="ss-input" rows="3" placeholder="Reason required" data-billing-reason ${disabledAttr}></textarea>
+              <button type="button" class="ss-btn ss-btn-primary" data-account-billing-submit="gifted_tier" data-account-id="${escapeHtml(accountId)}" ${disabledAttr}>Create Gifted Tier</button>
+            </div>
+          </div>
+          <div class="accounts-details-group" data-billing-form-kind="discount">
+            <h5 class="accounts-details-group-title">Per-User Discount</h5>
+            <div style="display:grid;gap:10px;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <select class="ss-input" data-billing-discount-type ${disabledAttr}>
+                  <option value="percent">Percent</option>
+                  <option value="amount">Amount</option>
+                </select>
+                <input class="ss-input" type="number" min="1" value="10" data-billing-discount-value ${disabledAttr} />
+              </div>
+              <textarea class="ss-input" rows="3" placeholder="Reason required" data-billing-reason ${disabledAttr}></textarea>
+              <button type="button" class="ss-btn ss-btn-primary" data-account-billing-submit="discount" data-account-id="${escapeHtml(accountId)}" ${disabledAttr}>Apply Discount</button>
+            </div>
+          </div>
+          <div class="accounts-details-group" data-billing-form-kind="discount_code_assignment">
+            <h5 class="accounts-details-group-title">Per-User Discount Code</h5>
+            <div style="display:grid;gap:10px;">
+              <input class="ss-input" type="text" placeholder="Code" data-billing-code ${disabledAttr} />
+              <input class="ss-input" type="text" placeholder="Label (optional)" data-billing-label ${disabledAttr} />
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <select class="ss-input" data-billing-discount-type ${disabledAttr}>
+                  <option value="percent">Percent</option>
+                  <option value="amount">Amount</option>
+                </select>
+                <input class="ss-input" type="number" min="1" value="10" data-billing-discount-value ${disabledAttr} />
+              </div>
+              <textarea class="ss-input" rows="3" placeholder="Reason required" data-billing-reason ${disabledAttr}></textarea>
+              <button type="button" class="ss-btn ss-btn-primary" data-account-billing-submit="discount_code_assignment" data-account-id="${escapeHtml(accountId)}" ${disabledAttr}>Issue Per-User Code</button>
+            </div>
+          </div>
+          <div class="accounts-details-group" data-billing-form-kind="ledger">
+            <h5 class="accounts-details-group-title">Credits / Write-Offs</h5>
+            <div style="display:grid;gap:10px;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <select class="ss-input" data-billing-ledger-kind ${disabledAttr}>
+                  <option value="credit">Credit</option>
+                  <option value="writeoff">Write-off</option>
+                </select>
+                <input class="ss-input" type="number" min="0.01" step="0.01" value="5.00" data-billing-amount ${disabledAttr} />
+              </div>
+              <textarea class="ss-input" rows="3" placeholder="Reason required" data-billing-reason ${disabledAttr}></textarea>
+              <button type="button" class="ss-btn ss-btn-primary" data-account-billing-submit="ledger" data-account-id="${escapeHtml(accountId)}" ${disabledAttr}>Post Adjustment</button>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:18px;">
+          <h5 class="accounts-details-group-title">Billing History</h5>
+          ${renderBillingAdminHistory(user)}
+        </div>
+      </section>
     `;
   }
 
@@ -873,6 +1124,7 @@ function normalizeUser(raw = {}) {
         ${actions.join("")}
         </div>
         ${renderAccountBadgeGovernance(user)}
+        ${renderBillingInterventionControls(user, { manageDisabled, isDeleted })}
       </div>
     `;
   }
@@ -1641,6 +1893,27 @@ function normalizeUser(raw = {}) {
     );
     const lastPaymentDateLabel = paymentSummary.lastPaymentAt ? formatTimestamp(paymentSummary.lastPaymentAt) : "No payment recorded";
     const nextDueLabel = paymentSummary.nextDueAt ? formatTimestamp(paymentSummary.nextDueAt) : "Not scheduled";
+    const balanceReliefLabel = formatCurrencyCents(
+      paymentSummary.balanceReliefTotalCents,
+      paymentSummary.currency,
+      "No adjustments"
+    );
+    const activeDiscountSummary = Array.isArray(paymentSummary.activeDiscounts) && paymentSummary.activeDiscounts.length
+      ? paymentSummary.activeDiscounts
+          .slice(0, 3)
+          .map((item) => {
+            const code = coerceText(item.code).toUpperCase();
+            const descriptor = formatDiscountValue(item.discount_type || item.discountType, item.discount_value || item.discountValue, item.currency);
+            return code ? `${code} (${descriptor})` : descriptor;
+          })
+          .join(", ")
+      : "No active discounts";
+    const effectiveTierSourceLabel = paymentSummary.isAdminGrantedTier
+      ? "Admin-granted tier"
+      : paymentSummary.effectiveTierSource === "account_tier"
+      ? "Account tier"
+      : humanizeSummaryToken(paymentSummary.effectiveTierSource, "Account tier");
+    const adminGrantDurationLabel = describeGrantDuration(paymentSummary);
     const badgeIcons = renderBadgeIconStrip(user.badges);
     const socialLinks = user.socialLinks && typeof user.socialLinks === "object" ? user.socialLinks : {};
     const socialMarkup = Object.entries(socialLinks)
@@ -1923,6 +2196,10 @@ function normalizeUser(raw = {}) {
             <div><span class="label">Last payment date</span><span class="value">${escapeHtml(lastPaymentDateLabel)}</span></div>
             <div><span class="label">Next renewal</span><span class="value">${escapeHtml(nextDueLabel)}</span></div>
             <div><span class="label">Recurring status</span><span class="value">${escapeHtml(recurringState)}</span></div>
+            <div><span class="label">Effective tier source</span><span class="value">${escapeHtml(effectiveTierSourceLabel)}</span></div>
+            <div><span class="label">Grant duration</span><span class="value">${escapeHtml(adminGrantDurationLabel)}</span></div>
+            <div><span class="label">Active discounts</span><span class="value">${escapeHtml(activeDiscountSummary)}</span></div>
+            <div><span class="label">Credits / write-offs</span><span class="value">${escapeHtml(balanceReliefLabel)}</span></div>
           </div>
         </section>
       </div>
@@ -2302,6 +2579,158 @@ function normalizeUser(raw = {}) {
     );
   }
 
+  function setBillingCodesStatus(message) {
+    if (el.billingCodesStatus) el.billingCodesStatus.textContent = message;
+  }
+
+  function setBillingCodesBanner(message, visible, options = {}) {
+    if (!el.billingCodesBanner) return;
+    el.billingCodesBanner.innerHTML = visible ? escapeHtml(message) : "";
+    el.billingCodesBanner.classList.toggle("hidden", !visible);
+    if (visible && message) {
+      window.StreamSuitesToast?.[options.tone || "info"]?.(message, {
+        key: options.key || "accounts-billing-codes",
+        title: options.title || "Billing Codes",
+        autoDismissMs: options.autoDismissMs
+      });
+    } else if (!visible) {
+      window.StreamSuitesToast?.dismiss?.(options.key || "accounts-billing-codes");
+    }
+  }
+
+  function renderBillingCodesPanel() {
+    if (!el.billingCodesPanel) return;
+    const rows = Array.isArray(state.billingDiscountCodes)
+      ? state.billingDiscountCodes.filter((item) => coerceText(item.scope).toLowerCase() === "global")
+      : [];
+    const listMarkup = rows.length
+      ? rows
+          .map((item) => `
+            <div class="accounts-details-placeholder-block">
+              <div class="accounts-details-placeholder-title">${escapeHtml(item.code || "Code")}</div>
+              <div class="accounts-details-placeholder-value">
+                ${escapeHtml(`${formatDiscountValue(item.discount_type || item.discountType, item.discount_value || item.discountValue, item.currency)} · ${humanizeSummaryToken(item.status || item.state, "Active")}`)}
+                <br />
+                ${escapeHtml(`${humanizeSummaryToken(item.scope, "Global")} · ${item.reason || "No reason recorded"}`)}
+              </div>
+              ${String(item.status || item.state).toLowerCase() === "active" ? `<button type="button" class="ss-btn ss-btn-small ss-btn-secondary" data-billing-code-revoke="${escapeHtml(item.id)}">Revoke</button>` : ""}
+            </div>
+          `)
+          .join("")
+      : '<div class="accounts-details-placeholder-block"><div class="accounts-details-placeholder-title">No global discount codes</div><div class="accounts-details-placeholder-value">Create the first authoritative runtime discount code here.</div></div>';
+    el.billingCodesPanel.innerHTML = `
+      <div class="accounts-details-group-grid">
+        <section class="accounts-details-group">
+          <h5 class="accounts-details-group-title">Create Global Discount Code</h5>
+          <div style="display:grid;gap:10px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <input id="accounts-billing-code" class="ss-input" type="text" placeholder="Code" />
+              <input id="accounts-billing-label" class="ss-input" type="text" placeholder="Label (optional)" />
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <select id="accounts-billing-discount-type" class="ss-input">
+                <option value="percent">Percent</option>
+                <option value="amount">Amount</option>
+              </select>
+              <input id="accounts-billing-discount-value" class="ss-input" type="number" min="1" value="10" />
+            </div>
+            <textarea id="accounts-billing-reason" class="ss-input" rows="3" placeholder="Reason required"></textarea>
+            <button id="accounts-billing-code-save" class="ss-btn ss-btn-primary" type="button">Create Global Code</button>
+          </div>
+        </section>
+        <section class="accounts-details-group">
+          <h5 class="accounts-details-group-title">Current Global Codes</h5>
+          <div class="accounts-details-placeholder-group">${listMarkup}</div>
+        </section>
+      </div>
+    `;
+  }
+
+  async function loadBillingCodes() {
+    setBillingCodesStatus("Loading...");
+    try {
+      const res = await fetchJson(buildApiUrl(BILLING_DISCOUNT_CODES_ENDPOINT));
+      if (res.status === 401 || res.status === 403) {
+        state.billingDiscountCodes = [];
+        renderBillingCodesPanel();
+        setBillingCodesStatus("Admin session required");
+        return;
+      }
+      if (!res.ok) throw new Error(`Billing code load failed (${res.status})`);
+      const payload = await res.json();
+      state.billingDiscountCodes = Array.isArray(payload.items) ? payload.items : [];
+      renderBillingCodesPanel();
+      setBillingCodesStatus("Live runtime data");
+      setBillingCodesBanner("", false);
+    } catch (err) {
+      console.warn("[Accounts] Failed to load billing codes", err);
+      state.billingDiscountCodes = [];
+      renderBillingCodesPanel();
+      setBillingCodesStatus("Unavailable");
+      setBillingCodesBanner("Billing discount code data is unavailable. Retry after runtime recovery.", true, {
+        tone: "warning",
+        title: "Billing codes unavailable",
+        autoDismissMs: 6800
+      });
+    }
+  }
+
+  async function createGlobalBillingCode() {
+    const codeInput = document.getElementById("accounts-billing-code");
+    const labelInput = document.getElementById("accounts-billing-label");
+    const discountTypeInput = document.getElementById("accounts-billing-discount-type");
+    const discountValueInput = document.getElementById("accounts-billing-discount-value");
+    const reasonInput = document.getElementById("accounts-billing-reason");
+    const payload = {
+      code: codeInput instanceof HTMLInputElement ? codeInput.value.trim().toUpperCase() : "",
+      label: labelInput instanceof HTMLInputElement ? labelInput.value.trim() : "",
+      discount_type: discountTypeInput instanceof HTMLSelectElement ? discountTypeInput.value : "percent",
+      discount_value: discountValueInput instanceof HTMLInputElement ? Number(discountValueInput.value || 0) : 0,
+      reason: reasonInput instanceof HTMLTextAreaElement ? reasonInput.value.trim() : "",
+      scope: "global"
+    };
+    setBillingCodesStatus("Saving...");
+    const res = await fetchJson(buildApiUrl(BILLING_DISCOUNT_CODES_ENDPOINT), {
+      method: "POST",
+      body: JSON.stringify(payload),
+      headers: { "Content-Type": "application/json" }
+    });
+    if (!res.ok) {
+      throw new Error((await readErrorMessage(res)) || `Billing code save failed (${res.status})`);
+    }
+    const responsePayload = await res.json();
+    state.billingDiscountCodes = Array.isArray(responsePayload.items) ? responsePayload.items : state.billingDiscountCodes;
+    renderBillingCodesPanel();
+    setBillingCodesStatus("Saved");
+    setBillingCodesBanner("Global billing discount code saved.", true, {
+      tone: "success",
+      title: "Saved",
+      autoDismissMs: 3200
+    });
+  }
+
+  async function revokeGlobalBillingCode(codeId) {
+    const reason = window.prompt("Reason for revoking this billing discount code:");
+    if (!reason) return;
+    const res = await fetchJson(buildApiUrl(`${BILLING_DISCOUNT_CODES_ENDPOINT}/revoke`), {
+      method: "POST",
+      body: JSON.stringify({ code_id: codeId, reason: reason.trim() }),
+      headers: { "Content-Type": "application/json" }
+    });
+    if (!res.ok) {
+      throw new Error((await readErrorMessage(res)) || `Billing code revoke failed (${res.status})`);
+    }
+    const payload = await res.json();
+    state.billingDiscountCodes = Array.isArray(payload.items) ? payload.items : state.billingDiscountCodes;
+    renderBillingCodesPanel();
+    setBillingCodesStatus("Updated");
+    setBillingCodesBanner("Billing discount code revoked.", true, {
+      tone: "success",
+      title: "Updated",
+      autoDismissMs: 3200
+    });
+  }
+
   function getActionPrompt(action, user) {
     const name = user.displayName || user.email || user.userCode || "this account";
     if (action === "suspend") {
@@ -2377,7 +2806,7 @@ function normalizeUser(raw = {}) {
 
   function setRowActionLoading(row, activeButton, isLoading) {
     if (!row) return;
-    const buttons = row.querySelectorAll("[data-account-action]");
+    const buttons = row.querySelectorAll("[data-account-action], [data-account-billing-submit], [data-account-billing-revoke]");
     const tierSelect = row.querySelector("[data-account-tier]");
     buttons.forEach((button) => {
       if (!(button instanceof HTMLButtonElement)) return;
@@ -2580,6 +3009,106 @@ function normalizeUser(raw = {}) {
     }
   }
 
+  async function submitAccountBillingIntervention(user, scope, button) {
+    if (!user || !button) return;
+    const accountId = normalizeAccountId(user.id);
+    const form = button.closest("[data-billing-form-kind]");
+    if (!(form instanceof HTMLElement)) return;
+    const formKind = form.getAttribute("data-billing-form-kind") || button.getAttribute("data-account-billing-submit") || "";
+    const reasonInput = form.querySelector("[data-billing-reason]");
+    const reason = reasonInput instanceof HTMLTextAreaElement ? reasonInput.value.trim() : "";
+    if (!reason) {
+      throw new Error("A reason is required for billing interventions.");
+    }
+    let payload = { kind: formKind, reason };
+    if (formKind === "gifted_tier") {
+      const tierInput = form.querySelector("[data-billing-tier]");
+      const durationUnitInput = form.querySelector("[data-billing-duration-unit]");
+      const durationValueInput = form.querySelector("[data-billing-duration-value]");
+      payload = {
+        ...payload,
+        kind: "gifted_tier",
+        tier: tierInput instanceof HTMLSelectElement ? tierInput.value : "GOLD",
+        duration_unit: durationUnitInput instanceof HTMLSelectElement ? durationUnitInput.value : "days",
+        duration_value: durationValueInput instanceof HTMLInputElement ? Number(durationValueInput.value || 0) : 0,
+      };
+      if (payload.duration_unit === "lifetime") {
+        delete payload.duration_value;
+      }
+    } else if (formKind === "discount") {
+      const typeInput = form.querySelector("[data-billing-discount-type]");
+      const valueInput = form.querySelector("[data-billing-discount-value]");
+      payload = {
+        ...payload,
+        kind: "discount",
+        discount_type: typeInput instanceof HTMLSelectElement ? typeInput.value : "percent",
+        discount_value: valueInput instanceof HTMLInputElement ? Number(valueInput.value || 0) : 0,
+      };
+    } else if (formKind === "discount_code_assignment") {
+      const codeInput = form.querySelector("[data-billing-code]");
+      const labelInput = form.querySelector("[data-billing-label]");
+      const typeInput = form.querySelector("[data-billing-discount-type]");
+      const valueInput = form.querySelector("[data-billing-discount-value]");
+      payload = {
+        ...payload,
+        kind: "discount_code_assignment",
+        code: codeInput instanceof HTMLInputElement ? codeInput.value.trim().toUpperCase() : "",
+        label: labelInput instanceof HTMLInputElement ? labelInput.value.trim() : "",
+        discount_type: typeInput instanceof HTMLSelectElement ? typeInput.value : "percent",
+        discount_value: valueInput instanceof HTMLInputElement ? Number(valueInput.value || 0) : 0,
+      };
+    } else {
+      const ledgerKindInput = form.querySelector("[data-billing-ledger-kind]");
+      const amountInput = form.querySelector("[data-billing-amount]");
+      payload = {
+        ...payload,
+        kind: ledgerKindInput instanceof HTMLSelectElement ? ledgerKindInput.value : "credit",
+        amount: amountInput instanceof HTMLInputElement ? Number(amountInput.value || 0) : 0,
+      };
+    }
+    setStatus("Saving billing intervention...");
+    setRowActionLoading(scope, button, true);
+    try {
+      const res = await fetchJson(buildApiUrl(`/api/admin/accounts/${encodeURIComponent(accountId)}/billing-interventions`), {
+        method: "POST",
+        body: JSON.stringify(payload),
+        headers: { "Content-Type": "application/json" }
+      });
+      if (!res.ok) {
+        throw new Error((await readErrorMessage(res)) || `Billing intervention failed (${res.status})`);
+      }
+      await Promise.all([loadUsers(), loadBillingCodes()]);
+      setStatus("Billing intervention saved.");
+    } finally {
+      setRowActionLoading(scope, button, false);
+    }
+  }
+
+  async function revokeAccountBillingIntervention(user, interventionId, button) {
+    if (!user || !interventionId) return;
+    const reason = window.prompt("Reason for revoking this billing intervention:");
+    if (!reason) return;
+    setStatus("Revoking billing intervention...");
+    setRowActionLoading(el.detailsActions || el.detailsDrawer, button, true);
+    try {
+      const res = await fetchJson(
+        buildApiUrl(`/api/admin/accounts/${encodeURIComponent(normalizeAccountId(user.id))}/billing-interventions/revoke`),
+        {
+          method: "POST",
+          body: JSON.stringify({ intervention_id: interventionId, reason: reason.trim() }),
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+      if (!res.ok) {
+        throw new Error((await readErrorMessage(res)) || `Billing revoke failed (${res.status})`);
+      }
+      await Promise.all([loadUsers(), loadBillingCodes()]);
+      setStatus("Billing intervention revoked.");
+    } finally {
+      setRowActionLoading(el.detailsActions || el.detailsDrawer, button, false);
+    }
+  }
+
   function parseFilename(headers, fallback) {
     const disposition = headers.get("content-disposition") || "";
     const match = disposition.match(/filename\*?=\"?([^\";]+)\"?/i);
@@ -2677,6 +3206,37 @@ function normalizeUser(raw = {}) {
             autoDismissMs: 6800
           });
           setBadgeGovernanceStatus("Reconcile failed");
+        });
+      }
+    });
+    el.billingCodesPanel?.addEventListener("click", (event) => {
+      const target = getEventTargetElement(event);
+      if (!target) return;
+      if (target.id === "accounts-billing-code-save") {
+        event.preventDefault();
+        void createGlobalBillingCode().catch((err) => {
+          console.warn("[Accounts] Billing code save failed", err);
+          setBillingCodesBanner(err?.message || "Failed to save billing discount code.", true, {
+            tone: "error",
+            title: "Billing code save failed",
+            autoDismissMs: 6800
+          });
+          setBillingCodesStatus("Save failed");
+        });
+        return;
+      }
+      const revokeButton = target.closest("[data-billing-code-revoke]");
+      if (revokeButton) {
+        event.preventDefault();
+        const codeId = revokeButton.getAttribute("data-billing-code-revoke") || "";
+        void revokeGlobalBillingCode(codeId).catch((err) => {
+          console.warn("[Accounts] Billing code revoke failed", err);
+          setBillingCodesBanner(err?.message || "Failed to revoke billing discount code.", true, {
+            tone: "error",
+            title: "Billing code revoke failed",
+            autoDismissMs: 6800
+          });
+          setBillingCodesStatus("Update failed");
         });
       }
     });
@@ -2806,6 +3366,41 @@ function normalizeUser(raw = {}) {
       }
 
       const button = target.closest("[data-account-action]");
+      const billingSubmit = target.closest("[data-account-billing-submit]");
+      if (billingSubmit) {
+        event.preventDefault();
+        const accountId = normalizeAccountId(billingSubmit.getAttribute("data-account-id"));
+        const user = getUserById(accountId);
+        if (!user) return;
+        void submitAccountBillingIntervention(user, el.detailsActions || el.detailsDrawer, billingSubmit).catch((err) => {
+          console.warn("[Accounts] Billing intervention save failed", err);
+          setInlineError(err?.message || "Failed to save billing intervention.", {
+            tone: "error",
+            key: "accounts-billing-save-failed",
+            title: "Billing save failed",
+            autoDismissMs: 6800
+          });
+        });
+        return;
+      }
+      const billingRevoke = target.closest("[data-account-billing-revoke]");
+      if (billingRevoke) {
+        event.preventDefault();
+        const accountId = normalizeAccountId(billingRevoke.getAttribute("data-account-id"));
+        const user = getUserById(accountId);
+        if (!user) return;
+        const interventionId = billingRevoke.getAttribute("data-account-billing-revoke") || "";
+        void revokeAccountBillingIntervention(user, interventionId, billingRevoke).catch((err) => {
+          console.warn("[Accounts] Billing intervention revoke failed", err);
+          setInlineError(err?.message || "Failed to revoke billing intervention.", {
+            tone: "error",
+            key: "accounts-billing-revoke-failed",
+            title: "Billing revoke failed",
+            autoDismissMs: 6800
+          });
+        });
+        return;
+      }
       const badgeSave = target.closest("[data-account-badge-governance-save]");
       if (badgeSave) {
         event.preventDefault();
@@ -2917,6 +3512,9 @@ function normalizeUser(raw = {}) {
     el.badgeGovernanceBanner = $("accounts-badge-governance-banner");
     el.badgeGovernanceStatus = $("accounts-badge-governance-status");
     el.badgeGovernancePanel = $("accounts-badge-governance-panel");
+    el.billingCodesBanner = $("accounts-billing-codes-banner");
+    el.billingCodesStatus = $("accounts-billing-codes-status");
+    el.billingCodesPanel = $("accounts-billing-codes-panel");
     el.detailsBackdrop = $("accounts-details-backdrop");
     el.detailsDrawer = $("accounts-details-drawer");
     el.detailsContent = $("accounts-details-content");
@@ -2944,13 +3542,13 @@ function normalizeUser(raw = {}) {
     toggleIdColumn(true);
     if (window.StreamSuitesGlobalLoader?.trackAsync) {
       await window.StreamSuitesGlobalLoader.trackAsync(
-        () => Promise.all([loadAdminIdentity(), loadUsers(), loadBadgeGovernance()]),
+        () => Promise.all([loadAdminIdentity(), loadUsers(), loadBadgeGovernance(), loadBillingCodes()]),
         "Hydrating accounts..."
       );
       return;
     }
 
-    await Promise.all([loadAdminIdentity(), loadUsers(), loadBadgeGovernance()]);
+    await Promise.all([loadAdminIdentity(), loadUsers(), loadBadgeGovernance(), loadBillingCodes()]);
   }
 
   window.AccountsView = {
