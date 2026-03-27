@@ -334,6 +334,43 @@
       .join("");
   }
 
+  function getBadgeSurfaceCatalog(source) {
+    const surfaceCatalog = source?.surface_catalog;
+    if (Array.isArray(surfaceCatalog) && surfaceCatalog.length) {
+      return surfaceCatalog
+        .map((entry) => ({
+          key: coerceText(entry?.key),
+          label: coerceText(entry?.label || entry?.key)
+        }))
+        .filter((entry) => entry.key);
+    }
+    return [
+      { key: "streamsuites_profile", label: "StreamSuites Profile" },
+      { key: "findmehere_profile", label: "FindMeHere Profile" },
+      { key: "profile_card", label: "Profile Cards" },
+      { key: "user_widget", label: "User Widget" },
+      { key: "creator_surface", label: "Creator Surface" },
+      { key: "admin_surface", label: "Admin Surface" },
+      { key: "public_surface", label: "Public Surface" },
+      { key: "directory", label: "Directory" }
+    ];
+  }
+
+  function renderVisibilityGlyph(visible, label) {
+    const iconPath = visible ? "/assets/icons/ui/visiblefilled.svg" : "/assets/icons/ui/hidden.svg";
+    return `<img src="${escapeHtml(iconPath)}" alt="${escapeHtml(label)}" title="${escapeHtml(label)}" style="width:14px;height:14px;display:block;margin:0 auto;" />`;
+  }
+
+  function buildBadgeMatrixCellMap(rows) {
+    const map = Object.create(null);
+    (Array.isArray(rows) ? rows : []).forEach((row) => {
+      const key = coerceText(row?.key || row?.value).toLowerCase();
+      if (!key) return;
+      map[key] = row?.surfaces && typeof row.surfaces === "object" ? row.surfaces : {};
+    });
+    return map;
+  }
+
   function getCurrentAccount() {
     return state.payload?.account && typeof state.payload.account === "object" ? state.payload.account : {};
   }
@@ -676,6 +713,7 @@
                 <option value="CORE"${currentTier === "CORE" ? " selected" : ""}>CORE</option>
                 <option value="GOLD"${currentTier === "GOLD" ? " selected" : ""}>GOLD</option>
                 <option value="PRO"${currentTier === "PRO" ? " selected" : ""}>PRO</option>
+                <option value="DEVELOPER"${currentTier === "DEVELOPER" ? " selected" : ""}>DEVELOPER</option>
               </select>
               <button type="button" class="ss-btn ss-btn-primary" data-user-detail-action="tier"${isDeleted ? " disabled" : ""}>Update tier</button>
             </div>
@@ -706,56 +744,72 @@
     const visibilityOverrides = badgeState.visibility_overrides && typeof badgeState.visibility_overrides === "object"
       ? badgeState.visibility_overrides
       : {};
-    const visibleKeys = Array.isArray(badgeState.visible) ? badgeState.visible : [];
-    const hiddenKeys = Array.isArray(badgeState.hidden) ? badgeState.hidden : [];
-    const findmehereBadges = Array.isArray(account?.findmehere_badges) ? account.findmehere_badges : [];
+    const surfaceCatalog = getBadgeSurfaceCatalog(badgeState);
+    const badgeSurfaceMap = buildBadgeMatrixCellMap(badgeState.applicable);
     const governedKeys = Array.from(new Set([
       ...Object.keys(badgeState.default_visibility || {}),
       ...Object.keys(visibilityOverrides || {}),
       ...Object.keys(entitlements || {}),
+      ...(Array.isArray(badgeState.applicable) ? badgeState.applicable.map((item) => item?.key) : []),
       "founder",
-      "moderator",
-      "developer"
+      "moderator"
     ])).filter(Boolean);
-    const visibilityRows = governedKeys
+    const matrixRows = governedKeys
       .map((key) => {
-        const override = visibilityOverrides[key];
-        const value =
-          override && typeof override === "object" && override.visible === true
-            ? "show"
-            : override && typeof override === "object" && override.visible === false
-            ? "hide"
-            : "default";
+        const surfaceStates = badgeSurfaceMap[key] && typeof badgeSurfaceMap[key] === "object" ? badgeSurfaceMap[key] : {};
+        const cells = surfaceCatalog
+          .map((surface) => {
+            const cell = surfaceStates[surface.key] && typeof surfaceStates[surface.key] === "object" ? surfaceStates[surface.key] : null;
+            if (!cell || cell.supported === false) {
+              return '<td class="muted" style="text-align:center;padding:8px 6px;">—</td>';
+            }
+            const overrideEntry =
+              visibilityOverrides[key] && typeof visibilityOverrides[key] === "object"
+                ? visibilityOverrides[key][surface.key]
+                : null;
+            const value =
+              overrideEntry && typeof overrideEntry === "object" && overrideEntry.visible === true
+                ? "show"
+                : overrideEntry && typeof overrideEntry === "object" && overrideEntry.visible === false
+                ? "hide"
+                : "default";
+            const helper =
+              cell.state === "admin_hidden"
+                ? "Hidden by admin override"
+                : cell.state === "global_hidden"
+                ? "Hidden by global default"
+                : cell.state === "creator_hidden"
+                ? "Hidden by creator preference"
+                : "Visible";
+            return `
+              <td style="padding:8px 6px;text-align:center;vertical-align:top;${cell.locked ? "background:rgba(255,255,255,0.04);" : ""}">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                  ${renderVisibilityGlyph(cell.visible === true, helper)}
+                  <select class="ss-input" data-user-detail-badge-visibility="${escapeHtml(key)}" data-user-detail-badge-surface="${escapeHtml(surface.key)}" ${cell.locked ? "disabled" : ""} style="min-width:88px;">
+                    <option value="default"${value === "default" ? " selected" : ""}>Default</option>
+                    <option value="show"${value === "show" ? " selected" : ""}>Show</option>
+                    <option value="hide"${value === "hide" ? " selected" : ""}>Hide</option>
+                  </select>
+                </div>
+              </td>
+            `;
+          })
+          .join("");
         return `
-          <label class="accounts-badge-visibility-row muted">
-            <span>${escapeHtml(formatBadgeLabel(key))}</span>
-            <select class="ss-input" data-user-detail-badge-visibility="${escapeHtml(key)}">
-              <option value="default"${value === "default" ? " selected" : ""}>Use system default</option>
-              <option value="show"${value === "show" ? " selected" : ""}>Force visible</option>
-              <option value="hide"${value === "hide" ? " selected" : ""}>Hide</option>
-            </select>
-          </label>
+          <tr>
+            <th scope="row" style="text-align:left;padding:8px 10px;white-space:nowrap;">${escapeHtml(formatBadgeLabel(key))}</th>
+            ${cells}
+          </tr>
         `;
       })
       .join("");
     el.badges.innerHTML = `
-      <div class="accounts-details-kpi-row">
-        ${renderBadge("Visible", "ss-badge-success")}
-        <span>${renderBadgeIconStrip(visibleKeys, "No visible badges")}</span>
-      </div>
-      <div class="accounts-details-kpi-row">
-        ${renderBadge("Hidden", "ss-badge-warning")}
-        <span>${renderBadgeIconStrip(hiddenKeys, "No hidden badges")}</span>
-      </div>
-      <div class="accounts-details-kpi-row">
-        ${renderBadge("FindMeHere", "")}
-        <span>${renderBadgeIconStrip(findmehereBadges, "No FindMeHere badges")}</span>
-      </div>
+      <p class="muted" style="margin:0 0 12px;">Effective visibility by surface. Unsupported cells are omitted and admin-hidden cells stay locked.</p>
       <div class="user-detail-badge-governance-grid">
         <div class="accounts-details-placeholder-block">
           <div class="accounts-details-placeholder-title">Manual entitlements</div>
           <div class="accounts-details-placeholder-value user-detail-checkbox-grid">
-            ${["founder", "moderator", "developer"].map((key) => `
+            ${["founder", "moderator"].map((key) => `
               <label class="accounts-badge-inline-option muted ss-checkbox-wrapper">
                 <input type="checkbox" data-user-detail-badge-entitlement="${escapeHtml(key)}"${entitlements[key]?.enabled === true ? " checked" : ""} />
                 <div class="ss-checkbox"></div>
@@ -765,9 +819,17 @@
           </div>
         </div>
         <div class="accounts-details-placeholder-block">
-          <div class="accounts-details-placeholder-title">Per-user visibility</div>
-          <div class="accounts-details-placeholder-value user-detail-control-stack">
-            ${visibilityRows}
+          <div class="accounts-details-placeholder-title">Surface matrix</div>
+          <div class="accounts-details-placeholder-value" style="overflow:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:12px;">
+              <thead>
+                <tr>
+                  <th style="text-align:left;padding:8px 10px;">Badge</th>
+                  ${surfaceCatalog.map((surface) => `<th style="padding:8px 6px;white-space:nowrap;">${escapeHtml(surface.label)}</th>`).join("")}
+                </tr>
+              </thead>
+              <tbody>${matrixRows}</tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -1151,8 +1213,12 @@
     document.querySelectorAll("[data-user-detail-badge-visibility]").forEach((select) => {
       if (!(select instanceof HTMLSelectElement)) return;
       const key = select.getAttribute("data-user-detail-badge-visibility") || "";
-      if (!key) return;
-      visibility_overrides[key] = select.value === "default" ? null : select.value === "show";
+      const surface = select.getAttribute("data-user-detail-badge-surface") || "";
+      if (!key || !surface) return;
+      if (!visibility_overrides[key] || typeof visibility_overrides[key] !== "object") {
+        visibility_overrides[key] = {};
+      }
+      visibility_overrides[key][surface] = select.value === "default" ? null : select.value === "show";
     });
     setButtonLoading(button, true);
     setStatusPill("Saving badges", "subtle");

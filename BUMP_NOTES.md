@@ -517,3 +517,25 @@ Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into t
 - The dashboard now reflects truthful backend readiness posture, but actual provider depth is still bounded by the current runtime/Auth foundation: Twitch remains identity-only, and YouTube, Kick, and Pilled remain planned or unavailable until backend capability expands.
 - No admin-side connect or override actions were added beyond trigger enabled-state toggles because the backend does not yet expose safe broader integration mutation paths for those providers.
 - Pending entries for `0.4.8-alpha` go here.
+
+## Task 3P - Developer Tier + Badge Surface Matrix - 2026-03-28
+
+### Technical Notes
+
+- The Dashboard accounts workflow now accepts the authoritative `Developer` tier in admin assignment controls.
+- The main Badge Governance view now renders the backend-owned badge-vs-surface matrix, stays read-only by default, and only exposes editable checkbox cells in explicit edit mode.
+- The Accounts sidebar and user-detail badge governance panels now render compact surface matrices instead of flat vertical visibility pills.
+
+### Human-Readable Notes
+
+- Admins can now assign Developer as a hidden internal tier without leaking it into public tier flows.
+- Badge governance in Dashboard now answers “which badge shows on which surface” at a glance.
+
+### Files / Areas Touched
+
+- `docs/js/accounts.js`
+- `docs/js/user-detail.js`
+
+### Risks / Follow-Ups
+
+- The matrix views depend on the new backend surface payload shape; stale backend deployments will degrade into fetch/save failures rather than falling back to fake client logic.

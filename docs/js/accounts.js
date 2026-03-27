@@ -41,6 +41,7 @@
     drawerDetailToken: 0,
     badgeGovernance: null,
     badgeGovernanceLoading: false,
+    badgeGovernanceEditing: false,
     billingDiscountCodes: [],
     columnResize: null,
     columnResizeHydrated: false,
@@ -209,6 +210,7 @@
     if (text === "open" || text === "core") return "CORE";
     if (text === "gold") return "GOLD";
     if (text === "pro") return "PRO";
+    if (text === "developer") return "DEVELOPER";
     return "";
   }
 
@@ -302,6 +304,48 @@
       })
       .filter(Boolean)
       .join("");
+  }
+
+  function getBadgeSurfaceCatalog(source) {
+    const surfaceCatalog = source?.surface_catalog;
+    if (Array.isArray(surfaceCatalog) && surfaceCatalog.length) {
+      return surfaceCatalog
+        .map((entry) => ({
+          key: String(entry?.key || "").trim(),
+          label: String(entry?.label || entry?.key || "").trim()
+        }))
+        .filter((entry) => entry.key);
+    }
+    return [
+      { key: "streamsuites_profile", label: "StreamSuites Profile" },
+      { key: "findmehere_profile", label: "FindMeHere Profile" },
+      { key: "profile_card", label: "Profile Cards" },
+      { key: "user_widget", label: "User Widget" },
+      { key: "creator_surface", label: "Creator Surface" },
+      { key: "admin_surface", label: "Admin Surface" },
+      { key: "public_surface", label: "Public Surface" },
+      { key: "directory", label: "Directory" }
+    ];
+  }
+
+  function renderVisibilityGlyph(visible, label) {
+    const iconPath = visible ? "/assets/icons/ui/visiblefilled.svg" : "/assets/icons/ui/hidden.svg";
+    const tone = visible ? "color:#23a55a;" : "color:var(--text-color, currentColor);";
+    return `
+      <span title="${escapeHtml(label)}" style="display:inline-flex;align-items:center;justify-content:center;${tone}">
+        <img src="${iconPath}" alt="${escapeHtml(label)}" style="width:14px;height:14px;display:block;" />
+      </span>
+    `;
+  }
+
+  function buildBadgeMatrixCellMap(rows) {
+    const map = Object.create(null);
+    (Array.isArray(rows) ? rows : []).forEach((row) => {
+      const key = String(row?.key || row?.value || "").trim().toLowerCase();
+      if (!key) return;
+      map[key] = row?.surfaces && typeof row.surfaces === "object" ? row.surfaces : {};
+    });
+    return map;
   }
 
   function resolveEmailVerifiedLabel(value) {
@@ -1016,7 +1060,7 @@ function normalizeUser(raw = {}) {
     const manageDisabled = !state.canManage;
     const isEmailVerified = user.emailVerified === true;
     const hasEmail = Boolean(user.email && user.email !== "—");
-    const tiers = ["CORE", "GOLD", "PRO"];
+    const tiers = ["CORE", "GOLD", "PRO", "DEVELOPER"];
     const currentTier = String(user.tier || "CORE").toUpperCase();
     const accountId = normalizeAccountId(user.id);
 
@@ -1170,10 +1214,12 @@ function normalizeUser(raw = {}) {
   function getGovernedBadgeKeys(user) {
     const badgeState = user?.badgeState && typeof user.badgeState === "object" ? user.badgeState : {};
     const governanceCatalog = Array.isArray(state.badgeGovernance?.catalog) ? state.badgeGovernance.catalog : [];
+    const applicable = Array.isArray(badgeState.applicable) ? badgeState.applicable : [];
     return sortBadgeKeys([
       ...Object.keys(badgeState.default_visibility || {}),
       ...Object.keys(badgeState.visibility_overrides || {}),
       ...Object.keys(badgeState.entitlements || {}),
+      ...applicable.map((item) => item?.key),
       ...governanceCatalog.map((item) => item?.key)
     ]);
   }
@@ -1189,8 +1235,10 @@ function normalizeUser(raw = {}) {
       badgeState.visibility_overrides && typeof badgeState.visibility_overrides === "object"
         ? badgeState.visibility_overrides
         : {};
-    const managedKeys = ["founder", "moderator", "developer"];
+    const managedKeys = ["founder", "moderator"];
     const visibilityKeys = getGovernedBadgeKeys(user);
+    const surfaceCatalog = getBadgeSurfaceCatalog(badgeState || state.badgeGovernance || {});
+    const badgeSurfaceMap = buildBadgeMatrixCellMap(badgeState.applicable);
     const accountId = normalizeAccountId(user?.id);
     const entitlementRows = managedKeys
       .map((key) => {
@@ -1204,57 +1252,77 @@ function normalizeUser(raw = {}) {
         `;
       })
       .join("");
-    const visibilityRows = visibilityKeys
+    const matrixRows = visibilityKeys
       .map((key) => {
-        const override = visibilityOverrides[key];
-        const value =
-          override && typeof override === "object" && override.visible === true
-            ? "show"
-            : override && typeof override === "object" && override.visible === false
-            ? "hide"
-            : "default";
+        const surfaceStates = badgeSurfaceMap[key] && typeof badgeSurfaceMap[key] === "object" ? badgeSurfaceMap[key] : {};
+        const cells = surfaceCatalog
+          .map((surface) => {
+            const cell = surfaceStates[surface.key] && typeof surfaceStates[surface.key] === "object" ? surfaceStates[surface.key] : null;
+            if (!cell || cell.supported === false) {
+              return '<td class="muted" style="text-align:center;padding:8px 6px;">—</td>';
+            }
+            const overrideEntry =
+              visibilityOverrides[key] && typeof visibilityOverrides[key] === "object"
+                ? visibilityOverrides[key][surface.key]
+                : null;
+            const value =
+              overrideEntry && typeof overrideEntry === "object" && overrideEntry.visible === true
+                ? "show"
+                : overrideEntry && typeof overrideEntry === "object" && overrideEntry.visible === false
+                ? "hide"
+                : "default";
+            const helper =
+              cell.state === "admin_hidden"
+                ? "Hidden by admin override"
+                : cell.state === "global_hidden"
+                ? "Hidden by global default"
+                : cell.state === "creator_hidden"
+                ? "Hidden by creator preference"
+                : "Visible";
+            return `
+              <td style="padding:8px 6px;text-align:center;vertical-align:top;${cell.locked ? "background:rgba(255,255,255,0.04);" : ""}">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                  ${renderVisibilityGlyph(cell.visible === true, helper)}
+                  <select class="ss-input" data-account-badge-visibility="${escapeHtml(key)}" data-account-badge-surface="${escapeHtml(surface.key)}" data-account-id="${escapeHtml(accountId)}" ${cell.locked || !state.canManage ? "disabled" : ""} style="min-width:88px;">
+                    <option value="default"${value === "default" ? " selected" : ""}>Default</option>
+                    <option value="show"${value === "show" ? " selected" : ""}>Show</option>
+                    <option value="hide"${value === "hide" ? " selected" : ""}>Hide</option>
+                  </select>
+                </div>
+              </td>
+            `;
+          })
+          .join("");
         return `
-          <label class="accounts-badge-visibility-row muted">
-            ${renderBadgeChoiceLabel(
-              key,
-              value === "default"
-                ? "Using system default"
-                : value === "show"
-                ? "Forced visible"
-                : "Hidden on this account"
-            )}
-            <select class="ss-input" data-account-badge-visibility="${escapeHtml(key)}" data-account-id="${escapeHtml(accountId)}">
-              <option value="default"${value === "default" ? " selected" : ""}>Use system default</option>
-              <option value="show"${value === "show" ? " selected" : ""}>Force visible</option>
-              <option value="hide"${value === "hide" ? " selected" : ""}>Hide</option>
-            </select>
-          </label>
+          <tr>
+            <th scope="row" style="text-align:left;padding:8px 10px;white-space:nowrap;">${renderBadgeChoiceLabel(key)}</th>
+            ${cells}
+          </tr>
         `;
       })
       .join("");
     return `
       <section class="accounts-details-group" style="margin-top:18px;">
         <h5 class="accounts-details-group-title">Badge Governance</h5>
-        <div class="accounts-details-kpi-row">
-          ${renderBadge("Visible", "ss-badge-success")}
-          <span>${renderBadgeStateSummary(badgeState.visible, "No visible badges")}</span>
-        </div>
-        <div class="accounts-details-kpi-row">
-          ${renderBadge("Hidden", "ss-badge-warning")}
-          <span>${renderBadgeStateSummary(badgeState.hidden, "No hidden badges")}</span>
-        </div>
-        <div class="accounts-details-kpi-row">
-          ${renderBadge("FindMeHere", "")}
-          <span>${renderBadgeStateSummary(user.findmehereBadges, "No FindMeHere badges")}</span>
-        </div>
+        <p class="muted" style="margin:0 0 12px;">Effective visibility by surface. Admin overrides here take priority over creator-side preferences.</p>
         <div class="accounts-details-placeholder-group" style="margin-top:12px;">
           <div class="accounts-details-placeholder-block">
             <div class="accounts-details-placeholder-title">Manual entitlements</div>
             <div class="accounts-details-placeholder-value">${entitlementRows}</div>
           </div>
           <div class="accounts-details-placeholder-block">
-            <div class="accounts-details-placeholder-title">Per-user visibility</div>
-            <div class="accounts-details-placeholder-value">${visibilityRows}</div>
+            <div class="accounts-details-placeholder-title">Surface matrix</div>
+            <div class="accounts-details-placeholder-value" style="overflow:auto;">
+              <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                <thead>
+                  <tr>
+                    <th style="text-align:left;padding:8px 10px;">Badge</th>
+                    ${surfaceCatalog.map((surface) => `<th style="padding:8px 6px;white-space:nowrap;">${escapeHtml(surface.label)}</th>`).join("")}
+                  </tr>
+                </thead>
+                <tbody>${matrixRows}</tbody>
+              </table>
+            </div>
           </div>
         </div>
         <div class="accounts-inline-actions" style="margin-top:12px;">
@@ -1274,6 +1342,8 @@ function normalizeUser(raw = {}) {
     const defaultVisibility = governance.default_visibility && typeof governance.default_visibility === "object" ? governance.default_visibility : {};
     const founder = governance.founder_reconcile || {};
     const founderPolicy = governance.founder_policy && typeof governance.founder_policy === "object" ? governance.founder_policy : {};
+    const surfaceCatalog = getBadgeSurfaceCatalog(governance);
+    const catalog = Array.isArray(governance.catalog) ? governance.catalog : [];
     const storedCutoffDate = typeof founderPolicy.cutoff_date === "string" && founderPolicy.cutoff_date
       ? founderPolicy.cutoff_date
       : (governance.founder_cutoff_date || "");
@@ -1284,20 +1354,42 @@ function normalizeUser(raw = {}) {
     const cutoffInclusive = founderPolicy.cutoff_inclusive !== false;
     const governedKeys = sortBadgeKeys([
       ...Object.keys(defaultVisibility),
-      ...((Array.isArray(governance.catalog) ? governance.catalog : []).map((item) => item?.key))
+      ...catalog.map((item) => item?.key)
     ]);
-    const visibleCount = governedKeys.filter((key) => defaultVisibility[key]).length;
-    const visibilityRows = governedKeys
-      .map((key) => `
-        <label class="accounts-badge-choice ss-checkbox-wrapper">
-          <input type="checkbox" data-system-badge-visibility="${escapeHtml(key)}"${defaultVisibility[key] ? " checked" : ""} />
-          <div class="ss-checkbox"></div>
-          ${renderBadgeChoiceLabel(
-            key,
-            defaultVisibility[key] ? "Shown by default" : "Hidden by default"
-          )}
-        </label>
-      `)
+    const visibleCount = governedKeys.reduce((count, key) => {
+      const row = defaultVisibility[key] && typeof defaultVisibility[key] === "object" ? defaultVisibility[key] : {};
+      return count + surfaceCatalog.filter((surface) => row[surface.key] === true).length;
+    }, 0);
+    const matrixRows = governedKeys
+      .map((key) => {
+        const catalogEntry = catalog.find((item) => String(item?.key || "").trim().toLowerCase() === key) || {};
+        const supportedSurfaces = Array.isArray(catalogEntry.surfaces) ? catalogEntry.surfaces : [];
+        const rowDefaults = defaultVisibility[key] && typeof defaultVisibility[key] === "object" ? defaultVisibility[key] : {};
+        const cells = surfaceCatalog
+          .map((surface) => {
+            if (!supportedSurfaces.includes(surface.key)) {
+              return '<td class="muted" style="text-align:center;padding:8px 6px;">—</td>';
+            }
+            const isVisible = rowDefaults[surface.key] === true;
+            return `
+              <td style="text-align:center;padding:8px 6px;">
+                ${state.badgeGovernanceEditing
+                  ? `<label class="ss-checkbox-wrapper" style="display:inline-flex;align-items:center;justify-content:center;">
+                      <input type="checkbox" data-system-badge-visibility="${escapeHtml(key)}" data-system-badge-surface="${escapeHtml(surface.key)}"${isVisible ? " checked" : ""} />
+                      <div class="ss-checkbox"></div>
+                    </label>`
+                  : renderVisibilityGlyph(isVisible, isVisible ? "Visible by default" : "Hidden by default")}
+              </td>
+            `;
+          })
+          .join("");
+        return `
+          <tr>
+            <th scope="row" style="text-align:left;padding:8px 10px;white-space:nowrap;">${renderBadgeChoiceLabel(key)}</th>
+            ${cells}
+          </tr>
+        `;
+      })
       .join("");
     el.badgeGovernancePanel.innerHTML = `
       <div class="accounts-governance-layout">
@@ -1348,12 +1440,28 @@ function normalizeUser(raw = {}) {
           <div class="accounts-governance-card-head">
             <div>
               <span class="accounts-governance-kicker">Surface Defaults</span>
-              <h5 class="accounts-details-group-title">System default visibility</h5>
+              <h5 class="accounts-details-group-title">System default visibility matrix</h5>
             </div>
-            <span class="accounts-governance-muted">${escapeHtml(String(governedKeys.length || 0))} badge options</span>
+            <span class="accounts-governance-muted">${escapeHtml(String(visibleCount || 0))} visible cells</span>
           </div>
-          <div class="accounts-governance-badge-grid">
-            ${visibilityRows}
+          <div class="accounts-inline-actions" style="margin-bottom:12px;">
+            ${state.badgeGovernanceEditing
+              ? `
+                <button type="button" id="accounts-badge-governance-save" class="ss-btn ss-btn-primary">Save matrix</button>
+                <button type="button" id="accounts-badge-governance-cancel" class="ss-btn ss-btn-secondary">Cancel</button>
+              `
+              : '<button type="button" id="accounts-badge-governance-edit" class="ss-btn ss-btn-secondary">Edit matrix</button>'}
+          </div>
+          <div style="overflow:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:12px;">
+              <thead>
+                <tr>
+                  <th style="text-align:left;padding:8px 10px;">Badge</th>
+                  ${surfaceCatalog.map((surface) => `<th style="padding:8px 6px;white-space:nowrap;">${escapeHtml(surface.label)}</th>`).join("")}
+                </tr>
+              </thead>
+              <tbody>${matrixRows}</tbody>
+            </table>
           </div>
         </section>
       </div>
@@ -2618,6 +2726,7 @@ function normalizeUser(raw = {}) {
       }
       if (!res.ok) throw new Error(`Badge governance error ${res.status}`);
       state.badgeGovernance = await res.json();
+      state.badgeGovernanceEditing = false;
       renderSystemBadgeGovernancePanel();
       setBadgeGovernanceStatus("Live runtime data");
       setBadgeGovernanceBanner("", false);
@@ -2643,8 +2752,12 @@ function normalizeUser(raw = {}) {
     document.querySelectorAll("[data-system-badge-visibility]").forEach((input) => {
       if (!(input instanceof HTMLInputElement)) return;
       const key = input.getAttribute("data-system-badge-visibility") || "";
-      if (!key) return;
-      payload.default_visibility[key] = input.checked;
+      const surface = input.getAttribute("data-system-badge-surface") || "";
+      if (!key || !surface) return;
+      if (!payload.default_visibility[key] || typeof payload.default_visibility[key] !== "object") {
+        payload.default_visibility[key] = {};
+      }
+      payload.default_visibility[key][surface] = input.checked;
     });
     setBadgeGovernanceStatus("Saving...");
     const res = await fetchJson(buildApiUrl(BADGE_GOVERNANCE_ENDPOINT), {
@@ -2656,6 +2769,7 @@ function normalizeUser(raw = {}) {
       throw new Error((await readErrorMessage(res)) || `Save failed (${res.status})`);
     }
     state.badgeGovernance = await res.json();
+    state.badgeGovernanceEditing = false;
     renderSystemBadgeGovernancePanel();
     setBadgeGovernanceStatus("Saved");
     setBadgeGovernanceBanner("Badge governance saved.", true, {
@@ -2961,9 +3075,13 @@ function normalizeUser(raw = {}) {
     });
     document.querySelectorAll(`[data-account-badge-visibility][data-account-id="${escapeSelectorValue(accountId)}"]`).forEach((select) => {
       const key = select.getAttribute("data-account-badge-visibility") || "";
+      const surface = select.getAttribute("data-account-badge-surface") || "";
       const value = select instanceof HTMLSelectElement ? select.value : "default";
-      if (!key) return;
-      visibility_overrides[key] = value === "default" ? null : value === "show";
+      if (!key || !surface) return;
+      if (!visibility_overrides[key] || typeof visibility_overrides[key] !== "object") {
+        visibility_overrides[key] = {};
+      }
+      visibility_overrides[key][surface] = value === "default" ? null : value === "show";
     });
 
     setStatus("Saving badge governance...");
@@ -3292,6 +3410,20 @@ function normalizeUser(raw = {}) {
     el.badgeGovernancePanel?.addEventListener("click", (event) => {
       const target = getEventTargetElement(event);
       if (!target) return;
+      if (target.id === "accounts-badge-governance-edit") {
+        event.preventDefault();
+        state.badgeGovernanceEditing = true;
+        renderSystemBadgeGovernancePanel();
+        setBadgeGovernanceStatus("Edit mode");
+        return;
+      }
+      if (target.id === "accounts-badge-governance-cancel") {
+        event.preventDefault();
+        state.badgeGovernanceEditing = false;
+        renderSystemBadgeGovernancePanel();
+        setBadgeGovernanceStatus("Live runtime data");
+        return;
+      }
       if (target.id === "accounts-badge-governance-save") {
         event.preventDefault();
         void saveSystemBadgeGovernance().catch((err) => {
