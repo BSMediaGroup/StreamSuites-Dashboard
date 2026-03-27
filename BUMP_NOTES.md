@@ -4,6 +4,30 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Admin Direct-Load Routing Parity Realignment - 2026-03-28
+
+### Technical Notes
+
+- The direct-load failure was traced to the repo-root Cloudflare Pages rewrite model, not the client route components: wildcard admin deep-link rules such as `/users/*`, `/profiles/*`, `/integrations/*`, plus the broad root catch-all, were still rewriting into `/docs/index.html`, which Cloudflare/Wrangler classifies as loop-prone and ignores. That left nested admin routes to fall through to `404.html` unless the Pages Function rescue path happened to recover them.
+- The dashboard has been realigned to the same single-root SPA routing pattern used by the working Creator/Public surfaces. Repo-root `_redirects` now resolves known admin routes directly to `/index.html`, the repo root now carries the real admin shell (`index.html`) and recovery document (`404.html`), and `functions/[[path]].js` now prefers the root shell before the legacy `docs/` shell.
+- The docs-root compatibility manifest was tightened to explicit known-route rewrites only by removing the broad `/* -> /index.html` catch-all, so invalid paths can still produce a real 404 while valid admin route families continue to hydrate through the SPA shell.
+
+### Human-Readable Notes
+
+- Refreshing or pasting real admin deep links no longer depends on the broken `/docs/index.html` compatibility hop that was causing nested routes to miss the SPA and land on the 404 page first.
+- The admin dashboard now follows the same root-routing model as the working Creator/Public dashboards while still keeping the existing `docs/` asset/export layout behind the scenes.
+- Invalid routes can still fail as 404s, but valid admin routes now have a proper root-shell entry path instead of collapsing into the wrong error surface.
+
+### Files / Areas Touched
+
+- `index.html`
+- `404.html`
+- `_redirects`
+- `docs/_redirects`
+- `functions/[[path]].js`
+- `README.md`
+- `BUMP_NOTES.md`
+
 ## Admin Shared Button Contrast + Icon Glyph Rendering - 2026-03-28
 
 ### Technical Notes

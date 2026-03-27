@@ -6,7 +6,7 @@ Admin-facing StreamSuites surface deployed to Cloudflare Pages at `https://admin
 
 - README state prepared for `v0.4.2-alpha`.
 - The active admin web surface is Cloudflare Pages hosted.
-- The static app source still lives under `docs/`, with repo-root compatibility files forwarding root-published Pages projects into the same app.
+- The repo-root admin shell now acts as the canonical Pages entry point, matching the working Creator/Public single-root routing model, while shared assets and published exports still live under `docs/`.
 - This repo consumes runtime exports for visibility and uses Auth API/runtime endpoints for privileged operations; it does not own runtime execution.
 
 ## Scope & Authority
@@ -43,7 +43,7 @@ flowchart TD
 ## Current Admin Surface Model
 
 - Clean path-based admin routes are the primary navigation model, replacing older hash-fragment and partial-only dependence for normal use.
-- Root and `docs/` rewrite manifests preserve deep links for routes such as `/overview`, `/accounts`, `/profiles`, `/analytics`, `/alerts`, `/notifications`, `/settings`, `/creator-stats`, `/integrations/...`, and other admin views.
+- Root and `docs/` rewrite manifests preserve deep links for routes such as `/overview`, `/accounts`, `/profiles`, `/analytics`, `/alerts`, `/notifications`, `/settings`, `/creator-stats`, `/integrations/...`, and other admin views, but the repo root is now the authoritative shell so deep links do not depend on a `/docs/index.html` compatibility hop.
 - Creator integrations now have a dedicated admin route at `/profiles/integrations`, backed by runtime/Auth-admin inspection endpoints for creator-capable posture, platform readiness, trigger foundation, and bot deploy eligibility.
 - Admin account investigation now also supports a dedicated `user_code` route at `/users/{user_code}` for exhaustive single-account inspection across identity, auth posture, creator readiness, integrations, and trigger footing.
 - Admin account inspection now exposes authoritative public-profile state, including canonical slug, creator-capable vs viewer-only posture, StreamSuites and FindMeHere visibility or eligibility, slug aliases, canonical URLs, and reserved media fields including background image URL.
@@ -54,9 +54,9 @@ flowchart TD
 
 ## Hosting and Routing
 
-- `_redirects` provides repo-root Cloudflare Pages compatibility and forwards routed assets and views into `docs/`.
-- `docs/_redirects` defines the admin clean-route rewrites used by the static app itself.
-- `functions/[[path]].js` adds a Cloudflare Pages runtime fallback so known admin SPA routes serve the shell with `200` even when static rewrites are bypassed and a literal 404 would otherwise win.
+- `_redirects` now mirrors the Creator/Public single-root SPA rewrite model: known admin routes resolve to the repo-root `index.html`, while shared asset directories still map into `docs/`.
+- `docs/_redirects` remains as the docs-root compatibility manifest and now only rewrites known admin routes so invalid paths still fall through to `404.html`.
+- `functions/[[path]].js` keeps a Pages runtime fallback for known admin SPA routes and now prefers the repo-root shell before the legacy `docs/` shell.
 - Runtime export metadata is consumed from local published copies under `docs/runtime/exports/`.
 
 ## Cross-Repo Orientation
@@ -76,6 +76,7 @@ StreamSuites-Dashboard/
 ├── .vscode/
 │   ├── launch.json
 │   └── settings.json
+├── 404.html
 ├── _redirects
 ├── BUMP_NOTES.md
 ├── DASHBOARD_AUDIT_REPORT.md
@@ -91,6 +92,7 @@ StreamSuites-Dashboard/
 │   └── roadmap.md
 ├── docs/
 │   ├── _redirects
+│   ├── 404.html
 │   ├── index.html
 │   ├── auth/
 │   │   ├── index.html

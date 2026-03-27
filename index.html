@@ -1,23 +1,973 @@
 <!DOCTYPE html>
-<html lang="en">
+<!-- ===================================================================== -->
+<!-- StreamSuites™ Dashboard (Static Admin UI)                             -->
+<!-- Owner: Daniel Clancy                                                  -->
+<!-- Copyright: © 2026 Brainstream Media Group                             -->
+<!-- ===================================================================== -->
+<html lang="en" class="admin-gate-pending">
 <head>
-  <meta charset="utf-8" />
-  <title>StreamSuites Admin Dashboard</title>
-  <meta name="robots" content="noindex, nofollow" />
-  <link rel="canonical" href="/docs/index.html" />
+  <script>
+    window.ADMIN_BASE_PATH = "";
+  </script>
+  <script src="/js/admin-routes.js"></script>
   <script>
     (function () {
-      const target = new URL("/docs/index.html", window.location.origin);
-      target.search = window.location.search || "";
-      target.hash = window.location.hash || "";
-      window.location.replace(target.toString());
+      const key = "ss_admin_sidebar_collapsed";
+      const mobileBreakpoint = 980;
+      let collapsed = false;
+
+      try {
+        const stored = window.localStorage.getItem(key);
+        if (stored === "1") {
+          collapsed = true;
+        } else if (stored === "0") {
+          collapsed = false;
+        } else {
+          collapsed = window.innerWidth <= mobileBreakpoint;
+        }
+      } catch (err) {
+        collapsed = window.innerWidth <= mobileBreakpoint;
+      }
+
+      if (collapsed) {
+        document.documentElement.classList.add("ss-sidebar-collapsed");
+      }
     })();
   </script>
+  <meta charset="UTF-8" />
+  <title>StreamSuites™ Admin Dashboard</title>
+
+  <!-- Viewport -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Basic metadata -->
+  <meta name="description" content="Administer StreamSuites creators, chat triggers, jobs, and platform settings from the StreamSuites admin dashboard." />
+  <meta name="robots" content="noindex, nofollow" />
+  <!-- ======================================================
+       Discord OAuth Configuration (AUTHORITATIVE)
+       ====================================================== -->
+  <meta name="discord-client-id" content="1449280789010321420" />
+  <meta name="discord-redirect-uri" content="https://admin.streamsuites.app/" />
+  <meta name="discord-scopes" content="identify guilds" />
+  <meta name="streamsuites-auth-base" content="https://api.streamsuites.app" />
+  <meta name="streamsuites-auth-session" content="https://api.streamsuites.app/auth/session" />
+  <meta name="streamsuites-auth-logout" content="https://api.streamsuites.app/auth/logout" />
+  <meta name="streamsuites-auth-login" content="https://api.streamsuites.app/auth/login?surface=admin&amp;redirect=https://admin.streamsuites.app/index.html" />
+  <meta name="streamsuites-auth-google" content="https://api.streamsuites.app/auth/login/google?surface=admin&amp;return_to=https://admin.streamsuites.app/auth/success.html" />
+  <meta name="streamsuites-auth-github" content="https://api.streamsuites.app/auth/login/github?surface=admin&amp;return_to=https://admin.streamsuites.app/auth/success.html" />
+  <meta name="streamsuites-auth-discord" content="https://api.streamsuites.app/auth/login/discord?surface=admin&amp;return_to=https://admin.streamsuites.app/auth/success.html" />
+  <meta name="streamsuites-auth-x" content="https://api.streamsuites.app/auth/x/start?surface=admin&amp;return_to=https://admin.streamsuites.app/auth/success.html" />
+  <meta name="streamsuites-auth-twitch" content="https://api.streamsuites.app/oauth/twitch/start" />
+  <meta name="streamsuites-auth-magic-link" content="https://api.streamsuites.app/auth/magic-link" />
+  <meta name="streamsuites-livechat-url" content="" />
+
+  <!-- ========================================================= -->
+  <!-- Social / Share metadata (ABSOLUTE URLS — REQUIRED) -->
+  <!-- ========================================================= -->
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="StreamSuites™ Admin Dashboard" />
+  <meta property="og:description" content="Administer StreamSuites creators, chat triggers, jobs, and platform settings from the StreamSuites admin dashboard." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://admin.streamsuites.app/" />
+  <meta property="og:image" content="https://admin.streamsuites.app/assets/logos/seodash.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="StreamSuites™ Admin Dashboard" />
+  <meta name="twitter:description" content="Administer StreamSuites creators, chat triggers, jobs, and platform settings from the StreamSuites admin dashboard." />
+  <meta name="twitter:image:src" content="https://admin.streamsuites.app/assets/logos/seodash.jpg" />
+
+  <!-- ============================= -->
+  <!-- Favicon -->
+  <!-- ============================= -->
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+
+  <!-- ============================= -->
+  <!-- Fonts (Authoritative) -->
+  <!-- ============================= -->
+  <style>
+    @font-face {
+      font-family: "RechargeBd";
+      src: url("https://raw.githubusercontent.com/BSMediaGroup/Resources/master/FONTS/Recharge%20Bd.otf")
+           format("opentype");
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "SuiGenerisRg";
+      src: url("https://raw.githubusercontent.com/BSMediaGroup/Resources/master/FONTS/Sui%20Generis%20Rg.otf")
+           format("opentype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* ---------------------------------------------------------- */
+    /* Header alignment + dashboard badge (PHASE 0 SAFE) */
+    /* ---------------------------------------------------------- */
+    #app-header .header-left,
+    .ss-sidebar-brand .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #app-header .header-left img,
+    .ss-sidebar-brand .header-left img {
+      height: 44px;
+      width: auto;
+      display: block;
+    }
+
+    #app-header .header-left a,
+    .ss-sidebar-brand .header-left a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    #app-header .header-left a:hover,
+    .ss-sidebar-brand .header-left a:hover {
+      text-decoration: none;
+    }
+
+    .ss-sidebar-brand .header-left a {
+      align-items: center;
+    }
+
+    .ss-sidebar-brand .ss-sidebar-brand-text {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .ss-sidebar-brand .ss-sidebar-brand-text .app-title {
+      margin: 0;
+      line-height: 1;
+    }
+
+    html.ss-sidebar-collapsed .ss-sidebar-brand .ss-sidebar-brand-text,
+    body.ss-sidebar-collapsed .ss-sidebar-brand .ss-sidebar-brand-text {
+      display: none;
+    }
+
+    .dashboard-badge {
+      margin-left: 6px;
+      padding: 2px 4px;
+      font-size: 0.55rem;
+      letter-spacing: 0.08em;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ddd;
+      font-family: "SuiGenerisRg", system-ui, sans-serif;
+      text-transform: uppercase;
+    }
+
+    .ss-sidebar-brand .ss-sidebar-brand-text .dashboard-badge {
+      margin: 0;
+      margin-left: 0;
+      align-self: flex-start;
+    }
+
+    /* ---------------------------------------------------------- */
+    /* Footer link hover behavior (SAFE, SCOPED) */
+    /* ---------------------------------------------------------- */
+    #app-footer a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    #app-footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* ---------------------------------------------------------- */
+    /* Footer layout — HARD LEFT / TRUE CENTER / HARD RIGHT */
+    /* ---------------------------------------------------------- */
+    #app-footer {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) auto !important;
+      align-items: center !important;
+      column-gap: 18px !important;
+      justify-content: stretch !important;
+      overflow: visible !important;
+    }
+
+    #app-footer .footer-left,
+    #app-footer .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      white-space: nowrap;
+    }
+
+    #app-footer .footer-left {
+      justify-self: start;
+      overflow: hidden;
+    }
+
+    #app-footer .footer-left .footer-version,
+    #app-footer .footer-left #footer-copyright {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #app-footer .footer-right {
+      justify-self: end;
+      justify-content: flex-end;
+      text-align: right;
+      gap: 6px;
+      overflow: visible;
+    }
+
+    #app-footer .footer-status-slot {
+      display: inline-flex;
+      align-items: center;
+      position: relative;
+      overflow: visible;
+      min-width: 0;
+      margin-right: 2px;
+    }
+
+    #app-footer #app-status.footer-active-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-right: 2px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(126, 226, 150, 0.38);
+      background: rgba(18, 26, 34, 0.44);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      font-size: 8px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+    }
+
+    #app-footer #app-status.footer-active-pill::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: currentColor;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.3);
+      flex-shrink: 0;
+    }
+
+    #app-footer #app-status.footer-active-pill.active {
+      color: #80e89b;
+      border-color: rgba(126, 226, 150, 0.5);
+      line-height: 1.25;
+    }
+
+    #app-footer #app-status.footer-active-pill.idle {
+      color: rgba(189, 198, 210, 0.88);
+      border-color: rgba(189, 198, 210, 0.32);
+    }
+  </style>
+
+  <!-- ============================= -->
+  <!-- Core Styles -->
+  <!-- ============================= -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
+  />
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/theme-dark.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+  <link rel="stylesheet" href="/css/updates.css" />
+  <link rel="stylesheet" href="/css/status-widget.css" />
+  <link rel="stylesheet" href="/assets/css/ss-profile-hovercard.css" />
+  <script defer src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 </head>
+
 <body>
-  <p>Redirecting to the StreamSuites admin dashboard...</p>
-  <noscript>
-    <p><a href="/docs/index.html">Open the dashboard</a></p>
-  </noscript>
+
+  <div id="admin-auth-overlay" class="admin-auth-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="admin-auth-title">
+    <div class="admin-auth-card glass-card">
+      <button id="admin-auth-close" class="admin-auth-close" aria-label="Close admin login">×</button>
+      <h2 id="admin-auth-title" class="admin-auth-title">
+        <img
+          src="/assets/logos/logocircle.png"
+          alt="StreamSuites"
+          class="admin-auth-title-logo"
+        />
+        <span>Sign up to StreamSuites™</span>
+      </h2>
+      <p class="muted">
+        StreamSuites Admin access is restricted to approved administrators.
+      </p>
+      <div class="admin-auth-providers">
+        <button class="ss-btn ss-btn-primary" data-admin-auth-provider="google">
+          <img
+            class="admin-auth-provider-icon"
+            src="/assets/icons/google.svg"
+            alt=""
+            aria-hidden="true"
+          />
+          <span>Continue with Google</span>
+        </button>
+        <button class="ss-btn ss-btn-secondary" data-admin-auth-provider="github">
+          <img
+            class="admin-auth-provider-icon"
+            src="/assets/icons/github.svg"
+            alt=""
+            aria-hidden="true"
+          />
+          <span>Continue with GitHub</span>
+        </button>
+        <button class="ss-btn ss-btn-secondary" data-admin-auth-provider="discord">
+          <img
+            class="admin-auth-provider-icon"
+            src="/assets/icons/discord.svg"
+            alt=""
+            aria-hidden="true"
+          />
+          <span>Continue with Discord</span>
+        </button>
+        <button class="ss-btn ss-btn-secondary" data-admin-auth-provider="x">
+          <img
+            class="admin-auth-provider-icon"
+            src="/assets/icons/x.svg"
+            alt=""
+            aria-hidden="true"
+          />
+          <span>Continue with X</span>
+        </button>
+        <button class="ss-btn ss-btn-secondary" data-admin-auth-provider="twitch">
+          <img
+            class="admin-auth-provider-icon"
+            src="/assets/icons/twitch.svg"
+            alt=""
+            aria-hidden="true"
+          />
+          <span>Continue with Twitch</span>
+        </button>
+      </div>
+      <div class="admin-auth-divider">
+        <span>Emergency Admin Access</span>
+      </div>
+      <form id="admin-auth-email-form" class="admin-auth-email">
+        <label for="admin-auth-email">Admin Email</label>
+        <div class="admin-auth-email-row">
+          <input
+            id="admin-auth-email"
+            name="email"
+            type="email"
+            placeholder="admin@streamsuites.app"
+            autocomplete="email"
+            required
+          />
+          <input
+            id="admin-auth-password"
+            name="password"
+            type="password"
+            placeholder="Password"
+            autocomplete="current-password"
+            required
+          />
+          <button id="admin-auth-email-submit" class="ss-btn ss-btn-secondary" type="submit">
+            Sign in
+          </button>
+        </div>
+        <p class="muted admin-auth-note">
+          This manual sign-in is an emergency fallback. If the auth API is offline, it will remain
+          read-only.
+        </p>
+      </form>
+      <div id="admin-auth-status" class="admin-auth-status" role="status" aria-live="polite"></div>
+      <div class="admin-auth-toggle-row">
+        <span class="muted">Already have an account?</span>
+        <a class="ss-btn ss-btn-primary admin-auth-toggle" href="/auth/login.html">Log in</a>
+      </div>
+    </div>
+  </div>
+
+      <div id="admin-auth-blocked" class="admin-auth-blocked hidden">
+    <div class="admin-auth-blocked-card glass-card">
+      <h2 id="admin-auth-blocked-title">Admin access required</h2>
+      <p id="admin-auth-blocked-message" class="muted"></p>
+      <div id="admin-auth-blocked-actions" class="admin-auth-blocked-actions">
+        <button id="admin-auth-open" class="ss-btn ss-btn-primary">Login as Administrator</button>
+        <button id="admin-auth-blocked-logout" class="ss-btn ss-btn-secondary hidden">Logout</button>
+        <a
+          id="admin-auth-creator"
+          class="ss-btn ss-btn-secondary hidden"
+          href="https://creator.streamsuites.app"
+        >
+          Go to Creator Dashboard
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div id="app">
+
+    <aside id="app-nav" class="ss-sidebar">
+      <div class="ss-sidebar-brand">
+        <div class="header-left">
+          <a href="https://admin.streamsuites.app" class="ss-sidebar-brand-link">
+            <img src="/assets/logos/adminredshield.webp" alt="StreamSuites Logo" />
+            <div class="ss-sidebar-brand-text">
+              <h1 class="app-title">StreamSuites™</h1>
+              <span class="dashboard-badge" id="dashboard-mode">
+                ADMIN DASHBOARD
+              </span>
+            </div>
+          </a>
+        </div>
+      </div>
+      <div class="nav-shell">
+        <ul id="app-nav-list">
+          <li class="nav-section nav-group-label" aria-hidden="true">Core</li>
+          <li data-view="overview">Overview</li>
+          <li data-view="bots">Bots / Runtime Status</li>
+          <li data-view="approvals">Approvals</li>
+          <li data-view="accounts">Accounts</li>
+          <li data-view="creators">Creators</li>
+          <li data-view="creator-integrations">Creator Integrations</li>
+          <li data-view="creator-stats">Creator Stats</li>
+
+          <li class="nav-section nav-group-label" aria-hidden="true">Operations</li>
+          <li data-view="audit">Audit</li>
+          <li data-view="alerts">Alerts</li>
+          <li data-view="analytics">Analytics</li>
+          <li data-view="ratelimits">Rate Limits</li>
+          <li data-view="api-usage">API Usage</li>
+          <li data-view="data-signals">Data &amp; Signals</li>
+          <li data-view="notifications">Inbox</li>
+
+          <li class="nav-section nav-group-label" aria-hidden="true">Automation / Jobs</li>
+          <li data-view="jobs">Jobs</li>
+          <li
+            data-view="chat-replay"
+            class="nav-disabled"
+            aria-disabled="true"
+            title="Unified replay engine not yet active"
+          >
+            Chat Replay
+          </li>
+
+          <li class="nav-section nav-group-label" aria-hidden="true">Platforms &amp; Rules</li>
+          <li data-view="rumble">Rumble</li>
+          <li data-view="youtube">YouTube</li>
+          <li data-view="twitch">Twitch</li>
+          <li data-view="kick">Kick</li>
+          <li data-view="pilled">Pilled</li>
+          <li data-view="twitter">Twitter</li>
+          <li data-view="discord" data-discord-nav data-discord-locked>Discord</li>
+          <li data-view="triggers">Chat Triggers</li>
+          <li data-view="tiers">Tiers</li>
+
+          <li class="nav-section nav-group-label" aria-hidden="true">Media Surfaces</li>
+          <li data-view="clips">Clips</li>
+          <li data-view="polls">Polls</li>
+          <li data-view="tallies">Tallies</li>
+          <li data-view="scoreboards">Scoreboards</li>
+
+          <li class="nav-section nav-group-label" aria-hidden="true">System</li>
+          <li data-view="settings">Settings</li>
+          <li data-view="updates">Updates</li>
+          <li data-view="design">Design</li>
+        </ul>
+        <div class="nav-overflow" id="app-nav-overflow" aria-hidden="true">
+          <button type="button" class="nav-more-toggle" id="app-nav-overflow-toggle" aria-expanded="false">
+            &rsaquo;
+          </button>
+          <ul class="nav-overflow-menu" id="app-nav-overflow-menu"></ul>
+        </div>
+      </div>
+    </aside>
+
+    <div class="ss-main">
+      <header id="app-header" class="ss-topbar">
+        <div class="ss-topbar-left">
+          <button
+            type="button"
+            id="sidebar-collapse-toggle"
+            class="sidebar-collapse-toggle"
+            aria-controls="app-nav"
+            aria-expanded="true"
+            aria-label="Collapse sidebar"
+            title="Collapse sidebar"
+          >
+            <span class="sidebar-collapse-toggle-icon" aria-hidden="true"></span>
+            <span class="sr-only">Toggle sidebar</span>
+          </button>
+          <button
+            type="button"
+            id="accounts-tabs-toggle"
+            class="sidebar-collapse-toggle accounts-tabs-toggle hidden"
+            aria-controls="accounts-shell-tabs"
+            aria-expanded="true"
+            aria-label="Collapse accounts section tabs"
+            title="Collapse accounts section tabs"
+          >
+            <span class="accounts-tabs-toggle-icon" aria-hidden="true"></span>
+            <span class="sr-only">Toggle accounts section tabs</span>
+          </button>
+          <span class="ss-topbar-title">Admin Control</span>
+        </div>
+        <div class="ss-topbar-right">
+          <div id="topbar-notifications" class="ss-notifications" data-notifications-widget>
+            <button
+              type="button"
+              id="notifications-toggle"
+              class="ss-notifications-toggle"
+              aria-label="Open notifications"
+              aria-controls="notifications-dropdown"
+              aria-expanded="false"
+            >
+              <span class="ss-notifications-icon" aria-hidden="true"></span>
+              <span id="notifications-badge" class="ss-notifications-badge hidden" aria-live="polite"></span>
+            </button>
+            <div id="notifications-dropdown" class="ss-notifications-dropdown hidden" role="menu">
+              <div class="ss-notifications-dropdown-header">
+                <h2 class="ss-notifications-title">Notifications</h2>
+                <button
+                  type="button"
+                  id="notifications-mark-all"
+                  class="ss-notifications-action"
+                >
+                  Mark all read
+                </button>
+              </div>
+              <div id="notifications-list" class="ss-notifications-list">
+                <div class="ss-notifications-empty">No notifications available.</div>
+              </div>
+              <a id="notifications-view-all" class="ss-notifications-footer" href="/notifications">
+                View all notifications
+              </a>
+            </div>
+          </div>
+          <div class="header-right">
+            <div class="header-row header-auth-row">
+              <div id="admin-auth-indicator" class="streamsuites-auth hidden ss-no-profile-hover" data-ss-profile-hover="off">
+                <div class="streamsuites-auth-toggle">
+                  <div class="streamsuites-auth-avatar">
+                    <img
+                      id="admin-auth-avatar"
+                      src="/assets/icons/ui/profile.svg"
+                      data-fallback="/assets/icons/ui/profile.svg"
+                      alt="StreamSuites account avatar"
+                    />
+                  </div>
+                  <div class="streamsuites-auth-meta">
+                    <span id="admin-auth-name" class="streamsuites-auth-name">
+                      <span class="streamsuites-auth-name-text">Administrator</span>
+                      <span class="ss-role-badges" data-ss-badge-kind="role">
+                        <img
+                          id="admin-auth-tier-badge"
+                          class="streamsuites-auth-tier-badge ss-tier-badge"
+                          data-ss-role-badge="core"
+                          src="/assets/icons/tierbadge-core.svg"
+                          alt=""
+                          aria-hidden="true"
+                        />
+                        <img
+                          id="admin-auth-admin-badge"
+                          class="streamsuites-auth-tier-badge streamsuites-auth-admin-badge ss-role-badge"
+                          data-ss-role-badge="admin"
+                          src="/assets/icons/tierbadge-admin.svg"
+                          alt="Admin"
+                        />
+                      </span>
+                    </span>
+                    <span id="admin-auth-identity" class="streamsuites-auth-identity">admin@streamsuites.app</span>
+                  </div>
+                  <span id="admin-auth-tier" class="streamsuites-auth-tier">CORE</span>
+                  <button
+                    type="button"
+                    id="admin-user-menu-toggle"
+                    class="streamsuites-auth-caret-toggle"
+                    aria-haspopup="menu"
+                    aria-controls="admin-user-menu"
+                    aria-expanded="false"
+                    aria-label="Toggle user menu"
+                  >
+                    <span class="streamsuites-auth-caret" aria-hidden="true"></span>
+                  </button>
+                </div>
+                <div
+                  id="admin-user-menu"
+                  class="ss-user-menu hidden"
+                  role="menu"
+                  aria-label="User menu"
+                >
+                  <button type="button" class="ss-user-menu-item" data-admin-user-action="account" role="menuitem">
+                    <span class="ss-user-menu-item-icon" data-icon="profile" aria-hidden="true"></span>
+                    <span>Account</span>
+                  </button>
+                  <button type="button" class="ss-user-menu-item" data-admin-user-action="settings" role="menuitem">
+                    <span class="ss-user-menu-item-icon" data-icon="cog" aria-hidden="true"></span>
+                    <span>Settings</span>
+                  </button>
+                  <div class="ss-user-menu-divider" role="separator" aria-hidden="true"></div>
+                  <button
+                    type="button"
+                    class="ss-user-menu-item is-disabled"
+                    data-admin-user-action="theme"
+                    role="menuitem"
+                    aria-disabled="true"
+                    disabled
+                  >
+                    <span class="ss-user-menu-item-icon" data-icon="switch" aria-hidden="true"></span>
+                    <span>Theme (soon)</span>
+                  </button>
+                  <button id="admin-auth-logout" type="button" class="ss-user-menu-item" data-admin-user-action="logout" role="menuitem">
+                    <span class="ss-user-menu-item-icon" data-icon="portal" aria-hidden="true"></span>
+                    <span>Logout</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+      <div
+        id="accounts-shell-tabs"
+        class="accounts-shell-tabs hidden"
+        hidden
+        aria-hidden="true"
+      >
+        <button
+          type="button"
+          id="accounts-shell-tabs-prev"
+          class="accounts-shell-tab-scroll hidden"
+          aria-label="Scroll accounts tabs left"
+          title="Scroll accounts tabs left"
+        >
+          <span aria-hidden="true">‹</span>
+        </button>
+        <div id="accounts-shell-tabs-viewport" class="accounts-shell-tabs-viewport">
+          <div id="accounts-shell-tabs-inner" class="accounts-shell-tabs-inner">
+            <a
+              class="accounts-shell-tab"
+              href="#accounts-table-section"
+              data-accounts-shell-anchor="accounts-table-section"
+            >
+              Accounts
+            </a>
+            <a
+              class="accounts-shell-tab"
+              href="#badge-governance-section"
+              data-accounts-shell-anchor="badge-governance-section"
+            >
+              Badge Governance
+            </a>
+            <a
+              class="accounts-shell-tab"
+              href="#billing-codes-section"
+              data-accounts-shell-anchor="billing-codes-section"
+            >
+              Billing Codes
+            </a>
+          </div>
+        </div>
+        <button
+          type="button"
+          id="accounts-shell-tabs-next"
+          class="accounts-shell-tab-scroll hidden"
+          aria-label="Scroll accounts tabs right"
+          title="Scroll accounts tabs right"
+        >
+          <span aria-hidden="true">›</span>
+        </button>
+      </div>
+      <div
+        id="global-loader"
+        class="ss-global-loader"
+        role="status"
+        aria-live="polite"
+        aria-hidden="true"
+      >
+        <div class="ss-global-loader-track" aria-hidden="true">
+          <span class="ss-global-loader-bar"></span>
+        </div>
+        <span id="global-loader-text" class="ss-global-loader-text">Loading...</span>
+      </div>
+
+      <main id="app-main">
+        <div
+          id="restart-required-banner"
+          class="ss-restart-banner hidden"
+          role="status"
+          aria-live="polite"
+        >
+          <div class="ss-restart-banner-text">
+            Pending changes detected — restart required to apply
+          </div>
+          <div class="ss-restart-banner-subtext">
+            Changes will take effect when StreamSuites is restarted.
+          </div>
+        </div>
+        <div id="view-container">
+          <noscript>
+            <p style="padding:20px;color:#f66;">
+              This dashboard requires JavaScript to run.
+            </p>
+          </noscript>
+        </div>
+      </main>
+
+    </div>
+
+    <footer id="app-footer" data-ss-footer-edge="true">
+      <div class="footer-left" data-footer-meta="true">
+        <span id="footer-version" class="footer-version">Version unavailable</span>
+        <span class="footer-sep">•</span>
+        <a id="footer-copyright" href="https://brainstream.media" target="_blank" rel="noopener noreferrer">
+          © 2026 Brainstream Media Group
+        </a>
+      </div>
+
+      <div class="footer-right">
+        <span id="app-status" class="status-indicator idle footer-active-pill">
+          idle
+        </span>
+        <span class="footer-status-slot" data-status-slot data-status-slot-mode="inline"></span>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Core Scripts (Loaded after Admin Gate) -->
+  <script src="/js/admin-gate.js"></script>
+  <script>
+    window.StreamSuitesAdminGate?.bootstrap({
+      scripts: [
+        "js/admin-routes.js",
+        "js/utils/global-loader.js",
+        "assets/js/ss-profile-hovercard.js",
+        "js/app.js",
+        "js/view-loader.js",
+        "js/utils/versioning.js",
+        "js/utils/version-stamp.js",
+        "js/utils/standalone-guard.js",
+        "js/utils/about-data.js",
+        "js/auth.js",
+        "js/discord-guild.js",
+        "js/utils/search-pagination.js",
+        "js/utils/country-flags.js",
+        "js/utils/table-resize.js",
+        "js/api.js",
+        "js/toast.js",
+        "js/state.js",
+        "js/notifications.js",
+        "js/telemetry.js",
+        "js/platforms.js",
+        "js/creators.js",
+        "js/creator-integrations.js",
+        "js/user-detail.js",
+        "js/utils/stats-formatting.js",
+        "js/creator-stats.js",
+        "js/settings.js",
+        "js/jobs.js",
+          "js/clips.js",
+          "js/tiers.js",
+        "js/accounts.js",
+        "js/approvals.js",
+        "js/audit.js",
+        "js/api-usage.js",
+        "js/analytics-alerting.js",
+        "js/alerts.js",
+        "js/analytics.js",
+        "js/data-signals.js",
+        "js/bots.js",
+        "js/overview.js",
+        "js/updates.js",
+        "js/platforms/youtube.js",
+        "js/platforms/twitch.js",
+        "js/platforms/discord.js",
+        "js/platforms/kick.js",
+        "js/platforms/pilled.js"
+      ]
+    });
+  </script>
+
+  <!-- Minimal Status Wiring -->
+  <script>
+    (function () {
+      function initStatus() {
+        const statusEl = document.getElementById("app-status");
+        if (!statusEl) return;
+
+        function setActive() {
+          statusEl.textContent = "active";
+          statusEl.classList.remove("idle");
+          statusEl.classList.add("active");
+        }
+
+        window.addEventListener("streamsuites:routechange", setActive);
+        document.addEventListener("click", (e) => {
+          if (e.target.closest("[data-view]")) {
+            setActive();
+          }
+        });
+
+        setActive();
+      }
+
+      if (window.StreamSuitesDashboardGuard?.shouldBlock) {
+        window.addEventListener(
+          "streamsuites:admin-auth",
+          (event) => {
+            if (event?.detail?.authorized) {
+              initStatus();
+            }
+          },
+          { once: true }
+        );
+        return;
+      }
+
+      initStatus();
+    })();
+  </script>
+  <script>
+    (function () {
+      function initLiveChat() {
+        const launch = document.getElementById("livechat-launch");
+        if (!launch) return;
+
+        const params = new URLSearchParams(window.location.search);
+        const paramUrl = params.get("livechatUrl");
+        const metaUrl = document
+          .querySelector('meta[name="streamsuites-livechat-url"]')
+          ?.getAttribute("content");
+
+        const configured =
+          (typeof paramUrl === "string" && paramUrl.trim()) ||
+          (typeof metaUrl === "string" && metaUrl.trim());
+
+        if (!configured) {
+          launch.classList.add("disabled");
+          launch.setAttribute("aria-disabled", "true");
+          launch.setAttribute(
+            "title",
+            "Set ?livechatUrl= or meta streamsuites-livechat-url to enable"
+          );
+          launch.setAttribute("href", "#");
+          return;
+        }
+
+        let resolved = configured;
+        try {
+          resolved = new URL(configured, document.baseURI).toString();
+        } catch (err) {
+          console.warn("[Dashboard] LiveChat URL is not a valid URL", err);
+        }
+
+        launch.setAttribute("href", resolved);
+        launch.classList.remove("disabled");
+        launch.removeAttribute("aria-disabled");
+        launch.setAttribute("title", `Open LiveChat (${resolved})`);
+      }
+
+      if (window.StreamSuitesDashboardGuard?.shouldBlock) {
+        window.addEventListener(
+          "streamsuites:admin-auth",
+          (event) => {
+            if (event?.detail?.authorized) {
+              initLiveChat();
+            }
+          },
+          { once: true }
+        );
+        return;
+      }
+
+      initLiveChat();
+    })();
+  </script>
+  <script>
+    (function () {
+      const header = document.getElementById("app-header");
+      const scrollEl = document.getElementById("app-main");
+
+      if (!header || !scrollEl) return;
+
+      let lastScrollTop = 0;
+      let ticking = false;
+      let isHidden = false;
+
+      function setHeaderHeight() {
+        const height = header.offsetHeight || 0;
+        document.documentElement.style.setProperty("--app-header-height", `${height}px`);
+      }
+
+      function setHidden(nextHidden) {
+        if (isHidden === nextHidden) return;
+        isHidden = nextHidden;
+        document.body.classList.toggle("header-hidden", nextHidden);
+      }
+
+      function onScroll() {
+        const current = scrollEl.scrollTop || 0;
+        const maxScroll = Math.max(0, scrollEl.scrollHeight - scrollEl.clientHeight);
+        const nearBottom = current >= maxScroll - 2;
+        const delta = current - lastScrollTop;
+
+        if (current <= 0) {
+          setHidden(false);
+          lastScrollTop = 0;
+          return;
+        }
+
+        if (nearBottom) {
+          lastScrollTop = current;
+          return;
+        }
+
+        if (Math.abs(delta) < 8) {
+          return;
+        }
+
+        if (delta > 0) {
+          setHidden(true);
+        } else {
+          setHidden(false);
+        }
+
+        lastScrollTop = current;
+      }
+
+      function requestTick() {
+        if (ticking) return;
+        ticking = true;
+        window.requestAnimationFrame(() => {
+          onScroll();
+          ticking = false;
+        });
+      }
+
+      setHeaderHeight();
+      lastScrollTop = scrollEl.scrollTop || 0;
+      scrollEl.addEventListener("scroll", requestTick, { passive: true });
+      window.addEventListener("resize", setHeaderHeight, { passive: true });
+      window.addEventListener("load", setHeaderHeight, { once: true });
+
+      if (window.ResizeObserver) {
+        const observer = new ResizeObserver(() => setHeaderHeight());
+        observer.observe(header);
+      }
+    })();
+  </script>
+  <script src="/js/status-widget.js" defer></script>
 </body>
 </html>

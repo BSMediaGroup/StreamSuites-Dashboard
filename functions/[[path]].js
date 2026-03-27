@@ -1,4 +1,4 @@
-const SPA_SHELL_CANDIDATES = ["/docs/index.html", "/index.html"];
+const SPA_SHELL_CANDIDATES = ["/index.html", "/docs/index.html"];
 
 const EXACT_DASHBOARD_ROUTES = new Set([
   "/",
