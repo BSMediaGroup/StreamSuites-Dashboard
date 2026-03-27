@@ -3,14 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <title>StreamSuites Admin Dashboard</title>
-  <meta http-equiv="refresh" content="0; url=/docs/index.html" />
   <meta name="robots" content="noindex, nofollow" />
   <link rel="canonical" href="/docs/index.html" />
   <script>
-    window.location.replace("/docs/index.html");
+    (function () {
+      const target = new URL("/docs/index.html", window.location.origin);
+      target.search = window.location.search || "";
+      target.hash = window.location.hash || "";
+      window.location.replace(target.toString());
+    })();
   </script>
 </head>
 <body>
   <p>Redirecting to the StreamSuites admin dashboard...</p>
+  <noscript>
+    <p><a href="/docs/index.html">Open the dashboard</a></p>
+  </noscript>
 </body>
 </html>

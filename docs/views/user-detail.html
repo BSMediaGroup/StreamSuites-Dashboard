@@ -42,8 +42,8 @@
 
       <div class="creator-integrations-kpi-grid" id="user-detail-kpis"></div>
 
-      <div class="user-detail-grid">
-        <section class="ss-panel user-detail-card user-detail-card-span">
+      <div class="user-detail-layout">
+        <section class="ss-panel user-detail-card user-detail-card-full user-detail-card-profile">
           <header class="ss-panel-header">
             <div class="ss-panel-header-main">
               <h3>Public Profile &amp; Identity</h3>
@@ -53,39 +53,39 @@
           <div class="ss-panel-body" id="user-detail-profile"></div>
         </section>
 
-        <section class="ss-panel user-detail-card">
-          <header class="ss-panel-header">
-            <div class="ss-panel-header-main">
-              <h3>Identity & Account Posture</h3>
-              <p class="muted">Authoritative account payload and public-surface posture.</p>
-            </div>
-          </header>
-          <div class="ss-panel-body" id="user-detail-identity"></div>
-        </section>
+        <div class="user-detail-cluster-grid user-detail-cluster-grid-context">
+          <section class="ss-panel user-detail-card user-detail-card-context">
+            <header class="ss-panel-header">
+              <div class="ss-panel-header-main">
+                <h3>Identity & Account Posture</h3>
+                <p class="muted">Authoritative account payload and public-surface posture.</p>
+              </div>
+            </header>
+            <div class="ss-panel-body" id="user-detail-identity"></div>
+          </section>
 
-        <section class="ss-panel user-detail-card">
-          <header class="ss-panel-header">
-            <div class="ss-panel-header-main">
-              <h3>Auth Overview</h3>
-              <p class="muted">Provider linkage, verification, and safe account-state context.</p>
-            </div>
-          </header>
-          <div class="ss-panel-body" id="user-detail-auth"></div>
-        </section>
-      </div>
+          <section class="ss-panel user-detail-card user-detail-card-context">
+            <header class="ss-panel-header">
+              <div class="ss-panel-header-main">
+                <h3>Auth Overview</h3>
+                <p class="muted">Provider linkage, verification, and safe account-state context.</p>
+              </div>
+            </header>
+            <div class="ss-panel-body" id="user-detail-auth"></div>
+          </section>
 
-      <div class="user-detail-grid">
-        <section class="ss-panel user-detail-card">
-          <header class="ss-panel-header">
-            <div class="ss-panel-header-main">
-              <h3>Creator Posture</h3>
-              <p class="muted">Creator capability, public visibility, and deployment boundary posture.</p>
-            </div>
-          </header>
-          <div class="ss-panel-body" id="user-detail-creator-posture"></div>
-        </section>
+          <section class="ss-panel user-detail-card user-detail-card-context">
+            <header class="ss-panel-header">
+              <div class="ss-panel-header-main">
+                <h3>Creator Posture</h3>
+                <p class="muted">Creator capability, public visibility, and deployment boundary posture.</p>
+              </div>
+            </header>
+            <div class="ss-panel-body" id="user-detail-creator-posture"></div>
+          </section>
+        </div>
 
-        <section class="ss-panel user-detail-card">
+        <section class="ss-panel user-detail-card user-detail-card-full user-detail-card-billing">
           <header class="ss-panel-header">
             <div class="ss-panel-header-main">
               <h3>Billing &amp; Supporter</h3>
@@ -94,10 +94,8 @@
           </header>
           <div class="ss-panel-body" id="user-detail-billing"></div>
         </section>
-      </div>
 
-      <div class="user-detail-grid">
-        <section class="ss-panel user-detail-card">
+        <section class="ss-panel user-detail-card user-detail-card-full user-detail-card-management">
           <header class="ss-panel-header">
             <div class="ss-panel-header-main">
               <h3>Admin Control Surface</h3>
@@ -107,7 +105,7 @@
           <div class="ss-panel-body" id="user-detail-management"></div>
         </section>
 
-        <section class="ss-panel user-detail-card">
+        <section class="ss-panel user-detail-card user-detail-card-full user-detail-card-badges">
           <header class="ss-panel-header">
             <div class="ss-panel-header-main">
               <h3>Badge Governance</h3>
@@ -116,56 +114,56 @@
           </header>
           <div class="ss-panel-body" id="user-detail-badges"></div>
         </section>
+
+        <section class="ss-panel user-detail-card user-detail-card-full">
+          <header class="ss-panel-header">
+            <div class="ss-panel-header-main">
+              <h3>Profile Reset &amp; Clear Controls</h3>
+              <p class="muted">Admin-safe public-profile resets only. Mutations stay inside runtime/Auth.</p>
+            </div>
+          </header>
+          <div class="ss-panel-body" id="user-detail-profile-controls"></div>
+        </section>
+
+        <section class="ss-panel user-detail-card user-detail-card-full">
+          <header class="ss-panel-header">
+            <div class="ss-panel-header-main">
+              <h3>Platform Integrations</h3>
+              <p class="muted">Safe inspection only. Provider secrets remain masked.</p>
+            </div>
+          </header>
+          <div class="ss-panel-body creator-integrations-platforms" id="user-detail-platforms"></div>
+        </section>
+
+        <section class="ss-panel user-detail-card user-detail-card-full">
+          <header class="ss-panel-header">
+            <div class="ss-panel-header-main">
+              <h3>Trigger Foundation</h3>
+              <p class="muted">Built-in trigger scope and readiness contribution for this single account.</p>
+            </div>
+          </header>
+          <div class="ss-panel-body">
+            <div class="ss-table-scroll">
+              <table class="ss-table ss-table-compact">
+                <thead>
+                  <tr>
+                    <th>Trigger</th>
+                    <th>Scope</th>
+                    <th>Status</th>
+                    <th>Readiness contribution</th>
+                    <th class="align-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="user-detail-triggers-body">
+                  <tr>
+                    <td colspan="5" class="muted">Loading trigger rows...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
       </div>
-
-      <section class="ss-panel user-detail-card">
-        <header class="ss-panel-header">
-          <div class="ss-panel-header-main">
-            <h3>Profile Reset &amp; Clear Controls</h3>
-            <p class="muted">Admin-safe public-profile resets only. Mutations stay inside runtime/Auth.</p>
-          </div>
-        </header>
-        <div class="ss-panel-body" id="user-detail-profile-controls"></div>
-      </section>
-
-      <section class="ss-panel user-detail-card">
-        <header class="ss-panel-header">
-          <div class="ss-panel-header-main">
-            <h3>Platform Integrations</h3>
-            <p class="muted">Safe inspection only. Provider secrets remain masked.</p>
-          </div>
-        </header>
-        <div class="ss-panel-body creator-integrations-platforms" id="user-detail-platforms"></div>
-      </section>
-
-      <section class="ss-panel user-detail-card">
-        <header class="ss-panel-header">
-          <div class="ss-panel-header-main">
-            <h3>Trigger Foundation</h3>
-            <p class="muted">Built-in trigger scope and readiness contribution for this single account.</p>
-          </div>
-        </header>
-        <div class="ss-panel-body">
-          <div class="ss-table-scroll">
-            <table class="ss-table ss-table-compact">
-              <thead>
-                <tr>
-                  <th>Trigger</th>
-                  <th>Scope</th>
-                  <th>Status</th>
-                  <th>Readiness contribution</th>
-                  <th class="align-right">Action</th>
-                </tr>
-              </thead>
-              <tbody id="user-detail-triggers-body">
-                <tr>
-                  <td colspan="5" class="muted">Loading trigger rows...</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
     </div>
   </section>
 </main>

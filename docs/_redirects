@@ -1,8 +1,10 @@
 /auth                  /auth/login.html         302
 /overview              /index.html              200
 /users                 /index.html              200
+/users/*               /index.html              200
 /accounts              /index.html              200
 /profiles              /index.html              200
+/profiles/*            /index.html              200
 /creators              /index.html              200
 /profiles/stats        /index.html              200
 /creator-stats         /index.html              200

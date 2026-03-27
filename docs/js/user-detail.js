@@ -428,7 +428,7 @@
       ? `<img src="${escapeHtml(account.avatar_url)}" alt="${escapeHtml(title)} avatar" loading="lazy" decoding="async" />`
       : `<span>${escapeHtml(resolveAvatarInitials(account))}</span>`;
     el.profile.innerHTML = `
-      <article class="accounts-details-profile-card glass-card">
+      <article class="accounts-details-profile-card glass-card user-detail-profile-card">
         <div class="accounts-details-preview-cover"${publicProfile?.cover_image_url ? ` style="background-image:url('${escapeHtml(publicProfile.cover_image_url)}')"` : ""}></div>
         <div class="accounts-details-profile-head">
           <div class="accounts-details-avatar${account?.avatar_url ? " has-image" : ""}" aria-hidden="true">${avatarMarkup}</div>
@@ -450,7 +450,7 @@
           { label: "Bio", value: escapeHtml(coerceText(publicProfile?.bio, "No public bio saved")) },
           { label: "Social links", value: socialMarkup || '<span class="muted">No social links saved.</span>' },
           { label: "Custom links", value: customMarkup }
-        ])}
+        ], "user-detail-profile-meta-grid")}
       </article>
     `;
   }
@@ -573,10 +573,10 @@
         { label: "Last payment date", value: escapeHtml(summary?.last_payment_at || summary?.lastPaymentAt ? formatTimestamp(summary?.last_payment_at || summary?.lastPaymentAt) : "No payment recorded") },
         { label: "Next renewal", value: escapeHtml(summary?.next_due_at || summary?.nextDueAt ? formatTimestamp(summary?.next_due_at || summary?.nextDueAt) : "Not scheduled") },
         { label: "Grant duration", value: escapeHtml(describeGrantDuration(summary)) }
-      ], "user-detail-key-grid")}
+      ], "user-detail-key-grid user-detail-billing-summary-grid")}
       <section class="accounts-details-group">
         <h5 class="accounts-details-group-title">Billing interventions</h5>
-        <div class="user-detail-form-grid">
+        <div class="user-detail-form-grid user-detail-billing-interventions-grid">
           <div class="accounts-details-group" data-user-detail-billing-form="gifted_tier">
             <h5 class="accounts-details-group-title">Gift paid tier</h5>
             <div class="user-detail-control-stack">
@@ -645,7 +645,7 @@
       </section>
       <section class="accounts-details-group">
         <h5 class="accounts-details-group-title">Billing history</h5>
-        <div class="accounts-details-placeholder-group">${renderBillingHistory(account)}</div>
+        <div class="accounts-details-placeholder-group user-detail-billing-history-grid">${renderBillingHistory(account)}</div>
       </section>
     `;
   }
@@ -662,35 +662,39 @@
     const canVerifyEmail = hasEmail && !account?.email_verified;
     const providerLabels = providers.map((provider) => coerceText(provider.provider || provider.label)).filter(Boolean);
     el.management.innerHTML = `
-      <div class="platform-actions">
-        ${routes.public_profile ? `<a class="ss-btn ss-btn-primary" href="${escapeHtml(routes.public_profile)}" target="_blank" rel="noopener noreferrer">Open public profile</a>` : ""}
-        <a class="ss-btn ss-btn-secondary" href="/users" data-view="accounts">Accounts table</a>
-        <a class="ss-btn ss-btn-secondary" href="${escapeHtml(routes.creator_integrations || "/profiles/integrations")}" data-view="creator-integrations">Creator integrations</a>
-        <a class="ss-btn ss-btn-secondary" href="${escapeHtml(routes.creator_stats || "/profiles/stats")}" data-view="creator-stats">Creator stats</a>
-      </div>
-      <div class="accounts-row-actions-grid">
-        <div class="accounts-row-actions-tier">
-          <select id="user-detail-tier-select" class="ss-input"${isDeleted ? " disabled" : ""}>
-            <option value="CORE"${currentTier === "CORE" ? " selected" : ""}>CORE</option>
-            <option value="GOLD"${currentTier === "GOLD" ? " selected" : ""}>GOLD</option>
-            <option value="PRO"${currentTier === "PRO" ? " selected" : ""}>PRO</option>
-          </select>
-          <button type="button" class="ss-btn ss-btn-primary" data-user-detail-action="tier"${isDeleted ? " disabled" : ""}>Update tier</button>
+      <div class="user-detail-management-shell">
+        <div class="user-detail-management-primary">
+          <div class="platform-actions">
+            ${routes.public_profile ? `<a class="ss-btn ss-btn-primary" href="${escapeHtml(routes.public_profile)}" target="_blank" rel="noopener noreferrer">Open public profile</a>` : ""}
+            <a class="ss-btn ss-btn-secondary" href="/users" data-view="accounts">Accounts table</a>
+            <a class="ss-btn ss-btn-secondary" href="${escapeHtml(routes.creator_integrations || "/profiles/integrations")}" data-view="creator-integrations">Creator integrations</a>
+            <a class="ss-btn ss-btn-secondary" href="${escapeHtml(routes.creator_stats || "/profiles/stats")}" data-view="creator-stats">Creator stats</a>
+          </div>
+          <div class="accounts-row-actions-grid">
+            <div class="accounts-row-actions-tier">
+              <select id="user-detail-tier-select" class="ss-input"${isDeleted ? " disabled" : ""}>
+                <option value="CORE"${currentTier === "CORE" ? " selected" : ""}>CORE</option>
+                <option value="GOLD"${currentTier === "GOLD" ? " selected" : ""}>GOLD</option>
+                <option value="PRO"${currentTier === "PRO" ? " selected" : ""}>PRO</option>
+              </select>
+              <button type="button" class="ss-btn ss-btn-primary" data-user-detail-action="tier"${isDeleted ? " disabled" : ""}>Update tier</button>
+            </div>
+            <div class="accounts-row-actions-buttons user-detail-action-buttons">
+              <button type="button" class="ss-btn ss-btn-secondary" data-user-detail-action="${escapeHtml(isSuspended ? "unsuspend" : "suspend")}"${isDeleted ? " disabled" : ""}>${escapeHtml(isSuspended ? "Unsuspend" : "Suspend")}</button>
+              <button type="button" class="ss-btn ss-btn-secondary" data-user-detail-action="reset-onboarding"${isDeleted ? " disabled" : ""}>Reset onboarding</button>
+              <button type="button" class="ss-btn ss-btn-secondary" data-user-detail-action="force-email-reverify"${!hasEmail || isDeleted ? " disabled" : ""}>Force email reverify</button>
+              <button type="button" class="ss-btn ss-btn-secondary" data-user-detail-action="mark-email-verified"${!canVerifyEmail || isDeleted ? " disabled" : ""}>Mark email verified</button>
+              <button type="button" class="ss-btn ss-btn-secondary" data-user-detail-action="admin-email-change"${isDeleted ? " disabled" : ""}>Change email</button>
+              <button type="button" class="ss-btn ss-btn-secondary" data-user-detail-action="admin-auth-unlink"${!providerLabels.length || isDeleted ? " disabled" : ""}>Unlink method</button>
+              <button type="button" class="ss-btn ss-btn-secondary" data-user-detail-action="invalidate-sessions">Force logout</button>
+              <button type="button" class="ss-btn ss-btn-danger" data-user-detail-action="delete"${isDeleted ? " disabled" : ""}>Delete</button>
+            </div>
+          </div>
         </div>
-        <div class="accounts-row-actions-buttons user-detail-action-buttons">
-          <button type="button" class="ss-btn ss-btn-secondary" data-user-detail-action="${escapeHtml(isSuspended ? "unsuspend" : "suspend")}"${isDeleted ? " disabled" : ""}>${escapeHtml(isSuspended ? "Unsuspend" : "Suspend")}</button>
-          <button type="button" class="ss-btn ss-btn-secondary" data-user-detail-action="reset-onboarding"${isDeleted ? " disabled" : ""}>Reset onboarding</button>
-          <button type="button" class="ss-btn ss-btn-secondary" data-user-detail-action="force-email-reverify"${!hasEmail || isDeleted ? " disabled" : ""}>Force email reverify</button>
-          <button type="button" class="ss-btn ss-btn-secondary" data-user-detail-action="mark-email-verified"${!canVerifyEmail || isDeleted ? " disabled" : ""}>Mark email verified</button>
-          <button type="button" class="ss-btn ss-btn-secondary" data-user-detail-action="admin-email-change"${isDeleted ? " disabled" : ""}>Change email</button>
-          <button type="button" class="ss-btn ss-btn-secondary" data-user-detail-action="admin-auth-unlink"${!providerLabels.length || isDeleted ? " disabled" : ""}>Unlink method</button>
-          <button type="button" class="ss-btn ss-btn-secondary" data-user-detail-action="invalidate-sessions">Force logout</button>
-          <button type="button" class="ss-btn ss-btn-danger" data-user-detail-action="delete"${isDeleted ? " disabled" : ""}>Delete</button>
+        <div class="user-detail-callout user-detail-management-callout">
+          <strong>Available sign-in methods</strong>
+          <p class="muted">${escapeHtml(providerLabels.length ? providerLabels.join(", ") : "No linked providers returned.")}</p>
         </div>
-      </div>
-      <div class="user-detail-callout">
-        <strong>Available sign-in methods</strong>
-        <p class="muted">${escapeHtml(providerLabels.length ? providerLabels.join(", ") : "No linked providers returned.")}</p>
       </div>
     `;
   }
@@ -747,7 +751,7 @@
         ${renderBadge("FindMeHere", "")}
         <span>${renderBadgeIconStrip(findmehereBadges, "No FindMeHere badges")}</span>
       </div>
-      <div class="accounts-details-placeholder-group">
+      <div class="user-detail-badge-governance-grid">
         <div class="accounts-details-placeholder-block">
           <div class="accounts-details-placeholder-title">Manual entitlements</div>
           <div class="accounts-details-placeholder-value user-detail-checkbox-grid">
@@ -766,7 +770,7 @@
           </div>
         </div>
       </div>
-      <div class="accounts-inline-actions">
+      <div class="accounts-inline-actions user-detail-badge-actions">
         <button type="button" class="ss-btn ss-btn-primary" data-user-detail-badge-save>Save badge settings</button>
       </div>
     `;

@@ -352,11 +352,12 @@
       const requestedUrl = `${pathname}${search}`;
 
       if (router?.isDashboardRoute(pathname)) {
-        const relay = new URL(`${window.location.origin}/`);
+        const relayEntry = pathname === "/docs" || pathname.startsWith("/docs/")
+          ? "/docs/index.html"
+          : "/index.html";
+        const relay = new URL(relayEntry, window.location.origin);
         relay.searchParams.set(router.REDIRECT_QUERY_KEY, encodeURIComponent(requestedUrl));
-        window.setTimeout(() => {
-          window.location.replace(relay.toString());
-        }, 1200);
+        window.location.replace(relay.toString());
       }
     })();
   </script>

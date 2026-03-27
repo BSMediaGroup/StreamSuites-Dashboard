@@ -193,6 +193,33 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 - Sidebar/admin shell icon mapping was updated so the current `SIDEBAR_VIEW_ICON_MAP` is the actual source of truth and swapped SVG assets refresh reliably without route or declared asset-path changes.
 - Repo-visible validation for this milestone is primarily state/history-backed hotfix work rather than a new automated dashboard test suite; no dedicated dashboard test harness was added in this repo-visible slice.
 
+## Admin Deep-Link Recovery + User Detail Reflow - 2026-03-28
+
+### Technical Notes
+
+- Cloudflare Pages SPA fallback handling was tightened in both publish-root variants: `docs/_redirects` now explicitly rewrites `/users/*` and `/profiles/*` into the admin shell, while the repo-root `_redirects` mirrors the same dynamic-route coverage for root-published compatibility deployments.
+- Root compatibility forwarding in `index.html` now preserves the original search string and hash while relaying into `/docs/index.html`, which keeps encoded deep-link state intact instead of dropping `__ss_route` during fallback recovery.
+- `docs/404.html` now immediately relays recognized admin routes back into the real SPA entry point rather than pausing on the 404 surface, so direct-entry recovery remains aligned with the route manifest instead of feeling like a broken stopover.
+- The `/users/{user_code}` surface was restructured away from repeated forced two-column rows. The profile lead is now full width, identity/auth/creator posture are grouped in a compact responsive context cluster, and the heavy billing, lifecycle, badge-governance, reset, integrations, and trigger sections now own full-width lanes.
+- Billing history, billing intervention forms, badge-governance controls, and the lifecycle-action shell were tightened with denser auto-fit sub-grids and grouped action/callout composition so the page reduces blank vertical dead zones without removing any control paths.
+
+### Human-Readable Notes
+
+- Refreshing or pasting routes like `/users/{user_code}` now has a real recovery path in both normal Pages rewrites and the repo-root compatibility path, instead of falling apart when a fallback route has to hand control back to the SPA.
+- The user page no longer wastes tall empty columns beside profile, billing, or governance areas. The heavy admin sections breathe, but they now read as intentional full-width control surfaces instead of mismatched card pairs.
+- Identity, auth, and creator posture still stay near the top of the page, but they now sit in a tighter responsive cluster while the billing and intervention tooling remains the authoritative full user-management workspace.
+
+### Files / Areas Touched
+
+- `_redirects`
+- `index.html`
+- `docs/_redirects`
+- `docs/404.html`
+- `docs/views/user-detail.html`
+- `docs/js/user-detail.js`
+- `docs/css/components.css`
+- `BUMP_NOTES.md`
+
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.8-alpha
 
 Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into the released `0.4.2-alpha` section above.

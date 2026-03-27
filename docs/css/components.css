@@ -5280,7 +5280,12 @@ body.ss-col-resizing-active {
 
 .user-detail-body {
   display: grid;
-  gap: 18px;
+  gap: 16px;
+}
+
+.user-detail-layout {
+  display: grid;
+  gap: 16px;
 }
 
 .user-detail-hero-shell {
@@ -5401,14 +5406,22 @@ body.ss-col-resizing-active {
   flex-wrap: wrap;
 }
 
-.user-detail-grid {
+.user-detail-cluster-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
+  gap: 16px;
+}
+
+.user-detail-cluster-grid-context {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
 .user-detail-card {
   margin: 0;
+  min-width: 0;
+}
+
+.user-detail-card-full {
+  width: 100%;
 }
 
 .user-detail-callout {
@@ -5429,22 +5442,38 @@ body.ss-col-resizing-active {
 
 .user-detail-card .ss-panel-body {
   display: grid;
+  gap: 14px;
+}
+
+.user-detail-profile-card {
+  gap: 14px;
+}
+
+.user-detail-profile-card .accounts-details-profile-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 12px;
+  align-items: center;
+}
+
+.user-detail-profile-meta-grid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
 .user-detail-key-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 }
 
 .user-detail-form-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  align-items: start;
 }
 
 .user-detail-inline-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 10px;
 }
 
@@ -5463,13 +5492,14 @@ body.ss-col-resizing-active {
 
 .user-detail-checkbox-grid {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 10px;
 }
 
 .user-detail-reset-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
 }
 
 .user-detail-reset-card {
@@ -5485,12 +5515,54 @@ body.ss-col-resizing-active {
   color: var(--text-secondary);
 }
 
+.user-detail-billing-summary-grid {
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+.user-detail-billing-interventions-grid,
+.user-detail-billing-history-grid {
+  align-items: start;
+}
+
+.user-detail-billing-history-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.user-detail-management-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.9fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.user-detail-management-primary {
+  display: grid;
+  gap: 12px;
+}
+
+.user-detail-management-callout {
+  height: 100%;
+}
+
+.user-detail-badge-governance-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.user-detail-badge-actions {
+  justify-content: flex-start;
+}
+
 @media (max-width: 1120px) {
   .creator-integrations-grid {
     grid-template-columns: 1fr;
   }
 
-  .user-detail-grid {
+  .user-detail-cluster-grid-context,
+  .user-detail-management-shell,
+  .user-detail-badge-governance-grid {
     grid-template-columns: 1fr;
   }
 
@@ -5520,6 +5592,7 @@ body.ss-col-resizing-active {
     align-items: flex-start;
   }
 
+  .user-detail-profile-card .accounts-details-profile-head,
   .user-detail-inline-grid {
     grid-template-columns: 1fr;
   }
