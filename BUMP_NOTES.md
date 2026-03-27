@@ -286,6 +286,21 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 - `README.md`
 - `BUMP_NOTES.md`
 
+## Admin Login Provisioning Copy Cleanup - 2026-03-28
+
+### Technical Notes
+
+- Removed the self-serve `Need an account? Sign up` footer row from the standalone admin login page so the admin auth surface no longer advertises a creator/public-style signup path that does not exist for dashboard administrators.
+
+### Human-Readable Notes
+
+- The admin login modal/page now reflects the real admin access model: admin accounts are provisioned manually or from trusted env-backed auth rules, not through a bottom-of-modal signup link.
+
+### Files / Areas Touched
+
+- `docs/auth/login.html`
+- `BUMP_NOTES.md`
+
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.8-alpha
 
 Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into the released `0.4.2-alpha` section above.
