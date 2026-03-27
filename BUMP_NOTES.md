@@ -4,6 +4,25 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Admin Shared Button Contrast + Icon Glyph Rendering - 2026-03-28
+
+### Technical Notes
+
+- The shared `.ss-btn-primary` hover/focus/active layer in `docs/css/components.css` now explicitly overrides the generic `.ss-btn:hover` dark-theme background swap, so primary CTAs keep a readable accent-colored label instead of inheriting near-black text against the darker hover treatment.
+- A reusable theme-aware icon glyph pattern was added to the shared button stylesheet using CSS mask rendering plus `currentColor` (`.ss-btn-icon-only` and `.ss-btn-icon-glyph`), allowing icon-only controls to inherit button-state color correctly without depending on hardcoded-fill SVGs loaded through `<img>`.
+- The Accounts table row actions were migrated onto that shared icon glyph path, preserving the compact one-row layout while fixing default, hover, focus-visible, active, and disabled icon color behavior through the button’s existing state color system.
+
+### Human-Readable Notes
+
+- Primary green dashboard buttons no longer flip to unreadable dark text when hovered; they now stay clearly legible and aligned with the admin theme.
+- The Accounts table icon-only action buttons now render their icons in the intended themed color instead of looking stuck black.
+
+### Files / Areas Touched
+
+- `docs/css/components.css`
+- `docs/js/accounts.js`
+- `BUMP_NOTES.md`
+
 ## Admin Compact Widget Cleanup - 2026-03-27
 
 ### Technical Notes

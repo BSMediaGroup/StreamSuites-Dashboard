@@ -3198,8 +3198,34 @@
   box-shadow: 0 0 12px var(--glow-soft);
 }
 
-.ss-btn-primary:hover {
+.ss-btn-primary:hover,
+.ss-btn-primary:focus-visible {
+  background: rgba(11, 18, 5, 0.92);
+  border-color: rgba(140, 199, 54, 0.95);
+  color: rgb(183, 227, 112);
   box-shadow: 0 0 18px var(--glow-hard);
+}
+
+.ss-btn-primary:focus-visible {
+  outline: none;
+}
+
+.ss-btn-primary:active {
+  background: rgba(9, 14, 5, 0.96);
+  border-color: rgba(140, 199, 54, 0.98);
+  color: rgb(205, 241, 152);
+}
+
+.ss-btn-primary:disabled,
+.ss-btn-primary.disabled {
+  background: linear-gradient(
+    180deg,
+    rgba(140, 199, 54, 0.55),
+    rgba(140, 199, 54, 0.38)
+  );
+  border-color: rgba(140, 199, 54, 0.48);
+  color: rgba(11, 18, 5, 0.78);
+  box-shadow: none;
 }
 
 .ss-btn-secondary {
@@ -4140,18 +4166,6 @@ body.ss-col-resizing-active {
   flex: 0 0 auto;
 }
 
-.accounts-icon-action img {
-  width: 15px;
-  height: 15px;
-  display: block;
-  opacity: 0.9;
-}
-
-.accounts-icon-action:hover img,
-.accounts-icon-action:focus-visible img {
-  opacity: 1;
-}
-
 .accounts-icon-action:focus-visible {
   outline: none;
   border-color: rgba(120, 195, 255, 0.72);
@@ -4160,6 +4174,47 @@ body.ss-col-resizing-active {
 
 .accounts-icon-action:active {
   background: rgba(255, 255, 255, 0.12);
+}
+
+.ss-btn-icon-only {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  flex: 0 0 auto;
+}
+
+.ss-btn-icon-only:disabled,
+.ss-btn-icon-only.disabled {
+  opacity: 0.45;
+}
+
+.ss-btn-icon-glyph {
+  width: 15px;
+  height: 15px;
+  display: block;
+  flex: 0 0 auto;
+  background-color: currentColor;
+  opacity: 0.92;
+  -webkit-mask-image: var(--ss-btn-icon);
+  mask-image: var(--ss-btn-icon);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  transition: opacity 0.15s ease;
+}
+
+.ss-btn-icon-only:hover .ss-btn-icon-glyph,
+.ss-btn-icon-only:focus-visible .ss-btn-icon-glyph,
+.ss-btn-icon-only:active .ss-btn-icon-glyph {
+  opacity: 1;
 }
 
 .accounts-table-system-value {

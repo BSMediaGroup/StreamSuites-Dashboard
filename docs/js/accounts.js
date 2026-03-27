@@ -1635,24 +1635,32 @@ function normalizeUser(raw = {}) {
         </button>
         <button
           type="button"
-          class="ss-btn ss-btn-small ss-btn-secondary accounts-icon-action"
+          class="ss-btn ss-btn-small ss-btn-secondary ss-btn-icon-only accounts-icon-action"
           data-account-open-integrations
           data-account-id="${escapeHtml(accountId)}"
           data-account-user-code="${userCode}"
           aria-label="Open creator integrations for ${displayName}"
           title="Open creator integrations"
         >
-          <img src="/assets/icons/ui/integrations.svg" alt="" aria-hidden="true" />
+          <span
+            class="ss-btn-icon-glyph"
+            aria-hidden="true"
+            style="--ss-btn-icon: url('/assets/icons/ui/integrations.svg')"
+          ></span>
         </button>
         <button
           type="button"
-          class="ss-btn ss-btn-small ss-btn-secondary accounts-icon-action"
+          class="ss-btn ss-btn-small ss-btn-secondary ss-btn-icon-only accounts-icon-action"
           data-account-open-stats
           data-account-id="${escapeHtml(accountId)}"
           aria-label="Open creator stats for ${displayName}"
           title="Open creator stats"
         >
-          <img src="/assets/icons/ui/querystats.svg" alt="" aria-hidden="true" />
+          <span
+            class="ss-btn-icon-glyph"
+            aria-hidden="true"
+            style="--ss-btn-icon: url('/assets/icons/ui/querystats.svg')"
+          ></span>
         </button>
       </div>
     `;
