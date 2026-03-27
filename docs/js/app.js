@@ -839,6 +839,26 @@ function registerView(name, config) {
    ---------------------------------------------------------------------- */
 
 const VIEW_FETCH_TIMEOUT_MS = 1500;
+const ACCOUNTS_TABS_COLLAPSE_STORAGE_KEY = "ss_accounts_shell_tabs_collapsed";
+const ACCOUNTS_SHELL_SECTION_IDS = Object.freeze([
+  "accounts-table-section",
+  "badge-governance-section",
+  "billing-codes-section"
+]);
+
+const accountsShell = {
+  initialized: false,
+  toggle: null,
+  rail: null,
+  tabs: [],
+  appMain: null,
+  sections: [],
+  visible: false,
+  collapsed: false,
+  currentSection: "",
+  collapsePreferenceLoaded: false,
+  scrollBound: false
+};
 
 async function fetchWithTimeout(url, options = {}, timeoutMs = VIEW_FETCH_TIMEOUT_MS) {
   const controller = new AbortController();
@@ -865,6 +885,228 @@ function markFirstViewMounted(name) {
   }
 }
 
+function initAccountsShellElements() {
+  if (accountsShell.initialized) return true;
+
+  accountsShell.toggle = document.getElementById("accounts-tabs-toggle");
+  accountsShell.rail = document.getElementById("accounts-shell-tabs");
+  accountsShell.appMain = document.getElementById("app-main");
+  accountsShell.tabs = Array.from(
+    document.querySelectorAll("[data-accounts-shell-anchor]")
+  );
+
+  if (!accountsShell.toggle || !accountsShell.rail || !accountsShell.appMain) {
+    return false;
+  }
+
+  accountsShell.initialized = true;
+  return true;
+}
+
+function readAccountsShellCollapsedPreference() {
+  try {
+    return window.localStorage.getItem(ACCOUNTS_TABS_COLLAPSE_STORAGE_KEY) === "1";
+  } catch (_err) {
+    return false;
+  }
+}
+
+function persistAccountsShellCollapsed(collapsed) {
+  try {
+    window.localStorage.setItem(
+      ACCOUNTS_TABS_COLLAPSE_STORAGE_KEY,
+      collapsed ? "1" : "0"
+    );
+  } catch (_err) {
+    // Storage can be unavailable in restricted contexts.
+  }
+}
+
+function updateAccountsShellToggleState() {
+  if (!accountsShell.toggle) return;
+  const label = accountsShell.collapsed
+    ? "Show accounts section tabs"
+    : "Collapse accounts section tabs";
+  accountsShell.toggle.setAttribute("aria-expanded", String(!accountsShell.collapsed));
+  accountsShell.toggle.setAttribute("aria-label", label);
+  accountsShell.toggle.setAttribute("title", label);
+  accountsShell.toggle.classList.toggle("is-collapsed", accountsShell.collapsed);
+}
+
+function setAccountsShellActiveSection(sectionId, options = {}) {
+  const normalizedSectionId = String(sectionId || "").trim();
+  accountsShell.currentSection = normalizedSectionId;
+
+  accountsShell.tabs.forEach((tab) => {
+    const targetId = tab.getAttribute("data-accounts-shell-anchor") || "";
+    const isActive = normalizedSectionId && targetId === normalizedSectionId;
+    tab.classList.toggle("is-active", isActive);
+    if (isActive) {
+      tab.setAttribute("aria-current", "true");
+    } else {
+      tab.removeAttribute("aria-current");
+    }
+  });
+
+  if (!options.updateHash || !normalizedSectionId) return;
+
+  const url = new URL(window.location.href);
+  if (url.hash === `#${normalizedSectionId}`) return;
+  url.hash = normalizedSectionId;
+  window.history.replaceState(window.history.state, "", url.toString());
+}
+
+function resolveActiveAccountsSection() {
+  if (!accountsShell.appMain || !accountsShell.sections.length) return "";
+  const rootTop = accountsShell.appMain.getBoundingClientRect().top;
+  const threshold = 132;
+  let activeId = accountsShell.sections[0]?.id || "";
+
+  accountsShell.sections.forEach((section) => {
+    const topOffset = section.getBoundingClientRect().top - rootTop;
+    if (topOffset <= threshold) {
+      activeId = section.id;
+    }
+  });
+
+  return activeId;
+}
+
+function refreshAccountsShellSections() {
+  accountsShell.sections = ACCOUNTS_SHELL_SECTION_IDS
+    .map((id) => document.getElementById(id))
+    .filter(Boolean);
+}
+
+function syncAccountsShellScrollState() {
+  if (!accountsShell.visible || accountsShell.collapsed) return;
+  const activeId = resolveActiveAccountsSection();
+  if (activeId) {
+    setAccountsShellActiveSection(activeId);
+  }
+}
+
+function scrollToAccountsShellSection(sectionId, options = {}) {
+  const target =
+    typeof sectionId === "string" ? document.getElementById(sectionId) : null;
+  if (!target) return;
+  const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  target.scrollIntoView({
+    behavior: options.behavior || (prefersReducedMotion ? "auto" : "smooth"),
+    block: "start"
+  });
+  setAccountsShellActiveSection(target.id, { updateHash: options.updateHash !== false });
+}
+
+function applyAccountsShellHashTarget() {
+  const hashId = window.location.hash.replace(/^#/, "").trim();
+  if (!hashId) {
+    syncAccountsShellScrollState();
+    return;
+  }
+  if (!accountsShell.sections.some((section) => section.id === hashId)) {
+    return;
+  }
+  scrollToAccountsShellSection(hashId, {
+    behavior: "auto",
+    updateHash: false
+  });
+}
+
+function setAccountsShellCollapsed(collapsed, options = {}) {
+  if (!initAccountsShellElements()) return;
+
+  accountsShell.collapsed = Boolean(collapsed);
+  updateAccountsShellToggleState();
+
+  const showRail = accountsShell.visible && !accountsShell.collapsed;
+  accountsShell.rail.classList.toggle("hidden", !showRail);
+  accountsShell.rail.hidden = !showRail;
+  accountsShell.rail.setAttribute("aria-hidden", String(!showRail));
+
+  document.documentElement.classList.toggle("ss-accounts-shell-visible", showRail);
+  document.body?.classList.toggle("ss-accounts-shell-visible", showRail);
+  document.documentElement.classList.toggle("ss-accounts-shell-collapsed", accountsShell.visible && accountsShell.collapsed);
+  document.body?.classList.toggle("ss-accounts-shell-collapsed", accountsShell.visible && accountsShell.collapsed);
+
+  if (options.persist !== false) {
+    persistAccountsShellCollapsed(accountsShell.collapsed);
+  }
+
+  if (showRail) {
+    syncAccountsShellScrollState();
+  }
+}
+
+function bindAccountsShell() {
+  if (!initAccountsShellElements()) return;
+  if (accountsShell.toggle.dataset.bound === "1") return;
+
+  accountsShell.toggle.dataset.bound = "1";
+  accountsShell.toggle.addEventListener("click", () => {
+    setAccountsShellCollapsed(!accountsShell.collapsed, { persist: true });
+  });
+
+  accountsShell.rail.addEventListener("click", (event) => {
+    const target = event.target.closest("[data-accounts-shell-anchor]");
+    if (!target) return;
+    event.preventDefault();
+    const sectionId = target.getAttribute("data-accounts-shell-anchor") || "";
+    if (!sectionId) return;
+    scrollToAccountsShellSection(sectionId);
+  });
+
+  if (!accountsShell.scrollBound) {
+    accountsShell.scrollBound = true;
+    accountsShell.appMain.addEventListener(
+      "scroll",
+      () => {
+        syncAccountsShellScrollState();
+      },
+      { passive: true }
+    );
+    window.addEventListener("hashchange", () => {
+      if (App.currentView !== "accounts") return;
+      refreshAccountsShellSections();
+      applyAccountsShellHashTarget();
+    });
+  }
+}
+
+function syncAccountsShellForView(viewName) {
+  if (!initAccountsShellElements()) return;
+
+  bindAccountsShell();
+
+  const shouldShow = viewName === "accounts";
+  refreshAccountsShellSections();
+  const hasRenderableSections = accountsShell.sections.length > 0;
+  accountsShell.visible = shouldShow && hasRenderableSections;
+
+  accountsShell.toggle.classList.toggle("hidden", !accountsShell.visible);
+  accountsShell.toggle.hidden = !accountsShell.visible;
+
+  if (!accountsShell.collapsePreferenceLoaded) {
+    accountsShell.collapsePreferenceLoaded = true;
+    accountsShell.collapsed = readAccountsShellCollapsedPreference();
+  }
+
+  if (!accountsShell.visible) {
+    setAccountsShellActiveSection("");
+    setAccountsShellCollapsed(accountsShell.collapsed, { persist: false });
+    document.documentElement.classList.remove("ss-accounts-shell-visible", "ss-accounts-shell-collapsed");
+    document.body?.classList.remove("ss-accounts-shell-visible", "ss-accounts-shell-collapsed");
+    return;
+  }
+
+  setAccountsShellCollapsed(accountsShell.collapsed, { persist: false });
+  window.requestAnimationFrame(() => {
+    refreshAccountsShellSections();
+    applyAccountsShellHashTarget();
+    syncAccountsShellScrollState();
+  });
+}
+
 async function loadView(name) {
   if (shouldBlockDashboardRuntime()) return;
   const view = App.views[name];
@@ -889,6 +1131,7 @@ async function loadView(name) {
   if (!isDashboardViewAllowed(name)) {
     App.currentView = name;
     renderRestrictedDashboardView(container, name);
+    syncAccountsShellForView(name);
     return;
   }
 
@@ -939,6 +1182,8 @@ async function loadView(name) {
       });
     }
 
+    syncAccountsShellForView(name);
+
     updateNavActiveState(name);
 
     if (window.Versioning?.stampFooters) {
@@ -958,6 +1203,7 @@ async function loadView(name) {
       </div>
     `;
     markFirstViewMounted(name);
+    syncAccountsShellForView(name);
   } finally {
     if (loaderToken) {
       window.StreamSuitesGlobalLoader?.stopLoading?.(loaderToken);

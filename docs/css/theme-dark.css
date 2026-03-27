@@ -64,6 +64,7 @@
   --link-accent: #F49900;
   --status-active: #84C642;
   --status-idle: #DF2323;
+  --date-picker-indicator-filter: brightness(0) saturate(100%) invert(90%) sepia(7%) saturate(177%) hue-rotate(180deg) brightness(95%) contrast(91%);
   --system-mono-font: "SUSEMono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
     "Courier New", monospace;
 }

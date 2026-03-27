@@ -199,6 +199,11 @@ Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into t
 
 ### Technical Notes
 
+- Reordered the admin accounts workspace so the primary `/users` landing surface opens on the accounts table first, followed by the badge-governance workspace, while keeping the existing route contract, runtime data flow, and admin action endpoints intact.
+- Added a route-scoped accounts shell rail beneath the topbar with a dedicated toggle beside the sidebar control, in-page section jumps, active-section highlighting driven by the `#app-main` scroll container, and collapse-state persistence without changing the dashboard router’s `/users` ownership.
+- Extended the shared client-side table manager with bounded page-size support up to 100 rows and wired the accounts toolbar to expose 5 / 10 / 20 / 50 / 100 row options while preserving search, sorting, filtering, pagination, exports, row actions, and drawer behavior.
+- Reworked the badge-governance presentation into a denser founder-governance summary plus compact badge-visibility grid, and the checkbox labels now render the real badge SVG assets already shipped in the repo instead of plain text-only labels.
+- Applied a shared dark-theme date-input calendar-indicator fix so native Chromium date controls inherit the intended themed treatment on accounts and other dashboard surfaces that use `type="date"`.
 - Added a dedicated admin `Creator Integrations` route and inspection workspace that reads runtime/Auth-admin creator integration summaries and per-account detail rather than inventing a second dashboard-owned provider model.
 - The new admin view surfaces creator-capable posture, linked-platform counts, deployable-platform counts, foundational trigger readiness, per-platform limitation reasons, and safe masked Rumble credential presence from authoritative backend payloads.
 - Added a dedicated `user-detail` route at `/users/{user_code}` so exhaustive account inspection can deep-link by `user_code` instead of staying trapped inside the accounts drawer.
@@ -207,6 +212,10 @@ Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into t
 
 ### Human-Readable Notes
 
+- The accounts page now opens on the live accounts table instead of governance controls, with a cleaner layout, tighter spacing, and a sticky section rail that makes it easier to jump between accounts operations and governance work.
+- Admins can change how many rows the accounts table shows at once without losing the existing filters, sorting, or actions.
+- Badge Governance is substantially more compact and now shows the real badge icons next to each governed badge option, making the section feel more intentional and easier to scan.
+- Native calendar icons on dashboard date fields now match the dark dashboard styling instead of rendering with the off-theme indicator color.
 - Admins can now inspect whether a creator is actually ready for bot-trigger usage, which platforms are only linked versus truly deployable, and whether the foundation triggers are what is blocking readiness.
 - The new per-user admin page turns `user_code` into a real support/deep-link surface, so one account can be inspected end-to-end without depending on the transient sidebar drawer state.
 - Rumble remains secret-safe in the admin UI: only presence and masked-state information is shown, never the raw backend-owned credential.
@@ -214,6 +223,15 @@ Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into t
 
 ### Files / Areas Touched
 
+- `docs/index.html`
+- `docs/js/app.js`
+- `docs/views/accounts.html`
+- `docs/js/accounts.js`
+- `docs/js/utils/search-pagination.js`
+- `docs/css/base.css`
+- `docs/css/components.css`
+- `docs/css/theme-dark.css`
+- `BUMP_NOTES.md`
 - `docs/views/creator-integrations.html`
 - `docs/js/creator-integrations.js`
 - `docs/js/accounts.js`

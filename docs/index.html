@@ -509,6 +509,18 @@
             <span class="sidebar-collapse-toggle-icon" aria-hidden="true"></span>
             <span class="sr-only">Toggle sidebar</span>
           </button>
+          <button
+            type="button"
+            id="accounts-tabs-toggle"
+            class="sidebar-collapse-toggle accounts-tabs-toggle hidden"
+            aria-controls="accounts-shell-tabs"
+            aria-expanded="true"
+            aria-label="Collapse accounts section tabs"
+            title="Collapse accounts section tabs"
+          >
+            <span class="accounts-tabs-toggle-icon" aria-hidden="true"></span>
+            <span class="sr-only">Toggle accounts section tabs</span>
+          </button>
           <span class="ss-topbar-title">Admin Control</span>
         </div>
         <div class="ss-topbar-right">
@@ -627,6 +639,36 @@
           </div>
         </div>
       </header>
+      <div
+        id="accounts-shell-tabs"
+        class="accounts-shell-tabs hidden"
+        hidden
+        aria-hidden="true"
+      >
+        <div class="accounts-shell-tabs-inner">
+          <a
+            class="accounts-shell-tab"
+            href="#accounts-table-section"
+            data-accounts-shell-anchor="accounts-table-section"
+          >
+            Accounts
+          </a>
+          <a
+            class="accounts-shell-tab"
+            href="#badge-governance-section"
+            data-accounts-shell-anchor="badge-governance-section"
+          >
+            Badge Governance
+          </a>
+          <a
+            class="accounts-shell-tab"
+            href="#billing-codes-section"
+            data-accounts-shell-anchor="billing-codes-section"
+          >
+            Billing Codes
+          </a>
+        </div>
+      </div>
       <div
         id="global-loader"
         class="ss-global-loader"

@@ -61,6 +61,7 @@
     pagination: null,
     empty: null,
     search: null,
+    pageSize: null,
     typeFilter: null,
     roleFilter: null,
     tierFilter: null,
@@ -231,6 +232,20 @@
     const tier = resolveTierData(value);
     const tierAttr = tier ? ` data-tier="${tier}"` : "";
     return `<span class="${classes}"${tierAttr}>${escapeHtml(formatBadgeLabel(value))}</span>`;
+  }
+
+  function renderBadgeChoiceLabel(key, meta = "") {
+    const iconPath = badgeIconPath(key);
+    const label = renderBadgeKeyLabel(key);
+    return `
+      <span class="accounts-badge-choice-label-wrap">
+        ${iconPath ? `<img class="accounts-badge-choice-icon" src="${escapeHtml(iconPath)}" alt="" aria-hidden="true" />` : ""}
+        <span class="accounts-badge-choice-copy">
+          <span class="accounts-badge-choice-label">${escapeHtml(label)}</span>
+          ${meta ? `<span class="accounts-badge-choice-meta">${escapeHtml(meta)}</span>` : ""}
+        </span>
+      </span>
+    `;
   }
 
   function badgeIconPath(key) {
@@ -1181,9 +1196,9 @@ function normalizeUser(raw = {}) {
       .map((key) => {
         const enabled = entitlements[key]?.enabled === true;
         return `
-          <label class="muted" style="display:flex;align-items:center;gap:8px;">
+          <label class="accounts-badge-inline-option muted">
             <input type="checkbox" data-account-badge-entitlement="${escapeHtml(key)}" data-account-id="${escapeHtml(accountId)}"${enabled ? " checked" : ""} />
-            <span>${escapeHtml(renderBadgeKeyLabel(key))}</span>
+            ${renderBadgeChoiceLabel(key, enabled ? "Enabled for this account" : "Not manually enabled")}
           </label>
         `;
       })
@@ -1198,9 +1213,16 @@ function normalizeUser(raw = {}) {
             ? "hide"
             : "default";
         return `
-          <label class="muted" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-            <span>${escapeHtml(renderBadgeKeyLabel(key))}</span>
-            <select class="ss-input" data-account-badge-visibility="${escapeHtml(key)}" data-account-id="${escapeHtml(accountId)}" style="max-width:180px;">
+          <label class="accounts-badge-visibility-row muted">
+            ${renderBadgeChoiceLabel(
+              key,
+              value === "default"
+                ? "Using system default"
+                : value === "show"
+                ? "Forced visible"
+                : "Hidden on this account"
+            )}
+            <select class="ss-input" data-account-badge-visibility="${escapeHtml(key)}" data-account-id="${escapeHtml(accountId)}">
               <option value="default"${value === "default" ? " selected" : ""}>Use system default</option>
               <option value="show"${value === "show" ? " selected" : ""}>Force visible</option>
               <option value="hide"${value === "hide" ? " selected" : ""}>Hide</option>
@@ -1250,35 +1272,70 @@ function normalizeUser(raw = {}) {
     }
     const defaultVisibility = governance.default_visibility && typeof governance.default_visibility === "object" ? governance.default_visibility : {};
     const founder = governance.founder_reconcile || {};
-    const visibilityRows = sortBadgeKeys(Object.keys(defaultVisibility))
+    const governedKeys = sortBadgeKeys([
+      ...Object.keys(defaultVisibility),
+      ...((Array.isArray(governance.catalog) ? governance.catalog : []).map((item) => item?.key))
+    ]);
+    const visibleCount = governedKeys.filter((key) => defaultVisibility[key]).length;
+    const visibilityRows = governedKeys
       .map((key) => `
-        <label class="muted" style="display:flex;align-items:center;gap:8px;">
+        <label class="accounts-badge-choice">
           <input type="checkbox" data-system-badge-visibility="${escapeHtml(key)}"${defaultVisibility[key] ? " checked" : ""} />
-          <span>${escapeHtml(renderBadgeKeyLabel(key))}</span>
+          ${renderBadgeChoiceLabel(
+            key,
+            defaultVisibility[key] ? "Shown by default" : "Hidden by default"
+          )}
         </label>
       `)
       .join("");
     el.badgeGovernancePanel.innerHTML = `
-      <div class="accounts-details-group-grid">
-        <section class="accounts-details-group">
-          <h5 class="accounts-details-group-title">Founder cutoff</h5>
-          <div class="accounts-details-meta-grid">
-            <label>
-              <span class="label">Cutoff date</span>
+      <div class="accounts-governance-layout">
+        <section class="accounts-governance-card accounts-governance-card-primary">
+          <div class="accounts-governance-card-head">
+            <div>
+              <span class="accounts-governance-kicker">Founder Governance</span>
+              <h5 class="accounts-details-group-title">Founder cutoff</h5>
+            </div>
+            <span class="ss-chip">${escapeHtml(String(governedKeys.length || 0))} governed badges</span>
+          </div>
+          <div class="accounts-governance-summary-grid">
+            <div class="accounts-governance-stat">
+              <span class="label">Eligible existing accounts</span>
+              <strong class="value">${escapeHtml(String(founder.eligible_existing_accounts || 0))}</strong>
+            </div>
+            <div class="accounts-governance-stat">
+              <span class="label">Founder enabled</span>
+              <strong class="value">${escapeHtml(String(founder.enabled_accounts || 0))}</strong>
+            </div>
+            <div class="accounts-governance-stat">
+              <span class="label">Pending reconcile</span>
+              <strong class="value">${escapeHtml(String(founder.pending_accounts || 0))}</strong>
+            </div>
+            <div class="accounts-governance-stat">
+              <span class="label">Visible by default</span>
+              <strong class="value">${escapeHtml(String(visibleCount))}</strong>
+            </div>
+          </div>
+          <div class="accounts-governance-controls">
+            <label class="accounts-governance-date-field">
+              <span class="label">Founder cutoff date</span>
               <input id="accounts-founder-cutoff-date" class="ss-input" type="date" value="${escapeHtml(governance.founder_cutoff_date || "")}" />
             </label>
-            <div><span class="label">Eligible existing accounts</span><span class="value">${escapeHtml(String(founder.eligible_existing_accounts || 0))}</span></div>
-            <div><span class="label">Founder enabled</span><span class="value">${escapeHtml(String(founder.enabled_accounts || 0))}</span></div>
-            <div><span class="label">Pending reconcile</span><span class="value">${escapeHtml(String(founder.pending_accounts || 0))}</span></div>
-          </div>
-          <div class="accounts-inline-actions" style="margin-top:12px;">
-            <button type="button" id="accounts-badge-governance-save" class="ss-btn ss-btn-primary">Save governance</button>
-            <button type="button" id="accounts-founder-reconcile" class="ss-btn ss-btn-secondary">Reconcile founder</button>
+            <div class="accounts-inline-actions accounts-governance-actions">
+              <button type="button" id="accounts-badge-governance-save" class="ss-btn ss-btn-primary">Save governance</button>
+              <button type="button" id="accounts-founder-reconcile" class="ss-btn ss-btn-secondary">Reconcile founder</button>
+            </div>
           </div>
         </section>
-        <section class="accounts-details-group">
-          <h5 class="accounts-details-group-title">System default visibility</h5>
-          <div class="accounts-details-placeholder-value" style="display:grid;gap:10px;">
+        <section class="accounts-governance-card">
+          <div class="accounts-governance-card-head">
+            <div>
+              <span class="accounts-governance-kicker">Surface Defaults</span>
+              <h5 class="accounts-details-group-title">System default visibility</h5>
+            </div>
+            <span class="accounts-governance-muted">${escapeHtml(String(governedKeys.length || 0))} badge options</span>
+          </div>
+          <div class="accounts-governance-badge-grid">
             ${visibilityRows}
           </div>
         </section>
@@ -1456,6 +1513,15 @@ function normalizeUser(raw = {}) {
     const filtered = getFilteredData();
     state.manager?.setData(filtered);
     updateEmptyStateMessage(getSearchFilteredCount(filtered));
+  }
+
+  function syncAccountsPageSizeControl(value) {
+    if (!(el.pageSize instanceof HTMLSelectElement)) return;
+    const numericValue = Number(value);
+    const safeValue = Number.isFinite(numericValue)
+      ? Math.min(100, Math.max(5, Math.trunc(numericValue)))
+      : 10;
+    el.pageSize.value = String(safeValue);
   }
 
   function toggleIdColumn(show) {
@@ -3178,6 +3244,14 @@ function normalizeUser(raw = {}) {
     el.roleFilter?.addEventListener("change", applyFilters);
     el.tierFilter?.addEventListener("change", applyFilters);
     el.providerFilter?.addEventListener("change", applyFilters);
+    el.pageSize?.addEventListener("change", (event) => {
+      const nextValue = Number(event.target?.value);
+      const safeValue = Number.isFinite(nextValue)
+        ? Math.min(100, Math.max(5, Math.trunc(nextValue)))
+        : 10;
+      syncAccountsPageSizeControl(safeValue);
+      state.manager?.setPageSize(safeValue, { resetPage: true });
+    });
     el.search?.addEventListener("input", () => {
       const filtered = getFilteredData();
       updateEmptyStateMessage(getSearchFilteredCount(filtered));
@@ -3487,7 +3561,7 @@ function normalizeUser(raw = {}) {
       searchFields: SEARCH_FIELDS,
       defaultSortField: "createdAt",
       defaultSortDirection: "desc",
-      pageSize: 10,
+      pageSize: Number(el.pageSize?.value) || 10,
       table: el.table,
       tableBody: el.body,
       emptyState: el.empty,
@@ -3497,6 +3571,7 @@ function normalizeUser(raw = {}) {
       renderRow,
       onRender: handleTableRender
     });
+    syncAccountsPageSizeControl(state.manager.getState?.().pageSize || 10);
   }
 
   async function init() {
@@ -3511,6 +3586,7 @@ function normalizeUser(raw = {}) {
     el.pagination = $("accounts-pagination");
     el.empty = $("accounts-empty");
     el.search = $("accounts-search");
+    el.pageSize = $("accounts-page-size");
     el.typeFilter = $("accounts-type-filter");
     el.roleFilter = $("accounts-role-filter");
     el.tierFilter = $("accounts-tier-filter");

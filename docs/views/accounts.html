@@ -2,37 +2,27 @@
 <!-- StreamSuites — Accounts (VIEW PARTIAL) -->
 <!-- ========================================================= -->
 
-<header class="ss-header">
+<header class="ss-header ss-accounts-header">
   <div class="ss-header-left">
-    <h1 class="ss-title">StreamSuites</h1>
-    <span class="ss-subtitle">Accounts</span>
+    <div class="ss-accounts-header-copy">
+      <span class="ss-chip ss-accounts-header-chip">Admin Workspace</span>
+      <div class="ss-accounts-header-title-row">
+        <h1 class="ss-title">StreamSuites</h1>
+        <span class="ss-subtitle">Accounts</span>
+      </div>
+      <p class="ss-accounts-header-summary">
+        Live account operations, badge governance, and billing-code administration from the authoritative runtime surface.
+      </p>
+    </div>
   </div>
 </header>
 
-<main class="ss-main">
-  <section class="ss-panel">
-    <header class="ss-panel-header">
-      <div class="ss-panel-header-main">
-        <h2>Badge Governance</h2>
-        <p class="muted" style="margin:6px 0 0;">
-          Authoritative founder cutoff and default badge visibility for Creator, Public, Dashboard, and FindMeHere surfaces.
-        </p>
-      </div>
-      <div class="ss-panel-header-actions">
-        <span id="accounts-badge-governance-status" class="muted">Loading...</span>
-      </div>
-    </header>
-    <div class="ss-panel-body">
-      <div id="accounts-badge-governance-banner" class="ss-alert hidden"></div>
-      <div id="accounts-badge-governance-panel"></div>
-    </div>
-  </section>
-
-  <section class="ss-panel">
+<main class="ss-main ss-accounts-main">
+  <section id="accounts-table-section" class="ss-panel ss-accounts-section ss-accounts-primary-section" data-accounts-section="accounts">
     <header class="ss-panel-header">
       <div class="ss-panel-header-main">
         <h2>Accounts</h2>
-        <p class="muted" style="margin:6px 0 0;">
+        <p class="ss-accounts-section-copy muted">
           Account visibility, authoritative public-profile state, and admin actions sourced from live runtime APIs.
           <a
             class="ss-link"
@@ -57,7 +47,7 @@
     <div class="ss-panel-body">
       <div id="accounts-snapshot-banner" class="ss-alert hidden"></div>
 
-      <div class="ss-toolbar">
+      <div class="ss-toolbar ss-accounts-toolbar">
         <div class="ss-toolbar-left">
           <input
             type="search"
@@ -78,19 +68,38 @@
             <option value="">All providers</option>
           </select>
         </div>
-        <div class="ss-toolbar-right">
-          <label class="muted">
+        <div class="ss-toolbar-right ss-accounts-toolbar-right">
+          <label class="accounts-toolbar-field accounts-page-size-field" for="accounts-page-size">
+            <span class="accounts-toolbar-label">Rows</span>
+            <select id="accounts-page-size" class="ss-input">
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </label>
+          <label class="accounts-toolbar-toggle muted">
             <input type="checkbox" id="accounts-id-toggle" checked />
-            Show internal IDs
+            <span>Show internal IDs</span>
           </label>
           <span id="accounts-status" class="muted">Loading…</span>
         </div>
       </div>
 
-      <div class="ss-meta-row">
-        <div><strong>Total users:</strong> <span id="accounts-count">—</span></div>
-        <div><strong>Source:</strong> <span id="accounts-source">—</span></div>
-        <div><strong>Export status:</strong> <span id="accounts-export-status">Idle</span></div>
+      <div class="ss-meta-row ss-accounts-meta-row">
+        <div class="ss-accounts-meta-card">
+          <span class="label">Total users</span>
+          <strong id="accounts-count">—</strong>
+        </div>
+        <div class="ss-accounts-meta-card">
+          <span class="label">Source</span>
+          <strong id="accounts-source">—</strong>
+        </div>
+        <div class="ss-accounts-meta-card">
+          <span class="label">Export status</span>
+          <strong id="accounts-export-status">Idle</strong>
+        </div>
       </div>
 
       <div class="ss-table-scroll ss-accounts-table-scroll" id="accounts-table-scroll">
@@ -125,11 +134,29 @@
     </div>
   </section>
 
-  <section class="ss-panel">
+  <section id="badge-governance-section" class="ss-panel ss-accounts-section" data-accounts-section="badge-governance">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Badge Governance</h2>
+        <p class="ss-accounts-section-copy muted">
+          Authoritative founder cutoff and default badge visibility for Creator, Public, Dashboard, and FindMeHere surfaces.
+        </p>
+      </div>
+      <div class="ss-panel-header-actions">
+        <span id="accounts-badge-governance-status" class="muted">Loading...</span>
+      </div>
+    </header>
+    <div class="ss-panel-body">
+      <div id="accounts-badge-governance-banner" class="ss-alert hidden"></div>
+      <div id="accounts-badge-governance-panel"></div>
+    </div>
+  </section>
+
+  <section id="billing-codes-section" class="ss-panel ss-accounts-section" data-accounts-section="billing-codes">
     <header class="ss-panel-header">
       <div class="ss-panel-header-main">
         <h2>Billing Discount Codes</h2>
-        <p class="muted" style="margin:6px 0 0;">
+        <p class="ss-accounts-section-copy muted">
           Authoritative global discount-code offers managed by the runtime billing intervention contract.
         </p>
       </div>

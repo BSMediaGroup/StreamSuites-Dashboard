@@ -2099,6 +2099,14 @@ body.header-hidden #app-header {
   .streamsuites-auth-tier {
     display: none;
   }
+
+  .accounts-shell-tabs {
+    margin-inline: 12px;
+  }
+
+  .accounts-shell-tab {
+    padding-inline: 10px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2283,6 +2291,110 @@ body.ss-sidebar-collapsed .sidebar-collapse-toggle-icon {
   transform: scaleX(-1);
 }
 
+.accounts-tabs-toggle-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  background-color: currentColor;
+  -webkit-mask-image: url("/assets/icons/ui/tabs.svg");
+  mask-image: url("/assets/icons/ui/tabs.svg");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: 124%;
+  mask-size: 124%;
+}
+
+.accounts-tabs-toggle.is-collapsed {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.accounts-shell-tabs {
+  flex: 0 0 auto;
+  margin: 0 20px 0;
+  padding: 0 0 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.accounts-shell-tabs-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.24) transparent;
+}
+
+.accounts-shell-tabs-inner::-webkit-scrollbar {
+  height: 6px;
+}
+
+.accounts-shell-tabs-inner::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.accounts-shell-tabs-inner::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.accounts-shell-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-secondary);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.accounts-shell-tab:hover,
+.accounts-shell-tab:focus-visible {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-subtle);
+  outline: none;
+}
+
+.accounts-shell-tab.is-active,
+.accounts-shell-tab[aria-current="true"] {
+  color: #eef5ff;
+  border-color: rgba(124, 182, 255, 0.38);
+  background:
+    linear-gradient(180deg, rgba(102, 152, 236, 0.24), rgba(102, 152, 236, 0.1)),
+    rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+input[type="date"] {
+  color-scheme: dark;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.84;
+  filter: var(--date-picker-indicator-filter, none);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+input[type="date"]:disabled::-webkit-calendar-picker-indicator {
+  opacity: 0.45;
+  cursor: default;
+}
+
 html.ss-sidebar-collapsed #app,
 body.ss-sidebar-collapsed #app {
   grid-template-columns: var(--app-sidebar-collapsed-width) minmax(0, 1fr);
@@ -2393,5 +2505,10 @@ body.ss-sidebar-collapsed #app-nav li.nav-section::after {
 
   #view-container {
     padding: 16px;
+  }
+
+  .accounts-shell-tabs {
+    margin: 0 14px 0;
+    padding-bottom: 10px;
   }
 }

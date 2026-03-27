@@ -8,6 +8,13 @@
   "use strict";
 
   const DEFAULT_PAGE_SIZE = 5;
+  const MAX_PAGE_SIZE = 100;
+
+  function clampPageSize(pageSize, fallback = DEFAULT_PAGE_SIZE) {
+    const parsed = Number(pageSize);
+    if (!Number.isFinite(parsed)) return fallback;
+    return Math.min(MAX_PAGE_SIZE, Math.max(1, Math.trunc(parsed)));
+  }
 
   function normalizeTerm(term) {
     return (term || "").toString().trim().toLowerCase();
@@ -67,18 +74,19 @@
   }
 
   function paginate(data, page = 1, pageSize = DEFAULT_PAGE_SIZE) {
+    const safePageSize = clampPageSize(pageSize);
     const total = Array.isArray(data) ? data.length : 0;
-    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    const totalPages = Math.max(1, Math.ceil(total / safePageSize));
     const safePage = Math.min(Math.max(page, 1), totalPages);
-    const start = (safePage - 1) * pageSize;
-    const end = start + pageSize;
+    const start = (safePage - 1) * safePageSize;
+    const end = start + safePageSize;
 
     return {
       items: (data || []).slice(start, end),
       total,
       totalPages,
       page: safePage,
-      pageSize
+      pageSize: safePageSize
     };
   }
 
@@ -126,7 +134,7 @@
       data: Array.isArray(config.data) ? config.data : [],
       searchTerm: "",
       page: 1,
-      pageSize: config.pageSize || DEFAULT_PAGE_SIZE,
+      pageSize: clampPageSize(config.pageSize || DEFAULT_PAGE_SIZE),
       sortField: config.defaultSortField || null,
       sortDirection: config.defaultSortDirection || "asc"
     };
@@ -147,6 +155,8 @@
       const filtered = filterData(state.data, state.searchTerm, config.searchFields || []);
       const sorted = sortData(filtered, state.sortField, state.sortDirection);
       const pageState = paginate(sorted, state.page, state.pageSize);
+      state.page = pageState.page;
+      state.pageSize = pageState.pageSize;
 
       if (config.emptyState) {
         if (pageState.total === 0) {
@@ -221,6 +231,20 @@
         state.data = Array.isArray(data) ? data : [];
         state.page = 1;
         render();
+      },
+      setPageSize(nextPageSize, options = {}) {
+        const safePageSize = clampPageSize(nextPageSize, state.pageSize);
+        if (safePageSize === state.pageSize && options.force !== true) {
+          return;
+        }
+        state.pageSize = safePageSize;
+        state.page = options.resetPage === false ? state.page : 1;
+        render();
+      },
+      getState() {
+        return {
+          ...state
+        };
       },
       refresh() {
         render();
