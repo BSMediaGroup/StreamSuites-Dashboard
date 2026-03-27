@@ -4,6 +4,30 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Admin Blue Accent Refinement + Full-Height Sidebar Spine + Title Sweep - 2026-03-28
+
+### Technical Notes
+
+- Shared dashboard shell accent tokens in `docs/css/theme-dark.css` were retuned from the recent purple family to a cooler blue family, including `--accent-shell`, `--accent-shell-strong`, `--accent-shell-soft`, `--accent-shell-glow`, `--link-color`, and `--link-accent`, plus shared RGB helper tokens used by shell chrome effects.
+- Shared shell accent surfaces that still carried hard-coded purple values now derive from the blue accent family instead, covering visited regular-text links, sidebar hover/active states, the active nav glow/spine treatment, the overflow toggle active state, topbar icon hover/focus/loading states, and the global loader track/bar fallbacks in `docs/css/base.css`.
+- The sidebar active-item spine no longer uses inset top/bottom offsets; shared nav-item overflow clipping plus a full-height pseudo-element now let the gradient spine span the complete selected item height cleanly inside the rounded item container.
+- Shared title-pruning logic in `docs/js/app.js` now removes legacy in-view `h1` title rows consistently and continues into the first panel header so redundant route titles are removed even when the page still had a second visible panel heading such as `Audit Logs`, `Accounts`, `Inbox`, or `User detail`.
+- Route-title metadata in `docs/js/admin-routes.js` was tightened where the shell title still used older wording, including `/audit` now resolving to `Audit Logs` and `/scoreboard-management` now resolving to `Manage Scores`, so the topbar remains the canonical current-view title source.
+
+### Human-Readable Notes
+
+- The dashboard chrome now uses a cooler blue accent instead of the newer purple, which fits the existing admin theme more naturally.
+- Selected sidebar items keep the refined glow/spine treatment, but the left accent spine now runs the full height of the active item instead of looking clipped.
+- Remaining duplicate page-title rows are now stripped through the shared shell flow, so the topbar owns the page title while useful copy, chips, and actions stay in place below it.
+
+### Files / Areas Touched
+
+- `docs/css/theme-dark.css`
+- `docs/css/base.css`
+- `docs/js/app.js`
+- `docs/js/admin-routes.js`
+- `BUMP_NOTES.md`
+
 ## Accounts Founder Governance Live-State Clarification - 2026-03-28
 
 ### Technical Notes

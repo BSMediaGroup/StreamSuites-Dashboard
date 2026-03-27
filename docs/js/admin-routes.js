@@ -33,7 +33,7 @@
       aliases: ["/creator-stats"],
       title: "Creator Stats"
     },
-    audit: { canonical: "/audit", title: "Audit" },
+    audit: { canonical: "/audit", title: "Audit Logs" },
     alerts: { canonical: "/alerts", aliases: ["/analytics-alerts"], title: "Alerts" },
     analytics: { canonical: "/analytics", title: "Analytics" },
     ratelimits: { canonical: "/ratelimits", aliases: ["/rate-limits"], title: "Rate Limits" },
@@ -59,7 +59,7 @@
     polls: { canonical: "/polls", title: "Polls" },
     tallies: { canonical: "/tallies", title: "Tallies" },
     scoreboards: { canonical: "/scoreboards", title: "Scoreboards" },
-    "scoreboard-management": { canonical: "/scoreboard-management", title: "Scoreboard Management" },
+    "scoreboard-management": { canonical: "/scoreboard-management", title: "Manage Scores" },
     settings: { canonical: "/settings", title: "Settings" },
     updates: { canonical: "/updates", title: "Updates" },
     design: { canonical: "/design", title: "Design" }

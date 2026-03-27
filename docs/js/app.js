@@ -915,20 +915,55 @@ function isRetryableViewError(err) {
   return err?.name === "AbortError" || err?.message === "Failed to fetch";
 }
 
-function normalizeTitleText(value) {
+const TITLE_NOISE_WORDS = new Set([
+  "streamsuites",
+  "admin",
+  "control",
+  "dashboard",
+  "page",
+  "view",
+  "surface"
+]);
+
+const TITLE_DESCRIPTOR_WORDS = new Set([
+  "platform",
+  "integration",
+  "integrations",
+  "logs",
+  "log",
+  "inbox",
+  "statistics",
+  "stats",
+  "preview",
+  "management",
+  "workspace",
+  "center"
+]);
+
+function normalizeTitleText(value, options = {}) {
+  const stripDescriptors = options.stripDescriptors === true;
   return String(value || "")
     .toLowerCase()
-    .replace(/streamsuites/g, "")
-    .replace(/admin(?:\s+control|\s+dashboard)?/g, "")
+    .replace(/&/g, " and ")
     .replace(/[^a-z0-9]+/g, " ")
-    .trim();
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .filter((token) => !TITLE_NOISE_WORDS.has(token))
+    .filter((token) => !(stripDescriptors && TITLE_DESCRIPTOR_WORDS.has(token)))
+    .join(" ");
 }
 
 function isRedundantViewHeading(candidate, title) {
   const normalizedCandidate = normalizeTitleText(candidate);
   const normalizedTitle = normalizeTitleText(title);
   if (!normalizedCandidate || !normalizedTitle) return false;
-  return normalizedCandidate === normalizedTitle;
+  if (normalizedCandidate === normalizedTitle) return true;
+
+  const normalizedCandidateCore = normalizeTitleText(candidate, { stripDescriptors: true });
+  const normalizedTitleCore = normalizeTitleText(title, { stripDescriptors: true });
+  if (!normalizedCandidateCore || !normalizedTitleCore) return false;
+  return normalizedCandidateCore === normalizedTitleCore;
 }
 
 function removeIfEmpty(element) {
@@ -946,12 +981,8 @@ function pruneTopLevelViewTitle(container, viewTitle) {
     const titleEl = header.querySelector(".ss-title, h1");
     const subtitleEl = header.querySelector(".ss-subtitle");
     const subtitleMatches = subtitleEl && isRedundantViewHeading(subtitleEl.textContent, viewTitle);
-    const titleIsBrandOnly = titleEl && !normalizeTitleText(titleEl.textContent);
 
-    if (
-      titleEl &&
-      (isRedundantViewHeading(titleEl.textContent, viewTitle) || (titleIsBrandOnly && subtitleMatches))
-    ) {
+    if (titleEl) {
       titleEl.remove();
     }
 
@@ -968,7 +999,6 @@ function pruneTopLevelViewTitle(container, viewTitle) {
     if (!header.textContent.trim() && !header.querySelector("img, button, input, select, textarea")) {
       header.remove();
     }
-    return;
   }
 
   const panelHeader =
