@@ -208,6 +208,11 @@ Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into t
 - The new admin view surfaces creator-capable posture, linked-platform counts, deployable-platform counts, foundational trigger readiness, per-platform limitation reasons, and safe masked Rumble credential presence from authoritative backend payloads.
 - Added a dedicated `user-detail` route at `/users/{user_code}` so exhaustive account inspection can deep-link by `user_code` instead of staying trapped inside the accounts drawer.
 - Accounts and Creators now include direct drill-in actions into the creator-integrations workflow and the new per-user page so admins can move from identity/account inspection into platform-readiness troubleshooting without changing the surrounding shell or route model.
+- The accounts toolbar layout is now denser and more intentional: search, filters, page-size, and ID toggle were regrouped for one-line desktop fit where possible, while the runtime-status label moved into its own lighter runtime strip so the control row no longer wastes horizontal space.
+- Accounts table UUID and user-code cells now explicitly use the dashboard-local SUSE Mono variable font already shipped in `docs/assets/fonts/mono/SUSEMono-Variable.ttf`, without changing typography for non-system table fields.
+- The accounts actions column now promotes the per-user page as the primary row CTA, keeps quick-view as the secondary drawer entry point, and retains integrations and stats access in a slimmer action cluster rather than a row of equally weighted buttons.
+- The full `/users/{user_code}` surface was rewritten from a lightweight inspector into the complete per-user admin control surface, with a richer hero/header treatment, authoritative management blocks, billing interventions, badge governance, creator-trigger toggles, and profile-reset controls while the drawer remains the abbreviated quick-view variant.
+- Dashboard routing was hardened in two layers: client-side route canonicalization now preserves dynamic `user_code` params when converting legacy hash links, and Cloudflare Pages-compatible `_redirects` catch-all fallbacks now serve the SPA entry for direct-load and refresh handling across dynamic admin routes.
 - Pending entries for `0.4.8-alpha` go here.
 
 ### Human-Readable Notes
@@ -218,6 +223,23 @@ Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into t
 - Native calendar icons on dashboard date fields now match the dark dashboard styling instead of rendering with the off-theme indicator color.
 - Admins can now inspect whether a creator is actually ready for bot-trigger usage, which platforms are only linked versus truly deployable, and whether the foundation triggers are what is blocking readiness.
 - The new per-user admin page turns `user_code` into a real support/deep-link surface, so one account can be inspected end-to-end without depending on the transient sidebar drawer state.
+- The accounts toolbar feels less crowded, the runtime label is no longer jammed into the filter row, and UUID / user-code values now read like system identifiers instead of ordinary copy.
+- Opening a user from the table, drawer, or creator-integrations area now consistently emphasizes the full user page as the main management surface, with the drawer clearly acting as the faster abbreviated view.
+- Refreshing or opening admin deep links like `/users/{user_code}` in a fresh tab now resolves back into the dashboard app instead of falling through to a 404 on Cloudflare Pages-style hosting.
+
+### Files / Areas Touched
+
+- `docs/views/accounts.html`
+- `docs/views/creator-integrations.html`
+- `docs/views/user-detail.html`
+- `docs/js/accounts.js`
+- `docs/js/creator-integrations.js`
+- `docs/js/user-detail.js`
+- `docs/js/admin-routes.js`
+- `docs/css/components.css`
+- `_redirects`
+- `docs/_redirects`
+- `BUMP_NOTES.md`
 - Rumble remains secret-safe in the admin UI: only presence and masked-state information is shown, never the raw backend-owned credential.
 - Pending entries for `0.4.8-alpha` go here.
 

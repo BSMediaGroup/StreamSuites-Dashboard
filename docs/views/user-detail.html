@@ -27,7 +27,9 @@
     <div class="ss-panel-body user-detail-body">
       <div id="user-detail-banner" class="ss-alert hidden" role="status" aria-live="polite"></div>
 
-      <div class="user-detail-toolbar">
+      <section class="user-detail-hero" id="user-detail-hero"></section>
+
+      <div class="user-detail-toolbar user-detail-toolbar-shell">
         <div class="user-detail-toolbar-copy">
           <span class="status-pill subtle" data-user-detail-status-pill="true"><span class="status-dot"></span>Loading</span>
           <span class="muted" data-user-detail-route-label="true">Waiting for route user code</span>
@@ -41,6 +43,16 @@
       <div class="creator-integrations-kpi-grid" id="user-detail-kpis"></div>
 
       <div class="user-detail-grid">
+        <section class="ss-panel user-detail-card user-detail-card-span">
+          <header class="ss-panel-header">
+            <div class="ss-panel-header-main">
+              <h3>Public Profile &amp; Identity</h3>
+              <p class="muted">Avatar, canonical surface state, media references, and creator-facing presentation.</p>
+            </div>
+          </header>
+          <div class="ss-panel-body" id="user-detail-profile"></div>
+        </section>
+
         <section class="ss-panel user-detail-card">
           <header class="ss-panel-header">
             <div class="ss-panel-header-main">
@@ -76,13 +88,45 @@
         <section class="ss-panel user-detail-card">
           <header class="ss-panel-header">
             <div class="ss-panel-header-main">
-              <h3>Supported Actions</h3>
-              <p class="muted">Only backend-supported navigation and safe admin actions are exposed.</p>
+              <h3>Billing &amp; Supporter</h3>
+              <p class="muted">Runtime-authored billing posture, effective tier context, and admin intervention history.</p>
+            </div>
+          </header>
+          <div class="ss-panel-body" id="user-detail-billing"></div>
+        </section>
+      </div>
+
+      <div class="user-detail-grid">
+        <section class="ss-panel user-detail-card">
+          <header class="ss-panel-header">
+            <div class="ss-panel-header-main">
+              <h3>Admin Control Surface</h3>
+              <p class="muted">Authoritative account lifecycle, auth, and navigation controls for this user.</p>
             </div>
           </header>
           <div class="ss-panel-body" id="user-detail-management"></div>
         </section>
+
+        <section class="ss-panel user-detail-card">
+          <header class="ss-panel-header">
+            <div class="ss-panel-header-main">
+              <h3>Badge Governance</h3>
+              <p class="muted">Per-user entitlement and visibility controls sourced from backend badge governance rules.</p>
+            </div>
+          </header>
+          <div class="ss-panel-body" id="user-detail-badges"></div>
+        </section>
       </div>
+
+      <section class="ss-panel user-detail-card">
+        <header class="ss-panel-header">
+          <div class="ss-panel-header-main">
+            <h3>Profile Reset &amp; Clear Controls</h3>
+            <p class="muted">Admin-safe public-profile resets only. Mutations stay inside runtime/Auth.</p>
+          </div>
+        </header>
+        <div class="ss-panel-body" id="user-detail-profile-controls"></div>
+      </section>
 
       <section class="ss-panel user-detail-card">
         <header class="ss-panel-header">

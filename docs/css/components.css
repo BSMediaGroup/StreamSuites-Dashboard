@@ -3598,6 +3598,11 @@
 }
 
 .ss-accounts-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
   margin: 0 0 14px;
   padding: 12px 14px 14px;
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -3611,9 +3616,36 @@
   flex: 1 1 620px;
 }
 
-.ss-accounts-toolbar .ss-toolbar-left #accounts-search {
-  min-width: min(320px, 100%);
+.ss-accounts-toolbar-primary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.accounts-toolbar-search-wrap {
   flex: 1 1 260px;
+  min-width: min(300px, 100%);
+}
+
+.accounts-toolbar-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 420px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.accounts-toolbar-filter-row .ss-input {
+  flex: 1 1 150px;
+}
+
+.ss-accounts-toolbar .ss-toolbar-left #accounts-search {
+  width: 100%;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .ss-accounts-toolbar .ss-toolbar-left .ss-input {
@@ -3621,6 +3653,10 @@
 }
 
 .ss-accounts-toolbar-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
   margin-left: auto;
   justify-content: flex-end;
 }
@@ -3652,6 +3688,39 @@
 
 .accounts-toolbar-toggle input {
   margin: 0;
+}
+
+.accounts-runtime-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 14px;
+  padding: 8px 12px;
+  border: 1px solid rgba(120, 195, 255, 0.12);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(120, 195, 255, 0.08), rgba(120, 195, 255, 0.025)),
+    rgba(8, 12, 20, 0.28);
+}
+
+.accounts-runtime-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #b9dcff;
+}
+
+.accounts-runtime-chip::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #78c3ff;
+  box-shadow: 0 0 10px rgba(120, 195, 255, 0.55);
 }
 
 .ss-accounts-meta-row {
@@ -3959,7 +4028,7 @@ body.ss-col-resizing-active {
 }
 
 #accounts-table .accounts-actions-cell {
-  min-width: 204px;
+  min-width: 192px;
 }
 
 #accounts-table th[data-col-key="actions"] {
@@ -4019,10 +4088,54 @@ body.ss-col-resizing-active {
 }
 
 .accounts-inline-actions {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 6px;
+  flex-wrap: wrap;
+}
+
+#accounts-table .accounts-inline-actions {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.accounts-actions-primary {
+  min-width: 112px;
+  justify-content: center;
+}
+
+.accounts-actions-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.accounts-actions-cluster .ss-btn {
+  padding-inline: 10px;
+}
+
+.accounts-table-system-value {
+  font-family: var(--system-mono-font);
+  font-variation-settings: "wght" 460;
+  letter-spacing: 0.01em;
+}
+
+.accounts-table-system-link {
+  min-width: 0;
+  font-family: inherit;
+}
+
+.accounts-table-system-link code {
+  font-family: inherit;
+}
+
+.accounts-details-primary-cta {
+  min-width: 132px;
+  justify-content: center;
 }
 
 .accounts-details-backdrop {
@@ -4485,14 +4598,22 @@ body.ss-col-resizing-active {
     padding: 12px;
   }
 
-  .ss-accounts-toolbar-left,
-  .ss-accounts-toolbar-right {
+  .ss-accounts-toolbar .ss-toolbar-left,
+  .ss-accounts-toolbar-right,
+  .ss-accounts-toolbar-primary,
+  .accounts-toolbar-search-wrap,
+  .accounts-toolbar-filter-row {
     width: 100%;
   }
 
   .ss-accounts-toolbar-right {
     justify-content: flex-start;
     margin-left: 0;
+  }
+
+  .accounts-runtime-strip {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .accounts-governance-summary-grid {
@@ -5162,6 +5283,107 @@ body.ss-col-resizing-active {
   gap: 18px;
 }
 
+.user-detail-hero-shell {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(120, 195, 255, 0.16);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at top left, rgba(120, 195, 255, 0.18), rgba(120, 195, 255, 0)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015)),
+    rgba(11, 16, 24, 0.7);
+  box-shadow:
+    0 22px 42px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.user-detail-hero-cover {
+  min-height: 138px;
+  background:
+    linear-gradient(135deg, rgba(120, 195, 255, 0.2), rgba(255, 184, 108, 0.08)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+  background-size: cover;
+  background-position: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.user-detail-hero-content {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: end;
+  padding: 0 22px 22px;
+  margin-top: -48px;
+}
+
+.user-detail-hero-avatar {
+  width: 104px;
+  height: 104px;
+  display: grid;
+  place-items: center;
+  border-radius: 24px;
+  overflow: hidden;
+  font-family: "RechargeBd", sans-serif;
+  font-size: 28px;
+  color: #f2f7ff;
+  background:
+    linear-gradient(135deg, rgba(120, 195, 255, 0.78), rgba(39, 123, 200, 0.92));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 16px 28px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.user-detail-hero-avatar.has-image {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.user-detail-hero-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.user-detail-hero-copy {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.user-detail-hero-kicker {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #b9dcff;
+}
+
+.user-detail-hero-copy h3 {
+  margin: 0;
+  font-size: clamp(26px, 3vw, 36px);
+  line-height: 1;
+}
+
+.user-detail-hero-copy p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.user-detail-hero-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.user-detail-hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .user-detail-toolbar {
   display: flex;
   justify-content: space-between;
@@ -5201,12 +5423,80 @@ body.ss-col-resizing-active {
   margin-bottom: 6px;
 }
 
+.user-detail-card .ss-panel-header {
+  padding-bottom: 12px;
+}
+
+.user-detail-card .ss-panel-body {
+  display: grid;
+  gap: 12px;
+}
+
+.user-detail-key-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.user-detail-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.user-detail-inline-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.user-detail-control-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.user-detail-action-buttons {
+  align-items: stretch;
+}
+
+.user-detail-action-buttons .ss-btn {
+  justify-content: center;
+}
+
+.user-detail-checkbox-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.user-detail-reset-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.user-detail-reset-card {
+  display: grid;
+  gap: 12px;
+  border-style: solid;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.01)),
+    rgba(7, 10, 16, 0.26);
+}
+
+.user-detail-reset-card .accounts-details-placeholder-value {
+  color: var(--text-secondary);
+}
+
 @media (max-width: 1120px) {
   .creator-integrations-grid {
     grid-template-columns: 1fr;
   }
 
   .user-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .user-detail-key-grid,
+  .user-detail-form-grid,
+  .user-detail-reset-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -5216,8 +5506,22 @@ body.ss-col-resizing-active {
     grid-template-columns: 1fr;
   }
 
+  .user-detail-hero-content {
+    grid-template-columns: 1fr;
+    align-items: start;
+    margin-top: -36px;
+  }
+
+  .user-detail-hero-actions {
+    justify-content: flex-start;
+  }
+
   .user-detail-toolbar {
     align-items: flex-start;
+  }
+
+  .user-detail-inline-grid {
+    grid-template-columns: 1fr;
   }
 }
 

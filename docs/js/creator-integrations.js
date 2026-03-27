@@ -294,9 +294,9 @@
           ${
             isRestrictedAdminSession()
               ? '<span class="muted">Restricted</span>'
-              : `<button type="button" class="ss-btn ss-btn-small ss-btn-secondary" data-open-user="${escapeHtml(
+              : `<button type="button" class="ss-btn ss-btn-small ss-btn-primary" data-open-user="${escapeHtml(
                   item.user_code || ""
-                )}">Inspect</button>`
+                )}">Open user page</button>`
           }
         </td>
       `;

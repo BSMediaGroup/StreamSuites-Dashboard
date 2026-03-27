@@ -1584,7 +1584,7 @@ function normalizeUser(raw = {}) {
       return renderTextValue(accountId || "—");
     }
     const hoverAttrs = buildProfileHoverAttrs(user, { userId: accountId });
-    return `<span class="accounts-cell-ellipsis accounts-hover-link" ${hoverAttrs} title="${escapeHtml(accountId)}">${escapeHtml(accountId)}</span>`;
+    return `<span class="accounts-cell-ellipsis accounts-hover-link accounts-table-system-value" ${hoverAttrs} title="${escapeHtml(accountId)}">${escapeHtml(accountId)}</span>`;
   }
 
   function renderAvatarValue(user) {
@@ -1610,11 +1610,11 @@ function normalizeUser(raw = {}) {
     return `
       <button
         type="button"
-        class="ss-link-btn accounts-hover-button"
+        class="ss-link-btn accounts-hover-button accounts-table-system-link"
         data-account-open-creator="${escapeHtml(userCode)}"
         ${buildProfileHoverAttrs(user, { userCode })}
       >
-        <code>${escapeHtml(userCode)}</code>
+        <code class="accounts-table-system-value">${escapeHtml(userCode)}</code>
       </button>
     `;
   }
@@ -1626,31 +1626,40 @@ function normalizeUser(raw = {}) {
       <div class="accounts-inline-actions">
         <button
           type="button"
-          class="ss-btn ss-btn-small ss-btn-secondary"
-          data-account-open-integrations
-          data-account-id="${escapeHtml(accountId)}"
-          data-account-user-code="${userCode}"
+          class="ss-btn ss-btn-small ss-btn-primary accounts-actions-primary"
+          data-account-open-user-detail="${userCode}"
         >
-          Integrations
+          Open user
         </button>
-        <button
-          type="button"
-          class="ss-btn ss-btn-small ss-btn-secondary"
-          data-account-open-stats
-          data-account-id="${escapeHtml(accountId)}"
-        >
-          View stats
-        </button>
-        <button
-          type="button"
-          class="ss-btn ss-btn-small ss-btn-secondary accounts-actions-toggle"
-          data-account-open-actions
-          data-account-id="${escapeHtml(accountId)}"
-          aria-expanded="false"
-          aria-controls="accounts-details-drawer"
-        >
-          Actions
-        </button>
+        <div class="accounts-actions-cluster">
+          <button
+            type="button"
+            class="ss-btn ss-btn-small ss-btn-secondary"
+            data-account-open-actions
+            data-account-id="${escapeHtml(accountId)}"
+            aria-expanded="false"
+            aria-controls="accounts-details-drawer"
+          >
+            Quick view
+          </button>
+          <button
+            type="button"
+            class="ss-btn ss-btn-small ss-btn-secondary"
+            data-account-open-integrations
+            data-account-id="${escapeHtml(accountId)}"
+            data-account-user-code="${userCode}"
+          >
+            Integrations
+          </button>
+          <button
+            type="button"
+            class="ss-btn ss-btn-small ss-btn-secondary"
+            data-account-open-stats
+            data-account-id="${escapeHtml(accountId)}"
+          >
+            Stats
+          </button>
+        </div>
       </div>
     `;
   }
@@ -2224,7 +2233,7 @@ function normalizeUser(raw = {}) {
           <div class="accounts-inline-actions">
             <button
               type="button"
-              class="ss-btn ss-btn-small ss-btn-secondary"
+              class="ss-btn ss-btn-small ss-btn-primary accounts-details-primary-cta"
               data-account-open-user-detail="${escapeHtml(user.userCode || "")}"
             >
               Open user page
@@ -2244,7 +2253,7 @@ function normalizeUser(raw = {}) {
               data-account-open-stats
               data-account-id="${escapeHtml(normalizeAccountId(user.id))}"
             >
-              View stats
+              Stats
             </button>
           </div>
         </section>
@@ -3380,6 +3389,14 @@ function normalizeUser(raw = {}) {
         clearRowClickTimer();
         const accountId = normalizeAccountId(statsButton.getAttribute("data-account-id"));
         openCreatorStats(accountId);
+        return;
+      }
+      const userDetailButton = target.closest("[data-account-open-user-detail]");
+      if (userDetailButton) {
+        event.preventDefault();
+        clearRowClickTimer();
+        const userCode = userDetailButton.getAttribute("data-account-open-user-detail") || "";
+        openUserDetail(userCode);
         return;
       }
       const integrationsButton = target.closest("[data-account-open-integrations]");

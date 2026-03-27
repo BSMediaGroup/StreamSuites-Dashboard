@@ -101,6 +101,14 @@
 
   const PATH_TO_VIEW = buildPathIndex();
 
+  function resolveViewMatchFromPath(normalizedPath) {
+    const exactView = PATH_TO_VIEW.get(normalizedPath) || "";
+    if (exactView) {
+      return { view: exactView, params: {} };
+    }
+    return resolveDynamicViewFromPath(normalizedPath);
+  }
+
   function resolveDynamicViewFromPath(normalizedPath) {
     if (
       normalizedPath.startsWith(USER_DETAIL_PREFIX) &&
@@ -164,9 +172,8 @@
 
   function resolveViewFromPath(pathname = window.location.pathname, search = window.location.search) {
     const normalizedPath = normalizePathname(pathname);
-    const exactView = PATH_TO_VIEW.get(normalizedPath) || "";
-    const dynamic = exactView ? null : resolveDynamicViewFromPath(normalizedPath);
-    const view = dynamic?.view || exactView;
+    const match = resolveViewMatchFromPath(normalizedPath);
+    const view = match?.view || "";
     const queryString =
       typeof search === "string" ? search.replace(/^\?/, "").trim() : "";
     return {
@@ -175,7 +182,7 @@
       pathname: normalizedPath,
       query: queryString ? `?${queryString}` : "",
       queryString,
-      params: dynamic?.params || {}
+      params: match?.params || {}
     };
   }
 
@@ -207,7 +214,7 @@
   }
 
   function isDashboardRoute(pathname = window.location.pathname) {
-    return Boolean(PATH_TO_VIEW.get(normalizePathname(pathname)));
+    return Boolean(resolveViewMatchFromPath(normalizePathname(pathname))?.view);
   }
 
   function resolveLocation() {
@@ -256,7 +263,16 @@
 
   function canonicalizeLegacyHashRoute(route = resolveViewFromHash(window.location.hash)) {
     if (!route?.view) return false;
-    const url = buildDashboardUrl(route.view, { params: route.queryString });
+    const params = new URLSearchParams(route.queryString || "");
+    if (route.params && typeof route.params === "object") {
+      Object.entries(route.params).forEach(([key, value]) => {
+        const normalizedKey = String(key || "").trim();
+        const normalizedValue = String(value || "").trim();
+        if (!normalizedKey || !normalizedValue) return;
+        params.set(normalizedKey, normalizedValue);
+      });
+    }
+    const url = buildDashboardUrl(route.view, { params });
     window.history.replaceState({}, "", url);
     emitRouteChange("hash-canonicalized");
     return true;
@@ -272,7 +288,7 @@
     const decodedTarget = decodeURIComponent(encodedTarget);
     const parsedTarget = new URL(decodedTarget, window.location.origin);
     const requestedPath = normalizePathname(parsedTarget.pathname);
-    if (!PATH_TO_VIEW.get(requestedPath)) {
+    if (!resolveViewMatchFromPath(requestedPath)?.view) {
       return false;
     }
 

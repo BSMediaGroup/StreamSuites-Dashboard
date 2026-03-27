@@ -48,25 +48,29 @@
       <div id="accounts-snapshot-banner" class="ss-alert hidden"></div>
 
       <div class="ss-toolbar ss-accounts-toolbar">
-        <div class="ss-toolbar-left">
-          <input
-            type="search"
-            id="accounts-search"
-            class="ss-input"
-            placeholder="Search by user code, email, or name"
-          />
-          <select id="accounts-type-filter" class="ss-input">
-            <option value="">All account types</option>
-          </select>
-          <select id="accounts-role-filter" class="ss-input">
-            <option value="">All roles</option>
-          </select>
-          <select id="accounts-tier-filter" class="ss-input">
-            <option value="">All tiers</option>
-          </select>
-          <select id="accounts-provider-filter" class="ss-input">
-            <option value="">All providers</option>
-          </select>
+        <div class="ss-toolbar-left ss-accounts-toolbar-primary">
+          <div class="accounts-toolbar-search-wrap">
+            <input
+              type="search"
+              id="accounts-search"
+              class="ss-input"
+              placeholder="Search by user code, email, or name"
+            />
+          </div>
+          <div class="accounts-toolbar-filter-row">
+            <select id="accounts-type-filter" class="ss-input">
+              <option value="">All account types</option>
+            </select>
+            <select id="accounts-role-filter" class="ss-input">
+              <option value="">All roles</option>
+            </select>
+            <select id="accounts-tier-filter" class="ss-input">
+              <option value="">All tiers</option>
+            </select>
+            <select id="accounts-provider-filter" class="ss-input">
+              <option value="">All providers</option>
+            </select>
+          </div>
         </div>
         <div class="ss-toolbar-right ss-accounts-toolbar-right">
           <label class="accounts-toolbar-field accounts-page-size-field" for="accounts-page-size">
@@ -83,8 +87,12 @@
             <input type="checkbox" id="accounts-id-toggle" checked />
             <span>Show internal IDs</span>
           </label>
-          <span id="accounts-status" class="muted">Loading…</span>
         </div>
+      </div>
+
+      <div class="accounts-runtime-strip" aria-live="polite">
+        <span class="accounts-runtime-chip">Live runtime data</span>
+        <span id="accounts-status" class="muted">Loading…</span>
       </div>
 
       <div class="ss-meta-row ss-accounts-meta-row">
