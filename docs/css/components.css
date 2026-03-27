@@ -7211,13 +7211,15 @@ body.ss-col-resizing-active {
    Link styling requirement
    ---------------------------------------------------------------------- */
 
-a,
 .ss-link {
-  color: #F49900;
+  color: var(--link-color, #c9a2ff);
   text-decoration: none;
 }
 
-a:hover,
+.ss-link:visited {
+  color: var(--link-accent, #a46cff);
+}
+
 .ss-link:hover {
   text-decoration: underline;
 }

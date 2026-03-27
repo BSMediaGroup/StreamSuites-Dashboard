@@ -13,44 +13,62 @@
   const USER_DETAIL_PREFIX = "/users/";
 
   const VIEW_ROUTE_DEFINITIONS = Object.freeze({
-    overview: { canonical: "/overview", aliases: ["/", "/index.html", "/home"] },
-    bots: { canonical: "/telemetry", aliases: ["/bots", "/runtime-status"] },
-    approvals: { canonical: "/approvals" },
-    accounts: { canonical: "/users", aliases: ["/accounts"] },
-    "user-detail": { canonical: "/users/:user_code" },
-    creators: { canonical: "/profiles", aliases: ["/creators"] },
-    "creator-integrations": { canonical: "/profiles/integrations", aliases: ["/creator-integrations"] },
-    "creator-stats": { canonical: "/profiles/stats", aliases: ["/creator-stats"] },
-    audit: { canonical: "/audit" },
-    alerts: { canonical: "/alerts", aliases: ["/analytics-alerts"] },
-    analytics: { canonical: "/analytics" },
-    ratelimits: { canonical: "/ratelimits", aliases: ["/rate-limits"] },
-    "api-usage": { canonical: "/api-usage" },
-    "data-signals": { canonical: "/data-signals", aliases: ["/signals"] },
-    notifications: { canonical: "/notifications", aliases: ["/inbox"] },
-    jobs: { canonical: "/jobs" },
-    "chat-replay": { canonical: "/chat-replay" },
-    rumble: { canonical: "/integrations/rumble", aliases: ["/rumble"] },
-    youtube: { canonical: "/integrations/youtube", aliases: ["/youtube"] },
-    twitch: { canonical: "/integrations/twitch", aliases: ["/twitch"] },
-    kick: { canonical: "/integrations/kick", aliases: ["/kick"] },
-    pilled: { canonical: "/integrations/pilled", aliases: ["/pilled"] },
-    twitter: { canonical: "/integrations/twitter", aliases: ["/twitter"] },
-    discord: { canonical: "/integrations/discord", aliases: ["/discord"] },
+    overview: { canonical: "/overview", aliases: ["/", "/index.html", "/home"], title: "Overview" },
+    bots: {
+      canonical: "/telemetry",
+      aliases: ["/bots", "/runtime-status"],
+      title: "Bots / Runtime Status"
+    },
+    approvals: { canonical: "/approvals", title: "Approvals" },
+    accounts: { canonical: "/users", aliases: ["/accounts"], title: "Accounts" },
+    "user-detail": { canonical: "/users/:user_code", title: "User Detail" },
+    creators: { canonical: "/profiles", aliases: ["/creators"], title: "Creators" },
+    "creator-integrations": {
+      canonical: "/profiles/integrations",
+      aliases: ["/creator-integrations"],
+      title: "Creator Integrations"
+    },
+    "creator-stats": {
+      canonical: "/profiles/stats",
+      aliases: ["/creator-stats"],
+      title: "Creator Stats"
+    },
+    audit: { canonical: "/audit", title: "Audit" },
+    alerts: { canonical: "/alerts", aliases: ["/analytics-alerts"], title: "Alerts" },
+    analytics: { canonical: "/analytics", title: "Analytics" },
+    ratelimits: { canonical: "/ratelimits", aliases: ["/rate-limits"], title: "Rate Limits" },
+    "api-usage": { canonical: "/api-usage", title: "API Usage" },
+    "data-signals": { canonical: "/data-signals", aliases: ["/signals"], title: "Data & Signals" },
+    notifications: { canonical: "/notifications", aliases: ["/inbox"], title: "Inbox" },
+    jobs: { canonical: "/jobs", title: "Jobs" },
+    "chat-replay": { canonical: "/chat-replay", title: "Chat Replay" },
+    rumble: { canonical: "/integrations/rumble", aliases: ["/rumble"], title: "Rumble" },
+    youtube: { canonical: "/integrations/youtube", aliases: ["/youtube"], title: "YouTube" },
+    twitch: { canonical: "/integrations/twitch", aliases: ["/twitch"], title: "Twitch" },
+    kick: { canonical: "/integrations/kick", aliases: ["/kick"], title: "Kick" },
+    pilled: { canonical: "/integrations/pilled", aliases: ["/pilled"], title: "Pilled" },
+    twitter: { canonical: "/integrations/twitter", aliases: ["/twitter"], title: "Twitter" },
+    discord: { canonical: "/integrations/discord", aliases: ["/discord"], title: "Discord" },
     triggers: {
       canonical: "/integrations/triggers",
-      aliases: ["/triggers", "/chat-triggers"]
+      aliases: ["/triggers", "/chat-triggers"],
+      title: "Chat Triggers"
     },
-    tiers: { canonical: "/tiers" },
-    clips: { canonical: "/clips" },
-    polls: { canonical: "/polls" },
-    tallies: { canonical: "/tallies" },
-    scoreboards: { canonical: "/scoreboards" },
-    "scoreboard-management": { canonical: "/scoreboard-management" },
-    settings: { canonical: "/settings" },
-    updates: { canonical: "/updates" },
-    design: { canonical: "/design" }
+    tiers: { canonical: "/tiers", title: "Tiers" },
+    clips: { canonical: "/clips", title: "Clips" },
+    polls: { canonical: "/polls", title: "Polls" },
+    tallies: { canonical: "/tallies", title: "Tallies" },
+    scoreboards: { canonical: "/scoreboards", title: "Scoreboards" },
+    "scoreboard-management": { canonical: "/scoreboard-management", title: "Scoreboard Management" },
+    settings: { canonical: "/settings", title: "Settings" },
+    updates: { canonical: "/updates", title: "Updates" },
+    design: { canonical: "/design", title: "Design" }
   });
+
+  function getViewConfig(viewName) {
+    const normalized = typeof viewName === "string" ? viewName.trim() : "";
+    return normalized ? VIEW_ROUTE_DEFINITIONS[normalized] || null : null;
+  }
 
   function resolveBasePath(configuredValue = window.ADMIN_BASE_PATH) {
     const configured =
@@ -187,9 +205,21 @@
   }
 
   function getCanonicalPathForView(viewName) {
-    const config = VIEW_ROUTE_DEFINITIONS[viewName];
+    const config = getViewConfig(viewName);
     if (!config) return "/overview";
     return normalizePathname(config.canonical);
+  }
+
+  function getTitleForView(viewName, params = {}) {
+    const config = getViewConfig(viewName);
+    if (!config) return "Overview";
+
+    if (viewName === "user-detail") {
+      const userCode = String(params?.user_code || "").trim();
+      return userCode ? `User Detail` : config.title;
+    }
+
+    return config.title || "Overview";
   }
 
   function buildDashboardUrl(viewName, options = {}) {
@@ -316,6 +346,7 @@
     resolveViewFromHash,
     resolveViewFromPath,
     resolveLocation,
+    getTitleForView,
     getCanonicalPathForView,
     buildDashboardUrl,
     navigateToView,

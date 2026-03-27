@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const SHOW_DELAY_MS = 120;
+  const SHOW_DELAY_MS = 60;
   const STUCK_THRESHOLD_MS = 12500;
 
   const state = {
@@ -59,7 +59,7 @@
     state.root.classList.toggle("is-stuck", state.visible && state.stuck);
 
     if (state.text) {
-      state.text.textContent = state.stuck ? "Still loading..." : "Loading...";
+      state.text.textContent = state.stuck ? "Still loading..." : getActiveReason();
     }
 
     syncA11y(isActive, ariaLabel);

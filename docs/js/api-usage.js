@@ -1112,7 +1112,7 @@
     }
 
     renderGracefulEmpty();
-    fetchBundle({ withLoader: true, trigger: "init" });
+    return fetchBundle({ withLoader: true, trigger: "init" });
   }
 
   function destroy() {

@@ -923,6 +923,9 @@
     if (el.heading) {
       el.heading.textContent = account.display_name || account.user_code || state.userCode || "User detail";
     }
+    window.StreamSuitesAdminShell?.setTopbarTitleOverride?.(
+      account.display_name || account.user_code || state.userCode || "User Detail"
+    );
     if (el.subheading) {
       el.subheading.textContent = account.email
         ? `${account.email} · ${account.user_code || state.userCode || "unknown user code"}`
@@ -978,12 +981,14 @@
     if (!normalizedUserCode) {
       state.userCode = "";
       state.payload = null;
+      window.StreamSuitesAdminShell?.clearTopbarTitleOverride?.();
       setStatusPill("Awaiting route", "subtle");
       renderEmpty("Select an account or open a /users/{user_code} route.");
       return;
     }
     const token = ++state.loadToken;
     state.userCode = normalizedUserCode;
+    window.StreamSuitesAdminShell?.setTopbarTitleOverride?.(normalizedUserCode);
     if (el.routeLabel) {
       el.routeLabel.textContent = `/users/${normalizedUserCode}`;
     }
@@ -1415,6 +1420,7 @@
     state.userCode = "";
     state.payload = null;
     state.loadToken += 1;
+    window.StreamSuitesAdminShell?.clearTopbarTitleOverride?.();
   }
 
   window.UserDetailView = {

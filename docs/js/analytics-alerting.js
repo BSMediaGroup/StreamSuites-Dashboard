@@ -3801,7 +3801,7 @@
     setupTemplateEditor("body", el.ruleBodyTemplate);
     bindEvents();
     populateRuleForm(null);
-    void loadAlerting({ forceRefresh: true, withLoader: false });
+    return loadAlerting({ forceRefresh: true, withLoader: true });
   }
 
   function destroy() {

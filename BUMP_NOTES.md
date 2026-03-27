@@ -4,6 +4,43 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Admin Hydration Reliability + Topbar Refresh/Title + Purple Chrome Pass - 2026-03-28
+
+### Technical Notes
+
+- The shared admin route table in `docs/js/admin-routes.js` now carries canonical per-view titles, allowing the shell to source the topbar title from shared route metadata instead of the old hardcoded `Admin Control` label.
+- The admin shell bootstrap in `docs/js/app.js` was hardened around first-load hydration by adding active view request tracking, stale-load suppression, abortable view fetches, bounded retry handling for retryable partial-load failures, and a shared topbar refresh action that re-runs the current view’s local hydration pipeline without reloading the browser tab.
+- The old shell-wide `1500ms` fetch defaults were too aggressive for first-hit admin hydration. Shared timeout defaults were raised to bounded `6000ms` values in both `docs/js/app.js` and `docs/js/state.js`, and the state loader no longer stops at the first timeout or `404`; it now continues through the configured fallback roots before deciding a payload is unavailable.
+- Shared loader timing was tightened in `docs/js/utils/global-loader.js`, while several high-traffic view init paths (`overview`, `analytics`, `alerts`, `api-usage`) now return their initial hydration promises so the loading bar can stay aligned with actual route/view hydration instead of dropping early.
+- The shell now performs a shared title-cleanup pass after partial injection so duplicated top-of-view title rows are stripped when their content is already represented in the topbar, while supporting descriptive copy and status chips remain in place.
+- Shared dark-theme chrome tokens in `docs/css/theme-dark.css` and `docs/css/base.css` now use the intended purple accent family for sidebar active states, topbar chrome, and the global loader. Regular text-link visited state is now `#a46cff`, and button-styled anchors are explicitly excluded from visited-link color inheritance.
+
+### Human-Readable Notes
+
+- Admin pages are less likely to stall on first load just because a state export or partial fetch took slightly longer than the old timeout budget.
+- The top loading bar now tracks route/view hydration more honestly, and the new topbar refresh button retries only the page you are on instead of forcing a full tab refresh.
+- The topbar now shows the current admin page title, and duplicated page-title rows at the top of many views have been removed while keeping the useful descriptive copy below them.
+- The old orange/gold chrome accent behavior has been replaced in the shared admin shell with the purple accent direction, including the refined active sidebar treatment and visited-link color update.
+
+### Files / Areas Touched
+
+- `docs/js/admin-routes.js`
+- `docs/js/app.js`
+- `docs/js/state.js`
+- `docs/js/utils/global-loader.js`
+- `docs/js/overview.js`
+- `docs/js/analytics.js`
+- `docs/js/api-usage.js`
+- `docs/js/analytics-alerting.js`
+- `docs/js/alerts.js`
+- `docs/js/user-detail.js`
+- `docs/css/theme-dark.css`
+- `docs/css/base.css`
+- `docs/css/components.css`
+- `docs/index.html`
+- `index.html`
+- `BUMP_NOTES.md`
+
 ## Admin Checkbox + Toggle Control Standardization - 2026-03-28
 
 ### Technical Notes

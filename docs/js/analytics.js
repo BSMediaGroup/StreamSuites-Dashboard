@@ -2407,7 +2407,7 @@
     if (!state.mapCollapsed) {
       scheduleMapResize();
     }
-    void fetchAnalytics({ withLoader: true });
+    const initialHydration = fetchAnalytics({ withLoader: true });
     if (state.refreshHandle) {
       clearInterval(state.refreshHandle);
     }
@@ -2415,6 +2415,7 @@
       if (state.destroyed) return;
       void fetchAnalytics({ withLoader: false, forceRefresh: true });
     }, ANALYTICS_REFRESH_INTERVAL_MS);
+    return initialHydration;
   }
 
   function destroy() {

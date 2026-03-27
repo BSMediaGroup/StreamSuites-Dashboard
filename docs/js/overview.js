@@ -1131,13 +1131,14 @@
       return;
     }
 
-    setTimeout(() => {
-      void updateLocalMetrics();
-      void refreshDiscord();
-      void refreshAdminActivity();
-      void refreshTelemetry({ trackLoader: true });
+    const initialHydration = Promise.allSettled([
+      updateLocalMetrics(),
+      refreshDiscord(),
+      refreshAdminActivity(),
+      refreshTelemetry({ trackLoader: true })
+    ]).finally(() => {
       updateQuotaFromRuntime();
-    }, 0);
+    });
 
     updateQuotaFromRuntime();
     quotaRefreshHandle = setInterval(updateQuotaFromRuntime, 3000);
@@ -1152,6 +1153,7 @@
 
     if (adminActivityHandle) clearInterval(adminActivityHandle);
     adminActivityHandle = setInterval(refreshAdminActivity, REFRESH_INTERVAL_MS);
+    return initialHydration;
   }
 
   function destroy() {

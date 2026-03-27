@@ -251,6 +251,18 @@ const App = {
     isLocalhost: false,
     snapshotDetected: false
   },
+  viewHydration: {
+    requestId: 0,
+    activeRequestId: 0,
+    activeView: "",
+    inFlight: false,
+    isRefresh: false,
+    abortController: null
+  },
+  title: {
+    base: "Overview",
+    override: ""
+  },
 
   // ✅ ADDITIVE — deferred anchor scroll support
   pendingAnchor: null
@@ -263,7 +275,7 @@ window.App = App;
    Fetch timeout safety
    ---------------------------------------------------------------------- */
 
-const DEFAULT_FETCH_TIMEOUT_MS = 1500;
+const DEFAULT_FETCH_TIMEOUT_MS = 6000;
 
 if (!window.__STREAMSUITES_FETCH_TIMEOUT_PATCHED__) {
   window.__STREAMSUITES_FETCH_TIMEOUT_PATCHED__ = true;
@@ -838,7 +850,9 @@ function registerView(name, config) {
    View Loader
    ---------------------------------------------------------------------- */
 
-const VIEW_FETCH_TIMEOUT_MS = 1500;
+const VIEW_FETCH_TIMEOUT_MS = 6000;
+const VIEW_FETCH_RETRY_COUNT = 1;
+const VIEW_FETCH_RETRY_DELAY_MS = 240;
 const ACCOUNTS_TABS_COLLAPSE_STORAGE_KEY = "ss_accounts_shell_tabs_collapsed";
 const ACCOUNTS_SHELL_SECTION_IDS = Object.freeze([
   "accounts-table-section",
@@ -868,15 +882,249 @@ const accountsShell = {
 async function fetchWithTimeout(url, options = {}, timeoutMs = VIEW_FETCH_TIMEOUT_MS) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+  let signal = controller.signal;
+
+  if (options?.signal && typeof AbortSignal !== "undefined" && typeof AbortSignal.any === "function") {
+    signal = AbortSignal.any([options.signal, controller.signal]);
+  } else if (options?.signal) {
+    signal = options.signal;
+  }
+
   try {
     return await fetch(url, {
       ...options,
-      signal: controller.signal,
+      signal,
       timeoutMs: 0
     });
   } finally {
     clearTimeout(timer);
   }
+}
+
+function delay(ms) {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
+function isRetryableViewStatus(status) {
+  return status === 408 || status === 425 || status === 429 || status >= 500;
+}
+
+function isRetryableViewError(err) {
+  return err?.name === "AbortError" || err?.message === "Failed to fetch";
+}
+
+function normalizeTitleText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/streamsuites/g, "")
+    .replace(/admin(?:\s+control|\s+dashboard)?/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function isRedundantViewHeading(candidate, title) {
+  const normalizedCandidate = normalizeTitleText(candidate);
+  const normalizedTitle = normalizeTitleText(title);
+  if (!normalizedCandidate || !normalizedTitle) return false;
+  return normalizedCandidate === normalizedTitle;
+}
+
+function removeIfEmpty(element) {
+  if (!(element instanceof HTMLElement)) return;
+  if (element.querySelector("img, button, input, select, textarea, a[href], [role=\"button\"]")) return;
+  if (element.textContent.trim()) return;
+  element.remove();
+}
+
+function pruneTopLevelViewTitle(container, viewTitle) {
+  if (!(container instanceof HTMLElement) || !viewTitle) return;
+
+  const header = container.querySelector(".ss-header");
+  if (header) {
+    const titleEl = header.querySelector(".ss-title, h1");
+    const subtitleEl = header.querySelector(".ss-subtitle");
+    const subtitleMatches = subtitleEl && isRedundantViewHeading(subtitleEl.textContent, viewTitle);
+    const titleIsBrandOnly = titleEl && !normalizeTitleText(titleEl.textContent);
+
+    if (
+      titleEl &&
+      (isRedundantViewHeading(titleEl.textContent, viewTitle) || (titleIsBrandOnly && subtitleMatches))
+    ) {
+      titleEl.remove();
+    }
+
+    if (subtitleMatches) {
+      subtitleEl.remove();
+    }
+
+    header
+      .querySelectorAll(
+        ".ss-accounts-header-title-row, .ss-header-left, .ss-header-right, .ss-alerts-header-copy, .ss-accounts-header-copy"
+      )
+      .forEach(removeIfEmpty);
+
+    if (!header.textContent.trim() && !header.querySelector("img, button, input, select, textarea")) {
+      header.remove();
+    }
+    return;
+  }
+
+  const panelHeader =
+    container.querySelector(".ss-panel > .ss-panel-header") ||
+    container.querySelector(".ss-panel-header");
+  if (!panelHeader) return;
+
+  const panelTitle = panelHeader.querySelector("h1, h2");
+  if (panelTitle && isRedundantViewHeading(panelTitle.textContent, viewTitle)) {
+    panelTitle.remove();
+    panelHeader.querySelectorAll(".ss-panel-header-main").forEach(removeIfEmpty);
+    if (!panelHeader.textContent.trim() && !panelHeader.querySelector("img, button, input, select, textarea")) {
+      panelHeader.remove();
+    }
+  }
+}
+
+const shellUi = {
+  title: null,
+  refreshButton: null
+};
+
+function ensureShellUi() {
+  if (!shellUi.title) {
+    shellUi.title = document.getElementById("topbar-view-title");
+  }
+  if (!shellUi.refreshButton) {
+    shellUi.refreshButton = document.getElementById("topbar-refresh-button");
+  }
+}
+
+function renderTopbarTitle() {
+  ensureShellUi();
+  const nextTitle = App.title.override || App.title.base || "Overview";
+  if (shellUi.title) {
+    shellUi.title.textContent = nextTitle;
+  }
+  document.title = `${nextTitle} | StreamSuites Admin`;
+}
+
+function setTopbarTitleBase(title) {
+  App.title.base = String(title || "Overview").trim() || "Overview";
+  renderTopbarTitle();
+}
+
+function setTopbarTitleOverride(title) {
+  App.title.override = String(title || "").trim();
+  renderTopbarTitle();
+}
+
+function clearTopbarTitleOverride() {
+  if (!App.title.override) return;
+  App.title.override = "";
+  renderTopbarTitle();
+}
+
+function updateViewRefreshButton() {
+  ensureShellUi();
+  if (!shellUi.refreshButton) return;
+
+  const isLoading = App.viewHydration.inFlight === true;
+  const label = isLoading ? "Refreshing current view" : "Refresh current view";
+  shellUi.refreshButton.disabled = isLoading;
+  shellUi.refreshButton.setAttribute("aria-busy", isLoading ? "true" : "false");
+  shellUi.refreshButton.setAttribute("aria-label", label);
+  shellUi.refreshButton.setAttribute("title", label);
+  shellUi.refreshButton.classList.toggle("is-loading", isLoading);
+}
+
+function broadcastViewHydrationState() {
+  updateViewRefreshButton();
+  try {
+    window.dispatchEvent(
+      new CustomEvent("streamsuites:view-hydration", {
+        detail: {
+          view: App.viewHydration.activeView,
+          requestId: App.viewHydration.activeRequestId,
+          loading: App.viewHydration.inFlight,
+          refresh: App.viewHydration.isRefresh
+        }
+      })
+    );
+  } catch (err) {
+    console.warn("[Dashboard] View hydration event dispatch failed", err);
+  }
+}
+
+function setViewHydrationState(nextState) {
+  App.viewHydration = {
+    ...App.viewHydration,
+    ...nextState
+  };
+  broadcastViewHydrationState();
+}
+
+async function fetchViewMarkup(viewUrl, options = {}) {
+  let lastError = null;
+
+  for (let attempt = 0; attempt <= VIEW_FETCH_RETRY_COUNT; attempt += 1) {
+    if (options.signal?.aborted) {
+      const abortedError = new DOMException("View load aborted", "AbortError");
+      throw abortedError;
+    }
+
+    try {
+      const response = await fetchWithTimeout(
+        viewUrl,
+        {
+          cache: "no-store",
+          signal: options.signal
+        },
+        VIEW_FETCH_TIMEOUT_MS
+      );
+
+      if (!response.ok) {
+        if (attempt < VIEW_FETCH_RETRY_COUNT && isRetryableViewStatus(response.status)) {
+          await delay(VIEW_FETCH_RETRY_DELAY_MS * (attempt + 1));
+          continue;
+        }
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      return await response.text();
+    } catch (err) {
+      lastError = err;
+      if (options.signal?.aborted || !isRetryableViewError(err) || attempt >= VIEW_FETCH_RETRY_COUNT) {
+        throw err;
+      }
+      await delay(VIEW_FETCH_RETRY_DELAY_MS * (attempt + 1));
+    }
+  }
+
+  throw lastError || new Error("View fetch failed");
+}
+
+function resolveViewTitle(name, route = App.currentRoute) {
+  return (
+    window.StreamSuitesAdminRoutes?.getTitleForView?.(name, route?.params || {}) ||
+    "Overview"
+  );
+}
+
+async function refreshCurrentView(options = {}) {
+  const route = App.currentRoute || resolveDashboardRoute();
+  const targetView =
+    route?.view && App.views[route.view]
+      ? route.view
+      : App.currentView && App.views[App.currentView]
+        ? App.currentView
+        : "overview";
+
+  return loadView(targetView, {
+    force: true,
+    refresh: true,
+    reason: options.reason || `Refreshing ${resolveViewTitle(targetView, route)}...`
+  });
 }
 
 function markFirstViewMounted(name) {
@@ -1198,13 +1446,32 @@ function syncAccountsShellForView(viewName) {
   });
 }
 
-async function loadView(name) {
+async function loadView(name, options = {}) {
   if (shouldBlockDashboardRuntime()) return;
   const view = App.views[name];
   if (!view) {
     console.warn(`[Dashboard] Unknown view: ${name}`);
     return;
   }
+
+  const activeRoute = options.route || App.currentRoute || resolveDashboardRoute();
+  const viewTitle = resolveViewTitle(name, activeRoute);
+  setTopbarTitleBase(viewTitle);
+  if (!options.preserveTitleOverride) {
+    clearTopbarTitleOverride();
+  }
+
+  App.viewHydration.abortController?.abort();
+  const loadController = new AbortController();
+  const requestId = App.viewHydration.requestId + 1;
+  setViewHydrationState({
+    requestId,
+    activeRequestId: requestId,
+    activeView: name,
+    inFlight: true,
+    isRefresh: options.refresh === true,
+    abortController: loadController
+  });
 
   if (App.currentView && App.views[App.currentView]) {
     try {
@@ -1238,15 +1505,19 @@ async function loadView(name) {
   }
 
   const loaderToken =
-    window.StreamSuitesGlobalLoader?.startLoading?.(`Loading ${name} view...`) || null;
+    window.StreamSuitesGlobalLoader?.startLoading?.(
+      options.reason || `${options.refresh ? "Refreshing" : "Loading"} ${viewTitle}...`
+    ) || null;
 
   try {
     window.StreamSuitesToast?.clearAll?.();
-    const res = await fetchWithTimeout(viewUrl, { cache: "no-store" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const html = await fetchViewMarkup(viewUrl, { signal: loadController.signal });
+    if (requestId !== App.viewHydration.activeRequestId || loadController.signal.aborted) {
+      return;
+    }
 
-    const html = await res.text();
     container.innerHTML = html;
+    pruneTopLevelViewTitle(container, viewTitle);
     markFirstViewMounted(name);
 
     setModeDataset(container);
@@ -1260,6 +1531,10 @@ async function loadView(name) {
       }
     } catch (e) {
       console.error(`[Dashboard] View load error (${name})`, e);
+    }
+
+    if (requestId !== App.viewHydration.activeRequestId || loadController.signal.aborted) {
+      return;
     }
 
     // ✅ ADDITIVE — perform deferred anchor scroll AFTER DOM exists
@@ -1281,12 +1556,15 @@ async function loadView(name) {
       window.Versioning.stampFooters();
     }
   } catch (err) {
+    if (err?.name === "AbortError") {
+      return;
+    }
     console.error(`[Dashboard] Failed to load view ${name}`, err);
     container.innerHTML = `
       <div class="panel">
-        <h3>${name}</h3>
+        <h3>${viewTitle}</h3>
         <div class="ss-alert ss-alert-danger">
-          Failed to load this view. Please refresh and try again.
+          Failed to hydrate this view. Use refresh to retry.
         </div>
         <p class="text-muted" style="margin-top: 0.5rem;">
           Expected partial: ${viewUrl.pathname}
@@ -1298,6 +1576,13 @@ async function loadView(name) {
   } finally {
     if (loaderToken) {
       window.StreamSuitesGlobalLoader?.stopLoading?.(loaderToken);
+    }
+    if (requestId === App.viewHydration.activeRequestId) {
+      setViewHydrationState({
+        inFlight: false,
+        isRefresh: false,
+        abortController: null
+      });
     }
   }
 }
@@ -1906,6 +2191,7 @@ function resolveInitialView() {
 function handleDashboardRouteChange(route = resolveDashboardRoute()) {
   const targetView = route?.view && App.views[route.view] ? route.view : "overview";
   App.currentRoute = route;
+  setTopbarTitleBase(resolveViewTitle(targetView, route));
 
   if (route?.mode === "hash") {
     window.StreamSuitesAdminRoutes?.canonicalizeLegacyHashRoute?.(route);
@@ -1923,6 +2209,18 @@ function bindRouteChanges() {
   window.addEventListener("streamsuites:routechange", (event) => {
     handleDashboardRouteChange(event?.detail?.route || resolveDashboardRoute());
   });
+}
+
+function bindTopbarRefresh() {
+  ensureShellUi();
+  if (!shellUi.refreshButton || shellUi.refreshButton.dataset.bound === "1") return;
+
+  shellUi.refreshButton.dataset.bound = "1";
+  shellUi.refreshButton.addEventListener("click", () => {
+    void refreshCurrentView();
+  });
+
+  updateViewRefreshButton();
 }
 
 /* ----------------------------------------------------------------------
@@ -1991,6 +2289,7 @@ async function initApp() {
 
     initSidebarShell();
     initAdminUserMenu();
+    bindTopbarRefresh();
     bindNavigation();
     bindDelegatedNavigation();
     bindRouteChanges();
@@ -2000,9 +2299,10 @@ async function initApp() {
     const initialView = resolveInitialView();
     App.currentRoute = initialRoute;
     App.boot.firstViewName = initialView;
+    setTopbarTitleBase(resolveViewTitle(initialView, initialRoute));
     console.log("[BOOT:55] Router ready", performance.now());
     console.log("[BOOT:60] first view mount begin", performance.now());
-    await loadView(initialView);
+    await loadView(initialView, { route: initialRoute });
     if (initialRoute?.mode === "hash" && initialRoute.view) {
       window.StreamSuitesAdminRoutes?.canonicalizeLegacyHashRoute?.(initialRoute);
     } else if (!initialRoute?.view || initialRoute?.pathname === "/") {
@@ -2034,127 +2334,101 @@ function maybeStartRuntimePolling() {
   RestartIndicator.init();
 }
 
+window.StreamSuitesAdminShell = {
+  refreshCurrentView,
+  setTopbarTitleOverride,
+  clearTopbarTitleOverride,
+  getCurrentViewTitle() {
+    return App.title.override || App.title.base || "Overview";
+  },
+  getCurrentView() {
+    return App.currentView || "";
+  },
+  isViewHydrating() {
+    return App.viewHydration.inFlight === true;
+  }
+};
+
 /* ----------------------------------------------------------------------
    Register Views
    ---------------------------------------------------------------------- */
 
 registerView("overview", {
-  onLoad: () => {
-    window.OverviewView?.init?.();
-  },
-  onUnload: () => {
-    window.OverviewView?.destroy?.();
-  }
+  onLoad: () => window.OverviewView?.init?.(),
+  onUnload: () => window.OverviewView?.destroy?.()
 });
 
 registerView("creators", {
   onLoad: () => {
     if (window.CreatorsView?.init) {
-      window.CreatorsView.init();
+      return window.CreatorsView.init();
     }
+    return null;
   },
-  onUnload: () => {
-    window.CreatorsView?.destroy?.();
-  }
+  onUnload: () => window.CreatorsView?.destroy?.()
 });
 registerView("creator-integrations", {
-  onLoad: () => {
-    window.CreatorIntegrationsView?.init?.();
-  },
-  onUnload: () => {
-    window.CreatorIntegrationsView?.destroy?.();
-  }
+  onLoad: () => window.CreatorIntegrationsView?.init?.(),
+  onUnload: () => window.CreatorIntegrationsView?.destroy?.()
 });
 registerView("user-detail", {
-  onLoad: () => {
-    window.UserDetailView?.init?.();
-  },
-  onUnload: () => {
-    window.UserDetailView?.destroy?.();
-  }
+  onLoad: () => window.UserDetailView?.init?.(),
+  onUnload: () => window.UserDetailView?.destroy?.()
 });
 registerView("creator-stats", {
-  onLoad: () => {
-    window.CreatorStatsView?.init?.();
-  },
-  onUnload: () => {
-    window.CreatorStatsView?.destroy?.();
-  }
+  onLoad: () => window.CreatorStatsView?.init?.(),
+  onUnload: () => window.CreatorStatsView?.destroy?.()
 });
   registerView("accounts", {
-    onLoad: () => {
-      window.AccountsView?.init?.();
-    }
+    onLoad: () => window.AccountsView?.init?.()
   });
   registerView("tiers", {
-    onLoad: () => {
-      window.TiersView?.init?.();
-    }
+    onLoad: () => window.TiersView?.init?.()
   });
   registerView("audit", {
     templatePath: "audit",
-    onLoad: () => {
-    window.AuditLogsView?.init?.();
-  }
+    onLoad: () => window.AuditLogsView?.init?.()
 });
 registerView("approvals", {
   templatePath: "approvals",
-  onLoad: () => {
-    window.ApprovalsView?.init?.();
-  },
-  onUnload: () => {
-    window.ApprovalsView?.destroy?.();
-  }
+  onLoad: () => window.ApprovalsView?.init?.(),
+  onUnload: () => window.ApprovalsView?.destroy?.()
 });
 registerView("api-usage", {
   templatePath: "api-usage",
-  onLoad: () => {
-    window.ApiUsageView?.init?.();
-  },
-  onUnload: () => {
-    window.ApiUsageView?.destroy?.();
-  }
+  onLoad: () => window.ApiUsageView?.init?.(),
+  onUnload: () => window.ApiUsageView?.destroy?.()
 });
 registerView("alerts", {
-  onLoad: () => {
-    window.StreamSuitesAlertsView?.init?.();
-  },
-  onUnload: () => {
-    window.StreamSuitesAlertsView?.destroy?.();
-  }
+  onLoad: () => window.StreamSuitesAlertsView?.init?.(),
+  onUnload: () => window.StreamSuitesAlertsView?.destroy?.()
 });
 registerView("analytics", {
-  onLoad: () => {
-    window.AnalyticsView?.init?.();
-  },
-  onUnload: () => {
-    window.AnalyticsView?.destroy?.();
-  }
+  onLoad: () => window.AnalyticsView?.init?.(),
+  onUnload: () => window.AnalyticsView?.destroy?.()
 });
 
 registerView("triggers", {
   onLoad: () => {
     if (window.TriggersView?.init) {
-      window.TriggersView.init();
+      return window.TriggersView.init();
     }
+    return null;
   }
 });
 
 registerView("jobs", {
   onLoad: () => {
     if (window.JobsView?.init) {
-      window.JobsView.init();
+      return window.JobsView.init();
     }
+    return null;
   }
 });
 
 registerView("clips", {
-  onLoad: () => {
-    window.ClipsView?.init?.();
-  },
-  onUnload: () => {
-    window.ClipsView?.destroy?.();
-  }
+  onLoad: () => window.ClipsView?.init?.(),
+  onUnload: () => window.ClipsView?.destroy?.()
 });
 registerView("polls", {});
 registerView("tallies", {});
@@ -2162,60 +2436,36 @@ registerView("scoreboards", {});
 registerView("scoreboard-management", {});
 registerView("data-signals", {
   templatePath: "data-signals",
-  onLoad: () => {
-    window.DataSignalsView?.init?.();
-  },
-  onUnload: () => {
-    window.DataSignalsView?.destroy?.();
-  }
+  onLoad: () => window.DataSignalsView?.init?.(),
+  onUnload: () => window.DataSignalsView?.destroy?.()
 });
 registerView("bots", {
-  onLoad: () => {
-    window.BotsView?.init?.();
-  },
-  onUnload: () => {
-    window.BotsView?.destroy?.();
-  }
+  onLoad: () => window.BotsView?.init?.(),
+  onUnload: () => window.BotsView?.destroy?.()
 });
 registerView("rumble", { templatePath: "platforms/rumble" });
 registerView("youtube", {
   templatePath: "platforms/youtube",
-  onLoad: () => {
-    window.YouTubeView?.init?.();
-  },
-  onUnload: () => {
-    window.YouTubeView?.destroy?.();
-  }
+  onLoad: () => window.YouTubeView?.init?.(),
+  onUnload: () => window.YouTubeView?.destroy?.()
 });
 registerView("twitch", {
   templatePath: "platforms/twitch",
-  onLoad: () => {
-    window.TwitchView?.init?.();
-  },
-  onUnload: () => {
-    window.TwitchView?.destroy?.();
-  }
+  onLoad: () => window.TwitchView?.init?.(),
+  onUnload: () => window.TwitchView?.destroy?.()
 });
 registerView("kick", {
   templatePath: "platforms/kick",
-  onLoad: (mode) => {
-    window.KickView?.init?.(mode);
-  },
-  onUnload: () => {
-    window.KickView?.destroy?.();
-  },
+  onLoad: (mode) => window.KickView?.init?.(mode),
+  onUnload: () => window.KickView?.destroy?.(),
   onModeChange: (mode) => {
     window.KickView?.onModeChange?.(mode);
   }
 });
 registerView("pilled", {
   templatePath: "platforms/pilled",
-  onLoad: (mode) => {
-    window.PilledView?.init?.(mode);
-  },
-  onUnload: () => {
-    window.PilledView?.destroy?.();
-  },
+  onLoad: (mode) => window.PilledView?.init?.(mode),
+  onUnload: () => window.PilledView?.destroy?.(),
   onModeChange: (mode) => {
     window.PilledView?.onModeChange?.(mode);
   }
@@ -2223,45 +2473,27 @@ registerView("pilled", {
 registerView("twitter", { templatePath: "platforms/twitter" });
 registerView("discord", {
   templatePath: "platforms/discord",
-  onLoad: () => {
-    window.DiscordView?.init?.();
-  },
-  onUnload: () => {
-    window.DiscordView?.destroy?.();
-  }
+  onLoad: () => window.DiscordView?.init?.(),
+  onUnload: () => window.DiscordView?.destroy?.()
 });
 
 registerView("ratelimits", {
-  onLoad: () => {
-    window.RatelimitsView?.init?.();
-  }
+  onLoad: () => window.RatelimitsView?.init?.()
 });
 
 registerView("settings", {
-  onLoad: () => {
-    window.SettingsView?.init?.();
-  },
-  onUnload: () => {
-    window.SettingsView?.destroy?.();
-  }
+  onLoad: () => window.SettingsView?.init?.(),
+  onUnload: () => window.SettingsView?.destroy?.()
 });
 registerView("chat-replay", {});
 registerView("design", {});
 registerView("updates", {
-  onLoad: () => {
-    window.UpdatesView?.init?.();
-  },
-  onUnload: () => {
-    window.UpdatesView?.destroy?.();
-  }
+  onLoad: () => window.UpdatesView?.init?.(),
+  onUnload: () => window.UpdatesView?.destroy?.()
 });
 registerView("notifications", {
-  onLoad: () => {
-    window.StreamSuitesNotifications?.initCenter?.();
-  },
-  onUnload: () => {
-    window.StreamSuitesNotifications?.destroyCenter?.();
-  }
+  onLoad: () => window.StreamSuitesNotifications?.initCenter?.(),
+  onUnload: () => window.StreamSuitesNotifications?.destroyCenter?.()
 });
 
 /* ----------------------------------------------------------------------

@@ -2,7 +2,7 @@
   "use strict";
 
   function init() {
-    window.StreamSuitesAnalyticsAlerting?.init?.();
+    return window.StreamSuitesAnalyticsAlerting?.init?.();
   }
 
   function destroy() {

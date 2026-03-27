@@ -1661,7 +1661,7 @@ function normalizeUser(raw = {}) {
           <span
             class="ss-btn-icon-glyph"
             aria-hidden="true"
-            style="--ss-btn-icon: url('/assets/icons/ui/querystats.svg')"
+            style="--ss-btn-icon: url('/assets/icons/ui/statgraph.svg')"
           ></span>
         </button>
       </div>

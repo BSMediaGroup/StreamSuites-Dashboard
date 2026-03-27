@@ -422,7 +422,7 @@
       <div class="ss-sidebar-brand">
         <div class="header-left">
           <a href="https://admin.streamsuites.app" class="ss-sidebar-brand-link">
-            <img src="/assets/logos/adminredshield.webp" alt="StreamSuites Logo" />
+            <img src="/assets/logos/adminshieldcon.webp" alt="StreamSuites Logo" />
             <div class="ss-sidebar-brand-text">
               <h1 class="app-title">StreamSuites™</h1>
               <span class="dashboard-badge" id="dashboard-mode">
@@ -521,9 +521,19 @@
             <span class="accounts-tabs-toggle-icon" aria-hidden="true"></span>
             <span class="sr-only">Toggle accounts section tabs</span>
           </button>
-          <span class="ss-topbar-title">Admin Control</span>
+          <span id="topbar-view-title" class="ss-topbar-title">Overview</span>
         </div>
         <div class="ss-topbar-right">
+          <button
+            type="button"
+            id="topbar-refresh-button"
+            class="ss-topbar-icon-button"
+            aria-label="Refresh current view"
+            title="Refresh current view"
+          >
+            <span class="ss-topbar-icon ss-topbar-icon-refresh" aria-hidden="true"></span>
+            <span class="sr-only">Refresh current view</span>
+          </button>
           <div id="topbar-notifications" class="ss-notifications" data-notifications-widget>
             <button
               type="button"

@@ -1332,6 +1332,10 @@ body.header-hidden #app-header {
   gap: 10px;
 }
 
+.ss-topbar-left {
+  min-width: 0;
+}
+
 .ss-topbar-right {
   margin-left: auto;
   min-width: 0;
@@ -1339,9 +1343,13 @@ body.header-hidden #app-header {
 
 .ss-topbar-title {
   font-family: "RechargeBd", sans-serif;
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  max-width: min(48vw, 520px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .ss-global-loader {
@@ -1359,7 +1367,7 @@ body.header-hidden #app-header {
   height: 3px;
   overflow: hidden;
   opacity: 0;
-  background: rgba(140, 121, 255, 0.12);
+  background: color-mix(in srgb, var(--accent-shell, #a46cff) 18%, transparent);
   transition: opacity 0.16s ease;
 }
 
@@ -1372,15 +1380,15 @@ body.header-hidden #app-header {
   opacity: 0;
   background: linear-gradient(
     90deg,
-    rgba(140, 121, 255, 0),
-    rgba(140, 121, 255, 0.85) 24%,
-    rgba(193, 130, 255, 0.8) 50%,
-    rgba(106, 123, 255, 0.75) 76%,
-    rgba(155, 145, 255, 0)
+    rgba(164, 108, 255, 0),
+    rgba(164, 108, 255, 0.86) 24%,
+    rgba(201, 162, 255, 0.82) 50%,
+    rgba(126, 122, 255, 0.72) 76%,
+    rgba(164, 108, 255, 0)
   );
   box-shadow:
-    0 0 8px rgba(155, 145, 255, 0.42),
-    0 0 16px rgba(193, 130, 255, 0.34);
+    0 0 8px rgba(164, 108, 255, 0.4),
+    0 0 16px rgba(201, 162, 255, 0.3);
   animation: ss-global-loader-indeterminate 1.05s linear infinite;
 }
 
@@ -1399,7 +1407,7 @@ body.header-hidden #app-header {
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(193, 130, 255, 0.92);
+  color: var(--accent-shell-strong, #c9a2ff);
   opacity: 0;
   transform: translateY(-3px);
   transition: opacity 0.18s ease, transform 0.18s ease;
@@ -1440,6 +1448,7 @@ body.header-hidden #app-header {
   align-items: center;
 }
 
+.ss-topbar-icon-button,
 .ss-notifications-toggle {
   position: relative;
   appearance: none;
@@ -1454,6 +1463,46 @@ body.header-hidden #app-header {
   justify-content: center;
   cursor: pointer;
   transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.ss-topbar-icon-button {
+  color: var(--text-secondary);
+}
+
+.ss-topbar-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: 128%;
+  mask-size: 128%;
+}
+
+.ss-topbar-icon-refresh {
+  -webkit-mask-image: url("/assets/icons/ui/refresh.svg");
+  mask-image: url("/assets/icons/ui/refresh.svg");
+}
+
+.ss-topbar-icon-button.is-loading .ss-topbar-icon-refresh {
+  animation: ss-topbar-icon-spin 0.85s linear infinite;
+}
+
+.ss-topbar-icon-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@keyframes ss-topbar-icon-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .ss-notifications-toggle:hover,
