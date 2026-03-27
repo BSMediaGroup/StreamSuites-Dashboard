@@ -4,6 +4,36 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Admin Checkbox + Toggle Control Standardization - 2026-03-28
+
+### Technical Notes
+
+- The shared glowing checkbox primitive in `docs/css/components.css` now defines the intended smaller baseline directly, reducing the old `/design` reference geometry from `24px` to a `12px` visual box while preserving the same glow, checkmark animation, dark-surface contrast, and disabled-state logic.
+- Keyboard treatment was tightened in the shared control layer by adding explicit focus-visible rings for both the glowing checkbox primitive and the existing shared `switch-button` Admin12121 toggle path, so admin checkboxes and switches now land on one consistent accessibility contract instead of a mix of native/browser-default states.
+- Remaining admin checkbox drift was removed from the Accounts, Alerts, Notifications, Discord installs, and badge-governance render paths by migrating those raw/native checkbox rows onto the shared `.ss-checkbox-wrapper` markup used elsewhere in the dashboard, while existing switch surfaces kept the established `switch-button` component path.
+- The `/design` supersheet checkbox reference copy was updated to describe the new smaller reference size, and the toggle reference wording was tightened so the design page accurately reflects the intended shared switch path without expanding this pass into unrelated control families.
+
+### Human-Readable Notes
+
+- Admin checkboxes now match each other again instead of mixing the glowing shared control with plain browser checkboxes in a few pages and drawers.
+- The intended checkbox look is noticeably smaller than before, but it keeps the same glow treatment and still reads cleanly against the dark dashboard theme.
+- Admin toggle switches continue using the same Admin12121 switch style, but focus and disabled handling are now more consistent across the places that already used it.
+
+### Files / Areas Touched
+
+- `docs/css/components.css`
+- `docs/css/base.css`
+- `docs/views/design.html`
+- `docs/views/accounts.html`
+- `docs/views/alerts.html`
+- `docs/views/notifications.html`
+- `docs/views/platforms/discord.html`
+- `docs/js/accounts.js`
+- `docs/js/analytics-alerting.js`
+- `docs/js/notifications.js`
+- `docs/js/user-detail.js`
+- `BUMP_NOTES.md`
+
 ## Admin Direct-Load Routing Parity Realignment - 2026-03-28
 
 ### Technical Notes

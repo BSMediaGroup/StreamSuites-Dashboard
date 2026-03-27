@@ -1927,7 +1927,15 @@ body.header-hidden #app-header {
   color: var(--text-secondary);
 }
 
+.ss-notifications-setting-toggle .ss-checkbox-text {
+  color: inherit;
+}
+
 .ss-notifications-setting-toggle.small {
+  font-size: 12px;
+}
+
+.ss-notifications-setting-toggle.small .ss-checkbox-text {
   font-size: 12px;
 }
 

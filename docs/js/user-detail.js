@@ -756,9 +756,10 @@
           <div class="accounts-details-placeholder-title">Manual entitlements</div>
           <div class="accounts-details-placeholder-value user-detail-checkbox-grid">
             ${["founder", "moderator", "developer"].map((key) => `
-              <label class="accounts-badge-inline-option muted">
+              <label class="accounts-badge-inline-option muted ss-checkbox-wrapper">
                 <input type="checkbox" data-user-detail-badge-entitlement="${escapeHtml(key)}"${entitlements[key]?.enabled === true ? " checked" : ""} />
-                <span>${escapeHtml(formatBadgeLabel(key))}</span>
+                <div class="ss-checkbox"></div>
+                <span class="ss-checkbox-text">${escapeHtml(formatBadgeLabel(key))}</span>
               </label>
             `).join("")}
           </div>

@@ -1583,9 +1583,10 @@
         return `
           <div class="ss-analytics-alerts-destination-row">
             <label class="ss-analytics-alerts-destination-main">
-              <span class="ss-analytics-alerts-inline-toggle">
+              <span class="ss-analytics-alerts-inline-toggle ss-checkbox-wrapper">
                 <input type="checkbox" data-destination-enabled="${escapeHtml(key)}" ${current.enabled !== false ? "checked" : ""} />
-                <strong>${escapeHtml(destinationLabel(key))}</strong>
+                <div class="ss-checkbox"></div>
+                <span class="ss-checkbox-text"><strong>${escapeHtml(destinationLabel(key))}</strong></span>
               </span>
               <span class="muted">${escapeHtml(labelize(key))}</span>
             </label>
@@ -1612,9 +1613,10 @@
       .map((key) => {
         const checked = selected.has(key) ? "checked" : "";
         return `
-          <label class="ss-analytics-alerts-inline-toggle">
+          <label class="ss-analytics-alerts-inline-toggle ss-checkbox-wrapper">
             <input type="checkbox" data-${datasetName}="${escapeHtml(key)}" ${checked} />
-            <span>${escapeHtml(destinationLabel(key))}</span>
+            <div class="ss-checkbox"></div>
+            <span class="ss-checkbox-text">${escapeHtml(destinationLabel(key))}</span>
           </label>
         `;
       })
@@ -2269,9 +2271,10 @@
     if (!config) return "";
     if (config.kind === "checkbox") {
       return `
-        <label class="ss-analytics-alerts-inline-toggle ss-analytics-alerts-scope-flag">
+        <label class="ss-analytics-alerts-inline-toggle ss-analytics-alerts-scope-flag ss-checkbox-wrapper">
           <input type="checkbox" data-scope-field="${escapeHtml(field)}" ${value === true ? "checked" : ""} />
-          <span>${escapeHtml(config.label)}</span>
+          <div class="ss-checkbox"></div>
+          <span class="ss-checkbox-text">${escapeHtml(config.label)}</span>
         </label>
       `;
     }
@@ -2279,14 +2282,15 @@
       const selected = new Set(Array.isArray(value) ? value : []);
       const options = getScopeSelectOptions(field, value)
         .map((option) => `
-          <label class="ss-alerts-surface-checkbox">
+          <label class="ss-alerts-surface-checkbox ss-checkbox-wrapper">
             <input
               type="checkbox"
               data-scope-field="${escapeHtml(field)}"
               data-scope-value="${escapeHtml(option)}"
               ${selected.has(option) ? "checked" : ""}
             />
-            <span>${escapeHtml(surfaceLabel(option))}</span>
+            <div class="ss-checkbox"></div>
+            <span class="ss-checkbox-text">${escapeHtml(surfaceLabel(option))}</span>
           </label>
         `)
         .join("");

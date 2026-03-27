@@ -1196,8 +1196,9 @@ function normalizeUser(raw = {}) {
       .map((key) => {
         const enabled = entitlements[key]?.enabled === true;
         return `
-          <label class="accounts-badge-inline-option muted">
+          <label class="accounts-badge-inline-option muted ss-checkbox-wrapper">
             <input type="checkbox" data-account-badge-entitlement="${escapeHtml(key)}" data-account-id="${escapeHtml(accountId)}"${enabled ? " checked" : ""} />
+            <div class="ss-checkbox"></div>
             ${renderBadgeChoiceLabel(key, enabled ? "Enabled for this account" : "Not manually enabled")}
           </label>
         `;
@@ -1279,8 +1280,9 @@ function normalizeUser(raw = {}) {
     const visibleCount = governedKeys.filter((key) => defaultVisibility[key]).length;
     const visibilityRows = governedKeys
       .map((key) => `
-        <label class="accounts-badge-choice">
+        <label class="accounts-badge-choice ss-checkbox-wrapper">
           <input type="checkbox" data-system-badge-visibility="${escapeHtml(key)}"${defaultVisibility[key] ? " checked" : ""} />
+          <div class="ss-checkbox"></div>
           ${renderBadgeChoiceLabel(
             key,
             defaultVisibility[key] ? "Shown by default" : "Hidden by default"

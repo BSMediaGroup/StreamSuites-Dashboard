@@ -341,9 +341,10 @@
                   <h4 id="analytics-alerts-rule-scope-title">Match filters</h4>
                   <p class="muted">Optional filters that keep a rule focused on the right pages, surfaces, auth flows, or user types.</p>
                 </div>
-                <label class="ss-analytics-alerts-inline-toggle">
+                <label class="ss-analytics-alerts-inline-toggle ss-checkbox-wrapper">
                   <input type="checkbox" id="analytics-alerts-rule-scope-enabled" />
-                  <span>Limit this rule</span>
+                  <div class="ss-checkbox"></div>
+                  <span class="ss-checkbox-text">Limit this rule</span>
                 </label>
               </div>
               <div id="analytics-alerts-rule-scope-body" class="ss-analytics-alerts-scope-body hidden">
@@ -391,13 +392,15 @@
       <div class="ss-panel-body ss-alerts-collapsible-body">
         <form id="analytics-alerts-preferences-form" class="ss-analytics-alerts-form">
           <div class="ss-analytics-alerts-toggle-grid">
-            <label class="ss-analytics-alerts-inline-toggle">
+            <label class="ss-analytics-alerts-inline-toggle ss-checkbox-wrapper">
               <input type="checkbox" id="analytics-alerts-master-enabled" />
-              <span>Alerts enabled</span>
+              <div class="ss-checkbox"></div>
+              <span class="ss-checkbox-text">Alerts enabled</span>
             </label>
-            <label class="ss-analytics-alerts-inline-toggle">
+            <label class="ss-analytics-alerts-inline-toggle ss-checkbox-wrapper">
               <input type="checkbox" id="analytics-alerts-quiet-hours-enabled" />
-              <span>Quiet hours enabled</span>
+              <div class="ss-checkbox"></div>
+              <span class="ss-checkbox-text">Quiet hours enabled</span>
             </label>
           </div>
 
@@ -488,9 +491,10 @@
             <div id="analytics-alerts-test-destinations" class="ss-analytics-alerts-destination-defaults"></div>
           </fieldset>
 
-          <label class="ss-analytics-alerts-inline-toggle">
+          <label class="ss-analytics-alerts-inline-toggle ss-checkbox-wrapper">
             <input type="checkbox" id="analytics-alerts-test-force" />
-            <span>Bypass quiet hours and suppression checks</span>
+            <div class="ss-checkbox"></div>
+            <span class="ss-checkbox-text">Bypass quiet hours and suppression checks</span>
           </label>
 
           <div class="ss-analytics-alerts-form-actions">

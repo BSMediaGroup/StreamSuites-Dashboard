@@ -569,9 +569,10 @@
       .map((value) => {
         const checked = setRef.has(value) ? "checked" : "";
         return `
-          <label class="ss-notifications-setting-toggle small">
+          <label class="ss-notifications-setting-toggle small ss-checkbox-wrapper">
             <input type="checkbox" data-mute-group="${name}" value="${escapeHtml(value)}" ${checked} />
-            <span>${escapeHtml(labelFormatter(value))}</span>
+            <div class="ss-checkbox"></div>
+            <span class="ss-checkbox-text">${escapeHtml(labelFormatter(value))}</span>
           </label>
         `;
       })
