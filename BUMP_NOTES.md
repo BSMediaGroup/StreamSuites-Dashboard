@@ -4,6 +4,25 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Admin Compact Widget Cleanup - 2026-03-27
+
+### Technical Notes
+
+- The dashboard top-bar auth widget now resolves one compact badge outcome instead of showing tier plus admin simultaneously; admin wins over tier, developer wins over Pro when admin-lite access is the relevant authorization path, and the redundant text-tier pill is hidden in the compact header control.
+- Header auth styling was tightened so the account widget sits closer to the notification control envelope instead of reading taller and heavier than adjacent chrome.
+
+### Human-Readable Notes
+
+- The admin header account pill is slimmer and no longer shows stacked redundant badge state.
+- Developer-authorized dashboard sessions now read as developer in the compact widget instead of looking like a generic tiered account.
+
+### Files / Areas Touched
+
+- `docs/js/admin-auth.js`
+- `docs/js/admin-gate.js`
+- `docs/css/base.css`
+- `BUMP_NOTES.md`
+
 ## Admin Badge Priority Display Alignment - 2026-03-27
 
 - The dashboard accounts surface now defensively suppresses creator-tier icons whenever an Admin badge is present, so account rows and detail drawers stay aligned with the authoritative runtime rule instead of showing stale redundant tier badges from older payload shapes.

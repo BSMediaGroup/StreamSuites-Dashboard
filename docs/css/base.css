@@ -281,8 +281,8 @@ body.header-hidden #app-header {
 }
 
 .streamsuites-auth-avatar {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.08);
   display: inline-flex;
@@ -291,8 +291,8 @@ body.header-hidden #app-header {
 }
 
 .streamsuites-auth-avatar img {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   filter: brightness(0) invert(0.9);
 }
 
@@ -304,14 +304,14 @@ body.header-hidden #app-header {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 140px;
+  min-width: 124px;
 }
 
 .streamsuites-auth-name {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: 5px;
+  font-size: 11px;
   letter-spacing: 0.02em;
 }
 
@@ -320,7 +320,7 @@ body.header-hidden #app-header {
 }
 
 .streamsuites-auth-tier-badge {
-  height: 16px;
+  height: 14px;
   width: auto;
   display: block;
   flex: 0 0 auto;
@@ -345,15 +345,7 @@ body.header-hidden #app-header {
 }
 
 .streamsuites-auth-tier {
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, rgba(92, 176, 188, 0.24), rgba(62, 130, 150, 0.14));
-  color: #d7f3f4;
-  box-shadow: none;
-  text-shadow: none;
+  display: none;
 }
 
 .streamsuites-auth-tier[data-tier="CORE"] {
@@ -379,8 +371,9 @@ body.header-hidden #app-header {
 .streamsuites-auth-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 4px 10px;
+  gap: 8px;
+  min-height: 30px;
+  padding: 3px 8px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.04);

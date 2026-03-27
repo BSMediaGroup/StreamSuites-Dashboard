@@ -422,8 +422,9 @@
       });
     },
 
-    setHeaderIdentity({ name, email, role, avatarUrl, tier }) {
+    setHeaderIdentity({ name, email, role, avatarUrl, tier, adminAccess }) {
       if (!this.elements.headerWrap) return;
+      const normalizedRole = String(role || "").trim().toLowerCase();
       const fallbackAvatar =
         this.elements.headerAvatar?.getAttribute("data-fallback") ||
         resolveBaseAssetPath("/assets/icons/ui/profile.svg");
@@ -454,14 +455,26 @@
         const resolvedTier = tier ? resolveTierLabel(tier).toUpperCase() : "CORE";
         this.elements.headerTier.textContent = resolvedTier;
         this.elements.headerTier.dataset.tier = resolvedTier;
+        this.elements.headerTier.hidden = true;
         if (headerTierBadge) {
           const badgeTier = resolvedTier.toLowerCase();
           headerTierBadge.src = resolveBaseAssetPath(`/assets/icons/tierbadge-${badgeTier}.svg`);
           headerTierBadge.dataset.tier = resolvedTier;
+          headerTierBadge.hidden = false;
         }
       }
       if (headerAdminBadge) {
-        headerAdminBadge.src = resolveBaseAssetPath("/assets/icons/tierbadge-admin.svg");
+        const showDeveloperBadge = normalizedRole !== "admin" && adminAccess?.allowed === true;
+        const badgeKey = showDeveloperBadge ? "developer" : "admin";
+        headerAdminBadge.src = resolveBaseAssetPath(
+          showDeveloperBadge ? "/assets/icons/dev-green.svg" : "/assets/icons/tierbadge-admin.svg"
+        );
+        headerAdminBadge.alt = showDeveloperBadge ? "Developer" : "Admin";
+        headerAdminBadge.dataset.ssRoleBadge = badgeKey;
+        headerAdminBadge.hidden = normalizedRole !== "admin" && !showDeveloperBadge;
+        if (headerTierBadge) {
+          headerTierBadge.hidden = normalizedRole === "admin" || showDeveloperBadge;
+        }
       }
       if (this.elements.headerAvatar) {
         const resolvedAvatar = avatarUrl || fallbackAvatar;
@@ -506,7 +519,8 @@
           email: this.state.email,
           role: this.state.role,
           avatarUrl: this.state.avatarUrl,
-          tier: this.state.tier
+          tier: this.state.tier,
+          adminAccess: this.state.adminAccess
         });
         return;
       }
@@ -520,7 +534,7 @@
           showCreator: false
         });
         this.openOverlay();
-        this.setHeaderIdentity({ name: "", email: "", role: "", tier: "" });
+        this.setHeaderIdentity({ name: "", email: "", role: "", tier: "", adminAccess: null });
         return;
       }
 
@@ -537,7 +551,8 @@
         email: this.state.email,
         role: this.state.role,
         avatarUrl: this.state.avatarUrl,
-        tier: this.state.tier
+        tier: this.state.tier,
+        adminAccess: this.state.adminAccess
       });
     },
 

@@ -472,6 +472,7 @@
     const headerTierBadge = headerName?.querySelector(".streamsuites-auth-tier-badge");
     const headerAdminBadge = headerName?.querySelector(".streamsuites-auth-admin-badge");
     const fallbackAvatar = `${window.ADMIN_BASE_PATH}/assets/icons/ui/profile.svg`;
+    const normalizedRole = String(admin?.role || "").trim().toLowerCase();
 
     if (!headerWrap) return;
 
@@ -495,14 +496,23 @@
       const resolvedTier = admin.tier ? resolveTierLabel(admin.tier).toUpperCase() : "CORE";
       headerTier.textContent = resolvedTier;
       headerTier.dataset.tier = resolvedTier;
+      headerTier.hidden = true;
       if (headerTierBadge) {
         const badgeTier = resolvedTier.toLowerCase();
         headerTierBadge.src = `${window.ADMIN_BASE_PATH}/assets/icons/tierbadge-${badgeTier}.svg`;
         headerTierBadge.dataset.tier = resolvedTier;
+        headerTierBadge.hidden = false;
       }
     }
     if (headerAdminBadge) {
-      headerAdminBadge.src = `${window.ADMIN_BASE_PATH}/assets/icons/tierbadge-admin.svg`;
+      const showDeveloperBadge = normalizedRole !== AUTHORIZED_ROLE && admin.adminAccess?.allowed === true;
+      headerAdminBadge.src = `${window.ADMIN_BASE_PATH}${showDeveloperBadge ? "/assets/icons/dev-green.svg" : "/assets/icons/tierbadge-admin.svg"}`;
+      headerAdminBadge.alt = showDeveloperBadge ? "Developer" : "Admin";
+      headerAdminBadge.dataset.ssRoleBadge = showDeveloperBadge ? "developer" : "admin";
+      headerAdminBadge.hidden = normalizedRole !== AUTHORIZED_ROLE && !showDeveloperBadge;
+      if (headerTierBadge) {
+        headerTierBadge.hidden = normalizedRole === AUTHORIZED_ROLE || showDeveloperBadge;
+      }
     }
     if (headerAvatar) {
       const resolvedAvatar = admin.avatarUrl || fallbackAvatar;
