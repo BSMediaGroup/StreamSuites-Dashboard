@@ -1273,6 +1273,15 @@ function normalizeUser(raw = {}) {
     }
     const defaultVisibility = governance.default_visibility && typeof governance.default_visibility === "object" ? governance.default_visibility : {};
     const founder = governance.founder_reconcile || {};
+    const founderPolicy = governance.founder_policy && typeof governance.founder_policy === "object" ? governance.founder_policy : {};
+    const storedCutoffDate = typeof founderPolicy.cutoff_date === "string" && founderPolicy.cutoff_date
+      ? founderPolicy.cutoff_date
+      : (governance.founder_cutoff_date || "");
+    const autoAssignmentEnabled = Boolean(founderPolicy.auto_assignment_enabled);
+    const cutoffTimezone = typeof founderPolicy.cutoff_timezone === "string" && founderPolicy.cutoff_timezone
+      ? founderPolicy.cutoff_timezone
+      : "UTC";
+    const cutoffInclusive = founderPolicy.cutoff_inclusive !== false;
     const governedKeys = sortBadgeKeys([
       ...Object.keys(defaultVisibility),
       ...((Array.isArray(governance.catalog) ? governance.catalog : []).map((item) => item?.key))
@@ -1306,12 +1315,16 @@ function normalizeUser(raw = {}) {
               <strong class="value">${escapeHtml(String(founder.eligible_existing_accounts || 0))}</strong>
             </div>
             <div class="accounts-governance-stat">
-              <span class="label">Founder enabled</span>
+              <span class="label">Existing founder enabled</span>
               <strong class="value">${escapeHtml(String(founder.enabled_accounts || 0))}</strong>
             </div>
             <div class="accounts-governance-stat">
               <span class="label">Pending reconcile</span>
               <strong class="value">${escapeHtml(String(founder.pending_accounts || 0))}</strong>
+            </div>
+            <div class="accounts-governance-stat">
+              <span class="label">New-account auto assign</span>
+              <strong class="value">${escapeHtml(autoAssignmentEnabled ? "Active" : "Off")}</strong>
             </div>
             <div class="accounts-governance-stat">
               <span class="label">Visible by default</span>
@@ -1320,12 +1333,14 @@ function normalizeUser(raw = {}) {
           </div>
           <div class="accounts-governance-controls">
             <label class="accounts-governance-date-field">
-              <span class="label">Founder cutoff date</span>
-              <input id="accounts-founder-cutoff-date" class="ss-input" type="date" value="${escapeHtml(governance.founder_cutoff_date || "")}" />
+              <span class="label">Live founder cutoff date</span>
+              <input id="accounts-founder-cutoff-date" class="ss-input" type="date" value="${escapeHtml(storedCutoffDate)}" />
             </label>
+            <p class="accounts-governance-muted">Stored runtime cutoff: <strong>${escapeHtml(storedCutoffDate || "Not configured")}</strong>.</p>
+            <p class="accounts-governance-muted">New accounts created on or before the selected ${escapeHtml(cutoffTimezone)} day${cutoffInclusive ? "" : " boundary"} receive Founder automatically. Reconcile remains a retroactive backfill/correction tool for existing eligible accounts.</p>
             <div class="accounts-inline-actions accounts-governance-actions">
               <button type="button" id="accounts-badge-governance-save" class="ss-btn ss-btn-primary">Save governance</button>
-              <button type="button" id="accounts-founder-reconcile" class="ss-btn ss-btn-secondary">Reconcile founder</button>
+              <button type="button" id="accounts-founder-reconcile" class="ss-btn ss-btn-secondary">Reconcile existing accounts</button>
             </div>
           </div>
         </section>
@@ -3292,7 +3307,7 @@ function normalizeUser(raw = {}) {
       }
       if (target.id === "accounts-founder-reconcile") {
         event.preventDefault();
-        if (!window.confirm("Apply founder entitlement to existing eligible accounts that do not already have an explicit founder decision?")) {
+        if (!window.confirm("Backfill founder entitlement for existing eligible accounts that do not already have an explicit founder decision? New accounts already use the stored live cutoff automatically.")) {
           return;
         }
         void reconcileFounderBadges().catch((err) => {

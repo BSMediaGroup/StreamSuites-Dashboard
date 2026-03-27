@@ -4,6 +4,24 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Accounts Founder Governance Live-State Clarification - 2026-03-28
+
+### Technical Notes
+
+- The Accounts badge-governance panel now consumes the richer runtime founder-policy payload instead of treating the cutoff like a bare manual input, so the hydrated panel can show live stored cutoff state plus automatic-assignment status directly from StreamSuites.
+- Founder-governance copy in `docs/views/accounts.html` and `docs/js/accounts.js` now separates the automatic new-account rule from the manual reconcile action, preserving the existing endpoint/actions while repositioning reconcile as an explicit backfill/correction tool for existing accounts.
+
+### Human-Readable Notes
+
+- The founder cutoff field now reads like a real saved system setting instead of a temporary date you only use during reconcile.
+- The dashboard now makes it clear that new accounts already use the stored cutoff automatically, and that reconcile is for older eligible accounts that still need backfill.
+
+### Files / Areas Touched
+
+- `docs/js/accounts.js`
+- `docs/views/accounts.html`
+- `BUMP_NOTES.md`
+
 ## Admin Publish-Root Canonicalization + Docs Bootstrap De-Ambiguation - 2026-03-28
 
 ### Technical Notes
