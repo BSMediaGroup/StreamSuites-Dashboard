@@ -1368,7 +1368,7 @@ body.header-hidden #app-header {
   height: 3px;
   overflow: hidden;
   opacity: 0;
-  background: color-mix(in srgb, var(--accent-shell, #5a9cff) 18%, transparent);
+  background: color-mix(in srgb, #a46cff 18%, transparent);
   transition: opacity 0.16s ease;
 }
 
@@ -1381,15 +1381,15 @@ body.header-hidden #app-header {
   opacity: 0;
   background: linear-gradient(
     90deg,
-    rgba(var(--accent-shell-rgb, 90, 156, 255), 0),
-    rgba(var(--accent-shell-rgb, 90, 156, 255), 0.86) 24%,
-    rgba(var(--accent-shell-strong-rgb, 164, 203, 255), 0.82) 50%,
-    rgba(116, 176, 255, 0.72) 76%,
-    rgba(var(--accent-shell-rgb, 90, 156, 255), 0)
+    rgba(164, 108, 255, 0),
+    rgba(164, 108, 255, 0.86) 24%,
+    rgba(201, 162, 255, 0.82) 50%,
+    rgba(126, 122, 255, 0.72) 76%,
+    rgba(164, 108, 255, 0)
   );
   box-shadow:
-    0 0 8px rgba(var(--accent-shell-rgb, 90, 156, 255), 0.4),
-    0 0 16px rgba(var(--accent-shell-strong-rgb, 164, 203, 255), 0.3);
+    0 0 8px rgba(164, 108, 255, 0.4),
+    0 0 16px rgba(201, 162, 255, 0.3);
   animation: ss-global-loader-indeterminate 1.05s linear infinite;
 }
 
@@ -1408,7 +1408,7 @@ body.header-hidden #app-header {
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--accent-shell-strong, #a4cbff);
+  color: #c9a2ff;
   opacity: 0;
   transform: translateY(-3px);
   transition: opacity 0.18s ease, transform 0.18s ease;
