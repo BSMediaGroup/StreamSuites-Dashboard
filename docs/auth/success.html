@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <script>
-    window.ADMIN_BASE_PATH = "/docs";
+    window.ADMIN_BASE_PATH = (() => {
+      const pathname = window.location.pathname || "";
+      return pathname === "/docs" || pathname.startsWith("/docs/") ? "/docs" : "";
+    })();
   </script>
   <script>
     window.location.replace("https://admin.streamsuites.app/overview");

@@ -7,6 +7,7 @@ Admin-facing StreamSuites surface deployed to Cloudflare Pages at `https://admin
 - README state prepared for `v0.4.2-alpha`.
 - The active admin web surface is Cloudflare Pages hosted.
 - The repo-root admin shell now acts as the canonical Pages entry point, matching the working Creator/Public single-root routing model, while shared assets and published exports still live under `docs/`.
+- The deploy workflow now builds a root-style publish artifact into `dist/` instead of shipping the raw `docs/` tree directly, so the published shell, fallback files, and asset paths all resolve from the same root.
 - This repo consumes runtime exports for visibility and uses Auth API/runtime endpoints for privileged operations; it does not own runtime execution.
 
 ## Scope & Authority
@@ -54,10 +55,11 @@ flowchart TD
 
 ## Hosting and Routing
 
-- `_redirects` now mirrors the Creator/Public single-root SPA rewrite model: known admin routes resolve to the repo-root `index.html`, while shared asset directories still map into `docs/`.
+- `_redirects` now mirrors the Creator/Public single-root SPA rewrite model: known admin routes resolve to the repo-root `index.html`, while shared asset directories still map into `docs/` in source checkouts.
 - `docs/_redirects` remains as the docs-root compatibility manifest and now only rewrites known admin routes so invalid paths still fall through to `404.html`.
 - `functions/[[path]].js` keeps a Pages runtime fallback for known admin SPA routes and now prefers the repo-root shell before the legacy `docs/` shell.
 - Runtime export metadata is consumed from local published copies under `docs/runtime/exports/`.
+- `scripts/build-pages-artifact.ps1` assembles the canonical deployment artifact by flattening `docs/` assets to the publish root, then overlaying the repo-root admin shell and root-style SPA fallback manifest.
 
 ## Cross-Repo Orientation
 
@@ -182,6 +184,8 @@ StreamSuites-Dashboard/
 │       ├── version.json
 │       └── admin/
 │           └── donations/
+├── scripts/
+│   └── build-pages-artifact.ps1
 ├── schemas/
 │   ├── creators.schema.json
 │   ├── jobs.schema.json

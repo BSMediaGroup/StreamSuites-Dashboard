@@ -4,6 +4,34 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Admin Publish-Root Canonicalization + Docs Bootstrap De-Ambiguation - 2026-03-28
+
+### Technical Notes
+
+- The actual divergence from the working Creator/Public surfaces was no longer just client routing: this repo still shipped two publish models at once. The dashboard source tree kept a root-style Cloudflare Pages shell plus a raw `docs/` publish tree, while the only checked-in deploy workflow still uploaded `docs/` directly. That meant fallback placement, `index.html`, and asset-root assumptions could drift between deployments even when route code looked correct.
+- A new repo-local deployment builder at `scripts/build-pages-artifact.ps1` now produces a canonical root-style publish artifact in `dist/`. It flattens the `docs/` asset/content tree to the publish root, overlays the repo-root `index.html` and `404.html`, and writes a root-native `_redirects` manifest that serves known admin routes straight to `/index.html` without the old `/docs/...` compatibility hop.
+- `.github/workflows/pages.yml` now uploads `dist` instead of raw `docs`, so the published shell, fallback files, and asset directories finally live in the same artifact root. This mirrors the simpler working publish model already used by Creator/Public instead of relying on source-tree duplication.
+- The admin entry documents that still exist in both source locations (`index.html`, `404.html`, `docs/index.html`, `docs/404.html`, `docs/auth/login.html`, `docs/auth/success.html`) no longer hard-code incompatible base-path assumptions. `ADMIN_BASE_PATH` is now resolved from the live pathname, so the same bootstrap logic survives root-hosted and `/docs`-hosted entry without forcing the wrong basename before routing/auth code normalizes.
+
+### Human-Readable Notes
+
+- The dashboard no longer depends on publishing the raw `docs/` folder exactly right for valid deep links to survive refreshes.
+- Deployments now have one canonical root entry shape, which is the same general model the working Creator/Public surfaces already use.
+- The lingering `/docs` bootstrap ambiguity was removed, so valid admin routes do not start from a mismatched base-path assumption when the host serves a root shell.
+
+### Files / Areas Touched
+
+- `.github/workflows/pages.yml`
+- `scripts/build-pages-artifact.ps1`
+- `index.html`
+- `404.html`
+- `docs/index.html`
+- `docs/404.html`
+- `docs/auth/login.html`
+- `docs/auth/success.html`
+- `README.md`
+- `BUMP_NOTES.md`
+
 ## Admin Hydration Reliability + Topbar Refresh/Title + Purple Chrome Pass - 2026-03-28
 
 ### Technical Notes

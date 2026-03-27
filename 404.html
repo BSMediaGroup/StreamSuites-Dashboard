@@ -7,7 +7,10 @@
 <html lang="en">
 <head>
   <script>
-    window.ADMIN_BASE_PATH = "";
+    window.ADMIN_BASE_PATH = (() => {
+      const pathname = window.location.pathname || "";
+      return pathname === "/docs" || pathname.startsWith("/docs/") ? "/docs" : "";
+    })();
   </script>
   <script src="/js/admin-routes.js"></script>
   <meta charset="UTF-8" />

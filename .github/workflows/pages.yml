@@ -26,10 +26,14 @@ jobs:
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
+      - name: Build root publish artifact
+        shell: pwsh
+        run: .\scripts\build-pages-artifact.ps1
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs
+          path: dist
 
   deploy:
     runs-on: ubuntu-latest
