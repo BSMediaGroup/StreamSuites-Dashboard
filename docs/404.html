@@ -352,10 +352,7 @@
       const requestedUrl = `${pathname}${search}`;
 
       if (router?.isDashboardRoute(pathname)) {
-        const relayEntry = pathname === "/docs" || pathname.startsWith("/docs/")
-          ? "/docs/index.html"
-          : "/index.html";
-        const relay = new URL(relayEntry, window.location.origin);
+        const relay = new URL("/", window.location.origin);
         relay.searchParams.set(router.REDIRECT_QUERY_KEY, encodeURIComponent(requestedUrl));
         window.location.replace(relay.toString());
       }

@@ -1622,44 +1622,38 @@ function normalizeUser(raw = {}) {
   function renderActionsToggle(user) {
     const accountId = normalizeAccountId(user.id);
     const userCode = escapeHtml(user.userCode || "");
+    const displayName = escapeHtml(user.displayName || user.userCode || user.email || "account");
     return `
-      <div class="accounts-inline-actions">
+      <div class="accounts-inline-actions" role="group" aria-label="Actions for ${displayName}">
         <button
           type="button"
           class="ss-btn ss-btn-small ss-btn-primary accounts-actions-primary"
+          title="Open full user details"
           data-account-open-user-detail="${userCode}"
         >
-          Open user
+          Details
         </button>
-        <div class="accounts-actions-cluster">
-          <button
-            type="button"
-            class="ss-btn ss-btn-small ss-btn-secondary"
-            data-account-open-actions
-            data-account-id="${escapeHtml(accountId)}"
-            aria-expanded="false"
-            aria-controls="accounts-details-drawer"
-          >
-            Quick view
-          </button>
-          <button
-            type="button"
-            class="ss-btn ss-btn-small ss-btn-secondary"
-            data-account-open-integrations
-            data-account-id="${escapeHtml(accountId)}"
-            data-account-user-code="${userCode}"
-          >
-            Integrations
-          </button>
-          <button
-            type="button"
-            class="ss-btn ss-btn-small ss-btn-secondary"
-            data-account-open-stats
-            data-account-id="${escapeHtml(accountId)}"
-          >
-            Stats
-          </button>
-        </div>
+        <button
+          type="button"
+          class="ss-btn ss-btn-small ss-btn-secondary accounts-icon-action"
+          data-account-open-integrations
+          data-account-id="${escapeHtml(accountId)}"
+          data-account-user-code="${userCode}"
+          aria-label="Open creator integrations for ${displayName}"
+          title="Open creator integrations"
+        >
+          <img src="/assets/icons/ui/integrations.svg" alt="" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          class="ss-btn ss-btn-small ss-btn-secondary accounts-icon-action"
+          data-account-open-stats
+          data-account-id="${escapeHtml(accountId)}"
+          aria-label="Open creator stats for ${displayName}"
+          title="Open creator stats"
+        >
+          <img src="/assets/icons/ui/querystats.svg" alt="" aria-hidden="true" />
+        </button>
       </div>
     `;
   }
@@ -3566,7 +3560,7 @@ function normalizeUser(raw = {}) {
       skipLastHandle: false,
       excludedColumnKeys: ["actions"],
       defaultColumnWidths: {
-        actions: 220
+        actions: 208
       }
     });
   }

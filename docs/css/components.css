@@ -4027,10 +4027,6 @@ body.ss-col-resizing-active {
   background: var(--border-strong);
 }
 
-#accounts-table .accounts-actions-cell {
-  min-width: 192px;
-}
-
 #accounts-table th[data-col-key="actions"] {
   position: sticky;
   right: 0;
@@ -4039,6 +4035,9 @@ body.ss-col-resizing-active {
   background-clip: padding-box;
   box-shadow: none;
   overflow: visible;
+  width: 208px;
+  min-width: 208px;
+  max-width: 208px;
 }
 
 #accounts-table td.accounts-actions-cell {
@@ -4049,6 +4048,10 @@ body.ss-col-resizing-active {
   background-clip: padding-box;
   box-shadow: none;
   overflow: visible;
+  width: 208px;
+  min-width: 208px;
+  max-width: 208px;
+  padding-block: 7px;
 }
 
 #accounts-table th[data-col-key="actions"]::before,
@@ -4091,19 +4094,26 @@ body.ss-col-resizing-active {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
-  flex-wrap: wrap;
+  gap: 4px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 #accounts-table .accounts-inline-actions {
-  display: grid;
-  justify-items: end;
-  gap: 6px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 .accounts-actions-primary {
-  min-width: 112px;
+  min-width: 88px;
+  padding-inline: 12px;
   justify-content: center;
+  flex: 0 0 auto;
 }
 
 .accounts-actions-cluster {
@@ -4116,6 +4126,40 @@ body.ss-col-resizing-active {
 
 .accounts-actions-cluster .ss-btn {
   padding-inline: 10px;
+}
+
+.accounts-icon-action {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  flex: 0 0 auto;
+}
+
+.accounts-icon-action img {
+  width: 15px;
+  height: 15px;
+  display: block;
+  opacity: 0.9;
+}
+
+.accounts-icon-action:hover img,
+.accounts-icon-action:focus-visible img {
+  opacity: 1;
+}
+
+.accounts-icon-action:focus-visible {
+  outline: none;
+  border-color: rgba(120, 195, 255, 0.72);
+  box-shadow: 0 0 0 2px rgba(120, 195, 255, 0.18);
+}
+
+.accounts-icon-action:active {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .accounts-table-system-value {

@@ -56,6 +56,7 @@ flowchart TD
 
 - `_redirects` provides repo-root Cloudflare Pages compatibility and forwards routed assets and views into `docs/`.
 - `docs/_redirects` defines the admin clean-route rewrites used by the static app itself.
+- `functions/[[path]].js` adds a Cloudflare Pages runtime fallback so known admin SPA routes serve the shell with `200` even when static rewrites are bypassed and a literal 404 would otherwise win.
 - Runtime export metadata is consumed from local published copies under `docs/runtime/exports/`.
 
 ## Cross-Repo Orientation
@@ -78,6 +79,8 @@ StreamSuites-Dashboard/
 ├── _redirects
 ├── BUMP_NOTES.md
 ├── DASHBOARD_AUDIT_REPORT.md
+├── functions/
+│   └── [[path]].js
 ├── README.md
 ├── changelog/
 │   ├── changelog.runtime.json

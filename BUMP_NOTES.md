@@ -220,6 +220,29 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 - `docs/css/components.css`
 - `BUMP_NOTES.md`
 
+## Admin Pages Fallback Hardening + Accounts Action Strip Compaction - 2026-03-28
+
+### Technical Notes
+
+- Cloudflare Pages fallback is now enforced at the runtime edge as well as in static manifests: `functions/[[path]].js` lets Pages serve the real admin SPA shell with HTTP `200` for known dashboard client routes whenever the asset layer would otherwise return `404`, covering direct-load, refresh, and pasted-tab entry for `/users/{user_code}` and sibling admin routes without hijacking assets or non-dashboard paths.
+- The existing dashboard 404 recovery page now relays recognized admin routes back through `/` instead of hard-coding `/index.html` or `/docs/index.html`, which removes the publish-root mismatch that was still leaking 404 behavior between the repo-root and `docs/` hosting variants.
+- The Accounts table actions cell was rebuilt into a strict single-line strip: the redundant text `Quick view` button was removed, the primary full-page CTA is now the only text label (`Details`), integrations and stats were converted to icon-only SVG buttons with `title` plus `aria-label`, and the sticky actions column now uses fixed sizing plus no-wrap flex rules so rows stay compact instead of stacking controls.
+
+### Human-Readable Notes
+
+- Opening an admin deep link like `/users/YR992ZS` now has a real Cloudflare Pages fallback path instead of depending on a 404 page to rescue the route after the server already failed it.
+- The Accounts table no longer burns row height on stacked action buttons. Each row now keeps a compact one-line control strip with a clear `Details` button and smaller integrations/stats icons beside it.
+- Clicking a row still opens the quick sidebar, but the actions cell is cleaner and the full user page remains the obvious primary action.
+
+### Files / Areas Touched
+
+- `functions/[[path]].js`
+- `docs/404.html`
+- `docs/js/accounts.js`
+- `docs/css/components.css`
+- `README.md`
+- `BUMP_NOTES.md`
+
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.8-alpha
 
 Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into the released `0.4.2-alpha` section above.
