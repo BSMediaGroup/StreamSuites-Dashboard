@@ -645,29 +645,49 @@
         hidden
         aria-hidden="true"
       >
-        <div class="accounts-shell-tabs-inner">
-          <a
-            class="accounts-shell-tab"
-            href="#accounts-table-section"
-            data-accounts-shell-anchor="accounts-table-section"
-          >
-            Accounts
-          </a>
-          <a
-            class="accounts-shell-tab"
-            href="#badge-governance-section"
-            data-accounts-shell-anchor="badge-governance-section"
-          >
-            Badge Governance
-          </a>
-          <a
-            class="accounts-shell-tab"
-            href="#billing-codes-section"
-            data-accounts-shell-anchor="billing-codes-section"
-          >
-            Billing Codes
-          </a>
+        <button
+          type="button"
+          id="accounts-shell-tabs-prev"
+          class="accounts-shell-tab-scroll hidden"
+          aria-label="Scroll accounts tabs left"
+          title="Scroll accounts tabs left"
+        >
+          <span aria-hidden="true">‹</span>
+        </button>
+        <div id="accounts-shell-tabs-viewport" class="accounts-shell-tabs-viewport">
+          <div id="accounts-shell-tabs-inner" class="accounts-shell-tabs-inner">
+            <a
+              class="accounts-shell-tab"
+              href="#accounts-table-section"
+              data-accounts-shell-anchor="accounts-table-section"
+            >
+              Accounts
+            </a>
+            <a
+              class="accounts-shell-tab"
+              href="#badge-governance-section"
+              data-accounts-shell-anchor="badge-governance-section"
+            >
+              Badge Governance
+            </a>
+            <a
+              class="accounts-shell-tab"
+              href="#billing-codes-section"
+              data-accounts-shell-anchor="billing-codes-section"
+            >
+              Billing Codes
+            </a>
+          </div>
         </div>
+        <button
+          type="button"
+          id="accounts-shell-tabs-next"
+          class="accounts-shell-tab-scroll hidden"
+          aria-label="Scroll accounts tabs right"
+          title="Scroll accounts tabs right"
+        >
+          <span aria-hidden="true">›</span>
+        </button>
       </div>
       <div
         id="global-loader"

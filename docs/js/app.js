@@ -850,6 +850,10 @@ const accountsShell = {
   initialized: false,
   toggle: null,
   rail: null,
+  viewport: null,
+  track: null,
+  prevButton: null,
+  nextButton: null,
   tabs: [],
   appMain: null,
   sections: [],
@@ -857,7 +861,8 @@ const accountsShell = {
   collapsed: false,
   currentSection: "",
   collapsePreferenceLoaded: false,
-  scrollBound: false
+  scrollBound: false,
+  resizeBound: false
 };
 
 async function fetchWithTimeout(url, options = {}, timeoutMs = VIEW_FETCH_TIMEOUT_MS) {
@@ -890,12 +895,24 @@ function initAccountsShellElements() {
 
   accountsShell.toggle = document.getElementById("accounts-tabs-toggle");
   accountsShell.rail = document.getElementById("accounts-shell-tabs");
+  accountsShell.viewport = document.getElementById("accounts-shell-tabs-viewport");
+  accountsShell.track = document.getElementById("accounts-shell-tabs-inner");
+  accountsShell.prevButton = document.getElementById("accounts-shell-tabs-prev");
+  accountsShell.nextButton = document.getElementById("accounts-shell-tabs-next");
   accountsShell.appMain = document.getElementById("app-main");
   accountsShell.tabs = Array.from(
-    document.querySelectorAll("[data-accounts-shell-anchor]")
+    accountsShell.track?.querySelectorAll("[data-accounts-shell-anchor]") || []
   );
 
-  if (!accountsShell.toggle || !accountsShell.rail || !accountsShell.appMain) {
+  if (
+    !accountsShell.toggle ||
+    !accountsShell.rail ||
+    !accountsShell.viewport ||
+    !accountsShell.track ||
+    !accountsShell.prevButton ||
+    !accountsShell.nextButton ||
+    !accountsShell.appMain
+  ) {
     return false;
   }
 
@@ -978,12 +995,53 @@ function refreshAccountsShellSections() {
     .filter(Boolean);
 }
 
+function setAccountsShellScrollButtonVisibility(button, visible) {
+  if (!button) return;
+  button.classList.toggle("hidden", !visible);
+  button.hidden = !visible;
+  button.setAttribute("aria-hidden", String(!visible));
+}
+
+function updateAccountsShellOverflowState() {
+  if (!accountsShell.track || !accountsShell.visible || accountsShell.collapsed) {
+    setAccountsShellScrollButtonVisibility(accountsShell.prevButton, false);
+    setAccountsShellScrollButtonVisibility(accountsShell.nextButton, false);
+    accountsShell.rail?.classList.remove("has-overflow", "show-left-fade", "show-right-fade");
+    return;
+  }
+
+  const maxScrollLeft = Math.max(
+    0,
+    accountsShell.track.scrollWidth - accountsShell.track.clientWidth
+  );
+  const hasOverflow = maxScrollLeft > 6;
+  const showLeft = hasOverflow && accountsShell.track.scrollLeft > 4;
+  const showRight =
+    hasOverflow && accountsShell.track.scrollLeft < maxScrollLeft - 4;
+
+  accountsShell.rail.classList.toggle("has-overflow", hasOverflow);
+  accountsShell.rail.classList.toggle("show-left-fade", showLeft);
+  accountsShell.rail.classList.toggle("show-right-fade", showRight);
+  setAccountsShellScrollButtonVisibility(accountsShell.prevButton, showLeft);
+  setAccountsShellScrollButtonVisibility(accountsShell.nextButton, showRight);
+}
+
 function syncAccountsShellScrollState() {
   if (!accountsShell.visible || accountsShell.collapsed) return;
   const activeId = resolveActiveAccountsSection();
   if (activeId) {
     setAccountsShellActiveSection(activeId);
   }
+}
+
+function scrollAccountsShellRail(direction) {
+  if (!accountsShell.track) return;
+  const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  const distance = Math.max(160, Math.round(accountsShell.track.clientWidth * 0.5));
+  accountsShell.track.scrollBy({
+    left: direction * distance,
+    behavior: prefersReducedMotion ? "auto" : "smooth"
+  });
 }
 
 function scrollToAccountsShellSection(sectionId, options = {}) {
@@ -1035,7 +1093,11 @@ function setAccountsShellCollapsed(collapsed, options = {}) {
 
   if (showRail) {
     syncAccountsShellScrollState();
+    updateAccountsShellOverflowState();
+    return;
   }
+
+  updateAccountsShellOverflowState();
 }
 
 function bindAccountsShell() {
@@ -1047,6 +1109,14 @@ function bindAccountsShell() {
     setAccountsShellCollapsed(!accountsShell.collapsed, { persist: true });
   });
 
+  accountsShell.prevButton.addEventListener("click", () => {
+    scrollAccountsShellRail(-1);
+  });
+
+  accountsShell.nextButton.addEventListener("click", () => {
+    scrollAccountsShellRail(1);
+  });
+
   accountsShell.rail.addEventListener("click", (event) => {
     const target = event.target.closest("[data-accounts-shell-anchor]");
     if (!target) return;
@@ -1055,6 +1125,14 @@ function bindAccountsShell() {
     if (!sectionId) return;
     scrollToAccountsShellSection(sectionId);
   });
+
+  accountsShell.track.addEventListener(
+    "scroll",
+    () => {
+      updateAccountsShellOverflowState();
+    },
+    { passive: true }
+  );
 
   if (!accountsShell.scrollBound) {
     accountsShell.scrollBound = true;
@@ -1069,7 +1147,19 @@ function bindAccountsShell() {
       if (App.currentView !== "accounts") return;
       refreshAccountsShellSections();
       applyAccountsShellHashTarget();
+      updateAccountsShellOverflowState();
     });
+  }
+
+  if (!accountsShell.resizeBound) {
+    accountsShell.resizeBound = true;
+    window.addEventListener(
+      "resize",
+      () => {
+        updateAccountsShellOverflowState();
+      },
+      { passive: true }
+    );
   }
 }
 
@@ -1104,6 +1194,7 @@ function syncAccountsShellForView(viewName) {
     refreshAccountsShellSections();
     applyAccountsShellHashTarget();
     syncAccountsShellScrollState();
+    updateAccountsShellOverflowState();
   });
 }
 
