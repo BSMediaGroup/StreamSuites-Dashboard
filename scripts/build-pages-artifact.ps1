@@ -23,6 +23,63 @@ $publishDirectories = @(
 )
 $excludedSourceFiles = @("_redirects", "404.html", "index.html")
 
+function Clear-DirectoryContents {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$Path
+  )
+
+  if (-not (Test-Path -LiteralPath $Path)) {
+    New-Item -ItemType Directory -Path $Path | Out-Null
+    return
+  }
+
+  Get-ChildItem -LiteralPath $Path -Force | ForEach-Object {
+    Remove-Item -LiteralPath $_.FullName -Recurse -Force
+  }
+}
+
+function Mirror-Directory {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$Source,
+    [Parameter(Mandatory = $true)]
+    [string]$Destination,
+    [string[]]$ExcludeFilePatterns = @()
+  )
+
+  $robocopyCommand = Get-Command robocopy -ErrorAction SilentlyContinue
+  if ($robocopyCommand) {
+    $args = @($Source, $Destination, "/E", "/NFL", "/NDL", "/NJH", "/NJS", "/NP", "/R:2", "/W:1")
+    if ($ExcludeFilePatterns.Count -gt 0) {
+      $args += "/XF"
+      $args += $ExcludeFilePatterns
+    }
+    & $robocopyCommand.Source @args | Out-Null
+    $robocopyExitCode = $LASTEXITCODE
+    if ($robocopyExitCode -gt 7) {
+      throw "robocopy failed while staging $Source into $Destination (exit code $robocopyExitCode)."
+    }
+    return
+  }
+
+  Clear-DirectoryContents -Path $Destination
+
+  Get-ChildItem -LiteralPath $Source -Force | ForEach-Object {
+    foreach ($pattern in $ExcludeFilePatterns) {
+      if (-not $_.PSIsContainer -and $_.Name -like $pattern) {
+        return
+      }
+    }
+
+    if ($_.PSIsContainer) {
+      Copy-Item -LiteralPath $_.FullName -Destination $Destination -Recurse -Force
+    } else {
+      Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $Destination $_.Name) -Force
+    }
+  }
+}
+
 $directRouteRedirects = @(
   "/auth                  /auth/login.html         302",
   "/overview              /index.html              200",
@@ -73,10 +130,7 @@ $directRouteRedirects = @(
 )
 
 if (Test-Path -LiteralPath $publishRoot) {
-  $emptyDir = Join-Path ([System.IO.Path]::GetTempPath()) ("ss-empty-" + [System.Guid]::NewGuid().ToString("N"))
-  New-Item -ItemType Directory -Path $emptyDir | Out-Null
-  & robocopy $emptyDir $publishRoot /MIR /NFL /NDL /NJH /NJS /NP /R:2 /W:1 | Out-Null
-  Remove-Item -LiteralPath $emptyDir -Recurse -Force
+  Clear-DirectoryContents -Path $publishRoot
 } else {
   New-Item -ItemType Directory -Path $publishRoot | Out-Null
 }
@@ -94,11 +148,7 @@ foreach ($directoryName in $publishDirectories) {
   }
 
   $destinationDir = Join-Path $publishRoot $directoryName
-  & robocopy $sourceDir $destinationDir /E /XF tmp* /NFL /NDL /NJH /NJS /NP /R:2 /W:1 /MT:16 | Out-Null
-  $robocopyExitCode = $LASTEXITCODE
-  if ($robocopyExitCode -gt 7) {
-    throw "robocopy failed while staging docs/$directoryName into the publish artifact (exit code $robocopyExitCode)."
-  }
+  Mirror-Directory -Source $sourceDir -Destination $destinationDir -ExcludeFilePatterns @("tmp*")
 }
 
 Copy-Item -LiteralPath (Join-Path $repoRoot "index.html") -Destination (Join-Path $publishRoot "index.html") -Force
