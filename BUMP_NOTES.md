@@ -577,3 +577,25 @@ Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into t
 ### Risks / Follow-Ups
 
 - The matrix views depend on the new backend surface payload shape; stale backend deployments will degrade into fetch/save failures rather than falling back to fake client logic.
+
+## Task 3W - Restart Banner Truthfulness - 2026-03-28
+
+### Technical Notes
+
+- The admin shell runtime snapshot poller now checks the published `docs/shared/state` mirror when the repo-root shell is running from a source checkout, instead of falling straight from a missing root `shared/state` file to the bundled demo snapshot.
+- Shared state-root resolution in `docs/js/state.js` now includes the local `docs/shared/state/` mirror for repo-root sessions, keeping shell/runtime hydration aligned with the real published export location.
+- This prevents the global restart banner from inheriting stale demo `restart_intent` data when the source checkout has fresh mirrored runtime state available.
+
+### Human-Readable Notes
+
+- Running the admin dashboard from the repo root now uses the real mirrored runtime state before any sample fallback, so the restart banner no longer gets stuck on because of demo snapshot data.
+
+### Files / Areas Touched
+
+- `docs/js/app.js`
+- `docs/js/state.js`
+- `BUMP_NOTES.md`
+
+### Risks / Follow-Ups
+
+- Already-generated `docs/shared/state/runtime_snapshot.json` files still need a fresh runtime republish to reflect the corrected runtime-side restart contract.

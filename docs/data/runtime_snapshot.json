@@ -39,17 +39,13 @@
     }
   },
   "restart_intent": {
-    "required": true,
+    "required": false,
     "pending": {
-      "system": true,
+      "system": false,
       "creators": false,
-      "triggers": true,
-      "platforms": true
+      "triggers": false,
+      "platforms": false
     },
-    "notes": [
-      "System settings changed",
-      "Triggers updated",
-      "Platform enablement staged"
-    ]
+    "notes": []
   }
 }

@@ -155,6 +155,20 @@ function markRuntimeAvailable() {
   window.__RUNTIME_AVAILABLE__ = true;
 }
 
+function buildPublishedStateUrls(relativePath) {
+  const normalized = String(relativePath || "").replace(/^\/+/, "");
+  const pathname = String(window.location?.pathname || "").toLowerCase();
+  const candidates = [new URL(`shared/state/${normalized}`, document.baseURI)];
+
+  if (!pathname.startsWith("/docs")) {
+    candidates.push(new URL(`docs/shared/state/${normalized}`, document.baseURI));
+  }
+
+  return candidates.filter(
+    (url, index, list) => list.findIndex((entry) => entry.href === url.href) === index
+  );
+}
+
 function resolveAdminApiBase() {
   const base =
     window.StreamSuitesAdminAuth?.config?.baseUrl ||
@@ -633,7 +647,12 @@ App.state.quotas = {
   async fetchOnce() {
     if (!isRuntimeAvailable()) return;
     try {
-      const url = new URL("shared/state/quotas.json", document.baseURI);
+      const [url] = buildPublishedStateUrls("quotas.json");
+      if (!url) {
+        markRuntimeUnavailable();
+        this.stop();
+        return;
+      }
       const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) {
         markRuntimeUnavailable();
@@ -693,7 +712,7 @@ App.state.runtimeSnapshot = {
   async fetchOnce() {
     if (!isRuntimeAvailable()) return;
     const sources = [
-      new URL("shared/state/runtime_snapshot.json", document.baseURI),
+      ...buildPublishedStateUrls("runtime_snapshot.json"),
       new URL("data/runtime_snapshot.json", document.baseURI)
     ];
 
@@ -1654,7 +1673,7 @@ const SIDEBAR_VIEW_ICON_MAP = Object.freeze({
   jobs: "/assets/icons/ui/automation.svg",
   clips: "/assets/icons/ui/clipcards.svg",
   polls: "/assets/icons/ui/vote.svg",
-  tallies: "/assets/icons/ui/ballot.svg",
+  tallies: "/assets/icons/ui/bulletlist.svg",
   scoreboards: "/assets/icons/ui/dashboard.svg",
   "data-signals": "/assets/icons/ui/celltower.svg",
   bots: "/assets/icons/ui/bot.svg",

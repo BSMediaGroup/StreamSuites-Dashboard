@@ -15,8 +15,13 @@
     };
   }
 
+  const LOCAL_STATE_ROOTS = ["./shared/state/"];
+  if (!(window.location?.pathname || "").toLowerCase().startsWith("/docs")) {
+    LOCAL_STATE_ROOTS.push("./docs/shared/state/");
+  }
+
   const DEFAULT_STATE_ROOTS = [
-    "./shared/state/",
+    ...LOCAL_STATE_ROOTS,
     // Runtime repo fallback (read-only, GitHub raw)
     "https://raw.githubusercontent.com/BSMediaGroup/StreamSuites/main/shared/state/"
   ];
