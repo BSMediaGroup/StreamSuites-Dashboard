@@ -130,9 +130,20 @@
                 <p id="analytics-alerts-rules-rail-summary" class="muted">Select a rule card to edit it in the workspace below.</p>
               </div>
               <div class="ss-alerts-rules-browser-tools">
-                <div id="analytics-alerts-rules-view-toggle" class="ss-alerts-view-toggle" role="group" aria-label="Choose how alert rules are displayed">
-                  <button type="button" id="analytics-alerts-rules-view-list" class="ss-alerts-view-toggle-button" data-rules-view="list" aria-pressed="true">List</button>
-                  <button type="button" id="analytics-alerts-rules-view-gallery" class="ss-alerts-view-toggle-button" data-rules-view="gallery" aria-pressed="false">Gallery</button>
+                <div class="ss-alerts-collection-controls" aria-label="Alert rules display controls">
+                  <div id="analytics-alerts-rules-view-toggle" class="ss-alerts-view-toggle" role="group" aria-label="Choose how alert rules are displayed">
+                    <button type="button" id="analytics-alerts-rules-view-list" class="ss-alerts-view-toggle-button" data-layout-target="rules" data-layout-view="list" aria-pressed="false">List</button>
+                    <button type="button" id="analytics-alerts-rules-view-gallery" class="ss-alerts-view-toggle-button" data-layout-target="rules" data-layout-view="gallery" aria-pressed="true">Gallery</button>
+                  </div>
+                  <label class="ss-alerts-page-size-control" for="analytics-alerts-rules-page-size">
+                    <span class="muted">Page size</span>
+                    <select id="analytics-alerts-rules-page-size">
+                      <option value="5">5</option>
+                      <option value="10" selected>10</option>
+                      <option value="20">20</option>
+                      <option value="50">50</option>
+                    </select>
+                  </label>
                 </div>
                 <span id="analytics-alerts-rules-count-chip" class="ss-chip ss-chip-muted">0 rules</span>
               </div>
@@ -550,7 +561,23 @@
           <p class="muted">Review recent sends, suppressed alerts, and the context the backend recorded for each delivery attempt.</p>
         </div>
         <div class="ss-analytics-alerts-header-actions">
-          <span id="analytics-alerts-history-summary" class="ss-chip ss-chip-muted">Latest 50 entries</span>
+          <span id="analytics-alerts-history-summary" class="ss-chip ss-chip-muted">Latest 250 entries</span>
+          <div class="ss-alerts-collection-controls" aria-label="Recent alert activity display controls">
+            <div id="analytics-alerts-history-view-toggle" class="ss-alerts-view-toggle" role="group" aria-label="Choose how recent alert activity is displayed">
+              <button type="button" id="analytics-alerts-history-view-list" class="ss-alerts-view-toggle-button" data-layout-target="history" data-layout-view="list" aria-pressed="true">List</button>
+              <button type="button" id="analytics-alerts-history-view-gallery" class="ss-alerts-view-toggle-button" data-layout-target="history" data-layout-view="gallery" aria-pressed="false">Gallery</button>
+            </div>
+            <label class="ss-alerts-page-size-control" for="analytics-alerts-history-page-size">
+              <span class="muted">Page size</span>
+              <select id="analytics-alerts-history-page-size">
+                <option value="5" selected>5</option>
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </label>
+          </div>
           <button type="button" id="analytics-alerts-history-refresh" class="ss-btn ss-btn-secondary ss-btn-small">Refresh activity</button>
         </div>
       </header>

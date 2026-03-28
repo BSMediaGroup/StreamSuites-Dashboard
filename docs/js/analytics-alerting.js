@@ -2,9 +2,11 @@
   "use strict";
 
   const DEFAULT_DESTINATIONS = ["windows_client", "pushover"];
-  const RULES_PAGE_SIZE = 6;
-  const HISTORY_LIMIT = 50;
-  const HISTORY_PAGE_SIZE = 5;
+  const DEFAULT_RULES_PAGE_SIZE = 10;
+  const RULES_PAGE_SIZE_OPTIONS = Object.freeze([5, 10, 20, 50]);
+  const HISTORY_LIMIT = 250;
+  const DEFAULT_HISTORY_PAGE_SIZE = 5;
+  const HISTORY_PAGE_SIZE_OPTIONS = Object.freeze([5, 10, 25, 50, 100]);
   const SEVERITIES = ["info", "warning", "error", "critical"];
   const TEMPLATE_TOKEN_PATTERN = /{{[a-z0-9_.]+}}/g;
   const DESTINATION_ICON_MAP = {
@@ -284,8 +286,11 @@
     activeRuleId: null,
     activeTemplateField: "body",
     activePreviewSurface: "desktop",
-    ruleView: "list",
+    ruleView: "gallery",
+    rulePageSize: DEFAULT_RULES_PAGE_SIZE,
     rulesPage: 1,
+    historyView: "list",
+    historyPageSize: DEFAULT_HISTORY_PAGE_SIZE,
     historyPage: 1,
     loadToken: 0,
     ruleScopePassthrough: {},
@@ -395,6 +400,7 @@
     rulesEmpty: null,
     rulesPagination: null,
     rulesViewToggle: null,
+    rulesPageSize: null,
     targetsRefresh: null,
     targetsTypeFilter: null,
     targetsStatusFilter: null,
@@ -408,6 +414,8 @@
     historyEmpty: null,
     historyPagination: null,
     historySummary: null,
+    historyViewToggle: null,
+    historyPageSize: null,
     preferencesSummaryMeta: null,
     preferencesSummaryDetail: null,
     testSummaryMeta: null,
@@ -1199,6 +1207,22 @@
     if (normalized === "error") return "error";
     if (normalized === "warning") return "warning";
     return "info";
+  }
+
+  function normalizePageSize(value, options, fallback) {
+    const allowed = Array.isArray(options) ? options : [];
+    const parsed = Number.parseInt(String(value || ""), 10);
+    return allowed.includes(parsed) ? parsed : fallback;
+  }
+
+  function syncViewToggleButtons(container, activeView) {
+    if (!(container instanceof HTMLElement)) return;
+    container.querySelectorAll("[data-layout-view]").forEach((button) => {
+      if (!(button instanceof HTMLButtonElement)) return;
+      const isActive = String(button.getAttribute("data-layout-view") || "").trim() === activeView;
+      button.classList.toggle("is-active", isActive);
+      button.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
   }
 
   function normalizeClientIp(value) {
@@ -2210,7 +2234,10 @@
   function renderRulePreview() {
     const model = buildRulePreviewModel();
     if (el.previewEvent) el.previewEvent.textContent = model.eventLabel;
-    if (el.previewSeverity) el.previewSeverity.textContent = model.severityText;
+    if (el.previewSeverity) {
+      el.previewSeverity.textContent = model.severityText;
+      el.previewSeverity.className = `ss-chip ss-alerts-preview-summary-chip ss-alerts-preview-summary-chip--${escapeHtml(model.severityKey)}`;
+    }
     if (el.previewStage) {
       el.previewStage.innerHTML = renderActivePreviewSurface(model);
       window.StreamSuitesCountryFlags?.upgradeFlagSlots?.(el.previewStage);
@@ -2384,7 +2411,7 @@
   function ensureRulesPageForRule(ruleId) {
     const ruleIndex = state.rules.findIndex((item) => item?.id === ruleId);
     if (ruleIndex < 0) return;
-    state.rulesPage = Math.floor(ruleIndex / RULES_PAGE_SIZE) + 1;
+    state.rulesPage = Math.floor(ruleIndex / state.rulePageSize) + 1;
   }
 
   function applyRuleDefaultsFromEventType(eventTypeKey) {
@@ -2543,16 +2570,14 @@
 
   function renderRulesList() {
     if (!el.rulesList || !el.rulesEmpty) return;
-    const pageInfo = paginateItems(state.rules, state.rulesPage, RULES_PAGE_SIZE);
+    const pageInfo = paginateItems(state.rules, state.rulesPage, state.rulePageSize);
     state.rulesPage = pageInfo.currentPage;
     el.rulesList.classList.toggle("is-gallery", state.ruleView === "gallery");
     el.rulesList.classList.toggle("is-list", state.ruleView !== "gallery");
-    el.rulesViewToggle?.querySelectorAll("[data-rules-view]").forEach((button) => {
-      if (!(button instanceof HTMLButtonElement)) return;
-      const isActive = button.getAttribute("data-rules-view") === state.ruleView;
-      button.classList.toggle("is-active", isActive);
-      button.setAttribute("aria-pressed", isActive ? "true" : "false");
-    });
+    syncViewToggleButtons(el.rulesViewToggle, state.ruleView);
+    if (el.rulesPageSize) {
+      el.rulesPageSize.value = String(state.rulePageSize);
+    }
     if (el.rulesCountChip) {
       el.rulesCountChip.textContent = state.rules.length
         ? `${pageInfo.startIndex + 1}-${pageInfo.endIndex} of ${state.rules.length}`
@@ -2716,12 +2741,18 @@
   function renderHistoryList() {
     if (!el.historyList || !el.historyEmpty) return;
     const limitedHistory = Array.isArray(state.history) ? state.history.slice(0, HISTORY_LIMIT) : [];
-    const pageInfo = paginateItems(limitedHistory, state.historyPage, HISTORY_PAGE_SIZE);
+    const pageInfo = paginateItems(limitedHistory, state.historyPage, state.historyPageSize);
     state.historyPage = pageInfo.currentPage;
+    el.historyList.classList.toggle("is-gallery", state.historyView === "gallery");
+    el.historyList.classList.toggle("is-list", state.historyView !== "gallery");
+    syncViewToggleButtons(el.historyViewToggle, state.historyView);
+    if (el.historyPageSize) {
+      el.historyPageSize.value = String(state.historyPageSize);
+    }
     if (el.historySummary) {
       el.historySummary.textContent = limitedHistory.length
         ? `Showing ${pageInfo.startIndex + 1}-${pageInfo.endIndex} of ${limitedHistory.length}`
-        : "Latest 50 entries";
+        : "Latest 250 entries";
     }
     if (state.historyError) {
       el.historyList.innerHTML = "";
@@ -3287,13 +3318,40 @@
     scrollRuleEditorIntoView();
   }
 
-  function handleRulesViewToggle(event) {
-    const button = event.target.closest("[data-rules-view]");
+  function handleLayoutToggle(event) {
+    const button = event.target.closest("[data-layout-target][data-layout-view]");
     if (!(button instanceof HTMLButtonElement)) return;
-    const nextView = String(button.getAttribute("data-rules-view") || "").trim();
-    if (!nextView || state.ruleView === nextView) return;
-    state.ruleView = nextView === "gallery" ? "gallery" : "list";
+    const target = String(button.getAttribute("data-layout-target") || "").trim();
+    const nextView = String(button.getAttribute("data-layout-view") || "").trim() === "gallery" ? "gallery" : "list";
+    if (target === "rules") {
+      if (state.ruleView === nextView) return;
+      state.ruleView = nextView;
+      state.rulesPage = 1;
+      renderRulesList();
+      return;
+    }
+    if (target === "history") {
+      if (state.historyView === nextView) return;
+      state.historyView = nextView;
+      state.historyPage = 1;
+      renderHistoryList();
+    }
+  }
+
+  function handleRulesPageSizeChange(event) {
+    const nextSize = normalizePageSize(event.target?.value, RULES_PAGE_SIZE_OPTIONS, DEFAULT_RULES_PAGE_SIZE);
+    if (state.rulePageSize === nextSize) return;
+    state.rulePageSize = nextSize;
+    state.rulesPage = 1;
     renderRulesList();
+  }
+
+  function handleHistoryPageSizeChange(event) {
+    const nextSize = normalizePageSize(event.target?.value, HISTORY_PAGE_SIZE_OPTIONS, DEFAULT_HISTORY_PAGE_SIZE);
+    if (state.historyPageSize === nextSize) return;
+    state.historyPageSize = nextSize;
+    state.historyPage = 1;
+    renderHistoryList();
   }
 
   function handlePaginationClick(event) {
@@ -3613,7 +3671,8 @@
     state.templateEditors.body?.editor?.addEventListener("focusout", handleTemplateEditorFocusOut);
     el.templateTargets?.addEventListener("click", handleTemplateTargetClick);
     el.templateVariables?.addEventListener("click", handleTemplateVariableClick);
-    el.rulesViewToggle?.addEventListener("click", handleRulesViewToggle);
+    el.rulesViewToggle?.addEventListener("click", handleLayoutToggle);
+    el.rulesPageSize?.addEventListener("change", handleRulesPageSizeChange);
     el.rulesList?.addEventListener("click", handleRulesListClick);
     el.rulesList?.addEventListener("keydown", handleRulesListKeydown);
     el.rulesPagination?.addEventListener("click", handlePaginationClick);
@@ -3623,6 +3682,8 @@
     el.targetsTypeFilter?.addEventListener("change", handleTargetFilterChange);
     el.targetsStatusFilter?.addEventListener("change", handleTargetFilterChange);
     el.historyRefresh?.addEventListener("click", handleRefreshAll);
+    el.historyViewToggle?.addEventListener("click", handleLayoutToggle);
+    el.historyPageSize?.addEventListener("change", handleHistoryPageSizeChange);
     el.historyPagination?.addEventListener("click", handlePaginationClick);
     window.addEventListener("beforeunload", handleBeforeUnload);
   }
@@ -3662,7 +3723,8 @@
     state.templateEditors.body?.editor?.removeEventListener("focusout", handleTemplateEditorFocusOut);
     el.templateTargets?.removeEventListener("click", handleTemplateTargetClick);
     el.templateVariables?.removeEventListener("click", handleTemplateVariableClick);
-    el.rulesViewToggle?.removeEventListener("click", handleRulesViewToggle);
+    el.rulesViewToggle?.removeEventListener("click", handleLayoutToggle);
+    el.rulesPageSize?.removeEventListener("change", handleRulesPageSizeChange);
     el.rulesList?.removeEventListener("click", handleRulesListClick);
     el.rulesList?.removeEventListener("keydown", handleRulesListKeydown);
     el.rulesPagination?.removeEventListener("click", handlePaginationClick);
@@ -3672,6 +3734,8 @@
     el.targetsTypeFilter?.removeEventListener("change", handleTargetFilterChange);
     el.targetsStatusFilter?.removeEventListener("change", handleTargetFilterChange);
     el.historyRefresh?.removeEventListener("click", handleRefreshAll);
+    el.historyViewToggle?.removeEventListener("click", handleLayoutToggle);
+    el.historyPageSize?.removeEventListener("change", handleHistoryPageSizeChange);
     el.historyPagination?.removeEventListener("click", handlePaginationClick);
     window.removeEventListener("beforeunload", handleBeforeUnload);
   }
@@ -3768,6 +3832,7 @@
     el.rulesEmpty = $("analytics-alerts-rules-empty");
     el.rulesPagination = $("analytics-alerts-rules-pagination");
     el.rulesViewToggle = $("analytics-alerts-rules-view-toggle");
+    el.rulesPageSize = $("analytics-alerts-rules-page-size");
     el.targetsRefresh = $("analytics-alerts-targets-refresh");
     el.targetsTypeFilter = $("analytics-alerts-targets-type-filter");
     el.targetsStatusFilter = $("analytics-alerts-targets-status-filter");
@@ -3781,6 +3846,8 @@
     el.historyEmpty = $("analytics-alerts-history-empty");
     el.historyPagination = $("analytics-alerts-history-pagination");
     el.historySummary = $("analytics-alerts-history-summary");
+    el.historyViewToggle = $("analytics-alerts-history-view-toggle");
+    el.historyPageSize = $("analytics-alerts-history-page-size");
     el.preferencesSummaryMeta = $("analytics-alerts-preferences-summary-meta");
     el.preferencesSummaryDetail = $("analytics-alerts-preferences-summary-detail");
     el.testSummaryMeta = $("analytics-alerts-test-summary-meta");

@@ -504,6 +504,30 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into the released `0.4.2-alpha` section above.
 
+### Admin Alerts Page Preview + Collection Controls Upgrade - 2026-03-28
+
+### Technical Notes
+
+- The Admin Dashboard alerts page now keeps the existing page structure but fixes the preview-panel sizing at the component/CSS level so the live preview surface, preview card, and helper note stack in separate rows without the previous bottom collision/clipping behavior.
+- Preview-surface toggle labels were softened from the previous heavier weight while preserving the same selected-state affordance, and the top preview severity chip now adopts severity-specific styling that matches the existing info/warning/error/critical alert palette already used by rules/history cards.
+- Alert-rules browsing now defaults to gallery instead of list and adds page-size options `5`, `10`, `20`, and `50`.
+- Recent alert activity keeps list as the default view, but now adds the same list/gallery control family plus page-size options `5`, `10`, `25`, `50`, and `100`.
+- The rules and history sections now share the same additive dashboard control pattern for layout toggles plus page-size selectors, without broad repo-wide component refactors or route changes.
+- Dashboard-side history loading was raised from the old `50`-entry request cap to `250`, but the dashboard still treats runtime/Auth API history as the source of truth rather than inventing local-only persistence.
+
+### Human-Readable Notes
+
+- The preview area no longer crashes into its helper text when switching between desktop, browser, and plain-text previews.
+- Alert rules open in gallery by default now, and both rules/history sections use the same compact controls for layout and page size.
+- Recent alert activity can now show a lot more retained backend history at once while still defaulting to the familiar list view.
+
+### Files / Areas Touched
+
+- `docs/views/alerts.html`
+- `docs/js/analytics-alerting.js`
+- `docs/css/components.css`
+- `BUMP_NOTES.md`
+
 ### Technical Notes
 
 - Reordered the admin accounts workspace so the primary `/users` landing surface opens on the accounts table first, followed by the badge-governance workspace, while keeping the existing route contract, runtime data flow, and admin action endpoints intact.
