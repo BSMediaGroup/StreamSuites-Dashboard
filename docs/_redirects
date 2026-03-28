@@ -6,6 +6,7 @@
 /profiles              /index.html              200
 /profiles/*            /index.html              200
 /creators              /index.html              200
+/creator-integrations  /index.html              200
 /profiles/stats        /index.html              200
 /creator-stats         /index.html              200
 /telemetry             /index.html              200

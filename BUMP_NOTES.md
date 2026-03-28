@@ -4,6 +4,30 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Admin Cloudflare Pages Deep-Link Fallback Cleanup - 2026-03-28
+
+### Technical Notes
+
+- The admin repo already had `_redirects` coverage and a catch-all Pages Function, but valid deep-link recovery was still duplicated inside both `404.html` entry documents. Those 404 rescue scripts tried to relay recognized admin routes back into the shell after the server had already failed them, which kept the 404 surface in the deep-link path and was a credible source of redirect/fail-loop behavior.
+- Both admin 404 documents were intentionally shortened by removing that route-bounce logic. They now stay branded real-404 documents only, while valid admin shell routes are expected to resolve before 404 through `_redirects` or `functions/[[path]].js`.
+- `functions/[[path]].js` was tightened to fetch only the repo-root `/index.html` shell instead of trying `/docs/index.html` as a secondary fallback, removing another legacy dual-root branch from the Cloudflare Pages path. The exact-route list and all generated `_redirects` manifests now also include the existing `/creator-integrations` alias so that route family keeps its current semantics on direct navigation and refresh.
+
+### Human-Readable Notes
+
+- Valid admin deep links now have one recovery path instead of a stack of fallback tricks fighting each other.
+- The admin 404 page still exists for real bad URLs, but it no longer tries to masquerade as a router.
+
+### Files / Areas Touched
+
+- `_redirects`
+- `docs/_redirects`
+- `functions/[[path]].js`
+- `404.html`
+- `docs/404.html`
+- `scripts/build-pages-artifact.ps1`
+- `README.md`
+- `BUMP_NOTES.md`
+
 ## Admin Badge Matrix Consumer Cleanup - 2026-03-28
 
 ### Technical Notes

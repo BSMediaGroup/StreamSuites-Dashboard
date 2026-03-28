@@ -348,17 +348,6 @@
         statusEl.classList.remove("idle");
         statusEl.classList.add("active");
       }
-
-      const router = window.StreamSuitesAdminRoutes;
-      const pathname = window.location.pathname || "/";
-      const search = window.location.search || "";
-      const requestedUrl = `${pathname}${search}`;
-
-      if (router?.isDashboardRoute(pathname)) {
-        const relay = new URL("/", window.location.origin);
-        relay.searchParams.set(router.REDIRECT_QUERY_KEY, encodeURIComponent(requestedUrl));
-        window.location.replace(relay.toString());
-      }
     })();
   </script>
   <script src="/js/utils/versioning.js"></script>

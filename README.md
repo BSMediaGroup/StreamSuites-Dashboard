@@ -57,7 +57,7 @@ flowchart TD
 
 - `_redirects` now mirrors the Creator/Public single-root SPA rewrite model: known admin routes resolve to the repo-root `index.html`, while shared asset directories still map into `docs/` in source checkouts.
 - `docs/_redirects` remains as the docs-root compatibility manifest and now only rewrites known admin routes so invalid paths still fall through to `404.html`.
-- `functions/[[path]].js` keeps a Pages runtime fallback for known admin SPA routes and now prefers the repo-root shell before the legacy `docs/` shell.
+- `functions/[[path]].js` keeps a Pages runtime fallback for known admin SPA routes and now serves only the repo-root shell, so valid admin routes no longer bounce through `404.html` or the legacy `/docs` shell before hydration.
 - Runtime export metadata is consumed from local published copies under `docs/runtime/exports/`.
 - `scripts/build-pages-artifact.ps1` assembles the canonical deployment artifact by flattening `docs/` assets to the publish root, then overlaying the repo-root admin shell and root-style SPA fallback manifest.
 

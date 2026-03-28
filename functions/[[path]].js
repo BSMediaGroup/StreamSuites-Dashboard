@@ -1,4 +1,4 @@
-const SPA_SHELL_CANDIDATES = ["/index.html", "/docs/index.html"];
+const SPA_SHELL_CANDIDATES = ["/index.html"];
 
 const EXACT_DASHBOARD_ROUTES = new Set([
   "/",
@@ -8,6 +8,7 @@ const EXACT_DASHBOARD_ROUTES = new Set([
   "/accounts",
   "/profiles",
   "/creators",
+  "/creator-integrations",
   "/profiles/stats",
   "/creator-stats",
   "/telemetry",
