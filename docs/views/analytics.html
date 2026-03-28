@@ -137,6 +137,15 @@
               aria-label="Filter geographic breakdown"
             />
             <span id="analytics-countries-count" class="muted">0 locations</span>
+            <label class="ss-alerts-page-size-control" for="analytics-countries-page-size">
+              <span class="muted">Rows</span>
+              <select id="analytics-countries-page-size">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+              </select>
+            </label>
           </div>
           <div class="ss-table-scroll ss-analytics-countries-table-wrap">
             <table class="ss-table ss-table-compact" id="analytics-countries-table">
@@ -155,6 +164,7 @@
             </table>
           </div>
           <div id="analytics-countries-empty" class="ss-empty-state hidden">No geographic data detected in this window.</div>
+          <div id="analytics-countries-pagination" class="ss-alerts-pagination hidden"></div>
         </div>
       </aside>
 
@@ -166,6 +176,18 @@
           </div>
         </header>
         <div class="ss-panel-body ss-analytics-endpoints-body">
+          <div class="ss-analytics-countries-toolbar">
+            <span id="analytics-endpoints-count" class="muted">0 routes</span>
+            <label class="ss-alerts-page-size-control" for="analytics-endpoints-page-size">
+              <span class="muted">Rows</span>
+              <select id="analytics-endpoints-page-size">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+              </select>
+            </label>
+          </div>
           <div class="ss-table-scroll ss-analytics-endpoints-table-wrap">
             <table class="ss-table ss-table-compact" id="analytics-endpoints-table">
               <thead>
@@ -181,6 +203,7 @@
             </table>
           </div>
           <div id="analytics-endpoints-empty" class="ss-empty-state hidden">No route activity yet.</div>
+          <div id="analytics-endpoints-pagination" class="ss-alerts-pagination hidden"></div>
         </div>
       </aside>
     </div>
@@ -269,6 +292,18 @@
       </div>
     </header>
     <div class="ss-panel-body ss-analytics-recent-requests-body">
+      <div class="ss-analytics-countries-toolbar">
+        <span id="analytics-recent-requests-count" class="muted">0 requests</span>
+        <label class="ss-alerts-page-size-control" for="analytics-recent-requests-page-size">
+          <span class="muted">Rows</span>
+          <select id="analytics-recent-requests-page-size">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+          </select>
+        </label>
+      </div>
       <div class="ss-table-scroll ss-analytics-recent-requests-wrap">
         <table class="ss-table ss-table-compact" id="analytics-recent-requests-table">
           <thead>
@@ -289,6 +324,7 @@
         </table>
       </div>
       <div id="analytics-recent-requests-empty" class="ss-empty-state hidden">No recent request samples in this window.</div>
+      <div id="analytics-recent-requests-pagination" class="ss-alerts-pagination hidden"></div>
     </div>
   </section>
 </main>

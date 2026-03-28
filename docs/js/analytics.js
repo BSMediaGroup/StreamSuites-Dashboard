@@ -8,6 +8,8 @@
   const DEFAULT_WINDOW = "5m";
   const ANALYTICS_CACHE_TTL_MS = 8000;
   const ANALYTICS_REFRESH_INTERVAL_MS = 15000;
+  const ANALYTICS_TABLE_RETENTION_LIMIT = 250;
+  const ANALYTICS_TABLE_PAGE_SIZE_OPTIONS = Object.freeze([5, 10, 25, 50]);
   const TOP_REFERRERS_LIMIT = 8;
   const COUNTRY_CENTROIDS_PATH = "/shared/data/country_centroids.json";
   const MAP_COLLAPSED_STORAGE_KEY = "ss_admin_analytics_map_collapsed";
@@ -143,7 +145,21 @@
     mapMarkerFilter: MAP_MARKER_FILTER_DEFAULT,
     mapResizeRaf: null,
     mapResizeTimeout: null,
-    mapFrameTimeout: null
+    mapFrameTimeout: null,
+    tableViews: {
+      countries: {
+        page: 1,
+        pageSize: 10
+      },
+      endpoints: {
+        page: 1,
+        pageSize: 10
+      },
+      recentRequests: {
+        page: 1,
+        pageSize: 10
+      }
+    }
   };
 
   const el = {
@@ -184,9 +200,14 @@
     countriesEmpty: null,
     countriesSearch: null,
     countriesCount: null,
+    countriesPageSize: null,
+    countriesPagination: null,
     geoCountryOnly: null,
     geoRegionDetail: null,
     geoCityDetail: null,
+    endpointsCount: null,
+    endpointsPageSize: null,
+    endpointsPagination: null,
     endpointsBody: null,
     endpointsEmpty: null,
     browsersList: null,
@@ -195,6 +216,9 @@
     devicesEmpty: null,
     platformsList: null,
     platformsEmpty: null,
+    recentRequestsCount: null,
+    recentRequestsPageSize: null,
+    recentRequestsPagination: null,
     recentRequestsBody: null,
     recentRequestsEmpty: null
   };
@@ -1571,10 +1595,105 @@
     });
   }
 
+  function clampAnalyticsPageSize(value, fallback = 10) {
+    const parsed = Number.parseInt(String(value || ""), 10);
+    if (!Number.isFinite(parsed)) return fallback;
+    if (!ANALYTICS_TABLE_PAGE_SIZE_OPTIONS.includes(parsed)) return fallback;
+    return parsed;
+  }
+
+  function clampAnalyticsRows(rows) {
+    return Array.isArray(rows) ? rows.slice(0, ANALYTICS_TABLE_RETENTION_LIMIT) : [];
+  }
+
+  function paginateAnalyticsRows(rows, page, pageSize) {
+    const safeRows = Array.isArray(rows) ? rows : [];
+    const safePageSize = clampAnalyticsPageSize(pageSize, 10);
+    const totalItems = safeRows.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / safePageSize));
+    const currentPage = Math.min(Math.max(Number.parseInt(String(page || ""), 10) || 1, 1), totalPages);
+    const startIndex = totalItems ? (currentPage - 1) * safePageSize : 0;
+    const endIndex = Math.min(totalItems, startIndex + safePageSize);
+    return {
+      items: safeRows.slice(startIndex, endIndex),
+      currentPage,
+      pageSize: safePageSize,
+      totalItems,
+      totalPages,
+      startIndex,
+      endIndex
+    };
+  }
+
+  function buildAnalyticsPaginationMarkup(target, pageInfo) {
+    if (!pageInfo || pageInfo.totalItems <= 0 || pageInfo.totalPages <= 1) return "";
+    const pageButtons = [];
+    const firstPage = Math.max(1, pageInfo.currentPage - 1);
+    const lastPage = Math.min(pageInfo.totalPages, firstPage + 2);
+    const normalizedFirst = Math.max(1, lastPage - 2);
+    for (let page = normalizedFirst; page <= lastPage; page += 1) {
+      pageButtons.push(`
+        <button
+          type="button"
+          class="ss-alerts-pagination-button${page === pageInfo.currentPage ? " is-active" : ""}"
+          data-analytics-pagination-target="${escapeHtml(target)}"
+          data-analytics-pagination-page="${escapeHtml(String(page))}"
+          aria-pressed="${page === pageInfo.currentPage ? "true" : "false"}"
+        >${escapeHtml(String(page))}</button>
+      `);
+    }
+    return `
+      <div class="ss-alerts-pagination-summary">
+        Showing ${escapeHtml(String(pageInfo.startIndex + 1))}-${escapeHtml(String(pageInfo.endIndex))} of ${escapeHtml(String(pageInfo.totalItems))}
+      </div>
+      <div class="ss-alerts-pagination-controls">
+        <button
+          type="button"
+          class="ss-alerts-pagination-button"
+          data-analytics-pagination-target="${escapeHtml(target)}"
+          data-analytics-pagination-page="${escapeHtml(String(pageInfo.currentPage - 1))}"
+          ${pageInfo.currentPage <= 1 ? "disabled" : ""}
+        >Prev</button>
+        ${pageButtons.join("")}
+        <button
+          type="button"
+          class="ss-alerts-pagination-button"
+          data-analytics-pagination-target="${escapeHtml(target)}"
+          data-analytics-pagination-page="${escapeHtml(String(pageInfo.currentPage + 1))}"
+          ${pageInfo.currentPage >= pageInfo.totalPages ? "disabled" : ""}
+        >Next</button>
+      </div>
+    `;
+  }
+
+  function renderAnalyticsPagination(container, target, pageInfo) {
+    if (!(container instanceof HTMLElement)) return;
+    const markup = buildAnalyticsPaginationMarkup(target, pageInfo);
+    container.innerHTML = markup;
+    container.classList.toggle("hidden", !markup);
+  }
+
+  function syncAnalyticsPageSizeControl(selectEl, pageSize) {
+    if (!(selectEl instanceof HTMLSelectElement)) return;
+    const safePageSize = clampAnalyticsPageSize(pageSize, 10);
+    if (selectEl.value !== String(safePageSize)) {
+      selectEl.value = String(safePageSize);
+    }
+  }
+
+  function describeRetainedCount(retainedCount, totalCount, singularLabel, pluralLabel) {
+    const singular = singularLabel || "item";
+    const plural = pluralLabel || `${singular}s`;
+    if (totalCount > retainedCount) {
+      return `${retainedCount.toLocaleString()} of ${totalCount.toLocaleString()} ${plural}`;
+    }
+    return `${retainedCount.toLocaleString()} ${retainedCount === 1 ? singular : plural}`;
+  }
+
   function renderCountryTable() {
     const allRows = Array.isArray(state.locationRows) && state.locationRows.length ? state.locationRows : state.countryRows;
     const filterText = String(state.countryFilter || "").trim().toLowerCase();
-      const filteredRows = filterText
+    const filteredRows = filterText
       ? allRows.filter((entry) => {
           const code = String(entry?.code || "").toLowerCase();
           const countryName = String(entry?.countryName || entry?.name || "").toLowerCase();
@@ -1594,19 +1713,29 @@
       : allRows;
     const totals = state.locationRows.length ? state.locationTotals : state.countryTotals;
     const sortedRows = sortCountryRows(filteredRows, totals);
+    const retainedRows = clampAnalyticsRows(sortedRows);
+    const pageInfo = paginateAnalyticsRows(
+      retainedRows,
+      state.tableViews.countries.page,
+      state.tableViews.countries.pageSize
+    );
+    state.tableViews.countries.page = pageInfo.currentPage;
+    state.tableViews.countries.pageSize = pageInfo.pageSize;
     updateCountrySortHeaders();
+    syncAnalyticsPageSizeControl(el.countriesPageSize, pageInfo.pageSize);
+    renderAnalyticsPagination(el.countriesPagination, "countries", pageInfo);
 
     if (el.countriesCount) {
       if (filterText) {
-        el.countriesCount.textContent = `${sortedRows.length.toLocaleString()} of ${allRows.length.toLocaleString()} locations`;
+        const retainedSummary = describeRetainedCount(retainedRows.length, sortedRows.length, "location", "locations");
+        el.countriesCount.textContent = `${retainedSummary} from ${allRows.length.toLocaleString()} filtered locations`;
       } else {
-        const label = allRows.length === 1 ? "location" : "locations";
-        el.countriesCount.textContent = `${allRows.length.toLocaleString()} ${label}`;
+        el.countriesCount.textContent = describeRetainedCount(retainedRows.length, allRows.length, "location", "locations");
       }
     }
 
     if (!el.countriesBody || !el.countriesEmpty) return;
-    if (!sortedRows.length) {
+    if (!retainedRows.length) {
       el.countriesBody.innerHTML = "";
       el.countriesEmpty.textContent = filterText
         ? "No geographic rows match this filter."
@@ -1618,7 +1747,7 @@
     el.countriesEmpty.classList.add("hidden");
     el.countriesBody.textContent = "";
     const fragment = document.createDocumentFragment();
-    sortedRows.forEach((entry) => {
+    pageInfo.items.forEach((entry) => {
       const code = String(entry?.code || "").toUpperCase();
       const countryName = String(entry?.countryName || entry?.name || resolveCountryName(code) || code).trim() || code;
       const locationName = resolveLocationLabel(entry);
@@ -1775,7 +1904,54 @@
 
   function handleCountrySearchInput(event) {
     state.countryFilter = String(event?.target?.value || "").trim();
+    state.tableViews.countries.page = 1;
     renderCountryTable();
+  }
+
+  function handleAnalyticsPageSizeChange(event) {
+    const select = event?.target;
+    if (!(select instanceof HTMLSelectElement)) return;
+    const target = String(select.getAttribute("data-analytics-page-size-target") || "").trim();
+    const nextPageSize = clampAnalyticsPageSize(select.value, 10);
+    if (target === "countries") {
+      state.tableViews.countries.pageSize = nextPageSize;
+      state.tableViews.countries.page = 1;
+      renderCountryTable();
+      return;
+    }
+    if (target === "endpoints") {
+      state.tableViews.endpoints.pageSize = nextPageSize;
+      state.tableViews.endpoints.page = 1;
+      renderEndpoints(state.lastEndpoints);
+      return;
+    }
+    if (target === "recentRequests") {
+      state.tableViews.recentRequests.pageSize = nextPageSize;
+      state.tableViews.recentRequests.page = 1;
+      renderRecentRequests(state.lastRecentRequests);
+    }
+  }
+
+  function handleAnalyticsPaginationClick(event) {
+    const button = event.target.closest("[data-analytics-pagination-target][data-analytics-pagination-page]");
+    if (!(button instanceof HTMLButtonElement)) return;
+    const target = String(button.getAttribute("data-analytics-pagination-target") || "").trim();
+    const nextPage = Number.parseInt(String(button.getAttribute("data-analytics-pagination-page") || ""), 10);
+    if (!Number.isFinite(nextPage) || nextPage < 1) return;
+    if (target === "countries") {
+      state.tableViews.countries.page = nextPage;
+      renderCountryTable();
+      return;
+    }
+    if (target === "endpoints") {
+      state.tableViews.endpoints.page = nextPage;
+      renderEndpoints(state.lastEndpoints);
+      return;
+    }
+    if (target === "recentRequests") {
+      state.tableViews.recentRequests.page = nextPage;
+      renderRecentRequests(state.lastRecentRequests);
+    }
   }
 
   async function updateMap(countryRows, options = {}) {
@@ -1910,13 +2086,27 @@
   function renderEndpoints(endpoints) {
     if (!el.endpointsBody || !el.endpointsEmpty) return;
     const rows = normalizeEndpoints(endpoints);
-    if (!rows.length) {
+    state.lastEndpoints = rows;
+    const retainedRows = clampAnalyticsRows(rows);
+    const pageInfo = paginateAnalyticsRows(
+      retainedRows,
+      state.tableViews.endpoints.page,
+      state.tableViews.endpoints.pageSize
+    );
+    state.tableViews.endpoints.page = pageInfo.currentPage;
+    state.tableViews.endpoints.pageSize = pageInfo.pageSize;
+    syncAnalyticsPageSizeControl(el.endpointsPageSize, pageInfo.pageSize);
+    renderAnalyticsPagination(el.endpointsPagination, "endpoints", pageInfo);
+    if (el.endpointsCount) {
+      el.endpointsCount.textContent = describeRetainedCount(retainedRows.length, rows.length, "route", "routes");
+    }
+    if (!retainedRows.length) {
       el.endpointsBody.innerHTML = "";
       el.endpointsEmpty.classList.remove("hidden");
       return;
     }
     el.endpointsEmpty.classList.add("hidden");
-    el.endpointsBody.innerHTML = rows
+    el.endpointsBody.innerHTML = pageInfo.items
       .map((entry) => {
         return `
           <tr>
@@ -1960,14 +2150,28 @@
   function renderRecentRequests(rows) {
     if (!el.recentRequestsBody || !el.recentRequestsEmpty) return;
     const items = normalizeRecentRequests(rows);
-    if (!items.length) {
+    state.lastRecentRequests = items;
+    const retainedRows = clampAnalyticsRows(items);
+    const pageInfo = paginateAnalyticsRows(
+      retainedRows,
+      state.tableViews.recentRequests.page,
+      state.tableViews.recentRequests.pageSize
+    );
+    state.tableViews.recentRequests.page = pageInfo.currentPage;
+    state.tableViews.recentRequests.pageSize = pageInfo.pageSize;
+    syncAnalyticsPageSizeControl(el.recentRequestsPageSize, pageInfo.pageSize);
+    renderAnalyticsPagination(el.recentRequestsPagination, "recentRequests", pageInfo);
+    if (el.recentRequestsCount) {
+      el.recentRequestsCount.textContent = describeRetainedCount(retainedRows.length, items.length, "request", "requests");
+    }
+    if (!retainedRows.length) {
       el.recentRequestsBody.innerHTML = "";
       el.recentRequestsEmpty.classList.remove("hidden");
       return;
     }
 
     el.recentRequestsEmpty.classList.add("hidden");
-    el.recentRequestsBody.innerHTML = items
+    el.recentRequestsBody.innerHTML = pageInfo.items
       .map((entry) => {
         const locationLabel = entry.locationLabel || entry.countryCode || "Unknown";
         const routeMeta = [formatSurfaceLabel(entry.surface), entry.referrerHost ? `Referrer ${entry.referrerHost}` : ""]
@@ -2289,6 +2493,22 @@
       region: 0,
       city: 0
     };
+    state.tableViews = {
+      countries: {
+        page: 1,
+        pageSize: 10
+      },
+      endpoints: {
+        page: 1,
+        pageSize: 10
+      },
+      recentRequests: {
+        page: 1,
+        pageSize: 10
+      }
+    };
+    state.lastEndpoints = [];
+    state.lastRecentRequests = [];
     state.countrySort = {
       key: COUNTRY_DEFAULT_SORT_KEY,
       direction: COUNTRY_DEFAULT_SORT_DIRECTION
@@ -2334,9 +2554,14 @@
     el.countriesEmpty = $("analytics-countries-empty");
     el.countriesSearch = $("analytics-countries-search");
     el.countriesCount = $("analytics-countries-count");
+    el.countriesPageSize = $("analytics-countries-page-size");
+    el.countriesPagination = $("analytics-countries-pagination");
     el.geoCountryOnly = $("analytics-geo-country-only");
     el.geoRegionDetail = $("analytics-geo-region-detail");
     el.geoCityDetail = $("analytics-geo-city-detail");
+    el.endpointsCount = $("analytics-endpoints-count");
+    el.endpointsPageSize = $("analytics-endpoints-page-size");
+    el.endpointsPagination = $("analytics-endpoints-pagination");
     el.endpointsBody = $("analytics-endpoints-body");
     el.endpointsEmpty = $("analytics-endpoints-empty");
     el.browsersList = $("analytics-browsers-list");
@@ -2345,6 +2570,9 @@
     el.devicesEmpty = $("analytics-devices-empty");
     el.platformsList = $("analytics-platforms-list");
     el.platformsEmpty = $("analytics-platforms-empty");
+    el.recentRequestsCount = $("analytics-recent-requests-count");
+    el.recentRequestsPageSize = $("analytics-recent-requests-page-size");
+    el.recentRequestsPagination = $("analytics-recent-requests-pagination");
     el.recentRequestsBody = $("analytics-recent-requests-body");
     el.recentRequestsEmpty = $("analytics-recent-requests-empty");
     if (el.mapToggle) {
@@ -2374,6 +2602,23 @@
       el.countriesSearch.value = "";
       el.countriesSearch.addEventListener("input", handleCountrySearchInput);
     }
+    [
+      ["countries", el.countriesPageSize],
+      ["endpoints", el.endpointsPageSize],
+      ["recentRequests", el.recentRequestsPageSize]
+    ].forEach(([target, selectEl]) => {
+      if (!(selectEl instanceof HTMLSelectElement)) return;
+      selectEl.setAttribute("data-analytics-page-size-target", target);
+      syncAnalyticsPageSizeControl(selectEl, 10);
+      selectEl.addEventListener("change", handleAnalyticsPageSizeChange);
+    });
+    [
+      el.countriesPagination,
+      el.endpointsPagination,
+      el.recentRequestsPagination
+    ].forEach((container) => {
+      container?.addEventListener("click", handleAnalyticsPaginationClick);
+    });
     setMapMarkerFilter(MAP_MARKER_FILTER_DEFAULT);
 
     if (el.windowSelect) {
@@ -2504,6 +2749,22 @@
       region: 0,
       city: 0
     };
+    state.tableViews = {
+      countries: {
+        page: 1,
+        pageSize: 10
+      },
+      endpoints: {
+        page: 1,
+        pageSize: 10
+      },
+      recentRequests: {
+        page: 1,
+        pageSize: 10
+      }
+    };
+    state.lastEndpoints = [];
+    state.lastRecentRequests = [];
     state.countrySort = {
       key: COUNTRY_DEFAULT_SORT_KEY,
       direction: COUNTRY_DEFAULT_SORT_DIRECTION

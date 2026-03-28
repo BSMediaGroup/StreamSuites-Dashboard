@@ -4,6 +4,28 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Analytics Table Pagination + 250 Entry Expansion - 2026-03-29
+
+### Technical Notes
+
+- Scoped the admin Analytics page changes to the three requested sections only in `docs/views/analytics.html` and `docs/js/analytics.js`: `Geographic Breakdown`, `Top Routes / Resources`, and `Recent Request Activity`.
+- Added page-size controls using the existing alerts pagination/control family already defined in `docs/css/components.css`, exposing `5 / 10 / 25 / 50` row options without introducing a new control style or redesigning the analytics layout.
+- Added analytics-local retained-set pagination in `docs/js/analytics.js` with a bounded display cap of `250` rows per target table and a per-table current-page/page-size state model. `Geographic Breakdown` now paginates its filtered/sorted retained set while preserving the existing location search, existing sortable headers, map-focus row behavior, and current descending-by-sessions default semantics.
+- Replaced the old direct full-body table dumps for `Top Routes / Resources` and `Recent Request Activity` with retained-set pagination renderers that page through up to `250` authoritative rows from the runtime payload while preserving existing API ordering semantics. No unrelated analytics cards, charts, filters, or other table surfaces were widened.
+- Nothing was removed from repo structure and no files were deleted. The analytics files grew slightly because the previous no-pagination inline table rendering path was replaced with retained-set pagination helpers and control wiring.
+
+### Human-Readable Notes
+
+- The three analytics tables now behave like browsable datasets instead of single dumps, with row-size choices and page navigation that match the dashboard’s existing control language.
+- Geographic rows can now be filtered, sorted, and paged through up to `250` retained entries without losing the current map focus interaction.
+- Route and recent-request tables now expose the deeper runtime history instead of stopping at the much shallower earlier payloads.
+
+### Files / Areas Touched
+
+- `docs/views/analytics.html`
+- `docs/js/analytics.js`
+- `BUMP_NOTES.md`
+
 ## Admin Developer Tier Polish + Alerts Shell Tabs - 2026-03-29
 
 ### Technical Notes
