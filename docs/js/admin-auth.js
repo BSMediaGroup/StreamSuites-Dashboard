@@ -758,12 +758,29 @@
         const response = await fetch(endpoint, {
           method: "POST",
           credentials: "include",
+          redirect: "manual",
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json"
           },
           body: JSON.stringify({ email, password, surface: ADMIN_SURFACE })
         });
+
+        const redirected =
+          response.type === "opaqueredirect" ||
+          [302, 303, 307, 308].includes(Number(response.status || 0));
+
+        if (redirected) {
+          this.setStatus("sent", "Signed in. Redirecting to the dashboard…");
+          if (this.elements.emailInput) {
+            this.elements.emailInput.value = "";
+          }
+          if (this.elements.passwordInput) {
+            this.elements.passwordInput.value = "";
+          }
+          window.location.assign(ADMIN_INDEX_URL);
+          return;
+        }
 
         if (!response.ok) {
           if (response.status === 404) {
