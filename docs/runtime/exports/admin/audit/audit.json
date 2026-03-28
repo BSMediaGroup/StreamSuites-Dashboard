@@ -1,12 +1,729 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-03-19T21:59:33.147805Z",
+  "exported_at": "2026-03-28T02:31:04.287315Z",
   "runtime": {
     "project": "StreamSuites\u2122 Runtime",
     "version": "0.4.2-alpha",
-    "build": "2026.03.19+011"
+    "build": "2026.03.28+003"
   },
   "audit": [
+    {
+      "id": "c9691d7c-f282-435b-9c2c-307cd5424141",
+      "ts": "2026-03-28T02:30:01Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "badge_governance_updated",
+      "metadata": {
+        "after": {
+          "catalog": [
+            {
+              "default_visibility": {
+                "admin_surface": true,
+                "creator_surface": true,
+                "directory": true,
+                "findmehere_profile": true,
+                "profile_card": true,
+                "public_surface": true,
+                "streamsuites_profile": true,
+                "user_widget": true
+              },
+              "icon_key": "admin",
+              "key": "admin",
+              "kind": "role",
+              "label": "Admin",
+              "manually_assignable": false,
+              "order": 10,
+              "surfaces": [
+                "admin_surface",
+                "creator_surface",
+                "directory",
+                "findmehere_profile",
+                "profile_card",
+                "public_surface",
+                "streamsuites_profile",
+                "user_widget"
+              ],
+              "title": "Administrator",
+              "value": "admin"
+            },
+            {
+              "default_visibility": {
+                "admin_surface": true,
+                "creator_surface": true,
+                "directory": true,
+                "findmehere_profile": true,
+                "profile_card": true,
+                "public_surface": true,
+                "streamsuites_profile": true,
+                "user_widget": true
+              },
+              "icon_key": "core",
+              "key": "core",
+              "kind": "tier",
+              "label": "Core",
+              "manually_assignable": false,
+              "order": 20,
+              "surfaces": [
+                "admin_surface",
+                "creator_surface",
+                "directory",
+                "findmehere_profile",
+                "profile_card",
+                "public_surface",
+                "streamsuites_profile",
+                "user_widget"
+              ],
+              "title": "Core Creator",
+              "value": "core"
+            },
+            {
+              "default_visibility": {
+                "admin_surface": true,
+                "creator_surface": true,
+                "directory": true,
+                "findmehere_profile": true,
+                "profile_card": true,
+                "public_surface": true,
+                "streamsuites_profile": true,
+                "user_widget": true
+              },
+              "icon_key": "gold",
+              "key": "gold",
+              "kind": "tier",
+              "label": "Gold",
+              "manually_assignable": false,
+              "order": 20,
+              "surfaces": [
+                "admin_surface",
+                "creator_surface",
+                "directory",
+                "findmehere_profile",
+                "profile_card",
+                "public_surface",
+                "streamsuites_profile",
+                "user_widget"
+              ],
+              "title": "Gold Creator",
+              "value": "gold"
+            },
+            {
+              "default_visibility": {
+                "admin_surface": true,
+                "creator_surface": true,
+                "directory": true,
+                "findmehere_profile": true,
+                "profile_card": true,
+                "public_surface": true,
+                "streamsuites_profile": true,
+                "user_widget": true
+              },
+              "icon_key": "pro",
+              "key": "pro",
+              "kind": "tier",
+              "label": "Pro",
+              "manually_assignable": false,
+              "order": 20,
+              "surfaces": [
+                "admin_surface",
+                "creator_surface",
+                "directory",
+                "findmehere_profile",
+                "profile_card",
+                "public_surface",
+                "streamsuites_profile",
+                "user_widget"
+              ],
+              "title": "Pro Creator",
+              "value": "pro"
+            },
+            {
+              "default_visibility": {
+                "admin_surface": true,
+                "creator_surface": true,
+                "directory": true,
+                "findmehere_profile": true,
+                "profile_card": true,
+                "public_surface": true,
+                "streamsuites_profile": true,
+                "user_widget": false
+              },
+              "icon_key": "founder",
+              "key": "founder",
+              "kind": "entitlement",
+              "label": "Founder",
+              "manually_assignable": true,
+              "order": 30,
+              "surfaces": [
+                "admin_surface",
+                "creator_surface",
+                "directory",
+                "findmehere_profile",
+                "profile_card",
+                "public_surface",
+                "streamsuites_profile",
+                "user_widget"
+              ],
+              "title": "Founding Member",
+              "value": "founder"
+            },
+            {
+              "default_visibility": {
+                "admin_surface": true,
+                "creator_surface": true,
+                "profile_card": true,
+                "public_surface": true,
+                "streamsuites_profile": true,
+                "user_widget": false
+              },
+              "icon_key": "moderator",
+              "key": "moderator",
+              "kind": "entitlement",
+              "label": "Moderator",
+              "manually_assignable": true,
+              "order": 40,
+              "surfaces": [
+                "admin_surface",
+                "creator_surface",
+                "profile_card",
+                "public_surface",
+                "streamsuites_profile",
+                "user_widget"
+              ],
+              "title": "Moderator",
+              "value": "moderator"
+            },
+            {
+              "default_visibility": {
+                "admin_surface": true,
+                "creator_surface": true,
+                "profile_card": true,
+                "public_surface": true,
+                "streamsuites_profile": true,
+                "user_widget": true
+              },
+              "icon_key": "developer",
+              "key": "developer",
+              "kind": "tier",
+              "label": "Developer",
+              "manually_assignable": false,
+              "order": 50,
+              "surfaces": [
+                "admin_surface",
+                "creator_surface",
+                "profile_card",
+                "public_surface",
+                "streamsuites_profile",
+                "user_widget"
+              ],
+              "title": "Developer",
+              "value": "developer"
+            }
+          ],
+          "default_visibility": {
+            "admin": {
+              "admin_surface": true,
+              "creator_surface": true,
+              "directory": true,
+              "findmehere_profile": true,
+              "profile_card": true,
+              "public_surface": true,
+              "streamsuites_profile": true,
+              "user_widget": true
+            },
+            "core": {
+              "admin_surface": true,
+              "creator_surface": true,
+              "directory": true,
+              "findmehere_profile": true,
+              "profile_card": true,
+              "public_surface": true,
+              "streamsuites_profile": true,
+              "user_widget": true
+            },
+            "developer": {
+              "admin_surface": true,
+              "creator_surface": true,
+              "profile_card": true,
+              "public_surface": true,
+              "streamsuites_profile": true,
+              "user_widget": true
+            },
+            "founder": {
+              "admin_surface": true,
+              "creator_surface": true,
+              "directory": true,
+              "findmehere_profile": true,
+              "profile_card": true,
+              "public_surface": true,
+              "streamsuites_profile": true,
+              "user_widget": false
+            },
+            "gold": {
+              "admin_surface": true,
+              "creator_surface": true,
+              "directory": true,
+              "findmehere_profile": true,
+              "profile_card": true,
+              "public_surface": true,
+              "streamsuites_profile": true,
+              "user_widget": true
+            },
+            "moderator": {
+              "admin_surface": true,
+              "creator_surface": true,
+              "profile_card": true,
+              "public_surface": true,
+              "streamsuites_profile": true,
+              "user_widget": false
+            },
+            "pro": {
+              "admin_surface": true,
+              "creator_surface": true,
+              "directory": true,
+              "findmehere_profile": true,
+              "profile_card": true,
+              "public_surface": true,
+              "streamsuites_profile": true,
+              "user_widget": true
+            }
+          },
+          "founder_cutoff_date": "",
+          "founder_policy": {
+            "auto_assignment_enabled": false,
+            "cutoff_date": "",
+            "cutoff_end_at": null,
+            "cutoff_end_ts": null,
+            "cutoff_inclusive": true,
+            "cutoff_timezone": "UTC"
+          },
+          "founder_reconcile": {
+            "eligible_existing_accounts": 0,
+            "enabled_accounts": 0,
+            "manually_disabled_accounts": 0,
+            "pending_accounts": 0
+          },
+          "managed_entitlement_keys": [
+            "founder",
+            "moderator"
+          ],
+          "surface_catalog": [
+            {
+              "key": "streamsuites_profile",
+              "label": "StreamSuites Profile"
+            },
+            {
+              "key": "findmehere_profile",
+              "label": "FindMeHere Profile"
+            },
+            {
+              "key": "profile_card",
+              "label": "Profile Cards"
+            },
+            {
+              "key": "user_widget",
+              "label": "User Widget"
+            },
+            {
+              "key": "creator_surface",
+              "label": "Creator Surface"
+            },
+            {
+              "key": "admin_surface",
+              "label": "Admin Surface"
+            },
+            {
+              "key": "public_surface",
+              "label": "Public Surface"
+            },
+            {
+              "key": "directory",
+              "label": "Directory"
+            }
+          ]
+        },
+        "before": {
+          "catalog": [
+            {
+              "default_visibility": {
+                "admin_surface": true,
+                "creator_surface": true,
+                "directory": true,
+                "findmehere_profile": true,
+                "profile_card": true,
+                "public_surface": true,
+                "streamsuites_profile": true,
+                "user_widget": true
+              },
+              "icon_key": "admin",
+              "key": "admin",
+              "kind": "role",
+              "label": "Admin",
+              "manually_assignable": false,
+              "order": 10,
+              "surfaces": [
+                "admin_surface",
+                "creator_surface",
+                "directory",
+                "findmehere_profile",
+                "profile_card",
+                "public_surface",
+                "streamsuites_profile",
+                "user_widget"
+              ],
+              "title": "Administrator",
+              "value": "admin"
+            },
+            {
+              "default_visibility": {
+                "admin_surface": true,
+                "creator_surface": true,
+                "directory": true,
+                "findmehere_profile": true,
+                "profile_card": true,
+                "public_surface": true,
+                "streamsuites_profile": true,
+                "user_widget": true
+              },
+              "icon_key": "core",
+              "key": "core",
+              "kind": "tier",
+              "label": "Core",
+              "manually_assignable": false,
+              "order": 20,
+              "surfaces": [
+                "admin_surface",
+                "creator_surface",
+                "directory",
+                "findmehere_profile",
+                "profile_card",
+                "public_surface",
+                "streamsuites_profile",
+                "user_widget"
+              ],
+              "title": "Core Creator",
+              "value": "core"
+            },
+            {
+              "default_visibility": {
+                "admin_surface": true,
+                "creator_surface": true,
+                "directory": true,
+                "findmehere_profile": true,
+                "profile_card": true,
+                "public_surface": true,
+                "streamsuites_profile": true,
+                "user_widget": true
+              },
+              "icon_key": "gold",
+              "key": "gold",
+              "kind": "tier",
+              "label": "Gold",
+              "manually_assignable": false,
+              "order": 20,
+              "surfaces": [
+                "admin_surface",
+                "creator_surface",
+                "directory",
+                "findmehere_profile",
+                "profile_card",
+                "public_surface",
+                "streamsuites_profile",
+                "user_widget"
+              ],
+              "title": "Gold Creator",
+              "value": "gold"
+            },
+            {
+              "default_visibility": {
+                "admin_surface": true,
+                "creator_surface": true,
+                "directory": true,
+                "findmehere_profile": true,
+                "profile_card": true,
+                "public_surface": true,
+                "streamsuites_profile": true,
+                "user_widget": true
+              },
+              "icon_key": "pro",
+              "key": "pro",
+              "kind": "tier",
+              "label": "Pro",
+              "manually_assignable": false,
+              "order": 20,
+              "surfaces": [
+                "admin_surface",
+                "creator_surface",
+                "directory",
+                "findmehere_profile",
+                "profile_card",
+                "public_surface",
+                "streamsuites_profile",
+                "user_widget"
+              ],
+              "title": "Pro Creator",
+              "value": "pro"
+            },
+            {
+              "default_visibility": {
+                "admin_surface": true,
+                "creator_surface": true,
+                "directory": true,
+                "findmehere_profile": true,
+                "profile_card": true,
+                "public_surface": true,
+                "streamsuites_profile": true,
+                "user_widget": true
+              },
+              "icon_key": "founder",
+              "key": "founder",
+              "kind": "entitlement",
+              "label": "Founder",
+              "manually_assignable": true,
+              "order": 30,
+              "surfaces": [
+                "admin_surface",
+                "creator_surface",
+                "directory",
+                "findmehere_profile",
+                "profile_card",
+                "public_surface",
+                "streamsuites_profile",
+                "user_widget"
+              ],
+              "title": "Founding Member",
+              "value": "founder"
+            },
+            {
+              "default_visibility": {
+                "admin_surface": true,
+                "creator_surface": true,
+                "profile_card": true,
+                "public_surface": true,
+                "streamsuites_profile": true,
+                "user_widget": true
+              },
+              "icon_key": "moderator",
+              "key": "moderator",
+              "kind": "entitlement",
+              "label": "Moderator",
+              "manually_assignable": true,
+              "order": 40,
+              "surfaces": [
+                "admin_surface",
+                "creator_surface",
+                "profile_card",
+                "public_surface",
+                "streamsuites_profile",
+                "user_widget"
+              ],
+              "title": "Moderator",
+              "value": "moderator"
+            },
+            {
+              "default_visibility": {
+                "admin_surface": true,
+                "creator_surface": true,
+                "profile_card": true,
+                "public_surface": true,
+                "streamsuites_profile": true,
+                "user_widget": true
+              },
+              "icon_key": "developer",
+              "key": "developer",
+              "kind": "tier",
+              "label": "Developer",
+              "manually_assignable": false,
+              "order": 50,
+              "surfaces": [
+                "admin_surface",
+                "creator_surface",
+                "profile_card",
+                "public_surface",
+                "streamsuites_profile",
+                "user_widget"
+              ],
+              "title": "Developer",
+              "value": "developer"
+            }
+          ],
+          "default_visibility": {
+            "admin": {
+              "admin_surface": true,
+              "creator_surface": true,
+              "directory": true,
+              "findmehere_profile": true,
+              "profile_card": true,
+              "public_surface": true,
+              "streamsuites_profile": true,
+              "user_widget": true
+            },
+            "core": {
+              "admin_surface": true,
+              "creator_surface": true,
+              "directory": true,
+              "findmehere_profile": true,
+              "profile_card": true,
+              "public_surface": true,
+              "streamsuites_profile": true,
+              "user_widget": true
+            },
+            "developer": {
+              "admin_surface": true,
+              "creator_surface": true,
+              "profile_card": true,
+              "public_surface": true,
+              "streamsuites_profile": true,
+              "user_widget": true
+            },
+            "founder": {
+              "admin_surface": true,
+              "creator_surface": true,
+              "directory": true,
+              "findmehere_profile": true,
+              "profile_card": true,
+              "public_surface": true,
+              "streamsuites_profile": true,
+              "user_widget": true
+            },
+            "gold": {
+              "admin_surface": true,
+              "creator_surface": true,
+              "directory": true,
+              "findmehere_profile": true,
+              "profile_card": true,
+              "public_surface": true,
+              "streamsuites_profile": true,
+              "user_widget": true
+            },
+            "moderator": {
+              "admin_surface": true,
+              "creator_surface": true,
+              "profile_card": true,
+              "public_surface": true,
+              "streamsuites_profile": true,
+              "user_widget": true
+            },
+            "pro": {
+              "admin_surface": true,
+              "creator_surface": true,
+              "directory": true,
+              "findmehere_profile": true,
+              "profile_card": true,
+              "public_surface": true,
+              "streamsuites_profile": true,
+              "user_widget": true
+            }
+          },
+          "founder_cutoff_date": "",
+          "founder_policy": {
+            "auto_assignment_enabled": false,
+            "cutoff_date": "",
+            "cutoff_end_at": null,
+            "cutoff_end_ts": null,
+            "cutoff_inclusive": true,
+            "cutoff_timezone": "UTC"
+          },
+          "managed_entitlement_keys": [
+            "founder",
+            "moderator"
+          ],
+          "surface_catalog": [
+            {
+              "key": "streamsuites_profile",
+              "label": "StreamSuites Profile"
+            },
+            {
+              "key": "findmehere_profile",
+              "label": "FindMeHere Profile"
+            },
+            {
+              "key": "profile_card",
+              "label": "Profile Cards"
+            },
+            {
+              "key": "user_widget",
+              "label": "User Widget"
+            },
+            {
+              "key": "creator_surface",
+              "label": "Creator Surface"
+            },
+            {
+              "key": "admin_surface",
+              "label": "Admin Surface"
+            },
+            {
+              "key": "public_surface",
+              "label": "Public Surface"
+            },
+            {
+              "key": "directory",
+              "label": "Directory"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "2058ebc8-eaf4-4f6a-b96b-5155449b1d94",
+      "ts": "2026-03-28T02:29:27Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "alert_configuration_updated",
+      "metadata": {
+        "rule_count": 10,
+        "timezone": "UTC"
+      }
+    },
+    {
+      "id": "350e2568-b592-4b8c-84ef-1c2e5ae2041d",
+      "ts": "2026-03-28T02:28:46Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "18989677-69fa-40ac-95b4-1fdb8c48479d",
+      "ts": "2026-03-27T14:51:44Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "fallback_admin_email_normalized",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "source": "admin_fallback_email_env"
+      }
+    },
+    {
+      "id": "6e21db86-16fa-45bd-a0e8-d5aa041ed43e",
+      "ts": "2026-03-27T14:51:44Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "d61f5f01-a8e2-4f8c-8a7d-d6023652ae49",
+      "target_user_code": "UGHW8WQ",
+      "action": "test_creator_bootstrapped",
+      "metadata": {
+        "action": "created",
+        "email": "test@streamsuites.app",
+        "source": "ss_test_env",
+        "user": "SStestAcc"
+      }
+    },
     {
       "id": "80d5c070-1e5d-49a7-9cf8-57401a88a3dc",
       "ts": "2026-03-19T17:48:30Z",

@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-03-19T21:59:32.590031Z",
+  "generated_at": "2026-03-28T02:31:03.771106Z",
   "events": [
     {
       "timestamp": "2026-01-22T05:45:05Z",
@@ -927,10 +927,21 @@
       "result": "success"
     },
     {
-      "timestamp": "2026-03-19T16:45:51.134314Z",
+      "timestamp": "2026-03-28T02:28:23.197136Z",
       "source": "system",
       "severity": "info",
       "message": "Runtime boot sequence started"
+    },
+    {
+      "timestamp": "2026-03-28T02:28:47Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
+      "event_type": "session_issued",
+      "email_type": "github",
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "success"
     }
   ]
 }
