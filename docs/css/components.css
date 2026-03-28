@@ -5594,6 +5594,20 @@ body.ss-col-resizing-active {
   gap: 10px;
 }
 
+.creator-integrations-platform-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.creator-integrations-platform-title-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  object-fit: contain;
+}
+
 .creator-integrations-platform-head h4 {
   margin: 0;
   text-transform: capitalize;
@@ -5626,13 +5640,15 @@ body.ss-col-resizing-active {
 
 .creator-integrations-reason-chip {
   display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  padding: 6px 10px;
+  align-items: flex-start;
+  border-radius: 12px;
+  padding: 7px 11px;
   font-size: 0.82rem;
   border: 1px solid rgba(232, 181, 71, 0.24);
   background: rgba(232, 181, 71, 0.08);
   color: var(--text-main);
+  line-height: 1.4;
+  max-width: 100%;
 }
 
 .creator-integrations-creator-cell {
@@ -6501,6 +6517,12 @@ body.ss-col-resizing-active {
   );
   color: #ffe1ff;
   border-color: rgba(255, 88, 204, 0.22);
+}
+
+.ss-badge[data-tier="DEVELOPER"] {
+  background: linear-gradient(135deg, rgba(103, 193, 36, 0.4), rgba(189, 233, 102, 0.14));
+  color: #f3ffd5;
+  border-color: rgba(171, 226, 88, 0.24);
 }
 
 .ss-badge-warning {

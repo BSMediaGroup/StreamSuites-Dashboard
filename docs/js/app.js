@@ -872,15 +872,34 @@ function registerView(name, config) {
 const VIEW_FETCH_TIMEOUT_MS = 6000;
 const VIEW_FETCH_RETRY_COUNT = 1;
 const VIEW_FETCH_RETRY_DELAY_MS = 240;
-const ACCOUNTS_TABS_COLLAPSE_STORAGE_KEY = "ss_accounts_shell_tabs_collapsed";
-const ACCOUNTS_SHELL_SECTION_IDS = Object.freeze([
-  "accounts-table-section",
-  "badge-governance-section",
-  "billing-codes-section"
-]);
+const SECTION_SHELL_CONFIG = Object.freeze({
+  accounts: Object.freeze({
+    storageKey: "ss_accounts_shell_tabs_collapsed",
+    toggleLabel: "accounts section tabs",
+    sections: Object.freeze([
+      { id: "accounts-table-section", label: "Accounts" },
+      { id: "badge-governance-section", label: "Badge Governance" },
+      { id: "billing-codes-section", label: "Billing Codes" }
+    ])
+  }),
+  alerts: Object.freeze({
+    storageKey: "ss_alerts_shell_tabs_collapsed",
+    toggleLabel: "alerts section tabs",
+    sections: Object.freeze([
+      { id: "alerts-overview-section", label: "Overview" },
+      { id: "alerts-rules-section", label: "Rules" },
+      { id: "alerts-preferences-section", label: "Defaults" },
+      { id: "alerts-test-section", label: "Test" },
+      { id: "alerts-targets-section", label: "Channels" },
+      { id: "alerts-history-section", label: "Activity" }
+    ])
+  })
+});
 
 const accountsShell = {
   initialized: false,
+  activeView: "",
+  activeConfig: null,
   toggle: null,
   rail: null,
   viewport: null,
@@ -1218,19 +1237,20 @@ function initAccountsShellElements() {
 }
 
 function readAccountsShellCollapsedPreference() {
+  const storageKey = accountsShell.activeConfig?.storageKey;
+  if (!storageKey) return false;
   try {
-    return window.localStorage.getItem(ACCOUNTS_TABS_COLLAPSE_STORAGE_KEY) === "1";
+    return window.localStorage.getItem(storageKey) === "1";
   } catch (_err) {
     return false;
   }
 }
 
 function persistAccountsShellCollapsed(collapsed) {
+  const storageKey = accountsShell.activeConfig?.storageKey;
+  if (!storageKey) return;
   try {
-    window.localStorage.setItem(
-      ACCOUNTS_TABS_COLLAPSE_STORAGE_KEY,
-      collapsed ? "1" : "0"
-    );
+    window.localStorage.setItem(storageKey, collapsed ? "1" : "0");
   } catch (_err) {
     // Storage can be unavailable in restricted contexts.
   }
@@ -1238,9 +1258,10 @@ function persistAccountsShellCollapsed(collapsed) {
 
 function updateAccountsShellToggleState() {
   if (!accountsShell.toggle) return;
+  const labelStem = accountsShell.activeConfig?.toggleLabel || "section tabs";
   const label = accountsShell.collapsed
-    ? "Show accounts section tabs"
-    : "Collapse accounts section tabs";
+    ? `Show ${labelStem}`
+    : `Collapse ${labelStem}`;
   accountsShell.toggle.setAttribute("aria-expanded", String(!accountsShell.collapsed));
   accountsShell.toggle.setAttribute("aria-label", label);
   accountsShell.toggle.setAttribute("title", label);
@@ -1287,9 +1308,35 @@ function resolveActiveAccountsSection() {
 }
 
 function refreshAccountsShellSections() {
-  accountsShell.sections = ACCOUNTS_SHELL_SECTION_IDS
+  const sectionIds = Array.isArray(accountsShell.activeConfig?.sections)
+    ? accountsShell.activeConfig.sections.map((section) => section.id)
+    : [];
+  accountsShell.sections = sectionIds
     .map((id) => document.getElementById(id))
     .filter(Boolean);
+}
+
+function renderAccountsShellTabs() {
+  if (!accountsShell.track) return;
+  const sections = Array.isArray(accountsShell.activeConfig?.sections)
+    ? accountsShell.activeConfig.sections
+    : [];
+  accountsShell.track.innerHTML = sections
+    .map(
+      (section) => `
+        <a
+          class="accounts-shell-tab"
+          href="#${section.id}"
+          data-accounts-shell-anchor="${section.id}"
+        >
+          ${section.label}
+        </a>
+      `
+    )
+    .join("");
+  accountsShell.tabs = Array.from(
+    accountsShell.track.querySelectorAll("[data-accounts-shell-anchor]")
+  );
 }
 
 function setAccountsShellScrollButtonVisibility(button, visible) {
@@ -1465,8 +1512,16 @@ function syncAccountsShellForView(viewName) {
 
   bindAccountsShell();
 
-  const shouldShow = viewName === "accounts";
+  const nextConfig = SECTION_SHELL_CONFIG[viewName] || null;
+  if (accountsShell.activeView !== viewName || accountsShell.activeConfig !== nextConfig) {
+    accountsShell.activeView = viewName;
+    accountsShell.activeConfig = nextConfig;
+    accountsShell.collapsePreferenceLoaded = false;
+    renderAccountsShellTabs();
+  }
+
   refreshAccountsShellSections();
+  const shouldShow = Boolean(nextConfig);
   const hasRenderableSections = accountsShell.sections.length > 0;
   accountsShell.visible = shouldShow && hasRenderableSections;
 

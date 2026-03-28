@@ -289,7 +289,7 @@
     ruleView: "gallery",
     rulePageSize: DEFAULT_RULES_PAGE_SIZE,
     rulesPage: 1,
-    historyView: "list",
+    historyView: "gallery",
     historyPageSize: DEFAULT_HISTORY_PAGE_SIZE,
     historyPage: 1,
     loadToken: 0,

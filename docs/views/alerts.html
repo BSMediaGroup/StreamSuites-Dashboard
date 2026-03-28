@@ -21,7 +21,7 @@
     <div id="analytics-alerts-banner" class="ss-alert ss-alert-danger hidden" role="status" aria-live="polite"></div>
   </section>
 
-  <section class="ss-panel ss-alerts-hero-panel">
+  <section id="alerts-overview-section" class="ss-panel ss-alerts-hero-panel">
     <div class="ss-panel-body ss-alerts-hero-body">
       <div class="ss-alerts-hero-main">
         <div class="ss-alerts-hero-copy">
@@ -110,7 +110,7 @@
   </section>
 
   <section class="ss-alerts-layout">
-    <section class="ss-panel ss-analytics-alerts-subpanel ss-alerts-rules-panel" aria-labelledby="analytics-alerts-rules-title">
+    <section id="alerts-rules-section" class="ss-panel ss-analytics-alerts-subpanel ss-alerts-rules-panel" aria-labelledby="analytics-alerts-rules-title">
       <header class="ss-panel-header">
         <div class="ss-panel-header-main">
           <h2 id="analytics-alerts-rules-title">Alert rules</h2>
@@ -389,7 +389,7 @@
   </section>
 
   <section class="ss-alerts-support-stack">
-    <details class="ss-panel ss-analytics-alerts-subpanel ss-alerts-collapsible-panel" open>
+    <details id="alerts-preferences-section" class="ss-panel ss-analytics-alerts-subpanel ss-alerts-collapsible-panel" open>
       <summary class="ss-panel-header ss-alerts-collapsible-summary" aria-labelledby="analytics-alerts-preferences-title">
         <div class="ss-panel-header-main ss-alerts-collapsible-summary-copy">
           <h2 id="analytics-alerts-preferences-title">Delivery defaults</h2>
@@ -449,7 +449,7 @@
       </div>
     </details>
 
-    <details class="ss-panel ss-analytics-alerts-subpanel ss-alerts-collapsible-panel" open>
+    <details id="alerts-test-section" class="ss-panel ss-analytics-alerts-subpanel ss-alerts-collapsible-panel" open>
       <summary class="ss-panel-header ss-alerts-collapsible-summary" aria-labelledby="analytics-alerts-test-title">
         <div class="ss-panel-header-main ss-alerts-collapsible-summary-copy">
           <h2 id="analytics-alerts-test-title">Send test notification</h2>
@@ -517,7 +517,7 @@
   </section>
 
   <section class="ss-alerts-operations-stack">
-    <details class="ss-panel ss-analytics-alerts-subpanel ss-alerts-collapsible-panel" open>
+    <details id="alerts-targets-section" class="ss-panel ss-analytics-alerts-subpanel ss-alerts-collapsible-panel" open>
       <summary class="ss-panel-header ss-alerts-collapsible-summary" aria-labelledby="analytics-alerts-targets-title">
         <div class="ss-panel-header-main ss-alerts-collapsible-summary-copy">
           <h2 id="analytics-alerts-targets-title">Delivery channels</h2>
@@ -554,7 +554,7 @@
       </div>
     </details>
 
-    <section class="ss-panel ss-analytics-alerts-subpanel" aria-labelledby="analytics-alerts-history-title">
+    <section id="alerts-history-section" class="ss-panel ss-analytics-alerts-subpanel" aria-labelledby="analytics-alerts-history-title">
       <header class="ss-panel-header">
         <div class="ss-panel-header-main">
           <h2 id="analytics-alerts-history-title">Recent alert activity</h2>
@@ -564,8 +564,8 @@
           <span id="analytics-alerts-history-summary" class="ss-chip ss-chip-muted">Latest 250 entries</span>
           <div class="ss-alerts-collection-controls" aria-label="Recent alert activity display controls">
             <div id="analytics-alerts-history-view-toggle" class="ss-alerts-view-toggle" role="group" aria-label="Choose how recent alert activity is displayed">
-              <button type="button" id="analytics-alerts-history-view-list" class="ss-alerts-view-toggle-button" data-layout-target="history" data-layout-view="list" aria-pressed="true">List</button>
-              <button type="button" id="analytics-alerts-history-view-gallery" class="ss-alerts-view-toggle-button" data-layout-target="history" data-layout-view="gallery" aria-pressed="false">Gallery</button>
+              <button type="button" id="analytics-alerts-history-view-list" class="ss-alerts-view-toggle-button" data-layout-target="history" data-layout-view="list" aria-pressed="false">List</button>
+              <button type="button" id="analytics-alerts-history-view-gallery" class="ss-alerts-view-toggle-button" data-layout-target="history" data-layout-view="gallery" aria-pressed="true">Gallery</button>
             </div>
             <label class="ss-alerts-page-size-control" for="analytics-alerts-history-page-size">
               <span class="muted">Page size</span>

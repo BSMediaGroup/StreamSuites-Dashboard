@@ -11,7 +11,8 @@
   const TIER_ICON_MAP = Object.freeze({
     core: "/assets/icons/tierbadge-core.svg",
     gold: "/assets/icons/tierbadge-gold.svg",
-    pro: "/assets/icons/tierbadge-pro.svg"
+    pro: "/assets/icons/tierbadge-pro.svg",
+    developer: "/assets/icons/dev-green.svg"
   });
   const SOCIAL_ICON_MAP = Object.freeze({
     youtube: "/assets/icons/youtube.svg",
@@ -82,7 +83,7 @@
 
   function normalizeTier(value) {
     const tier = safeText(value).toLowerCase();
-    return tier === "gold" || tier === "pro" ? tier : "core";
+    return tier === "gold" || tier === "pro" || tier === "developer" ? tier : "core";
   }
 
   function normalizeSocialLinks(value) {

@@ -7,6 +7,13 @@
 
   const LIST_ENDPOINT = "/api/admin/creator-integrations";
   const PLATFORMS = ["youtube", "rumble", "twitch", "kick", "pilled"];
+  const PLATFORM_ICON_MAP = Object.freeze({
+    youtube: "/assets/icons/youtube.svg",
+    rumble: "/assets/icons/rumble.svg",
+    twitch: "/assets/icons/twitch.svg",
+    kick: "/assets/icons/kick.svg",
+    pilled: "/assets/icons/pilled.svg"
+  });
 
   const state = {
     summaries: [],
@@ -370,10 +377,14 @@
         safeMeta.push(item.secret_present ? `Credential: ${item.secret_mask || "Configured"}` : "Credential: not stored");
       }
       if (metadata.future_secret_ref) safeMeta.push("Secret reference present");
+      const iconPath = PLATFORM_ICON_MAP[platform] || "";
       return `
         <article class="creator-integrations-platform-card">
           <div class="creator-integrations-platform-head">
-            <h4>${escapeHtml(platform)}</h4>
+            <h4 class="creator-integrations-platform-title">
+              ${iconPath ? `<img class="creator-integrations-platform-title-icon" src="${escapeHtml(iconPath)}" alt="" aria-hidden="true" />` : ""}
+              <span>${escapeHtml(platform)}</span>
+            </h4>
             ${renderBadge(
               deployment.can_deploy ? "Ready" : (item.status === "linked" ? "Linked but limited" : item.status || "Unknown"),
               deployment.can_deploy ? "ss-badge-success" : (item.status === "linked" ? "ss-badge-warning" : "")

@@ -4,6 +4,31 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Admin Developer Tier Polish + Alerts Shell Tabs - 2026-03-29
+
+### Technical Notes
+
+- Extended the shared admin tier-chip styling in `docs/css/components.css` with a `DEVELOPER` variant so existing tier badge surfaces rendered by `docs/js/accounts.js` and `docs/js/user-detail.js` now display the internal developer tier in the same chip family as Core, Gold, and Pro instead of falling back to the generic badge treatment.
+- Updated `docs/assets/js/ss-profile-hovercard.js` so hovercard tier normalization and icon lookup now accept the backend-owned `developer` tier and use `/assets/icons/dev-green.svg`, keeping badge/icon support aligned across account rows, detail views, and hover surfaces.
+- Polished the creator integrations Platform Breakdown in `docs/js/creator-integrations.js` and `docs/css/components.css` by prefixing platform card titles with their platform icons and changing the gold multiline reason chips to rounded rectangles that wrap cleanly without oversized pill geometry.
+- Generalized the existing Accounts top-bar jump-tab rail in `docs/js/app.js` into a view-configured shell that now powers the Alerts page as well, then added alert section anchors in `docs/views/alerts.html` and switched the recent-activity default layout in `docs/js/analytics-alerting.js` from list to gallery. This stayed additive and did not change routing or replace the established shell pattern.
+
+### Human-Readable Notes
+
+- Developer-tier accounts now render as a deliberate internal tier across the admin chip surfaces instead of looking like an unstyled fallback.
+- The creator integrations side breakdown is easier to scan because each platform card now starts with its icon and long gold detail tags wrap like compact cards instead of stretched pills.
+- Alerts now opens on the gallery-style recent activity view and gets the same top jump-tab behavior already used successfully on Accounts.
+
+### Files / Areas Touched
+
+- `docs/css/components.css`
+- `docs/assets/js/ss-profile-hovercard.js`
+- `docs/js/creator-integrations.js`
+- `docs/views/alerts.html`
+- `docs/js/analytics-alerting.js`
+- `docs/js/app.js`
+- `BUMP_NOTES.md`
+
 ## Admin Cloudflare Pages Shell Route Manifest Parity - 2026-03-28
 
 ### Technical Notes
