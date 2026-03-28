@@ -432,9 +432,9 @@
     "overlay_safe": false
   },
   "restart_intent": {
-    "required": true,
+    "required": false,
     "pending": {
-      "system": true,
+      "system": false,
       "creators": false,
       "triggers": false,
       "platforms": false
