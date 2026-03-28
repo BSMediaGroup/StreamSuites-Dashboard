@@ -266,7 +266,7 @@
   }
 
   function normalizeBadgeItems(items) {
-    const normalized = (Array.isArray(items) ? items : [])
+    return (Array.isArray(items) ? items : [])
       .map((badge) => {
         if (!badge || typeof badge !== "object") return null;
         const key = String(badge.key || badge.icon_key || badge.iconKey || badge.value || "").trim().toLowerCase();
@@ -279,17 +279,7 @@
           visible: badge.visible !== false
         };
       })
-      .filter(Boolean);
-    const hasAdminBadge = normalized.some((badge) => badge?.key === "admin");
-    const hasDeveloperBadge = normalized.some((badge) => badge?.key === "developer");
-    return normalized
-      .filter(
-        (badge) =>
-          !(
-            (hasAdminBadge && ["core", "gold", "pro"].includes(badge?.key)) ||
-            (hasDeveloperBadge && badge?.key === "pro")
-          )
-      )
+      .filter(Boolean)
       .sort((left, right) => BADGE_ORDER.indexOf(left.key) - BADGE_ORDER.indexOf(right.key));
   }
 

@@ -4,6 +4,24 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Admin Badge Matrix Consumer Cleanup - 2026-03-28
+
+### Technical Notes
+
+- Removed the stale local admin-over-tier and developer-over-Pro suppression filter from `docs/js/accounts.js` when normalizing backend badge arrays for the Accounts surface.
+- That filter had become a duplicate of older display assumptions and could hide runtime-authoritative badge combinations, especially developer plus Pro, after the matrix system started returning the final effective badge set directly.
+- The file became shorter because the old `hasAdminBadge` / `hasDeveloperBadge` filter branch was deleted instead of being reworked into another client-side override.
+
+### Human-Readable Notes
+
+- Admin account rows and drawers now trust the runtime badge payload instead of second-guessing it.
+- Compact header-style badge compression still exists in the dedicated top-bar auth widgets where space is intentionally limited.
+
+### Files / Areas Touched
+
+- `docs/js/accounts.js`
+- `BUMP_NOTES.md`
+
 ## Badge Governance UI Matrix Polish - 2026-03-28
 
 ### Technical Notes
