@@ -4,6 +4,28 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Admin Cloudflare Pages Shell Route Manifest Parity - 2026-03-28
+
+### Technical Notes
+
+- Compared the live admin deep-link failures against the current router and confirmed the production symptom is consistent with the deployment behaving like a static shell without the Pages Function rescue path. The root shell and root assets are live, but nested admin shell URLs are still returning raw `404` responses before hydration.
+- Hardened every admin rewrite manifest around the actual current admin shell routes rather than relying primarily on the broader `/profiles/*` and `/integrations/*` families. Exact rewrites now explicitly cover the known nested shell entrypoints already defined by `docs/js/admin-routes.js`, including `/profiles/integrations`, `/profiles/stats`, `/integrations/triggers`, and each current `/integrations/{provider}` surface.
+- Expanded `functions/[[path]].js` to mirror those exact nested routes as well, so the Pages Function path and the static `_redirects` manifests now declare the same current admin shell surface instead of depending on prefix-only inference.
+- Nothing was removed in this pass. The branded admin `404.html` documents remain intact for true misses, and no asset rewrites were broadened into a catch-all that could turn missing JS/CSS/image requests into HTML.
+
+### Human-Readable Notes
+
+- Valid nested admin dashboard URLs now have explicit static rewrites to the shell instead of depending on the fallback function to infer them.
+- The admin 404 page is still preserved for real unknown paths.
+
+### Files / Areas Touched
+
+- `_redirects`
+- `docs/_redirects`
+- `functions/[[path]].js`
+- `scripts/build-pages-artifact.ps1`
+- `BUMP_NOTES.md`
+
 ## Admin Cloudflare Pages Deep-Link Fallback Cleanup - 2026-03-28
 
 ### Technical Notes

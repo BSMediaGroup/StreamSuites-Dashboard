@@ -4,10 +4,11 @@
 /users/*               /index.html              200
 /accounts              /index.html              200
 /profiles              /index.html              200
+/profiles/integrations /index.html              200
+/profiles/stats        /index.html              200
 /profiles/*            /index.html              200
 /creators              /index.html              200
 /creator-integrations  /index.html              200
-/profiles/stats        /index.html              200
 /creator-stats         /index.html              200
 /telemetry             /index.html              200
 /bots                  /index.html              200
@@ -35,6 +36,14 @@
 /settings              /index.html              200
 /updates               /index.html              200
 /design                /index.html              200
+/integrations/triggers /index.html              200
+/integrations/rumble   /index.html              200
+/integrations/youtube  /index.html              200
+/integrations/twitch   /index.html              200
+/integrations/kick     /index.html              200
+/integrations/pilled   /index.html              200
+/integrations/twitter  /index.html              200
+/integrations/discord  /index.html              200
 /integrations/*        /index.html              200
 /rumble                /index.html              200
 /youtube               /index.html              200
