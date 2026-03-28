@@ -298,7 +298,7 @@
       this.config.endpoints.logout = getMetaContent("streamsuites-auth-logout");
       this.config.endpoints.login =
         getMetaContent("streamsuites-auth-login") ||
-        (baseUrl ? `${baseUrl.replace(/\/$/, "")}/auth/login` : "");
+        (baseUrl ? `${baseUrl.replace(/\/$/, "")}/auth/login/password` : "");
       this.config.endpoints.providers.google = getMetaContent("streamsuites-auth-google");
       this.config.endpoints.providers.github = getMetaContent("streamsuites-auth-github");
       this.config.endpoints.providers.discord = getMetaContent("streamsuites-auth-discord");
@@ -367,7 +367,7 @@
       if (this.elements.emailForm) {
         this.elements.emailForm.addEventListener("submit", (event) => {
           event.preventDefault();
-          void this.submitEmergencyLogin();
+          void this.submitPasswordLogin();
         });
       }
 
@@ -728,12 +728,12 @@
       window.location.assign(destination);
     },
 
-    async submitEmergencyLogin() {
+    async submitPasswordLogin() {
       const endpoint = this.config.endpoints.login;
       if (!endpoint) {
         this.setStatus(
           "offline",
-          "Emergency access is offline. Auth login endpoint is not configured."
+          "Password login is unavailable because the auth endpoint is not configured."
         );
         return;
       }
@@ -752,7 +752,7 @@
       }
 
       this.setLoading(true);
-      this.setStatus("loading", "Submitting emergency admin access…");
+      this.setStatus("loading", "Signing in…");
 
       try {
         const response = await fetch(endpoint, {
@@ -762,22 +762,22 @@
             "Content-Type": "application/json",
             Accept: "application/json"
           },
-          body: JSON.stringify({ email, password })
+          body: JSON.stringify({ email, password, surface: ADMIN_SURFACE })
         });
 
         if (!response.ok) {
           if (response.status === 404) {
             this.setStatus(
               "offline",
-              "Emergency access is offline. The auth service did not accept manual login."
+              "Password login is unavailable because the auth service rejected the login route."
             );
             return;
           }
-          const message = `Manual login failed (${response.status}).`;
+          const message = `Password login failed (${response.status}).`;
           throw new Error(message);
         }
 
-        this.setStatus("sent", "Manual login submitted. Redirecting to the dashboard…");
+        this.setStatus("sent", "Signed in. Redirecting to the dashboard…");
         if (this.elements.emailInput) {
           this.elements.emailInput.value = "";
         }
@@ -786,8 +786,8 @@
         }
         window.location.assign(ADMIN_INDEX_URL);
       } catch (err) {
-        console.warn("[Admin Auth] Emergency login request failed:", err);
-        this.setStatus("error", "Unable to submit manual login. Try again shortly.");
+        console.warn("[Admin Auth] Password login request failed:", err);
+        this.setStatus("error", "Unable to sign in. Try again shortly.");
       } finally {
         this.setLoading(false);
       }

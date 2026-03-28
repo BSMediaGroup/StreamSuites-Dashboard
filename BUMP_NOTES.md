@@ -4,6 +4,33 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Admin Web Email/Password Login Alignment - 2026-03-29
+
+### Technical Notes
+
+- Root-caused the Admin web email/password failure to stale dashboard-only wiring: `docs/js/admin-auth.js` and `docs/js/admin-login.js` were still posting the admin modal/page form to the generic `/auth/login` route and never sent the modern `surface: "admin"` password-login payload that the authoritative runtime already expects on `POST /auth/login/password`.
+- Updated the admin overlay shell (`index.html`, `docs/index.html`) and the standalone admin login page (`docs/auth/login.html`) to point their `streamsuites-auth-login` metadata at the modern password-login endpoint, then updated both submit handlers to post `{ email, password, surface: "admin" }` against that route while leaving all OAuth provider endpoints unchanged.
+- Removed the stale “emergency fallback” wording from the admin web email/password affordances so the dashboard now describes the same StreamSuites email/password flow already used by the other working surfaces.
+- Aligned the root and `docs/` admin fallback shells (`404.html`, `docs/404.html`) to the same password-login endpoint metadata so the published artifact cannot fall back to the obsolete admin-web-only route assumption from any entry surface.
+- No files were created or removed. The touched files stayed roughly the same size because this was a narrow route-contract correction plus small copy cleanup, not a modal redesign.
+
+### Human-Readable Notes
+
+- Admins can now use the web dashboard’s email/password sign-in against the same modern login route already working elsewhere instead of hitting an older dead-end admin path.
+- Google, GitHub, and the other OAuth buttons were left alone.
+- This change keeps the dashboard as a consumer of StreamSuites auth truth instead of preserving an outdated admin-only login assumption.
+
+### Files / Areas Touched
+
+- `docs/js/admin-auth.js`
+- `docs/js/admin-login.js`
+- `index.html`
+- `docs/index.html`
+- `docs/auth/login.html`
+- `404.html`
+- `docs/404.html`
+- `BUMP_NOTES.md`
+
 ## Analytics Table Pagination + 250 Entry Expansion - 2026-03-29
 
 ### Technical Notes

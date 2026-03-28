@@ -142,7 +142,7 @@
   const endpoints = {
     login:
       getMetaContent("streamsuites-auth-login") ||
-      (base ? `${base}/auth/login` : ""),
+      (base ? `${base}/auth/login/password` : ""),
     google: getMetaContent("streamsuites-auth-google"),
     github: getMetaContent("streamsuites-auth-github"),
     discord: getMetaContent("streamsuites-auth-discord"),
@@ -215,7 +215,7 @@
     window.location.assign(redirectUrl ? redirectUrl.toString() : destination);
   }
 
-  async function submitEmergencyLogin(event) {
+  async function submitPasswordLogin(event) {
     event.preventDefault();
     const email = normalizeEmail(elements.email?.value || "");
     const password = elements.password?.value || "";
@@ -231,12 +231,12 @@
     }
 
     if (!endpoints.login) {
-      setStatus("offline", "Emergency access is offline. Auth login endpoint is missing.");
+      setStatus("offline", "Password login is unavailable because the auth endpoint is missing.");
       return;
     }
 
     setLoading(true);
-    setStatus("loading", "Submitting emergency admin access…");
+    setStatus("loading", "Signing in…");
 
     try {
       const response = await fetch(endpoints.login, {
@@ -246,25 +246,25 @@
           "Content-Type": "application/json",
           Accept: "application/json"
         },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password, surface: ADMIN_SURFACE })
       });
 
       if (!response.ok) {
         if (response.status === 404) {
           setStatus(
             "offline",
-            "Emergency access is offline. The auth service did not accept manual login."
+            "Password login is unavailable because the auth service rejected the login route."
           );
           return;
         }
-        throw new Error(`Manual login failed (${response.status}).`);
+        throw new Error(`Password login failed (${response.status}).`);
       }
 
-      setStatus("sent", "Login submitted. Redirecting to the dashboard…");
+      setStatus("sent", "Signed in. Redirecting to the dashboard…");
       window.location.assign(redirectTarget);
     } catch (err) {
-      console.warn("[Admin Login] Manual login failed:", err);
-      setStatus("error", "Unable to submit manual login. Try again shortly.");
+      console.warn("[Admin Login] Password login failed:", err);
+      setStatus("error", "Unable to sign in. Try again shortly.");
     } finally {
       setLoading(false);
     }
@@ -288,6 +288,6 @@
   }
 
   if (elements.form) {
-    elements.form.addEventListener("submit", submitEmergencyLogin);
+    elements.form.addEventListener("submit", submitPasswordLogin);
   }
 })();

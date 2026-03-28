@@ -55,7 +55,7 @@
   <meta name="streamsuites-auth-base" content="https://api.streamsuites.app" />
   <meta name="streamsuites-auth-session" content="https://api.streamsuites.app/auth/session" />
   <meta name="streamsuites-auth-logout" content="https://api.streamsuites.app/auth/logout" />
-  <meta name="streamsuites-auth-login" content="https://api.streamsuites.app/auth/login?surface=admin&amp;redirect=https://admin.streamsuites.app/index.html" />
+  <meta name="streamsuites-auth-login" content="https://api.streamsuites.app/auth/login/password" />
   <meta name="streamsuites-auth-google" content="https://api.streamsuites.app/auth/login/google?surface=admin&amp;return_to=https://admin.streamsuites.app/auth/success.html" />
   <meta name="streamsuites-auth-github" content="https://api.streamsuites.app/auth/login/github?surface=admin&amp;return_to=https://admin.streamsuites.app/auth/success.html" />
   <meta name="streamsuites-auth-discord" content="https://api.streamsuites.app/auth/login/discord?surface=admin&amp;return_to=https://admin.streamsuites.app/auth/success.html" />
@@ -363,7 +363,7 @@
         </button>
       </div>
       <div class="admin-auth-divider">
-        <span>Emergency Admin Access</span>
+        <span>Email/Password</span>
       </div>
       <form id="admin-auth-email-form" class="admin-auth-email">
         <label for="admin-auth-email">Admin Email</label>
@@ -389,8 +389,7 @@
           </button>
         </div>
         <p class="muted admin-auth-note">
-          This manual sign-in is an emergency fallback. If the auth API is offline, it will remain
-          read-only.
+          Use the same StreamSuites email/password flow as the other login surfaces.
         </p>
       </form>
       <div id="admin-auth-status" class="admin-auth-status" role="status" aria-live="polite"></div>
