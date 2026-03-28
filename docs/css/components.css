@@ -3890,6 +3890,203 @@
   flex-wrap: wrap;
 }
 
+.badge-governance-section {
+  display: grid;
+  gap: 12px;
+}
+
+.badge-governance-intro {
+  margin: 0;
+}
+
+.badge-governance-summary-grid {
+  grid-template-columns: minmax(180px, 0.72fr) minmax(220px, 0.95fr) minmax(0, 1.6fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.badge-governance-summary-card,
+.badge-governance-matrix-card {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.badge-governance-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.badge-governance-card-note {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.badge-governance-icon-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  min-height: 24px;
+}
+
+.badge-governance-table-scroll {
+  overflow: auto;
+  padding-bottom: 4px;
+  scrollbar-gutter: stable both-edges;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+}
+
+.badge-governance-table-scroll::-webkit-scrollbar {
+  height: 7px;
+}
+
+.badge-governance-table-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.badge-governance-table-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.badge-governance-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.38);
+}
+
+.badge-governance-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12px;
+}
+
+.badge-governance-table thead th {
+  padding: 8px 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.badge-governance-table thead th:first-child {
+  text-align: left;
+  padding-left: 12px;
+}
+
+.badge-governance-table tbody th,
+.badge-governance-table tbody td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.badge-governance-table tbody tr:last-child th,
+.badge-governance-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.badge-governance-row-label {
+  min-width: 210px;
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.badge-governance-cell {
+  min-width: 112px;
+  padding: 10px 8px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.badge-governance-cell.is-locked {
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.badge-governance-cell.is-unsupported {
+  color: var(--text-secondary);
+}
+
+.badge-governance-cell-stack {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+
+.badge-governance-cell-select {
+  min-width: 92px;
+  max-width: 108px;
+}
+
+.badge-governance-checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-governance-empty {
+  color: var(--text-secondary);
+}
+
+.badge-governance-state {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: rgba(214, 226, 255, 0.72);
+  font-size: 11px;
+  line-height: 1;
+}
+
+.badge-governance-state.is-visible {
+  color: #23a55a;
+}
+
+.badge-governance-state.is-hidden {
+  color: rgba(214, 226, 255, 0.62);
+}
+
+.badge-governance-glyph {
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  background-color: currentColor;
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: contain;
+}
+
+.badge-governance-glyph.is-visible {
+  -webkit-mask-image: url("/assets/icons/ui/visiblefilled.svg");
+  mask-image: url("/assets/icons/ui/visiblefilled.svg");
+}
+
+.badge-governance-glyph.is-hidden {
+  -webkit-mask-image: url("/assets/icons/ui/hidden.svg");
+  mask-image: url("/assets/icons/ui/hidden.svg");
+}
+
+.badge-governance-state-text {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.badge-governance-actions-row {
+  margin-top: 12px;
+}
+
 .accounts-governance-badge-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -5654,13 +5851,36 @@ body.ss-col-resizing-active {
 
 .user-detail-badge-governance-grid {
   display: grid;
-  grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.1fr);
-  gap: 12px;
+  grid-template-columns: minmax(260px, 0.82fr) minmax(0, 1.38fr);
+  gap: 14px;
   align-items: start;
+}
+
+.user-detail-badge-summary-card {
+  gap: 12px;
+}
+
+.user-detail-badge-summary-card .accounts-details-placeholder-value {
+  display: grid;
+  gap: 12px;
+}
+
+.user-detail-badge-matrix-card {
+  min-width: 0;
 }
 
 .user-detail-badge-actions {
   justify-content: flex-start;
+}
+
+@media (max-width: 1320px) {
+  .badge-governance-summary-grid {
+    grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr);
+  }
+
+  .badge-governance-summary-grid .badge-governance-matrix-card {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 1120px) {
@@ -5678,6 +5898,14 @@ body.ss-col-resizing-active {
   .user-detail-form-grid,
   .user-detail-reset-grid {
     grid-template-columns: 1fr;
+  }
+
+  .badge-governance-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .badge-governance-summary-grid .badge-governance-matrix-card {
+    grid-column: auto;
   }
 }
 

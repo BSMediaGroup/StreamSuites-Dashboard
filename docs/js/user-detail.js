@@ -11,6 +11,8 @@
     visibility: "Reset public visibility",
     findmehere_theme: "Reset FindMeHere theme"
   };
+  const BADGE_ORDER = ["admin", "core", "gold", "pro", "founder", "moderator", "developer"];
+  const HIDDEN_BADGE_GOVERNANCE_SURFACES = new Set(["creator_surface", "admin_surface", "public_surface", "directory"]);
 
   const state = {
     userCode: "",
@@ -167,6 +169,33 @@
     return `<span class="${classes}">${escapeHtml(formatBadgeLabel(label))}</span>`;
   }
 
+  function badgeIconPath(key) {
+    const normalized = coerceText(key).toLowerCase();
+    const srcMap = {
+      admin: "/assets/icons/tierbadge-admin.svg",
+      core: "/assets/icons/tierbadge-core.svg",
+      gold: "/assets/icons/tierbadge-gold.svg",
+      pro: "/assets/icons/tierbadge-pro.svg",
+      founder: "/assets/icons/founder-gold.svg",
+      moderator: "/assets/icons/modgavel-blue.svg",
+      developer: "/assets/icons/dev-green.svg"
+    };
+    return srcMap[normalized] || "";
+  }
+
+  function renderBadgeChoiceLabel(key, meta = "") {
+    const iconPath = badgeIconPath(key);
+    return `
+      <span class="accounts-badge-choice-label-wrap">
+        ${iconPath ? `<img class="accounts-badge-choice-icon" src="${escapeHtml(iconPath)}" alt="" aria-hidden="true" />` : ""}
+        <span class="accounts-badge-choice-copy">
+          <span class="accounts-badge-choice-label">${escapeHtml(formatBadgeLabel(key))}</span>
+          ${meta ? `<span class="accounts-badge-choice-meta">${escapeHtml(meta)}</span>` : ""}
+        </span>
+      </span>
+    `;
+  }
+
   function renderBooleanBadge(value, trueLabel, falseLabel, falseTone = "ss-badge-warning") {
     return value
       ? renderBadge(trueLabel, "ss-badge-success")
@@ -316,16 +345,7 @@
     return badges
       .map((badge) => {
         const key = coerceText(badge?.key).toLowerCase();
-        const srcMap = {
-          admin: "/assets/icons/tierbadge-admin.svg",
-          core: "/assets/icons/tierbadge-core.svg",
-          gold: "/assets/icons/tierbadge-gold.svg",
-          pro: "/assets/icons/tierbadge-pro.svg",
-          founder: "/assets/icons/founder-gold.svg",
-          moderator: "/assets/icons/modgavel-blue.svg",
-          developer: "/assets/icons/dev-green.svg"
-        };
-        const src = srcMap[key];
+        const src = badgeIconPath(key);
         return src
           ? `<img class="accounts-details-preview-badge" src="${escapeHtml(src)}" alt="${escapeHtml(formatBadgeLabel(badge?.label || key))}" title="${escapeHtml(formatBadgeLabel(badge?.title || badge?.label || key))}" />`
           : "";
@@ -342,23 +362,23 @@
           key: coerceText(entry?.key),
           label: coerceText(entry?.label || entry?.key)
         }))
-        .filter((entry) => entry.key);
+        .filter((entry) => entry.key && !HIDDEN_BADGE_GOVERNANCE_SURFACES.has(entry.key));
     }
     return [
       { key: "streamsuites_profile", label: "StreamSuites Profile" },
       { key: "findmehere_profile", label: "FindMeHere Profile" },
       { key: "profile_card", label: "Profile Cards" },
-      { key: "user_widget", label: "User Widget" },
-      { key: "creator_surface", label: "Creator Surface" },
-      { key: "admin_surface", label: "Admin Surface" },
-      { key: "public_surface", label: "Public Surface" },
-      { key: "directory", label: "Directory" }
+      { key: "user_widget", label: "User Widget" }
     ];
   }
 
   function renderVisibilityGlyph(visible, label) {
-    const iconPath = visible ? "/assets/icons/ui/visiblefilled.svg" : "/assets/icons/ui/hidden.svg";
-    return `<img src="${escapeHtml(iconPath)}" alt="${escapeHtml(label)}" title="${escapeHtml(label)}" style="width:14px;height:14px;display:block;margin:0 auto;" />`;
+    return `
+      <span class="badge-governance-state${visible ? " is-visible" : " is-hidden"}" title="${escapeHtml(label)}">
+        <span class="badge-governance-glyph${visible ? " is-visible" : " is-hidden"}" aria-hidden="true"></span>
+        <span class="badge-governance-state-text">${escapeHtml(visible ? "Visible" : "Hidden")}</span>
+      </span>
+    `;
   }
 
   function buildBadgeMatrixCellMap(rows) {
@@ -753,7 +773,18 @@
       ...(Array.isArray(badgeState.applicable) ? badgeState.applicable.map((item) => item?.key) : []),
       "founder",
       "moderator"
-    ])).filter(Boolean);
+    ]))
+      .map((item) => coerceText(item).toLowerCase())
+      .filter(Boolean)
+      .sort((left, right) => {
+        const leftIndex = BADGE_ORDER.indexOf(left);
+        const rightIndex = BADGE_ORDER.indexOf(right);
+        return (leftIndex === -1 ? 999 : leftIndex) - (rightIndex === -1 ? 999 : rightIndex);
+      });
+    const visibleCellCount = governedKeys.reduce((count, key) => {
+      const surfaceStates = badgeSurfaceMap[key] && typeof badgeSurfaceMap[key] === "object" ? badgeSurfaceMap[key] : {};
+      return count + surfaceCatalog.filter((surface) => surfaceStates[surface.key]?.visible === true).length;
+    }, 0);
     const matrixRows = governedKeys
       .map((key) => {
         const surfaceStates = badgeSurfaceMap[key] && typeof badgeSurfaceMap[key] === "object" ? badgeSurfaceMap[key] : {};
@@ -761,7 +792,7 @@
           .map((surface) => {
             const cell = surfaceStates[surface.key] && typeof surfaceStates[surface.key] === "object" ? surfaceStates[surface.key] : null;
             if (!cell || cell.supported === false) {
-              return '<td class="muted" style="text-align:center;padding:8px 6px;">—</td>';
+              return '<td class="badge-governance-cell is-unsupported"><span class="badge-governance-empty">—</span></td>';
             }
             const overrideEntry =
               visibilityOverrides[key] && typeof visibilityOverrides[key] === "object"
@@ -782,10 +813,10 @@
                 ? "Hidden by creator preference"
                 : "Visible";
             return `
-              <td style="padding:8px 6px;text-align:center;vertical-align:top;${cell.locked ? "background:rgba(255,255,255,0.04);" : ""}">
-                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+              <td class="badge-governance-cell${cell.locked ? " is-locked" : ""}">
+                <div class="badge-governance-cell-stack">
                   ${renderVisibilityGlyph(cell.visible === true, helper)}
-                  <select class="ss-input" data-user-detail-badge-visibility="${escapeHtml(key)}" data-user-detail-badge-surface="${escapeHtml(surface.key)}" ${cell.locked ? "disabled" : ""} style="min-width:88px;">
+                  <select class="ss-input badge-governance-cell-select" data-user-detail-badge-visibility="${escapeHtml(key)}" data-user-detail-badge-surface="${escapeHtml(surface.key)}" ${cell.locked ? "disabled" : ""}>
                     <option value="default"${value === "default" ? " selected" : ""}>Default</option>
                     <option value="show"${value === "show" ? " selected" : ""}>Show</option>
                     <option value="hide"${value === "hide" ? " selected" : ""}>Hide</option>
@@ -797,35 +828,43 @@
           .join("");
         return `
           <tr>
-            <th scope="row" style="text-align:left;padding:8px 10px;white-space:nowrap;">${escapeHtml(formatBadgeLabel(key))}</th>
+            <th scope="row" class="badge-governance-row-label">${renderBadgeChoiceLabel(key)}</th>
             ${cells}
           </tr>
         `;
       })
       .join("");
     el.badges.innerHTML = `
-      <p class="muted" style="margin:0 0 12px;">Effective visibility by surface. Unsupported cells are omitted and admin-hidden cells stay locked.</p>
+      <p class="muted badge-governance-intro">Effective visibility by surface. Unsupported cells are omitted and admin-hidden cells stay locked.</p>
       <div class="user-detail-badge-governance-grid">
-        <div class="accounts-details-placeholder-block">
+        <div class="accounts-details-placeholder-block badge-governance-summary-card user-detail-badge-summary-card">
+          <div class="badge-governance-card-head">
+            <div class="accounts-details-placeholder-title">Effective badges</div>
+            <span class="badge-governance-card-note">${escapeHtml(String(visibleCellCount || 0))} visible cells</span>
+          </div>
+          <div class="accounts-details-placeholder-value badge-governance-icon-strip">${renderBadgeIconStrip(account?.badges, "No effective badge icons")}</div>
           <div class="accounts-details-placeholder-title">Manual entitlements</div>
           <div class="accounts-details-placeholder-value user-detail-checkbox-grid">
             ${["founder", "moderator"].map((key) => `
               <label class="accounts-badge-inline-option muted ss-checkbox-wrapper">
                 <input type="checkbox" data-user-detail-badge-entitlement="${escapeHtml(key)}"${entitlements[key]?.enabled === true ? " checked" : ""} />
                 <div class="ss-checkbox"></div>
-                <span class="ss-checkbox-text">${escapeHtml(formatBadgeLabel(key))}</span>
+                ${renderBadgeChoiceLabel(key)}
               </label>
             `).join("")}
           </div>
         </div>
-        <div class="accounts-details-placeholder-block">
-          <div class="accounts-details-placeholder-title">Surface matrix</div>
-          <div class="accounts-details-placeholder-value" style="overflow:auto;">
-            <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <div class="accounts-details-placeholder-block badge-governance-matrix-card user-detail-badge-matrix-card">
+          <div class="badge-governance-card-head">
+            <div class="accounts-details-placeholder-title">Surface matrix</div>
+            <span class="badge-governance-card-note">${escapeHtml(String(surfaceCatalog.length || 0))} remaining surfaces</span>
+          </div>
+          <div class="accounts-details-placeholder-value badge-governance-table-scroll">
+            <table class="badge-governance-table">
               <thead>
                 <tr>
-                  <th style="text-align:left;padding:8px 10px;">Badge</th>
-                  ${surfaceCatalog.map((surface) => `<th style="padding:8px 6px;white-space:nowrap;">${escapeHtml(surface.label)}</th>`).join("")}
+                  <th>Badge</th>
+                  ${surfaceCatalog.map((surface) => `<th>${escapeHtml(surface.label)}</th>`).join("")}
                 </tr>
               </thead>
               <tbody>${matrixRows}</tbody>

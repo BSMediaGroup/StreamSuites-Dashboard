@@ -4,6 +4,26 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Badge Governance UI Matrix Polish - 2026-03-28
+
+### Technical Notes
+
+- `docs/js/accounts.js` now filters redundant badge-governance surfaces (`creator_surface`, `admin_surface`, `public_surface`, and `directory`) out of the live surface catalog before rendering either the system matrix or the Accounts sidebar per-user matrix, while preserving the existing edit/save payload shape for remaining surfaces.
+- The Dashboard badge-governance visibility glyphs no longer render as raw SVG `<img>` tags; both `docs/js/accounts.js` and `docs/js/user-detail.js` now emit mask-based state spans, and `docs/css/components.css` applies `currentColor`/background masking so `visiblefilled.svg` renders green while `hidden.svg` follows the neutral dashboard icon/text tone.
+- The Accounts sidebar and full `/users/{user_code}` badge-governance surfaces now use denser summary-plus-matrix card layouts, restore badge icons on the full user page row labels/summary strip, and tighten table spacing without removing existing entitlement or per-cell override controls.
+
+### Human-Readable Notes
+
+- Badge governance is easier to scan in both Admin contexts because the redundant surface columns are gone, the status icons finally read as green versus neutral instead of black, and the tables use the space more deliberately.
+- The full user details page now shows the real badge icons again and reads like a compact admin matrix instead of a loose placeholder block.
+
+### Files / Areas Touched
+
+- `docs/js/accounts.js`
+- `docs/js/user-detail.js`
+- `docs/css/components.css`
+- `BUMP_NOTES.md`
+
 ## Admin Blue Accent Refinement + Full-Height Sidebar Spine + Title Sweep - 2026-03-28
 
 ### Technical Notes

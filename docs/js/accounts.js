@@ -10,6 +10,7 @@
   const BADGE_RECONCILE_ENDPOINT = "/admin/badge-governance/reconcile-founder";
   const BILLING_DISCOUNT_CODES_ENDPOINT = "/api/admin/billing-discount-codes";
   const BADGE_ORDER = ["admin", "core", "gold", "pro", "founder", "moderator", "developer"];
+  const HIDDEN_BADGE_GOVERNANCE_SURFACES = new Set(["creator_surface", "admin_surface", "public_surface", "directory"]);
   const COLUMN_WIDTH_STORAGE_KEY = "ss_admin_accounts_colwidths_v3";
   const ROW_CLICK_DELAY_MS = 240;
   const SEARCH_FIELDS = [
@@ -314,26 +315,21 @@
           key: String(entry?.key || "").trim(),
           label: String(entry?.label || entry?.key || "").trim()
         }))
-        .filter((entry) => entry.key);
+        .filter((entry) => entry.key && !HIDDEN_BADGE_GOVERNANCE_SURFACES.has(entry.key));
     }
     return [
       { key: "streamsuites_profile", label: "StreamSuites Profile" },
       { key: "findmehere_profile", label: "FindMeHere Profile" },
       { key: "profile_card", label: "Profile Cards" },
-      { key: "user_widget", label: "User Widget" },
-      { key: "creator_surface", label: "Creator Surface" },
-      { key: "admin_surface", label: "Admin Surface" },
-      { key: "public_surface", label: "Public Surface" },
-      { key: "directory", label: "Directory" }
+      { key: "user_widget", label: "User Widget" }
     ];
   }
 
   function renderVisibilityGlyph(visible, label) {
-    const iconPath = visible ? "/assets/icons/ui/visiblefilled.svg" : "/assets/icons/ui/hidden.svg";
-    const tone = visible ? "color:#23a55a;" : "color:var(--text-color, currentColor);";
     return `
-      <span title="${escapeHtml(label)}" style="display:inline-flex;align-items:center;justify-content:center;${tone}">
-        <img src="${iconPath}" alt="${escapeHtml(label)}" style="width:14px;height:14px;display:block;" />
+      <span class="badge-governance-state${visible ? " is-visible" : " is-hidden"}" title="${escapeHtml(label)}">
+        <span class="badge-governance-glyph${visible ? " is-visible" : " is-hidden"}" aria-hidden="true"></span>
+        <span class="badge-governance-state-text">${escapeHtml(visible ? "Visible" : "Hidden")}</span>
       </span>
     `;
   }
@@ -1240,6 +1236,7 @@ function normalizeUser(raw = {}) {
     const surfaceCatalog = getBadgeSurfaceCatalog(badgeState || state.badgeGovernance || {});
     const badgeSurfaceMap = buildBadgeMatrixCellMap(badgeState.applicable);
     const accountId = normalizeAccountId(user?.id);
+    const activeBadgeStrip = renderBadgeStateSummary(user?.badges, "No effective badge icons");
     const entitlementRows = managedKeys
       .map((key) => {
         const enabled = entitlements[key]?.enabled === true;
@@ -1259,7 +1256,7 @@ function normalizeUser(raw = {}) {
           .map((surface) => {
             const cell = surfaceStates[surface.key] && typeof surfaceStates[surface.key] === "object" ? surfaceStates[surface.key] : null;
             if (!cell || cell.supported === false) {
-              return '<td class="muted" style="text-align:center;padding:8px 6px;">—</td>';
+              return '<td class="badge-governance-cell is-unsupported"><span class="badge-governance-empty">—</span></td>';
             }
             const overrideEntry =
               visibilityOverrides[key] && typeof visibilityOverrides[key] === "object"
@@ -1280,10 +1277,10 @@ function normalizeUser(raw = {}) {
                 ? "Hidden by creator preference"
                 : "Visible";
             return `
-              <td style="padding:8px 6px;text-align:center;vertical-align:top;${cell.locked ? "background:rgba(255,255,255,0.04);" : ""}">
-                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+              <td class="badge-governance-cell${cell.locked ? " is-locked" : ""}">
+                <div class="badge-governance-cell-stack">
                   ${renderVisibilityGlyph(cell.visible === true, helper)}
-                  <select class="ss-input" data-account-badge-visibility="${escapeHtml(key)}" data-account-badge-surface="${escapeHtml(surface.key)}" data-account-id="${escapeHtml(accountId)}" ${cell.locked || !state.canManage ? "disabled" : ""} style="min-width:88px;">
+                  <select class="ss-input badge-governance-cell-select" data-account-badge-visibility="${escapeHtml(key)}" data-account-badge-surface="${escapeHtml(surface.key)}" data-account-id="${escapeHtml(accountId)}" ${cell.locked || !state.canManage ? "disabled" : ""}>
                     <option value="default"${value === "default" ? " selected" : ""}>Default</option>
                     <option value="show"${value === "show" ? " selected" : ""}>Show</option>
                     <option value="hide"${value === "hide" ? " selected" : ""}>Hide</option>
@@ -1295,29 +1292,36 @@ function normalizeUser(raw = {}) {
           .join("");
         return `
           <tr>
-            <th scope="row" style="text-align:left;padding:8px 10px;white-space:nowrap;">${renderBadgeChoiceLabel(key)}</th>
+            <th scope="row" class="badge-governance-row-label">${renderBadgeChoiceLabel(key)}</th>
             ${cells}
           </tr>
         `;
       })
       .join("");
     return `
-      <section class="accounts-details-group" style="margin-top:18px;">
+      <section class="accounts-details-group badge-governance-section" style="margin-top:18px;">
         <h5 class="accounts-details-group-title">Badge Governance</h5>
-        <p class="muted" style="margin:0 0 12px;">Effective visibility by surface. Admin overrides here take priority over creator-side preferences.</p>
-        <div class="accounts-details-placeholder-group" style="margin-top:12px;">
-          <div class="accounts-details-placeholder-block">
+        <p class="muted badge-governance-intro">Effective visibility by surface. Admin overrides here take priority over creator-side preferences.</p>
+        <div class="accounts-details-placeholder-group badge-governance-summary-grid">
+          <div class="accounts-details-placeholder-block badge-governance-summary-card">
+            <div class="accounts-details-placeholder-title">Badge icons</div>
+            <div class="accounts-details-placeholder-value badge-governance-icon-strip">${activeBadgeStrip}</div>
+          </div>
+          <div class="accounts-details-placeholder-block badge-governance-summary-card">
             <div class="accounts-details-placeholder-title">Manual entitlements</div>
             <div class="accounts-details-placeholder-value">${entitlementRows}</div>
           </div>
-          <div class="accounts-details-placeholder-block">
-            <div class="accounts-details-placeholder-title">Surface matrix</div>
-            <div class="accounts-details-placeholder-value" style="overflow:auto;">
-              <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <div class="accounts-details-placeholder-block badge-governance-matrix-card">
+            <div class="badge-governance-card-head">
+              <div class="accounts-details-placeholder-title">Surface matrix</div>
+              <span class="badge-governance-card-note">${escapeHtml(String(surfaceCatalog.length || 0))} remaining surfaces</span>
+            </div>
+            <div class="accounts-details-placeholder-value badge-governance-table-scroll">
+              <table class="badge-governance-table">
                 <thead>
                   <tr>
-                    <th style="text-align:left;padding:8px 10px;">Badge</th>
-                    ${surfaceCatalog.map((surface) => `<th style="padding:8px 6px;white-space:nowrap;">${escapeHtml(surface.label)}</th>`).join("")}
+                    <th>Badge</th>
+                    ${surfaceCatalog.map((surface) => `<th>${escapeHtml(surface.label)}</th>`).join("")}
                   </tr>
                 </thead>
                 <tbody>${matrixRows}</tbody>
@@ -1325,7 +1329,7 @@ function normalizeUser(raw = {}) {
             </div>
           </div>
         </div>
-        <div class="accounts-inline-actions" style="margin-top:12px;">
+        <div class="accounts-inline-actions badge-governance-actions-row">
           <button type="button" class="ss-btn ss-btn-small ss-btn-primary" data-account-badge-governance-save data-account-id="${escapeHtml(accountId)}">Save badge settings</button>
         </div>
       </section>
@@ -1368,13 +1372,13 @@ function normalizeUser(raw = {}) {
         const cells = surfaceCatalog
           .map((surface) => {
             if (!supportedSurfaces.includes(surface.key)) {
-              return '<td class="muted" style="text-align:center;padding:8px 6px;">—</td>';
+              return '<td class="badge-governance-cell is-unsupported"><span class="badge-governance-empty">—</span></td>';
             }
             const isVisible = rowDefaults[surface.key] === true;
             return `
-              <td style="text-align:center;padding:8px 6px;">
+              <td class="badge-governance-cell">
                 ${state.badgeGovernanceEditing
-                  ? `<label class="ss-checkbox-wrapper" style="display:inline-flex;align-items:center;justify-content:center;">
+                  ? `<label class="ss-checkbox-wrapper badge-governance-checkbox">
                       <input type="checkbox" data-system-badge-visibility="${escapeHtml(key)}" data-system-badge-surface="${escapeHtml(surface.key)}"${isVisible ? " checked" : ""} />
                       <div class="ss-checkbox"></div>
                     </label>`
@@ -1385,7 +1389,7 @@ function normalizeUser(raw = {}) {
           .join("");
         return `
           <tr>
-            <th scope="row" style="text-align:left;padding:8px 10px;white-space:nowrap;">${renderBadgeChoiceLabel(key)}</th>
+            <th scope="row" class="badge-governance-row-label">${renderBadgeChoiceLabel(key)}</th>
             ${cells}
           </tr>
         `;
@@ -1452,12 +1456,12 @@ function normalizeUser(raw = {}) {
               `
               : '<button type="button" id="accounts-badge-governance-edit" class="ss-btn ss-btn-secondary">Edit matrix</button>'}
           </div>
-          <div style="overflow:auto;">
-            <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <div class="badge-governance-table-scroll">
+            <table class="badge-governance-table">
               <thead>
                 <tr>
-                  <th style="text-align:left;padding:8px 10px;">Badge</th>
-                  ${surfaceCatalog.map((surface) => `<th style="padding:8px 6px;white-space:nowrap;">${escapeHtml(surface.label)}</th>`).join("")}
+                  <th>Badge</th>
+                  ${surfaceCatalog.map((surface) => `<th>${escapeHtml(surface.label)}</th>`).join("")}
                 </tr>
               </thead>
               <tbody>${matrixRows}</tbody>
