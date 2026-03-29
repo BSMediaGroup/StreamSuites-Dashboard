@@ -1733,7 +1733,7 @@ const SIDEBAR_VIEW_ICON_MAP = Object.freeze({
   "data-signals": "/assets/icons/ui/celltower.svg",
   bots: "/assets/icons/ui/bot.svg",
   notifications: "/assets/icons/ui/bell.svg",
-  ratelimits: "/assets/icons/ui/ratelimit.svg",
+  ratelimits: "/assets/icons/ui/speed.svg",
   settings: "/assets/icons/ui/cog.svg",
   "chat-replay": "/assets/icons/ui/uiscreen.svg",
   rumble: "/assets/icons/rumble-0.svg",
