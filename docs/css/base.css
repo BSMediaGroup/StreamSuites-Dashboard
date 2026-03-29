@@ -392,7 +392,7 @@ body.header-hidden #app-header {
   align-items: center;
   gap: 8px;
   min-height: 30px;
-  padding: 3px 10px 3px 8px;
+  padding: 5px 10px 5px 8px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.04);
