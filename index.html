@@ -570,7 +570,16 @@
           <div class="header-right">
             <div class="header-row header-auth-row">
               <div id="admin-auth-indicator" class="streamsuites-auth hidden ss-no-profile-hover" data-ss-profile-hover="off">
-                <div class="streamsuites-auth-toggle">
+                <div
+                  id="admin-user-menu-toggle"
+                  class="streamsuites-auth-toggle"
+                  role="button"
+                  tabindex="0"
+                  aria-haspopup="menu"
+                  aria-controls="admin-user-menu"
+                  aria-expanded="false"
+                  aria-label="Toggle user menu"
+                >
                   <div class="streamsuites-auth-avatar">
                     <img
                       id="admin-auth-avatar"
@@ -603,17 +612,6 @@
                     <span id="admin-auth-identity" class="streamsuites-auth-identity">admin@streamsuites.app</span>
                   </div>
                   <span id="admin-auth-tier" class="streamsuites-auth-tier">CORE</span>
-                  <button
-                    type="button"
-                    id="admin-user-menu-toggle"
-                    class="streamsuites-auth-caret-toggle"
-                    aria-haspopup="menu"
-                    aria-controls="admin-user-menu"
-                    aria-expanded="false"
-                    aria-label="Toggle user menu"
-                  >
-                    <span class="streamsuites-auth-caret" aria-hidden="true"></span>
-                  </button>
                 </div>
                 <div
                   id="admin-user-menu"

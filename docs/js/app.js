@@ -2140,10 +2140,9 @@ function initAdminUserMenu() {
   if (adminUserMenu.initialized) return;
 
   const root = document.getElementById("admin-auth-indicator");
-  const toggleSurface = root?.querySelector(".streamsuites-auth-toggle");
   const toggle = document.getElementById("admin-user-menu-toggle");
   const menu = document.getElementById("admin-user-menu");
-  if (!root || !toggleSurface || !toggle || !menu) return;
+  if (!root || !toggle || !menu) return;
 
   adminUserMenu.initialized = true;
   adminUserMenu.root = root;
@@ -2162,13 +2161,14 @@ function initAdminUserMenu() {
     }
   }
 
-  toggleSurface.addEventListener("click", (event) => {
+  toggle.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
     setAdminUserMenuOpen(!adminUserMenu.isOpen);
   });
 
-  toggle.addEventListener("click", (event) => {
+  toggle.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
     event.stopPropagation();
     setAdminUserMenuOpen(!adminUserMenu.isOpen);

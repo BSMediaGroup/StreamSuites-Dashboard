@@ -600,6 +600,30 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into the released `0.4.2-alpha` section above.
 
+### Admin Topbar User Widget Narrow Polish - 2026-03-30
+
+### Technical Notes
+
+- Scoped the change to the admin dashboard top-right user widget only in `docs/css/base.css`, `docs/index.html`, `index.html`, and the existing menu wiring in `docs/js/app.js`; no surrounding topbar controls or notification UI were changed.
+- Fixed avatar masking by making `.streamsuites-auth-avatar` the actual clipping boundary with `overflow: hidden` plus `border-radius: 50%`, while real account avatars (`img.is-avatar`) now fill the existing `24px` circle with `width: 100%`, `height: 100%`, `display: block`, and `object-fit: cover`. The fallback profile icon stays at its smaller non-avatar sizing so the widget height and apparent avatar footprint remain stable.
+- Nudged the username line from `11px` to `12px` and set it to `font-weight: 600`, then reduced the email line from `11px` to `10px` with `font-weight: 350`; both lines now explicitly keep single-line truncation/ellipsis behavior and tight `line-height` so the pill height does not grow.
+- Removed the dedicated caret button/chevron markup from both shell entry files and moved the menu trigger semantics onto the existing `.streamsuites-auth-toggle` pill. Internal spacing was rebalanced by replacing the old caret footprint with a small extra trailing inset (`padding-right: 10px` instead of `8px`) rather than widening the component in a redesign-like way.
+- No files were created or removed. The touched files are expected to be slightly shorter overall because the caret button markup and now-unused caret CSS were removed.
+
+### Human-Readable Notes
+
+- The admin user avatar now stays cleanly inside its round mask instead of letting square image edges bleed outside the circle.
+- The username is a touch larger and stronger, while the email line is slightly smaller and lighter so the hierarchy reads more cleanly without changing the widget’s overall size.
+- The dropdown arrow is gone, but the same pill still opens the menu and keeps the existing hover affordance.
+
+### Files / Areas Touched
+
+- `docs/css/base.css`
+- `docs/index.html`
+- `index.html`
+- `docs/js/app.js`
+- `BUMP_NOTES.md`
+
 ### Admin Alerts Page Preview + Collection Controls Upgrade - 2026-03-28
 
 ### Technical Notes
