@@ -600,6 +600,31 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into the released `0.4.2-alpha` section above.
 
+### Admin Settings Page Runtime/Posture Overhaul - 2026-04-02
+
+### Technical Notes
+
+- Replaced the placeholder-heavy `/settings` scaffold in `docs/views/settings.html` and `docs/js/settings.js` with a runtime-aware posture page built around current authoritative contracts instead of dashboard-only pretend settings.
+- The new Settings view now hydrates from the existing runtime snapshot, `runtime/exports/version.json`, `runtime/exports/meta.json`, published `live_status.json`, `/admin/auth/controls`, `/admin/badge-governance`, and the existing admin alerts settings/configuration endpoints. Dashboard-local config import/export remains available, but it is explicitly labeled as local draft transport rather than backend persistence.
+- Added `/settings` to the shared section-shell config in `docs/js/app.js`, reusing the same anchored jump-tab rail behavior already powering Accounts and Alerts instead of introducing route-specific scroll logic.
+- Added page-scoped settings presentation styles in `docs/css/components.css` so the route uses the existing admin shell language while presenting stronger summary cards, detail cards, split grids, and scaffold surfaces.
+- Removed and replaced obsolete placeholder sections from the old Settings page. The former `System`, `Platform Defaults`, `Security & Access`, and `Advanced` blocks were removed because they were disabled placeholders with no current runtime/Auth mutation contract. The old editable `Platform Polling`, `Global Platform Services`, and `Discord Bot` surfaces were also replaced because they mixed authoritative export state with dashboard-local draft edits and could misrepresent what the backend truly owned.
+- `docs/views/settings.html` and `docs/js/settings.js` are both expected to be shorter after this cleanup because large disabled placeholder forms and local-draft-only editing flows were deleted instead of being cosmetically restyled.
+
+### Human-Readable Notes
+
+- Settings now reads like a real admin control posture page instead of an early scaffold. It shows what runtime, Auth, exports, and alerts are actually reporting right now.
+- The page now separates true backend-owned state from dashboard-local draft import/export so admins are less likely to mistake local authoring convenience for production persistence.
+- Areas that still are not safely supported stay visible as deliberate scaffolds instead of fake toggles.
+
+### Files / Areas Touched
+
+- `docs/views/settings.html`
+- `docs/js/settings.js`
+- `docs/js/app.js`
+- `docs/css/components.css`
+- `BUMP_NOTES.md`
+
 ### Badge Governance Header Abbreviation Tweak - 2026-04-02
 
 ### Technical Notes

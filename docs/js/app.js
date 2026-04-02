@@ -893,6 +893,18 @@ const SECTION_SHELL_CONFIG = Object.freeze({
       { id: "alerts-targets-section", label: "Channels" },
       { id: "alerts-history-section", label: "Activity" }
     ])
+  }),
+  settings: Object.freeze({
+    storageKey: "ss_settings_shell_tabs_collapsed",
+    toggleLabel: "settings section tabs",
+    sections: Object.freeze([
+      { id: "settings-overview-section", label: "Overview" },
+      { id: "settings-runtime-section", label: "Runtime" },
+      { id: "settings-access-section", label: "Access" },
+      { id: "settings-data-section", label: "Data" },
+      { id: "settings-alerts-section", label: "Alerts" },
+      { id: "settings-roadmap-section", label: "Scaffolds" }
+    ])
   })
 });
 

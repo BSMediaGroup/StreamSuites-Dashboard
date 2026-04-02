@@ -1,351 +1,306 @@
 /* ============================================================
-   StreamSuites Dashboard — settings.js
-   ============================================================
-
-   PURPOSE:
-   - Centralized dashboard-level configuration
-   - Defines NON-runtime behavior and authoring preferences
-   - Configuration only — no live enforcement
-
-   IMPORTANT DISTINCTION:
-   - Settings here affect the DASHBOARD experience
-   - NOT livestream bots
-   - NOT runtime execution
-
-   SAFE FOR:
-   - GitHub Pages
-   - iframe embedding (Wix)
-   - Offline authoring
-
+   StreamSuites Dashboard - settings.js
+   Runtime-aware settings posture view
    ============================================================ */
 
 (() => {
   "use strict";
 
-  /* ------------------------------------------------------------
-     STORAGE
-     ------------------------------------------------------------ */
-
-  const STORAGE_KEY = "settings";
+  const VIEW_STATE = {
+    loadToken: 0,
+    destroyed: false,
+    wired: false,
+    runtimeListener: null,
+    visibilityListener: null,
+    state: createInitialState()
+  };
 
   const el = {};
 
-  let settings = null;
-  let runtimeSnapshot = null;
-  let systemConfig = null;
-  let runtimeDiscordConfig = null;
-  let authControls = null;
-  let wired = false;
-  let runtimeListener = null;
-  let visibilityListener = null;
-  let guildListener = null;
-  let activeGuildId = null;
-  let guildStatus = "missing";
-  let eligibleGuilds = new Map();
-  const DISCORD_CHANNEL_ID_REGEX = /^\d{17,20}$/;
-
-  /* ------------------------------------------------------------
-     INIT
-     ------------------------------------------------------------ */
-
-  function init() {
-    cacheElements();
-    wireEvents();
-    loadSettings();
-
-    setTimeout(() => {
-      (async () => {
-        await hydratePlatforms();
-        await hydrateRuntimeState();
-        await hydrateSystemSettings();
-        await hydrateAuthControls();
-        await hydrateDiscordRuntimeConfig();
-        await renderDashboardState();
-        bindRuntimeListeners();
-        bindGuildListeners();
-      })();
-    }, 0);
-  }
-
-  /* ------------------------------------------------------------
-     LOAD / SAVE
-     ------------------------------------------------------------ */
-
-  function loadSettings() {
-    const stored = App.storage.loadFromLocalStorage(STORAGE_KEY, null);
-
-    if (stored && typeof stored === "object") {
-      settings = stored;
-      return;
-    }
-
-    settings = settings || createDefaultSettings();
-  }
-
-  function persist() {
-    App.storage.saveToLocalStorage(STORAGE_KEY, settings);
-  }
-
-  /* ------------------------------------------------------------
-     DEFAULT SHAPE
-     ------------------------------------------------------------ */
-
-  function createDefaultSettings() {
+  function createInitialState() {
     return {
-      system: {
-        mode: "local",
-        autosave_interval_seconds: null,
-        verbose_logging: false
-      },
-      platform_defaults: {
-        chat_cooldown_seconds: null,
-        default_response_mode: "equals_icase",
-        enable_global_chat_responses: false
-      },
-      security: {
-        confirm_destructive_actions: true,
-        read_only_mode: false
-      },
-      advanced: {
-        runtime_export_format: "creators.json",
-        schema_version: "v1-draft"
-      }
+      runtimeRaw: null,
+      runtimeSnapshot: null,
+      runtimeVersion: null,
+      exportManifest: null,
+      liveStatus: null,
+      authControls: null,
+      badgeGovernance: null,
+      alertSettings: null,
+      alertConfiguration: null,
+      dashboardState: null,
+      lastRefreshAt: null,
+      sourceMode: "unknown",
+      banner: null
     };
   }
 
-  /* ------------------------------------------------------------
-     READ-ONLY ACCESSORS (FOR FUTURE UI)
-     ------------------------------------------------------------ */
-
-  function getSettings() {
-    return structuredClone(settings);
+  function init() {
+    VIEW_STATE.destroyed = false;
+    VIEW_STATE.state = createInitialState();
+    cacheElements();
+    wireEvents();
+    renderLoadingState();
+    void loadAll({ forceRefresh: false });
+    bindRuntimeListeners();
   }
 
-  function getSystemSettings() {
-    return structuredClone(settings.system);
+  function destroy() {
+    VIEW_STATE.destroyed = true;
+    VIEW_STATE.wired = false;
+    VIEW_STATE.state = createInitialState();
+
+    if (VIEW_STATE.runtimeListener) {
+      window.removeEventListener("streamsuites:runtimeSnapshot", VIEW_STATE.runtimeListener);
+      VIEW_STATE.runtimeListener = null;
+    }
+    if (VIEW_STATE.visibilityListener) {
+      document.removeEventListener("visibilitychange", VIEW_STATE.visibilityListener);
+      VIEW_STATE.visibilityListener = null;
+    }
   }
-
-  function getPlatformDefaults() {
-    return structuredClone(settings.platform_defaults);
-  }
-
-  function getSecuritySettings() {
-    return structuredClone(settings.security);
-  }
-
-  function getAdvancedSettings() {
-    return structuredClone(settings.advanced);
-  }
-
-  /* ------------------------------------------------------------
-     EXPORT / IMPORT
-     ------------------------------------------------------------ */
-
-  function exportSettings() {
-    App.storage.exportJsonToDownload(
-      "streamsuites-settings.json",
-      settings
-    );
-  }
-
-  function importSettingsFromFile(file, onError) {
-    App.storage.importJsonFromFile(file)
-      .then((data) => {
-        if (!validateSettings(data)) {
-          onError?.("Invalid settings file structure");
-          return;
-        }
-        settings = data;
-        persist();
-      })
-      .catch((err) => {
-        console.error("[Settings] Import failed", err);
-        onError?.("Failed to import settings file");
-      });
-  }
-
-  /* ------------------------------------------------------------
-     VALIDATION (INTENTIONALLY LOOSE)
-     ------------------------------------------------------------ */
-
-  function validateSettings(data) {
-    if (!data || typeof data !== "object") return false;
-    if (!("system" in data)) return false;
-    if (!("platform_defaults" in data)) return false;
-    if (!("security" in data)) return false;
-    if (!("advanced" in data)) return false;
-    return true;
-  }
-
-  /* ------------------------------------------------------------
-     PUBLIC API
-     ------------------------------------------------------------ */
-
-  window.SettingsView = {
-    init,
-    getSettings,
-    getSystemSettings,
-    getPlatformDefaults,
-    getSecuritySettings,
-    getAdvancedSettings,
-    exportSettings,
-    importSettingsFromFile
-  };
-
-  /* ------------------------------------------------------------
-     PLATFORM + CONFIG EXPORT WIRING
-     ------------------------------------------------------------ */
 
   function cacheElements() {
-    el.exportAll = document.getElementById("btn-export-config");
-    el.importAll = document.getElementById("btn-import-config");
-    el.importInput = document.getElementById("config-import-file");
-    el.dashboardState = document.getElementById("dashboard-config-state");
-    el.dashboardExport = document.getElementById("dashboard-export-state");
-    el.platformPollingToggle = document.getElementById("platform-polling-toggle");
-    el.platformPollingRuntime = document.getElementById(
-      "platform-polling-runtime-state"
-    );
-    el.platformPollingDraft = document.getElementById("platform-polling-draft-state");
-    el.platformPollingNotice = document.getElementById("platform-polling-restart");
-    el.discordBotEmpty = document.getElementById("discord-bot-empty");
-    el.discordBotEmptyTitle = document.getElementById("discord-bot-empty-title");
-    el.discordBotEmptySubtitle = document.getElementById("discord-bot-empty-subtitle");
-    el.discordBotGuilds = document.getElementById("discord-bot-guilds");
-    el.discordBotTemplate = document.getElementById("discord-bot-guild-template");
-    el.authFlagSignups = document.getElementById("auth-flag-signups");
-    el.authFlagVerification = document.getElementById("auth-flag-verification");
-    el.authFlagResend = document.getElementById("auth-flag-resend");
+    el.modeChip = document.getElementById("settings-mode-chip");
+    el.status = document.getElementById("settings-status");
+    el.banner = document.getElementById("settings-banner");
+    el.refresh = document.getElementById("settings-refresh");
+    el.exportDraft = document.getElementById("settings-export-draft");
+    el.importDraft = document.getElementById("settings-import-draft");
+    el.importFile = document.getElementById("settings-import-file");
+    el.openAccounts = document.getElementById("settings-open-accounts");
+    el.openAlerts = document.getElementById("settings-open-alerts");
 
-    el.restartRequiredFlag = document.getElementById("restart-required-flag");
-    el.restartPendingSystem = document.getElementById("restart-pending-system");
-    el.restartPendingCreators = document.getElementById("restart-pending-creators");
-    el.restartPendingTriggers = document.getElementById("restart-pending-triggers");
-    el.restartPendingPlatforms = document.getElementById("restart-pending-platforms");
-    el.restartSummary = document.getElementById("restart-change-summary");
+    el.metaRuntime = document.getElementById("settings-meta-runtime");
+    el.metaAlerts = document.getElementById("settings-meta-alerts");
+    el.metaLoaded = document.getElementById("settings-meta-loaded");
+    el.metaExported = document.getElementById("settings-meta-exported");
+
+    el.overviewSummary = document.getElementById("settings-overview-summary");
+    el.overviewRestart = document.getElementById("settings-overview-restart");
+    el.runtimeAuthority = document.getElementById("settings-runtime-authority");
+    el.runtimePlatforms = document.getElementById("settings-runtime-platforms");
+    el.liveProviders = document.getElementById("settings-live-status-providers");
+    el.authControls = document.getElementById("settings-auth-controls");
+    el.badgeGovernance = document.getElementById("settings-badge-governance");
+    el.dataAuthority = document.getElementById("settings-data-authority");
+    el.dataSources = document.getElementById("settings-data-sources");
+    el.alertsSummary = document.getElementById("settings-alerts-summary");
+    el.alertsDestinations = document.getElementById("settings-alerts-destinations");
+    el.roadmapGrid = document.getElementById("settings-roadmap-grid");
   }
 
   function wireEvents() {
-    if (wired) return;
+    if (VIEW_STATE.wired) return;
 
-    el.exportAll?.addEventListener("click", async () => {
-      await window.ConfigState?.exportAllConfigs?.();
-      await renderDashboardState(true);
+    el.refresh?.addEventListener("click", () => {
+      void loadAll({ forceRefresh: true });
     });
 
-    el.importAll?.addEventListener("click", () => {
-      if (!el.importInput) return;
-      el.importInput.value = "";
-      el.importInput.click();
-    });
-
-    el.importInput?.addEventListener("change", async () => {
-      const file = el.importInput.files?.[0];
-      if (!file) return;
+    el.exportDraft?.addEventListener("click", async () => {
       try {
-        await window.ConfigState?.importConfigBundle?.(file);
-        await PlatformsManager?.refresh?.(true);
-        await hydrateRuntimeState(true);
-        await hydrateSystemSettings(true);
-        await renderDashboardState(true);
+        await window.ConfigState?.exportAllConfigs?.();
+        VIEW_STATE.state.dashboardState = await window.ConfigState?.loadDashboardState?.({
+          forceReload: true
+        });
+        renderMeta();
+        setBanner("Dashboard draft bundle exported.", "info");
       } catch (err) {
-        console.error("[Settings] Import failed", err);
-        alert("Import failed: invalid configuration payload");
+        console.error("[Settings] Draft export failed", err);
+        setBanner("Dashboard draft export failed.", "warning");
       }
     });
 
-    el.platformPollingToggle?.addEventListener("change", () => {
-      updatePlatformPolling(el.platformPollingToggle.checked);
+    el.importDraft?.addEventListener("click", () => {
+      if (!el.importFile) return;
+      el.importFile.value = "";
+      el.importFile.click();
     });
 
-    wired = true;
+    el.importFile?.addEventListener("change", async () => {
+      const file = el.importFile.files?.[0];
+      if (!file) return;
+      try {
+        await window.ConfigState?.importConfigBundle?.(file);
+        setBanner("Dashboard draft bundle imported. Refreshing posture…", "info");
+        await loadAll({ forceRefresh: true });
+      } catch (err) {
+        console.error("[Settings] Draft import failed", err);
+        setBanner("Dashboard draft import failed. The file did not match the expected bundle shape.", "warning");
+      }
+    });
+
+    el.openAccounts?.addEventListener("click", () => {
+      window.StreamSuitesAdminRoutes?.navigateToView?.("accounts");
+    });
+
+    el.openAlerts?.addEventListener("click", () => {
+      window.StreamSuitesAdminRoutes?.navigateToView?.("alerts");
+    });
+
+    VIEW_STATE.wired = true;
   }
 
   function bindRuntimeListeners() {
-    if (!runtimeListener) {
-      runtimeListener = (event) => {
-        const rawSnapshot = event?.detail?.snapshot || null;
-        const normalized =
-          window.StreamSuitesState?.normalizeRuntimeSnapshot?.(rawSnapshot) || rawSnapshot;
-        if (!normalized) return;
-        runtimeSnapshot = normalized;
-        renderPlatformPolling();
-        renderRestartQueue();
-        window.PlatformsManager?.refresh?.(true);
+    if (!VIEW_STATE.runtimeListener) {
+      VIEW_STATE.runtimeListener = (event) => {
+        if (VIEW_STATE.destroyed) return;
+        const raw = event?.detail?.snapshot;
+        if (!raw || typeof raw !== "object") return;
+        VIEW_STATE.state.runtimeRaw = raw;
+        VIEW_STATE.state.runtimeSnapshot =
+          window.StreamSuitesState?.normalizeRuntimeSnapshot?.(raw) || null;
+        VIEW_STATE.state.sourceMode = "connected";
+        VIEW_STATE.state.lastRefreshAt = new Date().toISOString();
+        render();
       };
-      window.addEventListener("streamsuites:runtimeSnapshot", runtimeListener);
+      window.addEventListener("streamsuites:runtimeSnapshot", VIEW_STATE.runtimeListener);
     }
 
-    if (!visibilityListener) {
-      visibilityListener = () => {
+    if (!VIEW_STATE.visibilityListener) {
+      VIEW_STATE.visibilityListener = () => {
         if (document.visibilityState !== "visible") return;
-        App.state?.runtimeSnapshot?.fetchOnce?.();
+        void loadAll({ forceRefresh: true, quiet: true });
       };
-      document.addEventListener("visibilitychange", visibilityListener);
+      document.addEventListener("visibilitychange", VIEW_STATE.visibilityListener);
     }
   }
 
-  function bindGuildListeners() {
-    if (!guildListener) {
-      guildListener = (event) => {
-        const detail = event?.detail || {};
-        activeGuildId = detail.activeGuildId || null;
-        guildStatus = detail.status || "missing";
-        eligibleGuilds =
-          detail.eligibleGuilds instanceof Map ? detail.eligibleGuilds : new Map();
-        renderDiscordBotSettings();
-      };
-      window.addEventListener("streamsuites:discord-guild", guildListener);
+  async function loadAll(options = {}) {
+    const token = ++VIEW_STATE.loadToken;
+    setStatus(options.forceRefresh ? "Refreshing settings…" : "Hydrating settings…");
+    if (!options.quiet) {
+      setBanner("", "");
     }
 
-    const guildContext = window.StreamSuitesDiscordGuild;
-    if (guildContext) {
-      activeGuildId = guildContext.getActiveGuildId?.() || null;
-      guildStatus = guildContext.getStatus?.() || "missing";
-      eligibleGuilds = guildContext.getEligibleGuilds?.() || new Map();
+    const [
+      runtimeResult,
+      versionResult,
+      manifestResult,
+      liveStatusResult,
+      authResult,
+      badgeResult,
+      alertSettingsResult,
+      alertConfigurationResult,
+      dashboardStateResult
+    ] = await Promise.allSettled([
+      loadRuntimeSources(options),
+      loadRuntimeVersion(),
+      loadExportManifest(),
+      loadLiveStatus(options),
+      loadAuthControls(options),
+      loadBadgeGovernance(options),
+      loadAlertSettings(options),
+      loadAlertConfiguration(options),
+      window.ConfigState?.loadDashboardState?.({
+        forceReload: options.forceRefresh === true
+      })
+    ]);
+
+    if (VIEW_STATE.destroyed || token !== VIEW_STATE.loadToken) return;
+
+    VIEW_STATE.state.runtimeVersion = getSettledValue(versionResult);
+    VIEW_STATE.state.exportManifest = getSettledValue(manifestResult);
+    VIEW_STATE.state.liveStatus = getSettledValue(liveStatusResult);
+    VIEW_STATE.state.authControls = getSettledValue(authResult);
+    VIEW_STATE.state.badgeGovernance = getSettledValue(badgeResult);
+    VIEW_STATE.state.alertSettings = getSettledValue(alertSettingsResult);
+    VIEW_STATE.state.alertConfiguration = getSettledValue(alertConfigurationResult);
+    VIEW_STATE.state.dashboardState = getSettledValue(dashboardStateResult) || null;
+    VIEW_STATE.state.lastRefreshAt = new Date().toISOString();
+
+    const runtimePayload = getSettledValue(runtimeResult);
+    if (runtimePayload) {
+      VIEW_STATE.state.runtimeRaw = runtimePayload.runtimeRaw;
+      VIEW_STATE.state.runtimeSnapshot = runtimePayload.runtimeSnapshot;
+      VIEW_STATE.state.sourceMode = runtimePayload.sourceMode;
+    } else {
+      VIEW_STATE.state.runtimeRaw = null;
+      VIEW_STATE.state.runtimeSnapshot = null;
+      VIEW_STATE.state.sourceMode = "unavailable";
     }
 
-    renderDiscordBotSettings();
-  }
+    render();
 
-  async function hydratePlatforms() {
-    if (window.PlatformsManager?.initSettingsView) {
-      await window.PlatformsManager.initSettingsView();
-    }
-  }
+    const firstError = [
+      getSettledError(runtimeResult),
+      getSettledError(versionResult),
+      getSettledError(manifestResult),
+      getSettledError(liveStatusResult),
+      getSettledError(authResult),
+      getSettledError(badgeResult),
+      getSettledError(alertSettingsResult),
+      getSettledError(alertConfigurationResult)
+    ].find(Boolean);
 
-  async function hydrateRuntimeState(forceReload = false) {
-    if (window.__STREAMSUITES_RUNTIME_OFFLINE__) {
-      runtimeSnapshot = null;
-      renderPlatformPolling();
-      renderRestartQueue();
+    if (firstError) {
+      setStatus("Settings partially loaded");
+      if (!options.quiet) {
+        setBanner(firstError, "warning");
+      }
       return;
     }
 
-    try {
-      runtimeSnapshot =
-        (await window.ConfigState?.loadRuntimeSnapshot?.({ forceReload })) || null;
-    } catch (err) {
-      console.warn("[Settings] Unable to load runtime snapshot", err);
-      runtimeSnapshot = null;
-    }
-
-    renderPlatformPolling();
-    renderRestartQueue();
+    setStatus("Settings synced");
   }
 
-  async function hydrateSystemSettings(forceReload = false) {
-    try {
-      systemConfig =
-        (await window.ConfigState?.loadSystem?.({ forceReload })) || null;
-    } catch (err) {
-      console.warn("[Settings] Unable to load system config", err);
-      systemConfig = null;
+  async function loadRuntimeSources(options = {}) {
+    const runtimeState = window.App?.state?.runtimeSnapshot;
+    let runtimeRaw = runtimeState?.getSnapshot?.() || null;
+
+    if (options.forceRefresh === true && runtimeState?.fetchOnce) {
+      try {
+        await runtimeState.fetchOnce();
+        runtimeRaw = runtimeState?.getSnapshot?.() || runtimeRaw;
+      } catch (err) {
+        console.warn("[Settings] Runtime snapshot refresh failed", err);
+      }
     }
 
-    renderPlatformPolling();
-    renderRestartQueue();
-    renderDiscordBotSettings();
+    if (!runtimeRaw) {
+      try {
+        runtimeRaw = await window.StreamSuitesState?.loadStateJson?.("runtime_snapshot.json", {
+          loaderReason: "Hydrating settings runtime posture..."
+        });
+      } catch (err) {
+        console.warn("[Settings] Static runtime snapshot unavailable", err);
+      }
+    }
+
+    const runtimeSnapshot =
+      window.StreamSuitesState?.normalizeRuntimeSnapshot?.(runtimeRaw) || null;
+
+    let sourceMode = "unavailable";
+    if (runtimeRaw && runtimeState?.getSnapshot?.()) {
+      sourceMode = "connected";
+    } else if (runtimeRaw) {
+      sourceMode = "published";
+    }
+
+    return { runtimeRaw, runtimeSnapshot, sourceMode };
+  }
+
+  async function loadRuntimeVersion() {
+    return (await window.Versioning?.loadVersion?.()) || null;
+  }
+
+  async function loadExportManifest() {
+    const runtimeUrl = window.Versioning?.resolveRuntimeUrl?.("meta.json");
+    if (!runtimeUrl) return null;
+    const response = await fetch(runtimeUrl, { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error(`Export manifest unavailable (${response.status})`);
+    }
+    return response.json();
+  }
+
+  async function loadLiveStatus(options = {}) {
+    return (
+      (await window.StreamSuitesState?.loadStateJson?.("live_status.json", {
+        forceReload: options.forceRefresh === true,
+        loaderReason: "Hydrating live-status providers..."
+      })) || null
+    );
   }
 
   function resolveAuthApiBase() {
@@ -353,704 +308,824 @@
       window.StreamSuitesAdminAuth?.config?.baseUrl ||
       document.querySelector('meta[name="streamsuites-auth-base"]')?.getAttribute("content") ||
       "";
-    return base ? base.replace(/\/$/, "") : "";
+    return String(base || "").trim().replace(/\/+$/, "");
   }
 
   function buildAuthApiUrl(path) {
+    const normalizedPath = String(path || "").startsWith("/") ? path : `/${path}`;
     const base = resolveAuthApiBase();
-    if (!base) return path;
-    const normalized = path.startsWith("/") ? path : `/${path}`;
-    return `${base}${normalized}`;
+    return base ? `${base}${normalizedPath}` : normalizedPath;
   }
 
-  function formatAuthFlag(value) {
-    if (value === true) return "Disabled (kill switch)";
-    if (value === false) return "Enabled";
-    return "Unknown";
+  async function getJson(url, options = {}) {
+    const response = await fetch(url, {
+      credentials: "include",
+      cache: options.forceRefresh ? "no-store" : "default"
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      return { __authLocked: true };
+    }
+    if (!response.ok) {
+      throw new Error(`${options.label || "Request"} failed (${response.status})`);
+    }
+    return response.json();
+  }
+
+  async function loadAuthControls(options = {}) {
+    return getJson(buildAuthApiUrl("/admin/auth/controls"), {
+      forceRefresh: options.forceRefresh === true,
+      label: "Auth controls"
+    });
+  }
+
+  async function loadBadgeGovernance(options = {}) {
+    return getJson(buildAuthApiUrl("/admin/badge-governance"), {
+      forceRefresh: options.forceRefresh === true,
+      label: "Badge governance"
+    });
+  }
+
+  async function loadAlertSettings(options = {}) {
+    return (
+      (await window.StreamSuitesApi?.getAdminAlertSettings?.({
+        forceRefresh: options.forceRefresh === true
+      })) || null
+    );
+  }
+
+  async function loadAlertConfiguration(options = {}) {
+    return (
+      (await window.StreamSuitesApi?.getAdminAlertConfiguration?.({
+        forceRefresh: options.forceRefresh === true
+      })) || null
+    );
+  }
+
+  function renderLoadingState() {
+    const loading = '<div class="ss-settings-empty">Loading authoritative settings…</div>';
+    [
+      el.overviewSummary,
+      el.overviewRestart,
+      el.runtimeAuthority,
+      el.runtimePlatforms,
+      el.liveProviders,
+      el.authControls,
+      el.badgeGovernance,
+      el.dataAuthority,
+      el.dataSources,
+      el.alertsSummary,
+      el.alertsDestinations,
+      el.roadmapGrid
+    ].forEach((node) => {
+      if (node) node.innerHTML = loading;
+    });
+  }
+
+  function render() {
+    renderHeader();
+    renderMeta();
+    renderOverview();
+    renderRuntime();
+    renderAccess();
+    renderDataSources();
+    renderAlerts();
+    renderRoadmap();
+  }
+
+  function renderHeader() {
+    const mode = VIEW_STATE.state.sourceMode;
+    const runtimeText =
+      mode === "connected"
+        ? "Connected runtime"
+        : mode === "published"
+          ? "Published exports"
+          : "Runtime unavailable";
+
+    if (el.modeChip) {
+      el.modeChip.textContent = runtimeText;
+      el.modeChip.classList.toggle("ss-chip-success", mode === "connected");
+      el.modeChip.classList.toggle("ss-chip-warning", mode !== "connected");
+    }
+  }
+
+  function renderMeta() {
+    const dashboardState = VIEW_STATE.state.dashboardState || {};
+    const alertSettings = VIEW_STATE.state.alertSettings || {};
+    const runtimeRaw = VIEW_STATE.state.runtimeRaw || {};
+
+    setText(
+      el.metaRuntime,
+      formatTimestamp(runtimeRaw.generated_at || runtimeRaw.heartbeat) || "Unavailable"
+    );
+    setText(
+      el.metaAlerts,
+      formatTimestamp(
+        alertSettings.generated_at ||
+          alertSettings.configuration_generated_at ||
+          VIEW_STATE.state.alertConfiguration?.generated_at
+      ) || "Unavailable"
+    );
+    setText(el.metaLoaded, formatTimestamp(dashboardState.last_loaded_at) || "No draft loaded");
+    setText(el.metaExported, formatTimestamp(dashboardState.last_export_at) || "Not exported yet");
+  }
+
+  function renderOverview() {
+    const summaryCards = [
+      buildMetricCard(
+        "Runtime source",
+        VIEW_STATE.state.sourceMode === "connected"
+          ? "Live runtime"
+          : VIEW_STATE.state.sourceMode === "published"
+            ? "Published exports"
+            : "Unavailable",
+        VIEW_STATE.state.sourceMode === "connected"
+          ? "Polling is reading the current runtime snapshot."
+          : VIEW_STATE.state.sourceMode === "published"
+            ? "Read-only posture sourced from exported state files."
+            : "No authoritative runtime snapshot was available during this pass."
+      ),
+      buildMetricCard(
+        "Version",
+        formatVersion(VIEW_STATE.state.runtimeVersion),
+        `Last exported ${formatTimestamp(VIEW_STATE.state.runtimeVersion?.generated_at) || "unknown"}.`
+      ),
+      buildMetricCard(
+        "Auth posture",
+        summarizeAuthPosture(VIEW_STATE.state.authControls),
+        "These values come from Auth admin controls rather than dashboard-local state."
+      ),
+      buildMetricCard(
+        "Alerts defaults",
+        summarizeAlertPosture(VIEW_STATE.state.alertSettings),
+        "Notification defaults and delivery counts are read from the backend alerting contracts."
+      )
+    ];
+
+    if (el.overviewSummary) {
+      el.overviewSummary.innerHTML = summaryCards.join("");
+    }
+
+    renderRestartSurface();
+  }
+
+  function renderRestartSurface() {
+    const intent = VIEW_STATE.state.runtimeSnapshot?.restartIntent || null;
+    if (!el.overviewRestart) return;
+
+    if (!intent) {
+      el.overviewRestart.innerHTML = `
+        <div class="ss-settings-note-card">
+          <div class="ss-settings-note-card-head">
+            <h3>Restart queue</h3>
+            <span class="ss-chip ss-chip-muted">Unknown</span>
+          </div>
+          <p class="muted">No authoritative restart-intent payload was available.</p>
+        </div>
+      `;
+      return;
+    }
+
+    const pending = intent.pending || {};
+    const chips = [
+      buildPendingChip("System", pending.system),
+      buildPendingChip("Creators", pending.creators),
+      buildPendingChip("Triggers", pending.triggers),
+      buildPendingChip("Platforms", pending.platforms)
+    ].join("");
+
+    const summary = Array.isArray(intent.summary) && intent.summary.length
+      ? `<ul class="ss-settings-bullet-list">${intent.summary
+          .map((entry) => `<li>${escapeHtml(entry)}</li>`)
+          .join("")}</ul>`
+      : '<p class="muted">No pending restart notes are queued.</p>';
+
+    el.overviewRestart.innerHTML = `
+      <div class="ss-settings-note-card">
+        <div class="ss-settings-note-card-head">
+          <h3>Restart queue</h3>
+          <span class="ss-chip ${intent.required ? "ss-chip-warning" : "ss-chip-success"}">
+            ${intent.required ? "Restart required" : "No restart required"}
+          </span>
+        </div>
+        <div class="ss-settings-chip-row">${chips}</div>
+        ${summary}
+      </div>
+    `;
+  }
+
+  function renderRuntime() {
+    renderRuntimeAuthority();
+    renderRuntimePlatforms();
+    renderLiveStatusProviders();
+  }
+
+  function renderRuntimeAuthority() {
+    if (!el.runtimeAuthority) return;
+
+    const runtimeRaw = VIEW_STATE.state.runtimeRaw || {};
+    const runtimeSystem = runtimeRaw.system || {};
+    const runtime = runtimeRaw.runtime || {};
+    const exportsCount = Array.isArray(VIEW_STATE.state.exportManifest?.exports)
+      ? VIEW_STATE.state.exportManifest.exports.length
+      : 0;
+    const liveStatus = runtimeSystem.live_status || {};
+    const chatApi = runtimeSystem.chat?.api || {};
+    const syntheticChat = runtimeSystem.chat?.synthetic || {};
+    const hotReload = runtimeSystem.hot_reload || {};
+
+    el.runtimeAuthority.innerHTML = [
+      buildDetailCard(
+        "Runtime authority",
+        "Runtime and export lineage",
+        [
+          detailRow("Project", runtime.project || "StreamSuites Runtime"),
+          detailRow("Version", runtime.version || VIEW_STATE.state.runtimeVersion?.version || "Unavailable"),
+          detailRow("Build", runtime.build || VIEW_STATE.state.runtimeVersion?.build || "Unavailable"),
+          detailRow("Snapshot generated", formatTimestamp(runtimeRaw.generated_at || runtimeRaw.heartbeat) || "Unavailable"),
+          detailRow("Published exports", exportsCount ? `${exportsCount} files` : "Manifest unavailable")
+        ].join("")
+      ),
+      buildDetailCard(
+        "Service posture",
+        "Current subsystem state",
+        [
+          detailRow("Live-status export", liveStatus.enabled === true ? "Enabled" : liveStatus.enabled === false ? "Disabled" : "Unknown"),
+          detailRow("Chat API", chatApi.enabled === true ? `${chatApi.host || "0.0.0.0"}:${chatApi.port || "—"}` : chatApi.enabled === false ? "Disabled" : "Unknown"),
+          detailRow("Synthetic chat", syntheticChat.enabled === true ? "Enabled" : syntheticChat.enabled === false ? "Disabled" : "Unknown"),
+          detailRow("Hot reload", hotReload.enabled === true ? `Watching ${hotReload.watch_path || "runtime/exports"}` : hotReload.enabled === false ? "Disabled" : "Unknown"),
+          detailRow("Hot reload cadence", Number.isFinite(hotReload.interval_seconds) ? `${hotReload.interval_seconds}s` : "—")
+        ].join("")
+      ),
+      buildDetailCard(
+        "Surface polling",
+        "Platform polling exposure",
+        renderPollingRows(runtimeSystem.platform_polling_enabled)
+      )
+    ].join("");
+  }
+
+  function renderRuntimePlatforms() {
+    if (!el.runtimePlatforms) return;
+    const platforms = Array.isArray(VIEW_STATE.state.runtimeRaw?.platforms)
+      ? VIEW_STATE.state.runtimeRaw.platforms
+      : [];
+
+    if (!platforms.length) {
+      el.runtimePlatforms.innerHTML = '<div class="ss-settings-empty">No platform runtime posture was published.</div>';
+      return;
+    }
+
+    el.runtimePlatforms.innerHTML = platforms
+      .map((platform) => {
+        const counters = platform?.counters || {};
+        const statusTone =
+          platform?.status === "active"
+            ? "success"
+            : platform?.status === "paused"
+              ? "warning"
+              : "muted";
+
+        return `
+          <article class="ss-settings-platform-card">
+            <div class="ss-settings-card-head">
+              <div>
+                <span class="ss-settings-kicker">Platform</span>
+                <h3>${escapeHtml(labelize(platform?.name || platform?.platform || "Unknown"))}</h3>
+              </div>
+              <span class="ss-chip ${chipClassForTone(statusTone)}">${escapeHtml(labelize(platform?.status || platform?.state || "unknown"))}</span>
+            </div>
+            <dl class="ss-settings-detail-list">
+              ${detailRow("Enabled", formatBoolean(platform?.enabled))}
+              ${detailRow("Paused", formatBoolean(platform?.paused))}
+              ${detailRow("Telemetry", formatBoolean(platform?.telemetry_enabled))}
+              ${detailRow("Replay support", formatBoolean(platform?.replay_supported))}
+              ${detailRow("Overlay support", formatBoolean(platform?.overlay_supported))}
+              ${detailRow("Last heartbeat", formatTimestamp(platform?.last_heartbeat) || "Never")}
+              ${detailRow("Last success", formatTimestamp(platform?.last_success_ts) || "Never")}
+              ${detailRow("Last event", formatTimestamp(platform?.last_event_ts) || "Never")}
+              ${detailRow("Messages", formatCount(counters.messages))}
+              ${detailRow("Triggers", formatCount(counters.triggers))}
+            </dl>
+            <p class="ss-settings-card-note muted">${escapeHtml(platform?.paused_reason || platform?.error || "No active platform warning is being reported.")}</p>
+          </article>
+        `;
+      })
+      .join("");
+  }
+
+  function renderLiveStatusProviders() {
+    if (!el.liveProviders) return;
+    const providers = Array.isArray(VIEW_STATE.state.liveStatus?.providers)
+      ? VIEW_STATE.state.liveStatus.providers
+      : [];
+
+    if (!providers.length) {
+      el.liveProviders.innerHTML = '<div class="ss-settings-empty">No live-status provider export was available.</div>';
+      return;
+    }
+
+    el.liveProviders.innerHTML = providers
+      .map((provider) =>
+        buildDetailCard(
+          labelize(provider?.provider || "Provider"),
+          "Live-status provider",
+          [
+            detailRow("Cadence", Number.isFinite(provider?.cadence_seconds) ? `${provider.cadence_seconds}s` : "—"),
+            detailRow("Stale after", Number.isFinite(provider?.stale_after_seconds) ? `${provider.stale_after_seconds}s` : "—"),
+            detailRow("Batch size", formatCount(provider?.batch_size)),
+            detailRow("Creators configured", formatCount(provider?.creators_configured)),
+            detailRow("Last refresh start", formatTimestamp(provider?.last_refresh_started_at) || "Unavailable"),
+            detailRow("Last refresh finish", formatTimestamp(provider?.last_refresh_completed_at) || "Unavailable")
+          ].join(""),
+          provider?.last_error ? escapeHtml(provider.last_error) : "No provider error was reported in the published export."
+        )
+      )
+      .join("");
+  }
+
+  function renderAccess() {
+    renderAuthControls();
+    renderBadgeGovernance();
   }
 
   function renderAuthControls() {
-    if (authControls?.status === "locked") {
-      if (el.authFlagSignups) el.authFlagSignups.textContent = "Sign in required";
-      if (el.authFlagVerification) el.authFlagVerification.textContent = "Sign in required";
-      if (el.authFlagResend) el.authFlagResend.textContent = "Sign in required";
+    if (!el.authControls) return;
+    const auth = VIEW_STATE.state.authControls;
+    if (!auth) {
+      el.authControls.innerHTML = '<div class="ss-settings-empty">Auth controls were unavailable.</div>';
       return;
     }
-    const flags = authControls?.flags || {};
-    if (el.authFlagSignups) el.authFlagSignups.textContent = formatAuthFlag(flags.disable_new_signups);
-    if (el.authFlagVerification)
-      el.authFlagVerification.textContent = formatAuthFlag(flags.disable_email_verification);
-    if (el.authFlagResend)
-      el.authFlagResend.textContent = formatAuthFlag(flags.disable_resend_verification);
-  }
-
-  async function hydrateAuthControls(forceReload = false) {
-    if (window.__STREAMSUITES_RUNTIME_OFFLINE__) {
-      authControls = null;
-      renderAuthControls();
-      return;
-    }
-
-    try {
-      const res = await fetch(buildAuthApiUrl("/admin/auth/controls"), {
-        credentials: "include",
-        cache: forceReload ? "no-store" : "default"
-      });
-      if (res.status === 401 || res.status === 403) {
-        authControls = { status: "locked" };
-        renderAuthControls();
-        return;
-      }
-      if (!res.ok) {
-        authControls = null;
-        renderAuthControls();
-        return;
-      }
-      authControls = await res.json();
-    } catch (err) {
-      console.warn("[Settings] Unable to load auth controls", err);
-      authControls = null;
-    }
-
-    renderAuthControls();
-  }
-
-  function normalizeRuntimeDiscordConfig(raw) {
-    if (!raw || typeof raw !== "object") {
-      return { guilds: {} };
-    }
-
-    const discordRoot =
-      raw.discord && typeof raw.discord === "object" ? raw.discord : raw;
-
-    const sourceGuilds =
-      (discordRoot.guilds && typeof discordRoot.guilds === "object"
-        ? discordRoot.guilds
-        : null) ||
-      (discordRoot.config && typeof discordRoot.config === "object"
-        ? discordRoot.config.guilds
-        : null) ||
-      (discordRoot.settings && typeof discordRoot.settings === "object"
-        ? discordRoot.settings.guilds
-        : null) ||
-      (discordRoot.runtime && typeof discordRoot.runtime === "object"
-        ? discordRoot.runtime.guilds
-        : null) ||
-      {};
-
-    const guilds = {};
-
-    if (Array.isArray(sourceGuilds)) {
-      sourceGuilds.forEach((entry) => {
-        const guildId = coerceText(entry?.guild_id || entry?.id);
-        if (!guildId) return;
-        guilds[guildId] = { ...entry, guild_id: guildId };
-      });
-      return { guilds };
-    }
-
-    Object.entries(sourceGuilds).forEach(([guildId, entry]) => {
-      const normalizedId = coerceText(guildId || entry?.guild_id);
-      if (!normalizedId) return;
-      guilds[normalizedId] = {
-        ...(entry && typeof entry === "object" ? entry : {}),
-        guild_id: normalizedId
-      };
-    });
-
-    return { guilds };
-  }
-
-  async function hydrateDiscordRuntimeConfig() {
-    if (window.__STREAMSUITES_RUNTIME_OFFLINE__) {
-      runtimeDiscordConfig = { guilds: {} };
-      return;
-    }
-
-    const loader = window.StreamSuitesState?.loadStateJson;
-    if (typeof loader !== "function") {
-      runtimeDiscordConfig = { guilds: {} };
-      return;
-    }
-
-    try {
-      const runtime = await loader("discord/runtime.json");
-      runtimeDiscordConfig = normalizeRuntimeDiscordConfig(runtime);
-    } catch (err) {
-      console.warn("[Settings] Unable to load Discord runtime config", err);
-      runtimeDiscordConfig = { guilds: {} };
-    }
-  }
-
-  async function renderDashboardState(forceReload = false) {
-    const state =
-      (await window.ConfigState?.loadDashboardState?.({
-        forceReload
-      })) || null;
-
-    const loaded = state?.last_loaded_at
-      ? formatTimestamp(state.last_loaded_at)
-      : "No drafts loaded";
-    const exported = state?.last_export_at
-      ? formatTimestamp(state.last_export_at)
-      : "Not exported yet";
-
-    if (el.dashboardState) el.dashboardState.textContent = loaded;
-    if (el.dashboardExport) el.dashboardExport.textContent = exported;
-  }
-
-  function renderRestartQueue() {
-    const intent = runtimeSnapshot?.restartIntent || null;
-    const pending = intent?.pending || {};
-    const required = intent?.required === true;
-
-    const summaryList = intent?.summary || [];
-
-    if (el.restartRequiredFlag) {
-      el.restartRequiredFlag.textContent = required
-        ? "Restart required"
-        : intent
-          ? "No restart required"
-          : "Awaiting runtime snapshot";
-      el.restartRequiredFlag.classList.toggle("ss-badge-warning", !!required);
-      el.restartRequiredFlag.classList.toggle("ss-badge-success", intent && !required);
-    }
-
-    updatePendingChip(el.restartPendingSystem, pending.system);
-    updatePendingChip(el.restartPendingCreators, pending.creators);
-    updatePendingChip(el.restartPendingTriggers, pending.triggers);
-    updatePendingChip(el.restartPendingPlatforms, pending.platforms);
-
-    if (el.restartSummary) {
-      el.restartSummary.innerHTML = "";
-      const summary = document.createElement("div");
-      summary.classList.add("muted");
-      summary.textContent = intent
-        ? "Changes will take effect when StreamSuites is restarted."
-        : "Runtime snapshot not available. Pending state unknown.";
-      el.restartSummary.appendChild(summary);
-
-      if (summaryList.length > 0) {
-        const list = document.createElement("ul");
-        summaryList.forEach((entry) => {
-          const li = document.createElement("li");
-          li.textContent = entry;
-          list.appendChild(li);
-        });
-        el.restartSummary.appendChild(list);
-      }
-    }
-  }
-
-  function updatePendingChip(container, isPending) {
-    if (!container) return;
-
-    container.innerHTML = "";
-    const chip = document.createElement("span");
-    chip.classList.add("ss-pending-chip");
-
-    if (isPending === true) {
-      chip.classList.add("pending");
-      chip.textContent = "Pending";
-    } else if (isPending === false) {
-      chip.classList.add("clear");
-      chip.textContent = "Not pending";
-    } else {
-      chip.textContent = "Unknown";
-    }
-
-    container.appendChild(chip);
-  }
-
-  function getRuntimePollingValue() {
-    const value = runtimeSnapshot?.system?.platformPollingEnabled;
-    return value === true || value === false ? value : null;
-  }
-
-  function getDraftPollingState() {
-    const stored = systemConfig?.platform_polling_enabled;
-    const hasStoredDraft = stored === true || stored === false;
-
-    const runtimeFallback = getRuntimePollingValue();
-    const valueCandidate = hasStoredDraft ? stored : runtimeFallback;
-    const value = valueCandidate === true || valueCandidate === false ? valueCandidate : null;
-
-    return { value, hasStoredDraft };
-  }
-
-  function renderPlatformPolling() {
-    const runtimeValue = getRuntimePollingValue();
-    const draftState = getDraftPollingState();
-    const draftValue = draftState.value;
-
-    if (el.platformPollingToggle) {
-      if (draftValue === true || draftValue === false) {
-        el.platformPollingToggle.checked = draftValue;
-        el.platformPollingToggle.indeterminate = false;
-      } else {
-        el.platformPollingToggle.checked = false;
-        el.platformPollingToggle.indeterminate = true;
-      }
-    }
-
-    if (el.platformPollingRuntime) {
-      el.platformPollingRuntime.textContent =
-        runtimeValue === true
-          ? "ENABLED (runtime snapshot)"
-          : runtimeValue === false
-            ? "DISABLED (runtime snapshot)"
-            : "Unknown (runtime not reporting)";
-    }
-
-    if (el.platformPollingDraft) {
-      el.platformPollingDraft.textContent =
-        draftState.hasStoredDraft
-          ? draftValue === true
-            ? "Enabled for next start"
-            : draftValue === false
-              ? "Disabled for next start"
-              : "Not staged (uses runtime defaults)"
-          : draftValue === true
-            ? "Runtime default: enabled"
-            : draftValue === false
-              ? "Runtime default: disabled"
-              : "Not staged (uses runtime defaults)";
-    }
-
-    if (el.platformPollingNotice) {
-      const needsRestart =
-        draftState.hasStoredDraft && (runtimeValue === null || runtimeValue !== draftValue);
-      el.platformPollingNotice.style.display = needsRestart ? "block" : "none";
-    }
-  }
-
-  function coerceText(value) {
-    if (value === null || value === undefined) return "";
-    if (typeof value === "string") return value.trim();
-    return String(value).trim();
-  }
-
-  function getDiscordConfigStore() {
-    if (!systemConfig || typeof systemConfig !== "object") {
-      return { guilds: {} };
-    }
-
-    const source =
-      systemConfig.discord && typeof systemConfig.discord === "object"
-        ? systemConfig.discord
-        : {};
-
-    const guilds =
-      source.guilds && typeof source.guilds === "object" ? source.guilds : {};
-
-    return {
-      ...source,
-      guilds: { ...guilds }
-    };
-  }
-
-  function getActiveGuild() {
-    if (!activeGuildId) return null;
-    return eligibleGuilds.get(activeGuildId) || null;
-  }
-
-  function canEditActiveGuild() {
-    return guildStatus === "ready" && !!activeGuildId;
-  }
-
-  function normalizeDiscordGuild(entry = {}, guildId = "") {
-    const base = entry && typeof entry === "object" ? entry : {};
-    const logging =
-      base.logging && typeof base.logging === "object" ? base.logging : {};
-    const notifications =
-      base.notifications && typeof base.notifications === "object"
-        ? base.notifications
-        : {};
-    const notificationGeneral =
-      notifications.general && typeof notifications.general === "object"
-        ? notifications.general
-        : {};
-    const notificationClips =
-      notifications.clips && typeof notifications.clips === "object"
-        ? notifications.clips
-        : {};
-
-    const guildName =
-      typeof base.guild_name === "string"
-        ? base.guild_name.trim()
-        : typeof base.name === "string"
-          ? base.name.trim()
-          : typeof base.label === "string"
-            ? base.label.trim()
-            : "";
-
-    const resolvedGuildId = coerceText(guildId || base.guild_id);
-
-    const resolveChannelId = (...values) => {
-      for (const value of values) {
-        const trimmed = coerceText(value);
-        if (trimmed) return trimmed;
-      }
-      return "";
-    };
-
-    const resolveClipChannel = (platform) =>
-      resolveChannelId(
-        notificationClips[platform]?.channel_id,
-        notifications[`${platform}_clips_channel_id`],
-        notifications[`${platform}ClipsChannelId`]
+    if (auth.__authLocked) {
+      el.authControls.innerHTML = buildMetricCard(
+        "Admin auth",
+        "Session required",
+        "Sign in with an admin session to inspect the live Auth control surface."
       );
-
-    return {
-      ...base,
-      guild_id: resolvedGuildId,
-      guild_name: guildName,
-      logging: {
-        ...logging,
-        enabled: logging.enabled === true,
-        channel_id: resolveChannelId(logging.channel_id, logging.channel)
-      },
-      notifications: {
-        ...notifications,
-        general: {
-          ...notificationGeneral,
-          channel_id: resolveChannelId(
-            notificationGeneral.channel_id,
-            notifications.general_channel_id,
-            notifications.generalChannelId
-          )
-        },
-        clips: {
-          ...notificationClips,
-          rumble: {
-            ...(notificationClips.rumble && typeof notificationClips.rumble === "object"
-              ? notificationClips.rumble
-              : {}),
-            channel_id: resolveClipChannel("rumble")
-          },
-          youtube: {
-            ...(notificationClips.youtube && typeof notificationClips.youtube === "object"
-              ? notificationClips.youtube
-              : {}),
-            channel_id: resolveClipChannel("youtube")
-          },
-          kick: {
-            ...(notificationClips.kick && typeof notificationClips.kick === "object"
-              ? notificationClips.kick
-              : {}),
-            channel_id: resolveClipChannel("kick")
-          },
-          pilled: {
-            ...(notificationClips.pilled && typeof notificationClips.pilled === "object"
-              ? notificationClips.pilled
-              : {}),
-            channel_id: resolveClipChannel("pilled")
-          },
-          twitch: {
-            ...(notificationClips.twitch && typeof notificationClips.twitch === "object"
-              ? notificationClips.twitch
-              : {}),
-            channel_id: resolveClipChannel("twitch")
-          }
-        }
-      }
-    };
-  }
-
-  function getGuildLabel(guild, index, oauthGuild) {
-    const oauthName =
-      oauthGuild && typeof oauthGuild.name === "string"
-        ? oauthGuild.name.trim()
-        : "";
-
-    if (guild.guild_name || oauthName) {
-      const resolvedName = guild.guild_name || oauthName;
-      return guild.guild_id
-        ? `${resolvedName} (${guild.guild_id})`
-        : resolvedName;
-    }
-
-    if (guild.guild_id) {
-      return `Guild ${guild.guild_id}`;
-    }
-
-    return `Guild ${index + 1}`;
-  }
-
-  function updateChannelStatus(statusEl, value) {
-    if (!statusEl) return;
-    const trimmed = coerceText(value);
-    statusEl.classList.remove("pill-success", "pill-warning", "pill-default");
-
-    if (!trimmed) {
-      statusEl.classList.add("pill-default");
-      statusEl.textContent = "Not set";
       return;
     }
 
-    if (DISCORD_CHANNEL_ID_REGEX.test(trimmed)) {
-      statusEl.classList.add("pill-success");
-      statusEl.textContent = "Valid ID";
-      return;
-    }
-
-    statusEl.classList.add("pill-warning");
-    statusEl.textContent = "Invalid ID";
-  }
-
-  function persistDiscordGuildConfig(guildId, updatedGuild) {
-    if (!guildId) return;
-    const discord = getDiscordConfigStore();
-    const nextGuilds = {
-      ...discord.guilds,
-      [guildId]: {
-        ...updatedGuild,
-        guild_id: guildId
-      }
-    };
-
-    systemConfig =
-      window.ConfigState?.saveSystem?.({
-        discord: {
-          ...discord,
-          guilds: nextGuilds
-        }
-      }) || {
-        discord: {
-          ...discord,
-          guilds: nextGuilds
-        }
-      };
-    renderDashboardState();
-  }
-
-  function updateDiscordBotGuild(updater) {
-    if (!canEditActiveGuild()) return;
-    const guildId = activeGuildId;
-    const discord = getDiscordConfigStore();
-    const current = normalizeDiscordGuild(discord.guilds[guildId] || {}, guildId);
-    const next = updater ? updater({ ...current }) || current : current;
-    persistDiscordGuildConfig(guildId, next);
-  }
-
-  function renderDiscordBotSettings() {
-    if (!el.discordBotGuilds || !el.discordBotTemplate) return;
-
-    el.discordBotGuilds.innerHTML = "";
-
-    const showEmptyState =
-      !systemConfig || !canEditActiveGuild() || !activeGuildId;
-
-    if (el.discordBotEmpty) {
-      el.discordBotEmpty.classList.toggle("hidden", !showEmptyState);
-    }
-
-    if (el.discordBotEmptyTitle && el.discordBotEmptySubtitle) {
-      if (guildStatus === "no-access") {
-        el.discordBotEmptyTitle.textContent = "No authorized guilds available.";
-        el.discordBotEmptySubtitle.textContent =
-          "You do not have permission to manage any guilds where the StreamSuites bot is installed.";
-      } else if (!activeGuildId) {
-        el.discordBotEmptyTitle.textContent = "No active guild selected.";
-        el.discordBotEmptySubtitle.textContent =
-          "Select an eligible guild to view or edit per-guild settings.";
-      } else if (guildStatus === "unauthorized") {
-        el.discordBotEmptyTitle.textContent = "Guild access not authorized.";
-        el.discordBotEmptySubtitle.textContent =
-          "Choose a different guild to unlock Discord settings.";
-      } else {
-        el.discordBotEmptyTitle.textContent = "Discord settings locked.";
-        el.discordBotEmptySubtitle.textContent =
-          "Login and select a guild to unlock per-guild configuration.";
-      }
-    }
-
-    if (showEmptyState) return;
-
-    const discord = getDiscordConfigStore();
-    const activeGuild = getActiveGuild();
-    const runtimeGuild =
-      runtimeDiscordConfig?.guilds && activeGuildId
-        ? runtimeDiscordConfig.guilds[activeGuildId] || {}
-        : {};
-    const storedGuild = discord.guilds[activeGuildId] || {};
-    const baseGuild =
-      Object.keys(storedGuild).length > 0 ? storedGuild : runtimeGuild;
-    const guild = normalizeDiscordGuild(baseGuild, activeGuildId);
-
-    const fragment = el.discordBotTemplate.content.cloneNode(true);
-    const card = fragment.querySelector(".discord-guild-card");
-    const label = fragment.querySelector("[data-guild-label]");
-
-    if (card) {
-      card.dataset.guildIndex = "active";
-      card.dataset.access = "eligible";
-      card.setAttribute("aria-disabled", "false");
-    }
-
-    if (label) {
-      label.textContent = getGuildLabel(guild, 0, activeGuild);
-    }
-
-    const guildIdInput = fragment.querySelector('[data-field="guild-id"]');
-    const guildIdStatus = fragment.querySelector('[data-status="guild-id"]');
-    if (guildIdInput) {
-      guildIdInput.value = guild.guild_id;
-      guildIdInput.disabled = true;
-    }
-    updateChannelStatus(guildIdStatus, guild.guild_id);
-
-    const loggingEnabled = fragment.querySelector(
-      '[data-field="logging-enabled"]'
-    );
-    if (loggingEnabled) {
-      loggingEnabled.checked = guild.logging.enabled === true;
-      loggingEnabled.addEventListener("change", () => {
-        updateDiscordBotGuild((entry) => ({
-          ...entry,
-          logging: {
-            ...(entry.logging || {}),
-            enabled: loggingEnabled.checked === true
-          }
-        }));
-      });
-    }
-
-    const loggingChannel = fragment.querySelector(
-      '[data-field="logging-channel"]'
-    );
-    const loggingStatus = fragment.querySelector(
-      '[data-status="logging-channel"]'
-    );
-    if (loggingChannel) {
-      loggingChannel.value = guild.logging.channel_id;
-      loggingChannel.addEventListener("input", () => {
-        updateDiscordBotGuild((entry) => ({
-          ...entry,
-          logging: {
-            ...(entry.logging || {}),
-            channel_id: coerceText(loggingChannel.value)
-          }
-        }));
-        updateChannelStatus(loggingStatus, loggingChannel.value);
-      });
-    }
-    updateChannelStatus(loggingStatus, guild.logging.channel_id);
-
-    const channelBindings = [
-      ["general-channel", { type: "general" }],
-      ["rumble-channel", { type: "clips", platform: "rumble" }],
-      ["youtube-channel", { type: "clips", platform: "youtube" }],
-      ["kick-channel", { type: "clips", platform: "kick" }],
-      ["pilled-channel", { type: "clips", platform: "pilled" }],
-      ["twitch-channel", { type: "clips", platform: "twitch" }]
+    const flags = auth.flags || auth.controls || auth || {};
+    const cards = [
+      ["New signups", formatFlagState(flags.disable_new_signups, { inverted: true }), "Whether new accounts can register."],
+      ["Email verification", formatFlagState(flags.disable_email_verification, { inverted: true }), "Whether verification remains part of the account flow."],
+      ["Resend verification", formatFlagState(flags.disable_resend_verification, { inverted: true }), "Whether resend requests are allowed."],
+      ["Tier-config bypass", formatFlagState(flags.admin_tier_config_bypass), "Whether admin tier config bypass is active."]
     ];
 
-    const getNotificationChannelValue = (guildEntry, binding) => {
-      if (binding.type === "general") {
-        return guildEntry.notifications?.general?.channel_id || "";
-      }
-      if (binding.type === "clips" && binding.platform) {
-        return (
-          guildEntry.notifications?.clips?.[binding.platform]?.channel_id || ""
-        );
-      }
-      return "";
-    };
-
-    const updateNotificationChannelValue = (entry, binding, value) => {
-      if (binding.type === "general") {
-        return {
-          ...entry,
-          notifications: {
-            ...(entry.notifications || {}),
-            general: {
-              ...(entry.notifications?.general || {}),
-              channel_id: value
-            }
-          }
-        };
-      }
-
-      if (binding.type === "clips" && binding.platform) {
-        return {
-          ...entry,
-          notifications: {
-            ...(entry.notifications || {}),
-            clips: {
-              ...(entry.notifications?.clips || {}),
-              [binding.platform]: {
-                ...(entry.notifications?.clips?.[binding.platform] || {}),
-                channel_id: value
-              }
-            }
-          }
-        };
-      }
-
-      return entry;
-    };
-
-    channelBindings.forEach(([field, binding]) => {
-      const input = fragment.querySelector(`[data-field="${field}"]`);
-      const status = fragment.querySelector(`[data-status="${field}"]`);
-      const value = getNotificationChannelValue(guild, binding);
-
-      if (input) {
-        input.value = value;
-        input.addEventListener("input", () => {
-          const nextValue = coerceText(input.value);
-          updateDiscordBotGuild((entry) =>
-            updateNotificationChannelValue(entry, binding, nextValue)
-          );
-          updateChannelStatus(status, nextValue);
-        });
-      }
-      updateChannelStatus(status, value);
-    });
-
-    el.discordBotGuilds.appendChild(fragment);
+    el.authControls.innerHTML = cards
+      .map(([label, value, note]) => buildMetricCard(label, value, note))
+      .join("");
   }
 
-  function updatePlatformPolling(enabled) {
-    systemConfig =
-      window.ConfigState?.saveSystem?.({ platform_polling_enabled: !!enabled }) || {
-        platform_polling_enabled: !!enabled
-      };
+  function renderBadgeGovernance() {
+    if (!el.badgeGovernance) return;
+    const governance = VIEW_STATE.state.badgeGovernance;
+    if (!governance) {
+      el.badgeGovernance.innerHTML = '<div class="ss-settings-empty">Badge governance was unavailable.</div>';
+      return;
+    }
+    if (governance.__authLocked) {
+      el.badgeGovernance.innerHTML = buildDetailCard(
+        "Badge governance",
+        "Admin session required",
+        detailRow("Status", "Locked"),
+        "The runtime reported badge-governance access only for authenticated admins."
+      );
+      return;
+    }
 
-    renderPlatformPolling();
-    renderDashboardState();
+    const defaultVisibility = governance.default_visibility || {};
+    const founderPolicy = governance.founder_policy || {};
+    const founder = governance.founder_reconcile || {};
+    const catalog = Array.isArray(governance.catalog) ? governance.catalog : [];
+    const governedKeys = new Set([
+      ...Object.keys(defaultVisibility),
+      ...catalog.map((entry) => String(entry?.key || "").trim()).filter(Boolean)
+    ]);
+    const visibleCells = Object.values(defaultVisibility).reduce((count, row) => {
+      const values = row && typeof row === "object" ? Object.values(row) : [];
+      return count + values.filter((value) => value === true).length;
+    }, 0);
+    const supportedSurfaces = new Set();
+    catalog.forEach((entry) => {
+      (Array.isArray(entry?.surfaces) ? entry.surfaces : []).forEach((surface) => {
+        supportedSurfaces.add(surface);
+      });
+    });
+
+    el.badgeGovernance.innerHTML = [
+      buildDetailCard(
+        "Founder governance",
+        "Runtime-owned founder assignment posture",
+        [
+          detailRow("Cutoff date", founderPolicy.cutoff_date || governance.founder_cutoff_date || "Not configured"),
+          detailRow("Timezone", founderPolicy.cutoff_timezone || "UTC"),
+          detailRow("Auto assignment", founderPolicy.auto_assignment_enabled === true ? "Active" : "Off"),
+          detailRow("Eligible existing accounts", formatCount(founder.eligible_existing_accounts)),
+          detailRow("Pending reconcile", formatCount(founder.pending_accounts)),
+          detailRow("Founder enabled", formatCount(founder.enabled_accounts))
+        ].join(""),
+        "Mutations remain on the Accounts governance surface. Settings reflects the live posture only."
+      ),
+      buildDetailCard(
+        "Visibility matrix",
+        "Default badge surface exposure",
+        [
+          detailRow("Governed badge keys", formatCount(governedKeys.size)),
+          detailRow("Visible default cells", formatCount(visibleCells)),
+          detailRow("Supported surfaces", formatCount(supportedSurfaces.size)),
+          detailRow("Catalog entries", formatCount(catalog.length))
+        ].join(""),
+        supportedSurfaces.size
+          ? `Current surfaces: ${escapeHtml(Array.from(supportedSurfaces).map(labelize).join(", "))}.`
+          : "No supported surfaces were listed in the governance catalog."
+      )
+    ].join("");
+  }
+
+  function renderDataSources() {
+    if (el.dataAuthority) {
+      const manifest = VIEW_STATE.state.exportManifest || {};
+      const exportsList = Array.isArray(manifest.exports) ? manifest.exports : [];
+      const runtimeRaw = VIEW_STATE.state.runtimeRaw || {};
+
+      el.dataAuthority.innerHTML = [
+        buildDetailCard(
+          "Authoritative contracts",
+          "What this page trusts",
+          [
+            detailRow("Runtime snapshot", runtimeRaw.generated_at ? "Available" : "Unavailable"),
+            detailRow("Auth controls", VIEW_STATE.state.authControls ? "Available" : "Unavailable"),
+            detailRow("Badge governance", VIEW_STATE.state.badgeGovernance ? "Available" : "Unavailable"),
+            detailRow("Alert settings", VIEW_STATE.state.alertSettings ? "Available" : "Unavailable"),
+            detailRow("Exports manifest", exportsList.length ? `${exportsList.length} listed` : "Unavailable")
+          ].join(""),
+          "These contracts are treated as source-of-truth surfaces. The dashboard does not attempt to override them locally."
+        ),
+        buildDetailCard(
+          "Dashboard-local drafts",
+          "What import/export changes",
+          [
+            detailRow("Bundle scope", "Creators, platforms, system drafts"),
+            detailRow("Last draft load", formatTimestamp(VIEW_STATE.state.dashboardState?.last_loaded_at) || "Never"),
+            detailRow("Last draft export", formatTimestamp(VIEW_STATE.state.dashboardState?.last_export_at) || "Never"),
+            detailRow("Runtime authority", "Unaffected"),
+            detailRow("Auth authority", "Unaffected")
+          ].join(""),
+          "Import and export here are backup and authoring conveniences only. They are not backend persistence."
+        )
+      ].join("");
+    }
+
+    if (el.dataSources) {
+      const exportsList = Array.isArray(VIEW_STATE.state.exportManifest?.exports)
+        ? VIEW_STATE.state.exportManifest.exports
+        : [];
+
+      const cards = exportsList.map((entry) =>
+        buildMiniCard(
+          entry?.file || "unknown",
+          entry?.description || "Published runtime export",
+          [
+            badgeSpan(entry?.visibility || "public", "muted"),
+            badgeSpan("export", "info")
+          ].join("")
+        )
+      );
+
+      cards.push(
+        buildMiniCard(
+          "dashboard_state",
+          "Dashboard-local metadata for import and export timestamps.",
+          [badgeSpan("local only", "warning"), badgeSpan("non-authoritative", "warning")].join("")
+        )
+      );
+      cards.push(
+        buildMiniCard(
+          "local draft configs",
+          "Creators, platforms, and system drafts stored locally for authoring and bundle transport.",
+          [badgeSpan("local only", "warning"), badgeSpan("safe scaffold", "info")].join("")
+        )
+      );
+
+      el.dataSources.innerHTML = cards.join("");
+    }
+  }
+
+  function renderAlerts() {
+    renderAlertsSummary();
+    renderAlertsDestinations();
+  }
+
+  function renderAlertsSummary() {
+    if (!el.alertsSummary) return;
+    const settings = unwrapAlertSettings(VIEW_STATE.state.alertSettings);
+    if (!settings) {
+      el.alertsSummary.innerHTML = '<div class="ss-settings-empty">Alert settings were unavailable.</div>';
+      return;
+    }
+
+    const preferences = settings.preferences || {};
+    el.alertsSummary.innerHTML = [
+      buildMetricCard(
+        "Master delivery",
+        preferences.master_enabled === false ? "Muted" : "Enabled",
+        preferences.master_enabled === false
+          ? "Global alert delivery is disabled by backend preference."
+          : "Global alert delivery is enabled."
+      ),
+      buildMetricCard(
+        "Quiet hours",
+        preferences.quiet_hours_enabled === true
+          ? `${preferences.quiet_hours_start || "--"} to ${preferences.quiet_hours_end || "--"}`
+          : "Off",
+        preferences.timezone ? `Timezone: ${preferences.timezone}` : "No quiet-hours timezone reported."
+      ),
+      buildMetricCard(
+        "Registered devices",
+        formatCount(settings.registered_devices_total),
+        `${formatCount(settings.delivery_history_total)} delivery records are retained.`
+      ),
+      buildMetricCard(
+        "Rule coverage",
+        `${formatCount(settings.rule_count)} rules`,
+        `${formatCount(settings.active_stream_subscribers)} active stream subscribers are currently tracked.`
+      )
+    ].join("");
+  }
+
+  function renderAlertsDestinations() {
+    if (!el.alertsDestinations) return;
+    const settings = unwrapAlertSettings(VIEW_STATE.state.alertSettings);
+    const configurationPayload = VIEW_STATE.state.alertConfiguration;
+    const configuration =
+      configurationPayload?.configuration && typeof configurationPayload.configuration === "object"
+        ? configurationPayload.configuration
+        : configurationPayload || {};
+
+    if (!settings) {
+      el.alertsDestinations.innerHTML = '<div class="ss-settings-empty">Alert destination defaults were unavailable.</div>';
+      return;
+    }
+
+    const summary = settings.registered_devices_summary || {};
+    const destinationDefaults = configuration.destination_defaults || {};
+    const destinationKeys = Array.from(
+      new Set([
+        ...Object.keys(summary || {}),
+        ...Object.keys(destinationDefaults || {})
+      ])
+    );
+
+    if (!destinationKeys.length) {
+      el.alertsDestinations.innerHTML = '<div class="ss-settings-empty">No destination defaults or registered channels were reported.</div>';
+      return;
+    }
+
+    el.alertsDestinations.innerHTML = destinationKeys
+      .map((key) => {
+        const destination = destinationDefaults[key] || {};
+        const registered = summary[key];
+        return `
+          <article class="ss-settings-mini-card">
+            <div class="ss-settings-card-head">
+              <div>
+                <span class="ss-settings-kicker">Destination</span>
+                <h3>${escapeHtml(labelize(key))}</h3>
+              </div>
+              <span class="ss-chip ${destination.enabled === false ? "ss-chip-warning" : destination.enabled === true ? "ss-chip-success" : "ss-chip-muted"}">
+                ${destination.enabled === false ? "Default off" : destination.enabled === true ? "Default on" : "Default unknown"}
+              </span>
+            </div>
+            <dl class="ss-settings-detail-list">
+              ${detailRow("Registered devices", formatCount(registered))}
+              ${detailRow("Severity floor", destination.severity_minimum || "info")}
+              ${detailRow("Backend default", destination.enabled === false ? "Disabled" : destination.enabled === true ? "Enabled" : "Unknown")}
+            </dl>
+          </article>
+        `;
+      })
+      .join("");
+  }
+
+  function renderRoadmap() {
+    if (!el.roadmapGrid) return;
+    const cards = [
+      buildScaffoldCard(
+        "Provider credentials and secrets",
+        "Deliberately excluded here until StreamSuites exposes a safe mutation contract. This page stays read-only instead of faking secret controls."
+      ),
+      buildScaffoldCard(
+        "Per-guild Discord admin editing",
+        "The earlier settings scaffold mixed exported Discord runtime data with dashboard-local draft edits. That was removed from Settings because it was not authoritative backend state."
+      ),
+      buildScaffoldCard(
+        "Runtime restart actions",
+        "Restart posture is visible here, but restart execution remains outside this page until a real admin action contract exists."
+      )
+    ];
+    el.roadmapGrid.innerHTML = cards.join("");
+  }
+
+  function unwrapAlertSettings(payload) {
+    if (!payload || typeof payload !== "object") return null;
+    if (payload.settings && typeof payload.settings === "object") return payload.settings;
+    return payload;
+  }
+
+  function renderPollingRows(value) {
+    const rows = value && typeof value === "object"
+      ? Object.entries(value)
+          .map(([key, enabled]) => detailRow(labelize(key), formatBoolean(enabled)))
+          .join("")
+      : "";
+    return rows || detailRow("Polling surfaces", "Unavailable");
+  }
+
+  function summarizeAuthPosture(auth) {
+    if (!auth) return "Unavailable";
+    if (auth.__authLocked) return "Session required";
+    const flags = auth.flags || auth.controls || auth;
+    const evaluated = [
+      flags.disable_new_signups,
+      flags.disable_email_verification,
+      flags.disable_resend_verification
+    ].filter((value) => value === true || value === false);
+    const disabled = evaluated.filter((value) => value === true).length;
+    if (!evaluated.length) return "Flags unavailable";
+    return disabled > 0 ? `${disabled} restrictions active` : "Open posture";
+  }
+
+  function summarizeAlertPosture(alertsPayload) {
+    const settings = unwrapAlertSettings(alertsPayload);
+    if (!settings) return "Unavailable";
+    const preferences = settings.preferences || {};
+    if (!Object.keys(preferences).length) return "Preferences unavailable";
+    if (preferences.master_enabled === false) return "Muted";
+    if (preferences.quiet_hours_enabled === true) return "Quiet hours enabled";
+    return "Delivering";
+  }
+
+  function buildMetricCard(label, value, note) {
+    return `
+      <article class="ss-settings-metric-card">
+        <span class="ss-settings-kicker">${escapeHtml(label)}</span>
+        <strong class="ss-settings-metric-value">${escapeHtml(displayValue(value))}</strong>
+        <p class="muted">${escapeHtml(note || "")}</p>
+      </article>
+    `;
+  }
+
+  function buildDetailCard(kicker, title, rows, note = "") {
+    return `
+      <article class="ss-settings-detail-card">
+        <div class="ss-settings-card-head">
+          <div>
+            <span class="ss-settings-kicker">${escapeHtml(kicker)}</span>
+            <h3>${escapeHtml(title)}</h3>
+          </div>
+        </div>
+        <dl class="ss-settings-detail-list">${rows}</dl>
+        ${note ? `<p class="ss-settings-card-note muted">${note}</p>` : ""}
+      </article>
+    `;
+  }
+
+  function buildMiniCard(title, description, badges) {
+    return `
+      <article class="ss-settings-mini-card">
+        <div class="ss-settings-card-head">
+          <div>
+            <h3>${escapeHtml(title)}</h3>
+          </div>
+        </div>
+        <p class="muted">${escapeHtml(description)}</p>
+        <div class="ss-settings-chip-row">${badges}</div>
+      </article>
+    `;
+  }
+
+  function buildScaffoldCard(title, description) {
+    return `
+      <article class="ss-settings-scaffold-card">
+        <span class="ss-settings-kicker">Scaffold</span>
+        <h3>${escapeHtml(title)}</h3>
+        <p class="muted">${escapeHtml(description)}</p>
+      </article>
+    `;
+  }
+
+  function buildPendingChip(label, pending) {
+    return badgeSpan(`${label}: ${pending === true ? "pending" : pending === false ? "clear" : "unknown"}`, pending === true ? "warning" : pending === false ? "success" : "muted");
+  }
+
+  function detailRow(label, value) {
+    return `
+      <div class="ss-settings-detail-row">
+        <dt>${escapeHtml(label)}</dt>
+        <dd>${escapeHtml(displayValue(value))}</dd>
+      </div>
+    `;
+  }
+
+  function badgeSpan(label, tone = "muted") {
+    return `<span class="ss-chip ${chipClassForTone(tone)}">${escapeHtml(label)}</span>`;
+  }
+
+  function chipClassForTone(tone) {
+    if (tone === "success") return "ss-chip-success";
+    if (tone === "warning") return "ss-chip-warning";
+    if (tone === "info") return "ss-chip-muted";
+    return "ss-chip-muted";
+  }
+
+  function setStatus(text) {
+    setText(el.status, text || "Ready");
+  }
+
+  function setBanner(message, tone) {
+    if (!el.banner) return;
+    const text = String(message || "").trim();
+    if (!text) {
+      el.banner.textContent = "";
+      el.banner.classList.add("hidden");
+      el.banner.classList.remove("ss-alert-danger", "ss-alert-warning");
+      return;
+    }
+
+    el.banner.textContent = text;
+    el.banner.classList.remove("hidden");
+    el.banner.classList.toggle("ss-alert-danger", tone === "danger");
+    el.banner.classList.toggle("ss-alert-warning", tone !== "danger");
+  }
+
+  function setText(node, value) {
+    if (node) node.textContent = displayValue(value);
+  }
+
+  function getSettledValue(result) {
+    return result?.status === "fulfilled" ? result.value : null;
+  }
+
+  function getSettledError(result) {
+    if (result?.status !== "rejected") return "";
+    return result.reason?.message || String(result.reason || "Unable to load data.");
   }
 
   function formatTimestamp(value) {
-    return (
-      window.StreamSuitesState?.formatTimestamp?.(value) ||
-      value ||
-      "—"
-    );
+    if (!value) return "";
+    const formatted = window.StreamSuitesState?.formatTimestamp?.(value);
+    if (formatted) return formatted;
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString(undefined, { hour12: false });
   }
 
-  function destroy() {
-    wired = false;
-    runtimeSnapshot = null;
-    systemConfig = null;
-    authControls = null;
-    if (runtimeListener) {
-      window.removeEventListener("streamsuites:runtimeSnapshot", runtimeListener);
-      runtimeListener = null;
-    }
-    if (visibilityListener) {
-      document.removeEventListener("visibilitychange", visibilityListener);
-      visibilityListener = null;
-    }
-    if (guildListener) {
-      window.removeEventListener("streamsuites:discord-guild", guildListener);
-      guildListener = null;
-    }
-    window.PlatformsManager?.destroy?.();
+  function formatVersion(info) {
+    if (!info?.version) return "Unavailable";
+    return window.Versioning?.formatDisplayVersion?.(info) || info.version;
   }
 
-  window.SettingsView.init = init;
-  window.SettingsView.destroy = destroy;
+  function formatBoolean(value) {
+    if (value === true) return "Enabled";
+    if (value === false) return "Disabled";
+    return "Unknown";
+  }
 
+  function formatFlagState(value, options = {}) {
+    if (value !== true && value !== false) return "Unknown";
+    if (options.inverted) {
+      return value === true ? "Disabled" : "Enabled";
+    }
+    return value === true ? "Enabled" : "Disabled";
+  }
+
+  function formatCount(value) {
+    return Number.isFinite(value) ? String(value) : "—";
+  }
+
+  function displayValue(value) {
+    return value === null || value === undefined || value === "" ? "—" : String(value);
+  }
+
+  function labelize(value) {
+    return String(value || "")
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase())
+      .trim() || "Unknown";
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  window.SettingsView = {
+    init,
+    destroy
+  };
 })();

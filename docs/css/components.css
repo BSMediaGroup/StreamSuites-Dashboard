@@ -8288,3 +8288,214 @@ button.public-btn:active::after {
 .telemetry-error-active {
   background: rgba(217, 83, 79, 0.06);
 }
+
+.ss-settings-main {
+  display: grid;
+  gap: 18px;
+}
+
+.ss-settings-header-shell,
+.ss-settings-header-right,
+.ss-settings-section-heading,
+.ss-settings-card-head,
+.ss-settings-note-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ss-settings-header-copy,
+.ss-settings-hero-copy,
+.ss-settings-section-heading > div {
+  display: grid;
+  gap: 6px;
+}
+
+.ss-settings-header-chip {
+  align-self: flex-start;
+}
+
+.ss-settings-banner-wrap {
+  min-height: 0;
+}
+
+.ss-settings-hero-panel {
+  overflow: hidden;
+}
+
+.ss-settings-hero-body {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.95fr);
+}
+
+.ss-settings-hero-main,
+.ss-settings-hero-side,
+.ss-settings-restart-surface,
+.ss-settings-section-block,
+.ss-settings-stack {
+  display: grid;
+  gap: 18px;
+}
+
+.ss-settings-side-card,
+.ss-settings-note-card,
+.ss-settings-metric-card,
+.ss-settings-detail-card,
+.ss-settings-mini-card,
+.ss-settings-scaffold-card {
+  border: 1px solid rgba(124, 155, 191, 0.18);
+  background:
+    radial-gradient(circle at top right, rgba(84, 153, 255, 0.12), transparent 42%),
+    linear-gradient(180deg, rgba(19, 29, 45, 0.96), rgba(11, 17, 28, 0.96));
+  border-radius: 18px;
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.22);
+}
+
+.ss-settings-side-card,
+.ss-settings-note-card,
+.ss-settings-detail-card,
+.ss-settings-mini-card,
+.ss-settings-scaffold-card {
+  padding: 18px;
+}
+
+.ss-settings-metric-card {
+  padding: 16px 18px;
+  min-height: 148px;
+  display: grid;
+  gap: 10px;
+}
+
+.ss-settings-summary-grid,
+.ss-settings-split-grid,
+.ss-settings-platform-grid,
+.ss-settings-provider-grid,
+.ss-settings-source-grid,
+.ss-settings-destination-grid,
+.ss-settings-scaffold-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.ss-settings-summary-grid {
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.ss-settings-split-grid {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.ss-settings-platform-grid,
+.ss-settings-provider-grid,
+.ss-settings-source-grid,
+.ss-settings-destination-grid,
+.ss-settings-scaffold-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.ss-settings-actions-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.ss-settings-meta-list,
+.ss-settings-detail-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.ss-settings-meta-row,
+.ss-settings-detail-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.ss-settings-meta-row dt,
+.ss-settings-detail-row dt {
+  color: rgba(210, 220, 237, 0.72);
+}
+
+.ss-settings-meta-row dd,
+.ss-settings-detail-row dd {
+  margin: 0;
+  font-weight: 600;
+  color: #f6f8ff;
+  text-align: right;
+}
+
+.ss-settings-metric-value {
+  font-size: clamp(1.2rem, 1rem + 0.7vw, 1.9rem);
+  line-height: 1.1;
+  color: #f7fbff;
+}
+
+.ss-settings-kicker {
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(125, 193, 255, 0.82);
+}
+
+.ss-settings-card-head h3,
+.ss-settings-note-card-head h3 {
+  margin: 0;
+}
+
+.ss-settings-card-note,
+.ss-settings-side-note {
+  margin: 0;
+}
+
+.ss-settings-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ss-settings-bullet-list {
+  margin: 0;
+  padding-left: 18px;
+  color: rgba(223, 231, 244, 0.88);
+}
+
+.ss-settings-bullet-list li + li {
+  margin-top: 6px;
+}
+
+.ss-settings-empty {
+  border: 1px dashed rgba(124, 155, 191, 0.26);
+  border-radius: 16px;
+  padding: 18px;
+  color: rgba(207, 217, 234, 0.78);
+  background: rgba(10, 16, 27, 0.6);
+}
+
+@media (max-width: 1100px) {
+  .ss-settings-hero-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .ss-settings-header-shell,
+  .ss-settings-header-right,
+  .ss-settings-section-heading,
+  .ss-settings-card-head,
+  .ss-settings-note-card-head,
+  .ss-settings-meta-row,
+  .ss-settings-detail-row {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+
+  .ss-settings-meta-row dd,
+  .ss-settings-detail-row dd {
+    text-align: left;
+  }
+}
