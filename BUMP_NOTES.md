@@ -4,6 +4,27 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Admin Login Rate-Limit Error Transparency + In-Flight Guard - 2026-04-03
+
+### Technical Notes
+
+- Tightened both admin password-login consumers in `docs/js/admin-login.js` and `docs/js/admin-auth.js` so the dashboard no longer collapses all upstream auth failures into the same vague “Try again shortly” message.
+- Added response-body/header parsing for password-login failures, including `Retry-After` handling plus clearer `401`, `403`, `429`, and `5xx` messaging when the authoritative Auth/API layer rejects the request.
+- Added explicit password-login in-flight guards on both the standalone admin login page and the in-shell auth overlay so repeated submits cannot stack while a previous request is still pending.
+- This pass does not remove the upstream auth or Cloudflare rate limit itself because that limiter is not owned by this dashboard repo; it makes the real denial reason visible and prevents dashboard-side duplicate submits from obscuring the diagnosis.
+
+### Human-Readable Notes
+
+- Admin login now tells you when Auth is rate limiting the password route instead of pretending every denial is the same generic error.
+- If Auth sends a retry window, the UI now shows it.
+- The password form now blocks overlapping submits while a request is already in flight.
+
+### Files / Areas Touched
+
+- `docs/js/admin-login.js`
+- `docs/js/admin-auth.js`
+- `BUMP_NOTES.md`
+
 ## Overview Deep Polish + Snapshot Band Pass - 2026-04-03
 
 ### Technical Notes

@@ -99,6 +99,79 @@
     return trimmed;
   }
 
+  async function readErrorPayload(response) {
+    if (!response) return null;
+    const contentType = String(response.headers?.get("content-type") || "").toLowerCase();
+    try {
+      if (contentType.includes("application/json")) {
+        return await response.json();
+      }
+      const text = await response.text();
+      const trimmed = typeof text === "string" ? text.trim() : "";
+      if (!trimmed) return null;
+      try {
+        return JSON.parse(trimmed);
+      } catch {
+        return { message: trimmed };
+      }
+    } catch {
+      return null;
+    }
+  }
+
+  function formatRetryAfter(value) {
+    const raw = String(value || "").trim();
+    if (!raw) return "";
+    const seconds = Number(raw);
+    if (Number.isFinite(seconds) && seconds > 0) {
+      if (seconds < 60) return `${Math.ceil(seconds)} seconds`;
+      const minutes = Math.ceil(seconds / 60);
+      return `${minutes} minute${minutes === 1 ? "" : "s"}`;
+    }
+    const date = new Date(raw);
+    if (!Number.isNaN(date.getTime())) {
+      const diffMs = date.getTime() - Date.now();
+      if (diffMs > 0) {
+        return formatRetryAfter(String(Math.ceil(diffMs / 1000)));
+      }
+    }
+    return raw;
+  }
+
+  function buildPasswordLoginErrorMessage(response, payload) {
+    const status = Number(response?.status || 0);
+    const reason = resolveAuthReason(payload, response);
+    const payloadMessage =
+      typeof payload?.message === "string" && payload.message.trim()
+        ? payload.message.trim()
+        : typeof payload?.error === "string" && payload.error.trim()
+          ? payload.error.trim()
+          : "";
+    const retryAfter = formatRetryAfter(response?.headers?.get("Retry-After"));
+
+    if (status === 429) {
+      const retryText = retryAfter ? ` Retry after ${retryAfter}.` : "";
+      return payloadMessage || `Password login is being rate limited upstream.${retryText}`;
+    }
+
+    if (status === 401) {
+      return payloadMessage || "Email/password was rejected by Auth.";
+    }
+
+    if (status === 403) {
+      if (reason.includes("admin") || reason.includes("not_authorized") || reason.includes("forbidden")) {
+        return "This account authenticated, but Auth says it is not approved for the admin surface.";
+      }
+      return payloadMessage || "Auth denied this login attempt for the admin surface.";
+    }
+
+    if (status >= 500) {
+      return payloadMessage || "Auth is failing upstream. Try again after the service recovers.";
+    }
+
+    return payloadMessage || `Password login failed upstream (${status || "unknown"}).`;
+  }
+
   function parseUrl(value, base = ADMIN_ORIGIN) {
     if (typeof value !== "string" || !value.trim()) return null;
     try {
@@ -291,6 +364,7 @@
       headerTier: null,
       headerLogout: null
     },
+    passwordLoginInFlight: false,
 
     async init() {
       if (this.initialized) return this.state;
@@ -783,6 +857,10 @@
     },
 
     async submitPasswordLogin() {
+      if (this.passwordLoginInFlight) {
+        this.setStatus("loading", "A sign-in request is already in progress…");
+        return;
+      }
       const endpoint = this.config.endpoints.login;
       if (!endpoint) {
         this.setStatus(
@@ -805,6 +883,7 @@
         return;
       }
 
+      this.passwordLoginInFlight = true;
       this.setLoading(true);
       this.setStatus("loading", "Signing in…");
 
@@ -837,6 +916,7 @@
         }
 
         if (!response.ok) {
+          const payload = await readErrorPayload(response);
           if (response.status === 404) {
             this.setStatus(
               "offline",
@@ -844,7 +924,7 @@
             );
             return;
           }
-          const message = `Password login failed (${response.status}).`;
+          const message = buildPasswordLoginErrorMessage(response, payload);
           throw new Error(message);
         }
 
@@ -858,8 +938,9 @@
         window.location.assign(ADMIN_INDEX_URL);
       } catch (err) {
         console.warn("[Admin Auth] Password login request failed:", err);
-        this.setStatus("error", "Unable to sign in. Try again shortly.");
+        this.setStatus("error", err?.message || "Unable to sign in. Try again shortly.");
       } finally {
+        this.passwordLoginInFlight = false;
         this.setLoading(false);
       }
     },

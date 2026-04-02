@@ -11,6 +11,11 @@
   const PREVIEW_HOSTNAME_SUFFIX = ".pages.dev";
   const LOCAL_PREVIEW_HOSTNAMES = new Set(["localhost", "127.0.0.1", "0.0.0.0"]);
   const PUBLIC_HOSTNAMES = new Set(["streamsuites.app", "www.streamsuites.app"]);
+  const AUTH_REASON_HEADERS = [
+    "x-auth-reason",
+    "x-streamsuites-auth-reason",
+    "x-auth-status"
+  ];
   const resolvedBasePath = (() => {
     const configured =
       typeof window.ADMIN_BASE_PATH === "string" ? window.ADMIN_BASE_PATH.trim() : "";
@@ -191,6 +196,7 @@
   const redirectParam = params.get("redirect");
   const redirectTarget = normalizeAdminDash(redirectParam || ADMIN_DASH);
   const reason = params.get("reason");
+  let passwordLoginInFlight = false;
 
   if (elements.reason && reason) {
     elements.reason.textContent =
@@ -214,6 +220,109 @@
     controls.forEach((control) => {
       control.disabled = isLoading;
     });
+    if (elements.manualToggle) {
+      elements.manualToggle.disabled = isLoading;
+    }
+  }
+
+  function normalizeAuthReason(value) {
+    if (typeof value !== "string") return "";
+    return value.trim().toLowerCase();
+  }
+
+  function extractErrorReason(payload, response) {
+    const payloadReason =
+      payload?.reason ||
+      payload?.error?.reason ||
+      payload?.error_code ||
+      payload?.code ||
+      payload?.status ||
+      payload?.error ||
+      payload?.message ||
+      "";
+
+    if (payloadReason) {
+      return normalizeAuthReason(String(payloadReason));
+    }
+
+    if (!response?.headers) return "";
+    return normalizeAuthReason(
+      AUTH_REASON_HEADERS.map((header) => response.headers.get(header)).find(Boolean) || ""
+    );
+  }
+
+  async function readErrorPayload(response) {
+    if (!response) return null;
+    const contentType = String(response.headers?.get("content-type") || "").toLowerCase();
+    try {
+      if (contentType.includes("application/json")) {
+        return await response.json();
+      }
+      const text = await response.text();
+      const trimmed = typeof text === "string" ? text.trim() : "";
+      if (!trimmed) return null;
+      try {
+        return JSON.parse(trimmed);
+      } catch {
+        return { message: trimmed };
+      }
+    } catch {
+      return null;
+    }
+  }
+
+  function formatRetryAfter(value) {
+    const raw = String(value || "").trim();
+    if (!raw) return "";
+    const seconds = Number(raw);
+    if (Number.isFinite(seconds) && seconds > 0) {
+      if (seconds < 60) return `${Math.ceil(seconds)} seconds`;
+      const minutes = Math.ceil(seconds / 60);
+      return `${minutes} minute${minutes === 1 ? "" : "s"}`;
+    }
+    const date = new Date(raw);
+    if (!Number.isNaN(date.getTime())) {
+      const diffMs = date.getTime() - Date.now();
+      if (diffMs > 0) {
+        const diffSeconds = Math.ceil(diffMs / 1000);
+        return formatRetryAfter(String(diffSeconds));
+      }
+    }
+    return raw;
+  }
+
+  function buildPasswordLoginErrorMessage(response, payload) {
+    const status = Number(response?.status || 0);
+    const retryAfter = formatRetryAfter(response?.headers?.get("Retry-After"));
+    const reason = extractErrorReason(payload, response);
+    const payloadMessage =
+      typeof payload?.message === "string" && payload.message.trim()
+        ? payload.message.trim()
+        : typeof payload?.error === "string" && payload.error.trim()
+          ? payload.error.trim()
+          : "";
+
+    if (status === 429) {
+      const retryText = retryAfter ? ` Retry after ${retryAfter}.` : "";
+      return payloadMessage || `Password login is being rate limited upstream.${retryText}`;
+    }
+
+    if (status === 401) {
+      return payloadMessage || "Email/password was rejected by Auth.";
+    }
+
+    if (status === 403) {
+      if (reason.includes("admin") || reason.includes("not_authorized") || reason.includes("forbidden")) {
+        return "This account authenticated, but Auth says it is not approved for the admin surface.";
+      }
+      return payloadMessage || "Auth denied this login attempt for the admin surface.";
+    }
+
+    if (status >= 500) {
+      return payloadMessage || "Auth is failing upstream. Try again after the service recovers.";
+    }
+
+    return payloadMessage || `Password login failed upstream (${status || "unknown"}).`;
   }
 
   function startOAuth(provider) {
@@ -244,6 +353,10 @@
 
   async function submitPasswordLogin(event) {
     event.preventDefault();
+    if (passwordLoginInFlight) {
+      setStatus("loading", "A sign-in request is already in progress…");
+      return;
+    }
     const email = normalizeEmail(elements.email?.value || "");
     const password = elements.password?.value || "";
 
@@ -262,6 +375,7 @@
       return;
     }
 
+    passwordLoginInFlight = true;
     setLoading(true);
     setStatus("loading", "Signing in…");
 
@@ -288,6 +402,7 @@
       }
 
       if (!response.ok) {
+        const payload = await readErrorPayload(response);
         if (response.status === 404) {
           setStatus(
             "offline",
@@ -295,15 +410,16 @@
           );
           return;
         }
-        throw new Error(`Password login failed (${response.status}).`);
+        throw new Error(buildPasswordLoginErrorMessage(response, payload));
       }
 
       setStatus("sent", "Signed in. Redirecting to the dashboard…");
       window.location.assign(redirectTarget);
     } catch (err) {
       console.warn("[Admin Login] Password login failed:", err);
-      setStatus("error", "Unable to sign in. Try again shortly.");
+      setStatus("error", err?.message || "Unable to sign in. Try again shortly.");
     } finally {
+      passwordLoginInFlight = false;
       setLoading(false);
     }
   }
