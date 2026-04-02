@@ -8475,6 +8475,28 @@ button.public-btn:active::after {
   min-width: 0;
 }
 
+.ss-settings-destination-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ss-settings-destination-icon {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+  background: currentColor;
+  opacity: 0.92;
+  -webkit-mask-image: var(--settings-destination-icon);
+  mask-image: var(--settings-destination-icon);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
 .ss-settings-platform-icon {
   width: 16px;
   height: 16px;

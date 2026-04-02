@@ -929,7 +929,14 @@
             <div class="ss-settings-card-head">
               <div>
                 <span class="ss-settings-kicker">Destination</span>
-                <h3>${escapeHtml(labelize(key))}</h3>
+                <h3 class="ss-settings-destination-title">
+                  <span
+                    class="ss-settings-destination-icon"
+                    style="--settings-destination-icon: url('${escapeHtml(getDestinationIconPath(key))}')"
+                    aria-hidden="true"
+                  ></span>
+                  <span>${escapeHtml(labelizeDestination(key))}</span>
+                </h3>
               </div>
               <span class="ss-chip ${destination.enabled === false ? "ss-chip-warning" : destination.enabled === true ? "ss-chip-success" : "ss-chip-muted"}">
                 ${destination.enabled === false ? "Default off" : destination.enabled === true ? "Default on" : "Default unknown"}
@@ -1174,6 +1181,22 @@
       youtube: "/assets/icons/youtube.svg"
     };
     return iconMap[normalized] || "/assets/icons/ui/widget.svg";
+  }
+
+  function getDestinationIconPath(value) {
+    const normalized = String(value || "").trim().toLowerCase();
+    const iconMap = {
+      windows_client: "/assets/icons/ui/win2.svg",
+      pushover: "/assets/icons/ui/apple.svg"
+    };
+    return iconMap[normalized] || "/assets/icons/ui/widget.svg";
+  }
+
+  function labelizeDestination(value) {
+    const normalized = String(value || "").trim().toLowerCase();
+    if (normalized === "windows_client") return "Windows Client";
+    if (normalized === "pushover") return "Pushover";
+    return labelize(value);
   }
 
   function labelize(value) {
