@@ -1,12 +1,192 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-03-28T03:44:47.803292Z",
+  "exported_at": "2026-04-02T22:07:50.815518Z",
   "runtime": {
     "project": "StreamSuites™ Runtime",
     "version": "0.4.2-alpha",
-    "build": "2026.03.28+006"
+    "build": "2026.04.02+007"
   },
   "users": [
+    {
+      "id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "internal_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "public_slug": "automations",
+      "slug_aliases": [],
+      "public_profile": {
+        "public_slug": "automations",
+        "slug_aliases": [],
+        "public_surface_account_type": "creator_capable",
+        "creator_capable": true,
+        "viewer_only": false,
+        "streamsuites_profile_enabled": true,
+        "streamsuites_profile_eligible": true,
+        "streamsuites_profile_visible": true,
+        "streamsuites_profile_status_reason": "visible",
+        "streamsuites_profile_url": "https://streamsuites.app/u/automations",
+        "streamsuites_share_url": "https://streamsuites.app/u/automations",
+        "findmehere_enabled": true,
+        "findmehere_eligible": true,
+        "findmehere_visible": true,
+        "findmehere_status_reason": "visible",
+        "findmehere_profile_url": "https://findmehere.live/automations",
+        "findmehere_share_url": "https://findmehere.live/automations",
+        "cover_image_url": "",
+        "banner_image_url": "",
+        "background_image_url": "",
+        "bio": "",
+        "social_links": {},
+        "custom_links": [],
+        "is_anonymous": false,
+        "is_listed": true
+      },
+      "streamsuites_profile_url": "https://streamsuites.app/u/automations",
+      "streamsuites_share_url": "https://streamsuites.app/u/automations",
+      "streamsuites_profile_enabled": true,
+      "streamsuites_profile_eligible": true,
+      "streamsuites_profile_visible": true,
+      "streamsuites_profile_status_reason": "visible",
+      "findmehere_enabled": true,
+      "findmehere_eligible": true,
+      "findmehere_visible": true,
+      "findmehere_profile_url": "https://findmehere.live/automations",
+      "findmehere_status_reason": "visible",
+      "findmehere_share_url": "https://findmehere.live/automations",
+      "public_surface_account_type": "creator_capable",
+      "creator_capable": true,
+      "viewer_only": false,
+      "cover_image_url": "",
+      "banner_image_url": "",
+      "background_image_url": "",
+      "user_code": "JQ6MMUB",
+      "email": "automations@streamsuites.app",
+      "email_verified": true,
+      "display_name": "Automations",
+      "avatar_url": null,
+      "role": "admin",
+      "account_type": "ADMIN",
+      "tier": "pro",
+      "badges": [
+        {
+          "kind": "tier",
+          "value": "pro",
+          "label": "PRO"
+        },
+        {
+          "kind": "role",
+          "value": "admin",
+          "label": "Admin"
+        }
+      ],
+      "onboarding_status": "completed",
+      "onboarding_complete": true,
+      "account_status": "active",
+      "status": "active",
+      "providers": [
+        {
+          "provider": "email",
+          "provider_user_id": "Automations",
+          "linked_at": "2026-03-28T18:35:44Z"
+        },
+        {
+          "provider": "email",
+          "provider_user_id": "automations@streamsuites.app",
+          "linked_at": "2026-04-02T20:16:54Z"
+        }
+      ],
+      "created_at": "2026-03-28T18:35:44Z",
+      "last_login_at": "2026-04-02T21:05:17Z",
+      "updated_at": "2026-04-02T21:05:17Z"
+    },
+    {
+      "id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "internal_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "public_slug": "system",
+      "slug_aliases": [],
+      "public_profile": {
+        "public_slug": "system",
+        "slug_aliases": [],
+        "public_surface_account_type": "creator_capable",
+        "creator_capable": true,
+        "viewer_only": false,
+        "streamsuites_profile_enabled": true,
+        "streamsuites_profile_eligible": true,
+        "streamsuites_profile_visible": true,
+        "streamsuites_profile_status_reason": "visible",
+        "streamsuites_profile_url": "https://streamsuites.app/u/system",
+        "streamsuites_share_url": "https://streamsuites.app/u/system",
+        "findmehere_enabled": true,
+        "findmehere_eligible": true,
+        "findmehere_visible": true,
+        "findmehere_status_reason": "visible",
+        "findmehere_profile_url": "https://findmehere.live/system",
+        "findmehere_share_url": "https://findmehere.live/system",
+        "cover_image_url": "",
+        "banner_image_url": "",
+        "background_image_url": "",
+        "bio": "",
+        "social_links": {},
+        "custom_links": [],
+        "is_anonymous": false,
+        "is_listed": true
+      },
+      "streamsuites_profile_url": "https://streamsuites.app/u/system",
+      "streamsuites_share_url": "https://streamsuites.app/u/system",
+      "streamsuites_profile_enabled": true,
+      "streamsuites_profile_eligible": true,
+      "streamsuites_profile_visible": true,
+      "streamsuites_profile_status_reason": "visible",
+      "findmehere_enabled": true,
+      "findmehere_eligible": true,
+      "findmehere_visible": true,
+      "findmehere_profile_url": "https://findmehere.live/system",
+      "findmehere_status_reason": "visible",
+      "findmehere_share_url": "https://findmehere.live/system",
+      "public_surface_account_type": "creator_capable",
+      "creator_capable": true,
+      "viewer_only": false,
+      "cover_image_url": "",
+      "banner_image_url": "",
+      "background_image_url": "",
+      "user_code": "Y55GHS6",
+      "email": "system@streamsuites.app",
+      "email_verified": true,
+      "display_name": "System",
+      "avatar_url": null,
+      "role": "admin",
+      "account_type": "ADMIN",
+      "tier": "pro",
+      "badges": [
+        {
+          "kind": "tier",
+          "value": "pro",
+          "label": "PRO"
+        },
+        {
+          "kind": "role",
+          "value": "admin",
+          "label": "Admin"
+        }
+      ],
+      "onboarding_status": "completed",
+      "onboarding_complete": true,
+      "account_status": "active",
+      "status": "active",
+      "providers": [
+        {
+          "provider": "email",
+          "provider_user_id": "System",
+          "linked_at": "2026-03-28T18:35:43Z"
+        },
+        {
+          "provider": "email",
+          "provider_user_id": "system@streamsuites.app",
+          "linked_at": "2026-04-02T20:11:40Z"
+        }
+      ],
+      "created_at": "2026-03-28T18:35:43Z",
+      "last_login_at": "2026-04-02T21:05:17Z",
+      "updated_at": "2026-04-02T21:05:17Z"
+    },
     {
       "id": "d61f5f01-a8e2-4f8c-8a7d-d6023652ae49",
       "internal_id": "d61f5f01-a8e2-4f8c-8a7d-d6023652ae49",
@@ -84,7 +264,7 @@
       "providers": [],
       "created_at": "2026-03-27T14:51:44Z",
       "last_login_at": null,
-      "updated_at": "2026-03-28T03:44:22Z"
+      "updated_at": "2026-04-02T21:05:17Z"
     },
     {
       "id": "494098e5-1409-40ea-99a5-ec4a1b797da4",
@@ -236,8 +416,8 @@
           "label": "Admin"
         }
       ],
-      "onboarding_status": "required",
-      "onboarding_complete": false,
+      "onboarding_status": "completed",
+      "onboarding_complete": true,
       "account_status": "active",
       "status": "active",
       "providers": [
@@ -245,11 +425,16 @@
           "provider": "email",
           "provider_user_id": "DCadmin",
           "linked_at": "2026-02-21T20:51:09Z"
+        },
+        {
+          "provider": "email",
+          "provider_user_id": "admin@streamsuites.app",
+          "linked_at": "2026-04-02T21:10:36Z"
         }
       ],
       "created_at": "2026-02-21T20:51:09Z",
-      "last_login_at": "2026-03-28T03:42:58Z",
-      "updated_at": "2026-03-28T03:44:22Z"
+      "last_login_at": "2026-04-02T21:10:36Z",
+      "updated_at": "2026-04-02T21:10:36Z"
     },
     {
       "id": "338edf81-9e24-4730-977a-c9972aecba4d",
