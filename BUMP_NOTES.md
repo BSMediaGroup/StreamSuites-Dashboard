@@ -4,6 +4,25 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Overview Location Flag Prefix Alignment - 2026-04-03
+
+### Technical Notes
+
+- Replaced the remaining plain-text location rows in `docs/js/overview.js` with country-code-aware flagged HTML rows so the overview snapshot cards stop drifting from the rest of the dashboard’s shared SVG flag presentation.
+- The latest-alert location row now derives its flag prefix from the authoritative alert geo country code rather than depending on the older optional `country_flag` field, and the analytics “Most active region” row now carries the same country-code-backed flag slot.
+- Added a post-render `StreamSuitesCountryFlags.upgradeFlagSlots(...)` pass for the overview root so those inline location slots are actually hydrated after the overview cards repaint.
+- No files were removed in this repo during this fix. Older plain escaped location rows were replaced in place because the regression was inconsistent overview rendering, not a structural problem, so `docs/js/overview.js` is expected to be slightly longer.
+
+### Human-Readable Notes
+
+- Overview location mentions now get the same SVG flag prefix treatment already used elsewhere in the admin dashboard.
+- Latest alert location and analytics top-region rows now stay aligned on country-code-derived flag rendering instead of plain text only.
+
+### Files / Areas Touched
+
+- `docs/js/overview.js`
+- `BUMP_NOTES.md`
+
 ## Admin Login Rate-Limit Error Transparency + In-Flight Guard - 2026-04-03
 
 ### Technical Notes

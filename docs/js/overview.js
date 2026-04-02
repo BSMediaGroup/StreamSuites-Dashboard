@@ -603,6 +603,7 @@
     renderSignals();
     renderPublication();
     renderScaffolds();
+    window.StreamSuitesCountryFlags?.upgradeFlagSlots?.(el.pageRoot || document);
   }
 
   function renderHeader() {
@@ -719,7 +720,7 @@
           ${buildInlineMetric("Cities", formatCount(footprint.cityCount))}
         </div>
         <dl class="ss-overview-detail-list">
-          ${detailRow("Most active region", footprint.topRegionLabel)}
+          ${detailLocationRow("Most active region", footprint.topRegionLabel, footprint.topRegionCountryCode)}
           ${detailRow("Region-detail rows", formatCount(footprint.regionCount))}
           ${detailRow("Top surface", footprint.topSurface)}
           ${detailRow("Generated", generatedAt)}
@@ -750,7 +751,7 @@
     const statusText = getAlertHistoryStatus(entry);
     const statusTone = getAlertStatusTone(entry, statusText);
     const destinations = formatList(entry.destinations_targeted);
-    const locationLabel = summarizeAlertLocation(entry);
+    const locationSummary = summarizeAlertLocation(entry);
 
     return `
       <article class="ss-overview-detail-card ss-overview-snapshot-card is-alert">
@@ -769,7 +770,7 @@
           ${detailRow("Event type", labelize(entry.event_type || "unknown"))}
           ${detailRow("Triggered", formatTimestamp(entry.triggered_at || entry.created_at) || "Unavailable")}
           ${detailRow("Destinations", destinations)}
-          ${detailRow("Location", locationLabel)}
+          ${detailLocationRow("Location", locationSummary.label, locationSummary.countryCode)}
         </dl>
         <p class="ss-overview-card-note muted">This card is sourced from the existing alert delivery history rather than a dashboard-local placeholder feed.</p>
       </article>
@@ -1493,7 +1494,9 @@
   }
 
   function summarizeAlertLocation(entry) {
-    if (!entry || typeof entry !== "object") return "Unavailable";
+    if (!entry || typeof entry !== "object") {
+      return { label: "Unavailable", countryCode: "" };
+    }
     const geo =
       entry.metadata?.template_context?.geo ||
       entry.payload_snapshot?.geo ||
@@ -1503,7 +1506,10 @@
     const region = coerceText(geo.region || geo.region_code, "");
     const country = coerceText(geo.country || geo.country_code, "");
     const parts = [city, region, country].filter(Boolean);
-    return parts.length ? parts.join(", ") : "No location context";
+    return {
+      label: parts.length ? parts.join(", ") : "No location context",
+      countryCode: resolveCountryCode(geo.country_code || geo.country || "")
+    };
   }
 
   function summarizeAnalyticsFootprint(payload) {
@@ -1519,6 +1525,9 @@
       const country = coerceText(
         entry?.countryName || entry?.country || entry?.name || entry?.country_code || entry?.code,
         ""
+      );
+      const countryCode = resolveCountryCode(
+        entry?.country_code || entry?.code || entry?.country || entry?.name
       );
       const city = coerceText(entry?.city, "");
       const region = coerceText(entry?.region || entry?.regionCode || entry?.region_code, "");
@@ -1536,7 +1545,11 @@
       const regionLabel = [region, country].filter(Boolean).join(", ");
       if (regionLabel) {
         regionKeys.add(regionLabel.toLowerCase());
-        regionTotals.set(regionLabel, (regionTotals.get(regionLabel) || 0) + total);
+        const current = regionTotals.get(regionLabel) || { count: 0, countryCode: "" };
+        regionTotals.set(regionLabel, {
+          count: current.count + total,
+          countryCode: current.countryCode || countryCode
+        });
       }
     });
 
@@ -1552,13 +1565,14 @@
       }))
       .sort((left, right) => right.count - left.count)[0];
 
-    const topRegion = [...regionTotals.entries()].sort((left, right) => right[1] - left[1])[0];
+    const topRegion = [...regionTotals.entries()].sort((left, right) => right[1].count - left[1].count)[0];
 
     return {
       countryCount: countryKeys.size || countries.length,
       cityCount: cityKeys.size,
       regionCount: regionKeys.size,
       topRegionLabel: topRegion?.[0] || "No region detail exported",
+      topRegionCountryCode: topRegion?.[1]?.countryCode || "",
       topSurface: topSurface?.label || "Unavailable",
       windowLabel: String(payload?.window || ANALYTICS_WINDOW).trim() || ANALYTICS_WINDOW
     };
@@ -1841,6 +1855,19 @@
     `;
   }
 
+  function detailHtmlRow(label, valueHtml) {
+    return `
+      <div class="ss-overview-meta-row">
+        <dt>${escapeHtml(label)}</dt>
+        <dd>${valueHtml}</dd>
+      </div>
+    `;
+  }
+
+  function detailLocationRow(label, locationText, countryCode) {
+    return detailHtmlRow(label, buildLocationDisplayHtml(locationText, countryCode));
+  }
+
   function detailChipRow(label, value, tone = "muted") {
     return `
       <div class="ss-overview-meta-row">
@@ -1886,6 +1913,23 @@
       youtube: "/assets/icons/youtube.svg"
     };
     return iconMap[normalized] || "/assets/icons/ui/widget.svg";
+  }
+
+  function buildLocationDisplayHtml(locationText, countryCode) {
+    const label = coerceText(locationText, "Unavailable");
+    const normalizedCode = resolveCountryCode(countryCode);
+    const slotHtml = normalizedCode
+      ? window.StreamSuitesCountryFlags?.renderFlagSlotHtml?.(normalizedCode) || ""
+      : "";
+    return `${slotHtml}${slotHtml ? " " : ""}${escapeHtml(label)}`;
+  }
+
+  function resolveCountryCode(value) {
+    const normalized = String(value || "")
+      .trim()
+      .replace(/[^a-z]/gi, "")
+      .toUpperCase();
+    return /^[A-Z]{2}$/.test(normalized) ? normalized : "";
   }
 
   window.OverviewView = {
