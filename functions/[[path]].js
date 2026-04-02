@@ -36,6 +36,7 @@ const EXACT_DASHBOARD_ROUTES = new Set([
   "/scoreboards",
   "/scoreboard-management",
   "/settings",
+  "/permissions",
   "/updates",
   "/design",
   "/integrations/triggers",
@@ -57,7 +58,7 @@ const EXACT_DASHBOARD_ROUTES = new Set([
   "/chat-triggers"
 ]);
 
-const PREFIX_DASHBOARD_ROUTES = ["/users/", "/profiles/", "/integrations/"];
+const PREFIX_DASHBOARD_ROUTES = ["/users/"];
 
 function normalizePathname(pathname) {
   let normalized = typeof pathname === "string" && pathname.trim() ? pathname.trim() : "/";

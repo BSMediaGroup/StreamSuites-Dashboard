@@ -4,6 +4,31 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Admin Cloudflare Route Inventory Repair - 2026-04-02
+
+### Technical Notes
+
+- Root-caused the remaining admin deep-link failures to Cloudflare rejecting the wildcard shell rewrites in `_redirects`. Local `wrangler pages dev` logs showed `/users/*`, `/profiles/*`, and `/integrations/*` were being discarded as invalid infinite-loop candidates, which left dynamic user-detail and nested shell routes dependent on whichever fallback layer happened to be active in a given deployment shape.
+- Replaced those invalid wildcard shell rules in the repo-root `_redirects`, `docs/_redirects`, and generated `dist/_redirects` manifest with Cloudflare-valid route inventory entries: exact shell paths for all current admin route families, plus a single `/users/:user_code -> /index.html 200` placeholder for the real dynamic user-detail surface already defined in `docs/js/admin-routes.js`.
+- Tightened `functions/[[path]].js` so its prefix fallback is now limited to `/users/` only. Known exact nested routes under `/profiles/...` and `/integrations/...` remain explicitly enumerated, which preserves shell recovery for valid paths but stops fake nested paths from being rewritten into the app shell.
+- Added `/home` parity to the static shell manifests, added the missing `/permissions` docs-root compatibility rewrite, and added `/livechat/*` repo-root asset mapping so the source-checkout compatibility layer stays coherent when the repo root is served directly.
+- Added `scripts/validate-pages-routing.ps1` to build `dist/`, run `wrangler pages dev dist`, verify representative admin deep links, verify a true bad nested path still returns `404`, and verify a JS asset is not rewritten to HTML.
+
+### Human-Readable Notes
+
+- Admin deep links now use a Cloudflare-valid route inventory instead of ignored wildcard rewrites.
+- Dynamic user pages like `/users/{user_code}` still land in the shell, while fake nested `/profiles/...` paths stay real 404s.
+
+### Files / Areas Touched
+
+- `_redirects`
+- `docs/_redirects`
+- `functions/[[path]].js`
+- `scripts/build-pages-artifact.ps1`
+- `scripts/validate-pages-routing.ps1`
+- `README.md`
+- `BUMP_NOTES.md`
+
 ## Admin Permissions Surface + Authoritative Dashboard Enforcement - 2026-04-02
 
 ### Technical Notes

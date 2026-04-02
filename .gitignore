@@ -71,3 +71,4 @@ docs/shared/state/discord/runtime.json
 docs/shared/state/quotas.json
 docs/shared/state/runtime_snapshot.json
 docs/Thumbs.db
+/.wrangler/tmp
