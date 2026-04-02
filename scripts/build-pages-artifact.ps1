@@ -117,6 +117,7 @@ $directRouteRedirects = @(
   "/scoreboards           /index.html              200",
   "/scoreboard-management /index.html              200",
   "/settings              /index.html              200",
+  "/permissions           /index.html              200",
   "/updates               /index.html              200",
   "/design                /index.html              200",
   "/integrations/triggers /index.html              200",

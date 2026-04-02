@@ -659,6 +659,34 @@ Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into t
 - `docs/css/components.css`
 - `BUMP_NOTES.md`
 
+### Permissions Page Anchored Rail + Safe Edit Workflow Polish - 2026-04-02
+
+### Technical Notes
+
+- Added `/permissions` to the shared section-shell config in `docs/js/app.js`, reusing the same anchored jump-tab rail behavior already used by Accounts, Alerts, and Settings instead of adding page-specific scroll logic.
+- Updated `docs/views/permissions.html` to expose anchorable section IDs for the shared rail and replaced the old always-visible role/user save buttons with one explicit workflow surface: default view mode, `Edit`, then `Save` or `Cancel`.
+- Reworked `docs/js/permissions.js` so the page opens locked by default, stages edits locally while in edit mode, blocks refresh/scope/account context switching during an active edit session, and preserves the existing authoritative hydration plus save endpoints for role policy and per-user overrides.
+- Replaced the old permission-row checkbox markup in the role baseline editor with the existing shared `switch-button` toggle structure already used elsewhere in the dashboard. The old checkbox-specific visual treatment on this page was removed because it did not match the established admin/creator switch language.
+- Added SVG icon prefixes to permission titles using existing `/assets/icons/ui/*.svg` assets, rendered via CSS mask/currentColor so the icon color tracks the same visual treatment as the permission title text and can be swapped later by changing the mapped asset path.
+- Added the missing `/permissions` SPA direct-route fallback to the publish redirect lists so the polished page still resolves back into the dashboard shell on direct open/refresh in deployed static hosting.
+- `docs/views/permissions.html` is expected to be slightly shorter because the separate save-button markup for role/user scopes was replaced by one safer workflow surface. `docs/js/permissions.js` is expected to be longer because it now manages explicit edit-state, staged drafts, context-locking, and icon mapping instead of immediate live-edit affordances.
+
+### Human-Readable Notes
+
+- Permissions now has the same anchored jump rail behavior as the other sectioned admin pages.
+- The page opens in view mode, not live-edit mode, so changes require an explicit unlock and then a deliberate save.
+- Role permission switches now match the dashboard’s real switch styling, and permission names carry matching SVG icons for faster scanning.
+
+### Files / Areas Touched
+
+- `docs/views/permissions.html`
+- `docs/js/permissions.js`
+- `docs/js/app.js`
+- `docs/css/components.css`
+- `_redirects`
+- `scripts/build-pages-artifact.ps1`
+- `BUMP_NOTES.md`
+
 ### Badge Governance Header Abbreviation Tweak - 2026-04-02
 
 ### Technical Notes

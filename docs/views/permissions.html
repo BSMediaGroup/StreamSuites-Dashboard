@@ -17,7 +17,7 @@
     <div id="permissions-banner" class="ss-alert ss-alert-warning hidden" role="status" aria-live="polite"></div>
   </section>
 
-  <section class="ss-panel ss-permissions-hero-panel">
+  <section id="permissions-overview-section" class="ss-panel ss-permissions-hero-panel">
     <div class="ss-panel-body ss-permissions-hero-body">
       <div class="ss-permissions-hero-main">
         <div class="ss-permissions-hero-copy">
@@ -37,6 +37,17 @@
           <div class="ss-permissions-scope-switch" id="permissions-scope-switch" role="tablist" aria-label="Permission editor scope">
             <button type="button" class="ss-btn ss-btn-secondary ss-btn-small" data-permissions-scope="role">Role Defaults</button>
             <button type="button" class="ss-btn ss-btn-secondary ss-btn-small" data-permissions-scope="user">User Overrides</button>
+          </div>
+          <div class="ss-permissions-mode-surface">
+            <div class="ss-permissions-mode-copy-wrap">
+              <span id="permissions-edit-chip" class="ss-chip ss-chip-muted">View mode</span>
+              <p id="permissions-mode-copy" class="muted">Permissions open locked. Select Edit to unlock the current scope, then Save or Cancel explicitly.</p>
+            </div>
+            <div class="ss-permissions-actions">
+              <button type="button" id="permissions-edit" class="ss-btn ss-btn-primary ss-btn-small">Edit</button>
+              <button type="button" id="permissions-save" class="ss-btn ss-btn-primary ss-btn-small hidden">Save changes</button>
+              <button type="button" id="permissions-cancel" class="ss-btn ss-btn-secondary ss-btn-small hidden">Cancel</button>
+            </div>
           </div>
           <dl class="ss-permissions-meta-list">
             <div class="ss-permissions-meta-row">
@@ -61,7 +72,7 @@
     </div>
   </section>
 
-  <section class="ss-panel">
+  <section id="permissions-matrix-section" class="ss-panel">
     <header class="ss-panel-header">
       <div class="ss-panel-header-main">
         <h2>Developer admin-dashboard permission matrix</h2>
@@ -77,10 +88,6 @@
           <div>
             <h3 id="permissions-editor-title">Role defaults</h3>
             <p id="permissions-editor-copy" class="muted">Developer role policy is the default baseline before per-user overrides are applied.</p>
-          </div>
-          <div class="ss-permissions-actions">
-            <button type="button" id="permissions-save-role" class="ss-btn ss-btn-primary ss-btn-small">Save role policy</button>
-            <button type="button" id="permissions-save-user" class="ss-btn ss-btn-primary ss-btn-small hidden">Save user overrides</button>
           </div>
         </div>
         <div id="permissions-role-editor" class="ss-permissions-editor-surface"></div>
@@ -101,7 +108,7 @@
     </div>
   </section>
 
-  <section class="ss-panel">
+  <section id="permissions-accounts-section" class="ss-panel">
     <header class="ss-panel-header">
       <div class="ss-panel-header-main">
         <h2>Individual Developer overrides</h2>
@@ -126,7 +133,7 @@
     </div>
   </section>
 
-  <section class="ss-panel">
+  <section id="permissions-scaffolds-section" class="ss-panel">
     <header class="ss-panel-header">
       <div class="ss-panel-header-main">
         <h2>Future capability scaffolds</h2>

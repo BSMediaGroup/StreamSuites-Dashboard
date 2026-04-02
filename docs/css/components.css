@@ -8623,6 +8623,24 @@ button.public-btn:active::after {
   gap: 10px;
 }
 
+.ss-permissions-mode-surface {
+  display: grid;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ss-permissions-mode-copy-wrap {
+  display: grid;
+  gap: 8px;
+}
+
+.ss-permissions-mode-copy-wrap p {
+  margin: 0;
+}
+
 .ss-permissions-group {
   display: grid;
   gap: 12px;
@@ -8657,9 +8675,31 @@ button.public-btn:active::after {
   gap: 6px;
 }
 
+.ss-permissions-row-title-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(248, 250, 255, 0.97);
+}
+
 .ss-permissions-row-title {
   font-weight: 700;
-  color: rgba(248, 250, 255, 0.97);
+  color: inherit;
+}
+
+.ss-permissions-row-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  background: currentColor;
+  -webkit-mask-image: var(--permissions-icon);
+  mask-image: var(--permissions-icon);
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
 }
 
 .ss-permissions-row-meta {
@@ -8671,6 +8711,24 @@ button.public-btn:active::after {
   align-items: center;
   gap: 10px;
   white-space: nowrap;
+}
+
+.ss-permissions-toggle-state {
+  min-width: 62px;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(203, 214, 239, 0.82);
+  text-align: right;
+}
+
+.ss-permissions-toggle-control {
+  display: inline-flex;
+  align-items: center;
+}
+
+.ss-permissions-row.is-read-only {
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .ss-permissions-select-wrap {
@@ -8699,6 +8757,11 @@ button.public-btn:active::after {
 .ss-permissions-user-card.is-active {
   border-color: rgba(104, 208, 255, 0.55);
   background: rgba(42, 109, 144, 0.22);
+}
+
+.ss-permissions-user-card:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
 }
 
 .ss-permissions-user-card-top {

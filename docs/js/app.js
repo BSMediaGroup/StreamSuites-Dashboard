@@ -972,6 +972,16 @@ const SECTION_SHELL_CONFIG = Object.freeze({
       { id: "settings-alerts-section", label: "Alerts" },
       { id: "settings-roadmap-section", label: "Scaffolds" }
     ])
+  }),
+  permissions: Object.freeze({
+    storageKey: "ss_permissions_shell_tabs_collapsed",
+    toggleLabel: "permissions section tabs",
+    sections: Object.freeze([
+      { id: "permissions-overview-section", label: "Overview" },
+      { id: "permissions-matrix-section", label: "Matrix" },
+      { id: "permissions-accounts-section", label: "Accounts" },
+      { id: "permissions-scaffolds-section", label: "Scaffolds" }
+    ])
   })
 });
 
