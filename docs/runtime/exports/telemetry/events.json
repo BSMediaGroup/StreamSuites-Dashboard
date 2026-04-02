@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-03-28T03:44:47.484772Z",
+  "generated_at": "2026-04-02T22:07:50.275956Z",
   "events": [
     {
       "timestamp": "2026-01-22T05:45:05Z",
@@ -938,10 +938,384 @@
       "result": "success"
     },
     {
-      "timestamp": "2026-03-28T03:42:17.272673Z",
+      "timestamp": "2026-04-02T20:10:41Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:da***@brainstream.media result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:da***@brainstream.media",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-04-02T20:10:44Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:da***@brainstream.media result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:da***@brainstream.media",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-04-02T20:10:49Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:ad***@streamsuites.app result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:ad***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-04-02T20:10:52Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:ad***@streamsuites.app result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:ad***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-04-02T20:11:10Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:ad***@streamsuites.app result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:ad***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-04-02T20:11:11Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit_blocked email=login_email user=email:ad***@streamsuites.app result=login_backoff",
+      "event_type": "rate_limit_blocked",
+      "email_type": "login_email",
+      "user_identifier": "email:ad***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "login_backoff"
+    },
+    {
+      "timestamp": "2026-04-02T20:11:13Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit_blocked email=login_email user=email:ad***@streamsuites.app result=login_backoff",
+      "event_type": "rate_limit_blocked",
+      "email_type": "login_email",
+      "user_identifier": "email:ad***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "login_backoff"
+    },
+    {
+      "timestamp": "2026-04-02T20:11:15Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit_blocked email=login_email user=email:ad***@streamsuites.app result=login_backoff",
+      "event_type": "rate_limit_blocked",
+      "email_type": "login_email",
+      "user_identifier": "email:ad***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "login_backoff"
+    },
+    {
+      "timestamp": "2026-04-02T20:11:17Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:ad***@streamsuites.app result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:ad***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-04-02T20:11:17Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit_blocked email=login_email user=email:ad***@streamsuites.app result=login_backoff",
+      "event_type": "rate_limit_blocked",
+      "email_type": "login_email",
+      "user_identifier": "email:ad***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "login_backoff"
+    },
+    {
+      "timestamp": "2026-04-02T20:11:39Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:sy***@streamsuites.app result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:sy***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-04-02T20:11:41Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=email user=user_code:Y55GHS6 result=success",
+      "event_type": "session_issued",
+      "email_type": "email",
+      "user_identifier": "user_code:Y55GHS6",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-04-02T20:11:58Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": null,
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-04-02T20:16:01Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:da***@brainstream.media result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:da***@brainstream.media",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-04-02T20:16:01Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit_blocked email=login_email user=email:da***@brainstream.media result=login_backoff",
+      "event_type": "rate_limit_blocked",
+      "email_type": "login_email",
+      "user_identifier": "email:da***@brainstream.media",
+      "provider_message_id": null,
+      "result": "login_backoff"
+    },
+    {
+      "timestamp": "2026-04-02T20:16:34Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:da***@brainstream.media result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:da***@brainstream.media",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-04-02T20:16:34Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit_blocked email=login_email user=email:da***@brainstream.media result=login_backoff",
+      "event_type": "rate_limit_blocked",
+      "email_type": "login_email",
+      "user_identifier": "email:da***@brainstream.media",
+      "provider_message_id": null,
+      "result": "login_backoff"
+    },
+    {
+      "timestamp": "2026-04-02T20:16:53Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:au***@streamsuites.app result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:au***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-04-02T20:16:55Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=email user=user_code:JQ6MMUB result=success",
+      "event_type": "session_issued",
+      "email_type": "email",
+      "user_identifier": "user_code:JQ6MMUB",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-04-02T20:27:28Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:ad***@streamsuites.app result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:ad***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-04-02T20:27:28Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit_blocked email=login_email user=email:ad***@streamsuites.app result=login_backoff",
+      "event_type": "rate_limit_blocked",
+      "email_type": "login_email",
+      "user_identifier": "email:ad***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "login_backoff"
+    },
+    {
+      "timestamp": "2026-04-02T20:31:45Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:ad***@streamsuites.app result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:ad***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-04-02T20:31:45Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit_blocked email=login_email user=email:ad***@streamsuites.app result=login_backoff",
+      "event_type": "rate_limit_blocked",
+      "email_type": "login_email",
+      "user_identifier": "email:ad***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "login_backoff"
+    },
+    {
+      "timestamp": "2026-04-02T20:31:47Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit_blocked email=login_email user=email:ad***@streamsuites.app result=login_backoff",
+      "event_type": "rate_limit_blocked",
+      "email_type": "login_email",
+      "user_identifier": "email:ad***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "login_backoff"
+    },
+    {
+      "timestamp": "2026-04-02T20:31:54Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:sy***@streamsuites.app result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:sy***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-04-02T20:31:55Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=security_alert user=email:sy***@streamsuites.app result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "security_alert",
+      "user_identifier": "email:sy***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-04-02T20:31:56Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: security_alert email=password_login_new_session user=account_id:45385ed3-1b85-4deb-853f-2bf75fa6360c email:sy***@streamsuites.app result=sent message_id=89778fd5-977b-4223-8eff-54922d8b9cb4",
+      "event_type": "security_alert",
+      "email_type": "password_login_new_session",
+      "user_identifier": "account_id:45385ed3-1b85-4deb-853f-2bf75fa6360c email:sy***@streamsuites.app",
+      "provider_message_id": "89778fd5-977b-4223-8eff-54922d8b9cb4",
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-04-02T20:31:57Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=email user=user_code:Y55GHS6 result=success",
+      "event_type": "session_issued",
+      "email_type": "email",
+      "user_identifier": "user_code:Y55GHS6",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-04-02T20:37:56Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit_blocked email=login_email user=email:da***@brainstream.media result=ip_limit",
+      "event_type": "rate_limit_blocked",
+      "email_type": "login_email",
+      "user_identifier": "email:da***@brainstream.media",
+      "provider_message_id": null,
+      "result": "ip_limit"
+    },
+    {
+      "timestamp": "2026-04-02T20:38:13Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit_blocked email=login_email user=email:ad***@streamsuites.app result=ip_limit",
+      "event_type": "rate_limit_blocked",
+      "email_type": "login_email",
+      "user_identifier": "email:ad***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "ip_limit"
+    },
+    {
+      "timestamp": "2026-04-02T20:38:31Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit_blocked email=login_email user=email:sy***@streamsuites.app result=ip_limit",
+      "event_type": "rate_limit_blocked",
+      "email_type": "login_email",
+      "user_identifier": "email:sy***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "ip_limit"
+    },
+    {
+      "timestamp": "2026-04-02T21:05:25.692292Z",
       "source": "system",
       "severity": "info",
       "message": "Runtime boot sequence started"
+    },
+    {
+      "timestamp": "2026-04-02T21:10:17Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:da***@brainstream.media result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:da***@brainstream.media",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-04-02T21:10:35Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:ad***@streamsuites.app result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:ad***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-04-02T21:10:37Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=email user=user_code:YR992ZS result=success",
+      "event_type": "session_issued",
+      "email_type": "email",
+      "user_identifier": "user_code:YR992ZS",
+      "provider_message_id": null,
+      "result": "success"
     }
   ]
 }
