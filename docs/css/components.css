@@ -8457,9 +8457,53 @@ button.public-btn:active::after {
   margin: 0;
 }
 
+.ss-settings-platform-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ss-settings-platform-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  object-fit: contain;
+}
+
 .ss-settings-card-note,
 .ss-settings-side-note {
   margin: 0;
+}
+
+.ss-settings-flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 78px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(124, 155, 191, 0.22);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.ss-settings-flag.is-enabled {
+  color: #aef0bf;
+  background: rgba(35, 122, 71, 0.28);
+  border-color: rgba(72, 178, 112, 0.5);
+}
+
+.ss-settings-flag.is-disabled {
+  color: #d9e2f1;
+  background: rgba(61, 72, 92, 0.34);
+  border-color: rgba(121, 137, 166, 0.36);
+}
+
+.ss-settings-flag.is-unknown {
+  color: #f0d49b;
+  background: rgba(134, 94, 24, 0.22);
+  border-color: rgba(197, 150, 69, 0.4);
 }
 
 .ss-settings-chip-row {
@@ -8614,7 +8658,6 @@ button.public-btn:active::after {
 }
 
 .ss-permissions-card-kicker,
-.ss-permissions-row-key,
 .ss-permissions-row-note {
   font-size: 0.78rem;
   letter-spacing: 0.04em;
@@ -8749,6 +8792,25 @@ button.public-btn:active::after {
   color: rgba(213, 223, 244, 0.78);
 }
 
+.ss-permissions-row-key {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  padding: 3px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(104, 208, 255, 0.18);
+  background: rgba(104, 208, 255, 0.08);
+  color: rgba(156, 205, 255, 0.94);
+  font-family: var(--system-mono-font);
+  font-size: 0.8rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1.1;
+  word-break: break-all;
+}
+
 .ss-permissions-toggle {
   display: inline-flex;
   align-items: center;
@@ -8757,17 +8819,53 @@ button.public-btn:active::after {
 }
 
 .ss-permissions-toggle-state {
-  min-width: 62px;
+  min-width: 96px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
   font-size: 0.78rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: rgba(203, 214, 239, 0.82);
   text-align: right;
+  font-weight: 700;
+}
+
+.ss-permissions-toggle-state-icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  background: currentColor;
+  -webkit-mask-image: var(--permissions-state-icon);
+  mask-image: var(--permissions-state-icon);
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.ss-permissions-toggle-state-allowed {
+  color: #6ef08a;
+}
+
+.ss-permissions-toggle-state-denied {
+  color: #ff7f8f;
+}
+
+.ss-permissions-toggle-state-default {
+  color: rgba(203, 214, 239, 0.82);
 }
 
 .ss-permissions-toggle-control {
   display: inline-flex;
   align-items: center;
+}
+
+.ss-permissions-toggle-user {
+  justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .ss-permissions-row.is-read-only {

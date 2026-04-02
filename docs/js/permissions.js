@@ -18,6 +18,11 @@
     rate: "/assets/icons/ui/ratelimit.svg",
     runtime: "/assets/icons/ui/cmdkey.svg"
   });
+  const PERMISSION_STATE_ICON_PATHS = Object.freeze({
+    allowed: "/assets/icons/ui/tickyeslarge.svg",
+    default: "/assets/icons/ui/squaresquare.svg",
+    denied: "/assets/icons/ui/cross.svg"
+  });
 
   const state = {
     payload: null,
@@ -415,6 +420,22 @@
     `;
   }
 
+  function renderPermissionStateBadge(stateKey, label) {
+    const normalizedState =
+      stateKey === "allowed" || stateKey === "denied" || stateKey === "default" ? stateKey : "default";
+    const iconPath = PERMISSION_STATE_ICON_PATHS[normalizedState] || PERMISSION_STATE_ICON_PATHS.default;
+    return `
+      <span class="ss-permissions-toggle-state ss-permissions-toggle-state-${normalizedState}">
+        <span
+          class="ss-permissions-toggle-state-icon"
+          style="--permissions-state-icon: url('${escapeHtml(iconPath)}');"
+          aria-hidden="true"
+        ></span>
+        <span>${escapeHtml(label)}</span>
+      </span>
+    `;
+  }
+
   function renderRoleEditor(groups = getPermissionGroups()) {
     if (!el.roleEditor) return;
     const inputsDisabled = !state.canManage || !state.editMode || state.pending;
@@ -452,7 +473,7 @@
                         }
                       </span>
                       <span class="ss-permissions-toggle">
-                        <span class="ss-permissions-toggle-state">${checked ? "Allowed" : "Denied"}</span>
+                        ${renderPermissionStateBadge(checked ? "allowed" : "denied", checked ? "Allowed" : "Denied")}
                         <span class="ss-permissions-toggle-control">
                           <label class="switch-button" aria-label="${escapeHtml(entry?.label || key)} toggle">
                             <div class="switch-scale">
@@ -508,6 +529,14 @@
                   const key = coerceText(entry?.key);
                   const overrideMode = coerceText(state.userOverrideDraft?.[key]?.mode).toLowerCase();
                   const roleDefaultAllowed = state.rolePolicySource[key] === true;
+                  const effectiveState =
+                    overrideMode === "allow" ? "allowed" : overrideMode === "deny" ? "denied" : "default";
+                  const effectiveLabel =
+                    overrideMode === "allow"
+                      ? "Allowed"
+                      : overrideMode === "deny"
+                        ? "Denied"
+                        : "Default";
                   return `
                     <div class="ss-permissions-row${inputsDisabled ? " is-read-only" : ""}">
                       <span class="ss-permissions-row-copy">
@@ -516,14 +545,17 @@
                         <span class="ss-permissions-row-key">${escapeHtml(key)}</span>
                         <span class="ss-permissions-row-note">Role default: ${roleDefaultAllowed ? "Allowed" : "Denied"}</span>
                       </span>
-                      <label class="ss-permissions-select-wrap">
-                        <span class="sr-only">${escapeHtml(entry?.label || key)} override</span>
-                        <select class="ss-input" data-user-permission="${escapeHtml(key)}" ${disabledAttr}>
-                          <option value="" ${!overrideMode ? "selected" : ""}>Inherit role default</option>
-                          <option value="allow" ${overrideMode === "allow" ? "selected" : ""}>Allow</option>
-                          <option value="deny" ${overrideMode === "deny" ? "selected" : ""}>Deny</option>
-                        </select>
-                      </label>
+                      <span class="ss-permissions-toggle ss-permissions-toggle-user">
+                        ${renderPermissionStateBadge(effectiveState, effectiveLabel)}
+                        <label class="ss-permissions-select-wrap">
+                          <span class="sr-only">${escapeHtml(entry?.label || key)} override</span>
+                          <select class="ss-input" data-user-permission="${escapeHtml(key)}" ${disabledAttr}>
+                            <option value="" ${!overrideMode ? "selected" : ""}>Inherit role default</option>
+                            <option value="allow" ${overrideMode === "allow" ? "selected" : ""}>Allow</option>
+                            <option value="deny" ${overrideMode === "deny" ? "selected" : ""}>Deny</option>
+                          </select>
+                        </label>
+                      </span>
                     </div>
                   `;
                 })

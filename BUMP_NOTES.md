@@ -731,6 +731,27 @@ Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into t
 - `docs/js/permissions.js`
 - `BUMP_NOTES.md`
 
+### Permissions Matrix State Badges + Permission Key Chip Polish - 2026-04-02
+
+### Technical Notes
+
+- Updated `docs/js/permissions.js` so role-edit rows now render color-coded permission state badges with SVG prefixes for `Allowed` and `Denied`, using existing `tickyeslarge.svg` and `cross.svg` assets instead of plain text flags.
+- Updated the user-override matrix rows in `docs/js/permissions.js` to render the same SVG+text state badge ahead of the select control, with a third muted `Default` state backed by `squaresquare.svg` when the row inherits the role baseline.
+- Styled `.ss-permissions-row-key` in `docs/css/components.css` as a subtle monospace code chip using the existing `--system-mono-font` stack, which already resolves to `SUSEMono` from `docs/assets/fonts/mono/SUSEMono-Variable.ttf` in the dashboard theme.
+- Left the lower row note treatment intact; only the permission key chip and right-side current-state indicator were restyled in this pass.
+
+### Human-Readable Notes
+
+- Allowed and Denied are now easier to scan at a glance in role edit mode.
+- User override rows now show their current effective override posture visually before the dropdown.
+- Permission keys read more like compact policy IDs instead of plain muted text.
+
+### Files / Areas Touched
+
+- `docs/js/permissions.js`
+- `docs/css/components.css`
+- `BUMP_NOTES.md`
+
 ### Badge Governance Header Abbreviation Tweak - 2026-04-02
 
 ### Technical Notes

@@ -591,16 +591,25 @@
             <div class="ss-settings-card-head">
               <div>
                 <span class="ss-settings-kicker">Platform</span>
-                <h3>${escapeHtml(labelize(platform?.name || platform?.platform || "Unknown"))}</h3>
+                <h3 class="ss-settings-platform-title">
+                  <img
+                    class="ss-settings-platform-icon"
+                    src="${escapeHtml(getPlatformIconPath(platform?.name || platform?.platform))}"
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <span>${escapeHtml(labelize(platform?.name || platform?.platform || "Unknown"))}</span>
+                </h3>
               </div>
               <span class="ss-chip ${chipClassForTone(statusTone)}">${escapeHtml(labelize(platform?.status || platform?.state || "unknown"))}</span>
             </div>
             <dl class="ss-settings-detail-list">
-              ${detailRow("Enabled", formatBoolean(platform?.enabled))}
-              ${detailRow("Paused", formatBoolean(platform?.paused))}
-              ${detailRow("Telemetry", formatBoolean(platform?.telemetry_enabled))}
-              ${detailRow("Replay support", formatBoolean(platform?.replay_supported))}
-              ${detailRow("Overlay support", formatBoolean(platform?.overlay_supported))}
+              ${detailFlagRow("Enabled", platform?.enabled)}
+              ${detailFlagRow("Paused", platform?.paused)}
+              ${detailFlagRow("Telemetry", platform?.telemetry_enabled)}
+              ${detailFlagRow("Replay support", platform?.replay_supported)}
+              ${detailFlagRow("Overlay support", platform?.overlay_supported)}
               ${detailRow("Last heartbeat", formatTimestamp(platform?.last_heartbeat) || "Never")}
               ${detailRow("Last success", formatTimestamp(platform?.last_success_ts) || "Never")}
               ${detailRow("Last event", formatTimestamp(platform?.last_event_ts) || "Never")}
@@ -1029,6 +1038,17 @@
     `;
   }
 
+  function detailFlagRow(label, value) {
+    return `
+      <div class="ss-settings-detail-row">
+        <dt>${escapeHtml(label)}</dt>
+        <dd>
+          <span class="ss-settings-flag ${flagClassForValue(value)}">${escapeHtml(formatBoolean(value))}</span>
+        </dd>
+      </div>
+    `;
+  }
+
   function badgeSpan(label, tone = "muted") {
     return `<span class="ss-chip ${chipClassForTone(tone)}">${escapeHtml(label)}</span>`;
   }
@@ -1106,6 +1126,26 @@
 
   function displayValue(value) {
     return value === null || value === undefined || value === "" ? "—" : String(value);
+  }
+
+  function flagClassForValue(value) {
+    if (value === true) return "is-enabled";
+    if (value === false) return "is-disabled";
+    return "is-unknown";
+  }
+
+  function getPlatformIconPath(value) {
+    const normalized = String(value || "").trim().toLowerCase();
+    const iconMap = {
+      discord: "/assets/icons/discord-0.svg",
+      kick: "/assets/icons/kick-0.svg",
+      pilled: "/assets/icons/pilled-0.svg",
+      rumble: "/assets/icons/rumble-0.svg",
+      twitch: "/assets/icons/twitch-0.svg",
+      twitter: "/assets/icons/twitter-0.svg",
+      youtube: "/assets/icons/youtube-0.svg"
+    };
+    return iconMap[normalized] || "/assets/icons/ui/widget.svg";
   }
 
   function labelize(value) {
