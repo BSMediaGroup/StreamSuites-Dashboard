@@ -978,12 +978,69 @@ const SECTION_SHELL_CONFIG = Object.freeze({
     toggleLabel: "permissions section tabs",
     sections: Object.freeze([
       { id: "permissions-overview-section", label: "Overview" },
-      { id: "permissions-matrix-section", label: "Matrix" },
       { id: "permissions-accounts-section", label: "Accounts" },
       { id: "permissions-scaffolds-section", label: "Scaffolds" }
     ])
   })
 });
+
+const sectionShellOverrides = new Map();
+
+function normalizeSectionShellSections(sections) {
+  if (!Array.isArray(sections)) return [];
+  return sections
+    .map((section) => ({
+      id: String(section?.id || "").trim(),
+      label: String(section?.label || "").trim()
+    }))
+    .filter((section) => section.id && section.label);
+}
+
+function resolveSectionShellConfig(viewName) {
+  const baseConfig = SECTION_SHELL_CONFIG[viewName] || null;
+  if (!baseConfig) return null;
+  return sectionShellOverrides.get(viewName) || baseConfig;
+}
+
+function setSectionShellSections(viewName, sections) {
+  const normalizedViewName = String(viewName || "").trim();
+  const baseConfig = SECTION_SHELL_CONFIG[normalizedViewName] || null;
+  if (!baseConfig) return;
+
+  const normalizedSections = normalizeSectionShellSections(sections);
+  if (!normalizedSections.length) {
+    sectionShellOverrides.delete(normalizedViewName);
+  } else {
+    sectionShellOverrides.set(
+      normalizedViewName,
+      Object.freeze({
+        storageKey: baseConfig.storageKey,
+        toggleLabel: baseConfig.toggleLabel,
+        sections: Object.freeze(
+          normalizedSections.map((section) =>
+            Object.freeze({
+              id: section.id,
+              label: section.label
+            })
+          )
+        )
+      })
+    );
+  }
+
+  if (App.currentView === normalizedViewName) {
+    syncAccountsShellForView(normalizedViewName);
+  }
+}
+
+function resetSectionShellSections(viewName) {
+  const normalizedViewName = String(viewName || "").trim();
+  if (!normalizedViewName) return;
+  sectionShellOverrides.delete(normalizedViewName);
+  if (App.currentView === normalizedViewName) {
+    syncAccountsShellForView(normalizedViewName);
+  }
+}
 
 const accountsShell = {
   initialized: false,
@@ -1601,7 +1658,7 @@ function syncAccountsShellForView(viewName) {
 
   bindAccountsShell();
 
-  const nextConfig = SECTION_SHELL_CONFIG[viewName] || null;
+  const nextConfig = resolveSectionShellConfig(viewName);
   if (accountsShell.activeView !== viewName || accountsShell.activeConfig !== nextConfig) {
     accountsShell.activeView = viewName;
     accountsShell.activeConfig = nextConfig;
@@ -2531,6 +2588,8 @@ window.StreamSuitesAdminShell = {
   refreshCurrentView,
   setTopbarTitleOverride,
   clearTopbarTitleOverride,
+  setSectionShellSections,
+  resetSectionShellSections,
   getCurrentViewTitle() {
     return App.title.override || App.title.base || "Overview";
   },

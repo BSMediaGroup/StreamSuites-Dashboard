@@ -687,6 +687,29 @@ Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into t
 - `scripts/build-pages-artifact.ps1`
 - `BUMP_NOTES.md`
 
+### Permissions Page Layout Density + Live Group Anchor Tabs - 2026-04-02
+
+### Technical Notes
+
+- Replaced the old sparse overview split in `docs/views/permissions.html` with a denser overview composition: one tighter authority summary column, one compact editor-scope card, and one separate metadata card. The old single tall side panel was removed because it left too much dead space around the scope controls and metadata at normal admin desktop widths.
+- Updated the page-scoped permissions styles in `docs/css/components.css` to support the new overview composition, tighter summary-card spacing, and compact two-column metadata tiles while keeping the existing panel/card language already used across the dashboard.
+- Removed the static `Matrix` tab from the base `/permissions` section-shell config in `docs/js/app.js`. The permissions view now publishes runtime section-shell overrides back into the shared anchored rail so the tab row becomes `Overview`, one tab per real live permission group, `Accounts`, and `Scaffolds`.
+- Updated `docs/js/permissions.js` so live matrix groups derive shared anchor IDs from the same `groupEntries(getLiveEntries())` structure already driving the matrix render. The active role/user editor surface now owns those IDs at render time, which keeps the existing jump-scroll behavior aligned with whichever scope is visible without changing hydration, edit-mode, or persistence logic.
+- `docs/views/permissions.html` is expected to be slightly shorter because the old overview-side markup was replaced by tighter compact cards with less empty wrapper space. `docs/css/components.css` is expected to stay roughly flat to slightly longer because the removed hero-split rules were replaced by new overview-density layout rules and group-anchor polish.
+
+### Human-Readable Notes
+
+- The Permissions page top section now reads as a tighter admin overview instead of a loose banner with a tall sparse control panel.
+- The anchor tab row no longer stops at a generic Matrix tab; it now jumps directly into each real live permission group shown in the matrix.
+
+### Files / Areas Touched
+
+- `docs/views/permissions.html`
+- `docs/css/components.css`
+- `docs/js/app.js`
+- `docs/js/permissions.js`
+- `BUMP_NOTES.md`
+
 ### Badge Governance Header Abbreviation Tweak - 2026-04-02
 
 ### Technical Notes

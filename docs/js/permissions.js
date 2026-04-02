@@ -36,6 +36,11 @@
   };
 
   const el = {};
+  const PERMISSIONS_BASE_SHELL_SECTIONS = Object.freeze([
+    { id: "permissions-overview-section", label: "Overview" },
+    { id: "permissions-accounts-section", label: "Accounts" },
+    { id: "permissions-scaffolds-section", label: "Scaffolds" }
+  ]);
 
   function $(id) {
     return document.getElementById(id);
@@ -63,6 +68,14 @@
   function coerceText(value, fallback = "") {
     if (value === undefined || value === null) return fallback;
     const normalized = String(value).trim();
+    return normalized || fallback;
+  }
+
+  function slugifyAnchorSegment(value, fallback = "group") {
+    const normalized = coerceText(value, fallback)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
     return normalized || fallback;
   }
 
@@ -284,6 +297,57 @@
     return Array.from(groups.values());
   }
 
+  function getPermissionGroups() {
+    return groupEntries(getLiveEntries());
+  }
+
+  function buildGroupSectionId(groupKey) {
+    return `permissions-group-${slugifyAnchorSegment(groupKey, "general")}`;
+  }
+
+  function buildSectionShellSections(groups = getPermissionGroups()) {
+    return [
+      PERMISSIONS_BASE_SHELL_SECTIONS[0],
+      ...groups.map((group) => ({
+        id: buildGroupSectionId(group.key),
+        label: coerceText(group.label, "General")
+      })),
+      PERMISSIONS_BASE_SHELL_SECTIONS[1],
+      PERMISSIONS_BASE_SHELL_SECTIONS[2]
+    ];
+  }
+
+  function syncSectionShell(groups = getPermissionGroups()) {
+    window.StreamSuitesAdminShell?.setSectionShellSections?.(
+      "permissions",
+      buildSectionShellSections(groups)
+    );
+  }
+
+  function syncGroupSectionAnchors() {
+    [el.roleEditor, el.userEditor].forEach((surface) => {
+      surface?.querySelectorAll("[data-permissions-group-anchor]").forEach((section) => {
+        section.removeAttribute("id");
+      });
+    });
+
+    const activeSurface = state.scope === "user" ? el.userEditor : el.roleEditor;
+    activeSurface?.querySelectorAll("[data-permissions-group-anchor]").forEach((section) => {
+      const anchorId = coerceText(section.getAttribute("data-permissions-group-anchor"));
+      if (anchorId) {
+        section.id = anchorId;
+      }
+    });
+  }
+
+  function applyHashTarget() {
+    const hashId = window.location.hash.replace(/^#/, "").trim();
+    if (!hashId) return;
+    const target = document.getElementById(hashId);
+    if (!target) return;
+    target.scrollIntoView({ behavior: "auto", block: "start" });
+  }
+
   function describeSelectedAccount(account = getSelectedAccount()) {
     return coerceText(account?.display_name || account?.user_code || account?.email, "the selected account");
   }
@@ -349,16 +413,18 @@
     `;
   }
 
-  function renderRoleEditor() {
+  function renderRoleEditor(groups = getPermissionGroups()) {
     if (!el.roleEditor) return;
     const inputsDisabled = !state.canManage || !state.editMode || state.pending;
     const disabledAttr = inputsDisabled ? "disabled" : "";
-    const groups = groupEntries(getLiveEntries());
 
     el.roleEditor.innerHTML = groups
       .map(
         (group) => `
-          <section class="ss-permissions-group">
+          <section
+            class="ss-permissions-group"
+            data-permissions-group-anchor="${escapeHtml(buildGroupSectionId(group.key))}"
+          >
             <div class="ss-permissions-group-head">
               <div>
                 <h4>${escapeHtml(group.label)}</h4>
@@ -410,7 +476,7 @@
       .join("");
   }
 
-  function renderUserEditor() {
+  function renderUserEditor(groups = getPermissionGroups()) {
     if (!el.userEditor) return;
     const account = getSelectedAccount();
     if (!account) {
@@ -420,12 +486,14 @@
 
     const inputsDisabled = !state.canManage || !state.editMode || state.pending;
     const disabledAttr = inputsDisabled ? "disabled" : "";
-    const groups = groupEntries(getLiveEntries());
 
     el.userEditor.innerHTML = groups
       .map(
         (group) => `
-          <section class="ss-permissions-group">
+          <section
+            class="ss-permissions-group"
+            data-permissions-group-anchor="${escapeHtml(buildGroupSectionId(group.key))}"
+          >
             <div class="ss-permissions-group-head">
               <div>
                 <h4>${escapeHtml(group.label)}</h4>
@@ -770,15 +838,17 @@
   }
 
   function renderAll() {
+    const groups = getPermissionGroups();
     renderSummary();
     renderMeta();
-    renderRoleEditor();
-    renderUserEditor();
+    renderRoleEditor(groups);
+    renderUserEditor(groups);
     renderUserList();
     renderSelectedUser();
     renderEffectiveSummary();
     renderScaffolds();
     syncEditorScope();
+    syncGroupSectionAnchors();
     renderWorkflow();
   }
 
@@ -818,6 +888,10 @@
       applyPermissionsPayload(permissionsPayload);
       state.editMode = false;
       renderAll();
+      syncSectionShell();
+      requestAnimationFrame(() => {
+        applyHashTarget();
+      });
       setStatus(`Loaded ${getLiveEntries().length} live permissions and ${state.accounts.length} developer-capable accounts.`);
       if (!state.canManage) {
         setBanner("This session can inspect permission policy but cannot save changes without the manage-permissions grant.", "warning");
@@ -1000,6 +1074,7 @@
   function init() {
     cacheElements();
     bindEvents();
+    window.StreamSuitesAdminShell?.resetSectionShellSections?.("permissions");
     void hydrate();
   }
 

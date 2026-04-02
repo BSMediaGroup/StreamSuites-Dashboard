@@ -18,57 +18,68 @@
   </section>
 
   <section id="permissions-overview-section" class="ss-panel ss-permissions-hero-panel">
-    <div class="ss-panel-body ss-permissions-hero-body">
-      <div class="ss-permissions-hero-main">
-        <div class="ss-permissions-hero-copy">
-          <h2>Authority model and active scope</h2>
-          <p class="muted">Admins remain immutable superusers. Developer-capable accounts are the only non-admin class eligible for dashboard access in this pass, with role defaults resolved before per-user overrides.</p>
-        </div>
-        <div id="permissions-summary-grid" class="ss-permissions-summary-grid" aria-live="polite"></div>
-      </div>
-      <aside class="ss-permissions-hero-side">
-        <section class="ss-permissions-side-card">
-          <div class="ss-permissions-section-heading">
-            <div>
-              <h3>Editor scope</h3>
-              <p class="muted">Switch between developer role defaults and per-user overrides. All saves go back to StreamSuites Auth API.</p>
-            </div>
+    <div class="ss-panel-body ss-permissions-overview-body">
+      <div class="ss-permissions-overview-main">
+        <section class="ss-permissions-overview-primary">
+          <div class="ss-permissions-hero-copy">
+            <span class="ss-permissions-card-kicker">Authority model and active scope</span>
+            <h2>Auth-owned policy with explicit dashboard edit control</h2>
+            <p class="muted">Admins remain immutable superusers. Developer-capable accounts are the only non-admin class eligible for dashboard access in this pass, with role defaults resolved before per-user overrides.</p>
           </div>
-          <div class="ss-permissions-scope-switch" id="permissions-scope-switch" role="tablist" aria-label="Permission editor scope">
-            <button type="button" class="ss-btn ss-btn-secondary ss-btn-small" data-permissions-scope="role">Role Defaults</button>
-            <button type="button" class="ss-btn ss-btn-secondary ss-btn-small" data-permissions-scope="user">User Overrides</button>
-          </div>
-          <div class="ss-permissions-mode-surface">
-            <div class="ss-permissions-mode-copy-wrap">
-              <span id="permissions-edit-chip" class="ss-chip ss-chip-muted">View mode</span>
-              <p id="permissions-mode-copy" class="muted">Permissions open locked. Select Edit to unlock the current scope, then Save or Cancel explicitly.</p>
-            </div>
-            <div class="ss-permissions-actions">
-              <button type="button" id="permissions-edit" class="ss-btn ss-btn-primary ss-btn-small">Edit</button>
-              <button type="button" id="permissions-save" class="ss-btn ss-btn-primary ss-btn-small hidden">Save changes</button>
-              <button type="button" id="permissions-cancel" class="ss-btn ss-btn-secondary ss-btn-small hidden">Cancel</button>
-            </div>
-          </div>
-          <dl class="ss-permissions-meta-list">
-            <div class="ss-permissions-meta-row">
-              <dt>Registry version</dt>
-              <dd id="permissions-registry-version">--</dd>
-            </div>
-            <div class="ss-permissions-meta-row">
-              <dt>Resolution order</dt>
-              <dd id="permissions-resolution-order">--</dd>
-            </div>
-            <div class="ss-permissions-meta-row">
-              <dt>Editable live keys</dt>
-              <dd id="permissions-live-count">--</dd>
-            </div>
-            <div class="ss-permissions-meta-row">
-              <dt>Developer accounts</dt>
-              <dd id="permissions-developer-count">--</dd>
-            </div>
-          </dl>
+          <div id="permissions-summary-grid" class="ss-permissions-summary-grid" aria-live="polite"></div>
         </section>
-      </aside>
+        <aside class="ss-permissions-overview-side">
+          <section class="ss-permissions-side-card ss-permissions-overview-scope-card">
+            <div class="ss-permissions-section-heading">
+              <div>
+                <h3>Editor scope</h3>
+                <p class="muted">Switch between developer role defaults and per-user overrides. All saves go back to StreamSuites Auth API.</p>
+              </div>
+            </div>
+            <div class="ss-permissions-scope-switch" id="permissions-scope-switch" role="tablist" aria-label="Permission editor scope">
+              <button type="button" class="ss-btn ss-btn-secondary ss-btn-small" data-permissions-scope="role">Role Defaults</button>
+              <button type="button" class="ss-btn ss-btn-secondary ss-btn-small" data-permissions-scope="user">User Overrides</button>
+            </div>
+            <div class="ss-permissions-mode-surface">
+              <div class="ss-permissions-mode-copy-wrap">
+                <span id="permissions-edit-chip" class="ss-chip ss-chip-muted">View mode</span>
+                <p id="permissions-mode-copy" class="muted">Permissions open locked. Select Edit to unlock the current scope, then Save or Cancel explicitly.</p>
+              </div>
+              <div class="ss-permissions-actions">
+                <button type="button" id="permissions-edit" class="ss-btn ss-btn-primary ss-btn-small">Edit</button>
+                <button type="button" id="permissions-save" class="ss-btn ss-btn-primary ss-btn-small hidden">Save changes</button>
+                <button type="button" id="permissions-cancel" class="ss-btn ss-btn-secondary ss-btn-small hidden">Cancel</button>
+              </div>
+            </div>
+          </section>
+          <section class="ss-permissions-side-card ss-permissions-overview-meta-card">
+            <div class="ss-permissions-section-heading">
+              <div>
+                <h3>Policy metadata</h3>
+                <p class="muted">Live registry and resolution details from the current authoritative payload.</p>
+              </div>
+            </div>
+            <dl class="ss-permissions-meta-list ss-permissions-meta-grid">
+              <div class="ss-permissions-meta-row">
+                <dt>Registry version</dt>
+                <dd id="permissions-registry-version">--</dd>
+              </div>
+              <div class="ss-permissions-meta-row">
+                <dt>Resolution order</dt>
+                <dd id="permissions-resolution-order">--</dd>
+              </div>
+              <div class="ss-permissions-meta-row">
+                <dt>Editable live keys</dt>
+                <dd id="permissions-live-count">--</dd>
+              </div>
+              <div class="ss-permissions-meta-row">
+                <dt>Developer accounts</dt>
+                <dd id="permissions-developer-count">--</dd>
+              </div>
+            </dl>
+          </section>
+        </aside>
+      </div>
     </div>
   </section>
 

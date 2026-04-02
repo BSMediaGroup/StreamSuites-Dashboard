@@ -8502,7 +8502,7 @@ button.public-btn:active::after {
 
 .ss-permissions-main {
   display: grid;
-  gap: 20px;
+  gap: 18px;
 }
 
 .ss-permissions-header-shell,
@@ -8528,57 +8528,68 @@ button.public-btn:active::after {
 
 .ss-permissions-banner-wrap {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 .ss-permissions-hero-panel {
   overflow: hidden;
 }
 
-.ss-permissions-hero-body,
+.ss-permissions-overview-body,
 .ss-permissions-editor-grid,
 .ss-permissions-user-grid {
   display: grid;
-  gap: 18px;
+  gap: 16px;
 }
 
-.ss-permissions-hero-body {
-  grid-template-columns: minmax(0, 1.8fr) minmax(280px, 0.9fr);
+.ss-permissions-overview-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.95fr);
+  gap: 16px;
+  align-items: start;
 }
 
-.ss-permissions-hero-main,
+.ss-permissions-overview-primary,
+.ss-permissions-overview-side,
 .ss-permissions-side-card,
 .ss-permissions-editor-panel,
 .ss-permissions-insight-panel,
 .ss-permissions-editor-surface {
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
 
 .ss-permissions-summary-grid,
 .ss-permissions-selected-grid,
 .ss-permissions-scaffold-grid {
   display: grid;
-  gap: 14px;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 }
 
 .ss-permissions-summary-card,
 .ss-permissions-selected-card,
 .ss-permissions-scaffold-card {
   display: grid;
-  gap: 8px;
-  padding: 18px;
+  gap: 6px;
+  padding: 16px;
   border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: linear-gradient(180deg, rgba(16, 27, 48, 0.94), rgba(8, 13, 25, 0.92));
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
 }
 
+.ss-permissions-summary-card:first-child {
+  border-color: rgba(104, 208, 255, 0.18);
+  background:
+    radial-gradient(circle at top left, rgba(104, 208, 255, 0.14), transparent 58%),
+    linear-gradient(180deg, rgba(16, 27, 48, 0.96), rgba(8, 13, 25, 0.94));
+}
+
 .ss-permissions-side-card,
 .ss-permissions-editor-panel,
 .ss-permissions-insight-panel {
-  padding: 18px;
+  padding: 16px;
   border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: linear-gradient(180deg, rgba(16, 27, 48, 0.92), rgba(8, 13, 25, 0.9));
@@ -8599,9 +8610,22 @@ button.public-btn:active::after {
   gap: 10px;
 }
 
+.ss-permissions-meta-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
 .ss-permissions-meta-row {
   padding-bottom: 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ss-permissions-meta-grid .ss-permissions-meta-row {
+  min-height: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .ss-permissions-meta-row dt {
@@ -8625,8 +8649,8 @@ button.public-btn:active::after {
 
 .ss-permissions-mode-surface {
   display: grid;
-  gap: 14px;
-  padding: 14px;
+  gap: 12px;
+  padding: 12px;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.03);
@@ -8648,6 +8672,7 @@ button.public-btn:active::after {
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(10, 15, 29, 0.56);
+  scroll-margin-top: 18px;
 }
 
 .ss-permissions-group-head h4 {
@@ -8790,10 +8815,11 @@ button.public-btn:active::after {
 }
 
 @media (max-width: 1080px) {
-  .ss-permissions-hero-body,
+  .ss-permissions-overview-main,
   .ss-permissions-editor-grid,
   .ss-permissions-user-grid,
-  .ss-permissions-row {
+  .ss-permissions-row,
+  .ss-permissions-meta-grid {
     grid-template-columns: 1fr;
   }
 
