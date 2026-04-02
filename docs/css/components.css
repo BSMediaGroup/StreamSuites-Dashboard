@@ -8549,6 +8549,10 @@ button.public-btn:active::after {
   align-items: start;
 }
 
+.ss-permissions-overview-meta-card {
+  width: 100%;
+}
+
 .ss-permissions-overview-primary,
 .ss-permissions-overview-side,
 .ss-permissions-side-card,
@@ -8611,7 +8615,7 @@ button.public-btn:active::after {
 }
 
 .ss-permissions-meta-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 

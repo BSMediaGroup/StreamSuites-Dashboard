@@ -10,13 +10,13 @@
     api: "/assets/icons/ui/mobilecode.svg",
     audit: "/assets/icons/ui/audit.svg",
     creatorIntegrations: "/assets/icons/ui/hook.svg",
-    data: "/assets/icons/ui/stack.svg",
+    data: "/assets/icons/ui/photostack.svg",
     default: "/assets/icons/ui/label.svg",
-    jobs: "/assets/icons/ui/stack.svg",
+    jobs: "/assets/icons/ui/automation.svg",
     permissions: "/assets/icons/ui/key.svg",
     profile: "/assets/icons/ui/profile.svg",
     rate: "/assets/icons/ui/ratelimit.svg",
-    runtime: "/assets/icons/ui/quickcontrols.svg"
+    runtime: "/assets/icons/ui/cmdkey.svg"
   });
 
   const state = {
@@ -38,6 +38,7 @@
   const el = {};
   const PERMISSIONS_BASE_SHELL_SECTIONS = Object.freeze([
     { id: "permissions-overview-section", label: "Overview" },
+    { id: "permissions-matrix-section", label: "Matrix" },
     { id: "permissions-accounts-section", label: "Accounts" },
     { id: "permissions-scaffolds-section", label: "Scaffolds" }
   ]);
@@ -308,12 +309,13 @@
   function buildSectionShellSections(groups = getPermissionGroups()) {
     return [
       PERMISSIONS_BASE_SHELL_SECTIONS[0],
+      PERMISSIONS_BASE_SHELL_SECTIONS[1],
       ...groups.map((group) => ({
         id: buildGroupSectionId(group.key),
         label: coerceText(group.label, "General")
       })),
-      PERMISSIONS_BASE_SHELL_SECTIONS[1],
-      PERMISSIONS_BASE_SHELL_SECTIONS[2]
+      PERMISSIONS_BASE_SHELL_SECTIONS[2],
+      PERMISSIONS_BASE_SHELL_SECTIONS[3]
     ];
   }
 

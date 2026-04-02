@@ -710,6 +710,27 @@ Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into t
 - `docs/js/permissions.js`
 - `BUMP_NOTES.md`
 
+### Permissions Page Matrix Rail + Icon Path Fixes - 2026-04-02
+
+### Technical Notes
+
+- Corrected the permissions icon map in `docs/js/permissions.js` so it only references SVG assets that actually exist in the dashboard repo. The broken `/assets/icons/ui/stack.svg` and `/assets/icons/ui/quickcontrols.svg` references were replaced because those files are not present under `docs/assets/icons/ui/`.
+- Added the overall `Matrix` anchor tab back into the permissions section-shell sequence in `docs/js/permissions.js`, but kept the new per-group tabs immediately after it. `Matrix` now targets the top of `#permissions-matrix-section`, while the group tabs still jump into each real live permission group.
+- Replaced the narrow right-column placement of the `Policy metadata` card in `docs/views/permissions.html` with a full-width metadata band beneath the top overview row, and updated the supporting layout rules in `docs/css/components.css` so the metadata tiles can breathe horizontally instead of being squeezed into the side column.
+
+### Human-Readable Notes
+
+- Missing permission-row icons should stop 404ing because the page now uses real dashboard SVG paths.
+- The permissions rail now has both a top-level Matrix jump and the more granular per-group jumps.
+- Policy metadata now spans the full width of the overview section instead of being cramped into the right side.
+
+### Files / Areas Touched
+
+- `docs/views/permissions.html`
+- `docs/css/components.css`
+- `docs/js/permissions.js`
+- `BUMP_NOTES.md`
+
 ### Badge Governance Header Abbreviation Tweak - 2026-04-02
 
 ### Technical Notes
