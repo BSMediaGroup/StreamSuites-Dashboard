@@ -8327,7 +8327,7 @@ button.public-btn:active::after {
 .ss-settings-hero-body {
   display: grid;
   gap: 18px;
-  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.95fr);
+  grid-template-columns: minmax(0, 1.55fr) minmax(300px, 0.85fr);
 }
 
 .ss-settings-hero-main,
@@ -8362,10 +8362,10 @@ button.public-btn:active::after {
 }
 
 .ss-settings-metric-card {
-  padding: 16px 18px;
-  min-height: 148px;
+  padding: 14px 16px;
+  min-height: 126px;
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .ss-settings-summary-grid,
@@ -8381,6 +8381,10 @@ button.public-btn:active::after {
 
 .ss-settings-summary-grid {
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.ss-settings-hero-main > .ss-settings-summary-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .ss-settings-split-grid {
@@ -8430,16 +8434,22 @@ button.public-btn:active::after {
 }
 
 .ss-settings-metric-value {
-  font-size: clamp(1.2rem, 1rem + 0.7vw, 1.9rem);
-  line-height: 1.1;
+  font-size: clamp(0.96rem, 0.84rem + 0.46vw, 1.42rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
   color: #f7fbff;
 }
 
 .ss-settings-kicker {
-  font-size: 0.76rem;
+  font-size: 0.68rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(125, 193, 255, 0.82);
+}
+
+.ss-settings-metric-card .muted {
+  font-size: 0.81rem;
+  line-height: 1.35;
 }
 
 .ss-settings-card-head h3,
@@ -8479,6 +8489,10 @@ button.public-btn:active::after {
 @media (max-width: 1100px) {
   .ss-settings-hero-body {
     grid-template-columns: 1fr;
+  }
+
+  .ss-settings-hero-main > .ss-settings-summary-grid {
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   }
 }
 
