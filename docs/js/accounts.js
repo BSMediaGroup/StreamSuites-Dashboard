@@ -180,6 +180,10 @@
     return fallback;
   }
 
+  function canManageAccounts() {
+    return window.StreamSuitesDashboardPermissions?.has?.("admin.dashboard.manage.accounts") === true;
+  }
+
   function serializeDataAttr(value) {
     if (value == null) return "";
     try {
@@ -2670,12 +2674,12 @@ function normalizeUser(raw = {}) {
       const payload = await res.json();
       const normalized = extractUsers(payload).map(normalizeUser);
       state.raw = normalized;
-      state.canManage = true;
+      state.canManage = canManageAccounts();
       state.sourceMode = "runtime";
       updateFilterOptions(normalized);
       applyFilters();
       setBanner("", false);
-      setStatus("Live runtime data");
+      setStatus(state.canManage ? "Live runtime data" : "Live runtime data (read-only)");
       setSource("Runtime API");
     } catch (err) {
       console.warn("[Accounts] Failed to load runtime accounts", err);

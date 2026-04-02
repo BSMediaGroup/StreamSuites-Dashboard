@@ -253,6 +253,13 @@
     return `${secs}s`;
   }
 
+  function canManageRuntime() {
+    return (
+      window.StreamSuitesDashboardPermissions?.has?.("admin.dashboard.manage.runtime") ===
+      true
+    );
+  }
+
   function resolveApiBase() {
     const base =
       window.StreamSuitesAdminAuth?.config?.baseUrl ||
@@ -829,28 +836,34 @@
     const ui = getRowUi(creatorId, platform);
     const deploySchema = getDeployPlatformSchema(platform);
     const deploySupported = deploySchema?.deployEnabled === true;
+    const manageAllowed = canManageRuntime();
     const runtimeOffline = !isRuntimeAvailable();
     const runtimePaused = platformState?.paused === true;
-    const deployBlockedMessage = !deploySupported
-      ? deploySchema?.blockedReason || "Manual deploy is unavailable for this platform."
-      : "";
+    const deployBlockedMessage = !manageAllowed
+      ? "Runtime controls are view-only for this account."
+      : !deploySupported
+        ? deploySchema?.blockedReason || "Manual deploy is unavailable for this platform."
+        : "";
     const attachDisabled =
       ui.pending ||
+      !manageAllowed ||
       runtimeOffline ||
       runtimePaused ||
       !deploySupported ||
       !canAttach(bot);
-    const detachDisabled = ui.pending || runtimeOffline || !deploySupported || !canDetach(bot);
+    const detachDisabled =
+      ui.pending || !manageAllowed || runtimeOffline || !deploySupported || !canDetach(bot);
     const botPauseReason = String(bot?.pause_reason || "").trim();
     const pauseReason = botPauseReason || String(platformState?.pausedReason || "").trim();
     const isPaused = String(bot?.status || "").trim().toLowerCase() === "paused" || runtimePaused;
     const resumeDisabled =
       ui.pending ||
+      !manageAllowed ||
       runtimeOffline ||
       !deploySupported ||
       !isPaused ||
       !String(bot?.active_target || "").trim();
-    const clearDisabled = ui.pending || runtimeOffline || !isPaused;
+    const clearDisabled = ui.pending || !manageAllowed || runtimeOffline || !isPaused;
     const attachLabel =
       ui.pending && ui.pendingAction === "attach" ? "Deploying..." : "Manual Deploy";
     const detachLabel = ui.pending && ui.pendingAction === "detach" ? "Detaching..." : "Detach";
@@ -1157,11 +1170,15 @@
     if (!el.manualToggle || !el.manualForm) return;
 
     const creatorsAvailable = hasManualCreatorOptions();
+    const manageAllowed = canManageRuntime();
     const formOpen = state.manualFormOpen === true;
     el.manualForm.classList.toggle("hidden", !formOpen);
     el.manualToggle.textContent = formOpen ? "Hide Manual Deploy" : "Manual Deploy Bot";
-    el.manualToggle.disabled = !creatorsAvailable;
-    el.manualToggle.setAttribute("aria-disabled", creatorsAvailable ? "false" : "true");
+    el.manualToggle.disabled = !creatorsAvailable || !manageAllowed;
+    el.manualToggle.setAttribute(
+      "aria-disabled",
+      creatorsAvailable && manageAllowed ? "false" : "true"
+    );
 
     const values = manualFormValues();
     renderManualPlatformFieldset(values.platform);
@@ -1173,7 +1190,8 @@
         refreshed.platform &&
         (!requiresTarget || refreshed.targetIdentifier)
     );
-    const submitDisabled = state.manualDeploy.pending || Boolean(blockedReason) || !hasRequiredFields;
+    const submitDisabled =
+      state.manualDeploy.pending || !manageAllowed || Boolean(blockedReason) || !hasRequiredFields;
 
     if (el.manualSubmit) {
       el.manualSubmit.disabled = submitDisabled;
@@ -1181,20 +1199,21 @@
     }
 
     if (el.manualCreator) {
-      el.manualCreator.disabled = state.manualDeploy.pending || !creatorsAvailable;
+      el.manualCreator.disabled = state.manualDeploy.pending || !creatorsAvailable || !manageAllowed;
     }
     if (el.manualPlatform) {
-      el.manualPlatform.disabled = state.manualDeploy.pending;
+      el.manualPlatform.disabled = state.manualDeploy.pending || !manageAllowed;
     }
     if (el.manualTarget) {
-      el.manualTarget.disabled = state.manualDeploy.pending;
+      el.manualTarget.disabled = state.manualDeploy.pending || !manageAllowed;
     }
     if (el.manualCancel) {
-      el.manualCancel.disabled = state.manualDeploy.pending;
+      el.manualCancel.disabled = state.manualDeploy.pending || !manageAllowed;
     }
 
     if (el.manualNote) {
       const note =
+        (!manageAllowed ? "Runtime management is disabled for this account." : "") ||
         blockedReason ||
         (refreshed.schema?.deployEnabled === true
           ? "Manual deploy will create bot instance if needed."
@@ -1550,6 +1569,12 @@
 
   async function applyManualAction(action, creatorId, platform) {
     if (!state.lastPayload || !Array.isArray(state.lastPayload.bots)) return;
+    if (!canManageRuntime()) {
+      const ui = getRowUi(creatorId, platform);
+      ui.error = "Runtime controls are not permitted for this account.";
+      renderRowsAndCountersFromState();
+      return;
+    }
 
     const bot = state.lastPayload.bots.find(
       (entry) =>

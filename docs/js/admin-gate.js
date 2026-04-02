@@ -299,10 +299,38 @@
       payload.user?.admin_access ||
       payload.user?.adminAccess ||
       {};
+    const rawPermissions =
+      adminAccessSource?.permissions && typeof adminAccessSource.permissions === "object"
+        ? adminAccessSource.permissions
+        : {};
+    const permissions = Object.fromEntries(
+      Object.entries(rawPermissions).map(([permissionKey, rawEntry]) => {
+        const entry = rawEntry && typeof rawEntry === "object" ? rawEntry : {};
+        return [
+          coerceText(permissionKey),
+          {
+            allowed: entry.allowed === true,
+            source: coerceText(entry.source),
+            roleDefault: entry.role_default === true || entry.roleDefault === true,
+            overrideMode: coerceText(entry.override_mode || entry.overrideMode).toLowerCase() || null
+          }
+        ];
+      })
+    );
     const adminAccess = {
       allowed: adminAccessSource?.allowed === true,
       level: coerceText(adminAccessSource?.level).toLowerCase(),
       restricted: adminAccessSource?.restricted === true,
+      registryVersion: coerceText(
+        adminAccessSource?.registry_version || adminAccessSource?.registryVersion
+      ),
+      resolutionOrder: Array.isArray(
+        adminAccessSource?.resolution_order || adminAccessSource?.resolutionOrder
+      )
+        ? (adminAccessSource.resolution_order || adminAccessSource.resolutionOrder)
+            .map((item) => coerceText(item))
+            .filter(Boolean)
+        : [],
       allowedViews: Array.isArray(adminAccessSource?.allowed_views || adminAccessSource?.allowedViews)
         ? (adminAccessSource.allowed_views || adminAccessSource.allowedViews)
             .map((item) => coerceText(item).toLowerCase())
@@ -315,9 +343,39 @@
             .map((item) => coerceText(item).toLowerCase())
             .filter(Boolean)
         : [],
+      effectivePermissionKeys: Array.isArray(
+        adminAccessSource?.effective_permission_keys || adminAccessSource?.effectivePermissionKeys
+      )
+        ? (adminAccessSource.effective_permission_keys || adminAccessSource.effectivePermissionKeys)
+            .map((item) => coerceText(item))
+            .filter(Boolean)
+        : [],
+      deniedPermissionKeys: Array.isArray(
+        adminAccessSource?.denied_permission_keys || adminAccessSource?.deniedPermissionKeys
+      )
+        ? (adminAccessSource.denied_permission_keys || adminAccessSource.deniedPermissionKeys)
+            .map((item) => coerceText(item))
+            .filter(Boolean)
+        : [],
+      endpointPermissionKeys: Array.isArray(
+        adminAccessSource?.endpoint_permission_keys || adminAccessSource?.endpointPermissionKeys
+      )
+        ? (adminAccessSource.endpoint_permission_keys || adminAccessSource.endpointPermissionKeys)
+            .map((item) => coerceText(item))
+            .filter(Boolean)
+        : [],
+      permissions,
       features:
         adminAccessSource?.features && typeof adminAccessSource.features === "object"
           ? { ...adminAccessSource.features }
+          : {},
+      rolePolicy:
+        adminAccessSource?.role_policy && typeof adminAccessSource.role_policy === "object"
+          ? { ...adminAccessSource.role_policy }
+          : {},
+      userOverrides:
+        adminAccessSource?.user_overrides && typeof adminAccessSource.user_overrides === "object"
+          ? { ...adminAccessSource.user_overrides }
           : {}
     };
 

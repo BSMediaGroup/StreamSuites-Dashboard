@@ -334,12 +334,15 @@
     return false;
   }
 
-  function isRestrictedDeveloperSession() {
-    return window.StreamSuitesDashboardGuard?.adminAccess?.restricted === true;
+  function canViewOverviewAnalyticsPanels() {
+    return (
+      window.StreamSuitesDashboardPermissions?.has?.("admin.dashboard.view.analytics") ===
+      true
+    );
   }
 
   function applyOverviewSessionRestrictions() {
-    const restricted = isRestrictedDeveloperSession();
+    const restricted = !canViewOverviewAnalyticsPanels();
     const adminActivityPanel = el.adminActivityBody?.closest(".ss-panel, .ss-card, section");
     const telemetryAuthPanel =
       el.telemetryAuthEventsBody?.closest(".ss-panel, .ss-card, section");

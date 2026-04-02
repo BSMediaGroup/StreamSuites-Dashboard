@@ -8494,8 +8494,256 @@ button.public-btn:active::after {
     display: grid;
   }
 
-  .ss-settings-meta-row dd,
+.ss-settings-meta-row dd,
   .ss-settings-detail-row dd {
+    text-align: left;
+  }
+}
+
+.ss-permissions-main {
+  display: grid;
+  gap: 20px;
+}
+
+.ss-permissions-header-shell,
+.ss-permissions-header-right,
+.ss-permissions-section-heading,
+.ss-permissions-meta-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ss-permissions-header-copy,
+.ss-permissions-hero-copy,
+.ss-permissions-section-heading > div {
+  display: grid;
+  gap: 8px;
+}
+
+.ss-permissions-header-chip {
+  width: fit-content;
+}
+
+.ss-permissions-banner-wrap {
+  display: grid;
+  gap: 12px;
+}
+
+.ss-permissions-hero-panel {
+  overflow: hidden;
+}
+
+.ss-permissions-hero-body,
+.ss-permissions-editor-grid,
+.ss-permissions-user-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.ss-permissions-hero-body {
+  grid-template-columns: minmax(0, 1.8fr) minmax(280px, 0.9fr);
+}
+
+.ss-permissions-hero-main,
+.ss-permissions-side-card,
+.ss-permissions-editor-panel,
+.ss-permissions-insight-panel,
+.ss-permissions-editor-surface {
+  display: grid;
+  gap: 16px;
+}
+
+.ss-permissions-summary-grid,
+.ss-permissions-selected-grid,
+.ss-permissions-scaffold-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.ss-permissions-summary-card,
+.ss-permissions-selected-card,
+.ss-permissions-scaffold-card {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(16, 27, 48, 0.94), rgba(8, 13, 25, 0.92));
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
+}
+
+.ss-permissions-side-card,
+.ss-permissions-editor-panel,
+.ss-permissions-insight-panel {
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(16, 27, 48, 0.92), rgba(8, 13, 25, 0.9));
+}
+
+.ss-permissions-card-kicker,
+.ss-permissions-row-key,
+.ss-permissions-row-note {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(156, 173, 214, 0.78);
+}
+
+.ss-permissions-meta-list,
+.ss-permissions-effective-list {
+  display: grid;
+  gap: 10px;
+}
+
+.ss-permissions-meta-row {
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ss-permissions-meta-row dt {
+  color: rgba(203, 214, 239, 0.76);
+}
+
+.ss-permissions-meta-row dd {
+  margin: 0;
+  text-align: right;
+  color: rgba(245, 248, 255, 0.95);
+}
+
+.ss-permissions-scope-switch,
+.ss-permissions-actions,
+.ss-permissions-selected-list,
+.ss-permissions-scaffold-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ss-permissions-group {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(10, 15, 29, 0.56);
+}
+
+.ss-permissions-group-head h4 {
+  margin: 0;
+}
+
+.ss-permissions-group-list {
+  display: grid;
+  gap: 10px;
+}
+
+.ss-permissions-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ss-permissions-row-copy {
+  display: grid;
+  gap: 6px;
+}
+
+.ss-permissions-row-title {
+  font-weight: 700;
+  color: rgba(248, 250, 255, 0.97);
+}
+
+.ss-permissions-row-meta {
+  color: rgba(213, 223, 244, 0.78);
+}
+
+.ss-permissions-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.ss-permissions-select-wrap {
+  min-width: 190px;
+}
+
+.ss-permissions-user-list {
+  display: grid;
+  gap: 10px;
+  max-height: 520px;
+  overflow: auto;
+}
+
+.ss-permissions-user-card {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 14px 16px;
+  text-align: left;
+  color: inherit;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ss-permissions-user-card.is-active {
+  border-color: rgba(104, 208, 255, 0.55);
+  background: rgba(42, 109, 144, 0.22);
+}
+
+.ss-permissions-user-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ss-permissions-user-card-meta {
+  color: rgba(208, 220, 245, 0.72);
+}
+
+.ss-permissions-selected-user,
+.ss-permissions-effective-summary {
+  display: grid;
+  gap: 16px;
+}
+
+.ss-permissions-empty {
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  color: rgba(216, 226, 247, 0.74);
+  background: rgba(10, 15, 29, 0.48);
+}
+
+@media (max-width: 1080px) {
+  .ss-permissions-hero-body,
+  .ss-permissions-editor-grid,
+  .ss-permissions-user-grid,
+  .ss-permissions-row {
+    grid-template-columns: 1fr;
+  }
+
+  .ss-permissions-header-shell,
+  .ss-permissions-header-right,
+  .ss-permissions-section-heading,
+  .ss-permissions-meta-row,
+  .ss-permissions-user-card-top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ss-permissions-meta-row dd {
     text-align: left;
   }
 }

@@ -210,18 +210,76 @@ function getAdminAccessState() {
   return window.StreamSuitesDashboardGuard?.adminAccess || window.StreamSuitesAdminSession?.adminAccess || null;
 }
 
+function getAdminRoleState() {
+  return String(
+    window.StreamSuitesDashboardGuard?.adminRole ||
+      window.StreamSuitesAdminSession?.role ||
+      ""
+  )
+    .trim()
+    .toLowerCase();
+}
+
+function getAdminPermissionState(permissionKey) {
+  const normalized = String(permissionKey || "").trim();
+  if (!normalized) return null;
+  const access = getAdminAccessState();
+  if (!access || !access.permissions || typeof access.permissions !== "object") {
+    return null;
+  }
+  return access.permissions[normalized] || null;
+}
+
+function hasDashboardPermission(permissionKey) {
+  const normalizedRole = getAdminRoleState();
+  if (normalizedRole === "admin") return true;
+  const access = getAdminAccessState();
+  if (!access || access.allowed !== true) return false;
+  const permissionState = getAdminPermissionState(permissionKey);
+  return permissionState?.allowed === true;
+}
+
+function hasAnyDashboardPermission(permissionKeys = []) {
+  return (Array.isArray(permissionKeys) ? permissionKeys : []).some((permissionKey) =>
+    hasDashboardPermission(permissionKey)
+  );
+}
+
+function getPermissionKeysForView(viewName) {
+  const normalized = String(viewName || "").trim().toLowerCase();
+  if (!normalized) return [];
+  if (normalized === "user-detail") {
+    return [
+      "admin.dashboard.manage.accounts",
+      "admin.dashboard.manage.creator_integrations"
+    ];
+  }
+  return [];
+}
+
 function isDashboardViewAllowed(viewName) {
   const normalized = String(viewName || "").trim().toLowerCase();
   if (!normalized) return false;
-  const access = getAdminAccessState();
-  if (!access || access.restricted !== true) {
+  const normalizedRole = getAdminRoleState();
+  if (normalizedRole === "admin") {
     return true;
+  }
+  const access = getAdminAccessState();
+  if (!access || access.allowed !== true) {
+    return false;
   }
   const allowedViews = Array.isArray(access.allowedViews) ? access.allowedViews : [];
-  if (!allowedViews.length) {
+  if (allowedViews.includes(normalized)) {
     return true;
   }
-  return allowedViews.includes(normalized);
+  return hasAnyDashboardPermission(getPermissionKeysForView(normalized));
+}
+
+function getFirstAllowedDashboardView() {
+  const preferred = ["overview", "analytics", "api-usage", "creator-integrations", "accounts", "permissions"];
+  const registered = Object.keys(App.views || {});
+  const ordered = [...preferred, ...registered.filter((view) => !preferred.includes(view))];
+  return ordered.find((viewName) => isDashboardViewAllowed(viewName)) || "overview";
 }
 
 function renderRestrictedDashboardView(container, viewName) {
@@ -230,14 +288,23 @@ function renderRestrictedDashboardView(container, viewName) {
     <section class="ss-panel">
       <div class="ss-panel-header">
         <h2>Restricted view</h2>
-        <p>This area is unavailable in the current developer admin-lite session.</p>
+        <p>This route is blocked by the authoritative dashboard permission policy from StreamSuites.</p>
       </div>
       <div class="ss-empty-state">
-        <p><code>${String(viewName || "view").replace(/</g, "&lt;")}</code> is restricted.</p>
+        <p><code>${String(viewName || "view").replace(/</g, "&lt;")}</code> is not available for the current account.</p>
       </div>
     </section>
   `;
 }
+
+window.StreamSuitesDashboardPermissions = {
+  getAccess: getAdminAccessState,
+  getPermission: getAdminPermissionState,
+  has: hasDashboardPermission,
+  hasAny: hasAnyDashboardPermission,
+  canView: isDashboardViewAllowed,
+  firstAllowedView: getFirstAllowedDashboardView
+};
 
 const App = {
   currentView: null,
@@ -1747,6 +1814,7 @@ const SIDEBAR_VIEW_ICON_MAP = Object.freeze({
   notifications: "/assets/icons/ui/bell.svg",
   ratelimits: "/assets/icons/ui/speed.svg",
   settings: "/assets/icons/ui/cog.svg",
+  permissions: "/assets/icons/ui/shieldtoggle.svg",
   "chat-replay": "/assets/icons/ui/uiscreen.svg",
   rumble: "/assets/icons/rumble-0.svg",
   youtube: "/assets/icons/youtube-0.svg",
@@ -1915,12 +1983,10 @@ function ensureSidebarNavDecorated() {
 }
 
 function applySidebarAccessState() {
-  const access = getAdminAccessState();
-  const restricted = access?.restricted === true;
   $all("#app-nav-list li[data-view]").forEach((item) => {
     const viewName = String(item.dataset.view || "").trim().toLowerCase();
     if (!viewName) return;
-    const allowed = !restricted || isDashboardViewAllowed(viewName);
+    const allowed = isDashboardViewAllowed(viewName);
     item.hidden = !allowed;
     item.classList.toggle("is-disabled", !allowed);
     item.setAttribute("aria-hidden", allowed ? "false" : "true");
@@ -2301,11 +2367,12 @@ function resolveInitialView() {
   if (view && App.views[view]) {
     return view;
   }
-  return "overview";
+  return getFirstAllowedDashboardView();
 }
 
 function handleDashboardRouteChange(route = resolveDashboardRoute()) {
-  const targetView = route?.view && App.views[route.view] ? route.view : "overview";
+  const targetView =
+    route?.view && App.views[route.view] ? route.view : getFirstAllowedDashboardView();
   App.currentRoute = route;
   setTopbarTitleBase(resolveViewTitle(targetView, route));
 
@@ -2600,6 +2667,10 @@ registerView("ratelimits", {
 registerView("settings", {
   onLoad: () => window.SettingsView?.init?.(),
   onUnload: () => window.SettingsView?.destroy?.()
+});
+registerView("permissions", {
+  onLoad: () => window.PermissionsView?.init?.(),
+  onUnload: () => window.PermissionsView?.destroy?.()
 });
 registerView("chat-replay", {});
 registerView("design", {});

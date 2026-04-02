@@ -1,0 +1,140 @@
+<header class="ss-header ss-permissions-header-shell">
+  <div class="ss-header-left">
+    <div class="ss-permissions-header-copy">
+      <span class="ss-chip ss-permissions-header-chip">Authoritative dashboard policy</span>
+      <h1 class="ss-title">Permissions</h1>
+      <span class="ss-subtitle">StreamSuites defines the registry, stores the policy, resolves effective access, and exposes the current session contract. This page edits and inspects that authority without replacing it.</span>
+    </div>
+  </div>
+  <div class="ss-header-right ss-permissions-header-right">
+    <span id="permissions-mode-chip" class="ss-chip ss-chip-muted">Checking authority…</span>
+    <span id="permissions-status" class="muted">Loading permissions…</span>
+  </div>
+</header>
+
+<main class="ss-main ss-permissions-main" id="permissions-page-root">
+  <section class="ss-permissions-banner-wrap">
+    <div id="permissions-banner" class="ss-alert ss-alert-warning hidden" role="status" aria-live="polite"></div>
+  </section>
+
+  <section class="ss-panel ss-permissions-hero-panel">
+    <div class="ss-panel-body ss-permissions-hero-body">
+      <div class="ss-permissions-hero-main">
+        <div class="ss-permissions-hero-copy">
+          <h2>Authority model and active scope</h2>
+          <p class="muted">Admins remain immutable superusers. Developer-capable accounts are the only non-admin class eligible for dashboard access in this pass, with role defaults resolved before per-user overrides.</p>
+        </div>
+        <div id="permissions-summary-grid" class="ss-permissions-summary-grid" aria-live="polite"></div>
+      </div>
+      <aside class="ss-permissions-hero-side">
+        <section class="ss-permissions-side-card">
+          <div class="ss-permissions-section-heading">
+            <div>
+              <h3>Editor scope</h3>
+              <p class="muted">Switch between developer role defaults and per-user overrides. All saves go back to StreamSuites Auth API.</p>
+            </div>
+          </div>
+          <div class="ss-permissions-scope-switch" id="permissions-scope-switch" role="tablist" aria-label="Permission editor scope">
+            <button type="button" class="ss-btn ss-btn-secondary ss-btn-small" data-permissions-scope="role">Role Defaults</button>
+            <button type="button" class="ss-btn ss-btn-secondary ss-btn-small" data-permissions-scope="user">User Overrides</button>
+          </div>
+          <dl class="ss-permissions-meta-list">
+            <div class="ss-permissions-meta-row">
+              <dt>Registry version</dt>
+              <dd id="permissions-registry-version">--</dd>
+            </div>
+            <div class="ss-permissions-meta-row">
+              <dt>Resolution order</dt>
+              <dd id="permissions-resolution-order">--</dd>
+            </div>
+            <div class="ss-permissions-meta-row">
+              <dt>Editable live keys</dt>
+              <dd id="permissions-live-count">--</dd>
+            </div>
+            <div class="ss-permissions-meta-row">
+              <dt>Developer accounts</dt>
+              <dd id="permissions-developer-count">--</dd>
+            </div>
+          </dl>
+        </section>
+      </aside>
+    </div>
+  </section>
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Developer admin-dashboard permission matrix</h2>
+        <p class="muted">Live rows below are backed by real StreamSuites policy. Future Creator, Public, and Tier capability rows stay visible as honest scaffold only.</p>
+      </div>
+      <div class="ss-analytics-alerts-header-actions">
+        <button type="button" id="permissions-refresh" class="ss-btn ss-btn-secondary ss-btn-small">Refresh</button>
+      </div>
+    </header>
+    <div class="ss-panel-body ss-permissions-editor-grid">
+      <section class="ss-permissions-editor-panel">
+        <div class="ss-permissions-section-heading">
+          <div>
+            <h3 id="permissions-editor-title">Role defaults</h3>
+            <p id="permissions-editor-copy" class="muted">Developer role policy is the default baseline before per-user overrides are applied.</p>
+          </div>
+          <div class="ss-permissions-actions">
+            <button type="button" id="permissions-save-role" class="ss-btn ss-btn-primary ss-btn-small">Save role policy</button>
+            <button type="button" id="permissions-save-user" class="ss-btn ss-btn-primary ss-btn-small hidden">Save user overrides</button>
+          </div>
+        </div>
+        <div id="permissions-role-editor" class="ss-permissions-editor-surface"></div>
+        <div id="permissions-user-editor" class="ss-permissions-editor-surface hidden"></div>
+      </section>
+
+      <aside class="ss-permissions-insight-panel">
+        <section class="ss-permissions-side-card">
+          <div class="ss-permissions-section-heading">
+            <div>
+              <h3>Effective permissions insight</h3>
+              <p class="muted">Read how role defaults, user overrides, and dashboard access dependency combine for the selected scope.</p>
+            </div>
+          </div>
+          <div id="permissions-effective-summary" class="ss-permissions-effective-summary"></div>
+        </section>
+      </aside>
+    </div>
+  </section>
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Individual Developer overrides</h2>
+        <p class="muted">Browse developer-capable accounts and inspect per-user overrides without pretending non-developer roles already participate in dashboard access.</p>
+      </div>
+    </header>
+    <div class="ss-panel-body ss-permissions-user-grid">
+      <section class="ss-permissions-side-card">
+        <label class="accounts-toolbar-label" for="permissions-user-search">Search developer accounts</label>
+        <input id="permissions-user-search" class="ss-input" type="search" placeholder="Search by display name, email, user code, or role…" />
+        <div id="permissions-user-list" class="ss-permissions-user-list" aria-live="polite"></div>
+      </section>
+      <section class="ss-permissions-side-card">
+        <div class="ss-permissions-section-heading">
+          <div>
+            <h3>Selected account</h3>
+            <p class="muted">Current effective state is read from the authoritative account payload, not recomputed in the dashboard.</p>
+          </div>
+        </div>
+        <div id="permissions-selected-user" class="ss-permissions-selected-user"></div>
+      </section>
+    </div>
+  </section>
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Future capability scaffolds</h2>
+        <p class="muted">These domains are intentionally visible to shape the eventual model, but they remain non-editable until StreamSuites exposes real authoritative contracts for them.</p>
+      </div>
+    </header>
+    <div class="ss-panel-body">
+      <div id="permissions-future-scaffolds" class="ss-permissions-scaffold-grid"></div>
+    </div>
+  </section>
+</main>

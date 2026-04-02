@@ -125,8 +125,19 @@
     return `<span class="${classes}">${escapeHtml(label)}</span>`;
   }
 
-  function isRestrictedAdminSession() {
-    return window.StreamSuitesDashboardGuard?.adminAccess?.restricted === true;
+  function canManageCreatorIntegrations() {
+    return (
+      window.StreamSuitesDashboardPermissions?.has?.(
+        "admin.dashboard.manage.creator_integrations"
+      ) === true
+    );
+  }
+
+  function canOpenUserDetail() {
+    return window.StreamSuitesDashboardPermissions?.hasAny?.([
+      "admin.dashboard.manage.accounts",
+      "admin.dashboard.manage.creator_integrations"
+    ]) === true;
   }
 
   function renderBooleanBadge(value, trueLabel, falseLabel) {
@@ -297,9 +308,9 @@
         <td>${escapeHtml(String(item.deployable_platform_count || 0))}</td>
         <td>${renderBooleanBadge(item.foundational_trigger_ready, "Ready", "Missing")}</td>
         <td>${renderBadge(item.readiness_label || "Unknown", readinessTone(item.readiness_label))}</td>
-        <td class="align-right">
+          <td class="align-right">
           ${
-            isRestrictedAdminSession()
+            !canOpenUserDetail()
               ? '<span class="muted">Restricted</span>'
               : `<button type="button" class="ss-btn ss-btn-small ss-btn-primary" data-open-user="${escapeHtml(
                   item.user_code || ""
@@ -441,7 +452,7 @@
             <td>${escapeHtml(summarizeTriggerContribution(trigger))}</td>
             <td class="align-right">
               ${
-                isRestrictedAdminSession()
+                !canManageCreatorIntegrations()
                   ? '<span class="muted">Restricted</span>'
                   : `<button
                       type="button"
@@ -473,7 +484,7 @@
       el.refreshDetail.disabled = !state.userCode;
     }
     if (el.openUser) {
-      el.openUser.disabled = !state.userCode || isRestrictedAdminSession();
+      el.openUser.disabled = !state.userCode || !canOpenUserDetail();
     }
     if (!state.detail) {
       el.detailEmpty?.classList.remove("hidden");
@@ -515,9 +526,9 @@
   }
 
   async function fetchDetail(userCode) {
-    if (isRestrictedAdminSession()) {
+    if (!canManageCreatorIntegrations()) {
       renderDetail(null);
-      setBanner("Developer admin-lite sessions can review integration summaries but cannot open account detail.");
+      setBanner("This account can review integration summaries but cannot open admin detail without the creator-integrations management permission.");
       setStatus("Detail view restricted.");
       return;
     }
@@ -543,8 +554,8 @@
   }
 
   async function updateTrigger(triggerId, enabled) {
-    if (isRestrictedAdminSession()) {
-      setBanner("Developer admin-lite sessions cannot mutate creator triggers from Dashboard.");
+    if (!canManageCreatorIntegrations()) {
+      setBanner("Creator trigger controls require the creator-integrations management permission.");
       setStatus("Trigger controls restricted.");
       return;
     }

@@ -4,6 +4,40 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Admin Permissions Surface + Authoritative Dashboard Enforcement - 2026-04-02
+
+### Technical Notes
+
+- Added a new dedicated admin `Permissions` route and sidebar entry under `System`, with the page shell in `docs/views/permissions.html` and the page controller in `docs/js/permissions.js`.
+- Reworked dashboard-side admin access consumption in `docs/js/admin-gate.js` and `docs/js/app.js` so the SPA now reads authoritative effective permission state from StreamSuites instead of the older hard-coded developer-lite assumptions. Sidebar visibility, direct route gating, initial-view selection, and the new permission helper surface now all consume the same resolved payload.
+- Replaced the older dashboard copy and route logic that treated every non-admin dashboard session as a single `developer admin-lite` bucket. The client now distinguishes route/view permission grants and specific manage-action grants from the authoritative backend payload because developer dashboard access is now explicitly permission-driven rather than one fixed allowlist.
+- Added permission-aware control gating to the highest-impact existing mutation surfaces that developers might legitimately view without managing: Accounts manage actions, Creator Integrations detail or trigger controls, runtime bot/manual deploy controls, creator backfill, and Overview analytics panels.
+- Added additive styling for the new permission workspace in `docs/css/components.css` and updated the dashboard README tree to reflect the new page file. Existing unrelated pages were not redesigned.
+
+### Human-Readable Notes
+
+- The admin dashboard now has a real permissions workspace for developer dashboard access under `System > Permissions`.
+- Developers only see or use the dashboard areas their effective backend permissions allow, and direct URLs no longer bypass those checks.
+- Future Creator, Public, and Tier capability areas appear as intentional planned scaffolds, not fake live toggles.
+
+### Files / Areas Touched
+
+- `docs/js/app.js`
+- `docs/js/admin-gate.js`
+- `docs/js/admin-routes.js`
+- `docs/js/accounts.js`
+- `docs/js/bots.js`
+- `docs/js/creator-integrations.js`
+- `docs/js/creators.js`
+- `docs/js/overview.js`
+- `docs/js/permissions.js`
+- `docs/views/permissions.html`
+- `docs/css/components.css`
+- `index.html`
+- `docs/index.html`
+- `README.md`
+- `BUMP_NOTES.md`
+
 ## Admin Web Email/Password Login Alignment - 2026-03-29
 
 ### Technical Notes

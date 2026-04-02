@@ -61,6 +61,7 @@
     scoreboards: { canonical: "/scoreboards", title: "Scoreboards" },
     "scoreboard-management": { canonical: "/scoreboard-management", title: "Manage Scores" },
     settings: { canonical: "/settings", title: "Settings" },
+    permissions: { canonical: "/permissions", title: "Permissions" },
     updates: { canonical: "/updates", title: "Updates" },
     design: { canonical: "/design", title: "Design" }
   });

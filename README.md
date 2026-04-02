@@ -22,7 +22,7 @@ Admin-facing StreamSuites surface deployed to Cloudflare Pages at `https://admin
 ```mermaid
 flowchart TD
     Admin["Admin operator"] --> Gate["Admin session gate<br/>docs/auth + admin-gate.js"]
-    Gate --> Shell["Dashboard shell and routes<br/>/overview /accounts /alerts /analytics /bots /settings /profiles/integrations"]
+    Gate --> Shell["Dashboard shell and routes<br/>/overview /accounts /alerts /analytics /bots /settings /permissions /profiles/integrations"]
 
     Shell --> Accounts["Accounts and creators views"]
     Shell --> Alerts["Alerts workspace<br/>rules, targets, preferences, history"]
@@ -44,6 +44,7 @@ flowchart TD
 ## Current Admin Surface Model
 
 - Clean path-based admin routes are the primary navigation model, replacing older hash-fragment and partial-only dependence for normal use.
+- The admin dashboard now includes a dedicated `/permissions` route under System for authoritative developer dashboard access policy inspection and editing, while keeping StreamSuites Auth API as the sole permission authority.
 - Root and `docs/` rewrite manifests preserve deep links for routes such as `/overview`, `/accounts`, `/profiles`, `/analytics`, `/alerts`, `/notifications`, `/settings`, `/creator-stats`, `/integrations/...`, and other admin views, but the repo root is now the authoritative shell so deep links do not depend on a `/docs/index.html` compatibility hop.
 - Creator integrations now have a dedicated admin route at `/profiles/integrations`, backed by runtime/Auth-admin inspection endpoints for creator-capable posture, platform readiness, trigger foundation, and bot deploy eligibility.
 - Admin account investigation now also supports a dedicated `user_code` route at `/users/{user_code}` for exhaustive single-account inspection across identity, auth posture, creator readiness, integrations, and trigger footing.
@@ -137,6 +138,7 @@ StreamSuites-Dashboard/
 │   │   ├── creators.js
 │   │   ├── notifications.js
 │   │   ├── overview.js
+│   │   ├── permissions.js
 │   │   ├── settings.js
 │   │   ├── state.js
 │   │   ├── user-detail.js
@@ -173,6 +175,7 @@ StreamSuites-Dashboard/
 │       ├── jobs.html
 │       ├── notifications.html
 │       ├── overview.html
+│       ├── permissions.html
 │       ├── settings.html
 │       ├── user-detail.html
 │       └── platforms/

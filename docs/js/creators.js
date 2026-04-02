@@ -105,6 +105,13 @@
     el.linkNote.classList.toggle("hidden", !text);
   }
 
+  function canManageCreators() {
+    return (
+      window.StreamSuitesDashboardPermissions?.has?.("admin.dashboard.manage.runtime") ===
+      true
+    );
+  }
+
   function normalizedCreators(payload) {
     const rows = Array.isArray(payload?.creators) ? payload.creators : [];
     return rows
@@ -363,6 +370,10 @@
 
   async function runBackfill() {
     if (!el.btnBackfill) return;
+    if (!canManageCreators()) {
+      setError("Creator backfill requires the runtime management permission.");
+      return;
+    }
     const originalLabel = el.btnBackfill.textContent || "Backfill Creator Identities";
     el.btnBackfill.disabled = true;
     el.btnBackfill.textContent = "Backfilling...";
@@ -472,6 +483,11 @@
     el.linkNote = $("creators-link-note");
 
     wireReadOnlyUi();
+    if (el.btnBackfill && !canManageCreators()) {
+      el.btnBackfill.disabled = true;
+      el.btnBackfill.setAttribute("aria-disabled", "true");
+      el.btnBackfill.title = "Creator backfill requires the runtime management permission.";
+    }
 
     state.onRefreshClick = () => {
       void hydrateCreators();
