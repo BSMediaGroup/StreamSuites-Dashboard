@@ -8,6 +8,9 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ### Technical Notes
 
+- Follow-up deploy-shape root cause after the previous follow-up: this admin repo also needs to support direct `docs/` publishing, not just the repo-root or built-`dist` artifact shape. The live 404 behavior on `/overview` and other deep links was consistent with a `docs/`-published Pages site where `docs/_redirects` no longer rewrote SPA routes but there was still no matching `docs/functions/[[path]].js` fallback.
+- Added `docs/functions/[[path]].js` with the same known-route SPA fallback logic as the repo-root Pages Function, so direct `docs/` publishing now preserves real admin deep-link URLs instead of falling through to the branded 404 page.
+- Updated `scripts/build-pages-artifact.ps1` again so the builder also stages the `functions/` directory from `docs/` into `dist/`, which keeps the built artifact aligned with the direct-`docs` deployment shape instead of depending only on the repo-root function.
 - Follow-up root cause after deploy verification: the route-model repair was correct, but the repo-local publish builder still only staged static assets into `dist/` and did not include `functions/[[path]].js`. That meant the deployed artifact lost the Pages Function fallback entirely, so direct-entry shell routes on the live host fell straight to `404` once the old `_redirects -> /index.html` rewrites were removed.
 - Updated `scripts/build-pages-artifact.ps1` to copy the repo-root `functions/` directory into `dist/functions/`, so the publish artifact now ships the same Pages Function fallback logic that exists in source.
 - Tightened `scripts/validate-pages-routing.ps1` so it now fails immediately if `dist/functions/[[path]].js` is missing and starts `wrangler pages dev` from the built `dist/` directory instead of the repo root, which closes the previous validation blind spot where local checks could accidentally succeed against source-tree functions that were absent from the actual artifact.
@@ -31,6 +34,7 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 - `_redirects`
 - `docs/_redirects`
 - `functions/[[path]].js`
+- `docs/functions/[[path]].js`
 - `scripts/build-pages-artifact.ps1`
 - `docs/js/admin-gate.js`
 - `docs/js/admin-auth.js`

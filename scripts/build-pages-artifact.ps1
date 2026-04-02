@@ -14,6 +14,7 @@ $publishDirectories = @(
   "auth",
   "css",
   "data",
+  "functions",
   "js",
   "livechat",
   "runtime",
