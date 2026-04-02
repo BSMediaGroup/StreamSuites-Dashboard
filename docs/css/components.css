@@ -8468,6 +8468,17 @@ button.public-btn:active::after {
   display: block;
 }
 
+.ss-settings-destination-grid .ss-settings-card-head > div {
+  display: grid;
+  gap: 3px;
+  align-items: start;
+  min-width: 0;
+}
+
+.ss-settings-destination-grid .ss-settings-kicker {
+  display: block;
+}
+
 .ss-settings-platform-title {
   display: flex;
   align-items: center;
