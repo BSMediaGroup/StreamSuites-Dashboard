@@ -23,7 +23,7 @@ if (Test-Path -LiteralPath $stderrLog) {
 
 & $buildScript
 
-$compatibilityDate = Get-Date -Format "yyyy-MM-dd"
+$compatibilityDate = (Get-Date).AddDays(-1).ToString("yyyy-MM-dd")
 $process = $null
 
 function Invoke-RouteCheck {
@@ -84,6 +84,61 @@ try {
   Invoke-RouteCheck -Path "/permissions" -ExpectedStatus 200
   Invoke-RouteCheck -Path "/profiles/not-real" -ExpectedStatus 404
   Invoke-RouteCheck -Path "/js/admin-routes.js" -ExpectedStatus 200 -RejectHtml
+
+  $routeAudit = @'
+const fs = require('fs');
+const vm = require('vm');
+
+const listeners = new Map();
+const sandbox = {
+  console,
+  URL,
+  URLSearchParams,
+  CustomEvent: function CustomEvent(type, init = {}) { this.type = type; this.detail = init.detail; },
+  window: {
+    ADMIN_BASE_PATH: '',
+    location: new URL('http://127.0.0.1:__PORT__/overview'),
+    addEventListener(type, handler) {
+      listeners.set(type, handler);
+    },
+    dispatchEvent() {
+      return true;
+    }
+  }
+};
+sandbox.window.window = sandbox.window;
+
+vm.createContext(sandbox);
+vm.runInContext(fs.readFileSync('docs/js/admin-routes.js', 'utf8'), sandbox);
+
+const routes = sandbox.window.StreamSuitesAdminRoutes;
+const userDetail = routes.resolveViewFromPath('/users/7lPBEiA', '');
+if (userDetail.view !== 'user-detail' || userDetail.params.user_code !== '7lPBEiA') {
+  throw new Error(`Admin user-detail route mismatch: ${JSON.stringify(userDetail)}`);
+}
+
+const integrations = routes.resolveViewFromPath('/profiles/integrations', '?user_code=UGHW8WQ');
+if (integrations.view !== 'creator-integrations' || integrations.queryString !== 'user_code=UGHW8WQ') {
+  throw new Error(`Admin creator-integrations route mismatch: ${JSON.stringify(integrations)}`);
+}
+
+const discord = routes.resolveViewFromPath('/integrations/discord', '');
+if (discord.view !== 'discord') {
+  throw new Error(`Admin discord route mismatch: ${JSON.stringify(discord)}`);
+}
+
+sandbox.window.location = new URL('http://127.0.0.1:__PORT__/definitely-invalid-route');
+const unknown = routes.resolveLocation();
+if (unknown.view !== '' || unknown.matched !== false) {
+  throw new Error(`Admin unknown-route mismatch: ${JSON.stringify(unknown)}`);
+}
+'@
+  $routeAudit = $routeAudit.Replace("__PORT__", [string]$Port)
+
+  $routeAudit | node -
+  if ($LASTEXITCODE -ne 0) {
+    throw "Admin route resolver validation failed."
+  }
 
   Write-Host "Dashboard Pages routing validation passed on port $Port."
 } finally {

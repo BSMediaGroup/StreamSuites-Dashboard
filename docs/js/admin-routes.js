@@ -71,6 +71,10 @@
     return normalized ? VIEW_ROUTE_DEFINITIONS[normalized] || null : null;
   }
 
+  function normalizeViewToken(value) {
+    return typeof value === "string" ? value.trim().toLowerCase() : "";
+  }
+
   function resolveBasePath(configuredValue = window.ADMIN_BASE_PATH) {
     const configured =
       typeof configuredValue === "string" ? configuredValue.trim().replace(/\/+$/, "") : "";
@@ -205,6 +209,35 @@
     };
   }
 
+  function resolveViewName(viewLike) {
+    const normalized = normalizeViewToken(viewLike);
+    if (!normalized) return "";
+    if (VIEW_ROUTE_DEFINITIONS[normalized]) {
+      return normalized;
+    }
+    if (normalized.startsWith("#")) {
+      return resolveViewFromHash(normalized)?.view || "";
+    }
+    if (normalized.startsWith("/")) {
+      return resolveViewFromPath(normalized).view || "";
+    }
+    const pathView = resolveViewFromPath(`/${normalized}`).view || "";
+    if (pathView) {
+      return pathView;
+    }
+    try {
+      const parsed = new URL(String(viewLike), window.location.origin);
+      if (parsed.origin !== window.location.origin) return "";
+      return (
+        resolveViewFromPath(parsed.pathname || "/", parsed.search || "").view ||
+        resolveViewFromHash(parsed.hash || "").view ||
+        ""
+      );
+    } catch (err) {
+      return "";
+    }
+  }
+
   function getCanonicalPathForView(viewName) {
     const config = getViewConfig(viewName);
     if (!config) return "/overview";
@@ -249,23 +282,30 @@
   }
 
   function resolveLocation() {
-    const hashRoute = resolveViewFromHash(window.location.hash);
     const pathRoute = resolveViewFromPath();
+    const hashRoute = resolveViewFromHash(window.location.hash);
 
     if (pathRoute.view) {
-      return pathRoute;
+      return { ...pathRoute, matched: true };
     }
 
     if (hashRoute.view) {
-      return hashRoute;
+      return { ...hashRoute, matched: true };
+    }
+
+    if (pathRoute.pathname === "/") {
+      return {
+        ...pathRoute,
+        view: "overview",
+        matched: true,
+        defaulted: true
+      };
     }
 
     return {
-      mode: "path",
-      view: "overview",
-      pathname: normalizePathname(window.location.pathname),
-      query: window.location.search || "",
-      queryString: String(window.location.search || "").replace(/^\?/, "")
+      ...pathRoute,
+      matched: false,
+      defaulted: false
     };
   }
 
@@ -346,6 +386,7 @@
     normalizePathname,
     resolveViewFromHash,
     resolveViewFromPath,
+    resolveViewName,
     resolveLocation,
     getTitleForView,
     getCanonicalPathForView,

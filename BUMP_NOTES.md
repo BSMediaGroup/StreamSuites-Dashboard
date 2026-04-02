@@ -4,6 +4,31 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Admin Shell Startup Route Preservation + Nested Script Bootstrap Repair - 2026-04-03
+
+### Technical Notes
+
+- Root-caused the remaining admin deep-link collapse to the client bootstrap stack rather than the Cloudflare rewrite layer: `docs/js/admin-gate.js` still reloaded the dashboard script bundle from relative `js/...` paths after authorization, which turns into `/users/js/...`, `/profiles/js/...`, or `/integrations/js/...` on direct-entry nested URLs and can break the real shell bootstrap. At the same time, `docs/js/admin-routes.js` and `docs/js/app.js` still treated unmatched shell URLs as implicit `overview`, and same-view route changes such as `/users/{codeA}` -> `/users/{codeB}` did not force a reload because the handler only compared the view name.
+- Updated `docs/js/admin-gate.js` so gate-loaded scripts are normalized to origin-rooted paths before version stamping, which keeps the post-auth bootstrap loading the same files regardless of the current nested dashboard route.
+- Updated `docs/js/admin-routes.js` so route resolution now distinguishes a real root default from an unknown path, exposes a shared `resolveViewName(...)` normalizer for path-like permission/view tokens, and preserves unmatched routes as unmatched instead of fabricating `overview`.
+- Updated `docs/js/app.js` so startup routing, route-change handling, and permission checks all normalize through the same route helper, unknown routes render an explicit in-app not-found surface instead of collapsing to Overview, slash/path-based `allowedViews` tokens normalize back to canonical view ids, and same-view route changes reload when the pathname, params, or query actually changed.
+- Hardened `scripts/validate-pages-routing.ps1` so it also survives compatibility-date skew and now runs an inline admin route-resolver regression pass for `/users/{user_code}`, `/profiles/integrations?user_code=...`, `/integrations/discord`, and the unknown-route case in addition to the existing `wrangler pages dev` HTTP checks.
+- No files were removed or replaced in this repo. The touched files are slightly longer because the old fallback-to-overview behavior was replaced with explicit route-state handling and the gate loader now anchors script URLs instead of assuming the current path is the shell root.
+
+### Human-Readable Notes
+
+- Admin deep links now keep bootstrapping on nested URLs instead of trying to reload the dashboard bundle from a fake `/users/js/...` or `/profiles/js/...` path.
+- Valid admin routes like `/users/{user_code}`, `/profiles/integrations?user_code=...`, and `/integrations/discord` now resolve to their intended view, while a real bad route stays a real not-found state instead of quietly opening Overview.
+- Back/forward or programmatic navigation within the same view family now refreshes when the route payload actually changed, which keeps dynamic user-detail routes honest.
+
+### Files / Areas Touched
+
+- `docs/js/admin-gate.js`
+- `docs/js/admin-routes.js`
+- `docs/js/app.js`
+- `scripts/validate-pages-routing.ps1`
+- `BUMP_NOTES.md`
+
 ## Admin Cloudflare Route Inventory Repair - 2026-04-02
 
 ### Technical Notes

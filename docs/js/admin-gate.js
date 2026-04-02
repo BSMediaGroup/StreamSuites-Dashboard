@@ -981,9 +981,9 @@
   function normalizeScriptPath(src) {
     if (typeof src !== "string") return src;
     if (/^[a-z]+:\/\//i.test(src)) return src;
-    if (src.startsWith("/docs/")) return src.slice(6);
-    if (src.startsWith("/")) return src.slice(1);
-    return src;
+    if (src.startsWith("/docs/")) return src.slice(5);
+    if (src.startsWith("/")) return src;
+    return `/${src.replace(/^\/+/, "")}`;
   }
 
   let assetVersionPromise = null;
@@ -1040,7 +1040,7 @@
     }
 
     try {
-      const url = new URL(normalized, window.location.href);
+      const url = new URL(normalized, window.location.origin);
       if (!url.searchParams.has("v")) {
         url.searchParams.set("v", token);
       }

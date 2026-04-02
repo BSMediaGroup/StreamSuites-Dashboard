@@ -245,6 +245,16 @@ function hasAnyDashboardPermission(permissionKeys = []) {
   );
 }
 
+function normalizeDashboardViewName(viewLike) {
+  const normalized = String(viewLike || "").trim().toLowerCase();
+  if (!normalized) return "";
+  const router = window.StreamSuitesAdminRoutes;
+  if (typeof router?.resolveViewName === "function") {
+    return router.resolveViewName(normalized) || normalized;
+  }
+  return normalized;
+}
+
 function getPermissionKeysForView(viewName) {
   const normalized = String(viewName || "").trim().toLowerCase();
   if (!normalized) return [];
@@ -258,7 +268,7 @@ function getPermissionKeysForView(viewName) {
 }
 
 function isDashboardViewAllowed(viewName) {
-  const normalized = String(viewName || "").trim().toLowerCase();
+  const normalized = normalizeDashboardViewName(viewName);
   if (!normalized) return false;
   const normalizedRole = getAdminRoleState();
   if (normalizedRole === "admin") {
@@ -268,7 +278,9 @@ function isDashboardViewAllowed(viewName) {
   if (!access || access.allowed !== true) {
     return false;
   }
-  const allowedViews = Array.isArray(access.allowedViews) ? access.allowedViews : [];
+  const allowedViews = Array.isArray(access.allowedViews)
+    ? access.allowedViews.map((entry) => normalizeDashboardViewName(entry)).filter(Boolean)
+    : [];
   if (allowedViews.includes(normalized)) {
     return true;
   }
@@ -292,6 +304,24 @@ function renderRestrictedDashboardView(container, viewName) {
       </div>
       <div class="ss-empty-state">
         <p><code>${String(viewName || "view").replace(/</g, "&lt;")}</code> is not available for the current account.</p>
+      </div>
+    </section>
+  `;
+}
+
+function renderMissingDashboardRoute(container, route = App.currentRoute) {
+  if (!container) return;
+  const pathname = String(route?.pathname || window.location.pathname || "/").trim() || "/";
+  const query = String(route?.query || "").trim();
+  const requestedRoute = `${pathname}${query}`.replace(/</g, "&lt;");
+  container.innerHTML = `
+    <section class="ss-panel">
+      <div class="ss-panel-header">
+        <h2>Route not found</h2>
+        <p>This admin route is not mapped by the dashboard shell.</p>
+      </div>
+      <div class="ss-empty-state">
+        <p><code>${requestedRoute}</code> did not resolve to a known admin view.</p>
       </div>
     </section>
   `;
@@ -2429,31 +2459,64 @@ function resolveDashboardRoute() {
   };
 }
 
-function resolveInitialView() {
-  const route = resolveDashboardRoute();
+function isDefaultDashboardEntry(route) {
+  return String(route?.pathname || "").trim() === "/";
+}
+
+function getRouteIdentity(route) {
+  if (!route || typeof route !== "object") return "";
+  return JSON.stringify({
+    mode: route.mode || "",
+    view: route.view || "",
+    pathname: route.pathname || "",
+    queryString: route.queryString || "",
+    params: route.params || {}
+  });
+}
+
+function resolveInitialView(route = resolveDashboardRoute()) {
   const view = route?.view;
   if (view && App.views[view]) {
     return view;
   }
-  return getFirstAllowedDashboardView();
+  if (isDefaultDashboardEntry(route)) {
+    return getFirstAllowedDashboardView();
+  }
+  return "";
 }
 
 function handleDashboardRouteChange(route = resolveDashboardRoute()) {
+  const previousRoute = App.currentRoute;
   const targetView =
-    route?.view && App.views[route.view] ? route.view : getFirstAllowedDashboardView();
+    route?.view && App.views[route.view]
+      ? route.view
+      : isDefaultDashboardEntry(route)
+        ? getFirstAllowedDashboardView()
+        : "";
   App.currentRoute = route;
-  setTopbarTitleBase(resolveViewTitle(targetView, route));
 
-  if (route?.mode === "hash") {
+  if (route?.mode === "hash" && targetView) {
     window.StreamSuitesAdminRoutes?.canonicalizeLegacyHashRoute?.(route);
     return;
   }
 
-  if (App.currentView === targetView) {
+  if (!targetView) {
+    App.currentView = "";
+    setTopbarTitleBase("Not found");
+    clearTopbarTitleOverride();
+    renderMissingDashboardRoute($("#view-container"), route);
+    syncAccountsShellForView("");
+    updateNavActiveState("");
     return;
   }
 
-  loadView(targetView);
+  setTopbarTitleBase(resolveViewTitle(targetView, route));
+  const routeChanged = getRouteIdentity(previousRoute) !== getRouteIdentity(route);
+  if (App.currentView === targetView && !routeChanged) {
+    return;
+  }
+
+  loadView(targetView, { route });
 }
 
 function bindRouteChanges() {
@@ -2547,17 +2610,23 @@ async function initApp() {
 
     console.log("[BOOT:50] router begin", performance.now());
     const initialRoute = resolveDashboardRoute();
-    const initialView = resolveInitialView();
+    const initialView = resolveInitialView(initialRoute);
     App.currentRoute = initialRoute;
     App.boot.firstViewName = initialView;
-    setTopbarTitleBase(resolveViewTitle(initialView, initialRoute));
+    setTopbarTitleBase(initialView ? resolveViewTitle(initialView, initialRoute) : "Not found");
     console.log("[BOOT:55] Router ready", performance.now());
-    console.log("[BOOT:60] first view mount begin", performance.now());
-    await loadView(initialView, { route: initialRoute });
-    if (initialRoute?.mode === "hash" && initialRoute.view) {
-      window.StreamSuitesAdminRoutes?.canonicalizeLegacyHashRoute?.(initialRoute);
-    } else if (!initialRoute?.view || initialRoute?.pathname === "/") {
-      window.StreamSuitesAdminRoutes?.navigateToView?.(initialView, { replace: true });
+    if (initialView) {
+      console.log("[BOOT:60] first view mount begin", performance.now());
+      await loadView(initialView, { route: initialRoute });
+      if (initialRoute?.mode === "hash" && initialRoute.view) {
+        window.StreamSuitesAdminRoutes?.canonicalizeLegacyHashRoute?.(initialRoute);
+      } else if (!initialRoute?.view || initialRoute?.pathname === "/") {
+        window.StreamSuitesAdminRoutes?.navigateToView?.(initialView, { replace: true });
+      }
+    } else {
+      renderMissingDashboardRoute($("#view-container"), initialRoute);
+      syncAccountsShellForView("");
+      updateNavActiveState("");
     }
 
     App.initialized = true;
