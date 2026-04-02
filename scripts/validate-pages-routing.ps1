@@ -17,6 +17,11 @@ if (-not (Test-Path -LiteralPath (Split-Path $stdoutLog -Parent))) {
 
 & $buildScript
 
+$distFunctionPath = Join-Path $repoRoot "dist\\functions\\[[path]].js"
+if (-not (Test-Path -LiteralPath $distFunctionPath)) {
+  throw "Built artifact is missing dist/functions/[[path]].js. Pages SPA fallback would not ship."
+}
+
 $compatibilityDate = "2026-01-20"
 $process = $null
 $invokeWebRequestOptions = @{
@@ -288,12 +293,12 @@ try {
     "wrangler",
     "pages",
     "dev",
-    "dist",
+    ".",
     "--port",
     $Port,
     "--compatibility-date",
     $compatibilityDate
-  ) -WorkingDirectory $repoRoot -RedirectStandardOutput $stdoutLog -RedirectStandardError $stderrLog -PassThru
+  ) -WorkingDirectory (Join-Path $repoRoot "dist") -RedirectStandardOutput $stdoutLog -RedirectStandardError $stderrLog -PassThru
 
   $ready = $false
   for ($attempt = 0; $attempt -lt 30; $attempt += 1) {

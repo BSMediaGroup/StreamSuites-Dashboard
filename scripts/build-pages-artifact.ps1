@@ -6,6 +6,7 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $docsRoot = Join-Path $repoRoot "docs"
+$functionsRoot = Join-Path $repoRoot "functions"
 $publishRoot = Join-Path $repoRoot $OutputDir
 $publishDirectories = @(
   "about",
@@ -104,6 +105,11 @@ foreach ($directoryName in $publishDirectories) {
 
   $destinationDir = Join-Path $publishRoot $directoryName
   Mirror-Directory -Source $sourceDir -Destination $destinationDir -ExcludeFilePatterns @("tmp*")
+}
+
+if (Test-Path -LiteralPath $functionsRoot) {
+  $publishFunctionsRoot = Join-Path $publishRoot "functions"
+  Mirror-Directory -Source $functionsRoot -Destination $publishFunctionsRoot
 }
 
 Copy-Item -LiteralPath (Join-Path $repoRoot "index.html") -Destination (Join-Path $publishRoot "index.html") -Force
