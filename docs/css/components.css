@@ -8337,9 +8337,9 @@ button.public-btn:active::after {
   overflow: hidden;
   border: 1px solid rgba(125, 173, 255, 0.2);
   background:
-    radial-gradient(circle at top left, rgba(70, 136, 255, 0.22), transparent 42%),
-    radial-gradient(circle at top right, rgba(80, 214, 143, 0.16), transparent 34%),
-    linear-gradient(180deg, rgba(8, 19, 38, 0.96), rgba(11, 20, 34, 0.94));
+    radial-gradient(circle at top left, rgba(70, 136, 255, 0.18), transparent 44%),
+    radial-gradient(circle at 82% 18%, rgba(80, 214, 143, 0.12), transparent 28%),
+    linear-gradient(180deg, rgba(10, 20, 35, 0.97), rgba(10, 18, 30, 0.95));
   box-shadow:
     0 24px 48px rgba(0, 0, 0, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.07);
@@ -8350,16 +8350,8 @@ button.public-btn:active::after {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    linear-gradient(130deg, rgba(255, 255, 255, 0.06), transparent 28%),
-    repeating-linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.03) 0,
-      rgba(255, 255, 255, 0.03) 1px,
-      transparent 1px,
-      transparent 92px
-    );
-  opacity: 0.7;
+  background: linear-gradient(130deg, rgba(255, 255, 255, 0.05), transparent 30%);
+  opacity: 0.55;
 }
 
 .ss-overview-hero-body,
@@ -8370,7 +8362,7 @@ button.public-btn:active::after {
 }
 
 .ss-overview-hero-body {
-  grid-template-columns: minmax(0, 2.2fr) minmax(300px, 1fr);
+  grid-template-columns: minmax(0, 1.8fr) minmax(320px, 0.92fr);
 }
 
 .ss-overview-hero-main,
@@ -8378,13 +8370,44 @@ button.public-btn:active::after {
 .ss-overview-stack,
 .ss-overview-feed-card {
   display: grid;
-  gap: 14px;
+  gap: 16px;
+}
+
+.ss-overview-greeting {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(124, 155, 191, 0.24);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(224, 236, 255, 0.92);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.ss-overview-hero-copy h2 {
+  margin: 0;
+  font-size: clamp(1.45rem, 2.8vw, 2.05rem);
+  line-height: 1.14;
+}
+
+.ss-overview-hero-copy p {
+  max-width: 72ch;
+  margin: 0;
 }
 
 .ss-overview-summary-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+}
+
+.ss-overview-snapshot-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 18px;
 }
 
 .ss-overview-summary-card,
@@ -8404,13 +8427,13 @@ button.public-btn:active::after {
 .ss-overview-platform-card,
 .ss-overview-scaffold-card,
 .ss-overview-side-card {
-  padding: 16px 18px;
+  padding: 18px 20px;
 }
 
 .ss-overview-summary-card strong {
   font-family: "RechargeBd", sans-serif;
-  font-size: clamp(1.35rem, 2vw, 1.8rem);
-  letter-spacing: 0.03em;
+  font-size: clamp(1.08rem, 1.55vw, 1.38rem);
+  letter-spacing: 0.02em;
   color: #f4f8ff;
 }
 
@@ -8426,6 +8449,13 @@ button.public-btn:active::after {
 .ss-overview-feed-item p,
 .ss-overview-scaffold-card p {
   margin: 0;
+}
+
+.ss-overview-chip-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .ss-overview-actions-grid {
@@ -8460,18 +8490,90 @@ button.public-btn:active::after {
 .ss-overview-meta-row dd {
   color: var(--text-primary);
   text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .ss-overview-posture-grid,
 .ss-overview-detail-grid,
 .ss-overview-scaffold-grid {
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.ss-overview-detail-card,
+.ss-overview-scaffold-card {
+  grid-column: span 6;
+}
+
+.ss-overview-detail-card[data-span="wide"] {
+  grid-column: span 6;
+}
+
+.ss-overview-detail-card[data-span="full"],
+.ss-overview-scaffold-card[data-span="full"] {
+  grid-column: 1 / -1;
+}
+
+.ss-overview-snapshot-card.is-analytics {
+  grid-column: span 7;
+}
+
+.ss-overview-snapshot-card.is-alert {
+  grid-column: span 5;
+}
+
+.ss-overview-snapshot-card.is-api {
+  grid-column: 1 / -1;
+}
+
+.ss-overview-inline-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+}
+
+.ss-overview-inline-metric {
+  display: grid;
+  gap: 4px;
+  padding: 12px 13px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.ss-overview-inline-metric-label {
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ss-overview-inline-metric strong {
+  margin: 0;
+  font-family: "RechargeBd", sans-serif;
+  font-size: 1.08rem;
+  color: #f4f8ff;
 }
 
 .ss-overview-platform-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.ss-overview-platform-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ss-overview-platform-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  object-fit: contain;
 }
 
 .ss-overview-platform-card[data-tone="success"] {
@@ -8520,6 +8622,11 @@ button.public-btn:active::after {
   margin: 0;
 }
 
+.ss-overview-feed-topline-main {
+  display: grid;
+  gap: 8px;
+}
+
 .ss-overview-feed-topline span {
   text-align: right;
 }
@@ -8536,6 +8643,20 @@ button.public-btn:active::after {
   .ss-overview-hero-body {
     grid-template-columns: 1fr;
   }
+
+  .ss-overview-snapshot-grid,
+  .ss-overview-posture-grid,
+  .ss-overview-detail-grid,
+  .ss-overview-scaffold-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .ss-overview-detail-card,
+  .ss-overview-scaffold-card,
+  .ss-overview-snapshot-card.is-analytics,
+  .ss-overview-snapshot-card.is-alert {
+    grid-column: span 6;
+  }
 }
 
 @media (max-width: 720px) {
@@ -8544,9 +8665,26 @@ button.public-btn:active::after {
     grid-template-columns: 1fr;
   }
 
+  .ss-overview-summary-grid,
+  .ss-overview-snapshot-grid,
+  .ss-overview-posture-grid,
+  .ss-overview-detail-grid,
+  .ss-overview-scaffold-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ss-overview-detail-card,
+  .ss-overview-scaffold-card,
+  .ss-overview-snapshot-card.is-analytics,
+  .ss-overview-snapshot-card.is-alert,
+  .ss-overview-snapshot-card.is-api {
+    grid-column: auto;
+  }
+
   .ss-overview-meta-row dd,
   .ss-overview-feed-topline span {
     text-align: left;
+    justify-content: flex-start;
   }
 }
 

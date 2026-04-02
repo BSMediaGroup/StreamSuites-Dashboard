@@ -7,6 +7,9 @@
   const MAX_AUTH_EVENTS = 8;
   const MAX_AUDIT_ITEMS = 6;
   const MAX_WARNING_ITEMS = 8;
+  const ANALYTICS_WINDOW = "24h";
+  const API_USAGE_WINDOW = "5m";
+  const SNAPSHOT_ALERT_LIMIT = 6;
   const USERS_EXPORT_PATH = "runtime/exports/admin/users/users.json";
   const AUDIT_EXPORT_PATH = "runtime/exports/admin/audit/audit.json";
 
@@ -28,12 +31,15 @@
       runtimeVersion: null,
       exportManifest: null,
       liveStatus: null,
+      analyticsSnapshot: null,
+      apiUsage: null,
       localCreators: [],
       localPlatforms: null,
       dashboardState: null,
       authControls: null,
       sessionIdentity: null,
       alertSettings: null,
+      alertHistory: null,
       usersSnapshot: null,
       adminActivity: null,
       telemetrySnapshot: null,
@@ -75,7 +81,9 @@
     el.modeChip = document.getElementById("overview-mode-chip");
     el.status = document.getElementById("overview-status");
     el.banner = document.getElementById("overview-banner");
+    el.greeting = document.getElementById("overview-greeting");
     el.summaryGrid = document.getElementById("overview-summary-grid");
+    el.snapshotGrid = document.getElementById("overview-snapshot-grid");
     el.metaList = document.getElementById("overview-meta-list");
     el.postureGrid = document.getElementById("overview-posture-grid");
     el.platformGrid = document.getElementById("overview-platform-grid");
@@ -115,12 +123,15 @@
       window.Versioning?.loadVersion?.(),
       loadExportManifest(),
       loadLiveStatus(options),
+      loadAnalyticsSnapshot(options),
+      loadApiUsageOverview(options),
       loadLocalCreators(),
       loadLocalPlatforms(),
       loadDashboardState(options),
       loadAuthControls(options),
       loadSessionIdentity(options),
       loadAlertSettings(options),
+      loadAlertHistory(options),
       loadUsersSnapshot(options),
       loadAdminActivity(options),
       window.Telemetry?.loadSnapshot?.(options.forceRefresh === true),
@@ -137,12 +148,15 @@
       versionResult,
       manifestResult,
       liveStatusResult,
+      analyticsSnapshotResult,
+      apiUsageResult,
       creatorsResult,
       platformsResult,
       dashboardStateResult,
       authControlsResult,
       sessionIdentityResult,
       alertSettingsResult,
+      alertHistoryResult,
       usersSnapshotResult,
       adminActivityResult,
       telemetrySnapshotResult,
@@ -159,12 +173,15 @@
     VIEW_STATE.state.runtimeVersion = getSettledValue(versionResult) || null;
     VIEW_STATE.state.exportManifest = getSettledValue(manifestResult) || null;
     VIEW_STATE.state.liveStatus = getSettledValue(liveStatusResult) || null;
+    VIEW_STATE.state.analyticsSnapshot = getSettledValue(analyticsSnapshotResult) || null;
+    VIEW_STATE.state.apiUsage = getSettledValue(apiUsageResult) || null;
     VIEW_STATE.state.localCreators = getSettledValue(creatorsResult) || [];
     VIEW_STATE.state.localPlatforms = getSettledValue(platformsResult) || null;
     VIEW_STATE.state.dashboardState = getSettledValue(dashboardStateResult) || null;
     VIEW_STATE.state.authControls = getSettledValue(authControlsResult) || null;
     VIEW_STATE.state.sessionIdentity = getSettledValue(sessionIdentityResult) || null;
     VIEW_STATE.state.alertSettings = getSettledValue(alertSettingsResult) || null;
+    VIEW_STATE.state.alertHistory = getSettledValue(alertHistoryResult) || null;
     VIEW_STATE.state.usersSnapshot = getSettledValue(usersSnapshotResult) || null;
     VIEW_STATE.state.adminActivity = getSettledValue(adminActivityResult) || null;
     VIEW_STATE.state.telemetrySnapshot = getSettledValue(telemetrySnapshotResult) || null;
@@ -238,6 +255,41 @@
         loaderReason: "Hydrating overview live-status posture..."
       })) || null
     );
+  }
+
+  async function loadAnalyticsSnapshot(options = {}) {
+    try {
+      const payload = await window.StreamSuitesApi?.getAdminAnalytics?.(ANALYTICS_WINDOW, {
+        forceRefresh: options.forceRefresh === true,
+        ttlMs: 8000,
+        timeoutMs: 3500
+      });
+      return payload?.data && typeof payload.data === "object" ? payload.data : payload || null;
+    } catch (err) {
+      console.warn("[Overview] Analytics snapshot unavailable", err);
+      return null;
+    }
+  }
+
+  async function loadApiUsageOverview(options = {}) {
+    if (typeof window.StreamSuitesApi?.apiFetch !== "function") {
+      return null;
+    }
+    try {
+      return (
+        (await window.StreamSuitesApi.apiFetch(
+          `/api/admin/api-usage?window=${encodeURIComponent(API_USAGE_WINDOW)}`,
+          {
+            cacheTtlMs: 5000,
+            forceRefresh: options.forceRefresh === true,
+            timeoutMs: 3500
+          }
+        )) || null
+      );
+    } catch (err) {
+      console.warn("[Overview] API usage snapshot unavailable", err);
+      return null;
+    }
   }
 
   async function loadLocalCreators() {
@@ -361,6 +413,24 @@
     }
   }
 
+  async function loadAlertHistory(options = {}) {
+    try {
+      return (
+        (await window.StreamSuitesApi?.getAdminAlertHistory?.(
+          { limit: SNAPSHOT_ALERT_LIMIT },
+          {
+            forceRefresh: options.forceRefresh === true,
+            ttlMs: 5000,
+            timeoutMs: 3500
+          }
+        )) || null
+      );
+    } catch (err) {
+      console.warn("[Overview] Alert history unavailable", err);
+      return null;
+    }
+  }
+
   async function loadUsersSnapshot(options = {}) {
     const apiBase = resolveAuthApiBase();
     if (apiBase) {
@@ -446,6 +516,15 @@
     return [];
   }
 
+  function extractItems(payload) {
+    if (!payload) return [];
+    if (Array.isArray(payload)) return payload;
+    if (Array.isArray(payload.items)) return payload.items;
+    if (Array.isArray(payload.events)) return payload.events;
+    if (Array.isArray(payload.data?.items)) return payload.data.items;
+    return [];
+  }
+
   async function loadAdminActivity(options = {}) {
     try {
       return (
@@ -494,6 +573,7 @@
     const loading = '<div class="ss-overview-empty">Loading overview…</div>';
     [
       el.summaryGrid,
+      el.snapshotGrid,
       el.metaList,
       el.postureGrid,
       el.platformGrid,
@@ -516,6 +596,7 @@
     renderHeader();
     renderMeta();
     renderSummary();
+    renderSnapshotSection();
     renderOperationalPosture();
     renderPlatforms();
     renderAccounts();
@@ -539,6 +620,10 @@
       el.modeChip.classList.toggle("ss-chip-warning", mode !== "connected");
       el.modeChip.classList.toggle("ss-chip-muted", mode === "unknown");
     }
+
+    if (el.greeting) {
+      el.greeting.textContent = `Welcome, ${getPreferredOperatorName()}`;
+    }
   }
 
   function renderMeta() {
@@ -560,8 +645,6 @@
   function renderSummary() {
     if (!el.summaryGrid) return;
     const runtimeVersion = VIEW_STATE.state.runtimeVersion;
-    const users = extractUsers(VIEW_STATE.state.usersSnapshot);
-    const liveStatus = VIEW_STATE.state.liveStatus || {};
     const attentionItems = buildAttentionItems();
     const access = window.StreamSuitesDashboardPermissions?.getAccess?.() || {};
 
@@ -597,18 +680,149 @@
         attentionItems.length
           ? attentionItems.slice(0, 2).map((item) => item.label).join(" • ")
           : "No active warning contract is currently reporting a problem."
-      ),
-      buildSummaryCard(
-        "Admin accounts",
-        formatCount(countBy(users, (user) => normalizeRole(user.role) === "admin")),
-        `${formatCount(users.length)} total accounts in the current admin user snapshot.`
-      ),
-      buildSummaryCard(
-        "Live-status providers",
-        formatCount(Array.isArray(liveStatus.providers) ? liveStatus.providers.length : 0),
-        "Provider cadence and last refresh posture come from the live-status export."
       )
     ].join("");
+  }
+
+  function renderSnapshotSection() {
+    if (!el.snapshotGrid) return;
+
+    const analytics = VIEW_STATE.state.analyticsSnapshot;
+    const latestAlert = getLatestAlertEntry(VIEW_STATE.state.alertHistory);
+    const apiUsage = VIEW_STATE.state.apiUsage;
+
+    el.snapshotGrid.innerHTML = [
+      buildAnalyticsSnapshotCard(analytics),
+      buildLatestAlertSnapshotCard(latestAlert),
+      buildApiUsageSnapshotCard(apiUsage)
+    ].join("");
+  }
+
+  function buildAnalyticsSnapshotCard(analytics) {
+    const totals = analytics?.totals || {};
+    const footprint = summarizeAnalyticsFootprint(analytics);
+    const generatedAt = formatTimestamp(analytics?.generated_at) || "Unavailable";
+
+    return `
+      <article class="ss-overview-detail-card ss-overview-snapshot-card is-analytics">
+        <div class="ss-overview-card-head">
+          <div>
+            <span class="ss-overview-kicker">Analytics snapshot</span>
+            <h3>Reach and geographic footprint</h3>
+          </div>
+          ${badgeSpan(footprint.windowLabel, "info")}
+        </div>
+        <div class="ss-overview-inline-metrics">
+          ${buildInlineMetric("Sessions", formatCount(totals.sessions))}
+          ${buildInlineMetric("Requests", formatCount(totals.requests))}
+          ${buildInlineMetric("Nations", formatCount(footprint.countryCount))}
+          ${buildInlineMetric("Cities", formatCount(footprint.cityCount))}
+        </div>
+        <dl class="ss-overview-detail-list">
+          ${detailRow("Most active region", footprint.topRegionLabel)}
+          ${detailRow("Region-detail rows", formatCount(footprint.regionCount))}
+          ${detailRow("Top surface", footprint.topSurface)}
+          ${detailRow("Generated", generatedAt)}
+        </dl>
+        <p class="ss-overview-card-note muted">The footprint summary stays grounded in the same analytics contract that powers the dedicated reporting surface.</p>
+      </article>
+    `;
+  }
+
+  function buildLatestAlertSnapshotCard(entry) {
+    if (!entry) {
+      return `
+        <article class="ss-overview-detail-card ss-overview-snapshot-card is-alert">
+          <div class="ss-overview-card-head">
+            <div>
+              <span class="ss-overview-kicker">Latest system alert</span>
+              <h3>Recent alert activity</h3>
+            </div>
+            ${badgeSpan("Unavailable", "muted")}
+          </div>
+          ${buildEmptyFeed("No recent alert history was available from the current alerting contract.")}
+        </article>
+      `;
+    }
+
+    const severityText = coerceText(entry.severity, "info");
+    const severityTone = getAlertSeverityTone(severityText);
+    const statusText = getAlertHistoryStatus(entry);
+    const statusTone = getAlertStatusTone(entry, statusText);
+    const destinations = formatList(entry.destinations_targeted);
+    const locationLabel = summarizeAlertLocation(entry);
+
+    return `
+      <article class="ss-overview-detail-card ss-overview-snapshot-card is-alert">
+        <div class="ss-overview-card-head">
+          <div>
+            <span class="ss-overview-kicker">Latest system alert</span>
+            <h3>${escapeHtml(coerceText(entry.title || entry.event_type, "Alert activity"))}</h3>
+          </div>
+          <div class="ss-overview-chip-row">
+            ${badgeSpan(labelize(severityText), severityTone)}
+            ${badgeSpan(statusText, statusTone)}
+          </div>
+        </div>
+        <p class="muted">${escapeHtml(coerceText(entry.message, "Recent alert delivery activity is available, but this entry did not publish a message body."))}</p>
+        <dl class="ss-overview-detail-list">
+          ${detailRow("Event type", labelize(entry.event_type || "unknown"))}
+          ${detailRow("Triggered", formatTimestamp(entry.triggered_at || entry.created_at) || "Unavailable")}
+          ${detailRow("Destinations", destinations)}
+          ${detailRow("Location", locationLabel)}
+        </dl>
+        <p class="ss-overview-card-note muted">This card is sourced from the existing alert delivery history rather than a dashboard-local placeholder feed.</p>
+      </article>
+    `;
+  }
+
+  function buildApiUsageSnapshotCard(bundle) {
+    const liveSummary = getApiUsageLiveSummary(bundle);
+    const endpoints = sanitizeApiUsageEndpoints(bundle?.endpoints);
+    const topEndpoint = endpoints[0] || null;
+    const degradedCount = countBy(
+      endpoints,
+      (row) => row.status === "degraded" || row.status === "unhealthy"
+    );
+    const postureTone = degradedCount > 0 || Number(liveSummary.errorRate) >= 0.01
+      ? Number(liveSummary.errorRate) >= 0.05
+        ? "danger"
+        : "warning"
+      : "success";
+    const postureLabel =
+      postureTone === "danger"
+        ? "Needs review"
+        : postureTone === "warning"
+          ? "Watch"
+          : "Healthy";
+
+    return `
+      <article class="ss-overview-detail-card ss-overview-snapshot-card is-api">
+        <div class="ss-overview-card-head">
+          <div>
+            <span class="ss-overview-kicker">API usage overview</span>
+            <h3>Runtime request health</h3>
+          </div>
+          <div class="ss-overview-chip-row">
+            ${badgeSpan(liveSummary.windowLabel, "info")}
+            ${badgeSpan(postureLabel, postureTone)}
+          </div>
+        </div>
+        <div class="ss-overview-inline-metrics">
+          ${buildInlineMetric("RPM", liveSummary.rpmText)}
+          ${buildInlineMetric("Error rate", liveSummary.errorRateText)}
+          ${buildInlineMetric("Degraded endpoints", formatCount(degradedCount))}
+          ${buildInlineMetric("Top endpoint hits", formatCount(topEndpoint?.hits))}
+        </div>
+        <dl class="ss-overview-detail-list">
+          ${detailRow("Top endpoint", topEndpoint ? topEndpoint.endpoint : "Unavailable")}
+          ${detailRow("Top endpoint health", topEndpoint ? labelize(topEndpoint.status) : "Unknown")}
+          ${detailRow("Generated", liveSummary.generatedAt)}
+          ${detailRow("Auth/tier sections", summarizeApiSupplementSections(bundle))}
+        </dl>
+        <p class="ss-overview-card-note muted">The overview keeps API posture concise and defers detailed endpoint analysis to the dedicated API Usage surface.</p>
+      </article>
+    `;
   }
 
   function renderOperationalPosture() {
@@ -639,7 +853,8 @@
           ? "Runtime is directly connected to the shell."
           : VIEW_STATE.state.sourceMode === "published"
             ? "The shell is operating from exported state only."
-            : "No authoritative runtime payload was available."
+            : "No authoritative runtime payload was available.",
+        { span: "wide" }
       ),
       buildDetailCard(
         "Access posture",
@@ -647,7 +862,8 @@
         renderAuthRows(authControls),
         authControls?.__authLocked
           ? "Live Auth controls are locked behind an authenticated admin session."
-          : "These flags are sourced from the Auth API rather than local draft state."
+          : "These flags are sourced from the Auth API rather than local draft state.",
+        { span: "wide" }
       ),
       buildDetailCard(
         "Alerts posture",
@@ -655,7 +871,8 @@
         renderAlertRows(alertSettings),
         alertSettings
           ? "The dedicated Alerts workspace owns actual editing and delivery policy changes."
-          : "No authoritative alert settings payload was available."
+          : "No authoritative alert settings payload was available.",
+        { span: "wide" }
       ),
       buildDetailCard(
         "Restart boundary",
@@ -663,13 +880,15 @@
         renderRestartRows(restartIntent),
         restartIntent?.required
           ? "Runtime is reporting staged changes that still need an apply/restart boundary."
-          : "No authoritative restart-intent payload is reporting pending change application."
+          : "No authoritative restart-intent payload is reporting pending change application.",
+        { span: "wide" }
       ),
       buildDetailCard(
         "Local authoring context",
         "Dashboard drafts and creator config",
         renderLocalConfigRows(),
-        "These counts reflect dashboard-local drafts and creator configuration, not direct runtime mutation."
+        "These counts reflect dashboard-local drafts and creator configuration, not direct runtime mutation.",
+        { span: "wide" }
       ),
       buildDetailCard(
         "Live-status subsystem",
@@ -692,7 +911,8 @@
             ) || "Unavailable"
           )
         ].join(""),
-        "Provider error and cadence reporting stays read-only on this page."
+        "Provider error and cadence reporting stays read-only on this page.",
+        { span: "wide" }
       )
     ].join("");
   }
@@ -732,15 +952,24 @@
             <div class="ss-overview-card-head">
               <div>
                 <span class="ss-overview-kicker">Platform</span>
-                <h3>${escapeHtml(labelize(platform.platform || platform.name || "Unknown"))}</h3>
+                <h3 class="ss-overview-platform-title">
+                  <img
+                    class="ss-overview-platform-icon"
+                    src="${escapeHtml(getPlatformIconPath(platform.platform || platform.name))}"
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <span>${escapeHtml(labelize(platform.platform || platform.name || "Unknown"))}</span>
+                </h3>
               </div>
               ${badgeSpan(coerceText(platform.status, "unknown"), statusTone)}
             </div>
             <dl class="ss-overview-detail-list">
-              ${detailFlagRow("Enabled", platform.enabled)}
-              ${detailFlagRow("Telemetry", platform.telemetry_enabled ?? platform.telemetryEnabled)}
-              ${detailFlagRow("Replay support", platform.replay_supported)}
-              ${detailFlagRow("Overlay support", platform.overlay_supported)}
+              ${detailFlagChipRow("Enabled", platform.enabled)}
+              ${detailFlagChipRow("Telemetry", platform.telemetry_enabled ?? platform.telemetryEnabled)}
+              ${detailFlagChipRow("Replay support", platform.replay_supported)}
+              ${detailFlagChipRow("Overlay support", platform.overlay_supported)}
               ${detailRow("Draft config", configSummary)}
               ${detailRow("Last heartbeat", formatTimestamp(platform.last_heartbeat || platform.heartbeat || platform.lastUpdate) || "Never")}
               ${detailRow("Provider cadence", provider?.cadence_seconds ? `${provider.cadence_seconds}s` : "Not exported")}
@@ -835,10 +1064,10 @@
   function renderSignals() {
     if (!el.signalsGrid) return;
     el.signalsGrid.innerHTML = [
-      buildFeedCard("Attention queue", "Warnings derived from exported/runtime contracts", buildWarningsMarkup()),
-      buildFeedCard("Admin activity", "Recent operator actions from the admin activity contract", buildAdminActivityMarkup()),
-      buildFeedCard("Auth events", "Recent auth and email events from the analytics export/API", buildAuthEventsMarkup()),
-      buildFeedCard("Audit changes", "Recent governance and account changes from the audit export/API", buildAuditMarkup())
+      buildFeedCard("Attention queue", "Warnings derived from exported/runtime contracts", buildWarningsMarkup(), { span: "wide" }),
+      buildFeedCard("Admin activity", "Recent operator actions from the admin activity contract", buildAdminActivityMarkup(), { span: "wide" }),
+      buildFeedCard("Auth events", "Recent auth and email events from the analytics export/API", buildAuthEventsMarkup(), { span: "wide" }),
+      buildFeedCard("Audit changes", "Recent governance and account changes from the audit export/API", buildAuditMarkup(), { span: "wide" })
     ].join("");
   }
 
@@ -860,7 +1089,8 @@
           : detailRow("Exports", "Manifest unavailable"),
         exportsList.length
           ? "This list is sourced from the published export manifest."
-          : "The export manifest did not load, so this page cannot assert which files are currently published."
+          : "The export manifest did not load, so this page cannot assert which files are currently published.",
+        { span: "wide" }
       ),
       buildDetailCard(
         "Provider cadence",
@@ -877,20 +1107,22 @@
           : detailRow("Providers", "Not exported"),
         providers.some((provider) => coerceText(provider.last_error))
           ? "At least one provider reported an error in the latest export."
-          : "No provider errors were reported in the latest export."
+          : "No provider errors were reported in the latest export.",
+        { span: "wide" }
       ),
       buildDetailCard(
         "Observed admin contracts",
         "What overview is actually hydrating",
         [
-          detailRow("Runtime snapshot", VIEW_STATE.state.runtimeRaw ? "Available" : "Unavailable"),
-          detailRow("Auth controls", VIEW_STATE.state.authControls ? "Available" : "Unavailable"),
-          detailRow("Session identity", VIEW_STATE.state.sessionIdentity ? "Available" : "Unavailable"),
-          detailRow("Users snapshot", VIEW_STATE.state.usersSnapshot ? "Available" : "Unavailable"),
-          detailRow("Audit snapshot", VIEW_STATE.state.auditSnapshot ? "Available" : "Unavailable"),
-          detailRow("Discord status", VIEW_STATE.state.discordStatus ? "Available" : "Unavailable")
+          detailChipRow("Runtime snapshot", VIEW_STATE.state.runtimeRaw ? "Available" : "Unavailable", VIEW_STATE.state.runtimeRaw ? "success" : "muted"),
+          detailChipRow("Auth controls", VIEW_STATE.state.authControls ? "Available" : "Unavailable", VIEW_STATE.state.authControls ? "success" : "muted"),
+          detailChipRow("Session identity", VIEW_STATE.state.sessionIdentity ? "Available" : "Unavailable", VIEW_STATE.state.sessionIdentity ? "success" : "muted"),
+          detailChipRow("Users snapshot", VIEW_STATE.state.usersSnapshot ? "Available" : "Unavailable", VIEW_STATE.state.usersSnapshot ? "success" : "muted"),
+          detailChipRow("Audit snapshot", VIEW_STATE.state.auditSnapshot ? "Available" : "Unavailable", VIEW_STATE.state.auditSnapshot ? "success" : "muted"),
+          detailChipRow("Discord status", VIEW_STATE.state.discordStatus ? "Available" : "Unavailable", VIEW_STATE.state.discordStatus ? "success" : "muted")
         ].join(""),
-        "Overview only summarizes the contracts it can actually load in this admin shell."
+        "Overview only summarizes the contracts it can actually load in this admin shell.",
+        { span: "wide" }
       )
     ].join("");
   }
@@ -935,7 +1167,8 @@
         tone: "muted",
         label: coerceText(event.action, "Admin action"),
         meta: `${formatTimestamp(event.timestamp)} • ${coerceText(event.source, "unknown source")}`,
-        body: [coerceText(event.user, "Unknown operator"), coerceText(event.client_ip, "No client IP")].join(" • ")
+        body: [coerceText(event.user, "Unknown operator"), coerceText(event.client_ip, "No client IP")].join(" • "),
+        chips: [{ text: labelize(event.source || "activity"), tone: "info" }]
       }))
     );
   }
@@ -952,7 +1185,8 @@
         tone: normalizeResultTone(event.result),
         label: coerceText(event.action || event.event_name, "Auth event"),
         meta: `${formatTimestamp(event.timestamp_utc || event.timestamp)} • ${coerceText(event.event_type, "unknown")}`,
-        body: [coerceText(event.result, "result unknown"), coerceText(event.user_identifier || event.account_id, "unknown account")].join(" • ")
+        body: [coerceText(event.result, "result unknown"), coerceText(event.user_identifier || event.account_id, "unknown account")].join(" • "),
+        chips: [{ text: labelize(event.result || "unknown"), tone: normalizeResultTone(event.result) }]
       }))
     );
   }
@@ -967,7 +1201,8 @@
         tone: "muted",
         label: coerceText(entry.action, "Audit event"),
         meta: `${formatTimestamp(entry.ts || entry.timestamp || entry.created_at)} • ${coerceText(entry.actor_role, "unknown role")}`,
-        body: [coerceText(entry.actor_user_code, "unknown actor"), coerceText(entry.target_user_code, "no explicit target")].join(" • ")
+        body: [coerceText(entry.actor_user_code, "unknown actor"), coerceText(entry.target_user_code, "no explicit target")].join(" • "),
+        chips: [{ text: labelize(entry.actor_role || "unknown role"), tone: "muted" }]
       }))
     );
   }
@@ -1052,28 +1287,28 @@
 
   function renderAuthRows(authControls) {
     if (!authControls) {
-      return detailRow("Status", "Unavailable");
+      return detailChipRow("Status", "Unavailable", "muted");
     }
     if (authControls.__authLocked) {
-      return detailRow("Status", "Admin session required");
+      return detailChipRow("Status", "Admin session required", "warning");
     }
     const flags = authControls.flags || authControls.controls || authControls;
     return [
-      detailRow("New signups", formatFlagState(flags.disable_new_signups, { inverted: true })),
-      detailRow("Email verification", formatFlagState(flags.disable_email_verification, { inverted: true })),
-      detailRow("Resend verification", formatFlagState(flags.disable_resend_verification, { inverted: true })),
-      detailRow("Tier bypass", formatFlagState(flags.admin_tier_config_bypass)),
-      detailRow("Runtime authority", "Auth API")
+      detailChipRow("New signups", formatFlagState(flags.disable_new_signups, { inverted: true }), toneForFlagState(flags.disable_new_signups, { inverted: true })),
+      detailChipRow("Email verification", formatFlagState(flags.disable_email_verification, { inverted: true }), toneForFlagState(flags.disable_email_verification, { inverted: true })),
+      detailChipRow("Resend verification", formatFlagState(flags.disable_resend_verification, { inverted: true }), toneForFlagState(flags.disable_resend_verification, { inverted: true })),
+      detailChipRow("Tier bypass", formatFlagState(flags.admin_tier_config_bypass), toneForFlagState(flags.admin_tier_config_bypass)),
+      detailChipRow("Runtime authority", "Auth API", "info")
     ].join("");
   }
 
   function renderAlertRows(settings) {
     if (!settings) {
-      return detailRow("Status", "Unavailable");
+      return detailChipRow("Status", "Unavailable", "muted");
     }
     const preferences = settings.preferences || {};
     return [
-      detailRow("Master delivery", preferences.master_enabled === false ? "Muted" : "Enabled"),
+      detailChipRow("Master delivery", preferences.master_enabled === false ? "Muted" : "Enabled", preferences.master_enabled === false ? "warning" : "success"),
       detailRow(
         "Quiet hours",
         preferences.quiet_hours_enabled === true
@@ -1088,14 +1323,14 @@
 
   function renderRestartRows(restartIntent) {
     if (!restartIntent) {
-      return detailRow("Status", "Not exported");
+      return detailChipRow("Status", "Not exported", "muted");
     }
     return [
-      detailRow("Restart required", restartIntent.required ? "Yes" : "No"),
-      detailRow("System pending", restartIntent.pending?.system ? "Yes" : "No"),
-      detailRow("Creators pending", restartIntent.pending?.creators ? "Yes" : "No"),
-      detailRow("Triggers pending", restartIntent.pending?.triggers ? "Yes" : "No"),
-      detailRow("Platforms pending", restartIntent.pending?.platforms ? "Yes" : "No")
+      detailChipRow("Restart required", restartIntent.required ? "Yes" : "No", restartIntent.required ? "warning" : "success"),
+      detailChipRow("System pending", restartIntent.pending?.system ? "Pending" : "Clear", restartIntent.pending?.system ? "warning" : "success"),
+      detailChipRow("Creators pending", restartIntent.pending?.creators ? "Pending" : "Clear", restartIntent.pending?.creators ? "warning" : "success"),
+      detailChipRow("Triggers pending", restartIntent.pending?.triggers ? "Pending" : "Clear", restartIntent.pending?.triggers ? "warning" : "success"),
+      detailChipRow("Platforms pending", restartIntent.pending?.platforms ? "Pending" : "Clear", restartIntent.pending?.platforms ? "warning" : "success")
     ].join("");
   }
 
@@ -1181,11 +1416,221 @@
     return parts.length ? parts.join(" • ") : "Unavailable";
   }
 
+  function getPreferredOperatorName() {
+    const session = VIEW_STATE.state.sessionIdentity;
+    const authState = window.StreamSuitesAdminAuth?.state || {};
+    const sessionWindowState = window.StreamSuitesAdminSession || {};
+    const access = window.StreamSuitesDashboardPermissions?.getAccess?.() || {};
+    const email = coerceText(
+      session?.email ||
+        authState.email ||
+        sessionWindowState.email,
+      ""
+    );
+    const directName = coerceText(
+      session?.displayName ||
+        authState.displayName ||
+        authState.name ||
+        sessionWindowState.display_name ||
+        sessionWindowState.displayName ||
+        sessionWindowState.name ||
+        access.displayName,
+      ""
+    );
+    if (directName) return directName;
+    if (email.includes("@")) {
+      return email.split("@")[0];
+    }
+    return "Administrator";
+  }
+
   function normalizeResultTone(result) {
     const value = normalizeRole(result);
     if (value === "success" || value === "ok" || value === "allowed") return "success";
     if (value === "failed" || value === "failure" || value === "denied" || value === "error") return "danger";
+    if (value === "warning" || value === "pending") return "warning";
     return "muted";
+  }
+
+  function toneForFlagState(value, options = {}) {
+    if (value === true) return options.inverted ? "warning" : "success";
+    if (value === false) return options.inverted ? "success" : "muted";
+    return "muted";
+  }
+
+  function getAlertSeverityTone(value) {
+    const normalized = normalizeRole(value);
+    if (normalized === "critical" || normalized === "error") return "danger";
+    if (normalized === "warning") return "warning";
+    if (normalized === "info") return "info";
+    return "muted";
+  }
+
+  function getAlertHistoryStatus(entry) {
+    if (!entry || typeof entry !== "object") return "Unavailable";
+    if (entry.suppressed_reason) return "Suppressed";
+    if (Array.isArray(entry.destinations_delivered) && entry.destinations_delivered.length) return "Delivered";
+    if (entry.delivered_at) return "Delivered";
+    return "Pending";
+  }
+
+  function getAlertStatusTone(entry, statusText = "") {
+    if (entry?.suppressed_reason) return "warning";
+    if (statusText === "Delivered") return "success";
+    if (statusText === "Pending") return "muted";
+    return "muted";
+  }
+
+  function getLatestAlertEntry(payload) {
+    const items = extractItems(payload)
+      .filter((entry) => entry && typeof entry === "object")
+      .sort((left, right) => {
+        const leftTs = new Date(left.triggered_at || left.created_at || 0).getTime();
+        const rightTs = new Date(right.triggered_at || right.created_at || 0).getTime();
+        return rightTs - leftTs;
+      });
+    return items[0] || null;
+  }
+
+  function summarizeAlertLocation(entry) {
+    if (!entry || typeof entry !== "object") return "Unavailable";
+    const geo =
+      entry.metadata?.template_context?.geo ||
+      entry.payload_snapshot?.geo ||
+      entry.geo ||
+      {};
+    const city = coerceText(geo.city, "");
+    const region = coerceText(geo.region || geo.region_code, "");
+    const country = coerceText(geo.country || geo.country_code, "");
+    const parts = [city, region, country].filter(Boolean);
+    return parts.length ? parts.join(", ") : "No location context";
+  }
+
+  function summarizeAnalyticsFootprint(payload) {
+    const locations = Array.isArray(payload?.by_location) ? payload.by_location : [];
+    const countries = Array.isArray(payload?.by_country) ? payload.by_country : [];
+    const surfaces = Array.isArray(payload?.surfaces) ? payload.surfaces : [];
+    const countryKeys = new Set();
+    const cityKeys = new Set();
+    const regionKeys = new Set();
+    const regionTotals = new Map();
+
+    locations.forEach((entry) => {
+      const country = coerceText(
+        entry?.countryName || entry?.country || entry?.name || entry?.country_code || entry?.code,
+        ""
+      );
+      const city = coerceText(entry?.city, "");
+      const region = coerceText(entry?.region || entry?.regionCode || entry?.region_code, "");
+      const requests = Number(entry?.requests ?? entry?.count ?? 0);
+      const sessions = Number(entry?.sessions ?? entry?.count ?? requests);
+      const total = Number.isFinite(sessions) && sessions > 0
+        ? sessions
+        : Number.isFinite(requests)
+          ? requests
+          : 0;
+
+      if (country) countryKeys.add(country.toLowerCase());
+      if (city) cityKeys.add(`${city.toLowerCase()}|${country.toLowerCase()}`);
+
+      const regionLabel = [region, country].filter(Boolean).join(", ");
+      if (regionLabel) {
+        regionKeys.add(regionLabel.toLowerCase());
+        regionTotals.set(regionLabel, (regionTotals.get(regionLabel) || 0) + total);
+      }
+    });
+
+    countries.forEach((entry) => {
+      const country = coerceText(entry?.countryName || entry?.name || entry?.country || entry?.code, "");
+      if (country) countryKeys.add(country.toLowerCase());
+    });
+
+    const topSurface = [...surfaces]
+      .map((entry) => ({
+        label: labelize(entry?.label || entry?.surface || entry?.key || "Unknown"),
+        count: Number(entry?.count ?? 0)
+      }))
+      .sort((left, right) => right.count - left.count)[0];
+
+    const topRegion = [...regionTotals.entries()].sort((left, right) => right[1] - left[1])[0];
+
+    return {
+      countryCount: countryKeys.size || countries.length,
+      cityCount: cityKeys.size,
+      regionCount: regionKeys.size,
+      topRegionLabel: topRegion?.[0] || "No region detail exported",
+      topSurface: topSurface?.label || "Unavailable",
+      windowLabel: String(payload?.window || ANALYTICS_WINDOW).trim() || ANALYTICS_WINDOW
+    };
+  }
+
+  function getApiUsageLiveSummary(bundle) {
+    const live = bundle?.live_summary && typeof bundle.live_summary === "object"
+      ? bundle.live_summary
+      : bundle?.summary && typeof bundle.summary === "object"
+        ? bundle.summary
+        : {};
+    return {
+      rpmText: formatDecimal(live.rpm, Number(live.rpm) >= 10 ? 0 : 2),
+      errorRate: Number(live.error_rate),
+      errorRateText: formatPercent(live.error_rate, 2),
+      windowLabel: coerceText(live.window_label || bundle?.window_label || API_USAGE_WINDOW, API_USAGE_WINDOW),
+      generatedAt: formatTimestamp(live.generated_at || bundle?.generated_at) || "Unavailable"
+    };
+  }
+
+  function sanitizeApiUsageEndpoints(payload) {
+    const rows = Array.isArray(payload) ? payload : [];
+    return rows
+      .map((row) => {
+        const endpoint = coerceText(row?.endpoint || row?.path || row?.route, "unknown");
+        const hits = Number(row?.hits ?? 0);
+        const errors = Number(row?.errors ?? 0);
+        const errorRate = Number.isFinite(Number(row?.error_rate))
+          ? Number(row.error_rate)
+          : hits > 0
+            ? errors / hits
+            : 0;
+        const latency = Number(row?.p95_latency_ms ?? row?.avg_latency_ms ?? 0);
+        let status = "healthy";
+        if (errorRate > 0.05 || latency > 2000) {
+          status = "unhealthy";
+        } else if (errorRate >= 0.01 || latency >= 800) {
+          status = "degraded";
+        }
+        return {
+          endpoint,
+          hits: Number.isFinite(hits) ? Math.max(0, hits) : 0,
+          status
+        };
+      })
+      .sort((left, right) => right.hits - left.hits);
+  }
+
+  function summarizeApiSupplementSections(bundle) {
+    const sections = [];
+    if (bundle?.auth_access_signals) sections.push("Auth signals");
+    if (bundle?.tier_surface_usage) sections.push("Tier surfaces");
+    if (bundle?.version_regression) sections.push("Version watch");
+    return sections.length ? sections.join(" • ") : "Core summary only";
+  }
+
+  function formatPercent(value, digits = 0) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return "—";
+    return `${(number * 100).toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: digits
+    })}%`;
+  }
+
+  function formatDecimal(value, digits = 0) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return "—";
+    return number.toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: digits
+    });
   }
 
   function groupCounts(items, getter) {
@@ -1301,9 +1746,19 @@
     `;
   }
 
-  function buildDetailCard(label, title, body, note = "") {
+  function buildInlineMetric(label, value) {
     return `
-      <article class="ss-overview-detail-card">
+      <div class="ss-overview-inline-metric">
+        <span class="ss-overview-inline-metric-label">${escapeHtml(label)}</span>
+        <strong>${escapeHtml(value)}</strong>
+      </div>
+    `;
+  }
+
+  function buildDetailCard(label, title, body, note = "", options = {}) {
+    const span = coerceText(options.span, "");
+    return `
+      <article class="ss-overview-detail-card" ${span ? `data-span="${escapeHtml(span)}"` : ""}>
         <div class="ss-overview-card-head">
           <div>
             <span class="ss-overview-kicker">${escapeHtml(label)}</span>
@@ -1318,9 +1773,10 @@
     `;
   }
 
-  function buildFeedCard(title, subtitle, content) {
+  function buildFeedCard(title, subtitle, content, options = {}) {
+    const span = coerceText(options.span, "");
     return `
-      <article class="ss-overview-detail-card ss-overview-feed-card">
+      <article class="ss-overview-detail-card ss-overview-feed-card" ${span ? `data-span="${escapeHtml(span)}"` : ""}>
         <div class="ss-overview-card-head">
           <div>
             <span class="ss-overview-kicker">Recent feed</span>
@@ -1351,7 +1807,16 @@
             (item) => `
               <article class="ss-overview-feed-item" data-tone="${escapeHtml(item.tone || "muted")}">
                 <div class="ss-overview-feed-topline">
-                  <strong>${escapeHtml(item.label)}</strong>
+                  <div class="ss-overview-feed-topline-main">
+                    <strong>${escapeHtml(item.label)}</strong>
+                    ${
+                      Array.isArray(item.chips) && item.chips.length
+                        ? `<div class="ss-overview-chip-row">${item.chips
+                            .map((chip) => badgeSpan(chip.text, chip.tone || "muted"))
+                            .join("")}</div>`
+                        : ""
+                    }
+                  </div>
                   ${item.meta ? `<span class="muted">${escapeHtml(item.meta)}</span>` : ""}
                 </div>
                 <p class="muted">${escapeHtml(item.body || "")}</p>
@@ -1376,10 +1841,25 @@
     `;
   }
 
+  function detailChipRow(label, value, tone = "muted") {
+    return `
+      <div class="ss-overview-meta-row">
+        <dt>${escapeHtml(label)}</dt>
+        <dd>${badgeSpan(value, tone)}</dd>
+      </div>
+    `;
+  }
+
   function detailFlagRow(label, value) {
     if (value === true) return detailRow(label, "Yes");
     if (value === false) return detailRow(label, "No");
     return detailRow(label, "Unknown");
+  }
+
+  function detailFlagChipRow(label, value) {
+    if (value === true) return detailChipRow(label, "Enabled", "success");
+    if (value === false) return detailChipRow(label, "Disabled", "muted");
+    return detailChipRow(label, "Unknown", "muted");
   }
 
   function badgeSpan(text, tone = "muted") {
@@ -1392,6 +1872,20 @@
     if (tone === "danger") return "ss-chip-danger";
     if (tone === "info") return "ss-chip-info";
     return "ss-chip-muted";
+  }
+
+  function getPlatformIconPath(value) {
+    const normalized = String(value || "").trim().toLowerCase();
+    const iconMap = {
+      discord: "/assets/icons/discord.svg",
+      kick: "/assets/icons/kick.svg",
+      pilled: "/assets/icons/pilled.svg",
+      rumble: "/assets/icons/rumble.svg",
+      twitch: "/assets/icons/twitch.svg",
+      twitter: "/assets/icons/twitter.svg",
+      youtube: "/assets/icons/youtube.svg"
+    };
+    return iconMap[normalized] || "/assets/icons/ui/widget.svg";
   }
 
   window.OverviewView = {

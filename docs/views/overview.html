@@ -21,7 +21,8 @@
     <div class="ss-panel-body ss-overview-hero-body">
       <div class="ss-overview-hero-main">
         <div class="ss-overview-hero-copy">
-          <h2>Platform posture, access posture, and current operator context</h2>
+          <span id="overview-greeting" class="ss-overview-greeting">Welcome</span>
+          <h2>Operational posture, authority boundaries, and current operator context</h2>
           <p class="muted">This landing page keeps authority boundaries explicit. Runtime, Auth API, export manifests, admin activity, and admin snapshots remain the source of truth; the dashboard only summarizes and routes you into the dedicated work surfaces.</p>
         </div>
         <div id="overview-summary-grid" class="ss-overview-summary-grid" aria-live="polite"></div>
@@ -44,6 +45,18 @@
           <dl id="overview-meta-list" class="ss-overview-meta-list"></dl>
         </section>
       </aside>
+    </div>
+  </section>
+
+  <section id="overview-snapshot-section" class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Operations snapshot</h2>
+        <p class="muted">A quick read on live analytics reach, latest alert activity, and current API usage posture using the same backend contracts already feeding the dedicated work surfaces.</p>
+      </div>
+    </header>
+    <div class="ss-panel-body">
+      <div id="overview-snapshot-grid" class="ss-overview-snapshot-grid"></div>
     </div>
   </section>
 

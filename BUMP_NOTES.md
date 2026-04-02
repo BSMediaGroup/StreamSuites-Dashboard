@@ -4,6 +4,32 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Overview Deep Polish + Snapshot Band Pass - 2026-04-03
+
+### Technical Notes
+
+- Polished the existing `docs/views/overview.html` hero in place instead of replacing the overview architecture: removed the decorative grid treatment, tightened the typography scale, kept the command-access sidebar, and added a runtime/session-backed operator greeting at the top of the hero.
+- Added `/overview` to the shared anchored section-shell config in `docs/js/app.js`, reusing the same jump-tab rail pattern already used by Alerts, Settings, and Permissions rather than introducing overview-specific scroll logic.
+- Extended `docs/js/overview.js` with three additive snapshot loaders that reuse already-existing dashboard contracts: admin analytics for geographic/topline reach, admin alert history for the latest real alert snapshot, and the existing `/api/admin/api-usage` contract for a concise live API posture card.
+- Inserted a new first post-hero snapshot section in `docs/views/overview.html` and hydrated it from those real contracts, with intentionally uneven card widths so the analytics footprint and API usage summaries have enough horizontal room instead of collapsing into thin equal columns.
+- Reworked the overview-specific layout rules in `docs/css/components.css` so dense downstream cards now default to wider two-up presentation, feeds can breathe, hero summary cards read smaller and cleaner, and platform cards reuse the small logo-prefixed title treatment already established on Settings.
+- Tightened overview status presentation by reusing chip-color semantics for enabled/disabled, severity, result, availability, and restart-boundary states across the polished cards instead of leaving those values as flat uncolored text.
+- No overview sections or files were removed in this pass. This was a strict polish/additive upgrade, so `README.md` did not need a repo-tree update.
+
+### Human-Readable Notes
+
+- Overview remains recognizably the same page, but the hero reads more professionally and less placeholder-like.
+- The first section under the hero now gives a real operational snapshot for analytics reach, latest alert activity, and API usage.
+- Down-page cards have more breathing room, platform titles carry the existing logo treatment, and status-style values now read with clearer color meaning.
+
+### Files / Areas Touched
+
+- `docs/views/overview.html`
+- `docs/js/overview.js`
+- `docs/js/app.js`
+- `docs/css/components.css`
+- `BUMP_NOTES.md`
+
 ## Shared Runtime Export + Live-Status Mirror Refresh - 2026-04-03
 
 ### Technical Notes

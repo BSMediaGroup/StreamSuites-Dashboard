@@ -970,6 +970,19 @@ const VIEW_FETCH_TIMEOUT_MS = 6000;
 const VIEW_FETCH_RETRY_COUNT = 1;
 const VIEW_FETCH_RETRY_DELAY_MS = 240;
 const SECTION_SHELL_CONFIG = Object.freeze({
+  overview: Object.freeze({
+    storageKey: "ss_overview_shell_tabs_collapsed",
+    toggleLabel: "overview section tabs",
+    sections: Object.freeze([
+      { id: "overview-command-section", label: "Overview" },
+      { id: "overview-snapshot-section", label: "Snapshot" },
+      { id: "overview-posture-section", label: "Posture" },
+      { id: "overview-platforms-section", label: "Platforms" },
+      { id: "overview-accounts-section", label: "Accounts" },
+      { id: "overview-signals-section", label: "Signals" },
+      { id: "overview-publication-section", label: "Contracts" }
+    ])
+  }),
   accounts: Object.freeze({
     storageKey: "ss_accounts_shell_tabs_collapsed",
     toggleLabel: "accounts section tabs",
