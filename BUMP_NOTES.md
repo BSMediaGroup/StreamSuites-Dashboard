@@ -4,6 +4,32 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Shared Runtime Export + Live-Status Mirror Refresh - 2026-04-03
+
+### Technical Notes
+
+- Root-caused the stale admin version/build and shared live-status posture to upstream publication drift instead of an overview-only rendering bug: this repo’s checked-in `docs/runtime/exports/*` and `docs/shared/state/*` mirrors had fallen behind the authoritative `StreamSuites` runtime contracts, and the downstream `docs/shared/state/version.json` copy had remained effectively empty.
+- Refreshed the mirrored runtime-export payloads in `docs/runtime/exports/` from the authoritative `StreamSuites/runtime/exports/` contract, restoring the current runtime version/build metadata plus the current exported runtime snapshot, live-status snapshot, and related shared export payloads consumed by overview/settings posture surfaces.
+- Refreshed the mirrored shared-state payloads in `docs/shared/state/` from the same runtime-owned contract set, including truthful `version.json`, `runtime_snapshot.json`, `live_status.json`, quotas, Discord runtime state, and the other shared JSON documents this dashboard loads before any GitHub/raw fallback path.
+- No dashboard loader branches were removed in this repo during this fix. The broken assumption was stale downstream data, not the existence of the admin views themselves, so the repo structure stayed the same and `README.md` did not need a tree update.
+
+### Human-Readable Notes
+
+- The admin dashboard mirror now carries the current runtime version/build again.
+- Shared live-status hydration and other shared posture cards are back on the refreshed runtime-owned mirror instead of an older copied export set.
+- The old empty shared-state version mirror was replaced with the real runtime export metadata.
+
+### Files / Areas Touched
+
+- `docs/runtime/exports/version.json`
+- `docs/runtime/exports/runtime_snapshot.json`
+- `docs/runtime/exports/live_status.json`
+- `docs/shared/state/version.json`
+- `docs/shared/state/runtime_snapshot.json`
+- `docs/shared/state/live_status.json`
+- `docs/shared/state/...` (refreshed mirrored JSON contracts)
+- `BUMP_NOTES.md`
+
 ## Overview Command Landing Redesign + Real Admin Hydration Pass - 2026-04-03
 
 ### Technical Notes

@@ -11,8 +11,16 @@
       "creator": "example-creator",
       "question": "What should we stream next?",
       "options": [
-        {"option_id": "poll-000001-option-1", "label": "Gaming", "votes": 10},
-        {"option_id": "poll-000001-option-2", "label": "IRL", "votes": 5}
+        {
+          "option_id": "poll-000001-option-1",
+          "label": "Gaming",
+          "votes": 10
+        },
+        {
+          "option_id": "poll-000001-option-2",
+          "label": "IRL",
+          "votes": 5
+        }
       ],
       "state": "closed",
       "opened_at": "2024-01-01T00:00:00Z",

@@ -11,8 +11,16 @@
       "creator": "example-creator",
       "title": "Example scoreboard",
       "entries": [
-        {"position": 1, "label": "First place", "score": 120},
-        {"position": 2, "label": "Second place", "score": 90}
+        {
+          "position": 1,
+          "label": "First place",
+          "score": 120
+        },
+        {
+          "position": 2,
+          "label": "Second place",
+          "score": 90
+        }
       ],
       "finalized_at": "2024-01-01T01:00:00Z"
     }

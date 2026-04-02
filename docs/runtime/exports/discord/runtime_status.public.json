@@ -50,7 +50,7 @@
     },
     {
       "guild_id": 1449303974086967306,
-      "guild_name": "StreamSuites\u2122",
+      "guild_name": "StreamSuites™",
       "bot_present": true,
       "authorized_for_user": false,
       "authorization_reason": "none",
@@ -87,12 +87,12 @@
   "runtime_connectivity_detected": true,
   "fatal_error": null,
   "status": {
-    "text": "\ud83c\udf0e streamsuites.app",
+    "text": "🌎 streamsuites.app",
     "emoji": null,
     "profile": "public"
   },
   "presence": {
-    "status_text": "\ud83c\udf0e streamsuites.app",
+    "status_text": "🌎 streamsuites.app",
     "status_emoji": null
   },
   "heartbeat": {
