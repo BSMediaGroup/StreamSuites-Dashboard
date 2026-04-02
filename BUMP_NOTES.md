@@ -600,6 +600,25 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into the released `0.4.2-alpha` section above.
 
+### Badge Governance Header Abbreviation Tweak - 2026-04-02
+
+### Technical Notes
+
+- Narrowed the change to the badge-governance surface label normalizers in `docs/js/accounts.js` and `docs/js/user-detail.js` only.
+- The governance tables already had short fallback labels, but live runtime `surface_catalog` data could still inject the longer `StreamSuites Profile` and `FindMeHere Profile` header text. Both renderers now force those two known surface keys to display as `SS Profile` and `FMH Profile` while leaving every other surface key/label untouched.
+- No files were created or removed, and nothing was deleted from the table structure or backend payload handling. This was a display-label override only.
+
+### Human-Readable Notes
+
+- The badge governance tables on both the main Accounts page and individual user pages now use shorter profile column names so the matrix columns fit more evenly.
+- Only the two requested headers changed; the rest of the badge governance UI behaves the same.
+
+### Files / Areas Touched
+
+- `docs/js/accounts.js`
+- `docs/js/user-detail.js`
+- `BUMP_NOTES.md`
+
 ### Admin Topbar User Widget Narrow Polish - 2026-03-30
 
 ### Technical Notes

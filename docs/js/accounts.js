@@ -297,19 +297,26 @@
       .join("");
   }
 
+  function getBadgeSurfaceDisplayLabel(key, fallbackLabel) {
+    const normalizedKey = String(key || "").trim().toLowerCase();
+    if (normalizedKey === "streamsuites_profile") return "SS Profile";
+    if (normalizedKey === "findmehere_profile") return "FMH Profile";
+    return String(fallbackLabel || key || "").trim();
+  }
+
   function getBadgeSurfaceCatalog(source) {
     const surfaceCatalog = source?.surface_catalog;
     if (Array.isArray(surfaceCatalog) && surfaceCatalog.length) {
       return surfaceCatalog
         .map((entry) => ({
           key: String(entry?.key || "").trim(),
-          label: String(entry?.label || entry?.key || "").trim()
+          label: getBadgeSurfaceDisplayLabel(entry?.key, entry?.label || entry?.key)
         }))
         .filter((entry) => entry.key && !HIDDEN_BADGE_GOVERNANCE_SURFACES.has(entry.key));
     }
     return [
-      { key: "streamsuites_profile", label: "SS Profile" },
-      { key: "findmehere_profile", label: "FMH Profile" },
+      { key: "streamsuites_profile", label: getBadgeSurfaceDisplayLabel("streamsuites_profile") },
+      { key: "findmehere_profile", label: getBadgeSurfaceDisplayLabel("findmehere_profile") },
       { key: "profile_card", label: "Profile Cards" },
       { key: "user_widget", label: "User Widget" }
     ];
