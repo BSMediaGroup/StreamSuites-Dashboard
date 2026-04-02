@@ -4,6 +4,30 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Overview Command Landing Redesign + Real Admin Hydration Pass - 2026-04-03
+
+### Technical Notes
+
+- Replaced the old `docs/views/overview.html` scaffold composition with a new operations-home layout centered on real admin posture: one command hero, one operational posture band, one platform runtime grid, one accounts snapshot section, one recent-signals section, and one runtime publication plus honest-scaffold section.
+- Reworked `docs/js/overview.js` around the contracts this dashboard already consumes instead of mixing old placeholder tables with a few hydrated read-only panels. The new overview now hydrates from runtime snapshot/version/export/live-status payloads, Auth control and session payloads, alert settings, admin users snapshot, audit snapshot, admin activity, auth events, and dashboard-local creator/platform draft state.
+- Added dedicated overview-scoped styling in `docs/css/components.css` so the page now matches the denser premium card language already established on stronger admin surfaces such as Settings, Alerts, and Permissions without changing unrelated pages.
+- Removed or replaced several obsolete scaffold modules from the overview surface because they were no longer a truthful flagship landing page: the old system-status table, configuration-summary table, telemetry event/rates/error tables, static YouTube quota placeholder bars, platform-by-platform scaffold tables, Discord control-plane table, admin-activity table, and the generic upcoming-modules list.
+- That cleanup is expected to make `docs/views/overview.html` materially shorter because the old table-heavy placeholder surface was replaced by denser section containers that hydrate richer card content from script. `docs/js/overview.js` and `docs/css/components.css` are expected to be longer because they now own the new layout composition, hydration logic, and page-scoped presentation.
+- No files were created or removed in the repo structure during this pass, so the repo tree in `README.md` did not need a structural update.
+
+### Human-Readable Notes
+
+- Overview now behaves like a real admin command landing page instead of an early scaffold.
+- The page surfaces current runtime posture, access posture, account distribution, live-status coverage, recent admin/auth/audit feeds, and honest scaffold areas without fabricating health, deployments, incidents, or persistence.
+- Areas that still do not have a safe authoritative contract remain clearly labeled as read-only or intentionally not yet exposed.
+
+### Files / Areas Touched
+
+- `docs/views/overview.html`
+- `docs/js/overview.js`
+- `docs/css/components.css`
+- `BUMP_NOTES.md`
+
 ## Admin Pages Function Shell Preservation + Preview Host Bootstrap Recovery - 2026-04-03
 
 ### Technical Notes

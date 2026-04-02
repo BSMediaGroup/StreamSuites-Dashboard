@@ -1,656 +1,111 @@
-<!-- ========================================================= -->
-<!-- StreamSuites — Overview (VIEW PARTIAL) -->
-<!-- NOTE: CSS and app bootstrap are loaded by index.html -->
-<!-- ========================================================= -->
-
-<!-- ========================================================= -->
-<!-- HEADER -->
-<!-- ========================================================= -->
-<header class="ss-header">
+<header class="ss-header ss-overview-header-shell">
   <div class="ss-header-left">
-    <h1 class="ss-title">StreamSuites</h1>
-    <span class="ss-subtitle">Overview</span>
+    <div class="ss-overview-header-copy">
+      <span class="ss-chip ss-overview-header-chip">Admin command overview</span>
+      <h1 class="ss-title">Overview</h1>
+      <span class="ss-subtitle">Live operational posture for the current StreamSuites admin surface, sourced from the contracts this dashboard actually consumes today.</span>
+    </div>
+  </div>
+  <div class="ss-header-right ss-overview-header-right">
+    <span id="overview-mode-chip" class="ss-chip ss-chip-muted">Checking authority…</span>
+    <span id="overview-status" class="muted">Hydrating overview…</span>
   </div>
 </header>
 
-<!-- ========================================================= -->
-<!-- MAIN -->
-<!-- ========================================================= -->
-<main class="ss-main">
-
-  <!-- --------------------------------------------------------- -->
-  <!-- SYSTEM STATUS -->
-  <!-- --------------------------------------------------------- -->
-  <section class="ss-panel">
-    <header class="ss-panel-header">
-      <h2>System Status</h2>
-    </header>
-
-    <div class="ss-panel-body">
-      <table class="ss-table ss-table-compact">
-        <tbody>
-          <tr>
-            <td>Dashboard State</td>
-            <td id="ov-dashboard-state" class="align-right muted">
-              operational (static)
-            </td>
-          </tr>
-          <tr>
-            <td>Local Storage Available</td>
-            <td id="ov-storage-state" class="align-right muted">unknown</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+<main class="ss-main ss-overview-main" id="overview-page-root">
+  <section class="ss-overview-banner-wrap">
+    <div id="overview-banner" class="ss-alert ss-alert-warning hidden" role="status" aria-live="polite"></div>
   </section>
 
-  <!-- --------------------------------------------------------- -->
-  <!-- CONFIG SUMMARY -->
-  <!-- --------------------------------------------------------- -->
-  <section class="ss-panel">
-    <header class="ss-panel-header">
-      <h2>Configuration Summary</h2>
-    </header>
-
-    <div class="ss-panel-body">
-      <table class="ss-table ss-table-compact">
-        <tbody>
-          <tr>
-            <td>Creators Configured</td>
-            <td id="ov-creators-count" class="align-right">—</td>
-          </tr>
-          <tr>
-            <td>Chat Triggers Configured</td>
-            <td id="ov-triggers-count" class="align-right">—</td>
-          </tr>
-          <tr>
-            <td>Rumble Enabled Creators</td>
-            <td id="ov-rumble-enabled-count" class="align-right">—</td>
-          </tr>
-          <tr>
-            <td>Kick Enabled Creators</td>
-            <td id="ov-kick-enabled-count" class="align-right">—</td>
-          </tr>
-          <tr>
-            <td>Pilled Enabled Creators</td>
-            <td id="ov-pilled-enabled-count" class="align-right">—</td>
-          </tr>
-          <tr>
-            <td>Twitch Enabled Creators</td>
-            <td id="ov-twitch-enabled-count" class="align-right">—</td>
-          </tr>
-          <tr>
-            <td>YouTube Enabled Creators</td>
-            <td id="ov-youtube-enabled-count" class="align-right">—</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- --------------------------------------------------------- -->
-  <!-- RUNTIME TELEMETRY -->
-  <!-- --------------------------------------------------------- -->
-  <section class="ss-panel">
-    <header class="ss-panel-header">
-      <h2>Runtime Telemetry</h2>
-    </header>
-
-    <div class="ss-panel-body">
-      <div id="telemetry-empty" class="ss-alert ss-alert-info hidden">
-        No runtime snapshot available.
+  <section id="overview-command-section" class="ss-panel ss-overview-hero-panel">
+    <div class="ss-panel-body ss-overview-hero-body">
+      <div class="ss-overview-hero-main">
+        <div class="ss-overview-hero-copy">
+          <h2>Platform posture, access posture, and current operator context</h2>
+          <p class="muted">This landing page keeps authority boundaries explicit. Runtime, Auth API, export manifests, admin activity, and admin snapshots remain the source of truth; the dashboard only summarizes and routes you into the dedicated work surfaces.</p>
+        </div>
+        <div id="overview-summary-grid" class="ss-overview-summary-grid" aria-live="polite"></div>
       </div>
 
-      <table class="ss-table ss-table-compact" id="telemetry-table">
-        <thead>
-          <tr>
-            <th>Platform</th>
-            <th class="align-right">Status</th>
-            <th class="align-right">Last Seen</th>
-            <th class="align-right">Error State</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr data-platform="youtube">
-            <td>YouTube</td>
-            <td id="telemetry-youtube-status" class="align-right muted">—</td>
-            <td id="telemetry-youtube-last" class="align-right muted">—</td>
-            <td id="telemetry-youtube-error" class="align-right muted">—</td>
-          </tr>
-          <tr data-platform="twitch">
-            <td>Twitch</td>
-            <td id="telemetry-twitch-status" class="align-right muted">—</td>
-            <td id="telemetry-twitch-last" class="align-right muted">—</td>
-            <td id="telemetry-twitch-error" class="align-right muted">—</td>
-          </tr>
-          <tr data-platform="rumble">
-            <td>Rumble</td>
-            <td id="telemetry-rumble-status" class="align-right muted">—</td>
-            <td id="telemetry-rumble-last" class="align-right muted">—</td>
-            <td id="telemetry-rumble-error" class="align-right muted">—</td>
-          </tr>
-          <tr data-platform="kick">
-            <td>Kick</td>
-            <td id="telemetry-kick-status" class="align-right muted">—</td>
-            <td id="telemetry-kick-last" class="align-right muted">—</td>
-            <td id="telemetry-kick-error" class="align-right muted">—</td>
-          </tr>
-          <tr data-platform="pilled">
-            <td>Pilled</td>
-            <td id="telemetry-pilled-status" class="align-right muted">—</td>
-            <td id="telemetry-pilled-last" class="align-right muted">—</td>
-            <td id="telemetry-pilled-error" class="align-right muted">—</td>
-          </tr>
-          <tr data-platform="discord" data-discord-locked>
-            <td>Discord</td>
-            <td id="telemetry-discord-status" class="align-right muted">—</td>
-            <td id="telemetry-discord-last" class="align-right muted">—</td>
-            <td id="telemetry-discord-error" class="align-right muted">—</td>
-          </tr>
-        </tbody>
-      </table>
+      <aside class="ss-overview-hero-side">
+        <section class="ss-overview-side-card" aria-labelledby="overview-actions-title">
+          <div class="ss-overview-section-heading">
+            <div>
+              <h3 id="overview-actions-title">Command access</h3>
+              <p class="muted">Jump into the surfaces that own live intervention, configuration, and policy editing.</p>
+            </div>
+          </div>
+          <div class="ss-overview-actions-grid">
+            <button type="button" id="overview-open-alerts" class="ss-btn ss-btn-primary ss-btn-small">Open Alerts</button>
+            <button type="button" id="overview-open-accounts" class="ss-btn ss-btn-secondary ss-btn-small">Open Accounts</button>
+            <button type="button" id="overview-open-permissions" class="ss-btn ss-btn-secondary ss-btn-small">Open Permissions</button>
+            <button type="button" id="overview-open-settings" class="ss-btn ss-btn-secondary ss-btn-small">Open Settings</button>
+          </div>
+          <dl id="overview-meta-list" class="ss-overview-meta-list"></dl>
+        </section>
+      </aside>
     </div>
   </section>
 
-  <!-- --------------------------------------------------------- -->
-  <!-- TELEMETRY EVENTS -->
-  <!-- --------------------------------------------------------- -->
-  <section class="ss-panel">
-    <header class="ss-panel-header">
-      <h2>Runtime Events (Read-Only)</h2>
-    </header>
-
-    <div class="ss-panel-body">
-      <p class="muted">
-        Chronological runtime exports; newest first. No controls, no mutations.
-      </p>
-
-      <div
-        id="telemetry-events-warning"
-        class="ss-alert ss-alert-danger hidden"
-        aria-live="polite"
-      ></div>
-
-      <table class="ss-table ss-table-compact" id="telemetry-events-table">
-        <thead>
-          <tr>
-            <th>Severity</th>
-            <th class="align-right">Timestamp</th>
-            <th>Source</th>
-            <th>Message</th>
-          </tr>
-        </thead>
-        <tbody id="telemetry-events-body">
-          <tr>
-            <td colspan="4" class="muted">Awaiting telemetry…</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div id="telemetry-events-empty" class="ss-empty hidden">No data yet.</div>
-    </div>
-  </section>
-
-  <!-- --------------------------------------------------------- -->
-  <!-- AUTH EVENTS -->
-  <!-- --------------------------------------------------------- -->
-  <section class="ss-panel">
-    <header class="ss-panel-header">
-      <h2>Auth + Email Events (Read-Only)</h2>
-    </header>
-
-    <div class="ss-panel-body">
-      <p class="muted">
-        Recent authentication and email delivery events exported by the runtime.
-      </p>
-
-      <div
-        id="telemetry-auth-events-warning"
-        class="ss-alert ss-alert-danger hidden"
-        aria-live="polite"
-      ></div>
-
-      <table class="ss-table ss-table-compact" id="telemetry-auth-events-table">
-        <thead>
-          <tr>
-            <th class="align-right">Timestamp</th>
-            <th>Type</th>
-            <th>Action</th>
-            <th>Result</th>
-            <th>Account</th>
-            <th>Client IP</th>
-            <th>Email (Redacted)</th>
-          </tr>
-        </thead>
-        <tbody id="telemetry-auth-events-body">
-          <tr>
-            <td colspan="7" class="muted">Awaiting telemetry...</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div id="telemetry-auth-events-empty" class="ss-empty hidden">No events in this window.</div>
-    </div>
-  </section>
-
-  <!-- --------------------------------------------------------- -->
-  <!-- TELEMETRY RATES -->
-  <!-- --------------------------------------------------------- -->
-  <section class="ss-panel">
-    <header class="ss-panel-header">
-      <h2>Runtime Rates (Read-Only)</h2>
-    </header>
-
-    <div class="ss-panel-body">
-      <p class="muted">
-        Simple numeric indicators from snapshot exports. No charts; values update
-        when telemetry snapshots refresh.
-      </p>
-
-      <div
-        id="telemetry-rates-warning"
-        class="ss-alert ss-alert-danger hidden"
-        aria-live="polite"
-      ></div>
-
-      <div id="telemetry-rates-window" class="telemetry-rates-window muted">
-        Window: pending snapshot
-      </div>
-
-      <div id="telemetry-rates-grid" class="telemetry-rate-grid"></div>
-      <div id="telemetry-rates-empty" class="ss-empty hidden">No data yet.</div>
-    </div>
-  </section>
-
-  <!-- --------------------------------------------------------- -->
-  <!-- TELEMETRY ERRORS -->
-  <!-- --------------------------------------------------------- -->
-  <section class="ss-panel">
-    <header class="ss-panel-header">
-      <h2>Recent Errors (Read-Only)</h2>
-    </header>
-
-    <div class="ss-panel-body">
-      <p class="muted">
-        Highlights active or recent errors without enabling control-plane
-        actions.
-      </p>
-
-      <div
-        id="telemetry-errors-warning"
-        class="ss-alert ss-alert-danger hidden"
-        aria-live="polite"
-      ></div>
-
-      <table class="ss-table ss-table-compact" id="telemetry-errors-table">
-        <thead>
-          <tr>
-            <th>Status</th>
-            <th>Subsystem</th>
-            <th class="align-right">Last Seen</th>
-            <th>Message</th>
-          </tr>
-        </thead>
-        <tbody id="telemetry-errors-body">
-          <tr>
-            <td colspan="4" class="muted">Awaiting telemetry…</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div id="telemetry-errors-empty" class="ss-empty hidden">No data yet.</div>
-    </div>
-  </section>
-
-  <!-- --------------------------------------------------------- -->
-  <!-- API QUOTA USAGE (PLACEHOLDER) -->
-  <!-- --------------------------------------------------------- -->
-  <section class="ss-panel">
-    <header class="ss-panel-header">
-      <h2>YouTube API Quota Usage</h2>
-    </header>
-
-    <div class="ss-panel-body">
-      <p class="muted">
-        Static indicators. Values will populate from runtime-exported quota snapshots.
-      </p>
-
-      <div class="ss-quota-row">
-        <div class="ss-quota-label">
-          <span>Daily Units Used</span>
-          <span class="muted">0 / 200,000</span>
-        </div>
-        <div class="ss-quota-track">
-          <div class="ss-quota-fill"></div>
-        </div>
-      </div>
-
-      <div class="ss-quota-row">
-        <div class="ss-quota-label">
-          <span>Per-Minute Usage</span>
-          <span class="muted">0 / limit</span>
-        </div>
-        <div class="ss-quota-track">
-          <div class="ss-quota-fill"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- --------------------------------------------------------- -->
-  <!-- DISCORD CONTROL-PLANE -->
-  <!-- --------------------------------------------------------- -->
-  <section class="ss-panel" data-view="discord" data-discord-locked tabindex="0" role="button" style="cursor:pointer;">
+  <section id="overview-posture-section" class="ss-panel">
     <header class="ss-panel-header">
       <div class="ss-panel-header-main">
-        <h2>
-          Discord Control-Plane
-          <span class="ss-platform-badge foundation" id="badge-discord">
-            Foundation (Runtime Pending)
-          </span>
-        </h2>
-      </div>
-      <div class="ss-panel-header-actions">
-        <button type="button" class="ss-btn ss-btn-secondary" data-view="discord">
-          Go to Discord page
-        </button>
+        <h2>Operational posture</h2>
+        <p class="muted">High-authority posture cards for runtime, publication, access, and queued change boundaries.</p>
       </div>
     </header>
-
     <div class="ss-panel-body">
-      <table class="ss-table ss-table-compact">
-        <tbody>
-          <tr>
-            <td>Bot Summary</td>
-            <td class="align-right">
-              <span id="ov-discord-bot" class="badge offline">Loading...</span>
-            </td>
-          </tr>
-          <tr>
-            <td>Official Guild</td>
-            <td id="ov-discord-official-guild" class="align-right muted">Loading...</td>
-          </tr>
-          <tr>
-            <td>Admin Bot (official guild)</td>
-            <td id="ov-discord-admin-status" class="align-right muted">Loading...</td>
-          </tr>
-          <tr>
-            <td>Admin last_verified_at</td>
-            <td id="ov-discord-admin-last" class="align-right muted">Loading...</td>
-          </tr>
-          <tr>
-            <td>Admin error indicator</td>
-            <td id="ov-discord-admin-error" class="align-right muted">Loading...</td>
-          </tr>
-          <tr>
-            <td>Public Bot (official guild informational)</td>
-            <td id="ov-discord-public-status" class="align-right muted">Loading...</td>
-          </tr>
-          <tr>
-            <td>Public last_verified_at</td>
-            <td id="ov-discord-public-last" class="align-right muted">Loading...</td>
-          </tr>
-          <tr>
-            <td>Public error indicator</td>
-            <td id="ov-discord-public-error" class="align-right muted">Loading...</td>
-          </tr>
-        </tbody>
-      </table>
+      <div id="overview-posture-grid" class="ss-overview-posture-grid"></div>
+    </div>
+  </section>
 
-      <div class="ss-form-row">
-        <label for="discord-active-guild">Active Guild</label>
-        <select
-          id="discord-active-guild"
-          class="ss-input"
-          data-discord-guild-readonly="true"
-          disabled
-        >
-          <option value="">Select an eligible guild</option>
-        </select>
+  <section id="overview-platforms-section" class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Platform runtime posture</h2>
+        <p class="muted">Per-platform state, capability posture, and live-status coverage from runtime and published provider exports.</p>
       </div>
-      <p id="discord-guild-status" class="muted">
-        Select a Discord guild to manage settings.
-      </p>
-
-      <p class="muted" style="margin-top: 0.5rem;">
-        Discord status is read-only and sourced from the Auth API.
-      </p>
-      <p id="ov-discord-note" class="muted hidden" style="margin-top: 0.35rem;"></p>
+    </header>
+    <div class="ss-panel-body">
+      <div id="overview-platform-grid" class="ss-overview-platform-grid"></div>
     </div>
   </section>
 
-  <!-- --------------------------------------------------------- -->
-  <!-- ADMIN ACTIVITY -->
-  <!-- --------------------------------------------------------- -->
-  <section class="ss-panel">
+  <section id="overview-accounts-section" class="ss-panel">
     <header class="ss-panel-header">
-      <h2>Admin Activity</h2>
-    </header>
-
-    <div class="ss-panel-body">
-      <p class="muted">
-        Recent admin actions from Discord, Desktop, or dashboard interfaces. Events
-        appear when the runtime exports an admin activity feed.
-      </p>
-
-      <table class="ss-table ss-table-compact">
-        <thead>
-          <tr>
-            <th>Time</th>
-            <th>Source</th>
-            <th>User</th>
-            <th>Action</th>
-            <th>Client IP</th>
-          </tr>
-        </thead>
-        <tbody id="admin-activity-body">
-          <tr>
-            <td colspan="5" class="muted">Loading activity…</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div id="admin-activity-empty" class="ss-empty hidden">
-        No events in this window.
+      <div class="ss-panel-header-main">
+        <h2>Accounts and surface snapshot</h2>
+        <p class="muted">Account distribution, public-surface readiness, and role/tier mix from the current authoritative admin user snapshot.</p>
       </div>
-    </div>
-  </section>
-
-  <!-- --------------------------------------------------------- -->
-  <!-- RUMBLE -->
-  <!-- --------------------------------------------------------- -->
-  <section class="ss-panel" data-view="rumble" tabindex="0" role="button" style="cursor:pointer;">
-    <header class="ss-panel-header">
-      <h2>
-        Rumble Integration
-        <span class="ss-platform-badge scaffold" id="badge-rumble">
-          Architecture Solved (SSE-first)
-        </span>
-      </h2>
     </header>
-
-    <div class="ss-panel-body">
-      <table class="ss-table ss-table-compact">
-        <tbody>
-          <tr>
-            <td>Local Config</td>
-            <td id="ov-rumble-config" class="align-right muted">Loading…</td>
-          </tr>
-          <tr>
-            <td>Runtime</td>
-            <td id="ov-rumble-runtime" class="align-right muted">offline / unknown</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <p class="muted" style="margin-top: 0.5rem;">
-        Rumble chat ingests via SSE when available and falls back to DOM or API polling
-        (<code>https://web7.rumble.com/chat/api/chat/{CHAT_ID}/stream</code> is preferred).
-        Dashboard hydration relies on runtime-exported snapshots.
-      </p>
+    <div class="ss-panel-body ss-overview-stack">
+      <div id="overview-account-summary" class="ss-overview-summary-grid"></div>
+      <div id="overview-account-detail-grid" class="ss-overview-detail-grid"></div>
     </div>
   </section>
 
-  <!-- --------------------------------------------------------- -->
-  <!-- KICK -->
-  <!-- --------------------------------------------------------- -->
-  <section class="ss-panel" data-view="kick" tabindex="0" role="button" style="cursor:pointer;">
+  <section id="overview-signals-section" class="ss-panel">
     <header class="ss-panel-header">
-      <h2>
-        Kick Integration
-        <span class="ss-platform-badge foundation" id="badge-kick">
-          Scaffold (Runtime Export)
-        </span>
-      </h2>
+      <div class="ss-panel-header-main">
+        <h2>Signals and recent changes</h2>
+        <p class="muted">Warnings, recent admin actions, auth events, and audit-backed governance changes without pretending this page is an incident console.</p>
+      </div>
     </header>
-
-    <div class="ss-panel-body">
-      <table class="ss-table ss-table-compact">
-        <tbody>
-          <tr>
-            <td>Local Config</td>
-            <td id="ov-kick-config" class="align-right muted">Loading…</td>
-          </tr>
-          <tr>
-            <td>Runtime</td>
-            <td id="ov-kick-runtime" class="align-right muted">offline / unknown</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <p class="muted" style="margin-top: 0.5rem;">
-        Kick scaffolding is first-class and hydrates from runtime snapshots when present. Control-plane
-        actions remain locked; dashboard parity matches other platforms with read-only indicators.
-      </p>
+    <div class="ss-panel-body ss-overview-stack">
+      <div id="overview-signals-grid" class="ss-overview-detail-grid"></div>
     </div>
   </section>
 
-  <!-- --------------------------------------------------------- -->
-  <!-- PILLED -->
-  <!-- --------------------------------------------------------- -->
-  <section class="ss-panel" data-view="pilled" tabindex="0" role="button" style="cursor:pointer;">
+  <section id="overview-publication-section" class="ss-panel">
     <header class="ss-panel-header">
-      <h2>
-        Pilled Integration
-        <span class="ss-platform-badge warning" id="badge-pilled">
-          Ingest-Only (Control-Plane Unavailable)
-        </span>
-      </h2>
+      <div class="ss-panel-header-main">
+        <h2>Runtime publication and honest scaffolds</h2>
+        <p class="muted">What is currently exported, what the dashboard can truly observe, and where contracts are intentionally still read-only or not yet exposed.</p>
+      </div>
     </header>
-
-    <div class="ss-panel-body">
-      <table class="ss-table ss-table-compact">
-        <tbody>
-          <tr>
-            <td>Local Config</td>
-            <td id="ov-pilled-config" class="align-right muted">Loading…</td>
-          </tr>
-          <tr>
-            <td>Runtime</td>
-            <td id="ov-pilled-runtime" class="align-right muted">ingest-only / planned</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <p class="muted" style="margin-top: 0.5rem;">
-        Pilled is treated as a first-class ingest and replay target with no dashboard control-plane. Runtime
-        exports hydrate this surface; controls stay disabled to preserve read-only behavior.
-      </p>
+    <div class="ss-panel-body ss-overview-stack">
+      <div id="overview-publication-grid" class="ss-overview-detail-grid"></div>
+      <div id="overview-scaffold-grid" class="ss-overview-scaffold-grid"></div>
     </div>
   </section>
-
-  <!-- --------------------------------------------------------- -->
-  <!-- TWITCH -->
-  <!-- --------------------------------------------------------- -->
-  <section class="ss-panel" data-view="twitch" tabindex="0" role="button" style="cursor:pointer;">
-    <header class="ss-panel-header">
-      <h2>
-        Twitch Integration
-        <span class="ss-platform-badge foundation" id="badge-twitch">
-          Foundation (Disabled)
-        </span>
-      </h2>
-    </header>
-
-    <div class="ss-panel-body">
-      <table class="ss-table ss-table-compact">
-        <tbody>
-          <tr>
-            <td>Local Config</td>
-            <td id="ov-twitch-config" class="align-right muted">Loading…</td>
-          </tr>
-          <tr>
-            <td>Runtime</td>
-            <td id="ov-twitch-runtime" class="align-right muted">offline / unknown</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- --------------------------------------------------------- -->
-  <!-- YOUTUBE -->
-  <!-- --------------------------------------------------------- -->
-  <section class="ss-panel" data-view="youtube" tabindex="0" role="button" style="cursor:pointer;">
-    <header class="ss-panel-header">
-      <h2>
-        YouTube Integration
-        <span class="ss-platform-badge foundation" id="badge-youtube">
-          Foundation (Quota Pending)
-        </span>
-      </h2>
-    </header>
-
-    <div class="ss-panel-body">
-      <table class="ss-table ss-table-compact">
-        <tbody>
-          <tr>
-            <td>Local Config</td>
-            <td id="ov-youtube-config" class="align-right muted">Loading…</td>
-          </tr>
-          <tr>
-            <td>Runtime</td>
-            <td id="ov-youtube-runtime" class="align-right muted">
-              offline / not connected
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- --------------------------------------------------------- -->
-  <!-- UPCOMING MODULES -->
-  <!-- --------------------------------------------------------- -->
-  <section class="ss-panel">
-    <header class="ss-panel-header">
-      <h2>Upcoming Modules</h2>
-    </header>
-
-    <div class="ss-panel-body">
-      <ul class="ss-list muted">
-        <li>Chat-triggered clip generation</li>
-        <li>Live polls (chat-driven voting)</li>
-        <li>Multi-platform posting rules</li>
-      </ul>
-    </div>
-  </section>
-
 </main>
-
-<!-- ========================================================= -->
-<!-- FOOTER -->
-<!-- ========================================================= -->
-<footer class="ss-footer">
-  <span class="muted">
-    Overview is read-only and reflects locally stored configuration.
-    <a
-      class="ss-link"
-      href="https://docs.streamsuites.app/integrations/stripe"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      Billing overview (Stripe)
-    </a>
-  </span>
-</footer>
