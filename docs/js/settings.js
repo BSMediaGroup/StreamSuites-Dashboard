@@ -1187,7 +1187,7 @@
     const normalized = String(value || "").trim().toLowerCase();
     const iconMap = {
       windows_client: "/assets/icons/ui/win2.svg",
-      pushover: "/assets/icons/ui/apple.svg"
+      pushover: "/assets/icons/ui/iphone.svg"
     };
     return iconMap[normalized] || "/assets/icons/ui/widget.svg";
   }
