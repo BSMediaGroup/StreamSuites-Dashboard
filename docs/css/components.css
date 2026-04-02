@@ -8457,10 +8457,22 @@ button.public-btn:active::after {
   margin: 0;
 }
 
+.ss-settings-platform-card .ss-settings-card-head > div {
+  display: grid;
+  gap: 3px;
+  align-items: start;
+  min-width: 0;
+}
+
+.ss-settings-platform-card .ss-settings-kicker {
+  display: block;
+}
+
 .ss-settings-platform-title {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
 }
 
 .ss-settings-platform-icon {

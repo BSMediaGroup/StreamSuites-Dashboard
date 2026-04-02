@@ -12,6 +12,7 @@
     wired: false,
     runtimeListener: null,
     visibilityListener: null,
+    platformCardsSignature: "",
     state: createInitialState()
   };
 
@@ -37,6 +38,7 @@
 
   function init() {
     VIEW_STATE.destroyed = false;
+    VIEW_STATE.platformCardsSignature = "";
     VIEW_STATE.state = createInitialState();
     cacheElements();
     wireEvents();
@@ -48,6 +50,7 @@
   function destroy() {
     VIEW_STATE.destroyed = true;
     VIEW_STATE.wired = false;
+    VIEW_STATE.platformCardsSignature = "";
     VIEW_STATE.state = createInitialState();
 
     if (VIEW_STATE.runtimeListener) {
@@ -572,9 +575,34 @@
       : [];
 
     if (!platforms.length) {
+      VIEW_STATE.platformCardsSignature = "empty";
       el.runtimePlatforms.innerHTML = '<div class="ss-settings-empty">No platform runtime posture was published.</div>';
       return;
     }
+
+    const signature = JSON.stringify(
+      platforms.map((platform) => ({
+        name: platform?.name || platform?.platform || "",
+        enabled: platform?.enabled,
+        paused: platform?.paused,
+        telemetry_enabled: platform?.telemetry_enabled,
+        replay_supported: platform?.replay_supported,
+        overlay_supported: platform?.overlay_supported,
+        status: platform?.status || platform?.state || "",
+        paused_reason: platform?.paused_reason || "",
+        error: platform?.error || "",
+        last_heartbeat: platform?.last_heartbeat || "",
+        last_success_ts: platform?.last_success_ts || "",
+        last_event_ts: platform?.last_event_ts || "",
+        counters: platform?.counters || {}
+      }))
+    );
+
+    if (signature === VIEW_STATE.platformCardsSignature) {
+      return;
+    }
+
+    VIEW_STATE.platformCardsSignature = signature;
 
     el.runtimePlatforms.innerHTML = platforms
       .map((platform) => {
