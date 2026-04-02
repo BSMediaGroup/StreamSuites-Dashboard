@@ -938,3 +938,19 @@ Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into t
 ### Risks / Follow-Ups
 
 - Already-generated `docs/shared/state/runtime_snapshot.json` files still need a fresh runtime republish to reflect the corrected runtime-side restart contract.
+
+## Permissions Key Chip Width/Case Tweak - 2026-04-02
+
+### Technical Notes
+
+- Narrowed the follow-up change to `.ss-permissions-row-key` in `docs/css/components.css` only.
+- The permission-key chip now uses slightly tighter padding, removes forced uppercase styling, and pushes the mono glyphs wider via `font-stretch` plus a touch more horizontal letter spacing so the chip reads more like a compact code token than a label pill.
+
+### Human-Readable Notes
+
+- Permission IDs in both role and user matrix modes now look flatter, wider, and more code-like.
+
+### Files / Areas Touched
+
+- `docs/css/components.css`
+- `BUMP_NOTES.md`

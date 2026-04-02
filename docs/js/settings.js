@@ -1137,13 +1137,13 @@
   function getPlatformIconPath(value) {
     const normalized = String(value || "").trim().toLowerCase();
     const iconMap = {
-      discord: "/assets/icons/discord-0.svg",
-      kick: "/assets/icons/kick-0.svg",
-      pilled: "/assets/icons/pilled-0.svg",
-      rumble: "/assets/icons/rumble-0.svg",
-      twitch: "/assets/icons/twitch-0.svg",
-      twitter: "/assets/icons/twitter-0.svg",
-      youtube: "/assets/icons/youtube-0.svg"
+      discord: "/assets/icons/discord.svg",
+      kick: "/assets/icons/kick.svg",
+      pilled: "/assets/icons/pilled.svg",
+      rumble: "/assets/icons/rumble.svg",
+      twitch: "/assets/icons/twitch.svg",
+      twitter: "/assets/icons/twitter.svg",
+      youtube: "/assets/icons/youtube.svg"
     };
     return iconMap[normalized] || "/assets/icons/ui/widget.svg";
   }
