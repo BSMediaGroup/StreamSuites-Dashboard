@@ -5,11 +5,11 @@
 (() => {
   const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/i;
   const LAST_OAUTH_PROVIDER_KEY = "streamsuites.admin.lastOauthProvider";
-  const ADMIN_ORIGIN = "https://admin.streamsuites.app";
-  const ADMIN_SUCCESS = ADMIN_ORIGIN + "/auth/success.html";
   const ADMIN_SURFACE = "admin";
-  const ADMIN_DASH = `${ADMIN_ORIGIN}/overview`;
-  const ADMIN_HOSTNAME = "admin.streamsuites.app";
+  const CANONICAL_ADMIN_ORIGIN = "https://admin.streamsuites.app";
+  const CANONICAL_ADMIN_HOSTNAME = "admin.streamsuites.app";
+  const PREVIEW_HOSTNAME_SUFFIX = ".pages.dev";
+  const LOCAL_PREVIEW_HOSTNAMES = new Set(["localhost", "127.0.0.1", "0.0.0.0"]);
   const PUBLIC_HOSTNAMES = new Set(["streamsuites.app", "www.streamsuites.app"]);
   const resolvedBasePath = (() => {
     const configured =
@@ -27,6 +27,17 @@
     window.ADMIN_BASE_PATH = resolvedBasePath;
   }
 
+  const CURRENT_ADMIN_ORIGIN = window.location?.origin || CANONICAL_ADMIN_ORIGIN;
+  const CURRENT_ADMIN_HOSTNAME = normalizeHostname(window.location?.hostname);
+  const ADMIN_ORIGIN = isAllowedAdminHost(CURRENT_ADMIN_HOSTNAME)
+    ? CURRENT_ADMIN_ORIGIN
+    : CANONICAL_ADMIN_ORIGIN;
+  const ADMIN_SUCCESS = new URL(
+    `${window.ADMIN_BASE_PATH || ""}/auth/success.html`,
+    ADMIN_ORIGIN
+  ).toString();
+  const ADMIN_DASH = new URL(`${window.ADMIN_BASE_PATH || ""}/overview`, ADMIN_ORIGIN).toString();
+
   function getMetaContent(name) {
     const value = document.querySelector(`meta[name="${name}"]`)?.getAttribute("content");
     return typeof value === "string" ? value.trim() : "";
@@ -41,6 +52,20 @@
     if (!normalized) return "";
     if (normalized === "twitter") return "x";
     return normalized;
+  }
+
+  function normalizeHostname(value) {
+    return typeof value === "string" ? value.trim().toLowerCase() : "";
+  }
+
+  function isPreviewAdminHost(hostname) {
+    const normalized = normalizeHostname(hostname);
+    return normalized.endsWith(PREVIEW_HOSTNAME_SUFFIX) || LOCAL_PREVIEW_HOSTNAMES.has(normalized);
+  }
+
+  function isAllowedAdminHost(hostname) {
+    const normalized = normalizeHostname(hostname);
+    return normalized === CANONICAL_ADMIN_HOSTNAME || isPreviewAdminHost(normalized);
   }
 
   function persistLastOauthProvider(provider) {
@@ -71,16 +96,18 @@
   function normalizeAdminSuccess(value) {
     const parsed = parseUrl(value);
     if (!parsed) return ADMIN_SUCCESS;
-    if (PUBLIC_HOSTNAMES.has(parsed.hostname.toLowerCase())) return ADMIN_SUCCESS;
-    if (parsed.hostname.toLowerCase() !== ADMIN_HOSTNAME) return ADMIN_SUCCESS;
+    const hostname = normalizeHostname(parsed.hostname);
+    if (PUBLIC_HOSTNAMES.has(hostname)) return ADMIN_SUCCESS;
+    if (!isAllowedAdminHost(hostname)) return ADMIN_SUCCESS;
     return ADMIN_SUCCESS;
   }
 
   function normalizeAdminDash(value) {
     const parsed = parseUrl(value);
     if (!parsed) return ADMIN_DASH;
-    if (PUBLIC_HOSTNAMES.has(parsed.hostname.toLowerCase())) return ADMIN_DASH;
-    if (parsed.hostname.toLowerCase() !== ADMIN_HOSTNAME) return ADMIN_DASH;
+    const hostname = normalizeHostname(parsed.hostname);
+    if (PUBLIC_HOSTNAMES.has(hostname)) return ADMIN_DASH;
+    if (!isAllowedAdminHost(hostname)) return ADMIN_DASH;
     return `${parsed.origin}${parsed.pathname}${parsed.search}`;
   }
 

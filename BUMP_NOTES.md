@@ -4,6 +4,38 @@
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.
 
+## Admin Pages Function Shell Preservation + Preview Host Bootstrap Recovery - 2026-04-03
+
+### Technical Notes
+
+- Root-caused the remaining custom-domain deep-link collapse to the Cloudflare Pages shell manifest layer. The repo-root `_redirects`, `docs/_redirects`, and generated `dist/_redirects` file were still rewriting valid admin SPA routes straight to `/index.html 200`, which is the same URL-mutating pattern that had already broken Creator direct-entry routing. When Pages canonicalized that rewrite, the shell sometimes only saw `/` and the startup path defaulted back to `overview`.
+- Removed those SPA route inventory rewrites from `_redirects`, `docs/_redirects`, and `scripts/build-pages-artifact.ps1`. Those files are expected to be shorter. This is safe because `functions/[[path]].js` now owns known admin shell fallback and serves the shell body from the Pages asset binding without mutating the requested pathname.
+- Updated `functions/[[path]].js` to fetch `/index.html` from the `ASSETS` binding when a known dashboard route misses the static asset layer, mirroring the Creator repair. This preserves `/users/{user_code}`, `/profiles/integrations?user_code=...`, `/permissions`, and `/integrations/discord` as real first-load URLs while still letting true misses fall through to `404`.
+- Root-caused the `streamsuites-dashboard.pages.dev` "Service Unavailable" boot failure to hardcoded `admin.streamsuites.app` origin assumptions inside `docs/js/admin-gate.js`, `docs/js/admin-auth.js`, `docs/js/admin-login.js`, and `docs/auth/success.html`. Preview hosts were not treated as valid admin shell origins, so auth/bootstrap logic forced canonical-admin URLs and classified preview boot as an auth-service outage instead of an explicit preview path.
+- Replaced that hardcoded-origin logic with host-aware admin origin normalization. Canonical `admin.streamsuites.app` still behaves the same, while preview hosts (`*.pages.dev`, `localhost`, `127.0.0.1`, `0.0.0.0`) now preserve their own origin for admin success/login/dashboard URL construction.
+- Replaced the old preview-host auth failure path with an explicit preview bootstrap path in `docs/js/admin-gate.js` and `docs/js/admin-auth.js`. Preview hosts now boot the shell in static preview mode, surface a warning banner that live auth/actions belong on `admin.streamsuites.app`, and no longer fall into the generic Service Unavailable overlay during normal shell boot.
+- Replaced the unconditional canonical redirect in `docs/auth/success.html` so admin auth success now returns to same-origin overview or a same-origin redirect target instead of always bouncing to `https://admin.streamsuites.app/overview`.
+- Reworked `scripts/validate-pages-routing.ps1` so it now builds `dist/`, verifies HTTP status for the target deep links and one invalid route, runs a browser-backed validation of actual mounted views, and verifies preview-host boot does not render the generic unavailable fail state.
+
+### Human-Readable Notes
+
+- Admin deep links now keep the exact requested URL on first load instead of collapsing back to Overview because the Pages shell fallback no longer rewrites them to `/index.html`.
+- Preview deployments now boot as an explicit static preview instead of showing the generic Service Unavailable screen.
+- Real bad routes stay real 404s and do not silently become Overview.
+
+### Files / Areas Touched
+
+- `_redirects`
+- `docs/_redirects`
+- `functions/[[path]].js`
+- `scripts/build-pages-artifact.ps1`
+- `docs/js/admin-gate.js`
+- `docs/js/admin-auth.js`
+- `docs/js/admin-login.js`
+- `docs/auth/success.html`
+- `scripts/validate-pages-routing.ps1`
+- `BUMP_NOTES.md`
+
 ## Admin Shell Startup Route Preservation + Nested Script Bootstrap Repair - 2026-04-03
 
 ### Technical Notes

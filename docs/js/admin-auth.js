@@ -5,12 +5,23 @@
    ====================================================================== */
 
 (function () {
-  const ADMIN_ORIGIN = "https://admin.streamsuites.app";
-  const ADMIN_SUCCESS = ADMIN_ORIGIN + "/auth/success.html";
+  const CANONICAL_ADMIN_ORIGIN = "https://admin.streamsuites.app";
+  const CANONICAL_ADMIN_HOSTNAME = "admin.streamsuites.app";
+  const PREVIEW_HOSTNAME_SUFFIX = ".pages.dev";
+  const LOCAL_PREVIEW_HOSTNAMES = new Set(["localhost", "127.0.0.1", "0.0.0.0"]);
   const ADMIN_SURFACE = "admin";
-  const ADMIN_DASH = `${ADMIN_ORIGIN}/overview`;
-  const ADMIN_HOSTNAME = "admin.streamsuites.app";
   const PUBLIC_HOSTNAMES = new Set(["streamsuites.app", "www.streamsuites.app"]);
+  const CURRENT_ADMIN_ORIGIN = window.location?.origin || CANONICAL_ADMIN_ORIGIN;
+  const CURRENT_ADMIN_HOSTNAME = normalizeHostname(window.location?.hostname);
+  const ADMIN_ORIGIN = isAllowedAdminHost(CURRENT_ADMIN_HOSTNAME)
+    ? CURRENT_ADMIN_ORIGIN
+    : CANONICAL_ADMIN_ORIGIN;
+  const ADMIN_SUCCESS = new URL(
+    `${window.ADMIN_BASE_PATH || ""}/auth/success.html`,
+    ADMIN_ORIGIN
+  ).toString();
+  const ADMIN_DASH = new URL(`${window.ADMIN_BASE_PATH || ""}/overview`, ADMIN_ORIGIN).toString();
+  const IS_PREVIEW_ADMIN_HOST = isPreviewAdminHost(CURRENT_ADMIN_HOSTNAME);
   const ADMIN_INDEX_URL = ADMIN_DASH;
   const ADMIN_LOGOUT_REDIRECT = new URL(
     `${window.ADMIN_BASE_PATH}/auth/login.html?reason=logout`,
@@ -45,6 +56,20 @@
     "x-streamsuites-auth-reason",
     "x-auth-status"
   ];
+
+  function normalizeHostname(value) {
+    return typeof value === "string" ? value.trim().toLowerCase() : "";
+  }
+
+  function isPreviewAdminHost(hostname) {
+    const normalized = normalizeHostname(hostname);
+    return normalized.endsWith(PREVIEW_HOSTNAME_SUFFIX) || LOCAL_PREVIEW_HOSTNAMES.has(normalized);
+  }
+
+  function isAllowedAdminHost(hostname) {
+    const normalized = normalizeHostname(hostname);
+    return normalized === CANONICAL_ADMIN_HOSTNAME || isPreviewAdminHost(normalized);
+  }
 
   function getMetaContent(name) {
     const value = document.querySelector(`meta[name="${name}"]`)?.getAttribute("content");
@@ -92,16 +117,18 @@
   function normalizeAdminSuccess(value) {
     const parsed = parseUrl(value);
     if (!parsed) return ADMIN_SUCCESS;
-    if (PUBLIC_HOSTNAMES.has(parsed.hostname.toLowerCase())) return ADMIN_SUCCESS;
-    if (parsed.hostname.toLowerCase() !== ADMIN_HOSTNAME) return ADMIN_SUCCESS;
+    const hostname = normalizeHostname(parsed.hostname);
+    if (PUBLIC_HOSTNAMES.has(hostname)) return ADMIN_SUCCESS;
+    if (!isAllowedAdminHost(hostname)) return ADMIN_SUCCESS;
     return ADMIN_SUCCESS;
   }
 
   function normalizeAdminDash(value) {
     const parsed = parseUrl(value);
     if (!parsed) return ADMIN_DASH;
-    if (PUBLIC_HOSTNAMES.has(parsed.hostname.toLowerCase())) return ADMIN_DASH;
-    if (parsed.hostname.toLowerCase() !== ADMIN_HOSTNAME) return ADMIN_DASH;
+    const hostname = normalizeHostname(parsed.hostname);
+    if (PUBLIC_HOSTNAMES.has(hostname)) return ADMIN_DASH;
+    if (!isAllowedAdminHost(hostname)) return ADMIN_DASH;
     return `${parsed.origin}${parsed.pathname}${parsed.search}`;
   }
 
@@ -109,6 +136,24 @@
     const pathname = window.location?.pathname || "/overview";
     const search = window.location?.search || "";
     return `${ADMIN_ORIGIN}${pathname}${search}`;
+  }
+
+  function buildPreviewAuthState() {
+    return {
+      authenticated: true,
+      authorized: true,
+      role: "admin",
+      email: "preview@streamsuites.app",
+      displayName: "Preview Mode",
+      avatarUrl: "",
+      tier: "preview",
+      adminAccess: {
+        allowed: true,
+        level: "preview",
+        permissions: {}
+      },
+      error: ""
+    };
   }
 
   function applyAdminOAuthSafety(endpoint) {
@@ -253,6 +298,15 @@
       this.cacheElements();
       this.loadConfig();
       this.bindEvents();
+      if (IS_PREVIEW_ADMIN_HOST) {
+        this.state = buildPreviewAuthState();
+        this.setStatus(
+          "idle",
+          "Preview host booted in static preview mode. Use admin.streamsuites.app for live auth."
+        );
+        this.applyState();
+        return this.state;
+      }
       await this.refreshSession();
       return this.state;
     },

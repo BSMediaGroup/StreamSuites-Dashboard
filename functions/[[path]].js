@@ -1,4 +1,4 @@
-const SPA_SHELL_CANDIDATES = ["/index.html"];
+const SPA_SHELL_PATH = "/index.html";
 
 const EXACT_DASHBOARD_ROUTES = new Set([
   "/",
@@ -81,13 +81,21 @@ function isDashboardSpaRoute(pathname) {
 }
 
 async function fetchSpaShell(ctx) {
-  for (const candidate of SPA_SHELL_CANDIDATES) {
-    const response = await ctx.next(candidate);
-    if (response.ok) {
-      return response;
-    }
+  const { env, request } = ctx;
+  const assetUrl = new URL(request.url);
+  assetUrl.pathname = SPA_SHELL_PATH;
+  assetUrl.search = "";
+  assetUrl.hash = "";
+
+  if (typeof env?.ASSETS?.fetch === "function") {
+    const assetRequest = new Request(assetUrl.toString(), {
+      method: request.method,
+      headers: request.headers
+    });
+    return env.ASSETS.fetch(assetRequest);
   }
-  return null;
+
+  return ctx.next(SPA_SHELL_PATH);
 }
 
 function buildFallbackResponse(shellResponse, requestMethod) {
@@ -117,7 +125,7 @@ export async function onRequest(ctx) {
   }
 
   const shellResponse = await fetchSpaShell(ctx);
-  if (!shellResponse) {
+  if (!shellResponse?.ok) {
     return response;
   }
 

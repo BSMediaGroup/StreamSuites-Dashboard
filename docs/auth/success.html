@@ -8,7 +8,24 @@
     })();
   </script>
   <script>
-    window.location.replace("https://admin.streamsuites.app/overview");
+    (() => {
+      const basePath =
+        typeof window.ADMIN_BASE_PATH === "string" ? window.ADMIN_BASE_PATH.replace(/\/+$/, "") : "";
+      const params = new URLSearchParams(window.location.search || "");
+      const redirect = params.get("redirect") || params.get("next") || params.get("redirect_to");
+      let destination = `${window.location.origin}${basePath}/overview`;
+      if (redirect) {
+        try {
+          const parsed = new URL(redirect, window.location.origin);
+          if (parsed.origin === window.location.origin) {
+            destination = `${parsed.origin}${parsed.pathname}${parsed.search}`;
+          }
+        } catch (err) {
+          // Ignore invalid redirect parameters and fall back to overview.
+        }
+      }
+      window.location.replace(destination);
+    })();
   </script>
   <script src="/js/admin-routes.js"></script>
   <meta charset="utf-8" />
