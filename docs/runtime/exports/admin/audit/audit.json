@@ -1,12 +1,117 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-04-02T22:07:51.026127Z",
+  "exported_at": "2026-04-03T16:32:56.932079Z",
   "runtime": {
     "project": "StreamSuites™ Runtime",
     "version": "0.4.2-alpha",
-    "build": "2026.04.02+007"
+    "build": "2026.04.02+009"
   },
   "audit": [
+    {
+      "id": "35048ac6-ca31-4e02-a2e7-3a403f780fee",
+      "ts": "2026-04-02T22:32:30Z",
+      "actor_user_id": "880d5c4b-a5af-4058-8237-bf3c687becea",
+      "actor_user_code": "R8UVPMQ",
+      "actor_role": "creator",
+      "target_user_id": "880d5c4b-a5af-4058-8237-bf3c687becea",
+      "target_user_code": "R8UVPMQ",
+      "action": "login_success",
+      "metadata": {
+        "ip": "2a06:98c0:3600::103",
+        "provider": "email_password",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:149.0) Gecko/20100101 Firefox/149.0"
+      }
+    },
+    {
+      "id": "39f82480-9b7c-4f44-aa89-3cfb26ce7ea7",
+      "ts": "2026-04-02T22:31:44Z",
+      "actor_user_id": "880d5c4b-a5af-4058-8237-bf3c687becea",
+      "actor_user_code": "R8UVPMQ",
+      "actor_role": "creator",
+      "target_user_id": "880d5c4b-a5af-4058-8237-bf3c687becea",
+      "target_user_code": "R8UVPMQ",
+      "action": "email_verified",
+      "metadata": {
+        "ip": "185.187.168.204",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+      }
+    },
+    {
+      "id": "a4cf4110-2128-4d2e-91d0-8e72a58ab7bc",
+      "ts": "2026-04-02T22:30:52Z",
+      "actor_user_id": "880d5c4b-a5af-4058-8237-bf3c687becea",
+      "actor_user_code": "R8UVPMQ",
+      "actor_role": "creator",
+      "target_user_id": "880d5c4b-a5af-4058-8237-bf3c687becea",
+      "target_user_code": "R8UVPMQ",
+      "action": "account_created",
+      "metadata": {
+        "provider": "email_password"
+      }
+    },
+    {
+      "id": "7d4ac77b-8adb-4c72-a3f2-dcefed4d00fd",
+      "ts": "2026-04-02T22:13:34Z",
+      "actor_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "actor_user_code": "Y55GHS6",
+      "actor_role": "admin",
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "alert_target_updated",
+      "metadata": {
+        "device_type": "windows_client",
+        "enabled": true,
+        "target_id": "4066bc7e-96cf-4c3a-b4cf-8e62eca80f2e"
+      }
+    },
+    {
+      "id": "3a7d31e3-ebc9-42da-a51c-1758f5c96642",
+      "ts": "2026-04-02T22:13:15Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "7ce4546c-2113-4d9f-b4c8-e53cee96924a",
+      "ts": "2026-04-02T22:13:14Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "aeeaac88-d9f5-4fc1-a3cc-a65670e7a1dd",
+      "ts": "2026-04-02T22:13:14Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
     {
       "id": "42ff0f47-81b6-4128-93c1-88b57632165b",
       "ts": "2026-04-02T21:51:31Z",
