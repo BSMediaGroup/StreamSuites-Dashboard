@@ -839,6 +839,27 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into the released `0.4.2-alpha` section above.
 
+### Approvals Intake Expansion For Developer Console Foundations - 2026-04-04
+
+### Technical Notes
+
+- Extended the existing approvals view in `docs/views/approvals.html` and `docs/js/approvals.js` so it now surfaces three new runtime-owned intake queues alongside the current feature-request moderation flow: incoming feedback, pending beta applications, and incoming developer reports.
+- The dashboard continues to consume backend authority rather than inventing a local workflow. New intake sections read `/api/admin/intake/feedback`, `/api/admin/intake/beta`, `/api/admin/intake/reports`, and their detail endpoints, while the existing pending/approved request moderation actions remain intact.
+- Developer-report detail rendering now exposes safe artifact metadata plus download links to the backend-owned attachment download route, without introducing inline active preview behavior.
+- No files were created or removed in this repo during this milestone. The approvals files are expected to be longer because the page now covers multiple intake channels in one operator-facing surface.
+
+### Human-Readable Notes
+
+- Admins can now see the first real console intake queues inside Approvals instead of working only from the older feature-request moderation lane.
+- Feedback, beta applications, and developer reports all have recent-item visibility plus inspect detail.
+
+### Files / Areas Touched
+
+- `docs/views/approvals.html`
+- `docs/js/approvals.js`
+- `README.md`
+- `BUMP_NOTES.md`
+
 ### Admin Settings Page Runtime/Posture Overhaul - 2026-04-02
 
 ### Technical Notes

@@ -13,6 +13,26 @@
   <section class="ss-panel">
     <header class="ss-panel-header">
       <div class="ss-panel-header-main">
+        <h2>Developer Console Intake</h2>
+        <p class="muted" style="margin:6px 0 0;">
+          Early operational visibility for public feedback, beta applications, and authenticated
+          developer reports now routed through the new console foundations.
+        </p>
+      </div>
+    </header>
+
+    <div class="ss-panel-body">
+      <div class="ss-meta-row">
+        <div><strong>Feedback:</strong> <span id="approvals-intake-feedback-count">—</span></div>
+        <div><strong>Beta applications:</strong> <span id="approvals-intake-beta-count">—</span></div>
+        <div><strong>Developer reports:</strong> <span id="approvals-intake-reports-count">—</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
         <h2>Pending Requests</h2>
         <p class="muted" style="margin:6px 0 0;">
           Review creator-submitted feature requests and approve or deny with optional moderation notes.
@@ -79,6 +99,119 @@
       <div id="approvals-approved-list" class="ss-approvals-list"></div>
       <div id="approvals-approved-empty" class="ss-empty hidden">
         No approved requests available.
+      </div>
+    </div>
+  </section>
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Incoming Feedback / Requests</h2>
+        <p class="muted" style="margin:6px 0 0;">
+          Public console submissions replacing the old standalone requests intake as the primary
+          feedback channel.
+        </p>
+      </div>
+      <div class="ss-panel-header-actions">
+        <button id="approvals-refresh-feedback" class="ss-btn ss-btn-secondary" type="button">
+          Refresh Feedback
+        </button>
+      </div>
+    </header>
+
+    <div class="ss-panel-body">
+      <div class="ss-toolbar">
+        <div class="ss-toolbar-left">
+          <span id="approvals-feedback-status" class="muted">Loading feedback submissions...</span>
+        </div>
+      </div>
+
+      <div class="ss-meta-row">
+        <div><strong>Visible items:</strong> <span id="approvals-feedback-count">—</span></div>
+      </div>
+
+      <div id="approvals-feedback-list" class="ss-approvals-list"></div>
+      <div id="approvals-feedback-empty" class="ss-empty hidden">
+        No feedback submissions available.
+      </div>
+
+      <div id="approvals-feedback-detail" class="ss-empty">
+        Select a feedback item to inspect detail.
+      </div>
+    </div>
+  </section>
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Pending Beta Applications</h2>
+        <p class="muted" style="margin:6px 0 0;">
+          Early beta-program intake queue for public applicants who want structured product access.
+        </p>
+      </div>
+      <div class="ss-panel-header-actions">
+        <button id="approvals-refresh-beta" class="ss-btn ss-btn-secondary" type="button">
+          Refresh Beta
+        </button>
+      </div>
+    </header>
+
+    <div class="ss-panel-body">
+      <div class="ss-toolbar">
+        <div class="ss-toolbar-left">
+          <span id="approvals-beta-status" class="muted">Loading beta applications...</span>
+        </div>
+      </div>
+
+      <div class="ss-meta-row">
+        <div><strong>Visible items:</strong> <span id="approvals-beta-count">—</span></div>
+      </div>
+
+      <div id="approvals-beta-list" class="ss-approvals-list"></div>
+      <div id="approvals-beta-empty" class="ss-empty hidden">
+        No beta applications available.
+      </div>
+
+      <div id="approvals-beta-detail" class="ss-empty">
+        Select a beta application to inspect detail.
+      </div>
+    </div>
+  </section>
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Incoming Developer Reports</h2>
+        <p class="muted" style="margin:6px 0 0;">
+          Authenticated technical reports from developer-capable accounts, including artifact
+          metadata for safe admin review.
+        </p>
+      </div>
+      <div class="ss-panel-header-actions">
+        <button id="approvals-refresh-reports" class="ss-btn ss-btn-secondary" type="button">
+          Refresh Reports
+        </button>
+      </div>
+    </header>
+
+    <div class="ss-panel-body">
+      <div class="ss-toolbar">
+        <div class="ss-toolbar-left">
+          <span id="approvals-reports-status" class="muted">Loading developer reports...</span>
+        </div>
+      </div>
+
+      <div class="ss-meta-row">
+        <div><strong>Visible items:</strong> <span id="approvals-reports-count">—</span></div>
+      </div>
+
+      <div id="approvals-reports-list" class="ss-approvals-list"></div>
+      <div id="approvals-reports-empty" class="ss-empty hidden">
+        No developer reports available.
+      </div>
+
+      <div id="approvals-reports-detail" class="ss-empty">
+        Select a developer report to inspect detail.
       </div>
     </div>
   </section>

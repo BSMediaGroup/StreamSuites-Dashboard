@@ -46,6 +46,7 @@ flowchart TD
 
 - Clean path-based admin routes are the primary navigation model, replacing older hash-fragment and partial-only dependence for normal use.
 - The admin dashboard now includes a dedicated `/permissions` route under System for authoritative developer dashboard access policy inspection and editing, while keeping StreamSuites Auth API as the sole permission authority.
+- The `/approvals` workspace now also acts as the first admin intake surface for developer-console feedback submissions, beta applications, and authenticated developer reports while still consuming runtime-owned review data.
 - Root and `docs/` rewrite manifests preserve deep links for routes such as `/overview`, `/accounts`, `/profiles`, `/analytics`, `/alerts`, `/notifications`, `/settings`, `/creator-stats`, `/integrations/...`, and other admin views, but the repo root is now the authoritative shell so deep links do not depend on a `/docs/index.html` compatibility hop.
 - Creator integrations now have a dedicated admin route at `/profiles/integrations`, backed by runtime/Auth-admin inspection endpoints for creator-capable posture, platform readiness, trigger foundation, and bot deploy eligibility.
 - Admin account investigation now also supports a dedicated `user_code` route at `/users/{user_code}` for exhaustive single-account inspection across identity, auth posture, creator readiness, integrations, and trigger footing.
