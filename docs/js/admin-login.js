@@ -166,8 +166,18 @@
     password: document.getElementById("admin-login-password"),
     manualToggle: document.getElementById("admin-login-manual-toggle"),
     manualPanel: document.getElementById("admin-login-manual-panel"),
+    turnstilePanel: document.getElementById("admin-login-turnstile-panel"),
+    turnstileSlot: document.getElementById("admin-login-turnstile"),
+    turnstileStatus: document.getElementById("admin-login-turnstile-status"),
     oauthButtons: Array.from(document.querySelectorAll("[data-admin-auth-provider]"))
   };
+  const turnstileController = window.StreamSuitesTurnstileInline?.createController?.({
+    configUrl: "/auth/turnstile/config",
+    panel: elements.turnstilePanel,
+    slot: elements.turnstileSlot,
+    status: elements.turnstileStatus,
+    onStateChange: () => syncActionAvailability()
+  });
 
   const baseUrl = getMetaContent("streamsuites-auth-base");
   const base = baseUrl ? baseUrl.replace(/\/$/, "") : "";
@@ -211,6 +221,23 @@
     elements.status.textContent = message || "";
   }
 
+  function isTurnstileBlocked() {
+    return turnstileController?.isEnabled?.() && !turnstileController?.hasToken?.();
+  }
+
+  function syncActionAvailability() {
+    const disabled = isTurnstileBlocked();
+    elements.oauthButtons.forEach((button) => {
+      button.disabled = disabled;
+      button.setAttribute("aria-disabled", disabled ? "true" : "false");
+      button.classList.toggle("is-disabled", disabled);
+    });
+    const submitButton = elements.form?.querySelector('button[type="submit"]');
+    if (submitButton instanceof HTMLButtonElement) {
+      submitButton.disabled = passwordLoginInFlight || disabled;
+    }
+  }
+
   function setLoading(isLoading) {
     const controls = [
       ...elements.oauthButtons,
@@ -218,7 +245,7 @@
       elements.password
     ].filter(Boolean);
     controls.forEach((control) => {
-      control.disabled = isLoading;
+      control.disabled = isLoading || (!isLoading && isTurnstileBlocked());
     });
     if (elements.manualToggle) {
       elements.manualToggle.disabled = isLoading;
@@ -325,7 +352,7 @@
     return payloadMessage || `Password login failed upstream (${status || "unknown"}).`;
   }
 
-  function startOAuth(provider) {
+  async function startOAuth(provider) {
     const endpoint = endpoints[provider];
     if (!endpoint) {
       setStatus("error", `Auth provider not configured: ${provider}.`);
@@ -338,9 +365,17 @@
       setStatus("error", `Auth provider endpoint invalid: ${provider}.`);
       return;
     }
+    const turnstileToken = await turnstileController?.requireToken?.();
+    if (turnstileController?.isEnabled?.() && !turnstileToken) {
+      setStatus("error", "Complete the security check to continue.");
+      return;
+    }
 
     const redirectUrl = parseUrl(destination, ADMIN_ORIGIN);
     if (redirectUrl) {
+      if (turnstileToken) {
+        redirectUrl.searchParams.set("turnstile_token", turnstileToken);
+      }
       ["redirect_to", "post_login_redirect", "next"].forEach((paramName) => {
         redirectUrl.searchParams.set(paramName, redirectTarget);
       });
@@ -374,6 +409,11 @@
       setStatus("offline", "Password login is unavailable because the auth endpoint is missing.");
       return;
     }
+    const turnstileToken = await turnstileController?.requireToken?.();
+    if (turnstileController?.isEnabled?.() && !turnstileToken) {
+      setStatus("error", "Complete the security check to continue.");
+      return;
+    }
 
     passwordLoginInFlight = true;
     setLoading(true);
@@ -388,7 +428,7 @@
           "Content-Type": "application/json",
           Accept: "application/json"
         },
-        body: JSON.stringify({ email, password, surface: ADMIN_SURFACE })
+        body: JSON.stringify({ email, password, surface: ADMIN_SURFACE, turnstile_token: turnstileToken })
       });
 
       const redirected =
@@ -421,13 +461,17 @@
     } finally {
       passwordLoginInFlight = false;
       setLoading(false);
+      if (turnstileController?.isEnabled?.()) {
+        turnstileController.reset();
+      }
+      syncActionAvailability();
     }
   }
 
   elements.oauthButtons.forEach((button) => {
     button.addEventListener("click", () => {
       const provider = button.getAttribute("data-admin-auth-provider");
-      if (provider) startOAuth(provider);
+      if (provider) void startOAuth(provider);
     });
   });
 
@@ -444,4 +488,15 @@
   if (elements.form) {
     elements.form.addEventListener("submit", submitPasswordLogin);
   }
+
+  void turnstileController?.init?.()
+    .catch(() => {
+      if (elements.turnstileStatus) {
+        elements.turnstileStatus.dataset.tone = "error";
+        elements.turnstileStatus.textContent = "Security check failed to load. Refresh and try again.";
+      }
+    })
+    .finally(() => {
+      syncActionAvailability();
+    });
 })();

@@ -315,6 +315,10 @@
       <p class="muted">
         StreamSuites Admin access is restricted to approved administrators.
       </p>
+      <section id="admin-auth-turnstile-panel" class="admin-auth-turnstile" hidden aria-live="polite">
+        <div id="admin-auth-turnstile" class="admin-auth-turnstile-slot"></div>
+        <p id="admin-auth-turnstile-status" class="admin-auth-turnstile-status"></p>
+      </section>
       <div class="admin-auth-providers">
         <button class="ss-btn ss-btn-primary" data-admin-auth-provider="google">
           <img
@@ -393,6 +397,12 @@
         </p>
       </form>
       <div id="admin-auth-status" class="admin-auth-status" role="status" aria-live="polite"></div>
+      <nav class="admin-auth-surface-links" aria-label="Alternate login surfaces">
+        <span class="admin-auth-surface-links__label">Elsewhere</span>
+        <a href="https://streamsuites.app/public-login.html">Public</a>
+        <a href="https://creator.streamsuites.app/auth/login.html">Creator</a>
+        <a href="https://console.streamsuites.app/login/">Developer</a>
+      </nav>
       <div class="admin-auth-toggle-row">
         <span class="muted">Already have an account?</span>
         <a class="ss-btn ss-btn-primary admin-auth-toggle" href="/auth/login.html">Log in</a>

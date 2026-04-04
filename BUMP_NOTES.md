@@ -1200,3 +1200,31 @@ Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into t
 ### Risks / Follow-Ups
 
 - The dashboard still depends on the mirrored runtime export set under `docs/runtime/exports/`; stale mirrored assets can make the surface look older than the runtime auth contract it is calling.
+
+## Task 3Y - Admin Auth Surface Repair Pass - 2026-04-05
+
+### Technical Notes
+
+- Added inline Turnstile markup plus standalone wiring to `docs/auth/login.html` and `docs/js/admin-login.js`, so admin OAuth starts and password login now both require a fresh token from `/auth/turnstile/config` before continuing.
+- Added the same small alternate-surface login strip to the standalone admin login surface and mirrored the Turnstile/alternate-link markup into the dashboard overlay shell so the modal structure no longer diverges from the repaired standalone page.
+- Added a lightweight source-audit regression at `tests/admin-auth-turnstile.test.mjs` covering the standalone login wiring and overlay parity markup.
+
+### Human-Readable Notes
+
+- The admin login page now has the same inline Turnstile protection as the other repaired login surfaces.
+- Admin login surfaces now expose the same minimal links to Public, Creator, and Developer login routes instead of the earlier one-off Creator-only link.
+
+### Files / Areas Touched
+
+- `docs/auth/login.html`
+- `docs/js/admin-login.js`
+- `docs/index.html`
+- `index.html`
+- `docs/css/base.css`
+- `tests/admin-auth-turnstile.test.mjs`
+- `README.md`
+- `BUMP_NOTES.md`
+
+### Risks / Follow-Ups
+
+- The dashboard repo still contains older parallel auth scaffolding; a later cleanup pass should decide whether to remove or consolidate the unused admin auth codepaths rather than letting duplicate surface markup drift.

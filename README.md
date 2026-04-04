@@ -205,6 +205,8 @@ StreamSuites-Dashboard/
 │   ├── services.schema.json
 │   ├── triggers.schema.json
 │   └── platform/
+├── tests/
+│   └── admin-auth-turnstile.test.mjs
 ├── shared/
 │   └── state/
 │       ├── admin_activity.json

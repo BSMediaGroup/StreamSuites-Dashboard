@@ -45,6 +45,10 @@
       </h2>
       <p class="muted">Use your StreamSuites account to access the admin dashboard.</p>
       <p id="admin-login-reason" class="muted"></p>
+      <section id="admin-login-turnstile-panel" class="admin-auth-turnstile" hidden aria-live="polite">
+        <div id="admin-login-turnstile" class="admin-auth-turnstile-slot"></div>
+        <p id="admin-login-turnstile-status" class="admin-auth-turnstile-status"></p>
+      </section>
 
       <div class="admin-auth-providers">
         <button class="ss-btn ss-btn-primary" data-admin-auth-provider="google">
@@ -138,14 +142,16 @@
       </div>
 
       <div id="admin-login-status" class="admin-auth-status" role="status" aria-live="polite"></div>
-      <div class="admin-auth-creator-link">
-        <a class="admin-auth-creator-anchor" href="https://creator.streamsuites.app/auth/login.html">
-          Looking for Creator access? Switch to Creator login
-        </a>
-      </div>
+      <nav class="admin-auth-surface-links" aria-label="Alternate login surfaces">
+        <span class="admin-auth-surface-links__label">Elsewhere</span>
+        <a href="https://streamsuites.app/public-login.html">Public</a>
+        <a href="https://creator.streamsuites.app/auth/login.html">Creator</a>
+        <a href="https://console.streamsuites.app/login/">Developer</a>
+      </nav>
     </div>
   </main>
 
+  <script src="/js/turnstile-inline.js" defer></script>
   <script src="/js/admin-login.js"></script>
   <script src="/js/status-widget.js" defer></script>
 </body>
