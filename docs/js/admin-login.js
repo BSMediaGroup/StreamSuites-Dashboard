@@ -171,16 +171,17 @@
     turnstileStatus: document.getElementById("admin-login-turnstile-status"),
     oauthButtons: Array.from(document.querySelectorAll("[data-admin-auth-provider]"))
   };
+  const baseUrl = getMetaContent("streamsuites-auth-base");
+  const base = baseUrl ? baseUrl.replace(/\/$/, "") : "";
+  const turnstileConfigUrl = base ? `${base}/auth/turnstile/config` : "/auth/turnstile/config";
   const turnstileController = window.StreamSuitesTurnstileInline?.createController?.({
-    configUrl: "/auth/turnstile/config",
+    configUrl: turnstileConfigUrl,
     panel: elements.turnstilePanel,
     slot: elements.turnstileSlot,
     status: elements.turnstileStatus,
     onStateChange: () => syncActionAvailability()
   });
 
-  const baseUrl = getMetaContent("streamsuites-auth-base");
-  const base = baseUrl ? baseUrl.replace(/\/$/, "") : "";
   const endpoints = {
     login:
       getMetaContent("streamsuites-auth-login") ||

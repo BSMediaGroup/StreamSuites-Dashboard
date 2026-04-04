@@ -16,7 +16,9 @@ test("standalone admin login includes inline turnstile wiring", () => {
   assert.match(html, /admin-login-turnstile-panel/);
   assert.match(html, /<script src="\/js\/turnstile-inline\.js" defer><\/script>/);
   assert.match(html, /<script src="\/js\/admin-login\.js" defer><\/script>/);
-  assert.match(js, /auth\/turnstile\/config/);
+  assert.match(js, /const baseUrl = getMetaContent\("streamsuites-auth-base"\);/);
+  assert.match(js, /const turnstileConfigUrl = base \? `\$\{base\}\/auth\/turnstile\/config` : "\/auth\/turnstile\/config";/);
+  assert.doesNotMatch(js, /configUrl:\s*"\/auth\/turnstile\/config"/);
   assert.match(js, /requireToken/);
   assert.match(js, /turnstile_token/);
 });

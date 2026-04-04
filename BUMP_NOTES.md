@@ -1,5 +1,18 @@
 # Bump Notes
 
+## Emergency Admin Login Turnstile Hotfix - 2026-04-05
+
+### Technical Notes
+
+- Root-caused the live admin `/auth/login` Turnstile outage to a dashboard-only config fetch bug in `docs/js/admin-login.js`: the standalone admin login page was still requesting `GET /auth/turnstile/config` from `admin.streamsuites.app`, but this repo does not publish an auth proxy route for that path, so the deployed page received `404` and kept the Turnstile panel hidden.
+- Replaced that broken standalone admin config path with an explicit Auth-origin config URL derived from the existing `streamsuites-auth-base` metadata, so the real admin login page now requests `https://api.streamsuites.app/auth/turnstile/config` before rendering the inline widget.
+- Tightened `tests/admin-auth-turnstile.test.mjs` so it now fails if `docs/js/admin-login.js` regresses to the broken hard-coded same-origin `configUrl: "/auth/turnstile/config"` wiring.
+
+### Human-Readable Notes
+
+- The deployed admin login page was not missing markup; it was hiding the widget because it asked the wrong host for Turnstile config.
+- Admin `/auth/login` now explicitly pulls Turnstile config from the real Auth service instead of a non-existent dashboard route, which restores first-load inline widget rendering without weakening server-side validation.
+
 ## Admin Dropdown Account Overview Parity - 2026-04-05
 
 ### Technical Notes
