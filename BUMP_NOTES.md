@@ -1180,3 +1180,23 @@ Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into t
 
 - `docs/css/components.css`
 - `BUMP_NOTES.md`
+
+## Task 3X - Turnstile Auth Rollout Verification - 2026-04-04
+
+### Technical Notes
+
+- Verified the admin login surface now uses the shared explicit-render Turnstile helper and the auth proxy path for `/auth/turnstile/config`, keeping password and OAuth login starts tied to runtime-side validation instead of client-only completion.
+- Updated the repo tree so the newly created `docs/js/turnstile-inline.js` helper and `docs/runtime/exports/status.json` mirror are represented in the root README after they were added by the interrupted rollout.
+
+### Human-Readable Notes
+
+- The admin login entrypoint now includes the inline Cloudflare Turnstile checkpoint without switching to a fullscreen challenge flow, and the repo docs now actually reflect the files that were added for that rollout.
+
+### Files / Areas Touched
+
+- `README.md`
+- `BUMP_NOTES.md`
+
+### Risks / Follow-Ups
+
+- The dashboard still depends on the mirrored runtime export set under `docs/runtime/exports/`; stale mirrored assets can make the surface look older than the runtime auth contract it is calling.

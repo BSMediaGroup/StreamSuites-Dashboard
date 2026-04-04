@@ -146,6 +146,7 @@ StreamSuites-Dashboard/
 │   │   ├── permissions.js
 │   │   ├── settings.js
 │   │   ├── state.js
+│   │   ├── turnstile-inline.js
 │   │   ├── user-detail.js
 │   │   └── utils/
 │   │       └── country-flags.js
@@ -153,6 +154,7 @@ StreamSuites-Dashboard/
 │   │   └── exports/
 │   │       ├── meta.json
 │   │       ├── runtime_snapshot.json
+│   │       ├── status.json
 │   │       ├── version.json
 │   │       └── telemetry/
 │   ├── shared/
