@@ -29,3 +29,18 @@ test("admin overlay markup keeps parity links and turnstile slot", () => {
     assert.match(html, /Developer/);
   }
 });
+
+test("account management uses dedicated developer access controls instead of developer tier options", () => {
+  const accountsJs = read("docs/js/accounts.js");
+  const userDetailJs = read("docs/js/user-detail.js");
+
+  assert.doesNotMatch(accountsJs, /"DEVELOPER"\]/);
+  assert.match(accountsJs, /Grant Developer/);
+  assert.match(accountsJs, /Revoke Developer/);
+  assert.match(accountsJs, /developer-access/);
+
+  assert.doesNotMatch(userDetailJs, /<option value="DEVELOPER"/);
+  assert.match(userDetailJs, /Grant Developer/);
+  assert.match(userDetailJs, /Revoke Developer/);
+  assert.match(userDetailJs, /developer-access/);
+});

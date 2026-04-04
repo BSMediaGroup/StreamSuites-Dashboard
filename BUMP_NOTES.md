@@ -1,5 +1,19 @@
 # Bump Notes
 
+## Developer Access-Class Admin Controls - 2026-04-05
+
+### Technical Notes
+
+- Removed `Developer` from the generic tier selectors in `docs/js/accounts.js` and `docs/js/user-detail.js`; normal plan updates now stay limited to `CORE`, `GOLD`, and `PRO`.
+- Added dedicated Developer grant/revoke actions to the Dashboard accounts table row actions, the expandable account details/sidebar action block rendered from `docs/js/accounts.js`, and the full user details management panel in `docs/js/user-detail.js`.
+- Wired those controls to the new runtime-owned `PATCH /admin/accounts/{account_id}/developer-access` contract instead of piggybacking on the old tier update path, and updated account normalization to consume the runtime `access_class` plus display-tier fields.
+- Added a focused node test proving the Dashboard no longer renders developer as a tier option and now contains explicit `developer-access` grant/revoke controls on both account-management surfaces.
+
+### Human-Readable Notes
+
+- Admins now manage Developer access explicitly instead of pretending it is a paid plan.
+- The Dashboard still lets admins change normal plans, but Developer is now its own separate access control.
+
 ## RELEASED / PACKAGED: 0.4.2-alpha
 
 Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.4.8-alpha` section below.

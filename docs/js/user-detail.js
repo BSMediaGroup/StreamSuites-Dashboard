@@ -721,6 +721,9 @@
     const isDeleted = status === "deleted";
     const isSuspended = status === "suspended";
     const currentTier = coerceText(account?.tier, "CORE").toUpperCase();
+    const currentAccessClass = coerceText(account?.access_class || account?.role, "PUBLIC").toUpperCase();
+    const isDeveloper = currentAccessClass === "DEVELOPER";
+    const isAdminAccount = currentAccessClass === "ADMIN";
     const providers = Array.isArray(account?.providers) ? account.providers : [];
     const hasEmail = Boolean(coerceText(account?.email));
     const canVerifyEmail = hasEmail && !account?.email_verified;
@@ -740,9 +743,11 @@
                 <option value="CORE"${currentTier === "CORE" ? " selected" : ""}>CORE</option>
                 <option value="GOLD"${currentTier === "GOLD" ? " selected" : ""}>GOLD</option>
                 <option value="PRO"${currentTier === "PRO" ? " selected" : ""}>PRO</option>
-                <option value="DEVELOPER"${currentTier === "DEVELOPER" ? " selected" : ""}>DEVELOPER</option>
               </select>
               <button type="button" class="ss-btn ss-btn-primary" data-user-detail-action="tier"${isDeleted ? " disabled" : ""}>Update tier</button>
+            </div>
+            <div class="accounts-row-actions-tier">
+              <button type="button" class="ss-btn ${isDeveloper ? "ss-btn-secondary" : "ss-btn-primary"}" data-user-detail-action="developer-access"${isDeleted || isAdminAccount ? " disabled" : ""}>${escapeHtml(isDeveloper ? "Revoke Developer" : "Grant Developer")}</button>
             </div>
             <div class="accounts-row-actions-buttons user-detail-action-buttons">
               <button type="button" class="ss-btn ss-btn-secondary" data-user-detail-action="${escapeHtml(isSuspended ? "unsuspend" : "suspend")}"${isDeleted ? " disabled" : ""}>${escapeHtml(isSuspended ? "Unsuspend" : "Suspend")}</button>
@@ -1225,6 +1230,12 @@
       endpoint = `/admin/accounts/${encodeURIComponent(accountId)}/tier`;
       method = "PATCH";
       body = JSON.stringify({ tier: selectedTier });
+    } else if (action === "developer-access") {
+      endpoint = `/admin/accounts/${encodeURIComponent(accountId)}/developer-access`;
+      method = "PATCH";
+      body = JSON.stringify({
+        enabled: coerceText(account?.access_class || account?.role, "").toUpperCase() !== "DEVELOPER"
+      });
     }
 
     setButtonLoading(button, true);

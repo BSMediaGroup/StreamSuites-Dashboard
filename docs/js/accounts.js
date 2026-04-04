@@ -157,7 +157,7 @@
 
   function normalizeAccountType(value) {
     const normalized = String(value || "").trim().toUpperCase();
-    if (normalized === "PUBLIC" || normalized === "CREATOR" || normalized === "ADMIN") {
+    if (normalized === "PUBLIC" || normalized === "CREATOR" || normalized === "DEVELOPER" || normalized === "ADMIN") {
       return normalized;
     }
     return "";
@@ -202,6 +202,7 @@
 
   function resolveAccountType(raw = {}) {
     return (
+      normalizeAccountType(raw.access_class || raw.accessClass) ||
       normalizeAccountType(raw.account_type || raw.accountType || raw.type) ||
       normalizeAccountType(raw.role || raw.account_role) ||
       "PUBLIC"
@@ -741,8 +742,19 @@ function normalizeUser(raw = {}) {
         ? (raw.slug_aliases || publicProfile.slug_aliases).map((item) => coerceText(item)).filter(Boolean)
         : [],
       accountType,
-      role: raw.role || raw.account_role || accountType || "—",
+      accessClass: normalizeAccountType(raw.access_class || raw.accessClass || raw.role || raw.account_role || accountType),
+      role: raw.access_class || raw.accessClass || raw.role || raw.account_role || accountType || "—",
       tier: normalizeTierLabel(raw.tier || raw.account_tier || raw.plan || "Core"),
+      displayTier: normalizeTierLabel(
+        raw.effective_tier?.display_tier_label ||
+        raw.effectiveTier?.displayTierLabel ||
+        raw.effective_tier?.tier_label ||
+        raw.effectiveTier?.tierLabel ||
+        raw.tier ||
+        raw.account_tier ||
+        raw.plan ||
+        "Core"
+      ),
       paymentSummary,
       billingAdminSummary,
       supporterLabel,
@@ -1057,8 +1069,11 @@ function normalizeUser(raw = {}) {
     const manageDisabled = !state.canManage;
     const isEmailVerified = user.emailVerified === true;
     const hasEmail = Boolean(user.email && user.email !== "—");
-    const tiers = ["CORE", "GOLD", "PRO", "DEVELOPER"];
+    const tiers = ["CORE", "GOLD", "PRO"];
     const currentTier = String(user.tier || "CORE").toUpperCase();
+    const currentAccessClass = String(user.accessClass || user.accountType || "PUBLIC").toUpperCase();
+    const isDeveloper = currentAccessClass === "DEVELOPER";
+    const isAdminAccount = currentAccessClass === "ADMIN";
     const accountId = normalizeAccountId(user.id);
 
     const actions = [];
@@ -1183,6 +1198,16 @@ function normalizeUser(raw = {}) {
           tone: "ss-btn-primary",
           disabled: manageDisabled || isDeleted,
           title: isDeleted ? "Cannot change tier on deleted accounts." : "",
+          accountId
+        })}
+        </div>
+        <div class="accounts-row-actions-tier">
+        ${renderActionButton({
+          label: isDeveloper ? "Revoke Developer" : "Grant Developer",
+          action: "developer-access",
+          tone: isDeveloper ? "ss-btn-secondary" : "ss-btn-primary",
+          disabled: manageDisabled || isDeleted || isAdminAccount,
+          title: isAdminAccount ? "Admin accounts already exceed developer access." : isDeleted ? "Cannot change developer access on deleted accounts." : "",
           accountId
         })}
         </div>
@@ -3183,6 +3208,9 @@ function normalizeUser(raw = {}) {
         }
         method = "PATCH";
         body = JSON.stringify({ tier: selectedTier });
+      } else if (action === "developer-access") {
+        method = "PATCH";
+        body = JSON.stringify({ enabled: String(user.accessClass || user.accountType || "").toUpperCase() !== "DEVELOPER" });
       }
       setStatus(`Applying ${action.replace("-", " ")}...`);
       setBanner("", false);
