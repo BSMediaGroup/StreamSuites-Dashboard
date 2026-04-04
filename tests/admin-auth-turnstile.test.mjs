@@ -29,6 +29,10 @@ test("admin overlay markup keeps parity links and turnstile slot", () => {
     assert.doesNotMatch(html, /Elsewhere/);
     assert.match(html, /Creator Dashboard/);
     assert.match(html, /Developer Console/);
+    assert.match(html, /admin-user-overview-name/);
+    assert.match(html, /admin-user-overview-email/);
+    assert.match(html, /admin-user-overview-role/);
+    assert.match(html, /admin-user-overview-tier/);
   }
 
   const standaloneHtml = read("docs/auth/login.html");
@@ -37,6 +41,17 @@ test("admin overlay markup keeps parity links and turnstile slot", () => {
   assert.doesNotMatch(standaloneHtml, /Elsewhere/);
   assert.match(standaloneHtml, /Creator Dashboard/);
   assert.match(standaloneHtml, /Developer Console/);
+});
+
+test("admin session consumer hydrates the dropdown overview card", () => {
+  const js = read("docs/js/admin-auth.js");
+  const css = read("docs/css/base.css");
+
+  assert.match(js, /overviewName/);
+  assert.match(js, /overviewEmail/);
+  assert.match(js, /overviewRole/);
+  assert.match(js, /overviewTier/);
+  assert.match(css, /ss-user-menu-overview/);
 });
 
 test("account management uses dedicated developer access controls instead of developer tier options", () => {

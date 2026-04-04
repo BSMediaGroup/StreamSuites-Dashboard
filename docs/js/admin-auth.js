@@ -410,6 +410,10 @@
       this.elements.headerRole = document.getElementById("admin-auth-role");
       this.elements.headerTier = document.getElementById("admin-auth-tier");
       this.elements.headerLogout = document.getElementById("admin-auth-logout");
+      this.elements.overviewName = document.getElementById("admin-user-overview-name");
+      this.elements.overviewEmail = document.getElementById("admin-user-overview-email");
+      this.elements.overviewRole = document.getElementById("admin-user-overview-role");
+      this.elements.overviewTier = document.getElementById("admin-user-overview-tier");
 
       if (this.elements.headerAvatar) {
         this.elements.headerAvatar.setAttribute(
@@ -610,6 +614,18 @@
         this.elements.headerAvatar.classList.toggle("is-avatar", Boolean(avatarUrl));
       }
       this.elements.headerWrap.classList.toggle("hidden", !this.state.authorized);
+      if (this.elements.overviewName) {
+        this.elements.overviewName.textContent = name || email || "Administrator";
+      }
+      if (this.elements.overviewEmail) {
+        this.elements.overviewEmail.textContent = email || "admin@streamsuites.app";
+      }
+      if (this.elements.overviewRole) {
+        this.elements.overviewRole.textContent = role ? role.toUpperCase() : "ADMIN";
+      }
+      if (this.elements.overviewTier) {
+        this.elements.overviewTier.textContent = tier ? resolveTierLabel(tier).toUpperCase() : "CORE";
+      }
     },
 
     setBlockedState({ title, message, showLogin, showLogout, showCreator }) {

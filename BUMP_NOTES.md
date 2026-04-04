@@ -1,5 +1,18 @@
 # Bump Notes
 
+## Admin Dropdown Account Overview Parity - 2026-04-05
+
+### Technical Notes
+
+- Added the compact account overview card to the in-shell admin user menu in both `index.html` and `docs/index.html`, then hydrated those fields from the existing admin session consumer in `docs/js/admin-auth.js`.
+- Extended `docs/css/base.css` with additive overview-card styling only; the existing admin actions, menu order, and toggle shell remain intact.
+- No StreamSuites runtime contract change was needed for the Admin dropdown parity pass.
+
+### Human-Readable Notes
+
+- The Admin Dashboard dropdown now opens with the same compact account summary pattern as the Creator reference.
+- The rest of the admin menu stays where it was.
+
 ## Developer Access-Class Admin Controls - 2026-04-05
 
 ### Technical Notes
