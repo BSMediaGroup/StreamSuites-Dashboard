@@ -114,6 +114,13 @@ StreamSuites-Dashboard/
 │   │   ├── status-widget.css
 │   │   ├── theme-dark.css
 │   │   └── updates.css
+│   ├── assets/
+│   │   └── icons/
+│   │       └── ui/
+│   │           ├── ss-admin.svg
+│   │           ├── ss-creator.svg
+│   │           ├── ss-developer.svg
+│   │           └── ss-public.svg
 │   ├── data/
 │   │   ├── admin_activity.json
 │   │   ├── changelog.dashboard.json

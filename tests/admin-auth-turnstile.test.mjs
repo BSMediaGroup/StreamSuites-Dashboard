@@ -14,7 +14,8 @@ test("standalone admin login includes inline turnstile wiring", () => {
   const js = read("docs/js/admin-login.js");
 
   assert.match(html, /admin-login-turnstile-panel/);
-  assert.match(html, /\/js\/turnstile-inline\.js/);
+  assert.match(html, /<script src="\/js\/turnstile-inline\.js" defer><\/script>/);
+  assert.match(html, /<script src="\/js\/admin-login\.js" defer><\/script>/);
   assert.match(js, /auth\/turnstile\/config/);
   assert.match(js, /requireToken/);
   assert.match(js, /turnstile_token/);
@@ -24,10 +25,18 @@ test("admin overlay markup keeps parity links and turnstile slot", () => {
   for (const relativePath of ["docs/index.html", "index.html"]) {
     const html = read(relativePath);
     assert.match(html, /admin-auth-turnstile-panel/);
-    assert.match(html, /Alternate login surfaces/);
-    assert.match(html, /Creator/);
-    assert.match(html, /Developer/);
+    assert.match(html, /Login to other surfaces/);
+    assert.doesNotMatch(html, /Elsewhere/);
+    assert.match(html, /Creator Dashboard/);
+    assert.match(html, /Developer Console/);
   }
+
+  const standaloneHtml = read("docs/auth/login.html");
+  assert.match(standaloneHtml, /admin-login-turnstile-panel/);
+  assert.match(standaloneHtml, /Login to other surfaces/);
+  assert.doesNotMatch(standaloneHtml, /Elsewhere/);
+  assert.match(standaloneHtml, /Creator Dashboard/);
+  assert.match(standaloneHtml, /Developer Console/);
 });
 
 test("account management uses dedicated developer access controls instead of developer tier options", () => {

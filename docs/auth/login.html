@@ -142,17 +142,31 @@
       </div>
 
       <div id="admin-login-status" class="admin-auth-status" role="status" aria-live="polite"></div>
-      <nav class="admin-auth-surface-links" aria-label="Alternate login surfaces">
-        <span class="admin-auth-surface-links__label">Elsewhere</span>
-        <a href="https://streamsuites.app/public-login.html">Public</a>
-        <a href="https://creator.streamsuites.app/auth/login.html">Creator</a>
-        <a href="https://console.streamsuites.app/login/">Developer</a>
-      </nav>
+      <details class="admin-auth-surface-links" aria-label="Login to other surfaces">
+        <summary class="admin-auth-surface-links__summary">
+          <span class="admin-auth-surface-links__summary-label">Login to other surfaces</span>
+          <span class="admin-auth-surface-links__chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="admin-auth-surface-links__list">
+          <a class="admin-auth-surface-links__link" href="https://streamsuites.app/public-login.html">
+            <span class="admin-auth-surface-links__icon admin-auth-surface-links__icon--public" aria-hidden="true"></span>
+            <span>Public</span>
+          </a>
+          <a class="admin-auth-surface-links__link" href="https://creator.streamsuites.app/auth/login.html">
+            <span class="admin-auth-surface-links__icon admin-auth-surface-links__icon--creator" aria-hidden="true"></span>
+            <span>Creator Dashboard</span>
+          </a>
+          <a class="admin-auth-surface-links__link" href="https://console.streamsuites.app/login/">
+            <span class="admin-auth-surface-links__icon admin-auth-surface-links__icon--developer" aria-hidden="true"></span>
+            <span>Developer Console</span>
+          </a>
+        </div>
+      </details>
     </div>
   </main>
 
   <script src="/js/turnstile-inline.js" defer></script>
-  <script src="/js/admin-login.js"></script>
+  <script src="/js/admin-login.js" defer></script>
   <script src="/js/status-widget.js" defer></script>
 </body>
 </html>

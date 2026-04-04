@@ -1220,6 +1220,17 @@ Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into t
 ### Technical Notes
 
 - Added inline Turnstile markup plus standalone wiring to `docs/auth/login.html` and `docs/js/admin-login.js`, so admin OAuth starts and password login now both require a fresh token from `/auth/turnstile/config` before continuing.
+
+## Task 3Z - Auth Surface Login Repair Follow-up - 2026-04-05
+
+### Technical
+- Fixed the live admin `/auth/login` Turnstile regression at the page entrypoint by deferring `docs/js/admin-login.js` so it runs after `docs/js/turnstile-inline.js`, instead of constructing the controller before the helper exists.
+- Replaced the old `Elsewhere` alternate-surface strip with a collapsed `Login to other surfaces` section on `docs/auth/login.html`, `docs/index.html`, and the repo-root `index.html`, and added the supporting `ss-public.svg`, `ss-creator.svg`, `ss-admin.svg`, and `ss-developer.svg` assets under `docs/assets/icons/ui/`.
+- Updated `tests/admin-auth-turnstile.test.mjs` to assert the corrected standalone login script order plus the new collapsed alternate-surface wording across the admin login and overlay surfaces.
+
+### Human
+- The admin login page now starts the inline Turnstile reliably without changing the existing auth flow.
+- The old `Elsewhere` wording was removed because it looked like placeholder UI and did not present the alternate destinations as a discreet secondary action.
 - Added the same small alternate-surface login strip to the standalone admin login surface and mirrored the Turnstile/alternate-link markup into the dashboard overlay shell so the modal structure no longer diverges from the repaired standalone page.
 - Added a lightweight source-audit regression at `tests/admin-auth-turnstile.test.mjs` covering the standalone login wiring and overlay parity markup.
 
