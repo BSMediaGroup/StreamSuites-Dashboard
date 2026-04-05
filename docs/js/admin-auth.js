@@ -56,6 +56,7 @@
     "x-streamsuites-auth-reason",
     "x-auth-status"
   ];
+  const TURNSTILE_HELPER_URL = "/js/turnstile-inline.js";
 
   function normalizeHostname(value) {
     return typeof value === "string" ? value.trim().toLowerCase() : "";
@@ -313,6 +314,33 @@
     return `${window.ADMIN_BASE_PATH}${normalized}`;
   }
 
+  function loadTurnstileHelper() {
+    if (window.StreamSuitesTurnstileInline?.createController) {
+      return Promise.resolve(window.StreamSuitesTurnstileInline);
+    }
+    if (window.__streamsuitesAdminTurnstileHelperPromise) {
+      return window.__streamsuitesAdminTurnstileHelperPromise;
+    }
+    window.__streamsuitesAdminTurnstileHelperPromise = new Promise((resolve, reject) => {
+      const existing = document.querySelector(`script[src="${TURNSTILE_HELPER_URL}"]`);
+      if (existing) {
+        existing.addEventListener("load", () => resolve(window.StreamSuitesTurnstileInline), { once: true });
+        existing.addEventListener("error", () => reject(new Error("admin-turnstile-helper-load-failed")), {
+          once: true
+        });
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = TURNSTILE_HELPER_URL;
+      script.defer = true;
+      script.onload = () => resolve(window.StreamSuitesTurnstileInline);
+      script.onerror = () => reject(new Error("admin-turnstile-helper-load-failed"));
+      document.head.appendChild(script);
+    });
+    return window.__streamsuitesAdminTurnstileHelperPromise;
+  }
+
   const AdminAuth = {
     state: {
       authenticated: false,
@@ -400,6 +428,9 @@
       this.elements.emailInput = document.getElementById("admin-auth-email");
       this.elements.passwordInput = document.getElementById("admin-auth-password");
       this.elements.emailButton = document.getElementById("admin-auth-email-submit");
+      this.elements.turnstilePanel = document.getElementById("admin-auth-turnstile-panel");
+      this.elements.turnstileSlot = document.getElementById("admin-auth-turnstile");
+      this.elements.turnstileStatus = document.getElementById("admin-auth-turnstile-status");
       this.elements.oauthButtons = Array.from(
         document.querySelectorAll("[data-admin-auth-provider]")
       );
@@ -507,10 +538,58 @@
         button.addEventListener("click", () => {
           const provider = button.getAttribute("data-admin-auth-provider");
           if (provider) {
-            this.startOAuth(provider);
+            void this.startOAuth(provider);
           }
         });
       });
+    },
+
+    async ensureTurnstileController() {
+      if (this.turnstileController) {
+        return this.turnstileController;
+      }
+      await loadTurnstileHelper();
+      const base = this.config.baseUrl ? this.config.baseUrl.replace(/\/$/, "") : "";
+      const turnstileConfigUrl = base ? `${base}/auth/turnstile/config` : "/auth/turnstile/config";
+      this.turnstileController = window.StreamSuitesTurnstileInline?.createController?.({
+        configUrl: turnstileConfigUrl,
+        panel: this.elements.turnstilePanel,
+        slot: this.elements.turnstileSlot,
+        status: this.elements.turnstileStatus,
+        onStateChange: () => this.syncActionAvailability()
+      });
+      return this.turnstileController;
+    },
+
+    async ensureTurnstileInitialized() {
+      try {
+        const controller = await this.ensureTurnstileController();
+        await controller?.init?.();
+      } catch (error) {
+        console.warn("[Admin Auth] Turnstile failed to initialize:", error);
+        if (this.elements.turnstileStatus) {
+          this.elements.turnstileStatus.dataset.tone = "error";
+          this.elements.turnstileStatus.textContent = "Security check failed to load. Refresh and try again.";
+        }
+      } finally {
+        this.syncActionAvailability();
+      }
+    },
+
+    isTurnstileBlocked() {
+      return this.turnstileController?.isEnabled?.() && !this.turnstileController?.hasToken?.();
+    },
+
+    syncActionAvailability() {
+      const disabled = this.passwordLoginInFlight || this.isTurnstileBlocked();
+      this.elements.oauthButtons.forEach((button) => {
+        button.disabled = disabled;
+        button.setAttribute("aria-disabled", disabled ? "true" : "false");
+        button.classList.toggle("is-disabled", disabled);
+      });
+      if (this.elements.emailButton instanceof HTMLButtonElement) {
+        this.elements.emailButton.disabled = disabled;
+      }
     },
 
     isOverlayOpen() {
@@ -524,6 +603,7 @@
       if (this.elements.blocked) {
         this.elements.blocked.classList.add("hidden");
       }
+      void this.ensureTurnstileInitialized();
     },
 
     closeOverlay() {
@@ -544,14 +624,13 @@
     setLoading(isLoading) {
       document.body.classList.toggle("admin-auth-loading", isLoading);
       const controls = [
-        ...this.elements.oauthButtons,
         this.elements.emailInput,
-        this.elements.passwordInput,
-        this.elements.emailButton
+        this.elements.passwordInput
       ].filter(Boolean);
       controls.forEach((control) => {
-        control.disabled = isLoading;
+        control.disabled = isLoading || (!isLoading && this.isTurnstileBlocked());
       });
+      this.syncActionAvailability();
     },
 
     setHeaderIdentity({ name, email, role, avatarUrl, tier, adminAccess }) {
@@ -856,7 +935,7 @@
       };
     },
 
-    startOAuth(provider) {
+    async startOAuth(provider) {
       const endpoint = this.config.endpoints.providers[provider];
       if (!endpoint) {
         this.setStatus("error", `Auth provider not configured: ${provider}.`);
@@ -868,8 +947,17 @@
         this.setStatus("error", `Auth provider endpoint invalid: ${provider}.`);
         return;
       }
+      const turnstileToken = await this.turnstileController?.requireToken?.();
+      if (this.turnstileController?.isEnabled?.() && !turnstileToken) {
+        this.setStatus("error", "Complete the security check to continue.");
+        return;
+      }
+      const redirectUrl = parseUrl(destination, ADMIN_ORIGIN);
+      if (redirectUrl && turnstileToken) {
+        redirectUrl.searchParams.set("turnstile_token", turnstileToken);
+      }
       this.setStatus("loading", `Redirecting to ${provider}…`);
-      window.location.assign(destination);
+      window.location.assign(redirectUrl ? redirectUrl.toString() : destination);
     },
 
     async submitPasswordLogin() {
@@ -898,6 +986,11 @@
         this.setStatus("error", "Enter your admin password.");
         return;
       }
+      const turnstileToken = await this.turnstileController?.requireToken?.();
+      if (this.turnstileController?.isEnabled?.() && !turnstileToken) {
+        this.setStatus("error", "Complete the security check to continue.");
+        return;
+      }
 
       this.passwordLoginInFlight = true;
       this.setLoading(true);
@@ -912,7 +1005,7 @@
             "Content-Type": "application/json",
             Accept: "application/json"
           },
-          body: JSON.stringify({ email, password, surface: ADMIN_SURFACE })
+          body: JSON.stringify({ email, password, surface: ADMIN_SURFACE, turnstile_token: turnstileToken })
         });
 
         const redirected =
@@ -957,6 +1050,9 @@
         this.setStatus("error", err?.message || "Unable to sign in. Try again shortly.");
       } finally {
         this.passwordLoginInFlight = false;
+        if (this.turnstileController?.isEnabled?.()) {
+          this.turnstileController.reset();
+        }
         this.setLoading(false);
       }
     },

@@ -35,6 +35,10 @@ test("admin overlay markup keeps parity links and turnstile slot", () => {
     assert.match(html, /admin-user-overview-email/);
     assert.match(html, /admin-user-overview-role/);
     assert.match(html, /admin-user-overview-tier/);
+    assert.ok(
+      html.indexOf("Login to other surfaces") < html.indexOf("admin-auth-turnstile-status"),
+      `${relativePath} should keep the Turnstile block below alternate surface links`
+    );
   }
 
   const standaloneHtml = read("docs/auth/login.html");
@@ -43,6 +47,17 @@ test("admin overlay markup keeps parity links and turnstile slot", () => {
   assert.doesNotMatch(standaloneHtml, /Elsewhere/);
   assert.match(standaloneHtml, /Creator Dashboard/);
   assert.match(standaloneHtml, /Developer Console/);
+});
+
+test("admin overlay auth controller now explicitly initializes inline turnstile", () => {
+  const js = read("docs/js/admin-auth.js");
+
+  assert.match(js, /TURNSTILE_HELPER_URL/);
+  assert.match(js, /loadTurnstileHelper/);
+  assert.match(js, /createController/);
+  assert.match(js, /ensureTurnstileInitialized/);
+  assert.match(js, /requireToken/);
+  assert.match(js, /turnstile_token/);
 });
 
 test("admin session consumer hydrates the dropdown overview card", () => {

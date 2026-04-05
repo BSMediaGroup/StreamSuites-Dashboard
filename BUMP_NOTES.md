@@ -1,5 +1,19 @@
 # Bump Notes
 
+## Emergency Admin/Auth Turnstile Parity Hotfix - 2026-04-06
+
+### Technical Notes
+
+- Verified the standalone admin `/auth/login.html` path already had explicit Turnstile config/render wiring in `docs/js/admin-login.js`, but normalized its markup so the widget now sits near the bottom of the card beneath the alternate-surface links.
+- Root-caused the remaining admin omission to the in-shell login overlay in `docs/index.html`, `index.html`, and `docs/js/admin-auth.js`: the overlay shipped Turnstile markup but never loaded the helper or created a controller, so OAuth starts and password login there bypassed any inline widget rendering entirely.
+- Added explicit helper loading plus controller init to `docs/js/admin-auth.js`, required fresh Turnstile tokens for overlay OAuth starts and password login posts, and kept server-side validation authoritative by continuing to send `turnstile_token` to the same auth endpoints.
+- Tightened `tests/admin-auth-turnstile.test.mjs` so future regressions fail if the overlay loses its explicit inline Turnstile controller or if the admin markup drifts back to the older high placement.
+
+### Human-Readable Notes
+
+- Admin now has Turnstile parity on both the standalone `/auth/login` page and the dashboard overlay login, instead of only on one path.
+- The security check sits lower in the admin auth cards and keeps the tiny helper copy size already used there.
+
 ## Emergency Admin Login Turnstile Hotfix - 2026-04-05
 
 ### Technical Notes
