@@ -798,7 +798,7 @@ body.admin-auth-error #app {
 
 .admin-auth-turnstile-status {
   margin: 0;
-  font-size: 9px;
+  font-size: 10px;
   color: rgba(226, 233, 242, 0.78);
 }
 
