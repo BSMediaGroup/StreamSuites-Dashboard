@@ -1,5 +1,19 @@
 # Bump Notes
 
+## Emergency Admin Login Status Collapse Hotfix - 2026-04-06
+
+### Technical Notes
+
+- Root-caused the blank gap on the standalone admin `/auth/login` card to shared admin-auth status styling in `docs/css/base.css`: `.admin-auth-status` always reserved `min-height: 20px` plus `margin-top: 14px` even when the live region contained no text, so the bottom of the card kept an empty status row beneath the Turnstile block.
+- Updated the shared admin-auth status styling so the region is `display: none` with zero reserved height when empty and only regains its top spacing when it actually has text, preserving the existing DOM order and avoiding any Turnstile relocation.
+- Tightened both `docs/js/admin-login.js` and `docs/js/admin-auth.js` so clearing a status also removes the stale `data-state`, preventing empty live-region shells from retaining prior state markers after message text is cleared.
+- Added a focused regression assertion in `tests/admin-auth-turnstile.test.mjs` covering the self-collapsing CSS contract and the JS cleanup of stale status state.
+
+### Human-Readable Notes
+
+- The admin login card no longer leaves an ugly empty message strip under the security check when there is nothing to say.
+- Real admin validation, loading, success, and error messages still appear in the same place when they actually exist.
+
 ## Emergency Admin/Auth Turnstile Parity Hotfix - 2026-04-06
 
 ### Technical Notes

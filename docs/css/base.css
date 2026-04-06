@@ -772,10 +772,16 @@ body.admin-auth-error #app {
 }
 
 .admin-auth-status {
-  min-height: 20px;
-  margin-top: 14px;
+  display: none;
+  min-height: 0;
+  margin: 0;
   font-size: 12px;
   letter-spacing: 0.03em;
+}
+
+.admin-auth-status:not(:empty) {
+  display: block;
+  margin-top: 14px;
 }
 
 .admin-auth-turnstile {

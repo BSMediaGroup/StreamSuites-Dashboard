@@ -617,8 +617,14 @@
 
     setStatus(state, message) {
       if (!this.elements.status) return;
-      this.elements.status.dataset.state = state;
-      this.elements.status.textContent = message || "";
+      const nextMessage = typeof message === "string" ? message : "";
+      if (nextMessage) {
+        this.elements.status.dataset.state = state;
+        this.elements.status.textContent = nextMessage;
+        return;
+      }
+      delete this.elements.status.dataset.state;
+      this.elements.status.textContent = "";
     },
 
     setLoading(isLoading) {

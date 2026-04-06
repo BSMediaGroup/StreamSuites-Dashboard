@@ -60,6 +60,17 @@ test("admin overlay auth controller now explicitly initializes inline turnstile"
   assert.match(js, /turnstile_token/);
 });
 
+test("admin auth status region fully collapses when empty and clears stale state", () => {
+  const standaloneJs = read("docs/js/admin-login.js");
+  const overlayJs = read("docs/js/admin-auth.js");
+  const css = read("docs/css/base.css");
+
+  assert.match(css, /\.admin-auth-status\s*\{[\s\S]*display:\s*none;/);
+  assert.match(css, /\.admin-auth-status:not\(:empty\)\s*\{[\s\S]*margin-top:\s*14px;/);
+  assert.match(standaloneJs, /delete elements\.status\.dataset\.state;/);
+  assert.match(overlayJs, /delete this\.elements\.status\.dataset\.state;/);
+});
+
 test("admin session consumer hydrates the dropdown overview card", () => {
   const js = read("docs/js/admin-auth.js");
   const css = read("docs/css/base.css");

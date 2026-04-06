@@ -218,8 +218,14 @@
 
   function setStatus(state, message) {
     if (!elements.status) return;
-    elements.status.dataset.state = state;
-    elements.status.textContent = message || "";
+    const nextMessage = typeof message === "string" ? message : "";
+    if (nextMessage) {
+      elements.status.dataset.state = state;
+      elements.status.textContent = nextMessage;
+      return;
+    }
+    delete elements.status.dataset.state;
+    elements.status.textContent = "";
   }
 
   function isTurnstileBlocked() {
