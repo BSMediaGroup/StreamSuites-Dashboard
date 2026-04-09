@@ -1,10 +1,10 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-04-03T16:32:56.652207Z",
+  "exported_at": "2026-04-09T09:11:02.523309Z",
   "runtime": {
     "project": "StreamSuites™ Runtime",
     "version": "0.4.2-alpha",
-    "build": "2026.04.02+009"
+    "build": "2026.04.09+003"
   },
   "users": [
     {
@@ -64,14 +64,19 @@
       "email_verified": true,
       "display_name": "Developer",
       "avatar_url": "https://cdn.streamsuites.app/u/R8UVPMQ/avatar/v1.webp",
-      "role": "creator",
-      "account_type": "CREATOR",
-      "tier": "core",
+      "role": "developer",
+      "account_type": "DEVELOPER",
+      "tier": "pro",
       "badges": [
         {
+          "kind": "tier",
+          "value": "pro",
+          "label": "PRO"
+        },
+        {
           "kind": "role",
-          "value": "creator",
-          "label": "Creator"
+          "value": "developer",
+          "label": "Developer"
         }
       ],
       "onboarding_status": "required",
@@ -86,8 +91,8 @@
         }
       ],
       "created_at": "2026-04-02T22:30:51Z",
-      "last_login_at": "2026-04-02T22:32:30Z",
-      "updated_at": "2026-04-02T22:41:03Z"
+      "last_login_at": "2026-04-09T05:43:43Z",
+      "updated_at": "2026-04-09T05:43:43Z"
     },
     {
       "id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
@@ -176,8 +181,8 @@
         }
       ],
       "created_at": "2026-03-28T18:35:44Z",
-      "last_login_at": "2026-04-02T22:13:14Z",
-      "updated_at": "2026-04-02T22:13:15Z"
+      "last_login_at": "2026-04-09T09:06:25Z",
+      "updated_at": "2026-04-09T09:06:25Z"
     },
     {
       "id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
@@ -266,8 +271,8 @@
         }
       ],
       "created_at": "2026-03-28T18:35:43Z",
-      "last_login_at": "2026-04-02T22:13:14Z",
-      "updated_at": "2026-04-02T22:13:14Z"
+      "last_login_at": "2026-04-09T09:06:25Z",
+      "updated_at": "2026-04-09T09:06:25Z"
     },
     {
       "id": "d61f5f01-a8e2-4f8c-8a7d-d6023652ae49",
@@ -346,7 +351,7 @@
       "providers": [],
       "created_at": "2026-03-27T14:51:44Z",
       "last_login_at": null,
-      "updated_at": "2026-04-02T22:13:15Z"
+      "updated_at": "2026-04-09T09:06:25Z"
     },
     {
       "id": "494098e5-1409-40ea-99a5-ec4a1b797da4",
@@ -451,11 +456,16 @@
         "findmehere_status_reason": "visible",
         "findmehere_profile_url": "https://findmehere.live/bsmediagroup",
         "findmehere_share_url": "https://findmehere.live/bsmediagroup",
-        "cover_image_url": "",
-        "banner_image_url": "",
+        "cover_image_url": "https://cdn.streamsuites.app/u/YR992ZS/cover/v1.webp",
+        "banner_image_url": "https://cdn.streamsuites.app/u/YR992ZS/cover/v1.webp",
         "background_image_url": "",
-        "bio": "",
-        "social_links": {},
+        "bio": "Administrator account for StreamSuites™ systems.",
+        "social_links": {
+          "twitch": "https://twitch.tv/streamsuites",
+          "website": "https://brainstream.media",
+          "x": "https://x.com/thebsmediagroup",
+          "youtube": "https://youtube.com/@danielclancy"
+        },
         "custom_links": [],
         "is_anonymous": false,
         "is_listed": true
@@ -475,14 +485,14 @@
       "public_surface_account_type": "creator_capable",
       "creator_capable": true,
       "viewer_only": false,
-      "cover_image_url": "",
-      "banner_image_url": "",
+      "cover_image_url": "https://cdn.streamsuites.app/u/YR992ZS/cover/v1.webp",
+      "banner_image_url": "https://cdn.streamsuites.app/u/YR992ZS/cover/v1.webp",
       "background_image_url": "",
       "user_code": "YR992ZS",
       "email": "admin@streamsuites.app",
       "email_verified": true,
-      "display_name": "BSMediaGroup",
-      "avatar_url": null,
+      "display_name": "Admin",
+      "avatar_url": "https://cdn.streamsuites.app/u/YR992ZS/avatar/v1.webp",
       "role": "admin",
       "account_type": "ADMIN",
       "tier": "pro",
@@ -515,8 +525,8 @@
         }
       ],
       "created_at": "2026-02-21T20:51:09Z",
-      "last_login_at": "2026-04-02T22:13:14Z",
-      "updated_at": "2026-04-02T22:13:14Z"
+      "last_login_at": "2026-04-09T09:06:25Z",
+      "updated_at": "2026-04-09T09:06:25Z"
     },
     {
       "id": "338edf81-9e24-4730-977a-c9972aecba4d",
@@ -1265,8 +1275,8 @@
         }
       ],
       "created_at": "2026-01-17T17:32:32Z",
-      "last_login_at": "2026-03-28T02:28:46Z",
-      "updated_at": "2026-03-28T03:44:22Z"
+      "last_login_at": "2026-04-06T16:27:03Z",
+      "updated_at": "2026-04-06T16:27:03Z"
     },
     {
       "id": "064370cb-161a-438d-b657-d57a54aa1712",
