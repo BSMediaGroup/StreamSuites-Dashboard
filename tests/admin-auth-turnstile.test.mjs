@@ -51,13 +51,21 @@ test("admin overlay markup keeps parity links and turnstile slot", () => {
 
 test("admin overlay auth controller now explicitly initializes inline turnstile", () => {
   const js = read("docs/js/admin-auth.js");
+  const helper = read("docs/js/turnstile-inline.js");
 
   assert.match(js, /TURNSTILE_HELPER_URL/);
   assert.match(js, /loadTurnstileHelper/);
   assert.match(js, /createController/);
   assert.match(js, /ensureTurnstileInitialized/);
+  assert.match(js, /syncTurnstileRuntimeNotice/);
+  assert.match(js, /isRuntimeDisabled/);
   assert.match(js, /requireToken/);
   assert.match(js, /turnstile_token/);
+  assert.match(helper, /runtime_enabled/);
+  assert.match(helper, /configured/);
+  assert.match(helper, /panel\.hidden = !state\.enabled/);
+  assert.match(helper, /if \(!state\.enabled\) \{\s*setStatus\(status, ""\);/);
+  assert.match(helper, /isRuntimeDisabled\(\)/);
 });
 
 test("admin auth status region fully collapses when empty and clears stale state", () => {
@@ -67,8 +75,11 @@ test("admin auth status region fully collapses when empty and clears stale state
 
   assert.match(css, /\.admin-auth-status\s*\{[\s\S]*display:\s*none;/);
   assert.match(css, /\.admin-auth-status:not\(:empty\)\s*\{[\s\S]*margin-top:\s*14px;/);
+  assert.match(css, /\.admin-auth-status\[data-state=\\\"warning\\\"\]/);
   assert.match(standaloneJs, /delete elements\.status\.dataset\.state;/);
   assert.match(overlayJs, /delete this\.elements\.status\.dataset\.state;/);
+  assert.match(standaloneJs, /Cloudflare Turnstile is disabled by runtime env\./);
+  assert.match(overlayJs, /Cloudflare Turnstile is disabled by runtime env\./);
 });
 
 test("admin session consumer hydrates the dropdown overview card", () => {

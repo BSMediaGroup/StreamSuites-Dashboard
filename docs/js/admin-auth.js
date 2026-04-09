@@ -556,7 +556,10 @@
         panel: this.elements.turnstilePanel,
         slot: this.elements.turnstileSlot,
         status: this.elements.turnstileStatus,
-        onStateChange: () => this.syncActionAvailability()
+        onStateChange: () => {
+          this.syncActionAvailability();
+          this.syncTurnstileRuntimeNotice();
+        }
       });
       return this.turnstileController;
     },
@@ -573,11 +576,24 @@
         }
       } finally {
         this.syncActionAvailability();
+        this.syncTurnstileRuntimeNotice();
       }
     },
 
     isTurnstileBlocked() {
       return this.turnstileController?.isEnabled?.() && !this.turnstileController?.hasToken?.();
+    },
+
+    syncTurnstileRuntimeNotice() {
+      if (this.turnstileController?.isRuntimeDisabled?.()) {
+        if (!this.elements.status?.textContent?.trim() || this.elements.status?.dataset.state === "warning") {
+          this.setStatus("warning", "Cloudflare Turnstile is disabled by runtime env.");
+        }
+        return;
+      }
+      if (this.elements.status?.dataset.state === "warning") {
+        this.setStatus("idle", "");
+      }
     },
 
     syncActionAvailability() {

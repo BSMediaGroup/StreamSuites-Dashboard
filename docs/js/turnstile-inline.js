@@ -34,6 +34,8 @@
   function createController(options) {
     const state = {
       enabled: false,
+      runtimeEnabled: true,
+      configured: false,
       sitekey: "",
       token: "",
       widgetId: null,
@@ -48,6 +50,8 @@
       if (onStateChange) {
         onStateChange({
           enabled: state.enabled,
+          runtimeEnabled: state.runtimeEnabled,
+          configured: state.configured,
           token: state.token,
         });
       }
@@ -62,10 +66,15 @@
         headers: { Accept: "application/json" },
       }).catch(() => null);
       const payload = response?.ok ? await response.json().catch(() => null) : null;
+      state.runtimeEnabled = payload?.runtime_enabled !== false;
+      state.configured = payload?.configured === true;
       state.sitekey = typeof payload?.sitekey === "string" ? payload.sitekey.trim() : "";
       state.enabled = payload?.enabled === true && state.sitekey.length > 0;
       if (panel) {
         panel.hidden = !state.enabled;
+      }
+      if (!state.enabled) {
+        setStatus(status, "");
       }
       if (!state.enabled || !slot) {
         notify();
@@ -124,6 +133,12 @@
       requireToken,
       isEnabled() {
         return state.enabled;
+      },
+      isRuntimeDisabled() {
+        return state.runtimeEnabled === false;
+      },
+      isConfigured() {
+        return state.configured;
       },
       hasToken() {
         return !!state.token;

@@ -951,6 +951,10 @@ body.admin-auth-error #app {
   color: var(--status-warning, #facc15);
 }
 
+.admin-auth-status[data-state=\"warning\"] {
+  color: var(--status-warning, #facc15);
+}
+
 .admin-x-email-banner {
   margin: 12px;
   display: flex;

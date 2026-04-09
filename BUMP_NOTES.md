@@ -1,5 +1,18 @@
 # Bump Notes
 
+## Runtime Turnstile Kill-Switch Indicator - 2026-04-09
+
+### Technical Notes
+
+- Updated the shared dashboard Turnstile helper in `docs/js/turnstile-inline.js` so admin auth surfaces now consume the runtime-owned `/auth/turnstile/config` state including `runtime_enabled` and `configured`, while still hiding the widget whenever the effective `enabled` flag is false.
+- Reused the existing admin auth status region in `docs/js/admin-login.js` and `docs/js/admin-auth.js` for a compact operator warning when the runtime kill-switch disables Turnstile, avoiding a new page or auth modal redesign.
+- Expanded `tests/admin-auth-turnstile.test.mjs` to cover the runtime-disabled notice contract and the clean collapse path when Turnstile is not rendered.
+
+### Human-Readable Notes
+
+- Dashboard operators now get an obvious but low-impact warning on admin login surfaces when the runtime has Turnstile turned off.
+- The Turnstile block still disappears cleanly instead of leaving dead space behind.
+
 ## Emergency Admin Login Status Collapse Hotfix - 2026-04-06
 
 ### Technical Notes
