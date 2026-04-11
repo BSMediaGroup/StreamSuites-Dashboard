@@ -1,5 +1,19 @@
 # Bump Notes
 
+## 2026-04-12 - Admin Notification Runtime Authority Hardening
+
+### Technical Notes
+
+- Rebuilt `docs/js/notifications.js` around the runtime `GET/PATCH /api/admin/notifications` contract so the dashboard inbox now hydrates backend-owned `is_read`, `read_at`, `total_count`, `unread_count`, scoped notes, and per-viewer mutations instead of persisting read IDs in browser storage.
+- Removed and replaced the old browser-only read-state path in `docs/js/notifications.js`: the `READ_IDS_STORAGE_KEY` localStorage model, its related persistence helpers, and the synthetic read/unread toggling logic were replaced rather than retained because they created a second, non-authoritative notification state. The file stayed roughly the same scale overall, but it changed shape substantially because runtime fetch/mutation/error handling now owns the workflow.
+- Updated `docs/views/notifications.html` to describe the real runtime-backed operator feed accurately, added `tests/notifications-runtime-authority.test.mjs`, and updated `README.md` so the repo tree reflects the new notification regression test.
+
+### Human-Readable Notes
+
+- Admin inbox read state now follows the signed-in operator across the dashboard because the runtime owns it.
+- The old browser-only fake read-state layer is gone.
+- Notification mute/show-muted preferences stay local, but notification data and read state now come from the runtime contract.
+
 ## Runtime Turnstile Kill-Switch Indicator - 2026-04-09
 
 ### Technical Notes
