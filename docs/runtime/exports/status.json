@@ -1,31 +1,39 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-04-13T21:52:02.188984Z",
-  "server_generated_at": "2026-04-13T21:52:02.188984Z",
+  "generated_at": "2026-04-13T22:59:15.811277Z",
+  "server_generated_at": "2026-04-13T22:59:15.811277Z",
   "count": 1,
   "bots": [
     {
-      "creator_id": "creator-restored",
-      "platform": "twitch",
-      "status": "online",
-      "connected_at": "2026-04-13T21:52:02.187984Z",
+      "creator_id": "creator-one",
+      "platform": "rumble",
+      "status": "listening",
+      "connected_at": null,
       "last_message_at": null,
-      "manual_override": true,
-      "active_target": "restored-channel",
+      "manual_override": false,
+      "active_target": "https://rumble.com/v123-live.html",
       "last_error": null,
       "pause_reason": null,
-      "session_id": null,
-      "session_type": "manual",
-      "lifecycle_state": null,
-      "desired": false,
-      "status_reason": null,
-      "runner_kind": null,
-      "runner_state": null,
-      "last_heartbeat_at": null,
-      "last_evaluated_at": null,
-      "last_transition_at": null,
-      "resolved_target": {},
-      "uptime_seconds": 42
+      "session_id": "rumble-auto-1dd220353e0ec52f",
+      "session_type": "auto",
+      "lifecycle_state": "listening",
+      "desired": true,
+      "status_reason": "Listening to creator Rumble live chat.",
+      "runner_kind": "managed_transport",
+      "runner_state": "listening",
+      "last_heartbeat_at": "2026-04-13T22:59:15.806135Z",
+      "last_evaluated_at": "2026-04-13T22:59:15.806135Z",
+      "last_transition_at": "2026-04-13T22:59:15.806135Z",
+      "resolved_target": {
+        "watch_url": "https://rumble.com/v123-live.html",
+        "stream_identity": "rumble:video:123",
+        "video_id": "123",
+        "chat_id": "456",
+        "channel_handle": "@creator",
+        "channel_url": "https://rumble.com/c/creator",
+        "channel_slug": "creator"
+      },
+      "uptime_seconds": 0
     }
   ],
   "supported_platforms": [
@@ -170,7 +178,7 @@
       "available": true,
       "implemented": true,
       "runtime_ready": true,
-      "status": "ready",
+      "status": "connected",
       "paused": false,
       "paused_reason": null,
       "error": null,
@@ -179,7 +187,7 @@
       "required_env_keys": [],
       "missing_env_keys": [],
       "details": {
-        "bot_count": 0,
+        "bot_count": 1,
         "bot_online_count": 0,
         "bot_paused_count": 0,
         "bot_error_count": 0,
@@ -191,7 +199,11 @@
         "required_env_keys": [],
         "missing_env_keys": []
       },
-      "last_log": null
+      "last_log": {
+        "timestamp": "2026-04-13T22:59:15.806135Z",
+        "severity": "info",
+        "message": "[creator-one] Managed session state updated to listening."
+      }
     },
     {
       "platform": "twitch",
@@ -199,7 +211,7 @@
       "available": false,
       "implemented": true,
       "runtime_ready": false,
-      "status": "connected",
+      "status": "not_configured",
       "paused": false,
       "paused_reason": null,
       "error": null,
@@ -212,13 +224,13 @@
         "TWITCH_OAUTH_TOKEN_DANIEL"
       ],
       "details": {
-        "bot_count": 1,
-        "bot_online_count": 1,
+        "bot_count": 0,
+        "bot_online_count": 0,
         "bot_paused_count": 0,
         "bot_error_count": 0,
         "bot_desired_count": 0,
         "bot_blocked_count": 0,
-        "manual_override_count": 1,
+        "manual_override_count": 0,
         "implemented": true,
         "runtime_ready": false,
         "required_env_keys": [
