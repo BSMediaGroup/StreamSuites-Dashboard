@@ -169,6 +169,96 @@
     return `<span class="${classes}">${escapeHtml(formatBadgeLabel(label))}</span>`;
   }
 
+  function managedSessionForIntegration(item) {
+    return item?.managed_session && typeof item.managed_session === "object"
+      ? item.managed_session
+      : null;
+  }
+
+  function managedSessionTransportError(session) {
+    return session?.last_transport_error && typeof session.last_transport_error === "object"
+      ? session.last_transport_error
+      : null;
+  }
+
+  function managedSessionStateLabel(value) {
+    const normalized = coerceText(value).toLowerCase();
+    return normalized ? normalized.replace(/_/g, " ") : "Not created";
+  }
+
+  function managedSessionStateTone(value) {
+    const normalized = coerceText(value).toLowerCase();
+    if (["attached", "listening", "running"].includes(normalized)) return "ss-badge-success";
+    if (["desired", "starting", "attaching"].includes(normalized)) return "ss-badge-warning";
+    if (["blocked", "auth_failed", "target_unresolved", "transport_error", "stale"].includes(normalized)) {
+      return "ss-badge-danger";
+    }
+    return "";
+  }
+
+  function managedSessionAuthState(session) {
+    const error = managedSessionTransportError(session);
+    const code = coerceText(error?.code || session?.blocking_reason).toLowerCase();
+    if (code === "auth_material_insufficient") {
+      return {
+        label: "Stream key only",
+        tone: "ss-badge-warning",
+        detail: "Only a Rumble stream key is stored. Cookie-based chat auth is still missing."
+      };
+    }
+    if (code === "auth_material_missing") {
+      return {
+        label: "Chat auth missing",
+        tone: "ss-badge-warning",
+        detail: "No chat-capable Rumble auth material is stored."
+      };
+    }
+    if (code === "auth_material_invalid") {
+      return {
+        label: "Chat auth invalid",
+        tone: "ss-badge-danger",
+        detail: "Stored Rumble cookie auth exists, but runtime rejected it as invalid."
+      };
+    }
+    if (code === "auth_material_unrecognized") {
+      return {
+        label: "Chat auth unrecognized",
+        tone: "ss-badge-warning",
+        detail: "Stored Rumble auth material is not usable for chat transport."
+      };
+    }
+    if (session?.transport_capabilities?.can_listen) {
+      return {
+        label: "Chat auth ready",
+        tone: "ss-badge-success",
+        detail: "Runtime reports chat-capable auth for managed transport."
+      };
+    }
+    return {
+      label: session ? "Auth pending" : "Not evaluated",
+      tone: "",
+      detail: session?.status_reason || "No managed transport auth posture exported yet."
+    };
+  }
+
+  function managedSessionBlockingDetail(session) {
+    const error = managedSessionTransportError(session);
+    const code = coerceText(error?.code || session?.blocking_reason).toLowerCase();
+    if (code === "manual_override_active") {
+      return "Manual Rumble control is active, so the managed session is suppressed.";
+    }
+    if (code === "target_unresolved") {
+      return "Runtime has not resolved a usable watch/chat target for this live session yet.";
+    }
+    if (code === "transport_error") {
+      return error?.message || session?.error || "Managed transport reported an attachment/listening error.";
+    }
+    if (code.startsWith("auth_material_")) {
+      return managedSessionAuthState(session).detail;
+    }
+    return error?.message || session?.status_reason || "No managed-session blocking reason reported.";
+  }
+
   function badgeIconPath(key) {
     const normalized = coerceText(key).toLowerCase();
     const srcMap = {
@@ -946,6 +1036,9 @@
           const capabilities = item.capabilities && typeof item.capabilities === "object" ? item.capabilities : {};
           const reasons = Array.isArray(deployment.reasons) ? deployment.reasons : [];
           const metadata = item.metadata && typeof item.metadata === "object" ? item.metadata : {};
+          const managedSession = managedSessionForIntegration(item);
+          const transportError = managedSessionTransportError(managedSession);
+          const authState = managedSessionAuthState(managedSession);
           const safeMeta = [];
           if (item.connection_method) safeMeta.push(`Connection: ${item.connection_method}`);
           if (item.auth_mode) safeMeta.push(`Auth: ${item.auth_mode}`);
@@ -954,7 +1047,48 @@
           if (metadata.workspace_note) safeMeta.push(`Note: ${metadata.workspace_note}`);
           if (item.platform_key === "rumble") {
             safeMeta.push(item.secret_present ? `Credential: ${item.secret_mask || "Configured"}` : "Credential: not stored");
+            safeMeta.push(`Auto-deploy: ${item.bot_auto_deploy_enabled ? "enabled" : "disabled"}`);
           }
+          const resolvedTarget = managedSession?.resolved_target && typeof managedSession.resolved_target === "object"
+            ? managedSession.resolved_target
+            : {};
+          const runtimeLinks = [];
+          if (resolvedTarget.watch_url) {
+            runtimeLinks.push(
+              `<a class="creator-integrations-platform-link" href="${escapeHtml(resolvedTarget.watch_url)}" target="_blank" rel="noreferrer">Open watch target</a>`
+            );
+          }
+          if (resolvedTarget.channel_url) {
+            runtimeLinks.push(
+              `<a class="creator-integrations-platform-link" href="${escapeHtml(resolvedTarget.channel_url)}" target="_blank" rel="noreferrer">Open channel</a>`
+            );
+          }
+          const rumbleRuntimeBlock = item.platform_key === "rumble"
+            ? `
+              <div class="creator-integrations-platform-runtime">
+                <div class="creator-integrations-platform-meta">
+                  ${renderBadge(item.bot_auto_deploy_enabled ? "Auto-deploy enabled" : "Auto-deploy disabled", item.bot_auto_deploy_enabled ? "ss-badge-success" : "")}
+                  ${renderBadge(`Session ${managedSessionStateLabel(managedSession?.session_kind || "auto")}`, managedSession ? "ss-badge-warning" : "")}
+                  ${renderBadge(`Lifecycle ${managedSessionStateLabel(managedSession?.lifecycle_state)}`, managedSessionStateTone(managedSession?.lifecycle_state))}
+                  ${renderBadge(`Transport ${managedSessionStateLabel(managedSession?.transport_status)}`, managedSessionStateTone(managedSession?.transport_status))}
+                  ${renderBadge(authState.label, authState.tone)}
+                </div>
+                <ul class="creator-integrations-platform-list">
+                  <li>Managed session id: ${escapeHtml(managedSession?.session_id || "Not created")}</li>
+                  <li>Managed/manual: ${escapeHtml(managedSession ? "Managed auto session" : "No managed session")}</li>
+                  <li>Desired: ${escapeHtml(managedSession?.desired ? "Yes" : "No")}</li>
+                  <li>Eligibility: ${escapeHtml(managedSession ? (managedSession.eligible ? "Eligible" : "Blocked") : (item.bot_auto_deploy?.eligible ? "Eligible" : "Blocked"))}</li>
+                  <li>Last attach attempt: ${escapeHtml(formatTimestamp(managedSession?.last_attach_attempt_at))}</li>
+                  <li>Last attach success: ${escapeHtml(formatTimestamp(managedSession?.last_attach_success_at))}</li>
+                  <li>Last heartbeat: ${escapeHtml(formatTimestamp(managedSession?.last_transport_heartbeat_at || managedSession?.last_heartbeat_at))}</li>
+                  <li>Transport error: ${escapeHtml(transportError?.code || "None")}</li>
+                  <li>Target watch URL: ${escapeHtml(resolvedTarget.watch_url || item.bot_auto_deploy?.resolved_watch_url || "-")}</li>
+                </ul>
+                <p class="creator-integrations-platform-note">${escapeHtml(managedSessionBlockingDetail(managedSession))}</p>
+                ${runtimeLinks.length ? `<div class="creator-integrations-platform-reasons">${runtimeLinks.join("")}</div>` : ""}
+              </div>
+            `
+            : "";
           return `
             <article class="creator-integrations-platform-card">
               <div class="creator-integrations-platform-head">
@@ -976,6 +1110,7 @@
                 <li>Checks enabled: ${escapeHtml(item.checks_enabled ? "Yes" : "No")}</li>
                 <li>Config state: ${escapeHtml(item.config_state || "-")}</li>
               </ul>
+              ${rumbleRuntimeBlock}
               <p class="creator-integrations-platform-note">${escapeHtml(item.ui_message || "No admin-safe note available.")}</p>
               <div class="creator-integrations-platform-reasons">
                 ${

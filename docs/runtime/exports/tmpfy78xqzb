@@ -1,33 +1,9 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-04-13T21:52:02.188984Z",
-  "server_generated_at": "2026-04-13T21:52:02.188984Z",
-  "count": 1,
-  "bots": [
-    {
-      "creator_id": "creator-restored",
-      "platform": "twitch",
-      "status": "online",
-      "connected_at": "2026-04-13T21:52:02.187984Z",
-      "last_message_at": null,
-      "manual_override": true,
-      "active_target": "restored-channel",
-      "last_error": null,
-      "pause_reason": null,
-      "session_id": null,
-      "session_type": "manual",
-      "lifecycle_state": null,
-      "desired": false,
-      "status_reason": null,
-      "runner_kind": null,
-      "runner_state": null,
-      "last_heartbeat_at": null,
-      "last_evaluated_at": null,
-      "last_transition_at": null,
-      "resolved_target": {},
-      "uptime_seconds": 42
-    }
-  ],
+  "generated_at": "2026-04-13T21:50:26.548936Z",
+  "server_generated_at": "2026-04-13T21:50:26.548936Z",
+  "count": 0,
+  "bots": [],
   "supported_platforms": [
     "kick",
     "rumble",
@@ -199,7 +175,7 @@
       "available": false,
       "implemented": true,
       "runtime_ready": false,
-      "status": "connected",
+      "status": "not_configured",
       "paused": false,
       "paused_reason": null,
       "error": null,
@@ -212,13 +188,13 @@
         "TWITCH_OAUTH_TOKEN_DANIEL"
       ],
       "details": {
-        "bot_count": 1,
-        "bot_online_count": 1,
+        "bot_count": 0,
+        "bot_online_count": 0,
         "bot_paused_count": 0,
         "bot_error_count": 0,
         "bot_desired_count": 0,
         "bot_blocked_count": 0,
-        "manual_override_count": 1,
+        "manual_override_count": 0,
         "implemented": true,
         "runtime_ready": false,
         "required_env_keys": [

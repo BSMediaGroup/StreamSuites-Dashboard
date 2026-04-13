@@ -5644,6 +5644,28 @@ body.ss-col-resizing-active {
   color: var(--text-muted);
 }
 
+.creator-integrations-platform-runtime {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(120, 195, 255, 0.12);
+  background:
+    linear-gradient(180deg, rgba(120, 195, 255, 0.08), rgba(120, 195, 255, 0.025)),
+    rgba(8, 12, 20, 0.28);
+}
+
+.creator-integrations-platform-link {
+  color: #b9dcff;
+  text-decoration: none;
+  font-size: 0.84rem;
+}
+
+.creator-integrations-platform-link:hover,
+.creator-integrations-platform-link:focus-visible {
+  text-decoration: underline;
+}
+
 .creator-integrations-platform-reasons {
   display: flex;
   flex-wrap: wrap;
@@ -6804,6 +6826,26 @@ body.ss-col-resizing-active {
 .ss-bots-last-error.has-error {
   color: #ffb3b0;
   font-weight: 600;
+}
+
+.ss-bot-cell-stack {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ss-bot-badge-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.ss-bot-blocking-text {
+  color: #ffb3b0;
+  font-size: 12px;
+  line-height: 1.4;
+  word-break: break-word;
 }
 
 .ss-bot-actions {

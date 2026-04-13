@@ -513,19 +513,23 @@
 
   function statusTone(status) {
     const normalized = String(status || "").trim().toLowerCase();
-    if (normalized === "online" || normalized === "running" || normalized === "active") {
+    if (["online", "running", "active", "attached", "listening", "connected"].includes(normalized)) {
       return "ss-bot-status-online";
     }
-    if (normalized === "offline" || normalized === "disabled" || normalized === "unavailable") {
+    if (["offline", "disabled", "unavailable", "stopped"].includes(normalized)) {
       return "ss-bot-status-offline";
     }
-    if (normalized === "error") return "ss-bot-status-error";
-    if (normalized === "paused") return "ss-bot-status-paused";
+    if (["error", "transport_error", "auth_failed", "target_unresolved", "blocked", "stale"].includes(normalized)) {
+      return "ss-bot-status-error";
+    }
+    if (["paused", "desired", "starting", "attaching", "awaiting_transport"].includes(normalized)) {
+      return "ss-bot-status-paused";
+    }
     return "";
   }
 
   function statusLabel(status) {
-    const text = String(status || "").trim();
+    const text = String(status || "").trim().replace(/_/g, " ");
     return text ? text : "-";
   }
 
@@ -569,6 +573,119 @@
       return '<span class="ss-badge ss-badge-warning">Manual ON</span>';
     }
     return '<span class="ss-badge">Manual OFF</span>';
+  }
+
+  function renderBadge(label, tone = "") {
+    const classes = ["ss-badge", tone].filter(Boolean).join(" ");
+    return `<span class="${classes}">${escapeHtml(label)}</span>`;
+  }
+
+  function renderSessionCell(bot) {
+    const sessionType = String(bot?.session_type || "manual").trim().toLowerCase() || "manual";
+    const badges = [
+      renderBadge(sessionType === "auto" ? "Managed" : "Manual", sessionType === "auto" ? "ss-badge-warning" : ""),
+      renderManualOverride(bot?.manual_override === true)
+    ];
+    if (bot?.session_id) {
+      badges.push(renderBadge(`ID ${String(bot.session_id).slice(0, 16)}`, ""));
+    }
+    return `
+      <div class="ss-bot-cell-stack">
+        <div class="ss-bot-badge-stack">${badges.join("")}</div>
+        <div class="muted">${escapeHtml(bot?.creator_id || "-")}</div>
+      </div>
+    `;
+  }
+
+  function renderLifecycleCell(bot) {
+    const status = String(bot?.status || "").trim().toLowerCase();
+    const lifecycle = String(bot?.lifecycle_state || "").trim().toLowerCase();
+    const statusLine = renderStatus(status || lifecycle || "unknown");
+    const lifecycleLine = lifecycle
+      ? renderBadge(`Lifecycle ${statusLabel(lifecycle)}`, managedSessionTone(lifecycle))
+      : '<span class="muted">No lifecycle export</span>';
+    const desiredLine = renderBadge(bot?.desired ? "Desired" : "Not desired", bot?.desired ? "ss-badge-success" : "");
+    return `
+      <div class="ss-bot-cell-stack">
+        <div class="ss-bot-badge-stack">${statusLine}${lifecycleLine}${desiredLine}</div>
+        <div class="muted">${escapeHtml(bot?.status_reason || "No lifecycle note.")}</div>
+      </div>
+    `;
+  }
+
+  function managedSessionTone(value) {
+    const normalized = String(value || "").trim().toLowerCase();
+    if (["attached", "listening", "running"].includes(normalized)) return "ss-badge-success";
+    if (["desired", "starting", "attaching", "awaiting_transport"].includes(normalized)) return "ss-badge-warning";
+    if (["blocked", "auth_failed", "target_unresolved", "transport_error", "stale"].includes(normalized)) {
+      return "ss-badge-danger";
+    }
+    return "";
+  }
+
+  function renderTransportCell(bot) {
+    const transport = String(bot?.runner_state || bot?.status || "").trim().toLowerCase();
+    const transportStatus = String(bot?.status || "").trim().toLowerCase();
+    const badges = [
+      renderBadge(`Transport ${statusLabel(transportStatus)}`, managedSessionTone(transportStatus))
+    ];
+    if (bot?.runner_state) {
+      badges.push(renderBadge(`Runner ${statusLabel(bot.runner_state)}`, managedSessionTone(bot.runner_state)));
+    }
+    return `
+      <div class="ss-bot-cell-stack">
+        <div class="ss-bot-badge-stack">${badges.join("")}</div>
+        <div class="muted">${escapeHtml(formatTimestamp(bot?.last_transition_at))}</div>
+      </div>
+    `;
+  }
+
+  function renderTargetCell(bot) {
+    const resolvedTarget = bot?.resolved_target && typeof bot.resolved_target === "object" ? bot.resolved_target : {};
+    const watchUrl = String(resolvedTarget.watch_url || bot?.active_target || "").trim();
+    const bits = [];
+    if (watchUrl) {
+      const label = /^https?:\/\//i.test(watchUrl) ? "Open watch target" : watchUrl;
+      bits.push(
+        /^https?:\/\//i.test(watchUrl)
+          ? `<a class="creator-integrations-platform-link" href="${escapeHtml(watchUrl)}" target="_blank" rel="noreferrer">${escapeHtml(label)}</a>`
+          : `<span>${escapeHtml(label)}</span>`
+      );
+    }
+    if (resolvedTarget.channel_handle) bits.push(`<span>${escapeHtml(String(resolvedTarget.channel_handle))}</span>`);
+    if (resolvedTarget.chat_id) bits.push(`<span>chat ${escapeHtml(String(resolvedTarget.chat_id))}</span>`);
+    if (resolvedTarget.video_id) bits.push(`<span>video ${escapeHtml(String(resolvedTarget.video_id))}</span>`);
+    return bits.length
+      ? `<div class="ss-bot-cell-stack">${bits.join("")}</div>`
+      : '<span class="muted">No target exported.</span>';
+  }
+
+  function renderHeartbeatCell(bot, normalized, receivedAt) {
+    const uptimeSeconds = getDisplayUptimeSeconds(bot, normalized.generatedAt, receivedAt);
+    const uptimeLabel = uptimeSeconds === null ? "-" : formatUptime(uptimeSeconds);
+    return `
+      <div class="ss-bot-cell-stack">
+        <span>${escapeHtml(formatTimestamp(bot?.last_heartbeat_at || bot?.last_evaluated_at || bot?.connected_at))}</span>
+        <span class="muted">Uptime ${escapeHtml(uptimeLabel)}</span>
+      </div>
+    `;
+  }
+
+  function renderBlockingCell(bot, platformState) {
+    const entries = [
+      String(bot?.last_error || "").trim(),
+      String(bot?.pause_reason || "").trim(),
+      String(bot?.status_reason || "").trim(),
+      String(platformState?.pausedReason || "").trim()
+    ].filter(Boolean);
+    if (!entries.length) {
+      return '<span class="muted">No blocking/error reason.</span>';
+    }
+    return `
+      <div class="ss-bot-cell-stack">
+        ${entries.map((entry) => `<span class="ss-bot-blocking-text">${escapeHtml(entry)}</span>`).join("")}
+      </div>
+    `;
   }
 
   function normalizeRuntimePlatforms(snapshot) {
@@ -953,27 +1070,18 @@
       const platformKey = normalizePlatformKey(bot?.platform);
       const platformState = platformSummary?.[platformKey] || null;
       const isPaused = status === "paused" || platformState?.paused === true;
-      const effectiveStatus = isPaused ? "paused" : bot?.status;
-      const lastError =
-        String(bot?.last_error || "").trim() ||
-        String(bot?.pause_reason || "").trim() ||
-        String(platformState?.pausedReason || "").trim();
-      const hasError = Boolean(lastError);
-      const uptimeSeconds = getDisplayUptimeSeconds(bot, normalized.generatedAt, receivedAt);
-      const uptimeLabel = uptimeSeconds === null ? "-" : formatUptime(uptimeSeconds);
       const rowClass = isPaused ? "ss-bots-row-paused" : "";
-      const errorClass = hasError ? "ss-bots-last-error has-error" : "ss-bots-last-error";
 
       return `
         <tr class="${rowClass}">
           <td>${escapeHtml(bot?.creator_id)}</td>
           <td>${escapeHtml(platformDisplayName(bot?.platform))}</td>
-          <td>${renderStatus(effectiveStatus)}</td>
-          <td>${escapeHtml(bot?.active_target)}</td>
-          <td>${renderManualOverride(bot?.manual_override === true)}</td>
-          <td>${escapeHtml(formatTimestamp(bot?.connected_at))}</td>
-          <td>${escapeHtml(uptimeLabel)}</td>
-          <td class="${errorClass}">${escapeHtml(hasError ? lastError : "—")}</td>
+          <td>${renderSessionCell(bot)}</td>
+          <td>${renderLifecycleCell(bot)}</td>
+          <td>${renderTransportCell(bot)}</td>
+          <td>${renderTargetCell(bot)}</td>
+          <td>${renderHeartbeatCell(bot, normalized, receivedAt)}</td>
+          <td>${renderBlockingCell(bot, platformState)}</td>
           <td>${renderActionCell(bot, platformState)}</td>
         </tr>
       `;

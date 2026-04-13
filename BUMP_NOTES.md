@@ -1,5 +1,31 @@
 # Bump Notes
 
+## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.8-alpha
+
+## 2026-04-14 - Admin Rumble Managed Session Visibility Pass
+
+### Technical Notes
+
+- Extended `docs/js/creator-integrations.js` and `docs/js/user-detail.js` so the existing admin creator/account inspection surfaces now read the runtime-authored `integration.managed_session` block for Rumble, show auto-deploy posture beside managed-session lifecycle and transport status, render readable auth/target/heartbeat/attach timestamps, and expose watch/channel links only when the runtime already provides them.
+- Reworked the existing bot-runtime table in `docs/views/bots.html` and `docs/js/bots.js` so managed Rumble sessions are visually distinct from manual bot rows. The older generic `Status / Active target / Manual override / Connected at / Uptime / Last error` column layout was replaced with `Session / Lifecycle / Transport / Target / Heartbeat / Blocking / Error` because the old layout hid the new managed-session contract behind legacy manual-runtime assumptions. The file is longer because the richer runtime state is now rendered directly instead of being discarded.
+- Added small additive styling in `docs/css/components.css` for the new managed-session runtime block and denser bot-table cells without redesigning the broader dashboard component language.
+- Expanded `tests/notifications-runtime-authority.test.mjs` in the same source-level regression style already present here so the admin creator integration surfaces and bots view must keep their managed-session hooks, watch-target links, transport labels, and auth-blocking wording.
+
+### Human-Readable Notes
+
+- Operators can now tell the difference between managed and manual Rumble bot sessions at a glance.
+- Creator/account drill-in surfaces now show whether the blocker is insufficient chat auth, unresolved target, or transport failure instead of burying that state in runtime-only exports.
+
+### Files / Areas Touched
+
+- `docs/views/bots.html`
+- `docs/js/bots.js`
+- `docs/js/creator-integrations.js`
+- `docs/js/user-detail.js`
+- `docs/css/components.css`
+- `tests/notifications-runtime-authority.test.mjs`
+- `BUMP_NOTES.md`
+
 ## 2026-04-12 - Admin Notification Runtime Authority Hardening
 
 ### Technical Notes
