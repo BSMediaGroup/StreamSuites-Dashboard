@@ -80,14 +80,10 @@
   }
 
   function describeStatus(platformRow) {
-    const status = String(platformRow?.status || "").trim().toLowerCase();
+    const status = String(platformRow?.global_status || platformRow?.status || "").trim().toLowerCase();
     switch (status) {
       case "connected":
         return "Enabled / connected";
-      case "managed_pending":
-        return "Enabled / awaiting attach";
-      case "blocked":
-        return "Enabled / blocked";
       case "paused":
         return "Manually paused";
       case "ready":
@@ -104,9 +100,9 @@
   }
 
   function bannerTone(platformRow) {
-    const status = String(platformRow?.status || "").trim().toLowerCase();
+    const status = String(platformRow?.global_status || platformRow?.status || "").trim().toLowerCase();
     if (status === "connected" || status === "ready") return "success";
-    if (status === "managed_pending" || status === "blocked" || status === "paused") return "warning";
+    if (status === "paused") return "warning";
     return "danger";
   }
 
@@ -116,18 +112,27 @@
     const pendingCount = Number(details.bot_desired_count || 0);
     const connectedCount = Number(details.bot_online_count || 0);
     const manualOverrideCount = Number(details.manual_override_count || 0);
+    const sessionStatus = String(platformRow?.session_status || details.session_status || "").trim().toLowerCase();
     const detail = String(platformRow?.error || platformRow?.paused_reason || "").trim();
 
-    switch (String(platformRow?.status || "").trim().toLowerCase()) {
+    switch (String(platformRow?.global_status || platformRow?.status || "").trim().toLowerCase()) {
       case "connected":
+        if (sessionStatus === "blocked" && blockedCount > 0) {
+          return detail || `${blockedCount} creator-managed Rumble session${blockedCount === 1 ? "" : "s"} is blocked, while the platform remains globally enabled.`;
+        }
+        if (sessionStatus === "managed_pending" && pendingCount > 0) {
+          return `${pendingCount} creator-managed Rumble session${pendingCount === 1 ? "" : "s"} is still attaching while the platform remains globally enabled.`;
+        }
         return `${connectedCount} Rumble session${connectedCount === 1 ? "" : "s"} is currently connected in the runtime.`;
-      case "managed_pending":
-        return `${pendingCount} managed Rumble session${pendingCount === 1 ? "" : "s"} is enabled and still working toward attachment.`;
-      case "blocked":
-        return detail || `${blockedCount} enabled Rumble session${blockedCount === 1 ? "" : "s"} is currently blocked by runtime prerequisites.`;
       case "paused":
         return detail || "Rumble is manually paused by runtime control.";
       case "ready":
+        if (sessionStatus === "blocked" && blockedCount > 0) {
+          return detail || `${blockedCount} creator-managed Rumble session${blockedCount === 1 ? "" : "s"} is blocked by creator-level prerequisites, but the platform remains globally enabled.`;
+        }
+        if (sessionStatus === "managed_pending" && pendingCount > 0) {
+          return `${pendingCount} creator-managed Rumble session${pendingCount === 1 ? "" : "s"} is waiting for attachment while the platform remains globally enabled.`;
+        }
         return bots.length
           ? "Rumble is runtime-enabled with no active connected session right now."
           : "Rumble is runtime-enabled and ready for testing.";

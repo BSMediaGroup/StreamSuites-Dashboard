@@ -964,7 +964,7 @@
                   <span>${escapeHtml(labelize(platform.platform || platform.name || "Unknown"))}</span>
                 </h3>
               </div>
-              ${badgeSpan(coerceText(platform.status, "unknown"), statusTone)}
+              ${badgeSpan(coerceText(platform.global_status || platform.status, "unknown"), statusTone)}
             </div>
             <dl class="ss-overview-detail-list">
               ${detailFlagChipRow("Enabled", platform.enabled)}
@@ -979,7 +979,7 @@
               ${detailRow("Messages", formatCount(platform.counters?.messages))}
               ${detailRow("Triggers", formatCount(platform.counters?.triggers))}
             </dl>
-            <p class="ss-overview-card-note muted">${escapeHtml(coerceText(provider?.last_error || platform.paused_reason || platform.error, "No active platform warning is being reported."))}</p>
+            <p class="ss-overview-card-note muted">${escapeHtml(coerceText(provider?.last_error || platform.paused_reason || platform.error || platform.session_status_reason, "No active platform warning is being reported."))}</p>
           </article>
         `;
       })
@@ -1364,9 +1364,11 @@
   }
 
   function getPlatformTone(platform) {
-    const status = normalizeRole(platform.status || platform.state);
+    const status = normalizeRole(platform.global_status || platform.status || platform.state);
     if (status === "active") return "success";
+    if (status === "ready" || status === "connected") return "success";
     if (status === "paused") return "warning";
+    if (status === "staged") return "muted";
     if (status === "disabled" || status === "inactive") return "muted";
     return "info";
   }

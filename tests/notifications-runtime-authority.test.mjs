@@ -51,8 +51,9 @@ test("admin bots surface distinguishes managed sessions and transport posture", 
   assert.match(botsJs, /renderTargetCell/);
   assert.match(botsJs, /renderBlockingCell/);
   assert.match(botsJs, /Open watch target/);
-  assert.match(botsJs, /runtime\?\.status === "blocked"/);
-  assert.match(botsJs, /availability = "pending"/);
+  assert.match(botsJs, /const globalStatus = String\(runtime\?\.globalStatus \|\| runtime\?\.status \|\| ""\)/);
+  assert.match(botsJs, /const sessionStatus = String\(runtime\?\.sessionStatus \|\| runtime\?\.details\?\.session_status \|\| ""\)/);
+  assert.match(botsJs, /creator-managed session/);
 });
 
 test("admin rumble platform view reads live runtime posture instead of a hardcoded paused scaffold", () => {
@@ -63,6 +64,15 @@ test("admin rumble platform view reads live runtime posture instead of a hardcod
   assert.match(rumbleHtml, /\/api\/admin\/bots\/status/);
   assert.match(rumbleHtml, /This surface mirrors runtime-owned Rumble bot availability/);
   assert.match(rumbleJs, /const BOTS_STATUS_ENDPOINT = "\/api\/admin\/bots\/status";/);
-  assert.match(rumbleJs, /Enabled \/ blocked/);
+  assert.match(rumbleJs, /global_status \|\| platformRow\?\.status/);
+  assert.match(rumbleJs, /creator-managed Rumble session/);
   assert.doesNotMatch(rumbleJs, /Rumble ingest is paused by the runtime/);
+});
+
+test("admin overview platform cards prefer global runtime posture over creator-session blockers", () => {
+  const overviewJs = read("docs/js/overview.js");
+
+  assert.match(overviewJs, /platform\.global_status \|\| platform\.status/);
+  assert.match(overviewJs, /platform\.session_status_reason/);
+  assert.match(overviewJs, /if \(status === "ready" \|\| status === "connected"\) return "success";/);
 });

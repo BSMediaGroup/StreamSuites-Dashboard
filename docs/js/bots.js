@@ -776,6 +776,10 @@
       const schema = deployPlatformSchemas?.[platform] || null;
       const runtime = runtimePlatforms[platform] || null;
       const deployEnabled = schema?.deployEnabled === true;
+      const globalStatus = String(runtime?.globalStatus || runtime?.status || "").trim().toLowerCase();
+      const sessionStatus = String(runtime?.sessionStatus || runtime?.details?.session_status || "").trim().toLowerCase();
+      const blockedCount = Number(runtime?.details?.bot_blocked_count || 0);
+      const pendingCount = Number(runtime?.details?.bot_desired_count || 0);
       let availability = "unavailable";
       let reason = "No active runtime availability reported.";
       if (!deployEnabled) {
@@ -784,35 +788,35 @@
       } else if (fallbackMode) {
         availability = "unavailable";
         reason = fallbackReason;
-      } else if (runtime?.status === "blocked") {
-        availability = "blocked";
-        reason =
-          runtime?.error ||
-          runtime?.details?.status_reason ||
-          "Runtime reports enabled Rumble sessions, but attachment is blocked by prerequisites.";
-      } else if (runtime?.status === "managed_pending") {
-        availability = "pending";
-        reason = "Runtime reports enabled Rumble sessions that are still attaching.";
       } else if (runtime?.paused) {
         availability = "paused";
         reason = runtime.pausedReason || "Paused by runtime control.";
       } else if (
-        runtime?.status === "connected" ||
-        runtime?.status === "online" ||
-        runtime?.status === "active" ||
-        runtime?.status === "running" ||
-        runtime?.status === "ready" ||
+        globalStatus === "connected" ||
+        globalStatus === "online" ||
+        globalStatus === "active" ||
+        globalStatus === "running" ||
+        globalStatus === "ready" ||
         (runtime?.available === true && runtime?.status !== "not_configured")
       ) {
         availability = "active";
-        reason =
-          runtime?.status === "ready"
-            ? "Runtime is enabled and ready for deployment."
-            : "Runtime available.";
-      } else if (runtime?.status === "error" || runtime?.error) {
+        if (sessionStatus === "blocked" && blockedCount > 0) {
+          reason =
+            runtime?.details?.session_status_reason ||
+            runtime?.error ||
+            `${blockedCount} creator-managed session${blockedCount === 1 ? "" : "s"} is blocked by creator-level prerequisites.`;
+        } else if (sessionStatus === "managed_pending" && pendingCount > 0) {
+          reason = `${pendingCount} creator-managed session${pendingCount === 1 ? "" : "s"} is still attaching.`;
+        } else {
+          reason =
+            globalStatus === "ready"
+              ? "Runtime is globally enabled and ready for deployment."
+              : "Runtime is globally enabled and currently serving live sessions.";
+        }
+      } else if (globalStatus === "error" || runtime?.error) {
         availability = "unavailable";
         reason = runtime?.error || "Runtime reported an error.";
-      } else if (runtime?.status === "staged") {
+      } else if (globalStatus === "staged") {
         availability = "staged";
         reason = runtime?.disabledReason || schema?.blockedReason || "Staged/disabled.";
       }
@@ -823,7 +827,8 @@
         deployEnabled,
         staged: schema?.staged === true || !deployEnabled,
         availability,
-        status: !deployEnabled ? "staged" : runtime?.status || (fallbackMode ? "fallback" : "unknown"),
+        status: !deployEnabled ? "staged" : globalStatus || (fallbackMode ? "fallback" : "unknown"),
+        sessionStatus,
         details: runtime?.details || {},
         paused: runtime?.paused === true,
         pausedReason: runtime?.pausedReason || "",
