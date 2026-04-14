@@ -2749,7 +2749,8 @@ registerView("triggers", {
       return window.TriggersView.init();
     }
     return null;
-  }
+  },
+  onUnload: () => window.TriggersView?.destroy?.()
 });
 
 registerView("jobs", {

@@ -2,6 +2,19 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.8-alpha
 
+## 2026-04-14 - Admin Trigger Oversight Repair Completion
+
+### Technical Notes
+
+- Repaired the partially replaced admin trigger oversight route so `docs/js/triggers.js` now unloads cleanly with the admin shell lifecycle, avoids stacked listeners on repeated route entry, and distinguishes creator-manual, admin-manual, and automatic trigger-generated dispatch rows from the authoritative runtime/Auth export.
+- Updated `docs/js/app.js` to unload the trigger controller, and updated `README.md` additively so the repo tree truthfully includes the repaired trigger route assets plus the new trigger oversight source test. No files were removed in this repair pass.
+- Added `tests/triggers-runtime-authority.test.mjs` in the same lightweight regression style already used in this repo so the trigger oversight route must keep the runtime/Auth-backed wiring, unload path, and manual-send source distinctions.
+
+### Human-Readable Notes
+
+- The admin trigger route no longer risks accumulating duplicate event handlers when operators move in and out of the page.
+- Operators can now see whether a recent Rumble message was sent manually by admin, manually by the creator, or automatically by the trigger runtime.
+
 ## 2026-04-14 - Admin Rumble Managed Session Visibility Pass
 
 ### Technical Notes

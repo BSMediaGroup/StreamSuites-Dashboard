@@ -50,6 +50,7 @@ flowchart TD
 - Root and `docs/` rewrite manifests preserve deep links for routes such as `/overview`, `/accounts`, `/profiles`, `/analytics`, `/alerts`, `/notifications`, `/settings`, `/creator-stats`, `/integrations/...`, and other admin views, but the repo root is now the authoritative shell so deep links do not depend on a `/docs/index.html` compatibility hop.
 - Creator integrations now have a dedicated admin route at `/profiles/integrations`, backed by runtime/Auth-admin inspection endpoints for creator-capable posture, platform readiness, trigger foundation, and bot deploy eligibility.
 - Admin account investigation now also supports a dedicated `user_code` route at `/users/{user_code}` for exhaustive single-account inspection across identity, auth posture, creator readiness, integrations, and trigger footing.
+- The trigger oversight route at `/integrations/triggers` is now a runtime/Auth-backed admin surface for creator-scoped Rumble text trigger CRUD and controlled managed-send testing.
 - Admin account inspection now exposes authoritative public-profile state, including canonical slug, creator-capable vs viewer-only posture, StreamSuites and FindMeHere visibility or eligibility, slug aliases, canonical URLs, and reserved media fields including background image URL.
 - The current routing and auth cutover work is reflected in fail-closed Auth API session gating, Cloudflare Pages-safe login routing, and current route compatibility handling.
 - Alerts now live in a dedicated admin route and sidebar destination, separate from Analytics, while still consuming the same backend-owned alert settings, rules, targets, and history APIs.
@@ -153,6 +154,7 @@ StreamSuites-Dashboard/
 │   │   ├── permissions.js
 │   │   ├── settings.js
 │   │   ├── state.js
+│   │   ├── triggers.js
 │   │   ├── turnstile-inline.js
 │   │   ├── user-detail.js
 │   │   └── utils/
@@ -160,6 +162,8 @@ StreamSuites-Dashboard/
 │   ├── runtime/
 │   │   └── exports/
 │   │       ├── meta.json
+│   │       ├── rumble_bot_sessions.json
+│   │       ├── rumble_dispatches.json
 │   │       ├── runtime_snapshot.json
 │   │       ├── status.json
 │   │       ├── version.json
@@ -191,6 +195,7 @@ StreamSuites-Dashboard/
 │       ├── overview.html
 │       ├── permissions.html
 │       ├── settings.html
+│       ├── triggers.html
 │       ├── user-detail.html
 │       └── platforms/
 ├── runtime/
@@ -214,7 +219,8 @@ StreamSuites-Dashboard/
 │   └── platform/
 ├── tests/
 │   ├── admin-auth-turnstile.test.mjs
-│   └── notifications-runtime-authority.test.mjs
+│   ├── notifications-runtime-authority.test.mjs
+│   └── triggers-runtime-authority.test.mjs
 ├── shared/
 │   └── state/
 │       ├── admin_activity.json

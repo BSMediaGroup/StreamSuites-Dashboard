@@ -1,683 +1,433 @@
-/* ============================================================
-   StreamSuites Dashboard — triggers.js
-   ============================================================
-
-   Responsibilities:
-   - Render and edit creator-scoped triggers from runtime snapshot
-   - Export admin-safe triggers.json (no live effects)
-   - Persist drafts locally for a single creator
-
-   Runtime target:
-   docs/shared/state/admin/triggers.json
-
-   ============================================================ */
-
 (() => {
   "use strict";
 
-  /* ------------------------------------------------------------
-     CONSTANTS
-     ------------------------------------------------------------ */
+  const state = {
+    creators: [],
+    selectedUserCode: "",
+    detail: null,
+    editTriggerId: null,
+    abortController: null,
+    initialized: false,
+  };
 
-  const STORAGE_KEY = "triggers.admin.draft";
-  const MATCH_MODES = ["equals_icase", "contains_icase"];
+  const el = {};
 
-  /* ------------------------------------------------------------
-     DOM REFERENCES
-     ------------------------------------------------------------ */
-
-  const bannerNotice = document.getElementById("triggers-banner");
-  const runtimeState = document.getElementById("triggers-runtime-state");
-  const runtimeMissing = document.getElementById("triggers-runtime-missing");
-  const runtimeActionsMissing = document.getElementById("triggers-actions-missing");
-  const saveNotice = document.getElementById("triggers-save-notice");
-  const messageBox = document.getElementById("triggers-message");
-  const creatorLabel = document.getElementById("triggers-creator-label");
-  const snapshotLabel = document.getElementById("triggers-snapshot-label");
-
-  const tableBody = document.getElementById("triggers-table-body");
-  const emptyState = document.getElementById("triggers-empty");
-
-  const editorPanel = document.getElementById("trigger-editor");
-  const editorTitle = document.getElementById("trigger-editor-title");
-  const editorCreator = document.getElementById("trigger-editor-creator");
-
-  const form = document.getElementById("trigger-form");
-  const inputEnabled = document.getElementById("trigger-enabled");
-  const inputMatch = document.getElementById("trigger-match");
-  const inputMatchMode = document.getElementById("trigger-match-mode");
-  const inputAction = document.getElementById("trigger-action");
-
-  const btnAdd = document.getElementById("btn-add-trigger");
-  const btnCancel = document.getElementById("btn-cancel-trigger");
-  const btnRefresh = document.getElementById("btn-refresh-triggers");
-  const btnSave = document.getElementById("btn-save-triggers");
-
-  const activityList = document.getElementById("triggers-activity-list");
-  const activityEmpty = document.getElementById("triggers-activity-empty");
-  const activityError = document.getElementById("triggers-activity-error");
-  const activityStatus = document.getElementById("triggers-activity-status");
-  const activityExported = document.getElementById("triggers-activity-exported");
-  const btnRefreshActivity = document.getElementById("btn-refresh-trigger-activity");
-
-  /* ------------------------------------------------------------
-     STATE
-     ------------------------------------------------------------ */
-
-  let availableActions = [];
-  let triggers = [];
-  let currentCreator = null;
-  let editIndex = null;
-  let snapshotGeneratedAt = null;
-  let activityPollHandle = null;
-  let runtimePollingLogged = false;
-
-  /* ------------------------------------------------------------
-     INIT
-     ------------------------------------------------------------ */
-
-  document.addEventListener("DOMContentLoaded", init);
-
-  function init() {
-    wireEvents();
-    hideEditor();
-    hydrateFromRuntime();
-    renderBanner();
-    fetchTriggerActivity();
-    startActivityPolling();
+  function $(id) {
+    return document.getElementById(id);
   }
 
-  /* ------------------------------------------------------------
-     EVENTS
-     ------------------------------------------------------------ */
-
-  function wireEvents() {
-    btnAdd?.addEventListener("click", onAddTrigger);
-    btnCancel?.addEventListener("click", hideEditor);
-    btnRefresh?.addEventListener("click", () => hydrateFromRuntime(true));
-    btnSave?.addEventListener("click", onSaveDraft);
-    btnRefreshActivity?.addEventListener("click", () => fetchTriggerActivity(true));
-
-    tableBody?.addEventListener("click", onTableClick);
-    form?.addEventListener("submit", onSubmit);
-  }
-
-  /* ------------------------------------------------------------
-     LOAD FROM RUNTIME SNAPSHOT
-     ------------------------------------------------------------ */
-
-  async function hydrateFromRuntime(forceReload = false) {
-    setMessage("", false);
-    saveNotice?.classList.add("hidden");
-
-    const snapshot = await ConfigState.loadRuntimeSnapshot({ forceReload });
-    const adminTriggers = snapshot?.triggers;
-
-    if (!adminTriggers) {
-      renderRuntimeMissing("Runtime not reporting triggers");
-      return;
-    }
-
-    availableActions = (adminTriggers.actions || []).filter((action) =>
-      typeof action?.id === "string" && action.id.trim() !== ""
-    );
-
-    snapshotGeneratedAt = adminTriggers.generatedAt || snapshot?.generatedAt || null;
-
-    if (!availableActions.length) {
-      renderRuntimeMissing("Runtime not reporting trigger actions", true);
-      return;
-    }
-
-    const creator = pickCreator(adminTriggers.creators);
-    if (!creator) {
-      renderRuntimeMissing("Runtime not reporting triggers for any creator");
-      return;
-    }
-
-    currentCreator = creator;
-    populateActionSelect();
-    renderRuntimeMeta();
-
-    const draft = loadDraftForCreator(creator.creator_id);
-    triggers = sanitizeTriggers(draft.length ? draft : creator.triggers || []);
-
-    renderTriggers();
-    hideEditor();
-  }
-
-  function pickCreator(list) {
-    if (!Array.isArray(list) || !list.length) return null;
-    const creator = list[0];
-    if (typeof creator?.creator_id !== "string") return null;
-    return {
-      creator_id: creator.creator_id.trim(),
-      display_name:
-        typeof creator.display_name === "string" && creator.display_name.trim()
-          ? creator.display_name.trim()
-          : creator.creator_id,
-      triggers: Array.isArray(creator.triggers) ? creator.triggers : []
-    };
-  }
-
-  function sanitizeTriggers(list) {
-    const actionIds = new Set(availableActions.map((a) => a.id));
-    const seenIds = new Set();
-
-    return (list || [])
-      .map((entry, idx) => {
-        const match = typeof entry?.match === "string" ? entry.match.trim() : "";
-        const action = typeof entry?.action === "string" ? entry.action.trim() : "";
-        if (!match || !actionIds.has(action)) return null;
-
-        const matchMode = MATCH_MODES.includes(entry.match_mode)
-          ? entry.match_mode
-          : "equals_icase";
-
-        const idBase =
-          typeof entry?.id === "string" && entry.id.trim()
-            ? entry.id.trim()
-            : `${slugify(match)}-${idx + 1}`;
-
-        const id = seenIds.has(idBase) ? `${idBase}-${idx + 1}` : idBase;
-        seenIds.add(id);
-
-        return {
-          id,
-          creator_id: currentCreator?.creator_id || entry.creator_id || "",
-          enabled: entry.enabled !== false,
-          match,
-          match_mode: matchMode,
-          action,
-          notes:
-            typeof entry.notes === "string" && entry.notes.trim()
-              ? entry.notes.trim()
-              : undefined
-        };
-      })
-      .filter(Boolean);
-  }
-
-  /* ------------------------------------------------------------
-     RENDERING
-     ------------------------------------------------------------ */
-
-  function renderBanner() {
-    if (!bannerNotice) return;
-    bannerNotice.textContent =
-      "Triggers are evaluated at runtime startup. Restart StreamSuites to apply changes.";
-  }
-
-  function renderRuntimeMeta() {
-    runtimeMissing?.classList.add("hidden");
-    runtimeActionsMissing?.classList.add("hidden");
-    btnAdd?.removeAttribute("disabled");
-    btnSave?.removeAttribute("disabled");
-
-    if (creatorLabel) {
-      creatorLabel.textContent = currentCreator?.display_name || "—";
-    }
-
-    if (snapshotLabel) {
-      snapshotLabel.textContent = formatTimestampDisplay(snapshotGeneratedAt);
-    }
-
-    if (runtimeState) {
-      runtimeState.classList.remove("hidden");
-      runtimeState.textContent = `Loaded from runtime snapshot for ${
-        currentCreator?.display_name || "creator"
-      }.`;
-    }
-  }
-
-  function renderRuntimeMissing(message, missingActions = false) {
-    btnAdd?.setAttribute("disabled", "disabled");
-    btnSave?.setAttribute("disabled", "disabled");
-
-    if (runtimeMissing) {
-      runtimeMissing.textContent = message || "Runtime not reporting triggers";
-      runtimeMissing.classList.remove("hidden");
-    }
-
-    if (missingActions && runtimeActionsMissing) {
-      runtimeActionsMissing.classList.remove("hidden");
-    }
-
-    if (runtimeState) {
-      runtimeState.classList.add("hidden");
-    }
-
-    tableBody.innerHTML = "";
-    emptyState?.classList.add("hidden");
-  }
-
-  function renderTriggers() {
-    tableBody.innerHTML = "";
-
-    if (!Array.isArray(triggers) || !triggers.length) {
-      emptyState?.classList.remove("hidden");
-      return;
-    }
-
-    emptyState?.classList.add("hidden");
-
-    triggers.forEach((trig, index) => {
-      const row = document.createElement("tr");
-
-      row.innerHTML = `
-        <td>${trig.enabled ? "Enabled" : "Disabled"}</td>
-        <td>${escapeHtml(trig.match)}</td>
-        <td>${escapeHtml(formatMatchMode(trig.match_mode))}</td>
-        <td>${escapeHtml(resolveActionLabel(trig.action))}</td>
-        <td>${escapeHtml(currentCreator?.display_name || trig.creator_id || "")}</td>
-        <td class="align-right">
-          <button class="ss-btn ss-btn-small" data-edit="${index}">Edit</button>
-          <button class="ss-btn ss-btn-small ss-btn-danger" data-delete="${index}">Delete</button>
-        </td>
-      `;
-
-      tableBody.appendChild(row);
-    });
-  }
-
-  function formatMatchMode(mode) {
-    if (mode === "contains_icase") return "Contains (case-insensitive)";
-    return "Equals (case-insensitive)";
-  }
-
-  function resolveActionLabel(actionId) {
-    const found = availableActions.find((a) => a.id === actionId);
-    return found?.label || actionId || "";
-  }
-
-  /* ------------------------------------------------------------
-     EDITOR
-     ------------------------------------------------------------ */
-
-  function onAddTrigger() {
-    if (!currentCreator) return;
-    resetForm();
-    showEditor("Add Trigger");
-  }
-
-  function showEditor(title) {
-    editorTitle.textContent = title;
-    editorCreator.textContent = currentCreator?.display_name || "";
-    editorPanel.classList.remove("hidden");
-  }
-
-  function hideEditor() {
-    editorPanel.classList.add("hidden");
-    resetForm();
-  }
-
-  function resetForm() {
-    form.reset();
-    editIndex = null;
-    inputEnabled.checked = true;
-    inputMatchMode.value = MATCH_MODES[0];
-  }
-
-  function onTableClick(e) {
-    const editBtn = e.target.closest("[data-edit]");
-    const deleteBtn = e.target.closest("[data-delete]");
-
-    if (editBtn) {
-      const idx = Number(editBtn.dataset.edit);
-      const trig = triggers[idx];
-      if (!trig) return;
-
-      editIndex = idx;
-      inputEnabled.checked = trig.enabled !== false;
-      inputMatch.value = trig.match;
-      inputMatchMode.value = MATCH_MODES.includes(trig.match_mode)
-        ? trig.match_mode
-        : MATCH_MODES[0];
-      inputAction.value = trig.action;
-
-      showEditor("Edit Trigger");
-    }
-
-    if (deleteBtn) {
-      const idx = Number(deleteBtn.dataset.delete);
-      if (!confirm("Delete this trigger?")) return;
-
-      triggers.splice(idx, 1);
-      persistDraft();
-      renderTriggers();
-    }
-  }
-
-  function onSubmit(e) {
-    e.preventDefault();
-    setMessage("", false);
-
-    const match = inputMatch.value.trim();
-    const matchMode = MATCH_MODES.includes(inputMatchMode.value)
-      ? inputMatchMode.value
-      : MATCH_MODES[0];
-    const action = inputAction.value;
-    const enabled = inputEnabled.checked;
-
-    if (!match) {
-      setMessage("Match pattern is required", true);
-      return;
-    }
-
-    if (!availableActions.find((a) => a.id === action)) {
-      setMessage("Select a valid action", true);
-      return;
-    }
-
-    const trigger = {
-      id:
-        editIndex !== null && triggers[editIndex]
-          ? triggers[editIndex].id
-          : generateTriggerId(match),
-      creator_id: currentCreator?.creator_id || "",
-      enabled,
-      match,
-      match_mode: matchMode,
-      action,
-      notes:
-        editIndex !== null && triggers[editIndex]?.notes
-          ? triggers[editIndex].notes
-          : undefined
-    };
-
-    if (editIndex !== null) {
-      triggers[editIndex] = trigger;
-    } else {
-      triggers.push(trigger);
-    }
-
-    persistDraft();
-    renderTriggers();
-    hideEditor();
-    setMessage("Trigger saved to draft. Export to apply on next restart.", false);
-  }
-
-  /* ------------------------------------------------------------
-     SAVE / EXPORT
-     ------------------------------------------------------------ */
-
-  function onSaveDraft() {
-    if (!currentCreator) return;
-
-    const payload = buildExportPayload();
-    persistDraft();
-
-    App.storage.downloadJson("shared/state/admin/triggers.json", payload);
-    saveNotice?.classList.remove("hidden");
-    saveNotice.textContent = "Trigger changes apply on next runtime restart.";
-  }
-
-  function buildExportPayload() {
-    return {
-      schema: "streamsuites.triggers.admin.v1",
-      generated_at: new Date().toISOString(),
-      actions: availableActions,
-      creators: [
-        {
-          creator_id: currentCreator?.creator_id || "",
-          display_name: currentCreator?.display_name || "",
-          triggers: sanitizeTriggers(triggers)
-        }
-      ]
-    };
-  }
-
-  function persistDraft() {
-    if (!currentCreator) return;
-    const drafts = App.storage.loadFromLocalStorage(STORAGE_KEY, {});
-    drafts[currentCreator.creator_id] = sanitizeTriggers(triggers);
-    App.storage.saveToLocalStorage(STORAGE_KEY, drafts);
-  }
-
-  function loadDraftForCreator(creatorId) {
-    if (!creatorId) return [];
-    const drafts = App.storage.loadFromLocalStorage(STORAGE_KEY, {});
-    const draftList = drafts?.[creatorId];
-    return Array.isArray(draftList) ? draftList : [];
-  }
-
-  /* ------------------------------------------------------------
-     UTILS
-     ------------------------------------------------------------ */
-
-  function escapeHtml(str) {
-    return String(str)
+  function escapeHtml(value) {
+    if (value === undefined || value === null) return "";
+    return String(value)
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
+      .replace(/'/g, "&#39;");
   }
 
-  function formatTimestampDisplay(timestamp) {
-    if (!timestamp) return "unknown time";
+  function resolveApiBase() {
+    const base =
+      window.StreamSuitesAdminAuth?.config?.baseUrl ||
+      document.querySelector('meta[name="streamsuites-auth-base"]')?.getAttribute("content") ||
+      "";
+    return base ? String(base).replace(/\/+$/, "") : "";
+  }
+
+  function buildApiUrl(path) {
+    const base = resolveApiBase();
+    if (!base) return path;
+    const normalized = path.startsWith("/") ? path : `/${path}`;
+    return `${base}${normalized}`;
+  }
+
+  async function requestJson(path, options = {}) {
+    const response = await fetch(buildApiUrl(path), {
+      cache: "no-store",
+      credentials: "include",
+      ...options,
+      headers: {
+        Accept: "application/json",
+        ...(options.body ? { "Content-Type": "application/json" } : {}),
+        ...(options.headers || {}),
+      },
+    });
+    const payload = await readJsonSafe(response);
+    if (!response.ok || payload?.success === false) {
+      throw new Error(payload?.error || payload?.message || `Request failed (${response.status})`);
+    }
+    return payload || {};
+  }
+
+  async function readJsonSafe(response) {
     try {
-      const parsed = new Date(timestamp);
-      if (!Number.isNaN(parsed.getTime())) {
-        return parsed.toLocaleString(undefined, { hour12: false });
-      }
-    } catch (err) {
-      console.warn("[Triggers] Failed to format timestamp", err);
+      return await response.json();
+    } catch (_err) {
+      return null;
     }
-    return timestamp;
   }
 
-  function slugify(str) {
-    return String(str)
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)+/g, "")
-      .slice(0, 32) || "trigger";
-  }
-
-  function generateTriggerId(match) {
-    const base = slugify(match);
-    const existing = new Set(triggers.map((t) => t.id));
-    let candidate = base;
-    let counter = 1;
-    while (existing.has(candidate)) {
-      candidate = `${base}-${counter++}`;
-    }
-    return candidate;
-  }
-
-  function setMessage(msg, isError) {
-    if (!messageBox) return;
-    if (!msg) {
-      messageBox.classList.add("hidden");
-      messageBox.textContent = "";
-      return;
-    }
-    messageBox.textContent = msg;
-    messageBox.classList.toggle("ss-alert-danger", !!isError);
-    messageBox.classList.remove("hidden");
-  }
-
-  function populateActionSelect() {
-    if (!inputAction) return;
-    inputAction.innerHTML = "";
-    availableActions.forEach((action) => {
-      const opt = document.createElement("option");
-      opt.value = action.id;
-      opt.textContent = action.label || action.id;
-      inputAction.appendChild(opt);
+  function formatTimestamp(value) {
+    if (!value) return "—";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value);
+    return date.toLocaleString(undefined, {
+      hour12: false,
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
     });
   }
 
-  /* ------------------------------------------------------------
-     RECENT ACTIVITY
-     ------------------------------------------------------------ */
+  function setBanner(message, tone = "") {
+    if (!(el.banner instanceof HTMLElement)) return;
+    el.banner.textContent = message || "";
+    el.banner.className = "ss-alert";
+    if (message) {
+      if (tone === "danger" || tone === "warning") el.banner.classList.add("ss-alert-danger");
+      if (tone === "success") el.banner.classList.add("ss-alert-success");
+    }
+  }
 
-  function normalizeActivityItems(raw) {
-    const items = Array.isArray(raw?.events)
-      ? raw.events
-      : Array.isArray(raw?.items)
-        ? raw.items
-        : Array.isArray(raw)
-          ? raw
-          : [];
+  function setMessage(message, tone = "") {
+    if (!(el.message instanceof HTMLElement)) return;
+    if (!message) {
+      el.message.classList.add("hidden");
+      el.message.textContent = "";
+      return;
+    }
+    el.message.className = "ss-alert";
+    if (tone === "danger" || tone === "warning") el.message.classList.add("ss-alert-danger");
+    if (tone === "success") el.message.classList.add("ss-alert-success");
+    el.message.textContent = message;
+    el.message.classList.remove("hidden");
+  }
 
-    return items
-      .filter((entry) => entry && typeof entry === "object")
-      .map((entry) => {
-        const timestamp = entry.timestamp || entry.at || entry.time || entry.created_at;
-        const platform = entry.platform || entry.source || entry.origin || "unknown";
-        const command =
-          entry.command || entry.trigger || entry.phrase || entry.match || entry.action;
-        const user =
-          entry.user ||
-          entry.username ||
-          entry.requested_by ||
-          entry.requester ||
-          entry.actor ||
-          "unknown viewer";
-        const jobId = entry.job_id || entry.job || entry.clip_job_id || entry.entity_id;
-        const summary = entry.summary || entry.message || entry.description;
+  function selectedCreator() {
+    return state.creators.find((item) => item?.user_code === state.selectedUserCode) || null;
+  }
 
-        return {
-          timestamp,
-          platform,
-          command,
-          user,
-          jobId,
-          summary
-        };
-      })
-      .sort((a, b) => {
-        const aTime = new Date(a.timestamp || 0).getTime();
-        const bTime = new Date(b.timestamp || 0).getTime();
-        return bTime - aTime;
+  function currentAccountId() {
+    return String(state.detail?.account?.id || "").trim();
+  }
+
+  function renderCreatorOptions() {
+    if (!(el.creatorSelect instanceof HTMLSelectElement)) return;
+    const options = state.creators.map((item) => {
+      const label = item?.display_name || item?.user_code || "Unknown creator";
+      return `<option value="${escapeHtml(item.user_code || "")}">${escapeHtml(label)}</option>`;
+    });
+    el.creatorSelect.innerHTML = options.join("");
+    if (state.selectedUserCode) {
+      el.creatorSelect.value = state.selectedUserCode;
+    }
+  }
+
+  function summarizeScope(scope) {
+    const platforms = Array.isArray(scope?.platforms) ? scope.platforms : [];
+    return platforms.length ? platforms.join(", ") : "—";
+  }
+
+  function summarizeTriggerContribution(trigger) {
+    const rumble = trigger?.platform_applicability?.rumble || {};
+    if (rumble.trigger_execution_eligible) return "Operational for Rumble";
+    if (rumble.chat_capable) return "Linked but blocked";
+    return "Not operational in this phase";
+  }
+
+  function canDelete(trigger) {
+    return !trigger?.metadata?.builtin;
+  }
+
+  function renderTriggers(triggers) {
+    if (!(el.tableBody instanceof HTMLElement)) return;
+    const items = Array.isArray(triggers) ? triggers : [];
+    if (!items.length) {
+      el.tableBody.innerHTML = "";
+      el.empty?.classList.remove("hidden");
+      return;
+    }
+    el.empty?.classList.add("hidden");
+    el.tableBody.innerHTML = items.map((trigger) => `
+      <tr>
+        <td>
+          <strong>${escapeHtml(trigger.command_text || trigger.trigger_id || "-")}</strong>
+          <div class="muted">${escapeHtml(trigger.response_preview || trigger.response_template || "-")}</div>
+        </td>
+        <td>${escapeHtml(summarizeScope(trigger.scope))}</td>
+        <td>${trigger.enabled ? '<span class="ss-badge ss-badge-success">Enabled</span>' : '<span class="ss-badge ss-badge-warning">Disabled</span>'}</td>
+        <td>${escapeHtml(summarizeTriggerContribution(trigger))}</td>
+        <td class="align-right">
+          <button class="ss-btn ss-btn-small ss-btn-secondary" type="button" data-trigger-toggle="${escapeHtml(trigger.trigger_id || "")}" data-next-enabled="${trigger.enabled ? "false" : "true"}">
+            ${escapeHtml(trigger.enabled ? "Disable" : "Enable")}
+          </button>
+          <button class="ss-btn ss-btn-small ss-btn-secondary" type="button" data-trigger-edit="${escapeHtml(trigger.trigger_id || "")}">
+            Edit
+          </button>
+          ${canDelete(trigger)
+            ? `<button class="ss-btn ss-btn-small ss-btn-danger" type="button" data-trigger-delete="${escapeHtml(trigger.trigger_id || "")}">Delete</button>`
+            : '<span class="muted">Built-in</span>'}
+        </td>
+      </tr>
+    `).join("");
+  }
+
+  function renderManualSend(detail) {
+    const integration = (() => {
+      const items = Array.isArray(detail?.creator_integrations?.integrations) ? detail.creator_integrations.integrations : [];
+      return items.find((item) => item?.platform_key === "rumble") || null;
+    })();
+    const dispatch = integration?.managed_dispatch || null;
+    const session = integration?.managed_session || null;
+    const transportReady = ["attached", "listening", "running"].includes(String(session?.transport_status || "").trim().toLowerCase());
+    if (el.sessionLabel instanceof HTMLElement) {
+      el.sessionLabel.textContent = session?.session_id || "No managed session";
+    }
+    if (el.manualStatus instanceof HTMLElement) {
+      if (!session) {
+        el.manualStatus.textContent = "No managed Rumble session is currently exported for this creator.";
+      } else if (!transportReady) {
+        el.manualStatus.textContent = session?.status_reason || session?.blocking_reason || "Managed send is blocked.";
+      } else if (dispatch?.summary?.latest_status) {
+        el.manualStatus.textContent = `Latest dispatch: ${dispatch.summary.latest_status} via ${dispatch.summary.latest_request_source || "runtime"}.`;
+      } else {
+        el.manualStatus.textContent = "Managed Rumble session is ready. No recent dispatch row is exported yet.";
+      }
+    }
+    const items = Array.isArray(dispatch?.items) ? dispatch.items : [];
+    if (items.length) {
+      el.activityEmpty?.classList.add("hidden");
+      el.activityList.innerHTML = items.slice(0, 6).map((item) => {
+        const source = String(item?.request_source || "").trim().toLowerCase();
+        const kind = source === "trigger_runtime"
+          ? "Automatic trigger reply"
+          : source === "creator_dashboard"
+            ? "Manual creator send"
+            : "Manual admin send";
+        const blocking = item?.error_code ? ` (${item.error_code})` : "";
+        return `<li>${escapeHtml(kind)}: ${escapeHtml(item?.status || "unknown")} · ${escapeHtml(item?.message_preview || "No preview")} · ${escapeHtml(item?.requested_at || "Pending")}${escapeHtml(blocking)}</li>`;
+      }).join("");
+    } else {
+      el.activityList.innerHTML = "";
+      el.activityEmpty?.classList.remove("hidden");
+    }
+  }
+
+  function renderDetail(payload) {
+    state.detail = payload && typeof payload === "object" ? payload : null;
+    const account = state.detail?.account || {};
+    const triggers = state.detail?.creator_integrations?.triggers || [];
+    if (el.runtimeState instanceof HTMLElement) {
+      el.runtimeState.textContent = state.detail
+        ? "Hydrated from runtime/Auth creator trigger authority."
+        : "No creator detail loaded.";
+    }
+    if (el.creatorLabel instanceof HTMLElement) {
+      el.creatorLabel.textContent = account.display_name || account.user_code || "—";
+    }
+    if (el.snapshotLabel instanceof HTMLElement) {
+      el.snapshotLabel.textContent = formatTimestamp(state.detail?.generated_at);
+    }
+    if (el.editorCreator instanceof HTMLElement) {
+      el.editorCreator.textContent = account.display_name || account.user_code || "—";
+    }
+    renderTriggers(triggers);
+    renderManualSend(payload);
+  }
+
+  async function loadCreators() {
+    const payload = await requestJson("/api/admin/creator-integrations");
+    state.creators = Array.isArray(payload?.items) ? payload.items : [];
+    if (!state.selectedUserCode && state.creators[0]?.user_code) {
+      state.selectedUserCode = state.creators[0].user_code;
+    }
+    renderCreatorOptions();
+  }
+
+  async function loadDetail() {
+    if (!state.selectedUserCode) return;
+    const payload = await requestJson(`/api/admin/users/${encodeURIComponent(state.selectedUserCode)}`);
+    renderDetail(payload);
+  }
+
+  function openEditor(trigger = null) {
+    state.editTriggerId = trigger?.trigger_id || null;
+    el.editor?.classList.remove("hidden");
+    el.editorTitle.textContent = trigger ? `Edit ${trigger.command_text}` : "Add Rumble text trigger";
+    el.commandText.value = trigger?.command_text || "";
+    el.responseText.value = trigger?.response_template || "";
+    el.triggerEnabled.checked = trigger?.enabled !== false;
+    el.cooldownSeconds.value = String(Number(trigger?.cooldown_seconds ?? 5));
+  }
+
+  function closeEditor() {
+    state.editTriggerId = null;
+    el.editor?.classList.add("hidden");
+    el.triggerForm?.reset();
+    if (el.triggerEnabled instanceof HTMLInputElement) el.triggerEnabled.checked = true;
+    if (el.cooldownSeconds instanceof HTMLInputElement) el.cooldownSeconds.value = "5";
+  }
+
+  async function saveTrigger() {
+    const accountId = currentAccountId();
+    if (!accountId) return;
+    const payload = {
+      command_text: el.commandText.value.trim(),
+      response_template: el.responseText.value.trim(),
+      enabled: el.triggerEnabled.checked,
+      cooldown_seconds: Number(el.cooldownSeconds.value || 5),
+      scope: { mode: "platform_list", platforms: ["rumble"] },
+    };
+    if (state.editTriggerId) {
+      await requestJson(`/api/admin/accounts/${encodeURIComponent(accountId)}/creator-triggers/${encodeURIComponent(state.editTriggerId)}`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
       });
-  }
-
-  function renderActivityStatus(message) {
-    if (!activityStatus) return;
-    activityStatus.textContent = message;
-  }
-
-  function showActivityError(message) {
-    if (!activityError) return;
-    activityError.textContent = message;
-    activityError.classList.remove("hidden");
-  }
-
-  function hideActivityError() {
-    if (!activityError) return;
-    activityError.classList.add("hidden");
-    activityError.textContent = "";
-  }
-
-  function renderActivity(items, meta = {}) {
-    if (!activityList) return;
-
-    activityList.innerHTML = "";
-    const exportedAt =
-      meta?.exported_at ||
-      meta?.exportedAt ||
-      meta?.generated_at ||
-      meta?.updated_at ||
-      null;
-    if (activityExported) {
-      activityExported.textContent = exportedAt
-        ? formatTimestampDisplay(exportedAt)
-        : "—";
+    } else {
+      await requestJson(`/api/admin/accounts/${encodeURIComponent(accountId)}/creator-triggers`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
     }
-    if (!Array.isArray(items) || !items.length) {
-      activityEmpty?.classList.remove("hidden");
-      return;
-    }
+    closeEditor();
+    await loadDetail();
+    setMessage("Trigger saved through the authoritative runtime/Auth path.", "success");
+  }
 
-    activityEmpty?.classList.add("hidden");
-
-    items.forEach((entry) => {
-      const li = document.createElement("li");
-      const timestamp = formatTimestampDisplay(entry.timestamp);
-      const command = entry.command ? `${entry.command}` : "Trigger";
-      const platform = entry.platform ? `${entry.platform}` : "unknown source";
-      const user = entry.user ? `${entry.user}` : "unknown viewer";
-      const jobLabel = entry.jobId ? ` (job ${entry.jobId})` : "";
-      const summary = entry.summary ? ` — ${entry.summary}` : "";
-      li.textContent = `${timestamp} • ${platform} • ${command} by ${user}${jobLabel}${summary}`;
-      activityList.appendChild(li);
+  async function toggleTrigger(triggerId, enabled) {
+    const accountId = currentAccountId();
+    if (!accountId || !triggerId) return;
+    await requestJson(`/api/admin/accounts/${encodeURIComponent(accountId)}/creator-triggers/${encodeURIComponent(triggerId)}`, {
+      method: "PATCH",
+      body: JSON.stringify({ enabled }),
     });
-
+    await loadDetail();
   }
 
-  async function fetchTriggerActivity(forceReload = false) {
-    hideActivityError();
+  async function deleteTrigger(triggerId) {
+    const accountId = currentAccountId();
+    if (!accountId || !triggerId) return;
+    await requestJson(`/api/admin/accounts/${encodeURIComponent(accountId)}/creator-triggers/${encodeURIComponent(triggerId)}`, {
+      method: "DELETE",
+    });
+    await loadDetail();
+  }
 
-    let data = null;
+  async function sendManualMessage() {
+    const accountId = currentAccountId();
+    const integration = (() => {
+      const items = Array.isArray(state.detail?.creator_integrations?.integrations) ? state.detail.creator_integrations.integrations : [];
+      return items.find((item) => item?.platform_key === "rumble") || null;
+    })();
+    await requestJson("/api/admin/runtime/rumble-dispatch", {
+      method: "POST",
+      body: JSON.stringify({
+        creator_account_id: accountId,
+        session_id: integration?.managed_session?.session_id || null,
+        message_text: el.manualMessage.value.trim(),
+        reason: "operator_manual_send",
+      }),
+    });
+    el.manualSendForm.reset();
+    await loadDetail();
+    setMessage("Controlled admin Rumble send submitted.", "success");
+  }
 
-    if (!forceReload && activityList?.dataset?.loaded === "true") {
-      renderActivityStatus("Up to date");
+  async function init() {
+    if (state.abortController) {
+      state.abortController.abort();
     }
+    state.abortController = new AbortController();
+    const signal = state.abortController.signal;
 
-    if (typeof window.StreamSuitesState?.loadStateJson === "function") {
-      data = await window.StreamSuitesState.loadStateJson("chat_events.json");
-    }
+    el.banner = $("triggers-banner");
+    el.runtimeState = $("triggers-runtime-state");
+    el.creatorSelect = $("triggers-creator-select");
+    el.creatorLabel = $("triggers-creator-label");
+    el.snapshotLabel = $("triggers-snapshot-label");
+    el.sessionLabel = $("triggers-session-label");
+    el.message = $("triggers-message");
+    el.tableBody = $("triggers-table-body");
+    el.empty = $("triggers-empty");
+    el.activityList = $("triggers-activity-list");
+    el.activityEmpty = $("triggers-activity-empty");
+    el.manualStatus = $("triggers-manual-status");
+    el.manualSendForm = $("triggers-manual-send-form");
+    el.manualMessage = $("triggers-manual-message");
+    el.editor = $("trigger-editor");
+    el.editorTitle = $("trigger-editor-title");
+    el.editorCreator = $("trigger-editor-creator");
+    el.triggerForm = $("trigger-form");
+    el.triggerEnabled = $("trigger-enabled");
+    el.commandText = $("trigger-command-text");
+    el.responseText = $("trigger-response-text");
+    el.cooldownSeconds = $("trigger-cooldown-seconds");
 
-    if (!data) {
-      try {
-        const res = await fetch(new URL("data/chat_events.json", document.baseURI), {
-          cache: "no-store"
+    $("btn-refresh-triggers")?.addEventListener("click", () => {
+      void loadDetail().catch((err) => setBanner(err?.message || "Unable to refresh trigger oversight.", "danger"));
+    }, { signal });
+    $("btn-add-trigger")?.addEventListener("click", () => openEditor(null), { signal });
+    $("btn-cancel-trigger")?.addEventListener("click", closeEditor, { signal });
+    el.creatorSelect?.addEventListener("change", () => {
+      state.selectedUserCode = el.creatorSelect.value;
+      void loadDetail().catch((err) => setBanner(err?.message || "Unable to load creator detail.", "danger"));
+    }, { signal });
+    el.tableBody?.addEventListener("click", (event) => {
+      const target = event.target instanceof Element ? event.target : null;
+      if (!target) return;
+      const triggerId = target.closest("[data-trigger-edit]")?.getAttribute("data-trigger-edit");
+      if (triggerId) {
+        const trigger = (state.detail?.creator_integrations?.triggers || []).find((item) => item?.trigger_id === triggerId) || null;
+        openEditor(trigger);
+        return;
+      }
+      const toggleButton = target.closest("[data-trigger-toggle]");
+      if (toggleButton instanceof HTMLElement) {
+        void toggleTrigger(
+          toggleButton.getAttribute("data-trigger-toggle") || "",
+          toggleButton.getAttribute("data-next-enabled") === "true",
+        ).catch((err) => setBanner(err?.message || "Unable to update trigger.", "danger"));
+        return;
+      }
+      const deleteButton = target.closest("[data-trigger-delete]");
+      if (deleteButton instanceof HTMLElement) {
+        if (!window.confirm("Delete this trigger?")) return;
+        void deleteTrigger(deleteButton.getAttribute("data-trigger-delete") || "").catch((err) => {
+          setBanner(err?.message || "Unable to delete trigger.", "danger");
         });
-        if (res.ok) {
-          data = await res.json();
-        }
-      } catch (err) {
-        console.warn("[Triggers] Failed to load fallback chat_events.json", err);
       }
-    }
+    }, { signal });
+    el.triggerForm?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      void saveTrigger().catch((err) => setBanner(err?.message || "Unable to save trigger.", "danger"));
+    }, { signal });
+    el.manualSendForm?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      void sendManualMessage().catch((err) => setBanner(err?.message || "Unable to send manual test.", "danger"));
+    }, { signal });
 
-    if (!data) {
-      showActivityError("No trigger activity exports available.");
-      renderActivity([], {});
-      renderActivityStatus("No data");
-      return;
+    try {
+      await loadCreators();
+      await loadDetail();
+      setBanner("");
+    } catch (err) {
+      setBanner(err?.message || "Unable to load trigger oversight.", "danger");
     }
-
-    const items = normalizeActivityItems(data);
-    renderActivity(items, data.meta || data);
-    if (activityList?.dataset) {
-      activityList.dataset.loaded = "true";
-    }
-    renderActivityStatus(
-      `Last updated ${new Date().toLocaleTimeString(undefined, { hour12: false })}`
-    );
   }
-
-  function startActivityPolling() {
-    if (window.__RUNTIME_AVAILABLE__ !== true) {
-      if (!runtimePollingLogged) {
-        console.info("[Dashboard] Runtime unavailable. Polling disabled.");
-        runtimePollingLogged = true;
-      }
-      return;
-    }
-    if (activityPollHandle) return;
-    activityPollHandle = setInterval(() => fetchTriggerActivity(), 15000);
-  }
-
-  function stopActivityPolling() {
-    if (!activityPollHandle) return;
-    clearInterval(activityPollHandle);
-    activityPollHandle = null;
-  }
-
-  /* ------------------------------------------------------------
-     PUBLIC API
-     ------------------------------------------------------------ */
 
   window.TriggersView = {
     init,
-    destroy: () => {
-      stopActivityPolling();
-      hideEditor();
-    }
+    destroy() {
+      closeEditor();
+      if (state.abortController) {
+        state.abortController.abort();
+        state.abortController = null;
+      }
+      state.detail = null;
+      state.editTriggerId = null;
+    },
   };
 })();
