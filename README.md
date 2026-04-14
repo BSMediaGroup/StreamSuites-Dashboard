@@ -149,6 +149,7 @@ StreamSuites-Dashboard/
 │   │   ├── bots.js
 │   │   ├── creator-integrations.js
 │   │   ├── creators.js
+│   │   ├── jobs.js
 │   │   ├── notifications.js
 │   │   ├── overview.js
 │   │   ├── permissions.js
@@ -219,6 +220,7 @@ StreamSuites-Dashboard/
 │   └── platform/
 ├── tests/
 │   ├── admin-auth-turnstile.test.mjs
+│   ├── jobs-runtime-authority.test.mjs
 │   ├── notifications-runtime-authority.test.mjs
 │   └── triggers-runtime-authority.test.mjs
 ├── shared/

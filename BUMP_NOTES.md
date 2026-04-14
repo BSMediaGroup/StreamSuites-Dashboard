@@ -14,6 +14,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.8-alpha
 
+- Replaced the early scaffold on `docs/js/jobs.js` and `docs/views/jobs.html` with a real operator-facing `/jobs` oversight surface backed by the authoritative runtime export path. The page now hydrates from `jobs.json` plus `runtime_snapshot.json`, keeps canonical job state read-only, shows feed availability, runtime module posture, grouped job summaries, restart/apply posture, and a finished empty state that explicitly reserves future clip jobs until the runtime exports them for real. These two files were replaced in place rather than removed and are expected to be longer because the route now owns full runtime-backed hydration and presentation instead of a thin placeholder.
+- Added `tests/jobs-runtime-authority.test.mjs` and updated `docs/js/app.js` additively so the jobs route must remain unload-safe and must keep real hydration, grouping, empty-state, and missing-export handling instead of falling back to scaffold-only rendering.
+
 ## 2026-04-14 - Admin Trigger Oversight Repair Completion
 
 ### Technical Notes

@@ -2759,7 +2759,8 @@ registerView("jobs", {
       return window.JobsView.init();
     }
     return null;
-  }
+  },
+  onUnload: () => window.JobsView?.destroy?.()
 });
 
 registerView("clips", {
