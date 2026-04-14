@@ -244,6 +244,14 @@
     return error?.message || session?.status_reason || "No managed-session blocking reason reported.";
   }
 
+  function rumbleDecisionWaitingForLive(decision) {
+    return Boolean(decision?.awaiting_live_stream || String(decision?.decision_state || "").trim().toLowerCase() === "awaiting_live_stream");
+  }
+
+  function rumbleDecisionLiveTargetPending(decision) {
+    return Boolean(decision?.live_target_unresolved || String(decision?.decision_state || "").trim().toLowerCase() === "live_target_unresolved");
+  }
+
   function summarizeScope(platforms) {
     if (!Array.isArray(platforms) || !platforms.length) return "No platforms";
     return platforms.map((item) => String(item || "").trim()).filter(Boolean).join(", ");
@@ -471,6 +479,7 @@
       const reasons = Array.isArray(deployment.reasons) ? deployment.reasons : [];
       const metadata = item.metadata && typeof item.metadata === "object" ? item.metadata : {};
       const managedSession = managedSessionForIntegration(item);
+      const botDecision = item?.bot_auto_deploy && typeof item.bot_auto_deploy === "object" ? item.bot_auto_deploy : null;
       const transportError = managedSessionTransportError(managedSession);
       const authState = managedSessionAuthState(managedSession);
       const safeMeta = [];
@@ -506,20 +515,37 @@
               ${renderBadge(`Session ${managedSessionStateLabel(managedSession?.session_kind || "auto")}`, managedSession ? "ss-badge-warning" : "")}
               ${renderBadge(`Lifecycle ${managedSessionStateLabel(managedSession?.lifecycle_state)}`, managedSessionStateTone(managedSession?.lifecycle_state))}
               ${renderBadge(`Transport ${managedSessionStateLabel(managedSession?.transport_status)}`, managedSessionStateTone(managedSession?.transport_status))}
+              ${renderBadge(
+                rumbleDecisionWaitingForLive(botDecision)
+                  ? "Waiting for live stream"
+                  : rumbleDecisionLiveTargetPending(botDecision)
+                    ? "Live target pending"
+                    : botDecision?.attach_identity_ready
+                      ? "Attach ready"
+                      : "Decision pending",
+                botDecision?.attach_identity_ready ? "ss-badge-success" : rumbleDecisionWaitingForLive(botDecision) ? "" : "ss-badge-warning"
+              )}
               ${renderBadge(authState.label, authState.tone)}
             </div>
             <ul class="creator-integrations-platform-list">
               <li>Managed session id: ${escapeHtml(managedSession?.session_id || "Not created")}</li>
-              <li>Managed/manual: ${escapeHtml(managedSession ? "Managed auto session" : "No managed session")}</li>
+              <li>Managed/manual: ${escapeHtml(managedSession ? "Managed auto session" : rumbleDecisionWaitingForLive(botDecision) ? "Waiting for live stream" : "No managed session")}</li>
               <li>Desired: ${escapeHtml(managedSession?.desired ? "Yes" : "No")}</li>
               <li>Eligibility: ${escapeHtml(managedSession ? (managedSession.eligible ? "Eligible" : "Blocked") : (item.bot_auto_deploy?.eligible ? "Eligible" : "Blocked"))}</li>
               <li>Last attach attempt: ${escapeHtml(formatTimestamp(managedSession?.last_attach_attempt_at))}</li>
               <li>Last attach success: ${escapeHtml(formatTimestamp(managedSession?.last_attach_success_at))}</li>
               <li>Last heartbeat: ${escapeHtml(formatTimestamp(managedSession?.last_transport_heartbeat_at || managedSession?.last_heartbeat_at))}</li>
               <li>Transport error: ${escapeHtml(transportError?.code || "None")}</li>
-              <li>Target watch URL: ${escapeHtml(resolvedTarget.watch_url || item.bot_auto_deploy?.resolved_watch_url || "-")}</li>
+              <li>Live target URL: ${escapeHtml(resolvedTarget.watch_url || item.bot_auto_deploy?.resolved_live_target_url || item.bot_auto_deploy?.resolved_watch_url || "-")}</li>
+              <li>Watch home URL: ${escapeHtml(item.bot_auto_deploy?.resolved_watch_home_url || item.bot_auto_deploy?.resolved_channel_url || resolvedTarget.channel_url || "-")}</li>
             </ul>
-            <p class="creator-integrations-platform-note">${escapeHtml(managedSessionBlockingDetail(managedSession))}</p>
+            <p class="creator-integrations-platform-note">${escapeHtml(
+              !managedSession && rumbleDecisionWaitingForLive(botDecision)
+                ? "Managed session is absent because the creator is offline and runtime is waiting for a live stream target."
+                : !managedSession && rumbleDecisionLiveTargetPending(botDecision)
+                  ? "Managed session is absent because runtime has not resolved the concrete live target yet."
+                  : managedSessionBlockingDetail(managedSession)
+            )}</p>
             ${runtimeLinks.length ? `<div class="creator-integrations-platform-reasons">${runtimeLinks.join("")}</div>` : ""}
           </div>
         `

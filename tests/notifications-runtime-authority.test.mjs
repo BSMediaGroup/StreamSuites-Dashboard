@@ -30,10 +30,12 @@ test("admin creator integration surfaces expose rumble managed-session transport
   assert.match(integrationsJs, /Last attach attempt/);
   assert.match(integrationsJs, /Last attach success/);
   assert.match(integrationsJs, /Stream key only/);
+  assert.match(integrationsJs, /Waiting for live stream/);
   assert.match(integrationsJs, /Open watch target/);
 
   assert.match(userDetailJs, /item\?\.managed_session/);
   assert.match(userDetailJs, /Transport error/);
+  assert.match(userDetailJs, /Live target pending/);
   assert.match(userDetailJs, /Open watch target/);
   assert.match(userDetailJs, /Chat auth missing/);
 });
@@ -53,6 +55,8 @@ test("admin bots surface distinguishes managed sessions and transport posture", 
   assert.match(botsJs, /Open watch target/);
   assert.match(botsJs, /const globalStatus = String\(runtime\?\.globalStatus \|\| runtime\?\.status \|\| ""\)/);
   assert.match(botsJs, /const sessionStatus = String\(runtime\?\.sessionStatus \|\| runtime\?\.details\?\.session_status \|\| ""\)/);
+  assert.match(botsJs, /sessionStatus === "awaiting_live"/);
+  assert.match(botsJs, /sessionStatus === "live_target_unresolved"/);
   assert.match(botsJs, /creator-managed session/);
 });
 

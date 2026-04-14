@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Refined the admin-side Rumble posture wording in `docs/js/bots.js`, `docs/js/creator-integrations.js`, and `docs/js/user-detail.js` so matched-but-offline creators now show an awaiting-live posture, live-target unresolved creators stay distinct from attach-identity blockers, and real auth/transport failures remain the only hard blocked/error class. The existing pages and layouts were preserved; this is a narrow semantic pass on the runtime-backed labels and notes.
+- Updated `tests/notifications-runtime-authority.test.mjs` additively so the dashboard source tests now pin the new `awaiting_live` / `live_target_unresolved` posture handling and the calmer creator-card vocabulary. No files were removed or replaced in this pass.
+
 - Completed the admin-side Rumble posture split so overview, `/integrations/rumble`, and `/telemetry` now prefer runtime-global posture fields over creator-scoped managed-session blockers. `docs/js/bots.js`, `docs/js/platforms/rumble.js`, and `docs/js/overview.js` now read the exported `global_status` / `session_status` contract separately instead of flattening creator-disabled or blocked sessions into a fake paused platform state.
 - Updated `tests/notifications-runtime-authority.test.mjs` additively so the dashboard source tests now pin the new global-vs-session posture split on the bots surface, the dedicated Rumble page, and the overview platform cards. No files were removed or replaced in this completion pass.
 

@@ -800,12 +800,29 @@
         (runtime?.available === true && runtime?.status !== "not_configured")
       ) {
         availability = "active";
-        if (sessionStatus === "blocked" && blockedCount > 0) {
+        if (sessionStatus === "awaiting_live" && blockedCount > 0) {
+          availability = "pending";
+          reason =
+            runtime?.details?.session_status_reason ||
+            `${blockedCount} creator-managed session${blockedCount === 1 ? "" : "s"} is waiting for a creator to go live.`;
+        } else if (sessionStatus === "live_target_unresolved" && blockedCount > 0) {
+          availability = "pending";
+          reason =
+            runtime?.details?.session_status_reason ||
+            `${blockedCount} creator-managed session${blockedCount === 1 ? "" : "s"} is live but still waiting for a concrete live target.`;
+        } else if (sessionStatus === "attach_identity_incomplete" && blockedCount > 0) {
+          availability = "blocked";
+          reason =
+            runtime?.details?.session_status_reason ||
+            `${blockedCount} creator-managed session${blockedCount === 1 ? "" : "s"} is live but still missing attach identity.`;
+        } else if (sessionStatus === "blocked" && blockedCount > 0) {
+          availability = "blocked";
           reason =
             runtime?.details?.session_status_reason ||
             runtime?.error ||
             `${blockedCount} creator-managed session${blockedCount === 1 ? "" : "s"} is blocked by creator-level prerequisites.`;
         } else if (sessionStatus === "managed_pending" && pendingCount > 0) {
+          availability = "pending";
           reason = `${pendingCount} creator-managed session${pendingCount === 1 ? "" : "s"} is still attaching.`;
         } else {
           reason =
