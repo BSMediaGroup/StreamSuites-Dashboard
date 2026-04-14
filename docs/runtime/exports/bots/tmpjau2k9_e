@@ -1,7 +1,7 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-04-14T15:31:21.802251Z",
-  "server_generated_at": "2026-04-14T15:31:21.802251Z",
+  "generated_at": "2026-04-14T15:30:35.825438Z",
+  "server_generated_at": "2026-04-14T15:30:35.825438Z",
   "count": 15,
   "bots": [
     {
@@ -22,7 +22,7 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T15:30:56.402503Z",
+      "last_evaluated_at": "2026-04-14T15:30:15.619826Z",
       "last_transition_at": "2026-04-14T15:26:33.680475Z",
       "resolved_target": {
         "watch_url": "https://rumble.com/user/danielclancy",
@@ -53,7 +53,7 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T15:30:56.402503Z",
+      "last_evaluated_at": "2026-04-14T15:30:15.619826Z",
       "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
@@ -84,7 +84,7 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T15:31:17.630894Z",
+      "last_evaluated_at": "2026-04-14T15:30:15.619826Z",
       "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
@@ -115,7 +115,7 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T15:31:17.630894Z",
+      "last_evaluated_at": "2026-04-14T15:30:15.619826Z",
       "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
@@ -146,7 +146,7 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T15:31:17.630894Z",
+      "last_evaluated_at": "2026-04-14T15:30:15.619826Z",
       "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
@@ -177,7 +177,7 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T15:31:17.630894Z",
+      "last_evaluated_at": "2026-04-14T15:30:34.951093Z",
       "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
@@ -208,7 +208,7 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T15:31:17.630894Z",
+      "last_evaluated_at": "2026-04-14T15:30:15.619826Z",
       "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
@@ -239,7 +239,7 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T15:31:17.630894Z",
+      "last_evaluated_at": "2026-04-14T15:30:34.951093Z",
       "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
@@ -270,7 +270,7 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T15:31:17.630894Z",
+      "last_evaluated_at": "2026-04-14T15:30:15.619826Z",
       "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
@@ -301,7 +301,7 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T15:30:56.402503Z",
+      "last_evaluated_at": "2026-04-14T15:30:15.619826Z",
       "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
@@ -332,7 +332,7 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T15:31:17.630894Z",
+      "last_evaluated_at": "2026-04-14T15:30:34.951093Z",
       "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
@@ -363,7 +363,7 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T15:31:17.630894Z",
+      "last_evaluated_at": "2026-04-14T15:30:15.619826Z",
       "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
@@ -394,7 +394,7 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T15:31:17.630894Z",
+      "last_evaluated_at": "2026-04-14T15:30:15.619826Z",
       "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
@@ -425,7 +425,7 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T15:31:17.630894Z",
+      "last_evaluated_at": "2026-04-14T15:30:15.619826Z",
       "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
@@ -456,7 +456,7 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T15:31:17.630894Z",
+      "last_evaluated_at": "2026-04-14T15:30:15.619826Z",
       "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
@@ -657,7 +657,7 @@
       "last_log": {
         "timestamp": "2026-04-14T15:17:41.311664Z",
         "severity": "warning",
-        "message": "[fowTR0T] Managed session state updated to disabled."
+        "message": "[Y55GHS6] Managed session state updated to disabled."
       }
     },
     {

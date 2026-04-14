@@ -1,29 +1,29 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-04-14T14:59:51.126827Z",
-  "server_generated_at": "2026-04-14T14:59:51.126827Z",
+  "generated_at": "2026-04-14T15:31:46.602094Z",
+  "server_generated_at": "2026-04-14T15:31:46.602094Z",
   "count": 15,
   "bots": [
     {
       "creator_id": "4TiOlvS",
       "platform": "rumble",
-      "status": "disabled",
+      "status": "blocked",
       "connected_at": null,
       "last_message_at": null,
       "manual_override": false,
       "active_target": "https://rumble.com/user/danielclancy",
       "last_error": null,
-      "pause_reason": "creator_disabled",
+      "pause_reason": "live_status_unavailable",
       "session_id": "rumble-auto-9f87f67bad0b8abd",
       "session_type": "auto",
-      "lifecycle_state": "disabled",
+      "lifecycle_state": "blocked",
       "desired": false,
-      "status_reason": "Creator disabled Rumble bot auto-deploy.",
+      "status_reason": "Auto-deploy blocked: live_status_unavailable.",
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T11:15:28.440064Z",
-      "last_transition_at": "2026-04-14T11:09:18.600584Z",
+      "last_evaluated_at": "2026-04-14T15:31:39.330798Z",
+      "last_transition_at": "2026-04-14T15:26:33.680475Z",
       "resolved_target": {
         "watch_url": "https://rumble.com/user/danielclancy",
         "stream_identity": null,
@@ -53,8 +53,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T11:15:28.440064Z",
-      "last_transition_at": "2026-04-14T11:09:18.600584Z",
+      "last_evaluated_at": "2026-04-14T15:31:39.330798Z",
+      "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -84,8 +84,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T11:15:28.440064Z",
-      "last_transition_at": "2026-04-14T11:09:18.600584Z",
+      "last_evaluated_at": "2026-04-14T15:31:39.330798Z",
+      "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -115,8 +115,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T11:15:28.440064Z",
-      "last_transition_at": "2026-04-14T11:09:18.600584Z",
+      "last_evaluated_at": "2026-04-14T15:31:39.330798Z",
+      "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -146,8 +146,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T11:15:28.440064Z",
-      "last_transition_at": "2026-04-14T11:09:18.600584Z",
+      "last_evaluated_at": "2026-04-14T15:31:39.330798Z",
+      "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -177,8 +177,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T11:15:28.440064Z",
-      "last_transition_at": "2026-04-14T11:09:18.600584Z",
+      "last_evaluated_at": "2026-04-14T15:31:39.330798Z",
+      "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -208,8 +208,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T11:15:28.440064Z",
-      "last_transition_at": "2026-04-14T11:09:18.600584Z",
+      "last_evaluated_at": "2026-04-14T15:31:39.330798Z",
+      "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -239,8 +239,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T11:15:28.440064Z",
-      "last_transition_at": "2026-04-14T11:09:18.600584Z",
+      "last_evaluated_at": "2026-04-14T15:31:39.330798Z",
+      "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -270,8 +270,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T11:15:28.440064Z",
-      "last_transition_at": "2026-04-14T11:09:18.600584Z",
+      "last_evaluated_at": "2026-04-14T15:31:39.330798Z",
+      "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -301,8 +301,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T11:15:28.440064Z",
-      "last_transition_at": "2026-04-14T11:09:18.600584Z",
+      "last_evaluated_at": "2026-04-14T15:31:39.330798Z",
+      "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -332,8 +332,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T11:15:28.440064Z",
-      "last_transition_at": "2026-04-14T11:09:18.600584Z",
+      "last_evaluated_at": "2026-04-14T15:31:39.330798Z",
+      "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -363,8 +363,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T11:15:28.440064Z",
-      "last_transition_at": "2026-04-14T11:09:18.600584Z",
+      "last_evaluated_at": "2026-04-14T15:31:39.330798Z",
+      "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -394,8 +394,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T11:15:28.440064Z",
-      "last_transition_at": "2026-04-14T11:09:18.600584Z",
+      "last_evaluated_at": "2026-04-14T15:31:39.330798Z",
+      "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -425,8 +425,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T11:15:28.440064Z",
-      "last_transition_at": "2026-04-14T11:09:18.600584Z",
+      "last_evaluated_at": "2026-04-14T15:31:39.330798Z",
+      "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -456,8 +456,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-14T11:15:28.440064Z",
-      "last_transition_at": "2026-04-14T11:09:18.600584Z",
+      "last_evaluated_at": "2026-04-14T15:31:39.330798Z",
+      "last_transition_at": "2026-04-14T15:17:41.311664Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -631,7 +631,7 @@
       "session_status": "blocked",
       "paused": false,
       "paused_reason": null,
-      "error": "Creator disabled Rumble bot auto-deploy.",
+      "error": "Auto-deploy blocked: live_status_unavailable.",
       "staged": false,
       "disabled_reason": "",
       "required_env_keys": [],
@@ -649,33 +649,35 @@
         "global_state": "active",
         "global_enabled": true,
         "session_status": "blocked",
-        "session_status_reason": "Creator disabled Rumble bot auto-deploy.",
+        "session_status_reason": "Auto-deploy blocked: live_status_unavailable.",
         "session_paused_reason": null,
         "required_env_keys": [],
         "missing_env_keys": []
       },
-      "last_log": null
+      "last_log": {
+        "timestamp": "2026-04-14T15:17:41.311664Z",
+        "severity": "warning",
+        "message": "[VIvXsPS] Managed session state updated to disabled."
+      }
     },
     {
       "platform": "twitch",
       "label": "Twitch",
-      "available": false,
+      "available": true,
       "implemented": true,
-      "runtime_ready": false,
-      "status": "not_configured",
-      "global_status": "not_configured",
+      "runtime_ready": true,
+      "status": "ready",
+      "global_status": "ready",
       "session_status": "inactive",
       "paused": false,
       "paused_reason": null,
-      "error": "Missing runtime prerequisites: TWITCH_OAUTH_TOKEN_DANIEL.",
+      "error": null,
       "staged": false,
       "disabled_reason": "",
       "required_env_keys": [
         "TWITCH_OAUTH_TOKEN_DANIEL"
       ],
-      "missing_env_keys": [
-        "TWITCH_OAUTH_TOKEN_DANIEL"
-      ],
+      "missing_env_keys": [],
       "details": {
         "bot_count": 0,
         "bot_online_count": 0,
@@ -685,7 +687,7 @@
         "bot_blocked_count": 0,
         "manual_override_count": 0,
         "implemented": true,
-        "runtime_ready": false,
+        "runtime_ready": true,
         "global_state": "active",
         "global_enabled": true,
         "session_status": "inactive",
@@ -694,32 +696,28 @@
         "required_env_keys": [
           "TWITCH_OAUTH_TOKEN_DANIEL"
         ],
-        "missing_env_keys": [
-          "TWITCH_OAUTH_TOKEN_DANIEL"
-        ]
+        "missing_env_keys": []
       },
       "last_log": null
     },
     {
       "platform": "youtube",
       "label": "YouTube",
-      "available": false,
+      "available": true,
       "implemented": true,
-      "runtime_ready": false,
-      "status": "not_configured",
-      "global_status": "not_configured",
+      "runtime_ready": true,
+      "status": "ready",
+      "global_status": "ready",
       "session_status": "inactive",
       "paused": false,
       "paused_reason": null,
-      "error": "Missing runtime prerequisites: YOUTUBE_API_KEY_DANIEL.",
+      "error": null,
       "staged": false,
       "disabled_reason": "",
       "required_env_keys": [
         "YOUTUBE_API_KEY_DANIEL"
       ],
-      "missing_env_keys": [
-        "YOUTUBE_API_KEY_DANIEL"
-      ],
+      "missing_env_keys": [],
       "details": {
         "bot_count": 0,
         "bot_online_count": 0,
@@ -729,7 +727,7 @@
         "bot_blocked_count": 0,
         "manual_override_count": 0,
         "implemented": true,
-        "runtime_ready": false,
+        "runtime_ready": true,
         "global_state": "active",
         "global_enabled": true,
         "session_status": "inactive",
@@ -738,9 +736,7 @@
         "required_env_keys": [
           "YOUTUBE_API_KEY_DANIEL"
         ],
-        "missing_env_keys": [
-          "YOUTUBE_API_KEY_DANIEL"
-        ]
+        "missing_env_keys": []
       },
       "last_log": null
     }

@@ -1,10 +1,10 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-04-14T11:15:38.331541Z",
+  "exported_at": "2026-04-14T15:31:38.541050Z",
   "runtime": {
     "project": "StreamSuites™ Runtime",
     "version": "0.4.2-alpha",
-    "build": "2026.04.14+003"
+    "build": "2026.04.14+005"
   },
   "users": [
     {
@@ -181,8 +181,8 @@
         }
       ],
       "created_at": "2026-03-28T18:35:44Z",
-      "last_login_at": "2026-04-14T11:08:58Z",
-      "updated_at": "2026-04-14T11:08:58Z"
+      "last_login_at": "2026-04-14T15:17:22Z",
+      "updated_at": "2026-04-14T15:17:23Z"
     },
     {
       "id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
@@ -271,8 +271,8 @@
         }
       ],
       "created_at": "2026-03-28T18:35:43Z",
-      "last_login_at": "2026-04-14T11:09:38Z",
-      "updated_at": "2026-04-14T11:09:38Z"
+      "last_login_at": "2026-04-14T15:17:59Z",
+      "updated_at": "2026-04-14T15:17:59Z"
     },
     {
       "id": "d61f5f01-a8e2-4f8c-8a7d-d6023652ae49",
@@ -351,7 +351,7 @@
       "providers": [],
       "created_at": "2026-03-27T14:51:44Z",
       "last_login_at": null,
-      "updated_at": "2026-04-14T11:08:58Z"
+      "updated_at": "2026-04-14T15:17:23Z"
     },
     {
       "id": "494098e5-1409-40ea-99a5-ec4a1b797da4",
@@ -525,8 +525,8 @@
         }
       ],
       "created_at": "2026-02-21T20:51:09Z",
-      "last_login_at": "2026-04-14T11:08:57Z",
-      "updated_at": "2026-04-14T11:08:58Z"
+      "last_login_at": "2026-04-14T15:17:22Z",
+      "updated_at": "2026-04-14T15:17:22Z"
     },
     {
       "id": "338edf81-9e24-4730-977a-c9972aecba4d",
@@ -1211,11 +1211,18 @@
         "findmehere_status_reason": "visible",
         "findmehere_profile_url": "https://findmehere.live/danielclancy",
         "findmehere_share_url": "https://findmehere.live/danielclancy",
-        "cover_image_url": "",
-        "banner_image_url": "",
+        "cover_image_url": "https://cdn.streamsuites.app/u/4TiOlvS/cover/v1.webp",
+        "banner_image_url": "https://cdn.streamsuites.app/u/4TiOlvS/cover/v1.webp",
         "background_image_url": "",
-        "bio": "",
-        "social_links": {},
+        "bio": "Designer, Developer & Content Creator. Owner and Developer for StreamSuites™ and related surfaces.",
+        "social_links": {
+          "discord": "https://discord.gg/5dFwMDKHz7",
+          "tiktok": "https://tiktok.com/@notdanielclancy",
+          "twitch": "https://twitch.tv/streamsuites",
+          "website": "https://brainstream.media/",
+          "x": "https://x.com/danielclancy",
+          "youtube": "https://youtube.com/@danielclancy"
+        },
         "custom_links": [],
         "is_anonymous": false,
         "is_listed": true
@@ -1235,14 +1242,14 @@
       "public_surface_account_type": "creator_capable",
       "creator_capable": true,
       "viewer_only": false,
-      "cover_image_url": "",
-      "banner_image_url": "",
+      "cover_image_url": "https://cdn.streamsuites.app/u/4TiOlvS/cover/v1.webp",
+      "banner_image_url": "https://cdn.streamsuites.app/u/4TiOlvS/cover/v1.webp",
       "background_image_url": "",
       "user_code": "4TiOlvS",
       "email": "daniel@brainstream.media",
       "email_verified": true,
       "display_name": "Daniel Clancy",
-      "avatar_url": "https://avatars.githubusercontent.com/u/144799251?v=4",
+      "avatar_url": "https://cdn.streamsuites.app/u/4TiOlvS/avatar/v1.webp",
       "role": "admin",
       "account_type": "ADMIN",
       "tier": "pro",
@@ -1275,8 +1282,8 @@
         }
       ],
       "created_at": "2026-01-17T17:32:32Z",
-      "last_login_at": "2026-04-06T16:27:03Z",
-      "updated_at": "2026-04-06T16:27:03Z"
+      "last_login_at": "2026-04-14T15:22:24Z",
+      "updated_at": "2026-04-14T15:25:27Z"
     },
     {
       "id": "064370cb-161a-438d-b657-d57a54aa1712",
