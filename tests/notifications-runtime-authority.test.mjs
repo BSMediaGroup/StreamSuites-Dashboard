@@ -51,4 +51,18 @@ test("admin bots surface distinguishes managed sessions and transport posture", 
   assert.match(botsJs, /renderTargetCell/);
   assert.match(botsJs, /renderBlockingCell/);
   assert.match(botsJs, /Open watch target/);
+  assert.match(botsJs, /runtime\?\.status === "blocked"/);
+  assert.match(botsJs, /availability = "pending"/);
+});
+
+test("admin rumble platform view reads live runtime posture instead of a hardcoded paused scaffold", () => {
+  const rumbleHtml = read("docs/views/platforms/rumble.html");
+  const rumbleJs = read("docs/js/platforms/rumble.js");
+
+  assert.match(rumbleHtml, /Runtime Posture/);
+  assert.match(rumbleHtml, /\/api\/admin\/bots\/status/);
+  assert.match(rumbleHtml, /This surface mirrors runtime-owned Rumble bot availability/);
+  assert.match(rumbleJs, /const BOTS_STATUS_ENDPOINT = "\/api\/admin\/bots\/status";/);
+  assert.match(rumbleJs, /Enabled \/ blocked/);
+  assert.doesNotMatch(rumbleJs, /Rumble ingest is paused by the runtime/);
 });

@@ -17,6 +17,7 @@ test("admin triggers route is runtime/Auth-backed and unload-safe", () => {
   assert.match(appJs, /registerView\("triggers"/);
   assert.match(appJs, /onUnload:\s*\(\)\s*=>\s*window\.TriggersView\?\.destroy\?\.\(\)/);
   assert.match(triggersJs, /requestJson\("\/api\/admin\/creator-integrations"\)/);
+  assert.match(triggersJs, /requestJson\("\/api\/admin\/creators"\)/);
   assert.match(triggersJs, /requestJson\(`\/api\/admin\/users\/\$\{encodeURIComponent\(state\.selectedUserCode\)\}`\)/);
   assert.match(triggersJs, /state\.abortController = new AbortController\(\)/);
   assert.match(triggersJs, /destroy\(\) \{/);

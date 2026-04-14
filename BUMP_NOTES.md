@@ -1,5 +1,13 @@
 # Bump Notes
 
+## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
+
+- Replaced the old paused/read-only scaffold on `docs/views/platforms/rumble.html` and `docs/js/platforms/rumble.js` with a live admin runtime posture panel backed by `GET /api/admin/bots/status`. The page now reflects whether Rumble is ready, pending, blocked, manually paused, or in error based on the runtime-owned bot-status contract instead of a hardcoded paused message.
+- Reworked the Rumble platform-card and telemetry posture logic in `docs/js/bots.js` so enabled-but-blocked and managed-pending runtime states are shown truthfully on `/telemetry` instead of being flattened into a generic paused or ready posture. No workflow redesign was done; this is a narrow runtime-truth and polish pass on the existing cards.
+- Polished the `/telemetry` platform cards in `docs/css/components.css` with larger platform logos, stronger card contrast, roomier spacing, and dedicated blocked/pending states while preserving the same page layout and controls.
+- Hardened the admin trigger creator selector in `docs/js/triggers.js` so it falls back to the authoritative `/api/admin/creators` contract when the creator-integrations summary route does not return selector rows. Nothing was removed; the selector now has a second runtime/Auth-backed hydration path instead of failing empty.
+- Added focused regression checks in `tests/notifications-runtime-authority.test.mjs` and `tests/triggers-runtime-authority.test.mjs` for the runtime-backed Rumble page, the blocked/pending bots posture handling, and the trigger selector fallback.
+
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.8-alpha
 
 ## 2026-04-14 - Admin Trigger Oversight Repair Completion

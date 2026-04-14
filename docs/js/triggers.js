@@ -239,8 +239,22 @@
   }
 
   async function loadCreators() {
-    const payload = await requestJson("/api/admin/creator-integrations");
-    state.creators = Array.isArray(payload?.items) ? payload.items : [];
+    let creators = [];
+    try {
+      const payload = await requestJson("/api/admin/creator-integrations");
+      creators = Array.isArray(payload?.items) ? payload.items : [];
+    } catch (_err) {
+      creators = [];
+    }
+    if (!creators.length) {
+      const fallbackPayload = await requestJson("/api/admin/creators");
+      creators = Array.isArray(fallbackPayload?.items)
+        ? fallbackPayload.items
+        : Array.isArray(fallbackPayload?.creators)
+          ? fallbackPayload.creators
+          : [];
+    }
+    state.creators = creators;
     if (!state.selectedUserCode && state.creators[0]?.user_code) {
       state.selectedUserCode = state.creators[0].user_code;
     }

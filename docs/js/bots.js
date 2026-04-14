@@ -338,8 +338,9 @@
           paused: entry?.paused === true || status === "paused",
           pausedReason: String(entry?.paused_reason || entry?.pausedReason || "").trim(),
           error: String(entry?.error || "").trim(),
-          staged: entry?.staged === true || status === "staged",
           disabledReason: String(entry?.disabled_reason || entry?.disabledReason || "").trim(),
+          details: entry?.details && typeof entry.details === "object" ? { ...entry.details } : {},
+          staged: entry?.staged === true || status === "staged",
           lastLog: logMessage
             ? {
               timestamp: entry?.last_log?.timestamp || entry?.lastLog?.timestamp || null,
@@ -783,18 +784,31 @@
       } else if (fallbackMode) {
         availability = "unavailable";
         reason = fallbackReason;
+      } else if (runtime?.status === "blocked") {
+        availability = "blocked";
+        reason =
+          runtime?.error ||
+          runtime?.details?.status_reason ||
+          "Runtime reports enabled Rumble sessions, but attachment is blocked by prerequisites.";
+      } else if (runtime?.status === "managed_pending") {
+        availability = "pending";
+        reason = "Runtime reports enabled Rumble sessions that are still attaching.";
       } else if (runtime?.paused) {
         availability = "paused";
         reason = runtime.pausedReason || "Paused by runtime control.";
       } else if (
-        runtime?.available === true ||
         runtime?.status === "connected" ||
         runtime?.status === "online" ||
         runtime?.status === "active" ||
-        runtime?.status === "running"
+        runtime?.status === "running" ||
+        runtime?.status === "ready" ||
+        (runtime?.available === true && runtime?.status !== "not_configured")
       ) {
         availability = "active";
-        reason = "Runtime available.";
+        reason =
+          runtime?.status === "ready"
+            ? "Runtime is enabled and ready for deployment."
+            : "Runtime available.";
       } else if (runtime?.status === "error" || runtime?.error) {
         availability = "unavailable";
         reason = runtime?.error || "Runtime reported an error.";
@@ -810,6 +824,7 @@
         staged: schema?.staged === true || !deployEnabled,
         availability,
         status: !deployEnabled ? "staged" : runtime?.status || (fallbackMode ? "fallback" : "unknown"),
+        details: runtime?.details || {},
         paused: runtime?.paused === true,
         pausedReason: runtime?.pausedReason || "",
         reason,
@@ -869,6 +884,10 @@
         const stateClass =
           availability === "paused"
             ? "is-paused"
+            : availability === "blocked"
+              ? "is-blocked"
+              : availability === "pending"
+                ? "is-pending"
             : availability === "active"
               ? "is-active"
               : availability === "staged"
@@ -877,6 +896,10 @@
         const badgeLabel =
           availability === "paused"
             ? "Paused"
+            : availability === "blocked"
+              ? "Blocked"
+              : availability === "pending"
+                ? "Pending"
             : availability === "active"
               ? "Ready"
               : availability === "staged"
@@ -932,14 +955,16 @@
       const modeLabel = options?.live === true ? "Live" : "STALE / FALLBACK";
       const updatedLabel = formatTimestamp(options?.updatedAt || null);
       const pausedCount = entries.filter((entry) => entry.availability === "paused").length;
+      const blockedCount = entries.filter((entry) => entry.availability === "blocked").length;
+      const pendingCount = entries.filter((entry) => entry.availability === "pending").length;
       const activeCount = entries.filter((entry) => entry.availability === "active").length;
       const stagedCount = entries.filter((entry) => entry.availability === "staged").length;
       const unavailableCount = entries.filter(
         (entry) => entry.availability === "unavailable"
       ).length;
       el.platformsStatus.textContent =
-        `${modeLabel} | Last updated ${updatedLabel} | Ready ${activeCount} | Paused ${pausedCount} | ` +
-        `Unavailable ${unavailableCount} | Staged ${stagedCount}`;
+        `${modeLabel} | Last updated ${updatedLabel} | Ready ${activeCount} | Pending ${pendingCount} | ` +
+        `Blocked ${blockedCount} | Paused ${pausedCount} | Unavailable ${unavailableCount} | Staged ${stagedCount}`;
     }
     if (el.liveTotal) {
       const totalLive = Number.isFinite(liveCounts.total) ? liveCounts.total : 0;
