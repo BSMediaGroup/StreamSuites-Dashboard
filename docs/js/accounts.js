@@ -193,6 +193,37 @@
     }
   }
 
+  function getSocialPlatformApi() {
+    return window.StreamSuitesSocialPlatforms || null;
+  }
+
+  function collectCompactSocialEntries(value) {
+    const api = getSocialPlatformApi();
+    if (typeof api?.collectOrderedSocialEntries === "function") {
+      return api.collectOrderedSocialEntries(value);
+    }
+    return [];
+  }
+
+  function buildCompactSocialMarkup(value, emptyLabel = "No public social links saved.") {
+    const entries = collectCompactSocialEntries(value);
+    if (!entries.length) return `<span class="muted">${escapeHtml(emptyLabel)}</span>`;
+    const visible = entries.slice(0, 8);
+    const parts = visible.map(
+      ({ url, label, iconPath }) => `
+        <a class="ss-profile-hovercard-social" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(label)}">
+          <img src="${escapeHtml(iconPath)}" alt="" loading="lazy" decoding="async" />
+        </a>
+      `
+    );
+    if (entries.length > 8) {
+      parts.push(
+        `<span class="social-overflow-indicator" aria-label="${escapeHtml(`${entries.length - 8} more social links on the full profile`)}">+${entries.length - 8}</span>`
+      );
+    }
+    return `<span class="accounts-details-social-strip">${parts.join("")}</span>`;
+  }
+
   function escapeSelectorValue(value) {
     if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
       return CSS.escape(String(value || ""));
@@ -2158,16 +2189,7 @@ function normalizeUser(raw = {}) {
     const adminGrantDurationLabel = describeGrantDuration(paymentSummary);
     const badgeIcons = renderBadgeIconStrip(user.badges);
     const socialLinks = user.socialLinks && typeof user.socialLinks === "object" ? user.socialLinks : {};
-    const socialMarkup = Object.entries(socialLinks)
-      .filter(([, url]) => coerceText(url))
-      .slice(0, 6)
-      .map(
-        ([label, url]) =>
-          `<a class="ss-link" href="${escapeHtml(coerceText(url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(
-            formatBadgeLabel(label)
-          )}</a>`
-      )
-      .join(" · ");
+    const socialMarkup = buildCompactSocialMarkup(socialLinks);
     const avatarMarkup = user.avatarUrl
       ? `<img src="${escapeHtml(user.avatarUrl)}" alt="${escapeHtml(title)} avatar" loading="lazy" decoding="async" />`
       : `<span>${escapeHtml(resolveAvatarInitials(user))}</span>`;
@@ -2232,7 +2254,7 @@ function normalizeUser(raw = {}) {
             </div>
             <div class="accounts-details-preview-badges">${badgeIcons || '<span class="muted">No enabled badges</span>'}</div>
             <p class="accounts-details-preview-bio">${escapeHtml(user.bio || "No public bio saved.")}</p>
-            <div class="accounts-details-preview-links">${socialMarkup || '<span class="muted">No public social links saved.</span>'}</div>
+            <div class="accounts-details-preview-links">${socialMarkup}</div>
           </div>
         </div>
       </section>

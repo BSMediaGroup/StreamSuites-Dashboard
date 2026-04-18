@@ -80,3 +80,28 @@ test("admin overview platform cards prefer global runtime posture over creator-s
   assert.match(overviewJs, /platform\.session_status_reason/);
   assert.match(overviewJs, /if \(status === "ready" \|\| status === "connected"\) return "success";/);
 });
+
+test("admin compact profile surfaces use the canonical social registry and restrained overflow handling", () => {
+  const helperJs = read("docs/assets/js/ss-social-platforms.js");
+  const hovercardJs = read("docs/assets/js/ss-profile-hovercard.js");
+  const hovercardCss = read("docs/assets/css/ss-profile-hovercard.css");
+  const accountsJs = read("docs/js/accounts.js");
+  const userDetailJs = read("docs/js/user-detail.js");
+  const shellHtml = read("docs/index.html");
+
+  assert.match(shellHtml, /assets\/js\/ss-social-platforms\.js/);
+  assert.match(helperJs, /whatsappchannels/);
+  assert.match(helperJs, /icon: "\/assets\/icons\/whatsapp\.svg"/);
+  assert.match(helperJs, /applepodcasts/);
+  assert.match(helperJs, /aliases: \["x", "twitter"\]/);
+  assert.match(helperJs, /aliases: \["website", "site", "web", "url", "homepage"\]/);
+  assert.doesNotMatch(helperJs, /dlive/i);
+  assert.match(hovercardJs, /getSocialPlatformApi/);
+  assert.match(hovercardJs, /collectOrderedSocialEntries/);
+  assert.match(hovercardJs, /links\.slice\(0, 8\)/);
+  assert.match(hovercardJs, /social-overflow-indicator/);
+  assert.match(accountsJs, /buildCompactSocialMarkup/);
+  assert.match(accountsJs, /entries\.slice\(0, 8\)/);
+  assert.match(userDetailJs, /buildCompactSocialMarkup/);
+  assert.match(hovercardCss, /\.social-overflow-indicator/);
+});

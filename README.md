@@ -116,6 +116,8 @@ StreamSuites-Dashboard/
 │   │   ├── theme-dark.css
 │   │   └── updates.css
 │   ├── assets/
+│   │   ├── js/
+│   │   │   └── ss-social-platforms.js
 │   │   └── icons/
 │   │       └── ui/
 │   │           ├── ss-admin.svg

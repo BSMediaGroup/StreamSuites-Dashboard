@@ -4940,9 +4940,20 @@ body.ss-col-resizing-active {
 }
 
 .accounts-details-preview-links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
   font-size: 12px;
   line-height: 1.6;
   color: var(--text-secondary);
+}
+
+.accounts-details-social-strip {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .accounts-row-actions-grid {

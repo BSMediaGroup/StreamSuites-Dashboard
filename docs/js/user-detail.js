@@ -64,6 +64,30 @@
     return normalized || fallback;
   }
 
+  function getSocialPlatformApi() {
+    return window.StreamSuitesSocialPlatforms || null;
+  }
+
+  function buildCompactSocialMarkup(value, emptyLabel = "No social links saved.") {
+    const api = getSocialPlatformApi();
+    const entries = typeof api?.collectOrderedSocialEntries === "function" ? api.collectOrderedSocialEntries(value) : [];
+    if (!entries.length) return `<span class="muted">${escapeHtml(emptyLabel)}</span>`;
+    const visible = entries.slice(0, 8);
+    const parts = visible.map(
+      ({ url, label, iconPath }) => `
+        <a class="ss-profile-hovercard-social" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(label)}">
+          <img src="${escapeHtml(iconPath)}" alt="" loading="lazy" decoding="async" />
+        </a>
+      `
+    );
+    if (entries.length > 8) {
+      parts.push(
+        `<span class="social-overflow-indicator" aria-label="${escapeHtml(`${entries.length - 8} more social links on the full profile`)}">+${entries.length - 8}</span>`
+      );
+    }
+    return `<span class="accounts-details-social-strip">${parts.join("")}</span>`;
+  }
+
   function coerceInteger(value) {
     const parsed = Number(value);
     if (!Number.isFinite(parsed)) return null;
@@ -579,10 +603,7 @@
     const previewHref = buildPublicProfileHref(account);
     const socialLinks = publicProfile?.social_links && typeof publicProfile.social_links === "object" ? publicProfile.social_links : {};
     const customLinks = Array.isArray(publicProfile?.custom_links) ? publicProfile.custom_links : [];
-    const socialMarkup = Object.entries(socialLinks)
-      .filter(([, url]) => coerceText(url))
-      .map(([label, url]) => `<a class="ss-link" href="${escapeHtml(coerceText(url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(formatBadgeLabel(label))}</a>`)
-      .join(" · ");
+    const socialMarkup = buildCompactSocialMarkup(socialLinks);
     const customMarkup = customLinks.length
       ? customLinks.map((item) => `<span>${escapeHtml(item?.label || item?.url || "Link")}</span>`).join(" · ")
       : '<span class="muted">No custom links saved.</span>';

@@ -2,6 +2,12 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Added `docs/assets/js/ss-social-platforms.js` as the shared admin-side canonical social registry for compact identity surfaces. It mirrors the Public/Members first-class-first ordering, alias normalization, extended-platform coverage, full-color SVG preference, the `whatsappchannels` -> existing `whatsapp.svg` correction, and it deliberately omits any `dlive` entry.
+- Replaced the old partial hardcoded social icon/order logic in `docs/assets/js/ss-profile-hovercard.js` with the shared canonical helper because the previous local map only covered a small subset of platforms and could not keep compact hovercards aligned with Public/Members parity. That hovercard file is expected to be shorter in the mapping section because the duplicated inline registry was removed and replaced by the shared helper.
+- Replaced the old raw text-link social preview path in `docs/js/accounts.js` and `docs/js/user-detail.js` with the same compact canonical icon strip used by the hovercard. Compact preview cards now cap visible socials at eight icons and append a restrained `+N` overflow indicator instead of expanding into bulky link text.
+- Updated `docs/assets/css/ss-profile-hovercard.css` and `docs/css/components.css` additively so the new compact social strips keep the existing card language while supporting the slim overflow pill and shared icon spacing.
+- Expanded `tests/notifications-runtime-authority.test.mjs` additively and updated `README.md` so the admin repo now pins the shared helper load order, the WhatsApp Channels correction, the max-8 compact behavior, and the explicit absence of any `dlive` mapping.
+
 - Refined the admin-side Rumble posture wording in `docs/js/bots.js`, `docs/js/creator-integrations.js`, and `docs/js/user-detail.js` so matched-but-offline creators now show an awaiting-live posture, live-target unresolved creators stay distinct from attach-identity blockers, and real auth/transport failures remain the only hard blocked/error class. The existing pages and layouts were preserved; this is a narrow semantic pass on the runtime-backed labels and notes.
 - Updated `tests/notifications-runtime-authority.test.mjs` additively so the dashboard source tests now pin the new `awaiting_live` / `live_target_unresolved` posture handling and the calmer creator-card vocabulary. No files were removed or replaced in this pass.
 
