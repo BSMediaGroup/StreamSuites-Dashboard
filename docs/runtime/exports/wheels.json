@@ -1,0 +1,15 @@
+{
+  "schema_version": "streamsuites.public-wheels.v1",
+  "generated_at": "2026-04-19T15:31:08Z",
+  "meta": {
+    "source": "StreamSuites runtime",
+    "visibility": "public",
+    "scope": "wheels"
+  },
+  "counts": {
+    "total": 0,
+    "wheel_default": 0,
+    "scoreboard_default": 0
+  },
+  "wheels": []
+}
