@@ -2,6 +2,10 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Extended the existing `/approvals` route in `docs/views/approvals.html`, `docs/js/approvals.js`, and `docs/css/components.css` so it now includes a runtime-backed public-authority review lane fed by `GET /api/admin/public/authority/requests?status=all`, with pending-first ordering, local status/type filters, a selected-request detail pane, and operator wording that stays explicit about review-state changes versus automatic transfer or destructive deletion.
+- Added real admin mutation controls on that same approvals surface via `PATCH /api/admin/public/authority/requests/{request_id}` for the actual backend terminal states `approved`, `rejected`, and `cancelled`, including resolution-note wiring and dashboard-sourced `resolution_metadata`.
+- Added `tests/public-authority-approvals.test.mjs` and updated `README.md` so the repo tree and source coverage now pin the public-authority approvals surface alongside the existing intake queues.
+
 - Added `docs/assets/js/ss-social-platforms.js` as the shared admin-side canonical social registry for compact identity surfaces. It mirrors the Public/Members first-class-first ordering, alias normalization, extended-platform coverage, full-color SVG preference, the `whatsappchannels` -> existing `whatsapp.svg` correction, and it deliberately omits any `dlive` entry.
 - Replaced the old partial hardcoded social icon/order logic in `docs/assets/js/ss-profile-hovercard.js` with the shared canonical helper because the previous local map only covered a small subset of platforms and could not keep compact hovercards aligned with Public/Members parity. That hovercard file is expected to be shorter in the mapping section because the duplicated inline registry was removed and replaced by the shared helper.
 - Replaced the old raw text-link social preview path in `docs/js/accounts.js` and `docs/js/user-detail.js` with the same compact canonical icon strip used by the hovercard. Compact preview cards now cap visible socials at eight icons and append a restrained `+N` overflow indicator instead of expanding into bulky link text.

@@ -33,6 +33,79 @@
   <section class="ss-panel">
     <header class="ss-panel-header">
       <div class="ss-panel-header-main">
+        <h2>Public Authority Review</h2>
+        <p class="muted" style="margin:6px 0 0;">
+          Review public claim, assignment, issue, and removal requests against the runtime-owned
+          authority contract. Approval changes request state and metadata first; it does not imply
+          automatic identity transfer, and removal approval suppresses public visibility rather than
+          deleting records.
+        </p>
+      </div>
+      <div class="ss-panel-header-actions">
+        <button id="approvals-refresh-authority" class="ss-btn ss-btn-secondary" type="button">
+          Refresh Authority
+        </button>
+      </div>
+    </header>
+
+    <div class="ss-panel-body">
+      <div class="ss-toolbar">
+        <div class="ss-toolbar-left">
+          <span id="approvals-authority-status" class="muted">Loading public authority requests...</span>
+        </div>
+        <div class="ss-toolbar-right">
+          <span class="muted">PATCH /api/admin/public/authority/requests/{request_id}</span>
+        </div>
+      </div>
+
+      <div class="ss-meta-row">
+        <div><strong>Total:</strong> <span id="approvals-authority-count">—</span></div>
+        <div><strong>Pending:</strong> <span id="approvals-authority-pending-count">—</span></div>
+        <div><strong>Approved:</strong> <span id="approvals-authority-approved-count">—</span></div>
+        <div><strong>Rejected:</strong> <span id="approvals-authority-rejected-count">—</span></div>
+        <div><strong>Cancelled:</strong> <span id="approvals-authority-cancelled-count">—</span></div>
+      </div>
+
+      <div class="ss-approvals-filter-row">
+        <div class="ss-form-row">
+          <label for="approvals-authority-status-filter">Status</label>
+          <select id="approvals-authority-status-filter">
+            <option value="all">All statuses</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="ss-form-row">
+          <label for="approvals-authority-type-filter">Request type</label>
+          <select id="approvals-authority-type-filter">
+            <option value="all">All request types</option>
+            <option value="claim_profile">Claim profile</option>
+            <option value="assign_to_profile">Assign to profile</option>
+            <option value="report_issue">Report issue</option>
+            <option value="request_removal">Request removal</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="ss-approvals-authority-layout">
+        <div>
+          <div id="approvals-authority-list" class="ss-approvals-list"></div>
+          <div id="approvals-authority-empty" class="ss-empty hidden">
+            No public authority requests match the current filters.
+          </div>
+        </div>
+        <div id="approvals-authority-detail" class="ss-empty">
+          Select a public authority request to inspect detail.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
         <h2>Pending Requests</h2>
         <p class="muted" style="margin:6px 0 0;">
           Review creator-submitted feature requests and approve or deny with optional moderation notes.

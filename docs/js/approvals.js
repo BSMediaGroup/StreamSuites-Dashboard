@@ -6,6 +6,8 @@
   const DENY = (id) => `/api/admin/approvals/requests/${encodeURIComponent(id)}/deny`;
   const APPROVED = "/api/public/requests";
   const IMPLEMENTED = (id) => `/api/admin/requests/${encodeURIComponent(id)}/implemented`;
+  const AUTHORITY_LIST = "/api/admin/public/authority/requests?status=all";
+  const AUTHORITY_UPDATE = (id) => `/api/admin/public/authority/requests/${encodeURIComponent(id)}`;
   const INTAKES = {
     feedback: { list: "/api/admin/intake/feedback", detail: "/api/admin/intake/feedback/" },
     beta: { list: "/api/admin/intake/beta", detail: "/api/admin/intake/beta/" },
@@ -14,6 +16,20 @@
 
   const PENDING_TERMINAL = new Set(["approved", "denied", "rejected", "implemented", "closed"]);
   const APPROVED_STATES = new Set(["approved", "implemented", "live"]);
+  const AUTHORITY_TERMINAL = new Set(["approved", "rejected", "cancelled"]);
+  const AUTHORITY_STATUS_ORDER = Object.freeze({ pending: 0, approved: 1, rejected: 2, cancelled: 3 });
+  const AUTHORITY_TYPE_LABELS = Object.freeze({
+    claim_profile: "Claim profile",
+    assign_to_profile: "Assign to profile",
+    report_issue: "Report issue",
+    request_removal: "Request removal"
+  });
+  const AUTHORITY_STATUS_LABELS = Object.freeze({
+    pending: "Pending review",
+    approved: "Approved",
+    rejected: "Rejected",
+    cancelled: "Cancelled"
+  });
 
   const state = {
     pending: [],
@@ -26,6 +42,13 @@
       beta: { items: [], detail: null },
       reports: { items: [], detail: null }
     },
+    authority: {
+      items: [],
+      selectedId: "",
+      filters: { status: "all", type: "all" }
+    },
+    authorityNotes: new Map(),
+    authorityUi: new Map(),
     listeners: [],
     token: 0,
     denied: false
@@ -43,6 +66,18 @@
     approvedEmpty: null,
     refreshPending: null,
     refreshApproved: null,
+    authorityStatus: null,
+    authorityCount: null,
+    authorityPendingCount: null,
+    authorityApprovedCount: null,
+    authorityRejectedCount: null,
+    authorityCancelledCount: null,
+    authorityList: null,
+    authorityEmpty: null,
+    authorityDetail: null,
+    authorityRefresh: null,
+    authorityStatusFilter: null,
+    authorityTypeFilter: null,
     overviewFeedbackCount: null,
     overviewBetaCount: null,
     overviewReportsCount: null,
@@ -169,6 +204,59 @@
     });
   }
 
+  function authorityTypeLabel(value) {
+    return AUTHORITY_TYPE_LABELS[lower(value)] || "Request";
+  }
+
+  function authorityStatusLabel(value) {
+    return AUTHORITY_STATUS_LABELS[lower(value)] || "Unknown";
+  }
+
+  function normalizeAuthorityRequest(raw = {}) {
+    const targetIdentity = raw.target_identity && typeof raw.target_identity === "object" ? raw.target_identity : {};
+    const targetArtifact = raw.target_artifact && typeof raw.target_artifact === "object" ? raw.target_artifact : {};
+    return {
+      id: text(raw.request_id || raw.id),
+      requestType: lower(raw.request_type),
+      status: lower(raw.status || "pending"),
+      createdAt: text(raw.created_at),
+      updatedAt: text(raw.updated_at),
+      resolvedAt: text(raw.resolved_at),
+      resolvedByAccountId: text(raw.resolved_by_account_id),
+      requesterAccountId: text(raw.requester_account_id),
+      requesterUserCode: text(raw.requester_user_code),
+      requesterDisplayName: text(raw.requester_display_name) || "Unknown requester",
+      requesterContact: text(raw.requester_contact),
+      requesterNote: text(raw.requester_note),
+      requestContext: raw.request_context && typeof raw.request_context === "object" ? raw.request_context : {},
+      resolutionNote: text(raw.resolution_note),
+      resolutionMetadata: raw.resolution_metadata && typeof raw.resolution_metadata === "object" ? raw.resolution_metadata : {},
+      targetIdentityCode: text(raw.target_identity_code || targetIdentity.identity_code),
+      targetArtifactCode: text(raw.target_artifact_code || targetArtifact.artifact_code),
+      targetIdentity,
+      targetArtifact
+    };
+  }
+
+  function sortAuthority(items) {
+    return items.sort((a, b) => {
+      const statusDiff = (AUTHORITY_STATUS_ORDER[a?.status] ?? 99) - (AUTHORITY_STATUS_ORDER[b?.status] ?? 99);
+      if (statusDiff !== 0) return statusDiff;
+      const left = Date.parse(String(a?.createdAt || ""));
+      const right = Date.parse(String(b?.createdAt || ""));
+      if (!Number.isNaN(left) && !Number.isNaN(right) && left !== right) return right - left;
+      return String(a?.id || "").localeCompare(String(b?.id || ""));
+    });
+  }
+
+  function filteredAuthorityItems() {
+    return state.authority.items.filter((item) => {
+      const statusMatch = state.authority.filters.status === "all" || item.status === state.authority.filters.status;
+      const typeMatch = state.authority.filters.type === "all" || item.requestType === state.authority.filters.type;
+      return statusMatch && typeMatch;
+    });
+  }
+
   function renderPending() {
     const items = state.pending.slice();
     if (el.pendingCount) el.pendingCount.textContent = String(items.length);
@@ -207,6 +295,116 @@
         `;
       })
       .join("");
+  }
+
+  function renderAuthority() {
+    const items = filteredAuthorityItems();
+    const selectedId = items.some((item) => item.id === state.authority.selectedId)
+      ? state.authority.selectedId
+      : (items[0]?.id || "");
+    state.authority.selectedId = selectedId;
+    const selected = items.find((item) => item.id === selectedId) || null;
+
+    if (el.authorityCount) el.authorityCount.textContent = String(state.authority.items.length);
+    if (el.authorityPendingCount) el.authorityPendingCount.textContent = String(state.authority.items.filter((item) => item.status === "pending").length);
+    if (el.authorityApprovedCount) el.authorityApprovedCount.textContent = String(state.authority.items.filter((item) => item.status === "approved").length);
+    if (el.authorityRejectedCount) el.authorityRejectedCount.textContent = String(state.authority.items.filter((item) => item.status === "rejected").length);
+    if (el.authorityCancelledCount) el.authorityCancelledCount.textContent = String(state.authority.items.filter((item) => item.status === "cancelled").length);
+
+    if (!items.length) {
+      if (el.authorityList) el.authorityList.innerHTML = "";
+      if (el.authorityEmpty) el.authorityEmpty.classList.remove("hidden");
+      if (el.authorityDetail) el.authorityDetail.innerHTML = "No public authority requests match the current filters.";
+      return;
+    }
+    if (el.authorityEmpty) el.authorityEmpty.classList.add("hidden");
+
+    el.authorityList.innerHTML = items
+      .map((item) => {
+        const active = item.id === selectedId;
+        const targetSummary = [
+          text(item.targetIdentity.display_name),
+          text(item.targetIdentityCode),
+          text(item.targetArtifact.display_label || item.targetArtifact.title),
+          text(item.targetArtifactCode)
+        ].filter(Boolean).join(" | ") || "Target metadata unavailable";
+        return `
+          <article class="ss-approvals-request ss-approvals-authority-item${active ? " is-selected" : ""}" tabindex="0" data-authority-id="${escapeHtml(item.id)}">
+            <div class="ss-approvals-request-head">
+              <h3>${escapeHtml(authorityTypeLabel(item.requestType))}</h3>
+              <div class="ss-approvals-meta">
+                <span><strong>Status:</strong> ${escapeHtml(authorityStatusLabel(item.status))}</span>
+                <span><strong>Submitted:</strong> ${escapeHtml(formatTime(item.createdAt))}</span>
+                <span><strong>Requester:</strong> ${escapeHtml(item.requesterDisplayName)}</span>
+              </div>
+            </div>
+            <div class="ss-approvals-body">${escapeHtml(targetSummary)}</div>
+          </article>
+        `;
+      })
+      .join("");
+
+    if (!selected || !el.authorityDetail) {
+      if (el.authorityDetail) el.authorityDetail.innerHTML = "Select a public authority request to inspect detail.";
+      return;
+    }
+
+    const ui = state.authorityUi.get(selected.id) || {};
+    const note = state.authorityNotes.get(selected.id) ?? selected.resolutionNote ?? "";
+    const warning =
+      selected.requestType === "request_removal"
+        ? "Removal approval suppresses or unlists the public target. It does not physically delete the underlying record."
+        : selected.requestType === "claim_profile" || selected.requestType === "assign_to_profile"
+          ? "Approval records the review outcome only. Identity transfer is not implied to auto-execute from this action alone."
+          : "This action updates request state and operator metadata only.";
+    const detailMeta = [
+      metaLine("Request ID", selected.id),
+      metaLine("Type", authorityTypeLabel(selected.requestType)),
+      metaLine("Status", authorityStatusLabel(selected.status)),
+      metaLine("Submitted", formatTime(selected.createdAt)),
+      metaLine("Updated", formatTime(selected.updatedAt)),
+      metaLine("Resolved", formatTime(selected.resolvedAt)),
+      metaLine("Requester", selected.requesterDisplayName),
+      metaLine("Requester user code", selected.requesterUserCode),
+      metaLine("Requester contact", selected.requesterContact),
+      metaLine("Target identity", selected.targetIdentityCode || text(selected.targetIdentity.display_name)),
+      metaLine("Target artifact", selected.targetArtifactCode || text(selected.targetArtifact.display_label || selected.targetArtifact.title))
+    ].join("");
+    const requestContext = Object.keys(selected.requestContext).length
+      ? `<div class="ss-approvals-body"><strong>Request context</strong><pre>${escapeHtml(JSON.stringify(selected.requestContext, null, 2))}</pre></div>`
+      : "";
+    const resolutionMetadata = Object.keys(selected.resolutionMetadata).length
+      ? `<div class="ss-approvals-body"><strong>Resolution metadata</strong><pre>${escapeHtml(JSON.stringify(selected.resolutionMetadata, null, 2))}</pre></div>`
+      : "";
+    const disabled = ui.busy || state.denied || AUTHORITY_TERMINAL.has(selected.status) ? " disabled" : "";
+    const inlineClass = ui.error ? "ss-approvals-inline ss-approvals-inline-error" : "ss-approvals-inline muted";
+
+    el.authorityDetail.innerHTML = `
+      <article class="ss-approvals-request ss-approvals-authority-detail">
+        <div class="ss-approvals-request-head">
+          <h3>${escapeHtml(authorityTypeLabel(selected.requestType))}</h3>
+          <div class="ss-approvals-meta">
+            <span><strong>Status:</strong> ${escapeHtml(authorityStatusLabel(selected.status))}</span>
+            <span><strong>Requester:</strong> ${escapeHtml(selected.requesterDisplayName)}</span>
+          </div>
+        </div>
+        <div class="ss-meta-row">${detailMeta}</div>
+        <div class="ss-approvals-authority-warning">${escapeHtml(warning)}</div>
+        ${selected.requesterNote ? `<div class="ss-approvals-body"><strong>Requester note</strong><br />${escapeHtml(selected.requesterNote)}</div>` : ""}
+        ${requestContext}
+        ${resolutionMetadata}
+        <div class="ss-form-row ss-approvals-notes-row">
+          <label for="approvals-authority-note-${escapeHtml(selected.id)}">Resolution note</label>
+          <textarea id="approvals-authority-note-${escapeHtml(selected.id)}" class="ss-approvals-notes ss-approvals-authority-note" data-authority-note-id="${escapeHtml(selected.id)}" rows="4"${disabled}>${escapeHtml(note)}</textarea>
+        </div>
+        <div class="ss-approvals-authority-actions">
+          <button class="ss-btn ss-btn-primary" type="button" data-authority-action="approved" data-authority-id="${escapeHtml(selected.id)}"${disabled}>${ui.busy && ui.action === "approved" ? "Approving..." : "Approve"}</button>
+          <button class="ss-btn ss-btn-danger" type="button" data-authority-action="rejected" data-authority-id="${escapeHtml(selected.id)}"${disabled}>${ui.busy && ui.action === "rejected" ? "Rejecting..." : "Reject"}</button>
+          <button class="ss-btn ss-btn-secondary" type="button" data-authority-action="cancelled" data-authority-id="${escapeHtml(selected.id)}"${disabled}>${ui.busy && ui.action === "cancelled" ? "Cancelling..." : "Cancel"}</button>
+        </div>
+        <div class="${inlineClass}">${escapeHtml(ui.error || ui.message || "")}</div>
+      </article>
+    `;
   }
 
   function renderApproved() {
@@ -526,6 +724,80 @@
     }
   }
 
+  async function loadAuthority() {
+    el.authorityStatus.textContent = "Loading public authority requests...";
+    const response = await request(AUTHORITY_LIST);
+    if (response.status === 401 || response.status === 403) {
+      setDenied(true);
+      state.authority.items = [];
+      el.authorityStatus.textContent = "Admin access required.";
+      renderAuthority();
+      return;
+    }
+    if (!response.ok) throw new Error((await errorText(response)) || `Request failed (${response.status})`);
+    const payload = await response.json().catch(() => null);
+    state.authority.items = sortAuthority(extractRequests(payload).map(normalizeAuthorityRequest).filter((item) => item.id));
+    setDenied(false);
+    el.authorityStatus.textContent = state.authority.items.length ? "Public authority requests loaded." : "No public authority requests available.";
+    renderAuthority();
+  }
+
+  async function mutateAuthority(id, nextStatus) {
+    const item = state.authority.items.find((entry) => entry.id === id);
+    if (!item) return;
+    const ui = state.authorityUi.get(id) || { busy: false, action: "", error: "", message: "" };
+    if (ui.busy || AUTHORITY_TERMINAL.has(item.status)) return;
+    ui.busy = true;
+    ui.action = nextStatus;
+    ui.error = "";
+    ui.message = `${authorityStatusLabel(nextStatus)} in progress...`;
+    state.authorityUi.set(id, ui);
+    renderAuthority();
+
+    try {
+      const response = await request(AUTHORITY_UPDATE(id), {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: nextStatus,
+          resolution_note: text(state.authorityNotes.get(id)),
+          resolution_metadata: { operator_surface: "admin_dashboard", workflow: "public_authority_review" }
+        })
+      });
+      if (response.status === 401 || response.status === 403) {
+        setDenied(true);
+        ui.busy = false;
+        ui.error = "Admin access required.";
+        ui.message = "";
+        renderAuthority();
+        return;
+      }
+      if (!response.ok) throw new Error((await errorText(response)) || "Action failed");
+      const payload = await response.json().catch(() => null);
+      const normalized = normalizeAuthorityRequest(payload?.request || payload || {});
+      const index = state.authority.items.findIndex((entry) => entry.id === id);
+      if (index >= 0) {
+        state.authority.items[index] = normalized;
+      }
+      state.authorityNotes.set(id, normalized.resolutionNote || text(state.authorityNotes.get(id)));
+      ui.busy = false;
+      ui.action = "";
+      ui.error = "";
+      ui.message = `Request marked ${authorityStatusLabel(nextStatus).toLowerCase()}.`;
+      state.authorityUi.set(id, ui);
+      el.authorityStatus.textContent = `Public authority request ${authorityStatusLabel(nextStatus).toLowerCase()}.`;
+      state.authority.items = sortAuthority(state.authority.items.slice());
+      renderAuthority();
+    } catch (error) {
+      ui.busy = false;
+      ui.action = "";
+      ui.error = error?.message || "Action failed.";
+      ui.message = "";
+      state.authorityUi.set(id, ui);
+      renderAuthority();
+    }
+  }
+
   async function loadIntake(kind) {
     const ui = el.intake[kind];
     ui.status.textContent = "Loading...";
@@ -579,6 +851,18 @@
     el.approvedEmpty = $("approvals-approved-empty");
     el.refreshPending = $("approvals-refresh-pending");
     el.refreshApproved = $("approvals-refresh-approved");
+    el.authorityStatus = $("approvals-authority-status");
+    el.authorityCount = $("approvals-authority-count");
+    el.authorityPendingCount = $("approvals-authority-pending-count");
+    el.authorityApprovedCount = $("approvals-authority-approved-count");
+    el.authorityRejectedCount = $("approvals-authority-rejected-count");
+    el.authorityCancelledCount = $("approvals-authority-cancelled-count");
+    el.authorityList = $("approvals-authority-list");
+    el.authorityEmpty = $("approvals-authority-empty");
+    el.authorityDetail = $("approvals-authority-detail");
+    el.authorityRefresh = $("approvals-refresh-authority");
+    el.authorityStatusFilter = $("approvals-authority-status-filter");
+    el.authorityTypeFilter = $("approvals-authority-type-filter");
     el.overviewFeedbackCount = $("approvals-intake-feedback-count");
     el.overviewBetaCount = $("approvals-intake-beta-count");
     el.overviewReportsCount = $("approvals-intake-reports-count");
@@ -596,6 +880,46 @@
   function initBindings() {
     bind(el.refreshPending, "click", () => void loadPending().catch((error) => { el.pendingStatus.textContent = error.message || "Failed to load pending requests."; renderPending(); }));
     bind(el.refreshApproved, "click", () => void loadApproved().catch((error) => { el.approvedStatus.textContent = error.message || "Failed to load approved requests."; renderApproved(); }));
+    bind(el.authorityRefresh, "click", () => void loadAuthority().catch((error) => { el.authorityStatus.textContent = error.message || "Failed to load public authority requests."; renderAuthority(); }));
+    bind(el.authorityStatusFilter, "change", (event) => {
+      state.authority.filters.status = lower(event.target?.value || "all") || "all";
+      renderAuthority();
+    });
+    bind(el.authorityTypeFilter, "change", (event) => {
+      state.authority.filters.type = lower(event.target?.value || "all") || "all";
+      renderAuthority();
+    });
+    bind(el.authorityList, "click", (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const card = target.closest("[data-authority-id]");
+      if (!(card instanceof HTMLElement)) return;
+      state.authority.selectedId = card.getAttribute("data-authority-id") || "";
+      renderAuthority();
+    });
+    bind(el.authorityList, "keydown", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      if (event.key !== "Enter" && event.key !== " ") return;
+      const card = target.closest("[data-authority-id]");
+      if (!(card instanceof HTMLElement)) return;
+      event.preventDefault();
+      state.authority.selectedId = card.getAttribute("data-authority-id") || "";
+      renderAuthority();
+    });
+    bind(el.authorityDetail, "input", (event) => {
+      const target = event.target;
+      if (target instanceof HTMLTextAreaElement) {
+        state.authorityNotes.set(target.getAttribute("data-authority-note-id") || "", target.value || "");
+      }
+    });
+    bind(el.authorityDetail, "click", (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const button = target.closest("button[data-authority-action]");
+      if (!(button instanceof HTMLButtonElement) || button.disabled) return;
+      void mutateAuthority(button.getAttribute("data-authority-id") || "", button.getAttribute("data-authority-action") || "");
+    });
     bind(el.pendingList, "input", (event) => {
       const target = event.target;
       if (target instanceof HTMLTextAreaElement) state.notes.set(target.getAttribute("data-note-id") || "", target.value || "");
@@ -633,15 +957,17 @@
     state.token += 1;
     unbindAll();
     cache();
-    if (!el.pendingList || !el.approvedList) return;
+    if (!el.pendingList || !el.approvedList || !el.authorityList || !el.authorityDetail) return;
     setDenied(false);
     renderPending();
     renderApproved();
+    renderAuthority();
     renderIntake("feedback");
     renderIntake("beta");
     renderIntake("reports");
     initBindings();
     await Promise.all([
+      loadAuthority().catch((error) => { el.authorityStatus.textContent = error.message || "Failed to load public authority requests."; renderAuthority(); }),
       loadPending().catch((error) => { el.pendingStatus.textContent = error.message || "Failed to load pending requests."; renderPending(); }),
       loadApproved().catch((error) => { el.approvedStatus.textContent = error.message || "Failed to load approved requests."; renderApproved(); }),
       loadIntake("feedback").catch((error) => { el.intake.feedback.status.textContent = error.message || "Failed to load."; renderIntake("feedback"); }),

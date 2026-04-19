@@ -7006,6 +7006,76 @@ body.ss-col-resizing-active {
   color: #ffb3b0;
 }
 
+.ss-approvals-filter-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 14px 0;
+}
+
+.ss-approvals-filter-row .ss-form-row {
+  margin-bottom: 0;
+}
+
+.ss-approvals-authority-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.ss-approvals-authority-item {
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
+}
+
+.ss-approvals-authority-item:hover,
+.ss-approvals-authority-item:focus-visible {
+  border-color: rgba(103, 179, 255, 0.4);
+  background: rgba(255, 255, 255, 0.03);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.ss-approvals-authority-item.is-selected {
+  border-color: rgba(103, 179, 255, 0.46);
+  background: rgba(103, 179, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(103, 179, 255, 0.16);
+}
+
+.ss-approvals-authority-detail {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.ss-approvals-authority-note {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.ss-approvals-authority-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ss-approvals-authority-warning {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(219, 172, 84, 0.28);
+  background: rgba(219, 172, 84, 0.08);
+  color: #f8d8a8;
+  line-height: 1.45;
+  font-size: 12px;
+}
+
+@media (max-width: 980px) {
+  .ss-approvals-authority-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ----------------------------------------------------------------------
    Chat window (live/replay) reference styles
    Mirrors docs/views/chat_window.html for design showcase
