@@ -1,6 +1,6 @@
 {
   "schema_version": "streamsuites.public-wheels.v1",
-  "generated_at": "2026-04-20T02:32:55Z",
+  "generated_at": "2026-04-20T03:59:03Z",
   "meta": {
     "source": "StreamSuites runtime",
     "visibility": "public",
@@ -13,11 +13,11 @@
   },
   "wheels": [
     {
-      "id": "artifact-9ee9da8b256d49db9146207c56cb0bed",
-      "artifact_code": "artifact-9ee9da8b256d49db9146207c56cb0bed",
+      "id": "artifact-730b7816865d4dd196a99847a39d933a",
+      "artifact_code": "artifact-730b7816865d4dd196a99847a39d933a",
       "artifact_type": "wheel",
-      "slug": "creator-wheel",
-      "title": "Creator Wheel",
+      "slug": "test-wheel",
+      "title": "Test Wheel",
       "summary": "",
       "description": "",
       "notes": "",
@@ -37,7 +37,7 @@
           "entry_id": "entry-002",
           "label": "Bravo",
           "notes": "",
-          "weight": 1.0
+          "weight": 2.0
         }
       ],
       "entry_count": 2,
@@ -63,10 +63,10 @@
         "spin_duration_ms": 8500
       },
       "creator": {
-        "account_id": "143f4307-ccb9-49d8-be5f-6c6cf7f326d9",
-        "user_code": "WDF2AMW",
-        "public_slug": "wheelcreator",
-        "display_name": "Wheel Creator",
+        "account_id": "d61f5f01-a8e2-4f8c-8a7d-d6023652ae49",
+        "user_code": "UGHW8WQ",
+        "public_slug": "sstestacc",
+        "display_name": "SStestAcc",
         "avatar_url": null
       },
       "visibility": "listed",
@@ -83,8 +83,8 @@
         "notes": ""
       },
       "unsupported_import_fields": [],
-      "created_at": "2026-04-20T02:32:55Z",
-      "updated_at": "2026-04-20T02:32:55Z"
+      "created_at": "2026-04-20T03:59:03Z",
+      "updated_at": "2026-04-20T03:59:03Z"
     }
   ]
 }
