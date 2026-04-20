@@ -1,15 +1,90 @@
 {
   "schema_version": "streamsuites.public-wheels.v1",
-  "generated_at": "2026-04-19T15:31:08Z",
+  "generated_at": "2026-04-20T02:32:55Z",
   "meta": {
     "source": "StreamSuites runtime",
     "visibility": "public",
     "scope": "wheels"
   },
   "counts": {
-    "total": 0,
-    "wheel_default": 0,
+    "total": 1,
+    "wheel_default": 1,
     "scoreboard_default": 0
   },
-  "wheels": []
+  "wheels": [
+    {
+      "id": "artifact-9ee9da8b256d49db9146207c56cb0bed",
+      "artifact_code": "artifact-9ee9da8b256d49db9146207c56cb0bed",
+      "artifact_type": "wheel",
+      "slug": "creator-wheel",
+      "title": "Creator Wheel",
+      "summary": "",
+      "description": "",
+      "notes": "",
+      "default_display_mode": "wheel",
+      "allow_duplicates": true,
+      "auto_remove_winner": false,
+      "entries": [
+        {
+          "color": "#ff6b6b",
+          "entry_id": "entry-001",
+          "label": "Alpha",
+          "notes": "",
+          "weight": 1.0
+        },
+        {
+          "color": "#ffd166",
+          "entry_id": "entry-002",
+          "label": "Bravo",
+          "notes": "",
+          "weight": 1.0
+        }
+      ],
+      "entry_count": 2,
+      "palette": {
+        "accent_color": "#38bdf8",
+        "background_color": "#0f172a",
+        "segment_colors": [
+          "#ff6b6b",
+          "#ffd166",
+          "#06d6a0",
+          "#118ab2",
+          "#9b5de5",
+          "#f15bb5"
+        ],
+        "text_color": "#f8fafc"
+      },
+      "presentation": {
+        "animation_enabled": true,
+        "confetti_enabled": false,
+        "scoreboard_max_rows": 24,
+        "show_entry_labels": true,
+        "sound_enabled": true,
+        "spin_duration_ms": 8500
+      },
+      "creator": {
+        "account_id": "143f4307-ccb9-49d8-be5f-6c6cf7f326d9",
+        "user_code": "WDF2AMW",
+        "public_slug": "wheelcreator",
+        "display_name": "Wheel Creator",
+        "avatar_url": null
+      },
+      "visibility": "listed",
+      "state": "active",
+      "status": "active",
+      "provenance": "manual",
+      "source_platform": "",
+      "import_provenance": {
+        "source_format": "manual",
+        "source_name": "",
+        "imported_at": null,
+        "exact_source_available": true,
+        "unsupported_fields": [],
+        "notes": ""
+      },
+      "unsupported_import_fields": [],
+      "created_at": "2026-04-20T02:32:55Z",
+      "updated_at": "2026-04-20T02:32:55Z"
+    }
+  ]
 }
