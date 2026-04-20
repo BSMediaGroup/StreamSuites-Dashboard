@@ -1,7 +1,7 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-04-20T05:06:13.731254Z",
-  "server_generated_at": "2026-04-20T05:06:13.731254Z",
+  "generated_at": "2026-04-20T15:42:52.019596Z",
+  "server_generated_at": "2026-04-20T15:42:52.019596Z",
   "count": 15,
   "bots": [
     {
@@ -654,30 +654,28 @@
         "required_env_keys": [],
         "missing_env_keys": []
       },
-      "last_log": {
-        "timestamp": "2026-04-20T04:48:19.157469Z",
-        "severity": "warning",
-        "message": "[VIvXsPS] Managed session state updated to disabled."
-      }
+      "last_log": null
     },
     {
       "platform": "twitch",
       "label": "Twitch",
-      "available": true,
+      "available": false,
       "implemented": true,
-      "runtime_ready": true,
-      "status": "ready",
-      "global_status": "ready",
+      "runtime_ready": false,
+      "status": "not_configured",
+      "global_status": "not_configured",
       "session_status": "inactive",
       "paused": false,
       "paused_reason": null,
-      "error": null,
+      "error": "Missing runtime prerequisites: TWITCH_OAUTH_TOKEN_DANIEL.",
       "staged": false,
       "disabled_reason": "",
       "required_env_keys": [
         "TWITCH_OAUTH_TOKEN_DANIEL"
       ],
-      "missing_env_keys": [],
+      "missing_env_keys": [
+        "TWITCH_OAUTH_TOKEN_DANIEL"
+      ],
       "details": {
         "bot_count": 0,
         "bot_online_count": 0,
@@ -687,7 +685,7 @@
         "bot_blocked_count": 0,
         "manual_override_count": 0,
         "implemented": true,
-        "runtime_ready": true,
+        "runtime_ready": false,
         "global_state": "active",
         "global_enabled": true,
         "session_status": "inactive",
@@ -696,28 +694,32 @@
         "required_env_keys": [
           "TWITCH_OAUTH_TOKEN_DANIEL"
         ],
-        "missing_env_keys": []
+        "missing_env_keys": [
+          "TWITCH_OAUTH_TOKEN_DANIEL"
+        ]
       },
       "last_log": null
     },
     {
       "platform": "youtube",
       "label": "YouTube",
-      "available": true,
+      "available": false,
       "implemented": true,
-      "runtime_ready": true,
-      "status": "ready",
-      "global_status": "ready",
+      "runtime_ready": false,
+      "status": "not_configured",
+      "global_status": "not_configured",
       "session_status": "inactive",
       "paused": false,
       "paused_reason": null,
-      "error": null,
+      "error": "Missing runtime prerequisites: YOUTUBE_API_KEY_DANIEL.",
       "staged": false,
       "disabled_reason": "",
       "required_env_keys": [
         "YOUTUBE_API_KEY_DANIEL"
       ],
-      "missing_env_keys": [],
+      "missing_env_keys": [
+        "YOUTUBE_API_KEY_DANIEL"
+      ],
       "details": {
         "bot_count": 0,
         "bot_online_count": 0,
@@ -727,7 +729,7 @@
         "bot_blocked_count": 0,
         "manual_override_count": 0,
         "implemented": true,
-        "runtime_ready": true,
+        "runtime_ready": false,
         "global_state": "active",
         "global_enabled": true,
         "session_status": "inactive",
@@ -736,7 +738,9 @@
         "required_env_keys": [
           "YOUTUBE_API_KEY_DANIEL"
         ],
-        "missing_env_keys": []
+        "missing_env_keys": [
+          "YOUTUBE_API_KEY_DANIEL"
+        ]
       },
       "last_log": null
     }
