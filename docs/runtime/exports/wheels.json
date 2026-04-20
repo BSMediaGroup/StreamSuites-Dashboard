@@ -1,6 +1,6 @@
 {
   "schema_version": "streamsuites.public-wheels.v1",
-  "generated_at": "2026-04-20T05:00:29Z",
+  "generated_at": "2026-04-20T05:44:36Z",
   "meta": {
     "source": "StreamSuites runtime",
     "visibility": "public",
@@ -13,41 +13,34 @@
   },
   "wheels": [
     {
-      "id": "artifact-f86dba051ec249f1b739fb9d0be60cd3",
-      "artifact_code": "artifact-f86dba051ec249f1b739fb9d0be60cd3",
+      "id": "artifact-a0ea970b9be7490eb7a63a42d96acb08",
+      "artifact_code": "artifact-a0ea970b9be7490eb7a63a42d96acb08",
       "artifact_type": "wheel",
       "slug": "test-wheel",
       "title": "Test Wheel",
-      "summary": "test",
-      "description": "test",
-      "notes": "test",
+      "summary": "Initial live wheel description.",
+      "description": "Initial live wheel description.",
+      "notes": "",
       "default_display_mode": "wheel",
       "allow_duplicates": true,
-      "auto_remove_winner": true,
+      "auto_remove_winner": false,
       "entries": [
         {
           "color": "#ff6b6b",
-          "entry_id": "entry-1",
-          "label": "Daniel",
-          "notes": "",
-          "weight": 3.0
-        },
-        {
-          "color": "#ffd166",
-          "entry_id": "entry-2",
-          "label": "Big Balloon",
+          "entry_id": "entry-001",
+          "label": "Alpha",
           "notes": "",
           "weight": 1.0
         },
         {
-          "color": "#9147ff",
-          "entry_id": "entry-3",
-          "label": "Tully",
+          "color": "#ffd166",
+          "entry_id": "entry-002",
+          "label": "Bravo",
           "notes": "",
           "weight": 1.0
         }
       ],
-      "entry_count": 3,
+      "entry_count": 2,
       "palette": {
         "accent_color": "#38bdf8",
         "background_color": "#0f172a",
@@ -63,35 +56,35 @@
       },
       "presentation": {
         "animation_enabled": true,
-        "confetti_enabled": true,
+        "confetti_enabled": false,
         "scoreboard_max_rows": 24,
         "show_entry_labels": true,
         "sound_enabled": true,
         "spin_duration_ms": 8500
       },
       "creator": {
-        "account_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
-        "user_code": "4TiOlvS",
-        "public_slug": "danielclancy",
-        "display_name": "Daniel Clancy",
-        "avatar_url": "https://cdn.streamsuites.app/u/4TiOlvS/avatar/v1.webp"
+        "account_id": "8685180e-508a-4db2-9a6d-6e4da9baf88e",
+        "user_code": "RJRNGE6",
+        "public_slug": "verifycreator",
+        "display_name": "Verify Creator",
+        "avatar_url": null
       },
       "visibility": "listed",
       "state": "active",
       "status": "active",
-      "provenance": "imported",
-      "source_platform": "sswheel",
+      "provenance": "manual",
+      "source_platform": "",
       "import_provenance": {
-        "source_format": "sswheel",
-        "source_name": "test-wheel.sswheel",
+        "source_format": "manual",
+        "source_name": "",
         "imported_at": null,
         "exact_source_available": true,
         "unsupported_fields": [],
         "notes": ""
       },
       "unsupported_import_fields": [],
-      "created_at": "2026-04-20T04:59:14Z",
-      "updated_at": "2026-04-20T05:00:28Z"
+      "created_at": "2026-04-20T05:44:36Z",
+      "updated_at": "2026-04-20T05:44:36Z"
     }
   ]
 }
