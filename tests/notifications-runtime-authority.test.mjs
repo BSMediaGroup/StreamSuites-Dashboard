@@ -393,13 +393,28 @@ test("bots view shows calmer rumble pre-live probe degradation on the platform s
 test("admin rumble platform view reads live runtime posture instead of a hardcoded paused scaffold", () => {
   const rumbleHtml = read("docs/views/platforms/rumble.html");
   const rumbleJs = read("docs/js/platforms/rumble.js");
+  const appJs = read("docs/js/app.js");
+  const shellHtml = read("docs/index.html");
 
   assert.match(rumbleHtml, /Runtime Posture/);
   assert.match(rumbleHtml, /\/api\/admin\/bots\/status/);
   assert.match(rumbleHtml, /This surface mirrors runtime-owned Rumble bot availability/);
+  assert.match(rumbleHtml, /Rumble Intelligence/);
+  assert.match(rumbleHtml, /Search creator or channel/);
+  assert.match(rumbleHtml, /Stream history entry/);
   assert.match(rumbleJs, /const BOTS_STATUS_ENDPOINT = "\/api\/admin\/bots\/status";/);
+  assert.match(rumbleJs, /const CREATOR_SUMMARY_ENDPOINT = "\/api\/admin\/creator-integrations";/);
+  assert.match(rumbleJs, /\/api\/admin\/accounts\/\$\{encodeURIComponent\(accountId\)\}\/creator-integrations/);
+  assert.match(rumbleJs, /No historical Rumble engagement snapshots exported yet\./);
+  assert.match(rumbleJs, /resolved_watch_url/);
+  assert.match(rumbleJs, /resolved_video_id/);
+  assert.match(rumbleJs, /resolved_chat_id/);
+  assert.match(rumbleJs, /search_blob/);
   assert.match(rumbleJs, /global_status \|\| platformRow\?\.status/);
   assert.match(rumbleJs, /creator-managed Rumble session/);
+  assert.match(appJs, /registerView\("rumble", \{/);
+  assert.match(appJs, /window\.RumbleView\?\.init\?\.\(\)/);
+  assert.match(shellHtml, /js\/platforms\/rumble\.js/);
   assert.doesNotMatch(rumbleJs, /Rumble ingest is paused by the runtime/);
 });
 

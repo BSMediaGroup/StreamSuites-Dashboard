@@ -2780,7 +2780,11 @@ registerView("bots", {
   onLoad: () => window.BotsView?.init?.(),
   onUnload: () => window.BotsView?.destroy?.()
 });
-registerView("rumble", { templatePath: "platforms/rumble" });
+registerView("rumble", {
+  templatePath: "platforms/rumble",
+  onLoad: () => window.RumbleView?.init?.(),
+  onUnload: () => window.RumbleView?.destroy?.()
+});
 registerView("youtube", {
   templatePath: "platforms/youtube",
   onLoad: () => window.YouTubeView?.init?.(),

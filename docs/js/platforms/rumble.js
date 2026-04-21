@@ -4,9 +4,20 @@
   const PLATFORM = "rumble";
   const REFRESH_INTERVAL = 8000;
   const BOTS_STATUS_ENDPOINT = "/api/admin/bots/status";
+  const CREATOR_SUMMARY_ENDPOINT = "/api/admin/creator-integrations";
 
   const el = {};
   let runtimeTimer = null;
+  let intelligenceAbortController = null;
+  let selectorsHydrated = false;
+
+  const state = {
+    creators: [],
+    filteredCreators: [],
+    selectedAccountId: "",
+    selectedStreamKey: "",
+    intelligenceDetail: null,
+  };
 
   function cacheElements() {
     el.foundationStatus = document.getElementById("rumble-foundation-status");
@@ -19,6 +30,18 @@
     el.runtimeBlocked = document.getElementById("rumble-runtime-blocked");
     el.runtimeManual = document.getElementById("rumble-runtime-manual");
     el.serviceToggle = document.querySelector('input[data-service="rumble"]');
+    el.intelligenceBanner = document.getElementById("rumble-intelligence-banner");
+    el.searchInput = document.getElementById("rumble-intelligence-search");
+    el.creatorSelect = document.getElementById("rumble-intelligence-creator-select");
+    el.creatorEmpty = document.getElementById("rumble-intelligence-creator-empty");
+    el.creatorSummary = document.getElementById("rumble-intelligence-creator-summary");
+    el.streamSelect = document.getElementById("rumble-intelligence-stream-select");
+    el.historyState = document.getElementById("rumble-intelligence-history-state");
+    el.meta = document.getElementById("rumble-intelligence-meta");
+    el.postureChip = document.getElementById("rumble-intelligence-posture-chip");
+    el.chart = document.getElementById("rumble-intelligence-chart");
+    el.chartEmpty = document.getElementById("rumble-intelligence-chart-empty");
+    el.diagnostics = document.getElementById("rumble-intelligence-diagnostics");
   }
 
   function resolveApiBase() {
@@ -44,10 +67,11 @@
     }
   }
 
-  async function requestJson(path) {
+  async function requestJson(path, options = {}) {
     const response = await fetch(buildApiUrl(path), {
       cache: "no-store",
       credentials: "include",
+      signal: options.signal,
       headers: {
         Accept: "application/json",
       },
@@ -64,8 +88,49 @@
     target.textContent = value;
   }
 
+  function setHtml(target, value) {
+    if (!target) return;
+    target.innerHTML = value;
+  }
+
+  function escapeHtml(value) {
+    if (value === undefined || value === null) return "";
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
   function formatTimestamp(value) {
     return window.StreamSuitesState?.formatTimestamp?.(value) || value || "—";
+  }
+
+  function formatLabel(value) {
+    const text = String(value || "").trim();
+    if (!text) return "Unavailable";
+    return text
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+
+  function chipClassForTone(tone) {
+    if (tone === "success") return "ss-chip-success";
+    if (tone === "warning") return "ss-chip-warning";
+    if (tone === "danger") return "ss-chip-danger";
+    if (tone === "info") return "ss-chip-info";
+    return "ss-chip-muted";
+  }
+
+  function toneForPosture(status) {
+    const normalized = String(status || "").trim().toLowerCase();
+    if (normalized === "live" || normalized === "connected" || normalized === "attach_ready") return "success";
+    if (normalized === "offline" || normalized === "awaiting_live_stream" || normalized === "blocked") return "warning";
+    if (normalized === "error" || normalized === "live_target_unresolved" || normalized === "attach_identity_incomplete") {
+      return "danger";
+    }
+    return "muted";
   }
 
   function normalizePlatformRow(payload) {
@@ -77,6 +142,17 @@
     return (Array.isArray(payload?.bots) ? payload.bots : []).filter(
       (item) => String(item?.platform || "").trim().toLowerCase() === PLATFORM
     );
+  }
+
+  function selectedCreator() {
+    return state.filteredCreators.find((item) => item.account_id === state.selectedAccountId)
+      || state.creators.find((item) => item.account_id === state.selectedAccountId)
+      || null;
+  }
+
+  function selectedStream() {
+    const streams = Array.isArray(state.intelligenceDetail?.streams) ? state.intelligenceDetail.streams : [];
+    return streams.find((item) => item.key === state.selectedStreamKey) || streams[0] || null;
   }
 
   function describeStatus(platformRow) {
@@ -188,6 +264,462 @@
     }
   }
 
+  function setIntelligenceBanner(message, tone) {
+    if (!el.intelligenceBanner) return;
+    el.intelligenceBanner.classList.remove("ss-alert-success", "ss-alert-warning", "ss-alert-danger");
+    if (tone === "success") el.intelligenceBanner.classList.add("ss-alert-success");
+    else if (tone === "danger") el.intelligenceBanner.classList.add("ss-alert-danger");
+    else el.intelligenceBanner.classList.add("ss-alert-warning");
+    setText(el.intelligenceBanner, message);
+  }
+
+  function buildCreatorList(summaryPayload, botsPayload) {
+    const summaryItems = Array.isArray(summaryPayload?.items) ? summaryPayload.items : [];
+    const summaryByUserCode = new Map();
+    summaryItems.forEach((item) => {
+      const userCode = String(item?.user_code || "").trim();
+      if (userCode) summaryByUserCode.set(userCode, item);
+    });
+
+    return normalizeRumbleBots(botsPayload)
+      .map((bot) => {
+        const userCode = String(bot?.creator_id || "").trim();
+        const summary = summaryByUserCode.get(userCode) || {};
+        const target = bot?.resolved_target && typeof bot.resolved_target === "object" ? bot.resolved_target : {};
+        const displayName = String(summary?.display_name || userCode || "Unknown creator").trim() || "Unknown creator";
+        const accountId = String(summary?.account_id || "").trim();
+        const channelHandle = String(target?.channel_handle || "").trim();
+        const channelSlug = String(target?.channel_slug || "").trim();
+        const channelUrl = String(target?.channel_url || "").trim();
+        const activeTarget = String(bot?.active_target || target?.watch_url || "").trim();
+        return {
+          account_id: accountId,
+          user_code: userCode,
+          display_name: displayName,
+          readiness_label: String(summary?.readiness_label || bot?.status || "").trim() || "Unknown",
+          status: String(bot?.status || "").trim() || "unknown",
+          session_id: String(bot?.session_id || "").trim() || null,
+          channel_handle: channelHandle || null,
+          channel_slug: channelSlug || null,
+          channel_url: channelUrl || null,
+          active_target: activeTarget || null,
+          last_evaluated_at: bot?.last_evaluated_at || null,
+          search_blob: [
+            displayName,
+            userCode,
+            channelHandle,
+            channelSlug,
+            channelUrl,
+            activeTarget,
+          ].join(" ").toLowerCase(),
+        };
+      })
+      .filter((item) => item.account_id)
+      .sort((left, right) => left.display_name.localeCompare(right.display_name));
+  }
+
+  function filterCreators() {
+    const query = String(el.searchInput?.value || "").trim().toLowerCase();
+    state.filteredCreators = !query
+      ? state.creators.slice()
+      : state.creators.filter((item) => item.search_blob.includes(query));
+    if (!state.filteredCreators.some((item) => item.account_id === state.selectedAccountId)) {
+      state.selectedAccountId = state.filteredCreators[0]?.account_id || "";
+    }
+    renderCreatorOptions();
+  }
+
+  function renderCreatorOptions() {
+    if (!(el.creatorSelect instanceof HTMLSelectElement)) return;
+    const items = state.filteredCreators;
+    el.creatorSelect.innerHTML = items
+      .map((item) => {
+        const channelLabel = item.channel_handle || item.channel_slug || "Rumble";
+        return `<option value="${escapeHtml(item.account_id)}">${escapeHtml(`${item.display_name} • ${channelLabel}`)}</option>`;
+      })
+      .join("");
+    el.creatorSelect.disabled = items.length === 0;
+    if (items.length && state.selectedAccountId) {
+      el.creatorSelect.value = state.selectedAccountId;
+    }
+    if (el.creatorEmpty) {
+      el.creatorEmpty.classList.toggle("hidden", items.length !== 0);
+    }
+    renderCreatorSummary();
+  }
+
+  function renderCreatorSummary() {
+    const creator = selectedCreator();
+    if (!el.creatorSummary) return;
+    if (!creator) {
+      setHtml(el.creatorSummary, "");
+      return;
+    }
+    setHtml(
+      el.creatorSummary,
+      [
+        `<span class="ss-chip">Creator: ${escapeHtml(creator.display_name)}</span>`,
+        `<span class="ss-chip">User code: ${escapeHtml(creator.user_code)}</span>`,
+        `<span class="ss-chip">Channel: ${escapeHtml(creator.channel_handle || creator.channel_slug || "Unresolved")}</span>`,
+        `<span class="ss-chip ${chipClassForTone(toneForPosture(creator.status))}">${escapeHtml(formatLabel(creator.status))}</span>`,
+      ].join("")
+    );
+  }
+
+  function normalizeDetailPayload(payload) {
+    const integrations = Array.isArray(payload?.integrations) ? payload.integrations : [];
+    const rumble = integrations.find((item) => String(item?.platform_key || "").trim().toLowerCase() === PLATFORM) || null;
+    const botAuto = rumble?.bot_auto_deploy && typeof rumble.bot_auto_deploy === "object" ? rumble.bot_auto_deploy : {};
+    const managed = rumble?.managed_session && typeof rumble.managed_session === "object" ? rumble.managed_session : {};
+    const managedTarget = managed?.resolved_target && typeof managed.resolved_target === "object" ? managed.resolved_target : {};
+    const dispatch = rumble?.managed_dispatch && typeof rumble.managed_dispatch === "object" ? rumble.managed_dispatch : {};
+    const watchUrl =
+      String(managedTarget.watch_url || botAuto.resolved_watch_url || botAuto.resolved_live_target_url || "").trim() || null;
+    const videoId = String(managedTarget.video_id || botAuto.resolved_video_id || "").trim() || null;
+    const chatId = String(managedTarget.chat_id || botAuto.resolved_chat_id || "").trim() || null;
+    const streamIdentity = String(managedTarget.stream_identity || botAuto.resolved_stream_identity || "").trim() || null;
+    const channelUrl =
+      String(managedTarget.channel_url || botAuto.resolved_channel_url || rumble?.public_url || "").trim() || null;
+    const channelHandle = String(botAuto.resolved_channel_handle || rumble?.channel_handle || "").trim() || null;
+    const hasCurrentSnapshot = Boolean(
+      watchUrl
+      || videoId
+      || chatId
+      || streamIdentity
+      || botAuto.live_status === "live"
+      || managed.lifecycle_state
+    );
+
+    const streams = hasCurrentSnapshot
+      ? [
+          {
+            key: String(managed.session_id || streamIdentity || videoId || watchUrl || "current-runtime-snapshot"),
+            label:
+              botAuto.live_status === "live"
+                ? "Current runtime live snapshot"
+                : "Current runtime stream posture",
+            posture: botAuto.live_status || managed.lifecycle_state || "unknown",
+            live_truth_source: botAuto.live_truth_source || "none",
+            watch_url: watchUrl,
+            channel_url: channelUrl,
+            channel_handle: channelHandle,
+            video_id: videoId,
+            chat_id: chatId,
+            stream_identity: streamIdentity,
+            stream_title: null,
+            viewer_count: null,
+            chat_count: null,
+            unique_chatters: null,
+            metrics_available: {
+              live_viewers: false,
+              chat_count: false,
+              unique_chatters: false,
+            },
+            points: [],
+            last_sample_at:
+              managed.last_transport_heartbeat_at
+              || managed.last_evaluated_at
+              || botAuto.last_live_status_checked_at
+              || payload?.generated_at
+              || null,
+          },
+        ]
+      : [];
+
+    return {
+      generated_at: payload?.generated_at || null,
+      account: payload?.account || {},
+      rumble,
+      botAuto,
+      managed,
+      dispatch,
+      streams,
+      history_available: false,
+    };
+  }
+
+  function populateStreamOptions() {
+    if (!(el.streamSelect instanceof HTMLSelectElement)) return;
+    const streams = Array.isArray(state.intelligenceDetail?.streams) ? state.intelligenceDetail.streams : [];
+    if (!streams.length) {
+      el.streamSelect.innerHTML = '<option value="">No exported stream history</option>';
+      el.streamSelect.disabled = true;
+      state.selectedStreamKey = "";
+      return;
+    }
+    el.streamSelect.disabled = false;
+    el.streamSelect.innerHTML = streams
+      .map((item) => `<option value="${escapeHtml(item.key)}">${escapeHtml(item.label)}</option>`)
+      .join("");
+    if (!streams.some((item) => item.key === state.selectedStreamKey)) {
+      state.selectedStreamKey = streams[0].key;
+    }
+    el.streamSelect.value = state.selectedStreamKey;
+  }
+
+  function renderHistoryState() {
+    const creator = selectedCreator();
+    const stream = selectedStream();
+    if (!el.historyState) return;
+    if (!creator) {
+      setText(el.historyState, "Select a creator to inspect current runtime posture and any exported stream history.");
+      return;
+    }
+    if (!stream) {
+      setText(
+        el.historyState,
+        "No historical Rumble engagement snapshots exported yet. Live discovery is available when runtime can resolve a stream, but time-series analytics are not currently stored."
+      );
+      return;
+    }
+    setText(
+      el.historyState,
+      "Current runtime snapshot is available. Historical Rumble engagement analytics have not been exported yet, so the selector is limited to current posture."
+    );
+  }
+
+  function renderMetaGrid() {
+    const creator = selectedCreator();
+    const stream = selectedStream();
+    if (!el.meta) return;
+    if (!creator) {
+      setHtml(el.meta, '<div class="ss-empty-state" style="margin-top:0;">Select a creator or channel to inspect Rumble intelligence.</div>');
+      return;
+    }
+
+    const detail = state.intelligenceDetail || {};
+    const botAuto = detail.botAuto || {};
+    const managed = detail.managed || {};
+    const dispatchSummary = detail.dispatch?.summary && typeof detail.dispatch.summary === "object" ? detail.dispatch.summary : {};
+    const posture = stream?.posture || botAuto.decision_state || creator.status || "unknown";
+    const liveVsHistory = stream ? (botAuto.live_status === "live" ? "Current live snapshot" : "Current runtime posture") : "No stream snapshot";
+    const cards = [
+      { label: "Creator", value: escapeHtml(creator.display_name) },
+      { label: "Channel", value: escapeHtml(stream?.channel_handle || creator.channel_handle || creator.channel_slug || "Unavailable") },
+      {
+        label: "Watch URL",
+        value: stream?.watch_url
+          ? `<a href="${escapeHtml(stream.watch_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(stream.watch_url)}</a>`
+          : "Unavailable",
+      },
+      { label: "Detected Video ID", value: escapeHtml(stream?.video_id || "Unavailable") },
+      { label: "Chat ID", value: escapeHtml(stream?.chat_id || "Unavailable") },
+      { label: "Stream Title", value: escapeHtml(stream?.stream_title || "Unavailable in current runtime export") },
+      { label: "Last Sample Timestamp", value: escapeHtml(formatTimestamp(stream?.last_sample_at || botAuto.last_live_status_checked_at)) },
+      { label: "Posture", value: escapeHtml(`${formatLabel(posture)} • ${liveVsHistory}`) },
+      { label: "Live Truth Source", value: escapeHtml(formatLabel(stream?.live_truth_source || botAuto.live_truth_source || "none")) },
+      { label: "Managed Session", value: escapeHtml(formatLabel(managed.lifecycle_state || "unavailable")) },
+      {
+        label: "Dispatch History",
+        value: escapeHtml(
+          dispatchSummary.count
+            ? `${dispatchSummary.count} exported item${dispatchSummary.count === 1 ? "" : "s"}`
+            : "No recent managed dispatch export"
+        ),
+      },
+      { label: "Readiness", value: escapeHtml(creator.readiness_label || "Unknown") },
+    ];
+    setHtml(
+      el.meta,
+      cards
+        .map(
+          (card) => `
+            <article class="ss-rumble-intelligence-meta-card">
+              <span class="label">${card.label}</span>
+              <strong>${card.value}</strong>
+            </article>
+          `
+        )
+        .join("")
+    );
+  }
+
+  function renderDiagnostics() {
+    const creator = selectedCreator();
+    if (!el.diagnostics) return;
+    if (!creator || !state.intelligenceDetail) {
+      setHtml(el.diagnostics, 'Runtime discovery, detection, and stream metadata will appear here after a creator is selected.');
+      return;
+    }
+    const botAuto = state.intelligenceDetail.botAuto || {};
+    const diagnostics = Array.isArray(botAuto.runtime_diagnostics) ? botAuto.runtime_diagnostics : [];
+    const discoveryNotes = [
+      botAuto.discovery?.stop_reason ? `Discovery stop reason: ${formatLabel(botAuto.discovery.stop_reason)}` : "",
+      botAuto.discovery?.stop_detail ? `Discovery detail: ${formatLabel(botAuto.discovery.stop_detail)}` : "",
+      botAuto.blocking_reason ? `Blocking reason: ${formatLabel(botAuto.blocking_reason)}` : "",
+      botAuto.blocking_reason_detail ? `Blocking detail: ${formatLabel(botAuto.blocking_reason_detail)}` : "",
+    ].filter(Boolean);
+    const items = diagnostics.concat(discoveryNotes);
+    if (!items.length) {
+      setHtml(el.diagnostics, '<div class="ss-empty-state" style="margin-top:0;">No additional runtime diagnostics were exported for the current selection.</div>');
+      return;
+    }
+    setHtml(
+      el.diagnostics,
+      `<ul class="ss-rumble-intelligence-diagnostics">${items
+        .map((item) => `<li>${escapeHtml(formatLabel(item))}</li>`)
+        .join("")}</ul>`
+    );
+  }
+
+  function renderChart() {
+    const stream = selectedStream();
+    const botAuto = state.intelligenceDetail?.botAuto || {};
+    if (el.postureChip) {
+      const label = stream?.posture || botAuto.decision_state || "No stream selected";
+      el.postureChip.className = `ss-chip ${chipClassForTone(toneForPosture(label))}`;
+      el.postureChip.textContent = formatLabel(label);
+    }
+    if (!el.chart || !el.chartEmpty) return;
+    if (!stream) {
+      el.chart.classList.add("hidden");
+      el.chartEmpty.classList.remove("hidden");
+      setText(el.chartEmpty, "Select a creator and stream entry to inspect runtime-backed analytics posture.");
+      return;
+    }
+    const points = Array.isArray(stream.points) ? stream.points : [];
+    if (!points.length) {
+      el.chart.classList.add("hidden");
+      el.chartEmpty.classList.remove("hidden");
+      setText(
+        el.chartEmpty,
+        "No historical Rumble engagement snapshots exported yet. Current runtime metadata is available above, but live viewers, chat count, and unique chatter series are not currently stored."
+      );
+      return;
+    }
+
+    const width = 720;
+    const height = 280;
+    const padding = { left: 56, right: 28, top: 20, bottom: 36 };
+    const usableWidth = width - padding.left - padding.right;
+    const usableHeight = height - padding.top - padding.bottom;
+    const seriesDefs = [
+      { key: "live_viewers", className: "ss-rumble-intelligence-chart-viewers" },
+      { key: "chat_count", className: "ss-rumble-intelligence-chart-chat" },
+      { key: "unique_chatters", className: "ss-rumble-intelligence-chart-chatters" },
+    ];
+    const values = points.flatMap((point) =>
+      seriesDefs.map((series) => Number(point?.[series.key])).filter((value) => Number.isFinite(value))
+    );
+    const maxValue = Math.max(1, ...values);
+    const xStep = points.length > 1 ? usableWidth / (points.length - 1) : usableWidth;
+    const mapY = (value) => padding.top + usableHeight - (Number(value) / maxValue) * usableHeight;
+    const yTicks = [0, 0.25, 0.5, 0.75, 1]
+      .map((ratio) => {
+        const y = padding.top + usableHeight - ratio * usableHeight;
+        const label = Math.round(maxValue * ratio);
+        return `
+          <line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" class="ss-rumble-intelligence-chart-grid"></line>
+          <text x="10" y="${y + 4}" class="ss-rumble-intelligence-chart-label">${escapeHtml(String(label))}</text>
+        `;
+      })
+      .join("");
+    const xAxis = `
+      <line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${height - padding.bottom}" class="ss-rumble-intelligence-chart-axis"></line>
+      <line x1="${padding.left}" y1="${height - padding.bottom}" x2="${width - padding.right}" y2="${height - padding.bottom}" class="ss-rumble-intelligence-chart-axis"></line>
+    `;
+    const seriesMarkup = seriesDefs
+      .map((series) => {
+        const pathPoints = points
+          .map((point, index) => {
+            const value = Number(point?.[series.key]);
+            if (!Number.isFinite(value)) return null;
+            const x = padding.left + xStep * index;
+            const y = mapY(value);
+            return `${x},${y}`;
+          })
+          .filter(Boolean)
+          .join(" ");
+        if (!pathPoints) return "";
+        return `<polyline points="${pathPoints}" class="${series.className}"></polyline>`;
+      })
+      .join("");
+    const lastPoint = points[points.length - 1] || {};
+    const markerX = padding.left + xStep * Math.max(points.length - 1, 0);
+    const markerY = mapY(Number(lastPoint.live_viewers || 0));
+    setHtml(
+      el.chart,
+      `${yTicks}${xAxis}${seriesMarkup}<circle cx="${markerX}" cy="${markerY}" r="3.5" class="ss-rumble-intelligence-chart-point"></circle>`
+    );
+    el.chart.classList.remove("hidden");
+    el.chartEmpty.classList.add("hidden");
+  }
+
+  function renderIntelligence() {
+    populateStreamOptions();
+    renderHistoryState();
+    renderMetaGrid();
+    renderDiagnostics();
+    renderChart();
+  }
+
+  async function loadCreatorDetail(accountId) {
+    if (!accountId) {
+      state.intelligenceDetail = null;
+      renderIntelligence();
+      return;
+    }
+    if (intelligenceAbortController) intelligenceAbortController.abort();
+    intelligenceAbortController = new AbortController();
+    const detailPayload = await requestJson(
+      `/api/admin/accounts/${encodeURIComponent(accountId)}/creator-integrations`,
+      { signal: intelligenceAbortController.signal }
+    );
+    state.intelligenceDetail = normalizeDetailPayload(detailPayload);
+    const streams = Array.isArray(state.intelligenceDetail.streams) ? state.intelligenceDetail.streams : [];
+    state.selectedStreamKey = streams[0]?.key || "";
+    renderIntelligence();
+
+    if (!streams.length) {
+      setIntelligenceBanner(
+        "Rumble intelligence is loaded from runtime/Auth contracts, but no historical engagement export exists yet for the selected creator.",
+        "warning"
+      );
+      return;
+    }
+    setIntelligenceBanner(
+      "Rumble intelligence is loaded from runtime/Auth contracts. Current stream posture is available; historical analytics render only when runtime exports them.",
+      "success"
+    );
+  }
+
+  async function hydrateIntelligence(botsPayload) {
+    const summaryPayload = await requestJson(CREATOR_SUMMARY_ENDPOINT);
+    state.creators = buildCreatorList(summaryPayload, botsPayload);
+    filterCreators();
+    if (!state.selectedAccountId && state.creators.length) {
+      state.selectedAccountId = state.creators[0].account_id;
+    }
+    renderCreatorSummary();
+    await loadCreatorDetail(state.selectedAccountId);
+    selectorsHydrated = true;
+  }
+
+  function bindIntelligenceEvents() {
+    if (el.searchInput && !el.searchInput.dataset.rumbleBound) {
+      el.searchInput.dataset.rumbleBound = "true";
+      el.searchInput.addEventListener("input", () => {
+        filterCreators();
+        void loadCreatorDetail(state.selectedAccountId);
+      });
+    }
+    if (el.creatorSelect && !el.creatorSelect.dataset.rumbleBound) {
+      el.creatorSelect.dataset.rumbleBound = "true";
+      el.creatorSelect.addEventListener("change", () => {
+        state.selectedAccountId = String(el.creatorSelect.value || "").trim();
+        renderCreatorSummary();
+        void loadCreatorDetail(state.selectedAccountId);
+      });
+    }
+    if (el.streamSelect && !el.streamSelect.dataset.rumbleBound) {
+      el.streamSelect.dataset.rumbleBound = "true";
+      el.streamSelect.addEventListener("change", () => {
+        state.selectedStreamKey = String(el.streamSelect.value || "").trim();
+        renderIntelligence();
+      });
+    }
+  }
+
   function renderLoadFailure(message) {
     const detail = message || "Unable to load runtime bot posture.";
     if (el.serviceToggle instanceof HTMLInputElement) {
@@ -210,12 +742,16 @@
       el.foundationStatus.classList.add("idle");
       el.foundationStatus.textContent = "● Rumble runtime: Load failed";
     }
+    setIntelligenceBanner(detail, "danger");
   }
 
   async function hydrateRuntime() {
     try {
       const payload = await requestJson(BOTS_STATUS_ENDPOINT);
       renderPayload(payload);
+      if (!selectorsHydrated) {
+        await hydrateIntelligence(payload);
+      }
     } catch (err) {
       renderLoadFailure(err?.message || "Unable to load runtime bot posture.");
     }
@@ -230,6 +766,7 @@
 
   function init() {
     cacheElements();
+    bindIntelligenceEvents();
     startRuntimePolling();
   }
 
@@ -238,6 +775,11 @@
       clearInterval(runtimeTimer);
       runtimeTimer = null;
     }
+    if (intelligenceAbortController) {
+      intelligenceAbortController.abort();
+      intelligenceAbortController = null;
+    }
+    selectorsHydrated = false;
   }
 
   window.RumbleView = {

@@ -3474,6 +3474,158 @@
   margin-top: 12px;
 }
 
+.ss-rumble-intelligence-panel .ss-panel-body {
+  display: grid;
+  gap: 16px;
+}
+
+.ss-rumble-intelligence-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.ss-rumble-intelligence-sidebar,
+.ss-rumble-intelligence-main,
+.ss-rumble-intelligence-lower {
+  display: grid;
+  gap: 16px;
+}
+
+.ss-rumble-intelligence-sidebar {
+  align-content: start;
+}
+
+.ss-rumble-intelligence-control-group {
+  display: grid;
+  gap: 8px;
+}
+
+.ss-rumble-intelligence-control-group label {
+  font-family: "RechargeBd", sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.ss-rumble-intelligence-sidebar .ss-input,
+.ss-rumble-intelligence-sidebar select.ss-input {
+  width: 100%;
+}
+
+.ss-rumble-intelligence-sidebar select.ss-input {
+  min-height: 174px;
+}
+
+.ss-rumble-intelligence-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+}
+
+.ss-rumble-intelligence-meta-card {
+  padding: 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02)),
+    var(--surface-panel);
+}
+
+.ss-rumble-intelligence-meta-card .label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.ss-rumble-intelligence-meta-card strong,
+.ss-rumble-intelligence-meta-card a,
+.ss-rumble-intelligence-meta-card code {
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.ss-rumble-intelligence-chart-shell {
+  position: relative;
+  min-height: 280px;
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background:
+    radial-gradient(circle at top left, rgba(120, 196, 77, 0.12), transparent 30%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015)),
+    rgba(6, 10, 18, 0.56);
+}
+
+.ss-rumble-intelligence-chart {
+  width: 100%;
+  height: 280px;
+  display: block;
+}
+
+.ss-rumble-intelligence-chart.hidden {
+  display: none;
+}
+
+.ss-rumble-intelligence-chart-grid {
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 1;
+}
+
+.ss-rumble-intelligence-chart-axis {
+  stroke: rgba(255, 255, 255, 0.16);
+  stroke-width: 1;
+}
+
+.ss-rumble-intelligence-chart-label {
+  fill: rgba(233, 240, 255, 0.74);
+  font-size: 11px;
+}
+
+.ss-rumble-intelligence-chart-viewers {
+  fill: none;
+  stroke: #8fd66b;
+  stroke-width: 3;
+}
+
+.ss-rumble-intelligence-chart-chat {
+  fill: none;
+  stroke: #5fb8ff;
+  stroke-width: 2;
+}
+
+.ss-rumble-intelligence-chart-chatters {
+  fill: none;
+  stroke: #ffb86b;
+  stroke-width: 2;
+  stroke-dasharray: 6 6;
+}
+
+.ss-rumble-intelligence-chart-point {
+  fill: #f5f8ff;
+}
+
+.ss-rumble-intelligence-diagnostics {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-secondary);
+}
+
+.ss-rumble-intelligence-diagnostics li + li {
+  margin-top: 8px;
+}
+
+@media (max-width: 1080px) {
+  .ss-rumble-intelligence-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ----------------------------------------------------------------------
    Tables (component-level)
    ---------------------------------------------------------------------- */

@@ -108,6 +108,100 @@
       </ul>
     </div>
   </section>
+
+  <section class="ss-panel ss-rumble-intelligence-panel" data-scope="admin">
+    <header class="ss-panel-header">
+      <div>
+        <h2>Rumble Intelligence</h2>
+        <p class="muted" style="margin:0.35rem 0 0;">
+          Runtime-authored creator selection, stream posture, and truth-first analytics readiness using the existing admin route.
+        </p>
+      </div>
+      <div class="ss-panel-header-actions">
+        <span class="ss-chip ss-chip-muted">Runtime-backed</span>
+        <span class="ss-chip ss-chip-muted">No local demo data</span>
+      </div>
+    </header>
+
+    <div class="ss-panel-body">
+      <div id="rumble-intelligence-banner" class="ss-alert ss-alert-warning">
+        Loading runtime-backed Rumble intelligence controls.
+      </div>
+
+      <div class="ss-rumble-intelligence-layout">
+        <aside class="ss-rumble-intelligence-sidebar">
+          <div class="ss-rumble-intelligence-control-group">
+            <label for="rumble-intelligence-search">Search creator or channel</label>
+            <input
+              id="rumble-intelligence-search"
+              class="ss-input"
+              type="search"
+              placeholder="Filter by creator, user code, handle, or channel slug"
+            />
+          </div>
+
+          <div class="ss-rumble-intelligence-control-group">
+            <label for="rumble-intelligence-creator-select">Creator / Channel</label>
+            <select id="rumble-intelligence-creator-select" class="ss-input" size="8"></select>
+            <div id="rumble-intelligence-creator-empty" class="ss-empty-state hidden">
+              No runtime-backed Rumble creators match the current filter.
+            </div>
+          </div>
+
+          <div id="rumble-intelligence-creator-summary" class="ss-meta-row"></div>
+
+          <div class="ss-rumble-intelligence-control-group">
+            <label for="rumble-intelligence-stream-select">Stream history entry</label>
+            <select id="rumble-intelligence-stream-select" class="ss-input" size="6"></select>
+          </div>
+
+          <div id="rumble-intelligence-history-state" class="ss-empty-state">
+            Select a creator to inspect current runtime posture and any exported stream history.
+          </div>
+        </aside>
+
+        <div class="ss-rumble-intelligence-main">
+          <div id="rumble-intelligence-meta" class="ss-rumble-intelligence-meta-grid"></div>
+
+          <div class="ss-rumble-intelligence-lower">
+            <section class="ss-panel">
+              <header class="ss-panel-header">
+                <h3>Analytics</h3>
+                <div class="ss-panel-header-actions">
+                  <span id="rumble-intelligence-posture-chip" class="ss-chip ss-chip-muted">No stream selected</span>
+                </div>
+              </header>
+              <div class="ss-panel-body">
+                <div id="rumble-intelligence-chart-shell" class="ss-rumble-intelligence-chart-shell">
+                  <svg
+                    id="rumble-intelligence-chart"
+                    class="ss-rumble-intelligence-chart hidden"
+                    viewBox="0 0 720 280"
+                    role="img"
+                    aria-label="Rumble engagement analytics chart"
+                  ></svg>
+                  <div id="rumble-intelligence-chart-empty" class="ss-empty-state">
+                    No stream selected yet.
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="ss-panel">
+              <header class="ss-panel-header">
+                <h3>Stream Diagnostics</h3>
+              </header>
+              <div class="ss-panel-body">
+                <div id="rumble-intelligence-diagnostics" class="ss-empty-state">
+                  Runtime discovery, detection, and stream metadata will appear here after a creator is selected.
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
 
 <footer class="ss-footer">
