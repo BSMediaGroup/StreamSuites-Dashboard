@@ -5,7 +5,7 @@
 (() => {
   "use strict";
 
-  const POLL_INTERVAL_MS = 5000;
+  const POLL_INTERVAL_MS = 8000;
   const BOTS_STATUS_ENDPOINT = "/api/admin/bots/status";
   const CREATORS_ENDPOINT = "/api/admin/creators";
   const MANUAL_DEPLOY_ENDPOINT = "/api/admin/runtime/manual-deploy";
@@ -87,7 +87,9 @@
 
   const state = {
     pollHandle: null,
-    tickHandle: null,
+    refreshInFlight: null,
+    refreshAbortController: null,
+    mounted: false,
     lastPayload: null,
     deployPlatformSchemas: Object.create(null),
     creators: [],
@@ -107,6 +109,12 @@
       pending: false,
       error: "",
       renderedPlatform: ""
+    },
+    renderCache: {
+      rowSignature: "",
+      platformSignature: "",
+      creatorsSignature: "",
+      manualPlatformSignature: ""
     }
   };
 
@@ -229,6 +237,33 @@
     const text = String(value || "").trim();
     if (!text) return "";
     return text.length > max ? `${text.slice(0, max - 1)}...` : text;
+  }
+
+  function stableStringify(value) {
+    if (value === null || typeof value !== "object") {
+      return JSON.stringify(value);
+    }
+    if (Array.isArray(value)) {
+      return `[${value.map((entry) => stableStringify(entry)).join(",")}]`;
+    }
+    const keys = Object.keys(value).sort();
+    return `{${keys
+      .map((key) => `${JSON.stringify(key)}:${stableStringify(value[key])}`)
+      .join(",")}}`;
+  }
+
+  function normalizeReasonCode(value) {
+    return String(value || "").trim().toLowerCase();
+  }
+
+  function uniqueReasonCodes(values) {
+    return Array.from(
+      new Set(
+        (Array.isArray(values) ? values : [])
+          .map((value) => normalizeReasonCode(value))
+          .filter(Boolean)
+      )
+    ).sort();
   }
 
   function asFiniteNumber(value) {
@@ -661,8 +696,8 @@
       : '<span class="muted">No target exported.</span>';
   }
 
-  function renderHeartbeatCell(bot, normalized, receivedAt) {
-    const uptimeSeconds = getDisplayUptimeSeconds(bot, normalized.generatedAt, receivedAt);
+  function renderHeartbeatCell(bot) {
+    const uptimeSeconds = getDisplayUptimeSeconds(bot);
     const uptimeLabel = uptimeSeconds === null ? "-" : formatUptime(uptimeSeconds);
     return `
       <div class="ss-bot-cell-stack">
@@ -687,6 +722,74 @@
         ${entries.map((entry) => `<span class="ss-bot-blocking-text">${escapeHtml(entry)}</span>`).join("")}
       </div>
     `;
+  }
+
+  function buildPlatformSummarySignature(platformSummary, options = {}) {
+    const liveCounts = options?.liveCounts || { byPlatform: {}, total: 0 };
+    const rows = sortPlatformKeys(Object.keys(platformSummary || {})).map((platform) => {
+      const entry = platformSummary?.[platform] || {};
+      return {
+        platform,
+        availability: String(entry.availability || ""),
+        reason: String(entry.reason || ""),
+        status: String(entry.status || ""),
+        sessionStatus: String(entry.sessionStatus || ""),
+        paused: entry.paused === true,
+        pausedReason: String(entry.pausedReason || ""),
+        error: String(entry.error || ""),
+        details: entry.details || {},
+        lastLog: entry.lastLog || null,
+        liveCount: Number.isFinite(liveCounts.byPlatform?.[platform]) ? liveCounts.byPlatform[platform] : 0
+      };
+    });
+    return stableStringify({
+      live: options?.live === true,
+      updatedAt: options?.updatedAt || null,
+      totalLive: Number.isFinite(liveCounts.total) ? liveCounts.total : 0,
+      rows
+    });
+  }
+
+  function buildRowsSignature(normalized, platformSummary) {
+    const bots = Array.isArray(normalized?.bots) ? normalized.bots : [];
+    const rows = bots.map((bot) => {
+      const creatorId = String(bot?.creator_id || "");
+      const platform = normalizePlatformKey(bot?.platform);
+      const platformState = platformSummary?.[platform] || null;
+      const ui = getRowUi(creatorId, platform);
+      return {
+        creatorId,
+        platform,
+        bot,
+        platformState: platformState
+          ? {
+            availability: platformState.availability,
+            reason: platformState.reason,
+            paused: platformState.paused,
+            pausedReason: platformState.pausedReason,
+            status: platformState.status,
+            sessionStatus: platformState.sessionStatus
+          }
+          : null,
+        ui
+      };
+    });
+    return stableStringify(rows);
+  }
+
+  function buildCreatorsSignature(creators) {
+    return stableStringify(
+      (Array.isArray(creators) ? creators : []).map((creator) => ({
+        creator_id: String(creator?.creator_id || "").trim(),
+        display_name: String(creator?.display_name || "").trim(),
+        tier: String(creator?.tier || "").trim(),
+        status: String(creator?.status || "").trim()
+      }))
+    );
+  }
+
+  function buildManualPlatformSignature() {
+    return stableStringify(state.deployPlatformSchemas || {});
   }
 
   function normalizeRuntimePlatforms(snapshot) {
@@ -753,6 +856,39 @@
     return normalized;
   }
 
+  function isProbeDegradedReasonCode(code) {
+    return [
+      "browse_live_request_failed",
+      "sample_browse_live_request_failed",
+      "creator_channel_probe_failed",
+      "creator_page_probe_failed"
+    ].includes(normalizeReasonCode(code));
+  }
+
+  function hasProbeDegradedReason(runtime) {
+    const detailCodes = uniqueReasonCodes(runtime?.details?.session_blocking_codes);
+    if (detailCodes.some((code) => isProbeDegradedReasonCode(code))) {
+      return true;
+    }
+    const reason = String(runtime?.details?.session_status_reason || runtime?.error || "").trim().toLowerCase();
+    return (
+      reason.includes("trustworthy offline result could be established") ||
+      reason.includes("browse/live detection failed") ||
+      reason.includes("live probe failed")
+    );
+  }
+
+  function getProbeDegradedSummaryReason(runtime, blockedCount) {
+    const exportedReason = String(runtime?.details?.session_status_reason || runtime?.error || "").trim();
+    if (blockedCount > 0) {
+      return (
+        `Runtime is globally enabled, but ${blockedCount} creator-managed session${blockedCount === 1 ? "" : "s"} ` +
+        `is still awaiting trustworthy live verification.`
+      );
+    }
+    return exportedReason || "Runtime is globally enabled and awaiting trustworthy live verification.";
+  }
+
   function buildPlatformSummary(normalizedPayload, deployPlatformSchemas, options = {}) {
     const runtimePlatforms = Object.create(null);
     const runtimeRows = Array.isArray(normalizedPayload?.platformRows)
@@ -780,6 +916,7 @@
       const sessionStatus = String(runtime?.sessionStatus || runtime?.details?.session_status || "").trim().toLowerCase();
       const blockedCount = Number(runtime?.details?.bot_blocked_count || 0);
       const pendingCount = Number(runtime?.details?.bot_desired_count || 0);
+      const probeDegraded = hasProbeDegradedReason(runtime);
       let availability = "unavailable";
       let reason = "No active runtime availability reported.";
       if (!deployEnabled) {
@@ -815,6 +952,9 @@
           reason =
             runtime?.details?.session_status_reason ||
             `${blockedCount} creator-managed session${blockedCount === 1 ? "" : "s"} is live but still missing attach identity.`;
+        } else if (sessionStatus === "blocked" && blockedCount > 0 && probeDegraded) {
+          availability = "pending";
+          reason = getProbeDegradedSummaryReason(runtime, blockedCount);
         } else if (sessionStatus === "blocked" && blockedCount > 0) {
           availability = "blocked";
           reason =
@@ -887,6 +1027,7 @@
   function renderPlatformSummary(platformSummary, options = {}) {
     if (!el.platformsGrid) return;
     const liveCounts = options?.liveCounts || { byPlatform: Object.create(null), total: 0 };
+    const signature = buildPlatformSummarySignature(platformSummary, options);
 
     const entries = sortPlatformKeys(Object.keys(platformSummary || {})).map((platform) => (
       platformSummary[platform] || {
@@ -900,8 +1041,9 @@
       }
     ));
 
-    el.platformsGrid.innerHTML = entries
-      .map((entry) => {
+    if (signature !== state.renderCache.platformSignature) {
+      el.platformsGrid.innerHTML = entries
+        .map((entry) => {
         const availability = String(entry.availability || "unavailable").toLowerCase();
         const stateClass =
           availability === "paused"
@@ -970,8 +1112,10 @@
         )}</div>
           </article>
         `;
-      })
-      .join("");
+        })
+        .join("");
+      state.renderCache.platformSignature = signature;
+    }
 
     if (el.platformsStatus) {
       const modeLabel = options?.live === true ? "Live" : "STALE / FALLBACK";
@@ -1094,21 +1238,10 @@
     `;
   }
 
-  function getDisplayUptimeSeconds(bot, payloadGeneratedAt, receivedAt) {
+  function getDisplayUptimeSeconds(bot) {
     const base = asFiniteNumber(bot?.uptime_seconds);
     if (base === null) return null;
-
-    if (String(bot?.status || "").toLowerCase() !== "online") {
-      return Math.max(0, Math.floor(base));
-    }
-
-    const generated = payloadGeneratedAt ? new Date(payloadGeneratedAt).getTime() : null;
-    if (!generated || Number.isNaN(generated)) {
-      return Math.max(0, Math.floor(base));
-    }
-
-    const elapsed = Math.max(0, (receivedAt - generated) / 1000);
-    return Math.max(0, Math.floor(base + elapsed));
+    return Math.max(0, Math.floor(base));
   }
 
   function renderRows(normalized, receivedAt, platformSummary) {
@@ -1127,7 +1260,7 @@
           <td>${renderLifecycleCell(bot)}</td>
           <td>${renderTransportCell(bot)}</td>
           <td>${renderTargetCell(bot)}</td>
-          <td>${renderHeartbeatCell(bot, normalized, receivedAt)}</td>
+          <td>${renderHeartbeatCell(bot)}</td>
           <td>${renderBlockingCell(bot, platformState)}</td>
           <td>${renderActionCell(bot, platformState)}</td>
         </tr>
@@ -1214,6 +1347,7 @@
 
   function updateManualCreatorSuggestions() {
     if (!el.manualCreator) return;
+    const signature = buildCreatorsSignature(state.creators);
     const selected = String(el.manualCreator.value || "").trim();
     const options = (state.creators || [])
       .map((creator) => ({
@@ -1232,7 +1366,10 @@
       })
       .join("");
 
-    el.manualCreator.innerHTML = `<option value="">Select creator</option>${optionMarkup}`;
+    if (signature !== state.renderCache.creatorsSignature) {
+      el.manualCreator.innerHTML = `<option value="">Select creator</option>${optionMarkup}`;
+      state.renderCache.creatorsSignature = signature;
+    }
     if (selected && options.some((creator) => creator.creator_id === selected)) {
       el.manualCreator.value = selected;
     } else {
@@ -1242,6 +1379,7 @@
 
   function renderManualPlatformOptions() {
     if (!el.manualPlatform) return;
+    const signature = buildManualPlatformSignature();
     const selected = normalizePlatformKey(el.manualPlatform.value);
     const options = sortPlatformKeys(Object.keys(state.deployPlatformSchemas || {}));
     const optionMarkup = options
@@ -1254,7 +1392,10 @@
         )}</option>`;
       })
       .join("");
-    el.manualPlatform.innerHTML = `<option value="">Select platform</option>${optionMarkup}`;
+    if (signature !== state.renderCache.manualPlatformSignature) {
+      el.manualPlatform.innerHTML = `<option value="">Select platform</option>${optionMarkup}`;
+      state.renderCache.manualPlatformSignature = signature;
+    }
     if (selected && state.deployPlatformSchemas[selected]) {
       el.manualPlatform.value = selected;
     } else {
@@ -1508,11 +1649,12 @@
     }
   }
 
-  async function fetchPayload() {
+  async function fetchPayload(signal) {
     const endpoint = buildApiUrl(BOTS_STATUS_ENDPOINT);
     const res = await fetch(endpoint, {
       cache: "no-store",
-      credentials: "include"
+      credentials: "include",
+      signal
     });
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}`);
@@ -1539,12 +1681,13 @@
       .sort((a, b) => a.creator_id.localeCompare(b.creator_id));
   }
 
-  async function fetchCreators() {
+  async function fetchCreators(signal) {
     const endpoint = buildApiUrl(CREATORS_ENDPOINT);
     const res = await fetch(endpoint, {
       cache: "no-store",
       credentials: "include",
-      headers: { Accept: "application/json" }
+      headers: { Accept: "application/json" },
+      signal
     });
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}`);
@@ -1584,7 +1727,6 @@
 
     updateMeta(normalized, now);
     const liveCounts = buildLiveBotCounts(normalized, state.platformSummary);
-
     renderPlatformSummary(state.platformSummary, {
       live: hasLivePlatformRows,
       updatedAt: normalized?.serverGeneratedAt || normalized?.generatedAt || null,
@@ -1595,9 +1737,11 @@
     updateManualDeployUi();
 
     const hasRows = normalized && Array.isArray(normalized.bots) && normalized.bots.length > 0;
+    const rowSignature = buildRowsSignature(normalized, state.platformSummary);
 
-    if (el.body) {
+    if (el.body && rowSignature !== state.renderCache.rowSignature) {
       el.body.innerHTML = hasRows ? renderRows(normalized, now, state.platformSummary) : "";
+      state.renderCache.rowSignature = rowSignature;
     }
     if (el.empty) {
       el.empty.classList.toggle("hidden", hasRows);
@@ -1605,48 +1749,69 @@
   }
 
   async function refresh() {
+    if (!state.mounted) return;
+    if (state.refreshInFlight) return state.refreshInFlight;
+    state.refreshAbortController?.abort();
+    state.refreshAbortController = new AbortController();
     try {
-      const [normalized, creators] = await Promise.all([fetchPayload(), fetchCreators()]);
-      state.creators = Array.isArray(creators) ? creators : [];
-      setError("");
-      render(normalized);
+      state.refreshInFlight = Promise.all([fetchPayload(state.refreshAbortController.signal), fetchCreators(state.refreshAbortController.signal)])
+        .then(([normalized, creators]) => {
+          if (!state.mounted) return;
+          state.creators = Array.isArray(creators) ? creators : [];
+          setError("");
+          render(normalized);
+        })
+        .catch((err) => {
+          if (err?.name === "AbortError") return;
+          setRuntimeAvailable(false);
+          state.creators = [];
+          state.lastPayload = { bots: [], supportedPlatforms: [], generatedAt: null };
+          state.deployPlatformSchemas = buildFallbackDeploySchemas();
+          state.platformSummary = buildPlatformSummary(null, state.deployPlatformSchemas, {
+            fallback: true,
+            fallbackReason: "STALE / FALLBACK: runtime API unreachable."
+          });
+          state.lastReceivedAt = Date.now();
+          state.hydrationLive = false;
+          state.hydrationLabel = "Runtime unreachable - bot status unavailable";
+          state.renderCache.rowSignature = "";
+          state.renderCache.platformSignature = "";
+          state.renderCache.creatorsSignature = "";
+          state.renderCache.manualPlatformSignature = "";
+          if (el.status) {
+            el.status.textContent = state.hydrationLabel;
+          }
+          if (el.count) {
+            el.count.textContent = "-- rows";
+          }
+          if (el.generatedAt) {
+            el.generatedAt.textContent = "Generated: --";
+          }
+          if (el.body) {
+            el.body.innerHTML = "";
+          }
+          renderPlatformSummary(state.platformSummary, {
+            live: false,
+            updatedAt: null,
+            liveCounts: buildLiveBotCounts(state.lastPayload, state.platformSummary)
+          });
+          renderManualPlatformOptions();
+          if (el.empty) {
+            el.empty.classList.remove("hidden");
+          }
+          updateManualCreatorSuggestions();
+          updateManualDeployUi();
+          const detail = err?.message ? ` (${err.message})` : "";
+          setError(`Unable to load bot status from runtime API${detail}`);
+        })
+        .finally(() => {
+          state.refreshInFlight = null;
+        });
+      await state.refreshInFlight;
     } catch (err) {
-      setRuntimeAvailable(false);
-      state.creators = [];
-      state.lastPayload = { bots: [], supportedPlatforms: [], generatedAt: null };
-      state.deployPlatformSchemas = buildFallbackDeploySchemas();
-      state.platformSummary = buildPlatformSummary(null, state.deployPlatformSchemas, {
-        fallback: true,
-        fallbackReason: "STALE / FALLBACK: runtime API unreachable."
-      });
-      state.lastReceivedAt = Date.now();
-      state.hydrationLive = false;
-      state.hydrationLabel = "Runtime unreachable - bot status unavailable";
-      if (el.status) {
-        el.status.textContent = state.hydrationLabel;
+      if (err?.name !== "AbortError") {
+        throw err;
       }
-      if (el.count) {
-        el.count.textContent = "-- rows";
-      }
-      if (el.generatedAt) {
-        el.generatedAt.textContent = "Generated: --";
-      }
-      if (el.body) {
-        el.body.innerHTML = "";
-      }
-      renderPlatformSummary(state.platformSummary, {
-        live: false,
-        updatedAt: null,
-        liveCounts: buildLiveBotCounts(state.lastPayload, state.platformSummary)
-      });
-      renderManualPlatformOptions();
-      if (el.empty) {
-        el.empty.classList.remove("hidden");
-      }
-      updateManualCreatorSuggestions();
-      updateManualDeployUi();
-      const detail = err?.message ? ` (${err.message})` : "";
-      setError(`Unable to load bot status from runtime API${detail}`);
     }
   }
 
@@ -1661,6 +1826,10 @@
     state.lastReceivedAt = Date.now();
     state.hydrationLive = false;
     state.hydrationLabel = "Runtime offline - bot status unavailable";
+    state.renderCache.rowSignature = "";
+    state.renderCache.platformSignature = "";
+    state.renderCache.creatorsSignature = "";
+    state.renderCache.manualPlatformSignature = "";
     if (el.status) {
       el.status.textContent = state.hydrationLabel;
     }
@@ -1690,19 +1859,17 @@
     setError("");
   }
 
-  function tick() {
-    if (!state.lastPayload || !state.lastReceivedAt) return;
-    renderRowsAndCountersFromState(Date.now());
-    updateMeta(state.lastPayload, state.lastReceivedAt);
-  }
-
   function renderRowsAndCountersFromState(receivedAt = Date.now()) {
     if (!state.lastPayload) return;
     const hasRows = Array.isArray(state.lastPayload.bots) && state.lastPayload.bots.length > 0;
+    const rowSignature = buildRowsSignature(state.lastPayload, state.platformSummary);
     if (el.body) {
-      el.body.innerHTML = hasRows
-        ? renderRows(state.lastPayload, receivedAt, state.platformSummary)
-        : "";
+      if (rowSignature !== state.renderCache.rowSignature) {
+        el.body.innerHTML = hasRows
+          ? renderRows(state.lastPayload, receivedAt, state.platformSummary)
+          : "";
+        state.renderCache.rowSignature = rowSignature;
+      }
     }
     if (el.empty) {
       el.empty.classList.toggle("hidden", hasRows);
@@ -1900,22 +2067,28 @@
   async function startPollingAsync() {
     stopPolling();
     await refresh();
-    state.pollHandle = setInterval(refresh, POLL_INTERVAL_MS);
-    state.tickHandle = setInterval(tick, 1000);
+    if (!state.mounted) return;
+    state.pollHandle = window.setTimeout(async () => {
+      state.pollHandle = null;
+      await startPollingAsync();
+    }, POLL_INTERVAL_MS);
   }
 
   function stopPolling() {
     if (state.pollHandle) {
-      clearInterval(state.pollHandle);
+      clearTimeout(state.pollHandle);
       state.pollHandle = null;
     }
-    if (state.tickHandle) {
-      clearInterval(state.tickHandle);
-      state.tickHandle = null;
-    }
+    state.refreshAbortController?.abort();
+    state.refreshAbortController = null;
+    state.refreshInFlight = null;
   }
 
   function init() {
+    if (state.mounted) {
+      stopPolling();
+    }
+    state.mounted = true;
     el.status = $("bots-status");
     el.count = $("bots-count");
     el.generatedAt = $("bots-generated-at");
@@ -1959,6 +2132,7 @@
   }
 
   function destroy() {
+    state.mounted = false;
     stopPolling();
     if (state.onBodyClick && el.body) {
       el.body.removeEventListener("click", state.onBodyClick);
@@ -1992,6 +2166,12 @@
     state.hydrationLive = false;
     state.hydrationLabel = "Waiting for runtime status...";
     state.rowUi = Object.create(null);
+    state.renderCache = {
+      rowSignature: "",
+      platformSignature: "",
+      creatorsSignature: "",
+      manualPlatformSignature: ""
+    };
   }
 
   window.BotsView = {

@@ -2,6 +2,10 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Stabilized the admin `/telemetry` Bots / Runtime Status surface in `docs/js/bots.js` so it no longer destructively rebuilds unchanged platform cards, table rows, creator options, or manual-deploy platform options on every poll cycle. The view now uses a single non-overlapping 8-second poll loop with abort-safe teardown on route unload instead of stacking a broad poll plus a separate 1000ms DOM-refresh timer.
+- Refined the `/telemetry` Rumble platform-summary mapping in `docs/js/bots.js` so global-ready Rumble with probe-degraded pre-live blockers is shown as a calmer pending / awaiting-trustworthy-live-verification posture on the platform card, while row-level blocking and error cells still expose the exact technical blocker text and code exported by runtime.
+- Expanded `tests/notifications-runtime-authority.test.mjs` with a lightweight bots-view lifecycle harness that verifies repeated mounts do not multiply pollers, unchanged polls do not rewrite the cards/table DOM, and pre-live Rumble probe degradation renders as a calmer truthful summary without hiding row-level diagnostics.
+
 - Extended the existing `/approvals` route in `docs/views/approvals.html`, `docs/js/approvals.js`, and `docs/css/components.css` so it now includes a runtime-backed public-authority review lane fed by `GET /api/admin/public/authority/requests?status=all`, with pending-first ordering, local status/type filters, a selected-request detail pane, and operator wording that stays explicit about review-state changes versus automatic transfer or destructive deletion.
 - Added real admin mutation controls on that same approvals surface via `PATCH /api/admin/public/authority/requests/{request_id}` for the actual backend terminal states `approved`, `rejected`, and `cancelled`, including resolution-note wiring and dashboard-sourced `resolution_metadata`.
 - Added `tests/public-authority-approvals.test.mjs` and updated `README.md` so the repo tree and source coverage now pin the public-authority approvals surface alongside the existing intake queues.
