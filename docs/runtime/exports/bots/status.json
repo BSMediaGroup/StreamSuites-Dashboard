@@ -1,7 +1,7 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-04-21T11:39:33.267296Z",
-  "server_generated_at": "2026-04-21T11:39:33.267296Z",
+  "generated_at": "2026-04-21T11:57:56.834177Z",
+  "server_generated_at": "2026-04-21T11:57:56.834177Z",
   "count": 15,
   "bots": [
     {
@@ -557,6 +557,8 @@
       "status": "ready",
       "global_status": "ready",
       "session_status": "inactive",
+      "session_blocking_code": null,
+      "session_blocking_codes": [],
       "paused": false,
       "paused_reason": null,
       "error": null,
@@ -578,6 +580,8 @@
         "global_enabled": true,
         "session_status": "inactive",
         "session_status_reason": null,
+        "session_blocking_code": null,
+        "session_blocking_codes": [],
         "session_paused_reason": null,
         "required_env_keys": [],
         "missing_env_keys": []
@@ -593,6 +597,8 @@
       "status": "staged",
       "global_status": "staged",
       "session_status": "inactive",
+      "session_blocking_code": null,
+      "session_blocking_codes": [],
       "paused": false,
       "paused_reason": null,
       "error": null,
@@ -614,6 +620,8 @@
         "global_enabled": false,
         "session_status": "inactive",
         "session_status_reason": null,
+        "session_blocking_code": null,
+        "session_blocking_codes": [],
         "session_paused_reason": null,
         "required_env_keys": [],
         "missing_env_keys": []
@@ -629,6 +637,11 @@
       "status": "ready",
       "global_status": "ready",
       "session_status": "blocked",
+      "session_blocking_code": "browse_live_request_failed",
+      "session_blocking_codes": [
+        "browse_live_request_failed",
+        "creator_disabled"
+      ],
       "paused": false,
       "paused_reason": null,
       "error": "Rumble browse/live detection failed before a trustworthy offline result could be established.",
@@ -650,6 +663,11 @@
         "global_enabled": true,
         "session_status": "blocked",
         "session_status_reason": "Rumble browse/live detection failed before a trustworthy offline result could be established.",
+        "session_blocking_code": "browse_live_request_failed",
+        "session_blocking_codes": [
+          "browse_live_request_failed",
+          "creator_disabled"
+        ],
         "session_paused_reason": null,
         "required_env_keys": [],
         "missing_env_keys": []
@@ -665,6 +683,8 @@
       "status": "not_configured",
       "global_status": "not_configured",
       "session_status": "inactive",
+      "session_blocking_code": null,
+      "session_blocking_codes": [],
       "paused": false,
       "paused_reason": null,
       "error": "Missing runtime prerequisites: TWITCH_OAUTH_TOKEN_DANIEL.",
@@ -690,6 +710,8 @@
         "global_enabled": true,
         "session_status": "inactive",
         "session_status_reason": null,
+        "session_blocking_code": null,
+        "session_blocking_codes": [],
         "session_paused_reason": null,
         "required_env_keys": [
           "TWITCH_OAUTH_TOKEN_DANIEL"
@@ -709,6 +731,8 @@
       "status": "not_configured",
       "global_status": "not_configured",
       "session_status": "inactive",
+      "session_blocking_code": null,
+      "session_blocking_codes": [],
       "paused": false,
       "paused_reason": null,
       "error": "Missing runtime prerequisites: YOUTUBE_API_KEY_DANIEL.",
@@ -734,6 +758,8 @@
         "global_enabled": true,
         "session_status": "inactive",
         "session_status_reason": null,
+        "session_blocking_code": null,
+        "session_blocking_codes": [],
         "session_paused_reason": null,
         "required_env_keys": [
           "YOUTUBE_API_KEY_DANIEL"
