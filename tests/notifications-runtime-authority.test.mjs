@@ -402,6 +402,8 @@ test("admin rumble platform view reads live runtime posture instead of a hardcod
   assert.match(rumbleHtml, /Rumble Intelligence/);
   assert.match(rumbleHtml, /Search creator or channel/);
   assert.match(rumbleHtml, /Stream history entry/);
+  assert.match(rumbleHtml, /Raw Runtime Debug/);
+  assert.match(rumbleHtml, /Copy raw debug/);
   assert.match(rumbleJs, /const BOTS_STATUS_ENDPOINT = "\/api\/admin\/bots\/status";/);
   assert.match(rumbleJs, /const CREATOR_SUMMARY_ENDPOINT = "\/api\/admin\/creator-integrations";/);
   assert.match(rumbleJs, /\/api\/admin\/accounts\/\$\{encodeURIComponent\(accountId\)\}\/creator-integrations/);
@@ -409,6 +411,9 @@ test("admin rumble platform view reads live runtime posture instead of a hardcod
   assert.match(rumbleJs, /resolved_watch_url/);
   assert.match(rumbleJs, /resolved_video_id/);
   assert.match(rumbleJs, /resolved_chat_id/);
+  assert.match(rumbleJs, /runtimeDebug/);
+  assert.match(rumbleJs, /Request Chain \/ Stage Timeline/);
+  assert.match(rumbleJs, /window\.navigator\?\.clipboard\?\.writeText/);
   assert.match(rumbleJs, /search_blob/);
   assert.match(rumbleJs, /global_status \|\| platformRow\?\.status/);
   assert.match(rumbleJs, /creator-managed Rumble session/);
@@ -416,6 +421,25 @@ test("admin rumble platform view reads live runtime posture instead of a hardcod
   assert.match(appJs, /window\.RumbleView\?\.init\?\.\(\)/);
   assert.match(shellHtml, /js\/platforms\/rumble\.js/);
   assert.doesNotMatch(rumbleJs, /Rumble ingest is paused by the runtime/);
+});
+
+test("admin rumble platform view keeps richer diagnostics and raw export tied to the runtime-backed rumble fragment", () => {
+  const rumbleJs = read("docs/js/platforms/rumble.js");
+  const rumbleCss = read("docs/css/components.css");
+
+  assert.match(rumbleJs, /rumble\?\.runtime_debug/);
+  assert.match(rumbleJs, /buildTimeline/);
+  assert.match(rumbleJs, /Detection Summary/);
+  assert.match(rumbleJs, /Selected Identity/);
+  assert.match(rumbleJs, /Watch Target Resolution/);
+  assert.match(rumbleJs, /Chat Stream Resolution/);
+  assert.match(rumbleJs, /Blocking \/ Stop Reason/);
+  assert.match(rumbleJs, /Managed Session \/ Attach Readiness/);
+  assert.match(rumbleJs, /Freshness \/ Timestamps/);
+  assert.match(rumbleJs, /No runtime-backed debug object is currently exported/);
+  assert.match(rumbleCss, /\.ss-rumble-intelligence-debug-grid/);
+  assert.match(rumbleCss, /\.ss-rumble-intelligence-raw-shell/);
+  assert.match(rumbleCss, /\.ss-rumble-intelligence-raw-output/);
 });
 
 test("admin overview platform cards prefer global runtime posture over creator-session blockers", () => {

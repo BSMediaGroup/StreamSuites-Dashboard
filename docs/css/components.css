@@ -3620,8 +3620,107 @@
   margin-top: 8px;
 }
 
+.ss-rumble-intelligence-debug-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.ss-rumble-intelligence-debug-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.018)),
+    rgba(6, 10, 18, 0.46);
+}
+
+.ss-rumble-intelligence-debug-card h4 {
+  margin: 0;
+  font-family: "RechargeBd", sans-serif;
+  letter-spacing: 0.04em;
+}
+
+.ss-rumble-intelligence-kv {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.ss-rumble-intelligence-kv-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.ss-rumble-intelligence-kv-row dt,
+.ss-rumble-intelligence-kv-row dd {
+  margin: 0;
+}
+
+.ss-rumble-intelligence-kv-row dt {
+  color: var(--text-secondary);
+}
+
+.ss-rumble-intelligence-kv-row dd {
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.ss-rumble-intelligence-timeline {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 10px;
+  color: var(--text-secondary);
+}
+
+.ss-rumble-intelligence-timeline li {
+  padding-left: 4px;
+}
+
+.ss-rumble-intelligence-raw-shell {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.ss-rumble-intelligence-raw-toolbar,
+.ss-rumble-intelligence-raw-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ss-rumble-intelligence-raw-output {
+  margin: 0;
+  padding: 12px;
+  max-height: 440px;
+  overflow: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: rgba(5, 10, 18, 0.82);
+  color: #dbe8ff;
+  font-family: var(--system-mono-font);
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 @media (max-width: 1080px) {
   .ss-rumble-intelligence-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .ss-rumble-intelligence-kv-row {
     grid-template-columns: 1fr;
   }
 }

@@ -17,6 +17,7 @@
     selectedAccountId: "",
     selectedStreamKey: "",
     intelligenceDetail: null,
+    rawDebugExpanded: true,
   };
 
   function cacheElements() {
@@ -42,6 +43,10 @@
     el.chart = document.getElementById("rumble-intelligence-chart");
     el.chartEmpty = document.getElementById("rumble-intelligence-chart-empty");
     el.diagnostics = document.getElementById("rumble-intelligence-diagnostics");
+    el.rawShell = document.getElementById("rumble-intelligence-raw-shell");
+    el.rawOutput = document.getElementById("rumble-intelligence-raw-output");
+    el.rawCopy = document.getElementById("rumble-intelligence-raw-copy");
+    el.rawToggle = document.getElementById("rumble-intelligence-raw-toggle");
   }
 
   function resolveApiBase() {
@@ -113,6 +118,65 @@
     return text
       .replace(/_/g, " ")
       .replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+
+  function formatJson(value) {
+    try {
+      return JSON.stringify(value, null, 2);
+    } catch (_err) {
+      return "{}";
+    }
+  }
+
+  function formatBoolean(value) {
+    if (value === true) return "Yes";
+    if (value === false) return "No";
+    return "Unavailable";
+  }
+
+  function renderKeyValueRows(rows) {
+    const items = rows.filter((row) => row && row.label);
+    if (!items.length) {
+      return '<div class="ss-empty-state" style="margin-top:0;">No runtime detail exported for this section.</div>';
+    }
+    return `<dl class="ss-rumble-intelligence-kv">${items
+      .map(
+        (row) => `
+          <div class="ss-rumble-intelligence-kv-row">
+            <dt>${escapeHtml(row.label)}</dt>
+            <dd>${row.html ?? escapeHtml(row.value ?? "Unavailable")}</dd>
+          </div>
+        `
+      )
+      .join("")}</dl>`;
+  }
+
+  function requestLabel(item) {
+    const stage = formatLabel(item?.stage || "request");
+    const status = item?.status_code ? `HTTP ${item.status_code}` : item?.error ? "Error" : "Pending";
+    return `${stage} • ${status}`;
+  }
+
+  function buildTimeline(runtimeDebug) {
+    const diagnostics = runtimeDebug?.discovery_diagnostics || {};
+    const browse = Array.isArray(diagnostics?.browse_live?.requests) ? diagnostics.browse_live.requests : [];
+    const creatorProbe = Array.isArray(diagnostics?.creator_channel_probe?.request_sequence)
+      ? diagnostics.creator_channel_probe.request_sequence
+      : [];
+    const watchResolution = diagnostics?.watch_resolution && typeof diagnostics.watch_resolution === "object"
+      ? diagnostics.watch_resolution
+      : {};
+    const sampleChain = watchResolution?.sample_proof_chain && typeof watchResolution.sample_proof_chain === "object"
+      ? watchResolution.sample_proof_chain
+      : {};
+    const sampleChatStream = sampleChain?.chat_stream && typeof sampleChain.chat_stream === "object"
+      ? [sampleChain.chat_stream]
+      : [];
+    const watchChain = ["watch_page", "autoplay", "embed", "watching_now"]
+      .map((key) => watchResolution?.[key])
+      .filter((item) => item && typeof item === "object");
+
+    return [...browse, ...creatorProbe, ...sampleChatStream, ...watchChain].filter(Boolean);
   }
 
   function chipClassForTone(tone) {
@@ -373,6 +437,7 @@
     const managed = rumble?.managed_session && typeof rumble.managed_session === "object" ? rumble.managed_session : {};
     const managedTarget = managed?.resolved_target && typeof managed.resolved_target === "object" ? managed.resolved_target : {};
     const dispatch = rumble?.managed_dispatch && typeof rumble.managed_dispatch === "object" ? rumble.managed_dispatch : {};
+    const runtimeDebug = rumble?.runtime_debug && typeof rumble.runtime_debug === "object" ? rumble.runtime_debug : null;
     const watchUrl =
       String(managedTarget.watch_url || botAuto.resolved_watch_url || botAuto.resolved_live_target_url || "").trim() || null;
     const videoId = String(managedTarget.video_id || botAuto.resolved_video_id || "").trim() || null;
@@ -433,6 +498,7 @@
       botAuto,
       managed,
       dispatch,
+      runtimeDebug,
       streams,
       history_available: false,
     };
@@ -539,27 +605,153 @@
     if (!el.diagnostics) return;
     if (!creator || !state.intelligenceDetail) {
       setHtml(el.diagnostics, 'Runtime discovery, detection, and stream metadata will appear here after a creator is selected.');
+      if (el.rawShell) el.rawShell.classList.add("hidden");
       return;
     }
-    const botAuto = state.intelligenceDetail.botAuto || {};
-    const diagnostics = Array.isArray(botAuto.runtime_diagnostics) ? botAuto.runtime_diagnostics : [];
-    const discoveryNotes = [
-      botAuto.discovery?.stop_reason ? `Discovery stop reason: ${formatLabel(botAuto.discovery.stop_reason)}` : "",
-      botAuto.discovery?.stop_detail ? `Discovery detail: ${formatLabel(botAuto.discovery.stop_detail)}` : "",
-      botAuto.blocking_reason ? `Blocking reason: ${formatLabel(botAuto.blocking_reason)}` : "",
-      botAuto.blocking_reason_detail ? `Blocking detail: ${formatLabel(botAuto.blocking_reason_detail)}` : "",
-    ].filter(Boolean);
-    const items = diagnostics.concat(discoveryNotes);
-    if (!items.length) {
-      setHtml(el.diagnostics, '<div class="ss-empty-state" style="margin-top:0;">No additional runtime diagnostics were exported for the current selection.</div>');
+    const detail = state.intelligenceDetail || {};
+    const botAuto = detail.botAuto || {};
+    const runtimeDebug = detail.runtimeDebug || null;
+    if (!runtimeDebug) {
+      setHtml(el.diagnostics, '<div class="ss-empty-state" style="margin-top:0;">No runtime-backed debug object is currently exported for the selected creator.</div>');
+      if (el.rawShell) el.rawShell.classList.add("hidden");
       return;
     }
+
+    const discovery = runtimeDebug.matched_discovery_entry || {};
+    const discoveryDiagnostics = runtimeDebug.discovery_diagnostics || {};
+    const creatorProbe = discoveryDiagnostics.creator_channel_probe || {};
+    const watchResolution = discoveryDiagnostics.watch_resolution || {};
+    const managed = runtimeDebug.managed_session || {};
+    const timeline = buildTimeline(runtimeDebug);
+    const selectedIdentity = runtimeDebug.authoritative_identity || {};
+    const rawOutput = formatJson(runtimeDebug);
+    const debugCards = [
+      {
+        title: "Detection Summary",
+        body: renderKeyValueRows([
+          { label: "Decision state", value: formatLabel(botAuto.decision_state || runtimeDebug.decision?.decision_state) },
+          { label: "Live status", value: formatLabel(botAuto.live_status || runtimeDebug.decision?.live_status) },
+          { label: "Truth source", value: formatLabel(botAuto.live_truth_source || runtimeDebug.decision?.live_truth_source) },
+          { label: "Resolved watch URL", html: botAuto.resolved_watch_url ? `<code>${escapeHtml(botAuto.resolved_watch_url)}</code>` : "Unavailable" },
+          { label: "Resolved video ID", value: botAuto.resolved_video_id || "Unavailable" },
+          { label: "Resolved chat ID", value: botAuto.resolved_chat_id || "Unavailable" },
+        ]),
+      },
+      {
+        title: "Selected Identity",
+        body: renderKeyValueRows([
+          { label: "Identity source", value: formatLabel(selectedIdentity.source) },
+          { label: "Normalized creator keys", html: `<code>${escapeHtml((selectedIdentity.normalized_inputs?.creator_keys || []).join(", ") || "Unavailable")}</code>` },
+          { label: "Selected URLs", html: `<code>${escapeHtml((selectedIdentity.normalized_inputs?.urls || []).join(", ") || "Unavailable")}</code>` },
+          { label: "Selected slugs", html: `<code>${escapeHtml((selectedIdentity.normalized_inputs?.slugs || []).join(", ") || "Unavailable")}</code>` },
+          { label: "Ignored identities", value: String((selectedIdentity.ignored_identities || []).length || 0) },
+        ]),
+      },
+      {
+        title: "Live Tile Match",
+        body: renderKeyValueRows([
+          { label: "Browse live rows found", value: String(discoveryDiagnostics.browse_live?.live_tiles_found ?? "0") },
+          { label: "Matched Daniel row", value: formatBoolean(discoveryDiagnostics.browse_live?.matched_live_row_found) },
+          { label: "Matched row count", value: String(discoveryDiagnostics.browse_live?.matched_live_row_count ?? 0) },
+          { label: "Selected match", html: discoveryDiagnostics.browse_live?.selected_match?.watch_url ? `<code>${escapeHtml(discoveryDiagnostics.browse_live.selected_match.watch_url)}</code>` : "Unavailable" },
+        ]),
+      },
+      {
+        title: "Watch Target Resolution",
+        body: renderKeyValueRows([
+          { label: "Resolution source", value: formatLabel(discoveryDiagnostics.decision_summary?.resolution_source || creatorProbe.resolution_source) },
+          { label: "Resolved watch target", html: watchResolution.resolved_watch_target ? `<code>${escapeHtml(watchResolution.resolved_watch_target)}</code>` : "Unavailable" },
+          { label: "Resolved numeric video ID", value: watchResolution.resolved_numeric_video_id || discovery.numeric_video_id || "Unavailable" },
+          { label: "Attach identity ready", value: formatBoolean(watchResolution.attach_identity_ready ?? runtimeDebug.decision?.attach_identity_ready) },
+          { label: "Rejected evidence", value: String((creatorProbe.rejected_evidence || discoveryDiagnostics.rejected_evidence || []).length || 0) },
+        ]),
+      },
+      {
+        title: "Chat Stream Resolution",
+        body: renderKeyValueRows([
+          { label: "Chat ID", value: watchResolution.resolved_chat_id || runtimeDebug.decision?.resolved_chat_id || "Unavailable" },
+          { label: "Sample chat init", value: formatBoolean(watchResolution.sample_proof_chain?.chat_init_received) },
+          { label: "Chat request URL", html: watchResolution.sample_proof_chain?.chat_stream?.url ? `<code>${escapeHtml(watchResolution.sample_proof_chain.chat_stream.url)}</code>` : "Unavailable" },
+          { label: "Chat request status", value: watchResolution.sample_proof_chain?.chat_stream?.status_code ? `HTTP ${watchResolution.sample_proof_chain.chat_stream.status_code}` : watchResolution.sample_proof_chain?.chat_stream?.error || "Unavailable" },
+        ]),
+      },
+      {
+        title: "Blocking / Stop Reason",
+        body: renderKeyValueRows([
+          { label: "Blocking reason", value: formatLabel(botAuto.blocking_reason || runtimeDebug.decision?.blocking_reason) },
+          { label: "Blocking category", value: formatLabel(botAuto.blocking_reason_category || runtimeDebug.decision?.blocking_reason_category) },
+          { label: "Stop stage", value: formatLabel(discovery.stop_stage || creatorProbe.stop_stage) },
+          { label: "Stop reason", value: formatLabel(discovery.stop_reason || creatorProbe.stop_reason) },
+          { label: "Stop detail", value: discovery.stop_detail || creatorProbe.stop_detail || botAuto.blocking_reason_detail || "Unavailable" },
+        ]),
+      },
+      {
+        title: "Managed Session / Attach Readiness",
+        body: renderKeyValueRows([
+          { label: "Managed session state", value: formatLabel(managed.lifecycle_state) },
+          { label: "Desired", value: formatBoolean(managed.desired) },
+          { label: "Eligible", value: formatBoolean(managed.eligible) },
+          { label: "Attach readiness", value: formatBoolean(runtimeDebug.decision?.attach_identity_ready) },
+          { label: "Resolved target", html: managed.resolved_target?.watch_url ? `<code>${escapeHtml(managed.resolved_target.watch_url)}</code>` : "Unavailable" },
+        ]),
+      },
+      {
+        title: "Freshness / Timestamps",
+        body: renderKeyValueRows([
+          { label: "Debug generated", value: formatTimestamp(runtimeDebug.generated_at) },
+          { label: "Discovery export", value: formatTimestamp(runtimeDebug.source_exports?.discovery_generated_at) },
+          { label: "Discovery scan completed", value: formatTimestamp(runtimeDebug.source_exports?.discovery_scan_completed_at) },
+          { label: "Live status export", value: formatTimestamp(runtimeDebug.source_exports?.live_status_generated_at) },
+          { label: "Last live status checked", value: formatTimestamp(runtimeDebug.decision?.last_live_status_checked_at) },
+        ]),
+      },
+    ];
+
     setHtml(
       el.diagnostics,
-      `<ul class="ss-rumble-intelligence-diagnostics">${items
-        .map((item) => `<li>${escapeHtml(formatLabel(item))}</li>`)
-        .join("")}</ul>`
+      `
+        <div class="ss-rumble-intelligence-debug-grid">
+          ${debugCards
+            .map(
+              (card) => `
+                <article class="ss-rumble-intelligence-debug-card">
+                  <h4>${escapeHtml(card.title)}</h4>
+                  ${card.body}
+                </article>
+              `
+            )
+            .join("")}
+        </div>
+        <section class="ss-rumble-intelligence-debug-card">
+          <h4>Request Chain / Stage Timeline</h4>
+          ${
+            timeline.length
+              ? `<ol class="ss-rumble-intelligence-timeline">${timeline
+                  .map(
+                    (item) => `
+                      <li>
+                        <strong>${escapeHtml(requestLabel(item))}</strong>
+                        <div><code>${escapeHtml(item.url || "Unavailable")}</code></div>
+                        <div class="muted">Final URL: ${escapeHtml(item.final_url || "Unavailable")} • Response length: ${escapeHtml(String(item.response_length ?? item.response_size ?? "Unavailable"))}</div>
+                        <div class="muted">Blocked: ${escapeHtml(formatBoolean(item.blocked))} • Error: ${escapeHtml(item.error || "None")}</div>
+                      </li>
+                    `
+                  )
+                  .join("")}</ol>`
+              : '<div class="ss-empty-state" style="margin-top:0;">No request-chain stages were exported for the selected creator.</div>'
+          }
+        </section>
+      `
     );
+
+    if (el.rawShell && el.rawOutput) {
+      el.rawShell.classList.remove("hidden");
+      el.rawOutput.textContent = rawOutput;
+      el.rawOutput.classList.toggle("hidden", !state.rawDebugExpanded);
+      if (el.rawToggle) {
+        el.rawToggle.textContent = state.rawDebugExpanded ? "Collapse raw debug" : "Expand raw debug";
+      }
+    }
   }
 
   function renderChart() {
@@ -667,7 +859,9 @@
     );
     state.intelligenceDetail = normalizeDetailPayload(detailPayload);
     const streams = Array.isArray(state.intelligenceDetail.streams) ? state.intelligenceDetail.streams : [];
-    state.selectedStreamKey = streams[0]?.key || "";
+    if (!streams.some((item) => item.key === state.selectedStreamKey)) {
+      state.selectedStreamKey = streams[0]?.key || "";
+    }
     renderIntelligence();
 
     if (!streams.length) {
@@ -718,6 +912,23 @@
         renderIntelligence();
       });
     }
+    if (el.rawToggle && !el.rawToggle.dataset.rumbleBound) {
+      el.rawToggle.dataset.rumbleBound = "true";
+      el.rawToggle.addEventListener("click", () => {
+        state.rawDebugExpanded = !state.rawDebugExpanded;
+        renderDiagnostics();
+      });
+    }
+    if (el.rawCopy && !el.rawCopy.dataset.rumbleBound) {
+      el.rawCopy.dataset.rumbleBound = "true";
+      el.rawCopy.addEventListener("click", async () => {
+        const text = el.rawOutput?.textContent || "";
+        if (!text) return;
+        if (window.navigator?.clipboard?.writeText) {
+          await window.navigator.clipboard.writeText(text);
+        }
+      });
+    }
   }
 
   function renderLoadFailure(message) {
@@ -751,6 +962,8 @@
       renderPayload(payload);
       if (!selectorsHydrated) {
         await hydrateIntelligence(payload);
+      } else if (state.selectedAccountId) {
+        await loadCreatorDetail(state.selectedAccountId);
       }
     } catch (err) {
       renderLoadFailure(err?.message || "Unable to load runtime bot posture.");
