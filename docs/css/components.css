@@ -3682,6 +3682,32 @@
   padding-left: 4px;
 }
 
+.ss-rumble-intelligence-trace-block {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.ss-rumble-intelligence-trace-block .label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.ss-rumble-intelligence-trace-block pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--system-mono-font);
+  font-size: 11px;
+  color: #dbe8ff;
+}
+
 .ss-rumble-intelligence-raw-shell {
   display: grid;
   gap: 10px;

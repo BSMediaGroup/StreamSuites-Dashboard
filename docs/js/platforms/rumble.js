@@ -8,7 +8,6 @@
 
   const el = {};
   let runtimeTimer = null;
-  let intelligenceAbortController = null;
   let selectorsHydrated = false;
 
   const state = {
@@ -17,6 +16,13 @@
     selectedAccountId: "",
     selectedStreamKey: "",
     intelligenceDetail: null,
+    intelligenceDetailSignature: "",
+    creatorsSignature: "",
+    detailRequestToken: 0,
+    runtimeRefreshInFlight: false,
+    runtimeRefreshQueued: false,
+    destroyed: false,
+    rawDebugText: "",
     rawDebugExpanded: true,
   };
 
@@ -93,9 +99,23 @@
     target.textContent = value;
   }
 
+  function setTextIfChanged(target, value) {
+    if (!target) return;
+    const nextValue = String(value ?? "");
+    if (target.textContent === nextValue) return;
+    target.textContent = nextValue;
+  }
+
   function setHtml(target, value) {
     if (!target) return;
     target.innerHTML = value;
+  }
+
+  function setHtmlIfChanged(target, value) {
+    if (!target) return;
+    const nextValue = String(value ?? "");
+    if (target.innerHTML === nextValue) return;
+    target.innerHTML = nextValue;
   }
 
   function escapeHtml(value) {
@@ -134,6 +154,17 @@
     return "Unavailable";
   }
 
+  function stableSignature(value) {
+    return formatJson(value ?? null);
+  }
+
+  function listToCode(values) {
+    const items = Array.isArray(values)
+      ? values.map((value) => String(value || "").trim()).filter(Boolean)
+      : [];
+    return items.length ? `<code>${escapeHtml(items.join(", "))}</code>` : "Unavailable";
+  }
+
   function renderKeyValueRows(rows) {
     const items = rows.filter((row) => row && row.label);
     if (!items.length) {
@@ -158,6 +189,10 @@
   }
 
   function buildTimeline(runtimeDebug) {
+    const exported = runtimeDebug?.request_chains?.all;
+    if (Array.isArray(exported) && exported.length) {
+      return exported;
+    }
     const diagnostics = runtimeDebug?.discovery_diagnostics || {};
     const browse = Array.isArray(diagnostics?.browse_live?.requests) ? diagnostics.browse_live.requests : [];
     const creatorProbe = Array.isArray(diagnostics?.creator_channel_probe?.request_sequence)
@@ -177,6 +212,63 @@
       .filter((item) => item && typeof item === "object");
 
     return [...browse, ...creatorProbe, ...sampleChatStream, ...watchChain].filter(Boolean);
+  }
+
+  function traceMarkersMarkup(item) {
+    const markers = item?.parse_markers && typeof item.parse_markers === "object"
+      ? item.parse_markers
+      : {};
+    const headers = item?.request_headers && typeof item.request_headers === "object"
+      ? item.request_headers
+      : {};
+    const parts = [];
+    if (Object.keys(headers).length) {
+      parts.push(`
+        <div class="ss-rumble-intelligence-trace-block">
+          <span class="label">Request Headers</span>
+          <pre>${escapeHtml(formatJson(headers))}</pre>
+        </div>
+      `);
+    }
+    if (Object.keys(markers).length) {
+      parts.push(`
+        <div class="ss-rumble-intelligence-trace-block">
+          <span class="label">Parse Markers</span>
+          <pre>${escapeHtml(formatJson(markers))}</pre>
+        </div>
+      `);
+    }
+    return parts.join("");
+  }
+
+  function renderRequestChain(requests, emptyMessage) {
+    const items = Array.isArray(requests) ? requests.filter(Boolean) : [];
+    if (!items.length) {
+      return `<div class="ss-empty-state" style="margin-top:0;">${escapeHtml(emptyMessage)}</div>`;
+    }
+    return `<ol class="ss-rumble-intelligence-timeline">${items
+      .map(
+        (item) => `
+          <li>
+            <strong>${escapeHtml(requestLabel(item))}</strong>
+            <div><code>${escapeHtml(item.url || "Unavailable")}</code></div>
+            <div class="muted">Final URL: ${escapeHtml(item.final_url || "Unavailable")} • Response length: ${escapeHtml(String(item.response_length ?? item.response_size ?? "Unavailable"))}</div>
+            <div class="muted">Content type: ${escapeHtml(item.content_type || "Unavailable")} • Blocked: ${escapeHtml(formatBoolean(item.blocked))}</div>
+            <div class="muted">Error: ${escapeHtml(item.error || "None")}</div>
+            ${traceMarkersMarkup(item)}
+          </li>
+        `
+      )
+      .join("")}</ol>`;
+  }
+
+  function renderRequestChainCard(title, requests, emptyMessage) {
+    return `
+      <section class="ss-rumble-intelligence-debug-card">
+        <h4>${escapeHtml(title)}</h4>
+        ${renderRequestChain(requests, emptyMessage)}
+      </section>
+    `;
   }
 
   function chipClassForTone(tone) {
@@ -383,25 +475,32 @@
   }
 
   function filterCreators() {
+    const previousSelection = state.selectedAccountId;
     const query = String(el.searchInput?.value || "").trim().toLowerCase();
     state.filteredCreators = !query
       ? state.creators.slice()
       : state.creators.filter((item) => item.search_blob.includes(query));
     if (!state.filteredCreators.some((item) => item.account_id === state.selectedAccountId)) {
-      state.selectedAccountId = state.filteredCreators[0]?.account_id || "";
+      if (!state.filteredCreators.length && state.creators.some((item) => item.account_id === previousSelection)) {
+        state.selectedAccountId = previousSelection;
+      } else {
+        state.selectedAccountId = state.filteredCreators[0]?.account_id || state.creators[0]?.account_id || "";
+      }
     }
     renderCreatorOptions();
+    return previousSelection !== state.selectedAccountId;
   }
 
   function renderCreatorOptions() {
     if (!(el.creatorSelect instanceof HTMLSelectElement)) return;
     const items = state.filteredCreators;
-    el.creatorSelect.innerHTML = items
+    const optionsMarkup = items
       .map((item) => {
         const channelLabel = item.channel_handle || item.channel_slug || "Rumble";
         return `<option value="${escapeHtml(item.account_id)}">${escapeHtml(`${item.display_name} • ${channelLabel}`)}</option>`;
       })
       .join("");
+    setHtmlIfChanged(el.creatorSelect, optionsMarkup);
     el.creatorSelect.disabled = items.length === 0;
     if (items.length && state.selectedAccountId) {
       el.creatorSelect.value = state.selectedAccountId;
@@ -416,10 +515,10 @@
     const creator = selectedCreator();
     if (!el.creatorSummary) return;
     if (!creator) {
-      setHtml(el.creatorSummary, "");
+      setHtmlIfChanged(el.creatorSummary, "");
       return;
     }
-    setHtml(
+    setHtmlIfChanged(
       el.creatorSummary,
       [
         `<span class="ss-chip">Creator: ${escapeHtml(creator.display_name)}</span>`,
@@ -438,14 +537,57 @@
     const managedTarget = managed?.resolved_target && typeof managed.resolved_target === "object" ? managed.resolved_target : {};
     const dispatch = rumble?.managed_dispatch && typeof rumble.managed_dispatch === "object" ? rumble.managed_dispatch : {};
     const runtimeDebug = rumble?.runtime_debug && typeof rumble.runtime_debug === "object" ? rumble.runtime_debug : null;
+    const watchTargetResolution = runtimeDebug?.watch_target_resolution && typeof runtimeDebug.watch_target_resolution === "object"
+      ? runtimeDebug.watch_target_resolution
+      : {};
+    const streamChatIdentity = runtimeDebug?.stream_chat_identity && typeof runtimeDebug.stream_chat_identity === "object"
+      ? runtimeDebug.stream_chat_identity
+      : {};
     const watchUrl =
-      String(managedTarget.watch_url || botAuto.resolved_watch_url || botAuto.resolved_live_target_url || "").trim() || null;
-    const videoId = String(managedTarget.video_id || botAuto.resolved_video_id || "").trim() || null;
-    const chatId = String(managedTarget.chat_id || botAuto.resolved_chat_id || "").trim() || null;
-    const streamIdentity = String(managedTarget.stream_identity || botAuto.resolved_stream_identity || "").trim() || null;
+      String(
+        managedTarget.watch_url
+        || botAuto.resolved_watch_url
+        || botAuto.resolved_live_target_url
+        || watchTargetResolution.resolved_watch_target
+        || streamChatIdentity.resolved_watch_url
+        || streamChatIdentity.resolved_live_target_url
+        || ""
+      ).trim() || null;
+    const videoId = String(
+      managedTarget.video_id
+      || botAuto.resolved_video_id
+      || watchTargetResolution.resolved_numeric_video_id
+      || streamChatIdentity.resolved_video_id
+      || ""
+    ).trim() || null;
+    const chatId = String(
+      managedTarget.chat_id
+      || botAuto.resolved_chat_id
+      || watchTargetResolution.resolved_chat_id
+      || streamChatIdentity.resolved_chat_id
+      || ""
+    ).trim() || null;
+    const streamIdentity = String(
+      managedTarget.stream_identity
+      || botAuto.resolved_stream_identity
+      || watchTargetResolution.resolved_stream_identity
+      || streamChatIdentity.resolved_stream_identity
+      || ""
+    ).trim() || null;
     const channelUrl =
-      String(managedTarget.channel_url || botAuto.resolved_channel_url || rumble?.public_url || "").trim() || null;
-    const channelHandle = String(botAuto.resolved_channel_handle || rumble?.channel_handle || "").trim() || null;
+      String(
+        managedTarget.channel_url
+        || botAuto.resolved_channel_url
+        || watchTargetResolution.resolved_channel_url
+        || rumble?.public_url
+        || ""
+      ).trim() || null;
+    const channelHandle = String(
+      botAuto.resolved_channel_handle
+      || rumble?.channel_handle
+      || runtimeDebug?.selected_creator?.integration_channel_handle
+      || ""
+    ).trim() || null;
     const hasCurrentSnapshot = Boolean(
       watchUrl
       || videoId
@@ -508,15 +650,18 @@
     if (!(el.streamSelect instanceof HTMLSelectElement)) return;
     const streams = Array.isArray(state.intelligenceDetail?.streams) ? state.intelligenceDetail.streams : [];
     if (!streams.length) {
-      el.streamSelect.innerHTML = '<option value="">No exported stream history</option>';
+      setHtmlIfChanged(el.streamSelect, '<option value="">No exported stream history</option>');
       el.streamSelect.disabled = true;
       state.selectedStreamKey = "";
       return;
     }
     el.streamSelect.disabled = false;
-    el.streamSelect.innerHTML = streams
+    setHtmlIfChanged(
+      el.streamSelect,
+      streams
       .map((item) => `<option value="${escapeHtml(item.key)}">${escapeHtml(item.label)}</option>`)
-      .join("");
+      .join("")
+    );
     if (!streams.some((item) => item.key === state.selectedStreamKey)) {
       state.selectedStreamKey = streams[0].key;
     }
@@ -528,17 +673,17 @@
     const stream = selectedStream();
     if (!el.historyState) return;
     if (!creator) {
-      setText(el.historyState, "Select a creator to inspect current runtime posture and any exported stream history.");
+      setTextIfChanged(el.historyState, "Select a creator to inspect current runtime posture and any exported stream history.");
       return;
     }
     if (!stream) {
-      setText(
+      setTextIfChanged(
         el.historyState,
         "No historical Rumble engagement snapshots exported yet. Live discovery is available when runtime can resolve a stream, but time-series analytics are not currently stored."
       );
       return;
     }
-    setText(
+    setTextIfChanged(
       el.historyState,
       "Current runtime snapshot is available. Historical Rumble engagement analytics have not been exported yet, so the selector is limited to current posture."
     );
@@ -549,7 +694,7 @@
     const stream = selectedStream();
     if (!el.meta) return;
     if (!creator) {
-      setHtml(el.meta, '<div class="ss-empty-state" style="margin-top:0;">Select a creator or channel to inspect Rumble intelligence.</div>');
+      setHtmlIfChanged(el.meta, '<div class="ss-empty-state" style="margin-top:0;">Select a creator or channel to inspect Rumble intelligence.</div>');
       return;
     }
 
@@ -585,7 +730,7 @@
       },
       { label: "Readiness", value: escapeHtml(creator.readiness_label || "Unknown") },
     ];
-    setHtml(
+    setHtmlIfChanged(
       el.meta,
       cards
         .map(
@@ -604,7 +749,7 @@
     const creator = selectedCreator();
     if (!el.diagnostics) return;
     if (!creator || !state.intelligenceDetail) {
-      setHtml(el.diagnostics, 'Runtime discovery, detection, and stream metadata will appear here after a creator is selected.');
+      setHtmlIfChanged(el.diagnostics, 'Runtime discovery, detection, and stream metadata will appear here after a creator is selected.');
       if (el.rawShell) el.rawShell.classList.add("hidden");
       return;
     }
@@ -612,7 +757,7 @@
     const botAuto = detail.botAuto || {};
     const runtimeDebug = detail.runtimeDebug || null;
     if (!runtimeDebug) {
-      setHtml(el.diagnostics, '<div class="ss-empty-state" style="margin-top:0;">No runtime-backed debug object is currently exported for the selected creator.</div>');
+      setHtmlIfChanged(el.diagnostics, '<div class="ss-empty-state" style="margin-top:0;">No runtime-backed debug object is currently exported for the selected creator.</div>');
       if (el.rawShell) el.rawShell.classList.add("hidden");
       return;
     }
@@ -620,11 +765,41 @@
     const discovery = runtimeDebug.matched_discovery_entry || {};
     const discoveryDiagnostics = runtimeDebug.discovery_diagnostics || {};
     const creatorProbe = discoveryDiagnostics.creator_channel_probe || {};
-    const watchResolution = discoveryDiagnostics.watch_resolution || {};
-    const managed = runtimeDebug.managed_session || {};
+    const creatorPageProbe = creatorProbe.creator_page_probe && typeof creatorProbe.creator_page_probe === "object"
+      ? creatorProbe.creator_page_probe
+      : {};
+    const watchResolution = runtimeDebug.watch_target_resolution && typeof runtimeDebug.watch_target_resolution === "object"
+      ? runtimeDebug.watch_target_resolution
+      : discoveryDiagnostics.watch_resolution && typeof discoveryDiagnostics.watch_resolution === "object"
+      ? discoveryDiagnostics.watch_resolution
+      : {};
+    const streamChatIdentity = runtimeDebug.stream_chat_identity && typeof runtimeDebug.stream_chat_identity === "object"
+      ? runtimeDebug.stream_chat_identity
+      : {};
+    const blocking = runtimeDebug.blocking && typeof runtimeDebug.blocking === "object"
+      ? runtimeDebug.blocking
+      : {};
+    const stop = runtimeDebug.stop && typeof runtimeDebug.stop === "object"
+      ? runtimeDebug.stop
+      : {};
+    const freshness = runtimeDebug.freshness && typeof runtimeDebug.freshness === "object"
+      ? runtimeDebug.freshness
+      : {};
+    const identityResolution = runtimeDebug.identity_resolution && typeof runtimeDebug.identity_resolution === "object"
+      ? runtimeDebug.identity_resolution
+      : runtimeDebug.authoritative_identity || {};
+    const managed = runtimeDebug.managed_session_posture && typeof runtimeDebug.managed_session_posture === "object"
+      ? runtimeDebug.managed_session_posture
+      : runtimeDebug.managed_session || {};
     const timeline = buildTimeline(runtimeDebug);
-    const selectedIdentity = runtimeDebug.authoritative_identity || {};
-    const rawOutput = formatJson(runtimeDebug);
+    const requestChains = runtimeDebug.request_chains && typeof runtimeDebug.request_chains === "object"
+      ? runtimeDebug.request_chains
+      : {};
+    const requestCounts = runtimeDebug.request_chain_counts && typeof runtimeDebug.request_chain_counts === "object"
+      ? runtimeDebug.request_chain_counts
+      : {};
+    const rejectedEvidence = Array.isArray(runtimeDebug.rejected_evidence) ? runtimeDebug.rejected_evidence : [];
+    const rawOutput = state.rawDebugText || formatJson(runtimeDebug);
     const debugCards = [
       {
         title: "Detection Summary",
@@ -632,124 +807,217 @@
           { label: "Decision state", value: formatLabel(botAuto.decision_state || runtimeDebug.decision?.decision_state) },
           { label: "Live status", value: formatLabel(botAuto.live_status || runtimeDebug.decision?.live_status) },
           { label: "Truth source", value: formatLabel(botAuto.live_truth_source || runtimeDebug.decision?.live_truth_source) },
-          { label: "Resolved watch URL", html: botAuto.resolved_watch_url ? `<code>${escapeHtml(botAuto.resolved_watch_url)}</code>` : "Unavailable" },
-          { label: "Resolved video ID", value: botAuto.resolved_video_id || "Unavailable" },
-          { label: "Resolved chat ID", value: botAuto.resolved_chat_id || "Unavailable" },
+          {
+            label: "Resolved watch target",
+            html: watchResolution.resolved_watch_target
+              ? `<code>${escapeHtml(watchResolution.resolved_watch_target)}</code>`
+              : botAuto.resolved_watch_url
+              ? `<code>${escapeHtml(botAuto.resolved_watch_url)}</code>`
+              : "Unavailable",
+          },
+          { label: "Resolved video ID", value: watchResolution.resolved_numeric_video_id || botAuto.resolved_video_id || "Unavailable" },
+          { label: "Resolved chat ID", value: watchResolution.resolved_chat_id || botAuto.resolved_chat_id || "Unavailable" },
+          { label: "Live target unresolved", value: formatBoolean(watchResolution.live_target_unresolved ?? runtimeDebug.decision?.live_target_unresolved) },
+          { label: "Attach identity ready", value: formatBoolean(watchResolution.attach_identity_ready ?? runtimeDebug.decision?.attach_identity_ready) },
         ]),
       },
       {
-        title: "Selected Identity",
+        title: "Identity Resolution",
         body: renderKeyValueRows([
-          { label: "Identity source", value: formatLabel(selectedIdentity.source) },
-          { label: "Normalized creator keys", html: `<code>${escapeHtml((selectedIdentity.normalized_inputs?.creator_keys || []).join(", ") || "Unavailable")}</code>` },
-          { label: "Selected URLs", html: `<code>${escapeHtml((selectedIdentity.normalized_inputs?.urls || []).join(", ") || "Unavailable")}</code>` },
-          { label: "Selected slugs", html: `<code>${escapeHtml((selectedIdentity.normalized_inputs?.slugs || []).join(", ") || "Unavailable")}</code>` },
-          { label: "Ignored identities", value: String((selectedIdentity.ignored_identities || []).length || 0) },
+          { label: "Identity source", value: formatLabel(identityResolution.source) },
+          { label: "Selection reason", value: identityResolution.selection_reason || "Unavailable" },
+          { label: "Normalized creator keys", html: listToCode(identityResolution.normalized_inputs?.creator_keys) },
+          { label: "Selected channel IDs", html: listToCode(identityResolution.normalized_inputs?.channel_ids) },
+          { label: "Selected URLs", html: listToCode(identityResolution.normalized_inputs?.urls) },
+          { label: "Selected slugs", html: listToCode(identityResolution.normalized_inputs?.slugs) },
+          { label: "Ignored identities", value: String((identityResolution.ignored_identities || []).length || 0) },
         ]),
       },
       {
-        title: "Live Tile Match",
+        title: "Browse / Live Request Chain",
         body: renderKeyValueRows([
+          { label: "Requests exported", value: String(requestCounts.browse_live ?? ((requestChains.browse_live || []).length || 0)) },
           { label: "Browse live rows found", value: String(discoveryDiagnostics.browse_live?.live_tiles_found ?? "0") },
-          { label: "Matched Daniel row", value: formatBoolean(discoveryDiagnostics.browse_live?.matched_live_row_found) },
+          { label: "Matched live row", value: formatBoolean(discoveryDiagnostics.browse_live?.matched_live_row_found) },
           { label: "Matched row count", value: String(discoveryDiagnostics.browse_live?.matched_live_row_count ?? 0) },
-          { label: "Selected match", html: discoveryDiagnostics.browse_live?.selected_match?.watch_url ? `<code>${escapeHtml(discoveryDiagnostics.browse_live.selected_match.watch_url)}</code>` : "Unavailable" },
+          {
+            label: "Selected match",
+            html: discoveryDiagnostics.browse_live?.selected_match?.watch_url
+              ? `<code>${escapeHtml(discoveryDiagnostics.browse_live.selected_match.watch_url)}</code>`
+              : "Unavailable",
+          },
+          { label: "Browse stop reason", value: formatLabel(discoveryDiagnostics.browse_live?.stop_reason) },
+        ]),
+      },
+      {
+        title: "Creator Page Probe Chain",
+        body: renderKeyValueRows([
+          { label: "Requests exported", value: String(requestCounts.creator_page_probe ?? ((requestChains.creator_page_probe || []).length || 0)) },
+          { label: "Candidate URLs", value: String((creatorPageProbe.candidate_urls || []).length || 0) },
+          { label: "Live markers found", value: formatBoolean(creatorPageProbe.live_markers_found ?? creatorProbe.live_markers_found) },
+          { label: "Matching row found", value: formatBoolean(creatorPageProbe.matching_video_row_found) },
+          { label: "Watch URL extracted", value: formatBoolean(creatorPageProbe.watch_url_extracted ?? creatorProbe.watch_url_extracted) },
+          {
+            label: "Selected row watch URL",
+            html: creatorPageProbe.selected_row?.watch_url
+              ? `<code>${escapeHtml(creatorPageProbe.selected_row.watch_url)}</code>`
+              : creatorPageProbe.resolved_watch_url
+              ? `<code>${escapeHtml(creatorPageProbe.resolved_watch_url)}</code>`
+              : "Unavailable",
+          },
+          { label: "Probe stop reason", value: formatLabel(creatorPageProbe.stop_reason || creatorProbe.stop_reason) },
+        ]),
+      },
+      {
+        title: "Livestream API Probe Chain",
+        body: renderKeyValueRows([
+          { label: "Requests exported", value: String(requestCounts.livestream_api_probe ?? ((requestChains.livestream_api_probe || []).length || 0)) },
+          {
+            label: "Livestream API selected",
+            html: creatorProbe.livestream_api_url_selected
+              ? `<code>${escapeHtml(creatorProbe.livestream_api_url_selected)}</code>`
+              : "Unavailable",
+          },
+          { label: "Livestream rows", value: String(creatorProbe.livestream_count ?? 0) },
+          { label: "Resolution source", value: formatLabel(creatorProbe.resolution_source || watchResolution.resolution_source) },
+          {
+            label: "Resolved watch target",
+            html: creatorProbe.resolved_watch_url
+              ? `<code>${escapeHtml(creatorProbe.resolved_watch_url)}</code>`
+              : "Unavailable",
+          },
+          { label: "Resolved numeric video ID", value: creatorProbe.resolved_numeric_video_id || "Unavailable" },
+          { label: "Probe stop reason", value: formatLabel(creatorProbe.stop_reason) },
         ]),
       },
       {
         title: "Watch Target Resolution",
         body: renderKeyValueRows([
-          { label: "Resolution source", value: formatLabel(discoveryDiagnostics.decision_summary?.resolution_source || creatorProbe.resolution_source) },
-          { label: "Resolved watch target", html: watchResolution.resolved_watch_target ? `<code>${escapeHtml(watchResolution.resolved_watch_target)}</code>` : "Unavailable" },
+          { label: "Resolution source", value: formatLabel(watchResolution.resolution_source || creatorProbe.resolution_source) },
+          {
+            label: "Resolved watch target",
+            html: watchResolution.resolved_watch_target
+              ? `<code>${escapeHtml(watchResolution.resolved_watch_target)}</code>`
+              : "Unavailable",
+          },
           { label: "Resolved numeric video ID", value: watchResolution.resolved_numeric_video_id || discovery.numeric_video_id || "Unavailable" },
-          { label: "Attach identity ready", value: formatBoolean(watchResolution.attach_identity_ready ?? runtimeDebug.decision?.attach_identity_ready) },
-          { label: "Rejected evidence", value: String((creatorProbe.rejected_evidence || discoveryDiagnostics.rejected_evidence || []).length || 0) },
+          { label: "Resolved chat ID", value: watchResolution.resolved_chat_id || streamChatIdentity.resolved_chat_id || "Unavailable" },
+          { label: "Resolved stream identity", value: watchResolution.resolved_stream_identity || streamChatIdentity.resolved_stream_identity || "Unavailable" },
+          { label: "Channel URL rejected as live target", value: formatBoolean(watchResolution.channel_url_rejected_as_live_target ?? creatorProbe.channel_url_rejected_as_live_target) },
+          { label: "Rejected evidence", value: String(rejectedEvidence.length || 0) },
         ]),
       },
       {
-        title: "Chat Stream Resolution",
+        title: "Stream / Chat Identity Resolution",
         body: renderKeyValueRows([
-          { label: "Chat ID", value: watchResolution.resolved_chat_id || runtimeDebug.decision?.resolved_chat_id || "Unavailable" },
-          { label: "Sample chat init", value: formatBoolean(watchResolution.sample_proof_chain?.chat_init_received) },
-          { label: "Chat request URL", html: watchResolution.sample_proof_chain?.chat_stream?.url ? `<code>${escapeHtml(watchResolution.sample_proof_chain.chat_stream.url)}</code>` : "Unavailable" },
-          { label: "Chat request status", value: watchResolution.sample_proof_chain?.chat_stream?.status_code ? `HTTP ${watchResolution.sample_proof_chain.chat_stream.status_code}` : watchResolution.sample_proof_chain?.chat_stream?.error || "Unavailable" },
+          { label: "Live truth source", value: formatLabel(streamChatIdentity.live_truth_source || runtimeDebug.decision?.live_truth_source) },
+          { label: "Resolved channel URL", html: watchResolution.resolved_channel_url ? `<code>${escapeHtml(watchResolution.resolved_channel_url)}</code>` : "Unavailable" },
+          { label: "Resolved channel slug", value: watchResolution.resolved_channel_slug || "Unavailable" },
+          { label: "Resolved watch home URL", html: watchResolution.resolved_watch_home_url ? `<code>${escapeHtml(watchResolution.resolved_watch_home_url)}</code>` : "Unavailable" },
+          { label: "Sample chat init received", value: formatBoolean(streamChatIdentity.sample_chat_init_received) },
+          {
+            label: "Sample chat stream URL",
+            html: streamChatIdentity.sample_chat_stream_url
+              ? `<code>${escapeHtml(streamChatIdentity.sample_chat_stream_url)}</code>`
+              : "Unavailable",
+          },
         ]),
       },
       {
         title: "Blocking / Stop Reason",
         body: renderKeyValueRows([
-          { label: "Blocking reason", value: formatLabel(botAuto.blocking_reason || runtimeDebug.decision?.blocking_reason) },
-          { label: "Blocking category", value: formatLabel(botAuto.blocking_reason_category || runtimeDebug.decision?.blocking_reason_category) },
-          { label: "Stop stage", value: formatLabel(discovery.stop_stage || creatorProbe.stop_stage) },
-          { label: "Stop reason", value: formatLabel(discovery.stop_reason || creatorProbe.stop_reason) },
-          { label: "Stop detail", value: discovery.stop_detail || creatorProbe.stop_detail || botAuto.blocking_reason_detail || "Unavailable" },
+          { label: "Blocking reason", value: formatLabel(blocking.reason || botAuto.blocking_reason || runtimeDebug.decision?.blocking_reason) },
+          { label: "Blocking category", value: formatLabel(blocking.category || botAuto.blocking_reason_category || runtimeDebug.decision?.blocking_reason_category) },
+          { label: "Blocking detail", value: blocking.detail || botAuto.blocking_reason_detail || "Unavailable" },
+          { label: "Stop stage", value: formatLabel(stop.stop_stage || discovery.stop_stage || creatorProbe.stop_stage) },
+          { label: "Stop reason", value: formatLabel(stop.stop_reason || discovery.stop_reason || creatorProbe.stop_reason) },
+          { label: "Stop detail", value: stop.stop_detail || discovery.stop_detail || creatorProbe.stop_detail || "Unavailable" },
         ]),
       },
       {
-        title: "Managed Session / Attach Readiness",
+        title: "Managed Session Posture",
         body: renderKeyValueRows([
-          { label: "Managed session state", value: formatLabel(managed.lifecycle_state) },
+          { label: "Managed session present", value: formatBoolean(managed.present ?? true) },
+          { label: "Lifecycle state", value: formatLabel(managed.lifecycle_state) },
           { label: "Desired", value: formatBoolean(managed.desired) },
           { label: "Eligible", value: formatBoolean(managed.eligible) },
-          { label: "Attach readiness", value: formatBoolean(runtimeDebug.decision?.attach_identity_ready) },
-          { label: "Resolved target", html: managed.resolved_target?.watch_url ? `<code>${escapeHtml(managed.resolved_target.watch_url)}</code>` : "Unavailable" },
+          { label: "Status reason", value: managed.status_reason || "Unavailable" },
+          { label: "Blocking reason", value: formatLabel(managed.blocking_reason) },
+          {
+            label: "Resolved target",
+            html: managed.resolved_target?.watch_url
+              ? `<code>${escapeHtml(managed.resolved_target.watch_url)}</code>`
+              : "Unavailable",
+          },
         ]),
       },
       {
         title: "Freshness / Timestamps",
         body: renderKeyValueRows([
-          { label: "Debug generated", value: formatTimestamp(runtimeDebug.generated_at) },
-          { label: "Discovery export", value: formatTimestamp(runtimeDebug.source_exports?.discovery_generated_at) },
-          { label: "Discovery scan completed", value: formatTimestamp(runtimeDebug.source_exports?.discovery_scan_completed_at) },
-          { label: "Live status export", value: formatTimestamp(runtimeDebug.source_exports?.live_status_generated_at) },
-          { label: "Last live status checked", value: formatTimestamp(runtimeDebug.decision?.last_live_status_checked_at) },
+          { label: "Debug generated", value: formatTimestamp(freshness.debug_generated_at || runtimeDebug.generated_at) },
+          { label: "Discovery export", value: formatTimestamp(freshness.discovery_generated_at || runtimeDebug.source_exports?.discovery_generated_at) },
+          { label: "Discovery scan completed", value: formatTimestamp(freshness.discovery_scan_completed_at || runtimeDebug.source_exports?.discovery_scan_completed_at) },
+          { label: "Live status export", value: formatTimestamp(freshness.live_status_generated_at || runtimeDebug.source_exports?.live_status_generated_at) },
+          { label: "Last live status checked", value: formatTimestamp(freshness.last_live_status_checked_at || runtimeDebug.decision?.last_live_status_checked_at) },
+          { label: "Managed session last evaluated", value: formatTimestamp(freshness.managed_session_last_evaluated_at) },
+          { label: "Last transport heartbeat", value: formatTimestamp(freshness.managed_session_last_transport_heartbeat_at) },
         ]),
       },
     ];
 
-    setHtml(
+    const diagnosticsMarkup = `
+      <div class="ss-rumble-intelligence-debug-grid">
+        ${debugCards
+          .map(
+            (card) => `
+              <article class="ss-rumble-intelligence-debug-card">
+                <h4>${escapeHtml(card.title)}</h4>
+                ${card.body}
+              </article>
+            `
+          )
+          .join("")}
+      </div>
+      ${renderRequestChainCard(
+        "Browse / Live Request Attempts",
+        requestChains.browse_live,
+        "No browse/live request attempts were exported for the selected creator."
+      )}
+      ${renderRequestChainCard(
+        "Creator-Page Probe Chain",
+        requestChains.creator_page_probe,
+        "No creator-page probe request chain was exported for the selected creator."
+      )}
+      ${renderRequestChainCard(
+        "Livestream API Probe Chain",
+        requestChains.livestream_api_probe,
+        "No creator livestream API probe chain was exported for the selected creator."
+      )}
+      ${renderRequestChainCard(
+        "Watch-Target Resolution Chain",
+        requestChains.watch_resolution,
+        "No watch-target resolution request chain was exported for the selected creator."
+      )}
+      ${renderRequestChainCard(
+        "Combined Request Timeline",
+        timeline,
+        "No request-chain stages were exported for the selected creator."
+      )}
+    `;
+
+    setHtmlIfChanged(
       el.diagnostics,
-      `
-        <div class="ss-rumble-intelligence-debug-grid">
-          ${debugCards
-            .map(
-              (card) => `
-                <article class="ss-rumble-intelligence-debug-card">
-                  <h4>${escapeHtml(card.title)}</h4>
-                  ${card.body}
-                </article>
-              `
-            )
-            .join("")}
-        </div>
-        <section class="ss-rumble-intelligence-debug-card">
-          <h4>Request Chain / Stage Timeline</h4>
-          ${
-            timeline.length
-              ? `<ol class="ss-rumble-intelligence-timeline">${timeline
-                  .map(
-                    (item) => `
-                      <li>
-                        <strong>${escapeHtml(requestLabel(item))}</strong>
-                        <div><code>${escapeHtml(item.url || "Unavailable")}</code></div>
-                        <div class="muted">Final URL: ${escapeHtml(item.final_url || "Unavailable")} • Response length: ${escapeHtml(String(item.response_length ?? item.response_size ?? "Unavailable"))}</div>
-                        <div class="muted">Blocked: ${escapeHtml(formatBoolean(item.blocked))} • Error: ${escapeHtml(item.error || "None")}</div>
-                      </li>
-                    `
-                  )
-                  .join("")}</ol>`
-              : '<div class="ss-empty-state" style="margin-top:0;">No request-chain stages were exported for the selected creator.</div>'
-          }
-        </section>
-      `
+      diagnosticsMarkup
     );
 
     if (el.rawShell && el.rawOutput) {
       el.rawShell.classList.remove("hidden");
-      el.rawOutput.textContent = rawOutput;
+      if (el.rawOutput.textContent !== rawOutput) {
+        el.rawOutput.textContent = rawOutput;
+      }
       el.rawOutput.classList.toggle("hidden", !state.rawDebugExpanded);
       if (el.rawToggle) {
-        el.rawToggle.textContent = state.rawDebugExpanded ? "Collapse raw debug" : "Expand raw debug";
+        setTextIfChanged(el.rawToggle, state.rawDebugExpanded ? "Collapse raw debug" : "Expand raw debug");
       }
     }
   }
@@ -845,45 +1113,83 @@
     renderChart();
   }
 
+  function syncCreatorCollection(nextCreators) {
+    const creators = Array.isArray(nextCreators) ? nextCreators : [];
+    const nextSignature = stableSignature(creators);
+    const currentSelection = state.selectedAccountId;
+    state.creators = creators;
+    if (!creators.some((item) => item.account_id === currentSelection)) {
+      state.selectedAccountId = creators[0]?.account_id || "";
+    }
+    filterCreators();
+    if (!state.selectedAccountId && creators.length) {
+      state.selectedAccountId = creators[0].account_id;
+      renderCreatorOptions();
+    }
+    const changed = state.creatorsSignature !== nextSignature;
+    state.creatorsSignature = nextSignature;
+    return changed;
+  }
+
   async function loadCreatorDetail(accountId) {
     if (!accountId) {
       state.intelligenceDetail = null;
+      state.intelligenceDetailSignature = "";
+      state.rawDebugText = "";
       renderIntelligence();
       return;
     }
-    if (intelligenceAbortController) intelligenceAbortController.abort();
-    intelligenceAbortController = new AbortController();
-    const detailPayload = await requestJson(
-      `/api/admin/accounts/${encodeURIComponent(accountId)}/creator-integrations`,
-      { signal: intelligenceAbortController.signal }
-    );
-    state.intelligenceDetail = normalizeDetailPayload(detailPayload);
-    const streams = Array.isArray(state.intelligenceDetail.streams) ? state.intelligenceDetail.streams : [];
-    if (!streams.some((item) => item.key === state.selectedStreamKey)) {
-      state.selectedStreamKey = streams[0]?.key || "";
-    }
-    renderIntelligence();
-
-    if (!streams.length) {
-      setIntelligenceBanner(
-        "Rumble intelligence is loaded from runtime/Auth contracts, but no historical engagement export exists yet for the selected creator.",
-        "warning"
+    const requestToken = state.detailRequestToken + 1;
+    state.detailRequestToken = requestToken;
+    try {
+      const detailPayload = await requestJson(
+        `/api/admin/accounts/${encodeURIComponent(accountId)}/creator-integrations`
       );
-      return;
+      if (state.destroyed || requestToken !== state.detailRequestToken || accountId !== state.selectedAccountId) {
+        return;
+      }
+      const normalizedDetail = normalizeDetailPayload(detailPayload);
+      const nextSignature = stableSignature(normalizedDetail);
+      const streams = Array.isArray(normalizedDetail.streams) ? normalizedDetail.streams : [];
+      const currentRawText = normalizedDetail.runtimeDebug ? formatJson(normalizedDetail.runtimeDebug) : "";
+      if (!streams.some((item) => item.key === state.selectedStreamKey)) {
+        state.selectedStreamKey = streams[0]?.key || "";
+      }
+      state.intelligenceDetail = normalizedDetail;
+      state.rawDebugText = currentRawText;
+      if (state.intelligenceDetailSignature !== nextSignature) {
+        state.intelligenceDetailSignature = nextSignature;
+        renderIntelligence();
+      }
+
+      if (!streams.length) {
+        setIntelligenceBanner(
+          "Rumble intelligence is loaded from runtime/Auth contracts, but no historical engagement export exists yet for the selected creator.",
+          "warning"
+        );
+        return;
+      }
+      setIntelligenceBanner(
+        "Rumble intelligence is loaded from runtime/Auth contracts. Current stream posture is available; historical analytics render only when runtime exports them.",
+        "success"
+      );
+    } catch (err) {
+      if (state.destroyed || requestToken !== state.detailRequestToken) {
+        return;
+      }
+      setIntelligenceBanner(
+        err?.message || "Unable to load runtime-backed Rumble intelligence for the selected creator.",
+        "danger"
+      );
+      if (!state.intelligenceDetail) {
+        renderIntelligence();
+      }
     }
-    setIntelligenceBanner(
-      "Rumble intelligence is loaded from runtime/Auth contracts. Current stream posture is available; historical analytics render only when runtime exports them.",
-      "success"
-    );
   }
 
   async function hydrateIntelligence(botsPayload) {
     const summaryPayload = await requestJson(CREATOR_SUMMARY_ENDPOINT);
-    state.creators = buildCreatorList(summaryPayload, botsPayload);
-    filterCreators();
-    if (!state.selectedAccountId && state.creators.length) {
-      state.selectedAccountId = state.creators[0].account_id;
-    }
+    syncCreatorCollection(buildCreatorList(summaryPayload, botsPayload));
     renderCreatorSummary();
     await loadCreatorDetail(state.selectedAccountId);
     selectorsHydrated = true;
@@ -893,8 +1199,10 @@
     if (el.searchInput && !el.searchInput.dataset.rumbleBound) {
       el.searchInput.dataset.rumbleBound = "true";
       el.searchInput.addEventListener("input", () => {
-        filterCreators();
-        void loadCreatorDetail(state.selectedAccountId);
+        const selectionChanged = filterCreators();
+        if (selectionChanged) {
+          void loadCreatorDetail(state.selectedAccountId);
+        }
       });
     }
     if (el.creatorSelect && !el.creatorSelect.dataset.rumbleBound) {
@@ -926,6 +1234,10 @@
         if (!text) return;
         if (window.navigator?.clipboard?.writeText) {
           await window.navigator.clipboard.writeText(text);
+          setTextIfChanged(el.rawCopy, "Copied raw debug");
+          window.setTimeout(() => {
+            setTextIfChanged(el.rawCopy, "Copy raw debug");
+          }, 1600);
         }
       });
     }
@@ -957,16 +1269,36 @@
   }
 
   async function hydrateRuntime() {
+    if (state.runtimeRefreshInFlight) {
+      state.runtimeRefreshQueued = true;
+      return;
+    }
+    state.runtimeRefreshInFlight = true;
     try {
       const payload = await requestJson(BOTS_STATUS_ENDPOINT);
+      if (state.destroyed) return;
       renderPayload(payload);
-      if (!selectorsHydrated) {
-        await hydrateIntelligence(payload);
-      } else if (state.selectedAccountId) {
+      const summaryPayload = await requestJson(CREATOR_SUMMARY_ENDPOINT);
+      if (state.destroyed) return;
+      syncCreatorCollection(buildCreatorList(summaryPayload, payload));
+      renderCreatorSummary();
+      selectorsHydrated = true;
+      if (state.selectedAccountId) {
         await loadCreatorDetail(state.selectedAccountId);
+      } else {
+        state.intelligenceDetail = null;
+        state.intelligenceDetailSignature = "";
+        state.rawDebugText = "";
+        renderIntelligence();
       }
     } catch (err) {
       renderLoadFailure(err?.message || "Unable to load runtime bot posture.");
+    } finally {
+      state.runtimeRefreshInFlight = false;
+      if (state.runtimeRefreshQueued && !state.destroyed) {
+        state.runtimeRefreshQueued = false;
+        void hydrateRuntime();
+      }
     }
   }
 
@@ -978,19 +1310,17 @@
   }
 
   function init() {
+    state.destroyed = false;
     cacheElements();
     bindIntelligenceEvents();
     startRuntimePolling();
   }
 
   function destroy() {
+    state.destroyed = true;
     if (runtimeTimer) {
       clearInterval(runtimeTimer);
       runtimeTimer = null;
-    }
-    if (intelligenceAbortController) {
-      intelligenceAbortController.abort();
-      intelligenceAbortController = null;
     }
     selectorsHydrated = false;
   }

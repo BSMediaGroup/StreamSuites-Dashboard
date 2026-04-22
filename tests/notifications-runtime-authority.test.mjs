@@ -62,6 +62,7 @@ class FakeElement {
     this.value = "";
     this.disabled = false;
     this._className = "";
+    this.dataset = {};
     this.classList = new FakeClassList(this);
     this.listeners = new Map();
   }
@@ -94,6 +95,13 @@ class FakeElement {
     this.listeners.get(type)?.delete(handler);
   }
 
+  async dispatch(type) {
+    const handlers = Array.from(this.listeners.get(type) || []);
+    for (const handler of handlers) {
+      await handler({ target: this, currentTarget: this, preventDefault() {} });
+    }
+  }
+
   setAttribute(name, value) {
     this[name] = String(value);
   }
@@ -104,6 +112,8 @@ class FakeElement {
 }
 
 class FakeButtonElement extends FakeElement {}
+class FakeSelectElement extends FakeElement {}
+class FakeInputElement extends FakeElement {}
 
 class FakeTimerScheduler {
   constructor() {
@@ -113,11 +123,21 @@ class FakeTimerScheduler {
 
   setTimeout(callback, delay = 0) {
     const id = this.nextId += 1;
-    this.tasks.set(id, { callback, delay });
+    this.tasks.set(id, { callback, delay, interval: false });
     return id;
   }
 
   clearTimeout(id) {
+    this.tasks.delete(id);
+  }
+
+  setInterval(callback, delay = 0) {
+    const id = this.nextId += 1;
+    this.tasks.set(id, { callback, delay, interval: true });
+    return id;
+  }
+
+  clearInterval(id) {
     this.tasks.delete(id);
   }
 
@@ -128,7 +148,9 @@ class FakeTimerScheduler {
   async runNext() {
     const [id, task] = this.tasks.entries().next().value || [];
     if (!id) return;
-    this.tasks.delete(id);
+    if (!task.interval) {
+      this.tasks.delete(id);
+    }
     await task.callback();
   }
 }
@@ -279,6 +301,460 @@ function buildBotsSandbox({ botPayloads = [createBotsPayload()], creatorsPayload
   return { sandbox, elements, scheduler };
 }
 
+function createRumbleBotsPayload() {
+  return {
+    generated_at: "2026-04-23T01:00:00Z",
+    server_generated_at: "2026-04-23T01:00:00Z",
+    platforms: [
+      {
+        platform: "rumble",
+        implemented: true,
+        runtime_ready: true,
+        global_status: "ready",
+        session_status: "blocked",
+        error: "Blocked on sample browse/live failure.",
+        details: {
+          bot_blocked_count: 1,
+          bot_desired_count: 0,
+          bot_paused_count: 0,
+          manual_override_count: 0
+        }
+      }
+    ],
+    bots: [
+      {
+        creator_id: "daniel",
+        platform: "rumble",
+        session_type: "auto",
+        session_id: "rumble-auto-1",
+        status: "blocked",
+        last_evaluated_at: "2026-04-23T01:00:00Z",
+        resolved_target: {
+          watch_url: "https://rumble.com/v78pvkk-testing-0.4.2-alpha-2026.04.14-007.html",
+          video_id: "478900123",
+          chat_id: "478900123",
+          channel_url: "https://rumble.com/user/danielclancy",
+          channel_slug: "danielclancy",
+          channel_handle: "@danielclancy"
+        }
+      }
+    ]
+  };
+}
+
+function createRumbleCreatorSummaryPayload() {
+  return {
+    success: true,
+    items: [
+      {
+        account_id: "acct-daniel",
+        user_code: "daniel",
+        display_name: "Daniel Clancy",
+        readiness_label: "Blocked",
+        creator_capable: true
+      }
+    ]
+  };
+}
+
+function createRumbleRuntimeDebug({ variant = "base" } = {}) {
+  const browseRequest = {
+    stage: "browse_live_request",
+    method: "GET",
+    url: "https://rumble.com/browse/live?page=1",
+    final_url: "https://rumble.com/browse/live?page=1",
+    status_code: variant === "changed" ? 200 : 403,
+    response_length: variant === "changed" ? 1274 : 9,
+    response_size: variant === "changed" ? 1274 : 9,
+    content_type: "text/html",
+    blocked: variant !== "changed",
+    error: variant === "changed" ? null : "blocked_http_403",
+    request_headers: { Accept: "text/html", "User-Agent": "streamsuites-test" },
+    parse_markers: variant === "changed"
+      ? { parsed_entries: 1, matching_video_rows_found: 1 }
+      : { parsed_entries: 0, matching_video_rows_found: 0 }
+  };
+  const creatorPageRequest = {
+    stage: "creator_page_probe_request",
+    method: "GET",
+    url: "https://rumble.com/user/danielclancy",
+    final_url: "https://rumble.com/user/danielclancy",
+    status_code: 403,
+    response_length: 9,
+    response_size: 9,
+    content_type: "text/html",
+    blocked: true,
+    error: "blocked_http_403",
+    request_headers: { Accept: "text/html", Referer: "https://rumble.com" },
+    parse_markers: { live_markers_found: false }
+  };
+  const runtimeDebug = {
+    platform: "rumble",
+    schema_version: "v2",
+    generated_at: "2026-04-23T01:00:05Z",
+    selected_creator: {
+      account_id: "acct-daniel",
+      user_code: "daniel",
+      display_name: "Daniel Clancy",
+      integration_channel_handle: "@danielclancy"
+    },
+    identity_resolution: {
+      source: "creator_integration",
+      selection_reason: "creator_integration won for slugs, paths, urls.",
+      normalized_inputs: {
+        creator_keys: ["acct-daniel", "daniel"],
+        channel_ids: [],
+        slugs: ["danielclancy"],
+        paths: ["/user/danielclancy"],
+        urls: ["https://rumble.com/user/danielclancy"]
+      },
+      ignored_identities: [
+        {
+          source: "creator_identity",
+          normalized_inputs: {
+            urls: ["https://rumble.com/c/legacydaniel"]
+          }
+        }
+      ]
+    },
+    decision: {
+      decision_state: variant === "changed" ? "live_target_unresolved" : "sample_browse_live_request_failed",
+      live_status: "unknown",
+      live_truth_source: "none",
+      blocking_reason: variant === "changed" ? "watch_target_resolution_failed" : "sample_browse_live_request_failed",
+      blocking_reason_detail: variant === "changed" ? "live_rows_found_without_concrete_watch_target" : "blocked_http_403",
+      blocking_reason_category: variant === "changed" ? "watch_target_resolution_failed" : "sample_detection_failed",
+      attach_identity_ready: false,
+      live_target_unresolved: variant === "changed",
+      resolved_watch_url: null,
+      resolved_live_target_url: null,
+      resolved_video_id: variant === "changed" ? "478900123" : null,
+      resolved_chat_id: null,
+      resolved_stream_identity: null,
+      last_live_status_checked_at: "2026-04-23T01:00:00Z"
+    },
+    blocking: {
+      reason: variant === "changed" ? "watch_target_resolution_failed" : "sample_browse_live_request_failed",
+      detail: variant === "changed" ? "live_rows_found_without_concrete_watch_target" : "blocked_http_403",
+      category: variant === "changed" ? "watch_target_resolution_failed" : "sample_detection_failed"
+    },
+    stop: {
+      stop_stage: variant === "changed" ? "creator_page_probe" : "browse_live",
+      stop_reason: variant === "changed" ? "creator_page_live_marker_found_but_watch_url_missing" : "sample_browse_live_request_failed",
+      stop_detail: variant === "changed" ? "creator_page_live_marker_found_but_watch_url_missing" : "blocked_http_403"
+    },
+    watch_target_resolution: {
+      resolved_watch_target: null,
+      resolved_watch_home_url: "https://rumble.com/user/danielclancy",
+      resolved_numeric_video_id: variant === "changed" ? "478900123" : null,
+      resolved_chat_id: null,
+      resolved_stream_identity: null,
+      resolved_channel_url: "https://rumble.com/user/danielclancy",
+      resolved_channel_slug: "danielclancy",
+      resolution_source: variant === "changed" ? "sample_equivalent" : "creator_channel_probe",
+      decision_source: variant === "changed" ? "creator_page_probe" : "creator_channel_probe",
+      attach_identity_ready: false,
+      attach_identity_incomplete: false,
+      live_target_unresolved: variant === "changed",
+      channel_url_rejected_as_live_target: true
+    },
+    stream_chat_identity: {
+      live_truth_source: "none",
+      resolved_watch_url: null,
+      resolved_live_target_url: null,
+      resolved_video_id: variant === "changed" ? "478900123" : null,
+      resolved_chat_id: null,
+      resolved_stream_identity: null,
+      sample_chat_init_received: false,
+      sample_chat_stream_url: null
+    },
+    matched_discovery_entry: {
+      stop_stage: variant === "changed" ? "creator_page_probe" : "browse_live",
+      stop_reason: variant === "changed" ? "creator_page_live_marker_found_but_watch_url_missing" : "sample_browse_live_request_failed",
+      stop_detail: variant === "changed" ? "creator_page_live_marker_found_but_watch_url_missing" : "blocked_http_403"
+    },
+    discovery_diagnostics: {
+      browse_live: {
+        live_tiles_found: variant === "changed" ? 1 : 0,
+        matched_live_row_found: variant === "changed",
+        matched_live_row_count: variant === "changed" ? 1 : 0,
+        selected_match: variant === "changed"
+          ? { watch_url: "https://rumble.com/v78pvkk-testing-0.4.2-alpha-2026.04.14-007.html" }
+          : null,
+        stop_reason: "sample_live_tile_not_found"
+      },
+      creator_channel_probe: {
+        livestream_api_url_selected: "https://rumble.com/-livestream-api/get-data?key=%3Credacted%3E",
+        livestream_count: variant === "changed" ? 1 : 0,
+        resolution_source: variant === "changed" ? "sample_equivalent" : "creator_channel_probe",
+        resolved_watch_url: null,
+        resolved_numeric_video_id: variant === "changed" ? "478900123" : null,
+        resolved_chat_id: null,
+        live_markers_found: variant === "changed",
+        watch_url_extracted: false,
+        channel_url_rejected_as_live_target: true,
+        stop_stage: "creator_page_probe",
+        stop_reason: variant === "changed" ? "creator_page_live_marker_found_but_watch_url_missing" : "creator_page_probe_failed",
+        stop_detail: variant === "changed" ? "creator_page_live_marker_found_but_watch_url_missing" : "blocked_http_403",
+        creator_page_probe: {
+          candidate_urls: ["https://rumble.com/user/danielclancy"],
+          live_markers_found: variant === "changed",
+          matching_video_row_found: false,
+          watch_url_extracted: false,
+          stop_stage: "creator_page_probe",
+          stop_reason: variant === "changed" ? "creator_page_live_marker_found_but_watch_url_missing" : "creator_page_probe_failed",
+          stop_detail: variant === "changed" ? "creator_page_live_marker_found_but_watch_url_missing" : "blocked_http_403",
+          requests: [creatorPageRequest]
+        }
+      },
+      watch_resolution: {}
+    },
+    request_chains: {
+      browse_live: [browseRequest],
+      creator_page_probe: [creatorPageRequest],
+      livestream_api_probe: [],
+      watch_resolution: [],
+      sample_chat_stream: [],
+      all: [browseRequest, creatorPageRequest]
+    },
+    request_chain_counts: {
+      browse_live: 1,
+      creator_page_probe: 1,
+      livestream_api_probe: 0,
+      watch_resolution: 0,
+      sample_chat_stream: 0
+    },
+    rejected_evidence: [
+      {
+        source: "creator_page_probe",
+        reason: "channel_url_rejected_as_live_target"
+      }
+    ],
+    managed_session: {
+      lifecycle_state: "blocked",
+      desired: false,
+      eligible: false,
+      resolved_target: {}
+    },
+    managed_session_posture: {
+      present: true,
+      lifecycle_state: "blocked",
+      desired: false,
+      eligible: false,
+      blocking_reason: variant === "changed" ? "watch_target_resolution_failed" : "sample_browse_live_request_failed",
+      status_reason: "Managed session is blocked while runtime cannot prove a concrete live watch target.",
+      resolved_target: {}
+    },
+    freshness: {
+      debug_generated_at: "2026-04-23T01:00:05Z",
+      live_status_generated_at: "2026-04-23T01:00:00Z",
+      discovery_generated_at: "2026-04-23T01:00:03Z",
+      discovery_scan_completed_at: "2026-04-23T01:00:02Z",
+      last_live_status_checked_at: "2026-04-23T01:00:00Z",
+      managed_session_last_evaluated_at: "2026-04-23T01:00:04Z",
+      managed_session_last_transport_heartbeat_at: "2026-04-23T01:00:04Z"
+    },
+    source_exports: {
+      live_status_generated_at: "2026-04-23T01:00:00Z",
+      discovery_generated_at: "2026-04-23T01:00:03Z",
+      discovery_scan_completed_at: "2026-04-23T01:00:02Z"
+    }
+  };
+  return runtimeDebug;
+}
+
+function createRumbleDetailPayload({ runtimeDebug = createRumbleRuntimeDebug() } = {}) {
+  return {
+    success: true,
+    generated_at: "2026-04-23T01:00:05Z",
+    account: {
+      id: "acct-daniel",
+      user_code: "daniel",
+      display_name: "Daniel Clancy"
+    },
+    integrations: [
+      {
+        platform_key: "rumble",
+        public_url: "https://rumble.com/user/danielclancy",
+        channel_handle: "@danielclancy",
+        bot_auto_deploy: {
+          decision_state: runtimeDebug?.decision?.decision_state || "unknown",
+          live_status: runtimeDebug?.decision?.live_status || "unknown",
+          live_truth_source: runtimeDebug?.decision?.live_truth_source || "none",
+          resolved_watch_url: runtimeDebug?.decision?.resolved_watch_url || null,
+          resolved_video_id: runtimeDebug?.decision?.resolved_video_id || null,
+          resolved_chat_id: runtimeDebug?.decision?.resolved_chat_id || null,
+          resolved_stream_identity: runtimeDebug?.decision?.resolved_stream_identity || null,
+          resolved_channel_url: runtimeDebug?.watch_target_resolution?.resolved_channel_url || "https://rumble.com/user/danielclancy",
+          resolved_channel_handle: "@danielclancy",
+          blocking_reason: runtimeDebug?.blocking?.reason || null,
+          blocking_reason_category: runtimeDebug?.blocking?.category || null,
+          blocking_reason_detail: runtimeDebug?.blocking?.detail || null,
+          last_live_status_checked_at: runtimeDebug?.freshness?.last_live_status_checked_at || "2026-04-23T01:00:00Z"
+        },
+        managed_session: {
+          session_id: "rumble-auto-1",
+          lifecycle_state: "blocked",
+          desired: false,
+          eligible: false,
+          status_reason: "Managed session is blocked while runtime cannot prove a concrete live watch target.",
+          last_evaluated_at: "2026-04-23T01:00:04Z",
+          last_transport_heartbeat_at: "2026-04-23T01:00:04Z",
+          resolved_target: {}
+        },
+        managed_dispatch: {
+          summary: {
+            count: 0
+          }
+        },
+        runtime_debug: runtimeDebug
+      }
+    ]
+  };
+}
+
+function buildRumbleSandbox({
+  botPayloads = [createRumbleBotsPayload()],
+  summaryPayloads = [createRumbleCreatorSummaryPayload()],
+  detailPayloads = { "acct-daniel": [createRumbleDetailPayload()] }
+} = {}) {
+  const ids = [
+    "rumble-foundation-status",
+    "rumble-runtime-banner",
+    "rumble-runtime-status",
+    "rumble-runtime-updated",
+    "rumble-runtime-error",
+    "rumble-runtime-messages",
+    "rumble-runtime-triggers",
+    "rumble-runtime-blocked",
+    "rumble-runtime-manual",
+    "rumble-intelligence-banner",
+    "rumble-intelligence-search",
+    "rumble-intelligence-creator-select",
+    "rumble-intelligence-creator-empty",
+    "rumble-intelligence-creator-summary",
+    "rumble-intelligence-stream-select",
+    "rumble-intelligence-history-state",
+    "rumble-intelligence-meta",
+    "rumble-intelligence-posture-chip",
+    "rumble-intelligence-chart",
+    "rumble-intelligence-chart-empty",
+    "rumble-intelligence-diagnostics",
+    "rumble-intelligence-raw-shell",
+    "rumble-intelligence-raw-output",
+    "rumble-intelligence-raw-copy",
+    "rumble-intelligence-raw-toggle"
+  ];
+  const elements = new Map(
+    ids.map((id) => {
+      if (id.includes("search")) return [id, new FakeInputElement(id)];
+      if (id.includes("creator-select") || id.includes("stream-select")) return [id, new FakeSelectElement(id)];
+      if (id.includes("copy") || id.includes("toggle")) return [id, new FakeButtonElement(id)];
+      return [id, new FakeElement(id)];
+    })
+  );
+  const serviceToggle = new FakeInputElement("rumble-service-toggle");
+  elements.get("rumble-intelligence-creator-empty").className = "hidden";
+  elements.get("rumble-intelligence-raw-shell").className = "hidden";
+  elements.get("rumble-intelligence-chart").className = "hidden";
+
+  const scheduler = new FakeTimerScheduler();
+  const clipboardWrites = [];
+  let botsIndex = 0;
+  let summariesIndex = 0;
+  const detailIndexes = new Map();
+
+  async function fetchMock(url) {
+    const href = String(url);
+    if (href.includes("/api/admin/bots/status")) {
+      const payload = botPayloads[Math.min(botsIndex, botPayloads.length - 1)];
+      botsIndex += 1;
+      return {
+        ok: true,
+        status: 200,
+        async json() {
+          return payload;
+        }
+      };
+    }
+    if (href.includes("/api/admin/creator-integrations")) {
+      const payload = summaryPayloads[Math.min(summariesIndex, summaryPayloads.length - 1)];
+      summariesIndex += 1;
+      return {
+        ok: true,
+        status: 200,
+        async json() {
+          return payload;
+        }
+      };
+    }
+    const detailMatch = href.match(/\/api\/admin\/accounts\/([^/]+)\/creator-integrations/);
+    if (detailMatch) {
+      const accountId = decodeURIComponent(detailMatch[1]);
+      const series = detailPayloads[accountId] || [];
+      const nextIndex = detailIndexes.get(accountId) || 0;
+      const payload = series[Math.min(nextIndex, Math.max(series.length - 1, 0))] || createRumbleDetailPayload({ runtimeDebug: null });
+      detailIndexes.set(accountId, nextIndex + 1);
+      return {
+        ok: true,
+        status: 200,
+        async json() {
+          return payload;
+        }
+      };
+    }
+    throw new Error(`Unexpected fetch: ${href}`);
+  }
+
+  const document = {
+    getElementById(id) {
+      return elements.get(id) || null;
+    },
+    querySelector(selector) {
+      if (selector === 'input[data-service="rumble"]') {
+        return serviceToggle;
+      }
+      return null;
+    }
+  };
+
+  const window = {
+    setInterval: scheduler.setInterval.bind(scheduler),
+    clearInterval: scheduler.clearInterval.bind(scheduler),
+    setTimeout: scheduler.setTimeout.bind(scheduler),
+    clearTimeout: scheduler.clearTimeout.bind(scheduler),
+    fetch: fetchMock,
+    navigator: {
+      clipboard: {
+        async writeText(text) {
+          clipboardWrites.push(text);
+        }
+      }
+    },
+    StreamSuitesAdminAuth: { config: { baseUrl: "" } },
+    StreamSuitesState: { formatTimestamp: (value) => value },
+  };
+
+  const sandbox = {
+    window,
+    document,
+    fetch: fetchMock,
+    console,
+    AbortController,
+    setInterval: scheduler.setInterval.bind(scheduler),
+    clearInterval: scheduler.clearInterval.bind(scheduler),
+    setTimeout: scheduler.setTimeout.bind(scheduler),
+    clearTimeout: scheduler.clearTimeout.bind(scheduler),
+    HTMLButtonElement: FakeButtonElement,
+    HTMLSelectElement: FakeSelectElement,
+    HTMLInputElement: FakeInputElement
+  };
+
+  vm.createContext(sandbox);
+  vm.runInContext(read("docs/js/platforms/rumble.js"), sandbox);
+  return { sandbox, elements, scheduler, clipboardWrites, serviceToggle };
+}
+
 async function flushMicrotasks() {
   await Promise.resolve();
   await Promise.resolve();
@@ -412,11 +888,14 @@ test("admin rumble platform view reads live runtime posture instead of a hardcod
   assert.match(rumbleJs, /resolved_video_id/);
   assert.match(rumbleJs, /resolved_chat_id/);
   assert.match(rumbleJs, /runtimeDebug/);
-  assert.match(rumbleJs, /Request Chain \/ Stage Timeline/);
+  assert.match(rumbleJs, /Combined Request Timeline/);
   assert.match(rumbleJs, /window\.navigator\?\.clipboard\?\.writeText/);
   assert.match(rumbleJs, /search_blob/);
   assert.match(rumbleJs, /global_status \|\| platformRow\?\.status/);
   assert.match(rumbleJs, /creator-managed Rumble session/);
+  assert.doesNotMatch(rumbleJs, /intelligenceAbortController\.abort/);
+  assert.match(rumbleJs, /runtimeRefreshInFlight/);
+  assert.match(rumbleJs, /intelligenceDetailSignature/);
   assert.match(appJs, /registerView\("rumble", \{/);
   assert.match(appJs, /window\.RumbleView\?\.init\?\.\(\)/);
   assert.match(shellHtml, /js\/platforms\/rumble\.js/);
@@ -430,16 +909,86 @@ test("admin rumble platform view keeps richer diagnostics and raw export tied to
   assert.match(rumbleJs, /rumble\?\.runtime_debug/);
   assert.match(rumbleJs, /buildTimeline/);
   assert.match(rumbleJs, /Detection Summary/);
-  assert.match(rumbleJs, /Selected Identity/);
+  assert.match(rumbleJs, /Identity Resolution/);
+  assert.match(rumbleJs, /Browse \/ Live Request Chain/);
+  assert.match(rumbleJs, /Creator Page Probe Chain/);
+  assert.match(rumbleJs, /Livestream API Probe Chain/);
   assert.match(rumbleJs, /Watch Target Resolution/);
-  assert.match(rumbleJs, /Chat Stream Resolution/);
+  assert.match(rumbleJs, /Stream \/ Chat Identity Resolution/);
   assert.match(rumbleJs, /Blocking \/ Stop Reason/);
-  assert.match(rumbleJs, /Managed Session \/ Attach Readiness/);
+  assert.match(rumbleJs, /Managed Session Posture/);
   assert.match(rumbleJs, /Freshness \/ Timestamps/);
   assert.match(rumbleJs, /No runtime-backed debug object is currently exported/);
   assert.match(rumbleCss, /\.ss-rumble-intelligence-debug-grid/);
   assert.match(rumbleCss, /\.ss-rumble-intelligence-raw-shell/);
   assert.match(rumbleCss, /\.ss-rumble-intelligence-raw-output/);
+  assert.match(rumbleCss, /\.ss-rumble-intelligence-trace-block/);
+});
+
+test("admin rumble platform view renders the selected creator intelligence area and preserves selection across refresh", async () => {
+  const { sandbox, elements, scheduler } = buildRumbleSandbox({
+    botPayloads: [createRumbleBotsPayload(), createRumbleBotsPayload()],
+    summaryPayloads: [createRumbleCreatorSummaryPayload(), createRumbleCreatorSummaryPayload()],
+    detailPayloads: {
+      "acct-daniel": [
+        createRumbleDetailPayload({ runtimeDebug: createRumbleRuntimeDebug() }),
+        createRumbleDetailPayload({ runtimeDebug: createRumbleRuntimeDebug() })
+      ]
+    }
+  });
+
+  sandbox.window.RumbleView.init();
+  await flushMicrotasks();
+
+  assert.equal(elements.get("rumble-intelligence-creator-select").value, "acct-daniel");
+  assert.match(elements.get("rumble-intelligence-diagnostics").innerHTML, /Detection Summary/);
+  assert.match(elements.get("rumble-intelligence-diagnostics").innerHTML, /Browse \/ Live Request Attempts/);
+
+  const diagnosticsWrites = elements.get("rumble-intelligence-diagnostics").innerHTMLWrites;
+
+  await scheduler.runNext();
+  await flushMicrotasks();
+
+  assert.equal(elements.get("rumble-intelligence-creator-select").value, "acct-daniel");
+  assert.equal(elements.get("rumble-intelligence-diagnostics").innerHTMLWrites, diagnosticsWrites);
+});
+
+test("admin rumble raw debug block stays copy-pastable and reflects the real runtime debug payload", async () => {
+  const runtimeDebug = createRumbleRuntimeDebug({ variant: "changed" });
+  const { sandbox, elements, clipboardWrites } = buildRumbleSandbox({
+    detailPayloads: {
+      "acct-daniel": [createRumbleDetailPayload({ runtimeDebug })]
+    }
+  });
+
+  sandbox.window.RumbleView.init();
+  await flushMicrotasks();
+
+  const expectedRaw = JSON.stringify(runtimeDebug, null, 2);
+  assert.equal(elements.get("rumble-intelligence-raw-output").textContent, expectedRaw);
+  assert.ok(!elements.get("rumble-intelligence-raw-shell").classList.contains("hidden"));
+
+  await elements.get("rumble-intelligence-raw-copy").dispatch("click");
+  await flushMicrotasks();
+
+  assert.deepEqual(clipboardWrites, [expectedRaw]);
+});
+
+test("admin rumble platform view keeps the empty state truthful when runtime debug is absent", async () => {
+  const { sandbox, elements } = buildRumbleSandbox({
+    detailPayloads: {
+      "acct-daniel": [createRumbleDetailPayload({ runtimeDebug: null })]
+    }
+  });
+
+  sandbox.window.RumbleView.init();
+  await flushMicrotasks();
+
+  assert.match(
+    elements.get("rumble-intelligence-diagnostics").innerHTML,
+    /No runtime-backed debug object is currently exported for the selected creator\./
+  );
+  assert.ok(elements.get("rumble-intelligence-raw-shell").classList.contains("hidden"));
 });
 
 test("admin overview platform cards prefer global runtime posture over creator-session blockers", () => {
