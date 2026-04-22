@@ -669,6 +669,9 @@ function buildRumbleSandbox({
     if (href.includes("/api/admin/bots/status")) {
       const payload = botPayloads[Math.min(botsIndex, botPayloads.length - 1)];
       botsIndex += 1;
+      if (payload instanceof Error) {
+        throw payload;
+      }
       return {
         ok: true,
         status: 200,
@@ -680,6 +683,9 @@ function buildRumbleSandbox({
     if (href.includes("/api/admin/creator-integrations")) {
       const payload = summaryPayloads[Math.min(summariesIndex, summaryPayloads.length - 1)];
       summariesIndex += 1;
+      if (payload instanceof Error) {
+        throw payload;
+      }
       return {
         ok: true,
         status: 200,
@@ -695,6 +701,9 @@ function buildRumbleSandbox({
       const nextIndex = detailIndexes.get(accountId) || 0;
       const payload = series[Math.min(nextIndex, Math.max(series.length - 1, 0))] || createRumbleDetailPayload({ runtimeDebug: null });
       detailIndexes.set(accountId, nextIndex + 1);
+      if (payload instanceof Error) {
+        throw payload;
+      }
       return {
         ok: true,
         status: 200,
@@ -953,6 +962,34 @@ test("admin rumble platform view renders the selected creator intelligence area 
   assert.equal(elements.get("rumble-intelligence-diagnostics").innerHTMLWrites, diagnosticsWrites);
 });
 
+test("admin rumble platform view preserves the loaded creator workspace when a later summary refresh returns empty", async () => {
+  const { sandbox, elements, scheduler } = buildRumbleSandbox({
+    botPayloads: [createRumbleBotsPayload(), createRumbleBotsPayload()],
+    summaryPayloads: [createRumbleCreatorSummaryPayload(), { items: [] }],
+    detailPayloads: {
+      "acct-daniel": [
+        createRumbleDetailPayload({ runtimeDebug: createRumbleRuntimeDebug() }),
+        createRumbleDetailPayload({ runtimeDebug: createRumbleRuntimeDebug({ variant: "changed" }) })
+      ]
+    }
+  });
+
+  sandbox.window.RumbleView.init();
+  await flushMicrotasks();
+
+  const initialDiagnostics = elements.get("rumble-intelligence-diagnostics").innerHTML;
+  assert.equal(elements.get("rumble-intelligence-creator-select").value, "acct-daniel");
+  assert.match(initialDiagnostics, /Detection Summary/);
+
+  await scheduler.runNext();
+  await flushMicrotasks();
+
+  assert.equal(elements.get("rumble-intelligence-creator-select").value, "acct-daniel");
+  assert.match(elements.get("rumble-intelligence-diagnostics").innerHTML, /Detection Summary/);
+  assert.ok(elements.get("rumble-intelligence-diagnostics").innerHTML.length >= initialDiagnostics.length);
+  assert.equal(elements.get("rumble-intelligence-creator-empty").classList.contains("hidden"), true);
+});
+
 test("admin rumble raw debug block stays copy-pastable and reflects the real runtime debug payload", async () => {
   const runtimeDebug = createRumbleRuntimeDebug({ variant: "changed" });
   const { sandbox, elements, clipboardWrites } = buildRumbleSandbox({
@@ -989,6 +1026,32 @@ test("admin rumble platform view keeps the empty state truthful when runtime deb
     /No runtime-backed debug object is currently exported for the selected creator\./
   );
   assert.ok(elements.get("rumble-intelligence-raw-shell").classList.contains("hidden"));
+});
+
+test("admin rumble platform view ignores normal poll aborts instead of surfacing the abort text as a user-facing failure", async () => {
+  const abortError = Object.assign(new Error("signal is aborted without reason"), { name: "AbortError" });
+  const { sandbox, elements, scheduler } = buildRumbleSandbox({
+    botPayloads: [createRumbleBotsPayload(), abortError],
+    summaryPayloads: [createRumbleCreatorSummaryPayload()],
+    detailPayloads: {
+      "acct-daniel": [createRumbleDetailPayload({ runtimeDebug: createRumbleRuntimeDebug() })]
+    }
+  });
+
+  sandbox.window.RumbleView.init();
+  await flushMicrotasks();
+
+  const initialBanner = elements.get("rumble-intelligence-banner").textContent;
+  const initialDiagnostics = elements.get("rumble-intelligence-diagnostics").innerHTML;
+
+  await scheduler.runNext();
+  await flushMicrotasks();
+
+  assert.equal(elements.get("rumble-runtime-status").textContent, "Enabled / ready");
+  assert.equal(elements.get("rumble-intelligence-banner").textContent, initialBanner);
+  assert.equal(elements.get("rumble-intelligence-diagnostics").innerHTML, initialDiagnostics);
+  assert.doesNotMatch(elements.get("rumble-runtime-error").textContent, /signal is aborted without reason/i);
+  assert.doesNotMatch(elements.get("rumble-intelligence-banner").textContent, /signal is aborted without reason/i);
 });
 
 test("admin overview platform cards prefer global runtime posture over creator-session blockers", () => {

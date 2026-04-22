@@ -83,6 +83,7 @@
       cache: "no-store",
       credentials: "include",
       signal: options.signal,
+      timeoutMs: options.timeoutMs,
       headers: {
         Accept: "application/json",
       },
@@ -92,6 +93,18 @@
       throw new Error(payload?.error || payload?.message || `Request failed (${response.status})`);
     }
     return payload || {};
+  }
+
+  function isAbortLikeError(error) {
+    if (!error) return false;
+    const name = String(error?.name || "").trim().toLowerCase();
+    const message = String(error?.message || error || "").trim().toLowerCase();
+    return (
+      name === "aborterror"
+      || message.includes("signal is aborted without reason")
+      || message.includes("aborted")
+      || message.includes("aborterror")
+    );
   }
 
   function setText(target, value) {
@@ -303,7 +316,55 @@
   function selectedCreator() {
     return state.filteredCreators.find((item) => item.account_id === state.selectedAccountId)
       || state.creators.find((item) => item.account_id === state.selectedAccountId)
+      || selectedCreatorFromDetail()
       || null;
+  }
+
+  function selectedCreatorFromDetail() {
+    const detail = state.intelligenceDetail || {};
+    const selectedCreator = detail.runtimeDebug?.selected_creator && typeof detail.runtimeDebug.selected_creator === "object"
+      ? detail.runtimeDebug.selected_creator
+      : {};
+    const account = detail.account && typeof detail.account === "object" ? detail.account : {};
+    const accountId = String(selectedCreator.account_id || account.id || state.selectedAccountId || "").trim();
+    if (!accountId) return null;
+    const displayName = String(
+      selectedCreator.display_name
+      || account.display_name
+      || account.user_code
+      || "Unknown creator"
+    ).trim() || "Unknown creator";
+    const userCode = String(selectedCreator.user_code || account.user_code || "").trim();
+    const channelHandle = String(
+      selectedCreator.integration_channel_handle
+      || detail.rumble?.channel_handle
+      || ""
+    ).trim();
+    const channelUrl = String(
+      selectedCreator.integration_public_url
+      || detail.rumble?.public_url
+      || detail.runtimeDebug?.watch_target_resolution?.resolved_channel_url
+      || ""
+    ).trim();
+    return {
+      account_id: accountId,
+      user_code: userCode || accountId,
+      display_name: displayName,
+      readiness_label: String(detail.botAuto?.decision_state || "Runtime detail loaded").trim() || "Runtime detail loaded",
+      status: String(detail.botAuto?.live_status || detail.managed?.lifecycle_state || "unknown").trim() || "unknown",
+      session_id: String(detail.managed?.session_id || "").trim() || null,
+      channel_handle: channelHandle || null,
+      channel_slug: String(detail.botAuto?.resolved_channel_slug || "").trim() || null,
+      channel_url: channelUrl || null,
+      active_target: String(detail.botAuto?.resolved_watch_url || detail.botAuto?.resolved_live_target_url || "").trim() || null,
+      last_evaluated_at: detail.managed?.last_evaluated_at || detail.generated_at || null,
+      search_blob: [
+        displayName,
+        userCode,
+        channelHandle,
+        channelUrl,
+      ].join(" ").toLowerCase(),
+    };
   }
 
   function selectedStream() {
@@ -443,7 +504,7 @@
         const summary = summaryByUserCode.get(userCode) || {};
         const target = bot?.resolved_target && typeof bot.resolved_target === "object" ? bot.resolved_target : {};
         const displayName = String(summary?.display_name || userCode || "Unknown creator").trim() || "Unknown creator";
-        const accountId = String(summary?.account_id || "").trim();
+        const accountId = String(summary?.account_id || bot?.creator_account_id || "").trim();
         const channelHandle = String(target?.channel_handle || "").trim();
         const channelSlug = String(target?.channel_slug || "").trim();
         const channelUrl = String(target?.channel_url || "").trim();
@@ -589,7 +650,9 @@
       || ""
     ).trim() || null;
     const hasCurrentSnapshot = Boolean(
-      watchUrl
+      runtimeDebug
+      || rumble
+      || watchUrl
       || videoId
       || chatId
       || streamIdentity
@@ -1023,6 +1086,7 @@
   }
 
   function renderChart() {
+    const creator = selectedCreator();
     const stream = selectedStream();
     const botAuto = state.intelligenceDetail?.botAuto || {};
     if (el.postureChip) {
@@ -1034,7 +1098,12 @@
     if (!stream) {
       el.chart.classList.add("hidden");
       el.chartEmpty.classList.remove("hidden");
-      setText(el.chartEmpty, "Select a creator and stream entry to inspect runtime-backed analytics posture.");
+      setText(
+        el.chartEmpty,
+        creator && state.intelligenceDetail
+          ? "Current runtime diagnostics are loaded for the selected creator, but no historical Rumble engagement series has been exported yet."
+          : "Select a creator and stream entry to inspect runtime-backed analytics posture."
+      );
       return;
     }
     const points = Array.isArray(stream.points) ? stream.points : [];
@@ -1114,7 +1183,13 @@
   }
 
   function syncCreatorCollection(nextCreators) {
-    const creators = Array.isArray(nextCreators) ? nextCreators : [];
+    const incomingCreators = Array.isArray(nextCreators) ? nextCreators : [];
+    const preserveExistingCreators = (
+      incomingCreators.length === 0
+      && state.creators.length > 0
+      && Boolean(state.intelligenceDetail?.runtimeDebug || state.intelligenceDetail?.rumble)
+    );
+    const creators = preserveExistingCreators ? state.creators.slice() : incomingCreators;
     const nextSignature = stableSignature(creators);
     const currentSelection = state.selectedAccountId;
     state.creators = creators;
@@ -1143,7 +1218,8 @@
     state.detailRequestToken = requestToken;
     try {
       const detailPayload = await requestJson(
-        `/api/admin/accounts/${encodeURIComponent(accountId)}/creator-integrations`
+        `/api/admin/accounts/${encodeURIComponent(accountId)}/creator-integrations`,
+        { timeoutMs: 20000 }
       );
       if (state.destroyed || requestToken !== state.detailRequestToken || accountId !== state.selectedAccountId) {
         return;
@@ -1174,6 +1250,9 @@
         "success"
       );
     } catch (err) {
+      if (isAbortLikeError(err)) {
+        return;
+      }
       if (state.destroyed || requestToken !== state.detailRequestToken) {
         return;
       }
@@ -1188,7 +1267,7 @@
   }
 
   async function hydrateIntelligence(botsPayload) {
-    const summaryPayload = await requestJson(CREATOR_SUMMARY_ENDPOINT);
+    const summaryPayload = await requestJson(CREATOR_SUMMARY_ENDPOINT, { timeoutMs: 20000 });
     syncCreatorCollection(buildCreatorList(summaryPayload, botsPayload));
     renderCreatorSummary();
     await loadCreatorDetail(state.selectedAccountId);
@@ -1275,10 +1354,10 @@
     }
     state.runtimeRefreshInFlight = true;
     try {
-      const payload = await requestJson(BOTS_STATUS_ENDPOINT);
+      const payload = await requestJson(BOTS_STATUS_ENDPOINT, { timeoutMs: 20000 });
       if (state.destroyed) return;
       renderPayload(payload);
-      const summaryPayload = await requestJson(CREATOR_SUMMARY_ENDPOINT);
+      const summaryPayload = await requestJson(CREATOR_SUMMARY_ENDPOINT, { timeoutMs: 20000 });
       if (state.destroyed) return;
       syncCreatorCollection(buildCreatorList(summaryPayload, payload));
       renderCreatorSummary();
@@ -1292,6 +1371,9 @@
         renderIntelligence();
       }
     } catch (err) {
+      if (isAbortLikeError(err)) {
+        return;
+      }
       renderLoadFailure(err?.message || "Unable to load runtime bot posture.");
     } finally {
       state.runtimeRefreshInFlight = false;
