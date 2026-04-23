@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Extended admin `/integrations/rumble` in `docs/js/platforms/rumble.js` so the authenticated-session diagnostics now show selected material type, validation errors, safe material-updated timestamp, and whether authenticated mode actually changed the outcome compared with the sample path, while still keeping raw runtime debug copyable and secret-safe.
+- Expanded `tests/rumble-challenge-session-posture.test.mjs` additively so the dashboard contract now pins those new safe session posture fields and continues asserting that no raw cookie values are surfaced in the rendered/raw-debug pathway. No files were created or removed in this pass.
+
 - Extended admin `/integrations/rumble` in `docs/js/platforms/rumble.js` so selected-creator diagnostics now surface challenge/interstitial classification, expected-vs-observed content type, pre-parse-block posture, authenticated-session configuration posture, whether a session-backed probe was attempted, and a sample-path versus session/API path comparison while keeping the raw runtime debug block copyable.
 - Added `tests/rumble-challenge-session-posture.test.mjs` to pin the additive challenge/session posture panels, raw debug response-shape visibility, and truthful no-debug empty state. No existing dashboard files were removed or replaced; `README.md` was updated because the test file is new.
 

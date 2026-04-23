@@ -21,6 +21,9 @@ test("rumble integrations page renders challenge and authenticated-session postu
   assert.match(rumbleJs, /authenticated_session_posture/);
   assert.match(rumbleJs, /session_backed_attempted/);
   assert.match(rumbleJs, /cookie_material_present/);
+  assert.match(rumbleJs, /selected_material_type/);
+  assert.match(rumbleJs, /validation_errors/);
+  assert.match(rumbleJs, /secret_last_updated_at/);
   assert.match(rumbleJs, /likely_pre_parse_block/);
   assert.match(rumbleJs, /expected_content_type/);
   assert.match(rumbleJs, /observed_content_type/);
@@ -35,5 +38,7 @@ test("rumble raw debug and request chain include additive response-shape fields"
   assert.match(rumbleJs, /Pre-parse block:/);
   assert.match(rumbleJs, /Session-backed:/);
   assert.match(rumbleJs, /Auth probe:/);
+  assert.match(rumbleJs, /Authenticated mode changed result/);
   assert.match(rumbleJs, /No runtime-backed debug object is currently exported/);
+  assert.doesNotMatch(rumbleJs, /request_headers\"\\s*:\\s*\\{[^}]*Cookie/);
 });

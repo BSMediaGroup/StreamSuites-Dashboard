@@ -927,6 +927,9 @@
       : creatorProbe.authenticated_session && typeof creatorProbe.authenticated_session === "object"
       ? creatorProbe.authenticated_session
       : {};
+    const integrationSessionValidationErrors = Array.isArray(detail?.rumble?.session_material_validation_errors)
+      ? detail.rumble.session_material_validation_errors
+      : [];
     const parityComparison = creatorProbe.parity_comparison && typeof creatorProbe.parity_comparison === "object"
       ? creatorProbe.parity_comparison
       : {};
@@ -963,6 +966,22 @@
           { label: "Last authenticated probe", value: formatLabel(authenticatedSessionPosture.last_authenticated_probe_attempted) },
           { label: "Authority path", value: authenticatedSessionPosture.authority_path || "creator_live_status_secrets:rumble" },
           { label: "Material types", html: listToCode(authenticatedSessionPosture.session_material_types) },
+          { label: "Selected material type", value: formatLabel(authenticatedSessionPosture.selected_material_type) },
+          {
+            label: "Validation errors",
+            html: listToCode(
+              authenticatedSessionPosture.validation_errors && authenticatedSessionPosture.validation_errors.length
+                ? authenticatedSessionPosture.validation_errors
+                : integrationSessionValidationErrors
+            ),
+          },
+          {
+            label: "Material updated",
+            value: formatTimestamp(
+              authenticatedSessionPosture.secret_last_updated_at
+              || detail?.rumble?.session_material_updated_at
+            ),
+          },
         ]),
       },
       {
@@ -977,6 +996,16 @@
           { label: "Session/API live row", value: formatBoolean(sessionPath.live_row_found) },
           { label: "Session/API stop reason", value: formatLabel(sessionPath.stop_reason) },
           { label: "Session/API stop detail", value: sessionPath.stop_detail || "Unavailable" },
+          {
+            label: "Authenticated mode changed result",
+            value: formatBoolean(
+              Boolean(sessionPath.authenticated_request_attempted) && (
+                sessionPath.live_row_found !== samplePath.live_row_found
+                || sessionPath.stop_reason !== samplePath.stop_reason
+                || sessionPath.resolved_watch_url !== samplePath.resolved_watch_url
+              )
+            ),
+          },
         ]),
       },
       {
