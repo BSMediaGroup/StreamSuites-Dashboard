@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-04-23T18:07:10.202710Z",
+  "generated_at": "2026-04-23T18:08:00.930440Z",
   "provider_priority": [
     "twitch",
     "youtube",
@@ -23,8 +23,8 @@
       "stale_after_seconds": 90,
       "batch_size": 100,
       "creators_configured": 1,
-      "last_refresh_started_at": "2026-04-23T18:07:04.751467Z",
-      "last_refresh_completed_at": "2026-04-23T18:07:04.751467Z",
+      "last_refresh_started_at": "2026-04-23T18:08:00.930440Z",
+      "last_refresh_completed_at": "2026-04-23T18:08:00.930440Z",
       "last_error": null
     },
     {
@@ -45,7 +45,7 @@
       "is_live": false,
       "active_provider": null,
       "active_status": null,
-      "last_checked_at": "2026-04-23T18:07:05.521480Z",
+      "last_checked_at": "2026-04-23T18:08:00.930440Z",
       "freshness": "fresh",
       "stale": false,
       "checked_provider_count": 3,
@@ -64,7 +64,7 @@
           "viewer_count": null,
           "game_name": null,
           "started_at": null,
-          "last_checked_at": "2026-04-23T18:07:04.751467Z",
+          "last_checked_at": "2026-04-23T18:08:00.930440Z",
           "stale": false,
           "freshness": "fresh",
           "error": null,
