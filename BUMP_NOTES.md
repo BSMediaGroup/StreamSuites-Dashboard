@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Extended admin `/integrations/rumble` in `docs/js/platforms/rumble.js` so selected-creator diagnostics now surface challenge/interstitial classification, expected-vs-observed content type, pre-parse-block posture, authenticated-session configuration posture, whether a session-backed probe was attempted, and a sample-path versus session/API path comparison while keeping the raw runtime debug block copyable.
+- Added `tests/rumble-challenge-session-posture.test.mjs` to pin the additive challenge/session posture panels, raw debug response-shape visibility, and truthful no-debug empty state. No existing dashboard files were removed or replaced; `README.md` was updated because the test file is new.
+
 - Repaired the admin `/integrations/rumble` route binding in `docs/js/platforms/rumble.js` so the creator/search list is now built from the authoritative creator-integration summary first and enriched by bot rows when present, instead of going blank whenever no Rumble bot row is exported for Daniel yet. Loaded runtime detail remains authoritative for the current workspace.
 - Tightened the same route lifecycle with explicit poll/detail abort controllers, poll generations, duplicate-poller prevention, teardown cancellation, and last-good-detail preservation so expected route refresh/navigation cancellation does not surface `signal is aborted without reason` or destructively clear the selected creator, diagnostics, raw debug block, or stream posture.
 - Expanded `tests/notifications-runtime-authority.test.mjs` additively so the Rumble page now pins the no-bot-row creator summary binding case in addition to the existing selection, raw-debug, unchanged-payload, empty-state, and abort-like refresh regressions. No files were removed or replaced in this pass.

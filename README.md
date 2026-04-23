@@ -226,6 +226,7 @@ StreamSuites-Dashboard/
 │   ├── jobs-runtime-authority.test.mjs
 │   ├── public-authority-approvals.test.mjs
 │   ├── notifications-runtime-authority.test.mjs
+│   ├── rumble-challenge-session-posture.test.mjs
 │   └── triggers-runtime-authority.test.mjs
 ├── shared/
 │   └── state/

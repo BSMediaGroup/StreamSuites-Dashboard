@@ -234,6 +234,9 @@
     const markers = item?.parse_markers && typeof item.parse_markers === "object"
       ? item.parse_markers
       : {};
+    const responseShape = item?.response_shape && typeof item.response_shape === "object"
+      ? item.response_shape
+      : {};
     const headers = item?.request_headers && typeof item.request_headers === "object"
       ? item.request_headers
       : {};
@@ -254,6 +257,14 @@
         </div>
       `);
     }
+    if (Object.keys(responseShape).length) {
+      parts.push(`
+        <div class="ss-rumble-intelligence-trace-block">
+          <span class="label">Response Shape</span>
+          <pre>${escapeHtml(formatJson(responseShape))}</pre>
+        </div>
+      `);
+    }
     return parts.join("");
   }
 
@@ -270,6 +281,9 @@
             <div><code>${escapeHtml(item.url || "Unavailable")}</code></div>
             <div class="muted">Final URL: ${escapeHtml(item.final_url || "Unavailable")} • Response length: ${escapeHtml(String(item.response_length ?? item.response_size ?? "Unavailable"))}</div>
             <div class="muted">Content type: ${escapeHtml(item.content_type || "Unavailable")} • Blocked: ${escapeHtml(formatBoolean(item.blocked))}</div>
+            <div class="muted">Expected: ${escapeHtml(item.expected_content_type || "Unavailable")} • Observed: ${escapeHtml(item.observed_content_type || item.content_type || "Unavailable")}</div>
+            <div class="muted">Challenge: ${escapeHtml(formatBoolean(item.challenge_detected))} • Type: ${escapeHtml(formatLabel(item.challenge_type))} • Pre-parse block: ${escapeHtml(formatBoolean(item.likely_pre_parse_block))}</div>
+            <div class="muted">Session-backed: ${escapeHtml(formatBoolean(item.session_mode_used))} • Auth probe: ${escapeHtml(formatBoolean(item.authenticated_probe_attempted))}</div>
             <div class="muted">Error: ${escapeHtml(item.error || "None")}</div>
             ${traceMarkersMarkup(item)}
           </li>
@@ -905,9 +919,66 @@
     const requestCounts = runtimeDebug.request_chain_counts && typeof runtimeDebug.request_chain_counts === "object"
       ? runtimeDebug.request_chain_counts
       : {};
+    const challengeClassification = runtimeDebug.challenge_classification && typeof runtimeDebug.challenge_classification === "object"
+      ? runtimeDebug.challenge_classification
+      : {};
+    const authenticatedSessionPosture = runtimeDebug.authenticated_session_posture && typeof runtimeDebug.authenticated_session_posture === "object"
+      ? runtimeDebug.authenticated_session_posture
+      : creatorProbe.authenticated_session && typeof creatorProbe.authenticated_session === "object"
+      ? creatorProbe.authenticated_session
+      : {};
+    const parityComparison = creatorProbe.parity_comparison && typeof creatorProbe.parity_comparison === "object"
+      ? creatorProbe.parity_comparison
+      : {};
+    const samplePath = parityComparison.sample_equivalent_path && typeof parityComparison.sample_equivalent_path === "object"
+      ? parityComparison.sample_equivalent_path
+      : {};
+    const sessionPath = parityComparison.livestream_api_path && typeof parityComparison.livestream_api_path === "object"
+      ? parityComparison.livestream_api_path
+      : {};
     const rejectedEvidence = Array.isArray(runtimeDebug.rejected_evidence) ? runtimeDebug.rejected_evidence : [];
     const rawOutput = state.rawDebugText || formatJson(runtimeDebug);
     const debugCards = [
+      {
+        title: "Challenge / Interstitial Classification",
+        body: renderKeyValueRows([
+          { label: "Challenge detected", value: formatBoolean(challengeClassification.challenge_detected) },
+          { label: "Challenge type", value: formatLabel(challengeClassification.challenge_type) },
+          { label: "First challenge stage", value: formatLabel(challengeClassification.first_challenge_stage) },
+          { label: "Pre-parse blocked", value: formatBoolean(challengeClassification.likely_pre_parse_block) },
+          { label: "First pre-parse stage", value: formatLabel(challengeClassification.first_pre_parse_block_stage) },
+          { label: "First pre-parse status", value: String(challengeClassification.first_pre_parse_block_status ?? "Unavailable") },
+          { label: "Response shape", value: formatLabel(challengeClassification.first_pre_parse_block_response_shape) },
+          { label: "Expected content type", value: challengeClassification.expected_content_type || "Unavailable" },
+          { label: "Observed content type", value: challengeClassification.observed_content_type || "Unavailable" },
+          { label: "Classifier summary", value: challengeClassification.first_challenge_summary || "Unavailable" },
+        ]),
+      },
+      {
+        title: "Authenticated Session Posture",
+        body: renderKeyValueRows([
+          { label: "Session mode available", value: formatBoolean(authenticatedSessionPosture.session_mode_available) },
+          { label: "Cookie material configured", value: formatBoolean(authenticatedSessionPosture.cookie_material_present) },
+          { label: "Session-backed attempt made", value: formatBoolean(authenticatedSessionPosture.session_backed_attempted) },
+          { label: "Last authenticated probe", value: formatLabel(authenticatedSessionPosture.last_authenticated_probe_attempted) },
+          { label: "Authority path", value: authenticatedSessionPosture.authority_path || "creator_live_status_secrets:rumble" },
+          { label: "Material types", html: listToCode(authenticatedSessionPosture.session_material_types) },
+        ]),
+      },
+      {
+        title: "Sample Path vs Session-Backed Path",
+        body: renderKeyValueRows([
+          { label: "Sample path attempted", value: formatBoolean(samplePath.request_attempted) },
+          { label: "Sample path live row", value: formatBoolean(samplePath.live_row_found) },
+          { label: "Sample path stop reason", value: formatLabel(samplePath.stop_reason) },
+          { label: "Sample path stop detail", value: samplePath.stop_detail || "Unavailable" },
+          { label: "Session/API path attempted", value: formatBoolean(sessionPath.request_attempted) },
+          { label: "Authenticated request attempted", value: formatBoolean(sessionPath.authenticated_request_attempted) },
+          { label: "Session/API live row", value: formatBoolean(sessionPath.live_row_found) },
+          { label: "Session/API stop reason", value: formatLabel(sessionPath.stop_reason) },
+          { label: "Session/API stop detail", value: sessionPath.stop_detail || "Unavailable" },
+        ]),
+      },
       {
         title: "Detection Summary",
         body: renderKeyValueRows([
