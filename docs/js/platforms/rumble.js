@@ -9,6 +9,8 @@
   const el = {};
   let runtimeTimer = null;
   let selectorsHydrated = false;
+  let runtimePollController = null;
+  let detailLoadController = null;
 
   const state = {
     creators: [],
@@ -21,6 +23,7 @@
     detailRequestToken: 0,
     runtimeRefreshInFlight: false,
     runtimeRefreshQueued: false,
+    runtimePollGeneration: 0,
     destroyed: false,
     rawDebugText: "",
     rawDebugExpanded: true,
@@ -493,24 +496,63 @@
   function buildCreatorList(summaryPayload, botsPayload) {
     const summaryItems = Array.isArray(summaryPayload?.items) ? summaryPayload.items : [];
     const summaryByUserCode = new Map();
+    const summaryByAccountId = new Map();
     summaryItems.forEach((item) => {
       const userCode = String(item?.user_code || "").trim();
       if (userCode) summaryByUserCode.set(userCode, item);
+      const accountId = String(item?.account_id || item?.id || "").trim();
+      if (accountId) summaryByAccountId.set(accountId, item);
+    });
+    const byAccountId = new Map();
+
+    summaryItems.forEach((summary) => {
+      const accountId = String(summary?.account_id || summary?.id || "").trim();
+      if (!accountId) return;
+      const displayName = String(summary?.display_name || summary?.user_code || "Unknown creator").trim() || "Unknown creator";
+      const userCode = String(summary?.user_code || accountId).trim();
+      const rumble = Array.isArray(summary?.integrations)
+        ? summary.integrations.find((item) => String(item?.platform_key || item?.platform || "").trim().toLowerCase() === PLATFORM)
+        : {};
+      const channelHandle = String(rumble?.channel_handle || summary?.channel_handle || "").trim();
+      const channelSlug = String(rumble?.channel_slug || summary?.channel_slug || "").trim();
+      const channelUrl = String(rumble?.public_url || rumble?.channel_url || summary?.channel_url || "").trim();
+      byAccountId.set(accountId, {
+        account_id: accountId,
+        user_code: userCode || accountId,
+        display_name: displayName,
+        readiness_label: String(summary?.readiness_label || rumble?.readiness_label || "Runtime summary loaded").trim() || "Runtime summary loaded",
+        status: String(rumble?.status || summary?.status || "unknown").trim() || "unknown",
+        session_id: null,
+        channel_handle: channelHandle || null,
+        channel_slug: channelSlug || null,
+        channel_url: channelUrl || null,
+        active_target: null,
+        last_evaluated_at: summary?.last_evaluated_at || null,
+        search_blob: [
+          displayName,
+          userCode,
+          channelHandle,
+          channelSlug,
+          channelUrl,
+        ].join(" ").toLowerCase(),
+      });
     });
 
-    return normalizeRumbleBots(botsPayload)
-      .map((bot) => {
+    normalizeRumbleBots(botsPayload)
+      .forEach((bot) => {
         const userCode = String(bot?.creator_id || "").trim();
-        const summary = summaryByUserCode.get(userCode) || {};
+        const accountId = String(bot?.creator_account_id || "").trim();
+        const summary = summaryByUserCode.get(userCode) || summaryByAccountId.get(accountId) || {};
         const target = bot?.resolved_target && typeof bot.resolved_target === "object" ? bot.resolved_target : {};
         const displayName = String(summary?.display_name || userCode || "Unknown creator").trim() || "Unknown creator";
-        const accountId = String(summary?.account_id || bot?.creator_account_id || "").trim();
+        const resolvedAccountId = String(summary?.account_id || bot?.creator_account_id || "").trim();
         const channelHandle = String(target?.channel_handle || "").trim();
         const channelSlug = String(target?.channel_slug || "").trim();
         const channelUrl = String(target?.channel_url || "").trim();
         const activeTarget = String(bot?.active_target || target?.watch_url || "").trim();
-        return {
-          account_id: accountId,
+        if (!resolvedAccountId) return;
+        byAccountId.set(resolvedAccountId, {
+          account_id: resolvedAccountId,
           user_code: userCode,
           display_name: displayName,
           readiness_label: String(summary?.readiness_label || bot?.status || "").trim() || "Unknown",
@@ -529,8 +571,10 @@
             channelUrl,
             activeTarget,
           ].join(" ").toLowerCase(),
-        };
-      })
+        });
+      });
+
+    return Array.from(byAccountId.values())
       .filter((item) => item.account_id)
       .sort((left, right) => left.display_name.localeCompare(right.display_name));
   }
@@ -1194,7 +1238,13 @@
     const currentSelection = state.selectedAccountId;
     state.creators = creators;
     if (!creators.some((item) => item.account_id === currentSelection)) {
-      state.selectedAccountId = creators[0]?.account_id || "";
+      const detailCreator = selectedCreatorFromDetail();
+      const detailAccountId = String(detailCreator?.account_id || "").trim();
+      if (detailAccountId && detailAccountId === currentSelection) {
+        state.selectedAccountId = currentSelection;
+      } else {
+        state.selectedAccountId = creators[0]?.account_id || detailAccountId || "";
+      }
     }
     filterCreators();
     if (!state.selectedAccountId && creators.length) {
@@ -1208,18 +1258,24 @@
 
   async function loadCreatorDetail(accountId) {
     if (!accountId) {
-      state.intelligenceDetail = null;
-      state.intelligenceDetailSignature = "";
-      state.rawDebugText = "";
+      if (state.intelligenceDetail?.runtimeDebug || state.intelligenceDetail?.rumble) {
+        renderIntelligence();
+        return;
+      }
+      clearLoadedDetail();
       renderIntelligence();
       return;
     }
     const requestToken = state.detailRequestToken + 1;
     state.detailRequestToken = requestToken;
+    if (detailLoadController) {
+      detailLoadController.abort();
+    }
+    detailLoadController = new AbortController();
     try {
       const detailPayload = await requestJson(
         `/api/admin/accounts/${encodeURIComponent(accountId)}/creator-integrations`,
-        { timeoutMs: 20000 }
+        { signal: detailLoadController.signal, timeoutMs: 20000 }
       );
       if (state.destroyed || requestToken !== state.detailRequestToken || accountId !== state.selectedAccountId) {
         return;
@@ -1264,6 +1320,13 @@
         renderIntelligence();
       }
     }
+  }
+
+  function clearLoadedDetail() {
+    state.intelligenceDetail = null;
+    state.intelligenceDetailSignature = "";
+    state.rawDebugText = "";
+    state.selectedStreamKey = "";
   }
 
   async function hydrateIntelligence(botsPayload) {
@@ -1353,21 +1416,24 @@
       return;
     }
     state.runtimeRefreshInFlight = true;
+    const pollGeneration = state.runtimePollGeneration;
+    if (runtimePollController) {
+      runtimePollController.abort();
+    }
+    runtimePollController = new AbortController();
     try {
-      const payload = await requestJson(BOTS_STATUS_ENDPOINT, { timeoutMs: 20000 });
-      if (state.destroyed) return;
+      const payload = await requestJson(BOTS_STATUS_ENDPOINT, { signal: runtimePollController.signal, timeoutMs: 20000 });
+      if (state.destroyed || pollGeneration !== state.runtimePollGeneration) return;
       renderPayload(payload);
-      const summaryPayload = await requestJson(CREATOR_SUMMARY_ENDPOINT, { timeoutMs: 20000 });
-      if (state.destroyed) return;
+      const summaryPayload = await requestJson(CREATOR_SUMMARY_ENDPOINT, { signal: runtimePollController.signal, timeoutMs: 20000 });
+      if (state.destroyed || pollGeneration !== state.runtimePollGeneration) return;
       syncCreatorCollection(buildCreatorList(summaryPayload, payload));
       renderCreatorSummary();
       selectorsHydrated = true;
       if (state.selectedAccountId) {
         await loadCreatorDetail(state.selectedAccountId);
       } else {
-        state.intelligenceDetail = null;
-        state.intelligenceDetailSignature = "";
-        state.rawDebugText = "";
+        clearLoadedDetail();
         renderIntelligence();
       }
     } catch (err) {
@@ -1385,6 +1451,11 @@
   }
 
   function startRuntimePolling() {
+    if (runtimeTimer) {
+      clearInterval(runtimeTimer);
+      runtimeTimer = null;
+    }
+    state.runtimePollGeneration += 1;
     void hydrateRuntime();
     runtimeTimer = window.setInterval(() => {
       void hydrateRuntime();
@@ -1400,9 +1471,18 @@
 
   function destroy() {
     state.destroyed = true;
+    state.runtimePollGeneration += 1;
     if (runtimeTimer) {
       clearInterval(runtimeTimer);
       runtimeTimer = null;
+    }
+    if (runtimePollController) {
+      runtimePollController.abort();
+      runtimePollController = null;
+    }
+    if (detailLoadController) {
+      detailLoadController.abort();
+      detailLoadController = null;
     }
     selectorsHydrated = false;
   }

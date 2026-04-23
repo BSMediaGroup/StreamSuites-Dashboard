@@ -990,6 +990,41 @@ test("admin rumble platform view preserves the loaded creator workspace when a l
   assert.equal(elements.get("rumble-intelligence-creator-empty").classList.contains("hidden"), true);
 });
 
+test("admin rumble platform view can bind Daniel from creator summary even when no bot row exists yet", async () => {
+  const runtimeDebug = createRumbleRuntimeDebug();
+  const { sandbox, elements } = buildRumbleSandbox({
+    botPayloads: [
+      {
+        ...createRumbleBotsPayload(),
+        bots: [],
+        platforms: [
+          {
+            ...createRumbleBotsPayload().platforms[0],
+            details: {
+              bot_blocked_count: 0,
+              bot_desired_count: 0,
+              bot_paused_count: 0,
+              manual_override_count: 0
+            }
+          }
+        ]
+      }
+    ],
+    summaryPayloads: [createRumbleCreatorSummaryPayload()],
+    detailPayloads: {
+      "acct-daniel": [createRumbleDetailPayload({ runtimeDebug })]
+    }
+  });
+
+  sandbox.window.RumbleView.init();
+  await flushMicrotasks();
+
+  assert.equal(elements.get("rumble-intelligence-creator-select").value, "acct-daniel");
+  assert.match(elements.get("rumble-intelligence-creator-summary").innerHTML, /Daniel Clancy/);
+  assert.match(elements.get("rumble-intelligence-diagnostics").innerHTML, /Detection Summary/);
+  assert.equal(elements.get("rumble-intelligence-creator-empty").classList.contains("hidden"), true);
+});
+
 test("admin rumble raw debug block stays copy-pastable and reflects the real runtime debug payload", async () => {
   const runtimeDebug = createRumbleRuntimeDebug({ variant: "changed" });
   const { sandbox, elements, clipboardWrites } = buildRumbleSandbox({
