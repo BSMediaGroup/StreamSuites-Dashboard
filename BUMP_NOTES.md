@@ -2,6 +2,8 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Re-verified admin `/integrations/rumble` as a consumer of the repaired runtime/Auth Rumble posture contract. No dashboard runtime code needed to originate the fix; the existing `docs/js/platforms/rumble.js` surface remains compatible with masked session posture fields and copyable sanitized raw debug. `tests/notifications-runtime-authority.test.mjs` was run to confirm the consumer contract. No files were created or removed.
+
 - Extended admin `/integrations/rumble` in `docs/js/platforms/rumble.js` so the authenticated-session diagnostics now show selected material type, validation errors, safe material-updated timestamp, and whether authenticated mode actually changed the outcome compared with the sample path, while still keeping raw runtime debug copyable and secret-safe.
 - Expanded `tests/rumble-challenge-session-posture.test.mjs` additively so the dashboard contract now pins those new safe session posture fields and continues asserting that no raw cookie values are surfaced in the rendered/raw-debug pathway. No files were created or removed in this pass.
 
