@@ -27,6 +27,74 @@
 <section class="ss-panel">
   <header class="ss-panel-header">
     <div class="ss-panel-header-main">
+      <h2>Creator-Owned Custom Triggers</h2>
+      <p class="muted" style="margin:6px 0 0;">
+        Hydrated from runtime/Auth custom trigger config endpoints. These rows are creator-owned config for future dispatch; they do not mutate the global seed registry and do not imply live execution.
+      </p>
+    </div>
+  </header>
+  <div class="ss-panel-body">
+    <div id="triggers-custom-state" class="muted">Loading creator custom trigger configs...</div>
+    <div class="ss-toolbar" style="margin-top:16px;">
+      <div class="ss-toolbar-left">
+        <label class="ss-field">
+          <span class="muted">Creator</span>
+          <input id="triggers-custom-creator-filter" class="ss-input" type="search" placeholder="Account ID, user code" />
+        </label>
+        <label class="ss-field">
+          <span class="muted">Status</span>
+          <select id="triggers-custom-status-filter" class="ss-input">
+            <option value="">All statuses</option>
+            <option value="active">Active</option>
+            <option value="disabled">Disabled</option>
+            <option value="true">Enabled</option>
+            <option value="false">Disabled config</option>
+          </select>
+        </label>
+        <label class="ss-field">
+          <span class="muted">Platform</span>
+          <select id="triggers-custom-platform-filter" class="ss-input">
+            <option value="">All platforms</option>
+            <option value="rumble">Rumble</option>
+            <option value="youtube">YouTube</option>
+            <option value="twitch">Twitch</option>
+            <option value="kick">Kick</option>
+            <option value="pilled">Pilled planned/disabled</option>
+          </select>
+        </label>
+        <label class="ss-field" style="min-width: 260px;">
+          <span class="muted">Search</span>
+          <input id="triggers-custom-search" class="ss-input" type="search" placeholder="ID, trigger, alias" />
+        </label>
+      </div>
+    </div>
+    <div class="ss-table-scroll">
+      <table class="ss-table">
+        <thead>
+          <tr>
+            <th>ID / Creator</th>
+            <th>Enabled / Status</th>
+            <th>Command / Aliases</th>
+            <th>Platforms</th>
+            <th>Response / Cooldown</th>
+            <th>Access</th>
+            <th>Created / Updated</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="triggers-custom-table-body"></tbody>
+      </table>
+    </div>
+    <div id="triggers-custom-empty" class="ss-empty hidden">No creator-owned custom triggers match the current filters.</div>
+    <p class="muted" style="margin-top:12px;">
+      Admin edits/deletes use runtime/Auth account-scoped trigger endpoints when available. Admin mutation later remains the status if an account row cannot be addressed through that authority path.
+    </p>
+  </div>
+</section>
+
+<section class="ss-panel">
+  <header class="ss-panel-header">
+    <div class="ss-panel-header-main">
       <h2>Trigger Definitions</h2>
       <p class="muted" style="margin:6px 0 0;">
         Registry rows expose command metadata, platform eligibility, response mode, cooldown, actor resolution, mention behavior, identity requirement, profile binding, and role gate source. They do not imply dispatch support.
@@ -88,6 +156,6 @@
 
 <footer class="ss-footer">
   <span class="muted">
-    Runtime/Auth is the authority. Creator/Admin trigger configuration controls are future managed phases and are intentionally not exposed here.
+    Runtime/Auth is the authority. Global registry rows remain read-only; creator custom trigger configs are a separate runtime-owned management layer.
   </span>
 </footer>

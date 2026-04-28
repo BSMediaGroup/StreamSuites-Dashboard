@@ -21,11 +21,13 @@ test("admin triggers route is runtime/Auth-backed and unload-safe", () => {
   assert.match(triggersJs, /requestJson\("\/api\/livechat\/games", \{ signal \}\)/);
   assert.match(triggersJs, /requestJson\("\/api\/livechat\/capabilities", \{ signal \}\)/);
   assert.match(triggersJs, /requestJson\("\/api\/livechat\/game-assets", \{ signal \}\)/);
+  assert.match(triggersJs, /requestJson\("\/api\/admin\/livechat\/custom-triggers", \{ signal \}\)/);
   assert.match(triggersJs, /state\.abortController = new AbortController\(\)/);
   assert.match(triggersJs, /destroy\(\) \{/);
   assert.match(triggersHtml, /Authoritative Runtime Registry/);
   assert.match(triggersHtml, /Trigger Definitions/);
   assert.match(triggersHtml, /read-only and does not mutate trigger, game, transport, or creator configuration state/);
+  assert.match(triggersHtml, /Creator-Owned Custom Triggers/);
   assert.match(triggersHtml, /No playable game engine, persistence, or transport execution is implemented/);
 });
 
@@ -41,5 +43,20 @@ test("admin trigger oversight exposes technical read-only registry metadata", ()
   assert.match(triggersJs, /platformCapsSummary/);
   assert.doesNotMatch(triggersJs, /\/api\/admin\/runtime\/rumble-dispatch/);
   assert.match(triggersHtml, /Actor \/ Identity/);
-  assert.match(triggersHtml, /Creator\/Admin trigger configuration controls are future managed phases/);
+  assert.match(triggersHtml, /creator custom trigger configs are a separate runtime-owned management layer/);
+});
+
+test("admin trigger oversight hydrates custom configs from runtime/Auth and mutates only account-scoped custom rows", () => {
+  const triggersJs = read("docs/js/triggers.js");
+  const triggersHtml = read("docs/views/triggers.html");
+
+  assert.match(triggersJs, /state\.customItems/);
+  assert.match(triggersJs, /filteredCustomTriggers/);
+  assert.match(triggersJs, /\/api\/admin\/livechat\/custom-triggers/);
+  assert.match(triggersJs, /\/api\/admin\/accounts\/\$\{encodeURIComponent\(creatorId\)\}\/creator-triggers\/\$\{encodeURIComponent\(triggerId\)\}/);
+  assert.match(triggersJs, /data-custom-trigger-toggle/);
+  assert.match(triggersJs, /data-custom-trigger-delete/);
+  assert.match(triggersHtml, /Admin edits\/deletes use runtime\/Auth account-scoped trigger endpoints/);
+  assert.match(triggersHtml, /future dispatch/);
+  assert.doesNotMatch(triggersJs, /localStorage/);
 });

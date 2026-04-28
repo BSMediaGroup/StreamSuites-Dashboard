@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Extended Admin Trigger Oversight with a separate creator-owned custom trigger config section hydrated from `GET /api/admin/livechat/custom-triggers` while preserving the global `/api/livechat/*` registry as read-only seed data. The new oversight table includes creator/account owner, enabled/status, command/aliases, platforms, response mode, cooldown, access, timestamps, and creator/status/platform/search filters.
+- Added runtime/Auth-only admin enable/disable and delete actions for addressable custom rows through the existing account-scoped `/api/admin/accounts/{account_id}/creator-triggers/{trigger_id}` authority path, with truthful copy that this is configuration management for future dispatch and not live execution. No files were created or removed; `docs/js/triggers.js`, `docs/views/triggers.html`, and the trigger source test were updated in place and are expected to be longer due to the added custom-config oversight surface.
+
 - Replaced the Admin trigger oversight page with a read-only livechat registry view hydrated from the authoritative runtime/Auth `/api/livechat/*` endpoints. The page now shows summary counts, platform caps, filters/search, trigger technical metadata, Games registry foundation rows, and explicit runtime/Auth authority/source without using creator-specific local mutation scaffolds.
 - Removed active Admin trigger create/edit/delete/manual-send controls from this route because this task is registry hydration only. No files were created or removed; `docs/js/triggers.js` and `docs/views/triggers.html` were replaced in place and are expected to be shorter because the previous creator-specific mutation workflow was removed.
 

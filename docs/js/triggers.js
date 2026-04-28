@@ -4,6 +4,8 @@
   const state = {
     registry: { triggers: [], games: [], capabilities: [], assets: [], schemas: [], summary: null },
     filters: { module: "", status: "", platform: "", search: "" },
+    customItems: [],
+    customFilters: { creator: "", status: "", platform: "", search: "" },
     abortController: null,
   };
 
@@ -204,11 +206,101 @@
       : "<li>No game registry rows were returned by runtime/Auth.</li>";
   }
 
+  function customRowSearchText(item) {
+    return [
+      item.id,
+      item.custom_trigger_id,
+      item.creator_id,
+      item.creator_account_id,
+      item.owner_user_code,
+      item.status,
+      item.trigger,
+      item.command_text,
+      ...(Array.isArray(item.aliases) ? item.aliases : []),
+    ].join(" ").toLowerCase();
+  }
+
+  function filteredCustomTriggers() {
+    const creatorValue = state.customFilters.creator.toLowerCase();
+    const statusValue = state.customFilters.status.toLowerCase();
+    const platformValue = state.customFilters.platform.toLowerCase();
+    const searchValue = state.customFilters.search.toLowerCase();
+    return state.customItems.filter((item) => {
+      const haystack = customRowSearchText(item);
+      const platforms = Array.isArray(item?.eligible_platforms)
+        ? item.eligible_platforms.map((platform) => String(platform).toLowerCase())
+        : [];
+      if (creatorValue && !haystack.includes(creatorValue)) return false;
+      if (statusValue && String(item?.status || "").toLowerCase() !== statusValue && String(Boolean(item?.enabled)).toLowerCase() !== statusValue) return false;
+      if (platformValue && !platforms.includes(platformValue)) return false;
+      if (searchValue && !haystack.includes(searchValue)) return false;
+      return true;
+    });
+  }
+
+  function renderCustomRows() {
+    if (!(el.customTableBody instanceof HTMLElement)) return;
+    const items = filteredCustomTriggers();
+    if (el.customState instanceof HTMLElement) {
+      el.customState.textContent = `Custom triggers: creator-owned runtime config (${state.customItems.length} loaded). Execution/transport is a later phase.`;
+    }
+    if (!items.length) {
+      el.customTableBody.innerHTML = "";
+      el.customEmpty?.classList.remove("hidden");
+      return;
+    }
+    el.customEmpty?.classList.add("hidden");
+    el.customTableBody.innerHTML = items.map((item) => {
+      const platforms = Array.isArray(item.eligible_platforms) ? item.eligible_platforms : [];
+      const creatorId = item.creator_id || item.creator_account_id || "";
+      const id = item.id || item.custom_trigger_id || "";
+      const canMutate = Boolean(creatorId && id);
+      return `
+        <tr>
+          <td>
+            <strong>${escapeHtml(id)}</strong>
+            <div class="muted">${escapeHtml(creatorId)}</div>
+            <div class="muted">${escapeHtml(item.owner_user_code || "-")}</div>
+          </td>
+          <td>
+            <span class="ss-badge ${item.enabled ? "ss-badge-success" : "ss-badge-warning"}">${escapeHtml(item.enabled ? "Enabled" : "Disabled")}</span>
+            <div class="muted">${escapeHtml(item.status || "-")}</div>
+          </td>
+          <td>
+            <strong>${escapeHtml(item.command_text || `${item.prefix || ""}${item.trigger || ""}`)}</strong>
+            <div class="muted">${escapeHtml(Array.isArray(item.aliases) && item.aliases.length ? `Aliases: ${item.aliases.join(", ")}` : "Aliases: none")}</div>
+          </td>
+          <td>${escapeHtml(platforms.map(humanizePlatform).join(", "))}</td>
+          <td>
+            <div>${escapeHtml(item.response_mode || "-")}</div>
+            <div class="muted">${escapeHtml((item.cooldown_seconds || item.cooldown?.user_seconds || 5) + "s user cooldown")}</div>
+          </td>
+          <td>
+            <div>${escapeHtml(item.access || "everyone")}</div>
+            <div class="muted">Actor: ${escapeHtml(item.actor_resolution || "-")}</div>
+            <div class="muted">Role gate: ${escapeHtml(item.role_gate_source || "-")}</div>
+          </td>
+          <td>
+            <div>${escapeHtml(formatTimestamp(item.created_at))}</div>
+            <div class="muted">${escapeHtml(formatTimestamp(item.updated_at))}</div>
+          </td>
+          <td>
+            ${canMutate ? `
+              <button class="ss-btn ss-btn-secondary ss-btn-small" type="button" data-custom-trigger-toggle="${escapeHtml(id)}" data-creator-id="${escapeHtml(creatorId)}" data-next-enabled="${item.enabled ? "false" : "true"}">${escapeHtml(item.enabled ? "Disable" : "Enable")}</button>
+              <button class="ss-btn ss-btn-danger ss-btn-small" type="button" data-custom-trigger-delete="${escapeHtml(id)}" data-creator-id="${escapeHtml(creatorId)}">Delete</button>
+            ` : `<span class="muted">Admin mutation later</span>`}
+          </td>
+        </tr>
+      `;
+    }).join("");
+  }
+
   function renderAll() {
     renderSummary();
     renderFilters();
     renderRows();
     renderGameRows();
+    renderCustomRows();
     if (el.runtimeState instanceof HTMLElement) {
       const pilled = state.registry.capabilities.find((item) => item.platform === "pilled");
       el.runtimeState.textContent = pilled?.enabled === false
@@ -221,13 +313,14 @@
     setBanner("");
     if (el.runtimeState instanceof HTMLElement) el.runtimeState.textContent = "Loading authoritative runtime registry...";
     const signal = state.abortController?.signal;
-    const [summary, triggers, games, capabilities, assets, schemas] = await Promise.all([
+    const [summary, triggers, games, capabilities, assets, schemas, customTriggers] = await Promise.all([
       requestJson("/api/livechat/registry-summary", { signal }),
       requestJson("/api/livechat/triggers", { signal }),
       requestJson("/api/livechat/games", { signal }),
       requestJson("/api/livechat/capabilities", { signal }),
       requestJson("/api/livechat/game-assets", { signal }),
       requestJson("/api/livechat/game-schemas", { signal }),
+      requestJson("/api/admin/livechat/custom-triggers", { signal }),
     ]);
     state.registry = {
       summary,
@@ -237,7 +330,24 @@
       assets: Array.isArray(assets.items) ? assets.items : [],
       schemas: Array.isArray(schemas.items) ? schemas.items : [],
     };
+    state.customItems = Array.isArray(customTriggers.items) ? customTriggers.items : [];
     renderAll();
+  }
+
+  async function updateCustomTrigger(creatorId, triggerId, enabled) {
+    await requestJson(`/api/admin/accounts/${encodeURIComponent(creatorId)}/creator-triggers/${encodeURIComponent(triggerId)}`, {
+      method: "PATCH",
+      body: JSON.stringify({ enabled }),
+      headers: { "Content-Type": "application/json" },
+    });
+    await refreshAll();
+  }
+
+  async function deleteCustomTrigger(creatorId, triggerId) {
+    await requestJson(`/api/admin/accounts/${encodeURIComponent(creatorId)}/creator-triggers/${encodeURIComponent(triggerId)}`, {
+      method: "DELETE",
+    });
+    await refreshAll();
   }
 
   async function init() {
@@ -254,6 +364,13 @@
     el.tableBody = $("triggers-table-body");
     el.empty = $("triggers-empty");
     el.games = $("triggers-games-list");
+    el.customState = $("triggers-custom-state");
+    el.customCreatorFilter = $("triggers-custom-creator-filter");
+    el.customStatusFilter = $("triggers-custom-status-filter");
+    el.customPlatformFilter = $("triggers-custom-platform-filter");
+    el.customSearch = $("triggers-custom-search");
+    el.customTableBody = $("triggers-custom-table-body");
+    el.customEmpty = $("triggers-custom-empty");
     $("btn-refresh-triggers")?.addEventListener("click", () => void refreshAll().catch((err) => setBanner(err?.message || "Unable to refresh registry.", "danger")), { signal });
     [el.moduleFilter, el.statusFilter, el.platformFilter, el.search].forEach((control) => {
       control?.addEventListener("input", () => {
@@ -264,6 +381,34 @@
         renderRows();
       }, { signal });
     });
+    [el.customCreatorFilter, el.customStatusFilter, el.customPlatformFilter, el.customSearch].forEach((control) => {
+      control?.addEventListener("input", () => {
+        state.customFilters.creator = el.customCreatorFilter?.value || "";
+        state.customFilters.status = el.customStatusFilter?.value || "";
+        state.customFilters.platform = el.customPlatformFilter?.value || "";
+        state.customFilters.search = el.customSearch?.value || "";
+        renderCustomRows();
+      }, { signal });
+    });
+    el.customTableBody?.addEventListener("click", (event) => {
+      const target = event.target instanceof Element ? event.target : null;
+      if (!target) return;
+      const toggle = target.closest("[data-custom-trigger-toggle]");
+      if (toggle) {
+        void updateCustomTrigger(
+          toggle.getAttribute("data-creator-id") || "",
+          toggle.getAttribute("data-custom-trigger-toggle") || "",
+          toggle.getAttribute("data-next-enabled") === "true",
+        ).catch((err) => setBanner(err?.message || "Unable to update custom trigger.", "danger"));
+      }
+      const deleteButton = target.closest("[data-custom-trigger-delete]");
+      if (deleteButton) {
+        void deleteCustomTrigger(
+          deleteButton.getAttribute("data-creator-id") || "",
+          deleteButton.getAttribute("data-custom-trigger-delete") || "",
+        ).catch((err) => setBanner(err?.message || "Unable to delete custom trigger.", "danger"));
+      }
+    }, { signal });
     try {
       await refreshAll();
     } catch (err) {
@@ -280,6 +425,7 @@
         state.abortController = null;
       }
       state.registry = { triggers: [], games: [], capabilities: [], assets: [], schemas: [], summary: null };
+      state.customItems = [];
     },
   };
 })();
