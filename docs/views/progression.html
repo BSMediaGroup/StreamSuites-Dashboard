@@ -1,0 +1,133 @@
+<!-- ========================================================= -->
+<!-- StreamSuites - XP / Rank Administration (VIEW PARTIAL) -->
+<!-- ========================================================= -->
+
+<header class="ss-header">
+  <div class="ss-header-left">
+    <h1 class="ss-title">StreamSuites</h1>
+    <span class="ss-subtitle">XP / Rank Controls</span>
+  </div>
+</header>
+
+<main class="ss-main ss-progression-admin">
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Progression Overview / Search</h2>
+        <p class="muted" style="margin:6px 0 0;">
+          Runtime/Auth is the authority for global XP, rank derivation, manual ledger events, and leaderboard visibility.
+        </p>
+      </div>
+      <div class="ss-panel-header-actions">
+        <span id="progression-status" class="muted">Loading progression controls...</span>
+        <button id="progression-refresh" class="ss-btn ss-btn-secondary" type="button">Refresh</button>
+      </div>
+    </header>
+    <div class="ss-panel-body">
+      <div class="ss-progression-search-row">
+        <div class="ss-form-row">
+          <label for="progression-search-input">Identity, account, user code, or display name</label>
+          <input id="progression-search-input" type="search" placeholder="Search global progression identities" />
+        </div>
+        <button id="progression-search-submit" class="ss-btn" type="button">Search</button>
+      </div>
+      <div class="ss-meta-row">
+        <div><strong>Scope:</strong> <span id="progression-scope">global</span></div>
+        <div><strong>Ranks:</strong> <span id="progression-rank-count">--</span></div>
+        <div><strong>Rules:</strong> <span id="progression-rule-count">--</span></div>
+        <div><strong>Identities:</strong> <span id="progression-identity-count">--</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="ss-progression-grid">
+    <section class="ss-panel">
+      <header class="ss-panel-header">
+        <div class="ss-panel-header-main">
+          <h2>Rank Definitions</h2>
+          <p class="muted" style="margin:6px 0 0;">
+            Labels and thresholds are editable. Internal codes remain fixed as RANK0 through RANK10.
+          </p>
+        </div>
+        <div class="ss-panel-header-actions">
+          <span id="progression-ranks-status" class="muted">No pending changes</span>
+          <button id="progression-ranks-save" class="ss-btn" type="button" disabled>Save ranks</button>
+        </div>
+      </header>
+      <div class="ss-panel-body">
+        <div id="progression-ranks-list" class="ss-progression-list"></div>
+      </div>
+    </section>
+
+    <section class="ss-panel">
+      <header class="ss-panel-header">
+        <div class="ss-panel-header-main">
+          <h2>XP Rules</h2>
+          <p class="muted" style="margin:6px 0 0;">
+            Tune existing rule amounts and supported caps without inventing new game systems.
+          </p>
+        </div>
+        <div class="ss-panel-header-actions">
+          <span id="progression-rules-status" class="muted">No pending changes</span>
+          <button id="progression-rules-save" class="ss-btn" type="button" disabled>Save rules</button>
+        </div>
+      </header>
+      <div class="ss-panel-body">
+        <div id="progression-rules-list" class="ss-progression-list"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="ss-progression-grid">
+    <section class="ss-panel">
+      <header class="ss-panel-header">
+        <div class="ss-panel-header-main">
+          <h2>Identity Progression Inspector</h2>
+          <p class="muted" style="margin:6px 0 0;">
+            Inspect current XP, derived rank, recent append-only XP history, and leaderboard visibility.
+          </p>
+        </div>
+      </header>
+      <div class="ss-panel-body">
+        <div id="progression-identities-list" class="ss-progression-list"></div>
+        <div id="progression-identities-empty" class="ss-empty hidden">No progression identities match the current search.</div>
+      </div>
+    </section>
+
+    <section class="ss-panel">
+      <header class="ss-panel-header">
+        <div class="ss-panel-header-main">
+          <h2>Manual Actions</h2>
+          <p class="muted" style="margin:6px 0 0;">
+            Grants, penalties, adjustments, and reversals create new ledger events. Existing history is not edited.
+          </p>
+        </div>
+      </header>
+      <div class="ss-panel-body">
+        <div id="progression-inspector" class="ss-progression-inspector ss-empty">
+          Select an identity to inspect progression and apply controls.
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="ss-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Leaderboard Hygiene</h2>
+        <p class="muted" style="margin:6px 0 0;">
+          Suppression affects public leaderboard display only. XP totals and ledger history remain intact.
+        </p>
+      </div>
+    </header>
+    <div class="ss-panel-body">
+      <div id="progression-leaderboard-hygiene" class="ss-progression-hygiene ss-empty">
+        Select an identity to review or change public leaderboard visibility.
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="ss-footer">
+  <span class="muted">XP/rank controls are global-only for this phase. Creator-private analytics remain separate.</span>
+</footer>

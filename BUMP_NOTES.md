@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Added a new `/progression` admin route for runtime-owned XP/rank controls. The compact dark admin surface loads `GET/PATCH /api/admin/progression/ranks`, `GET/PATCH /api/admin/progression/rules`, identity search/detail/history endpoints, manual grant/penalty/adjustment event creation, append-only reversal creation, and leaderboard visibility suppression without storing progression authority in Dashboard.
+- Added `docs/views/progression.html`, `docs/js/progression.js`, and `tests/progression-admin-controls.test.mjs`; updated route registration, shell nav/script loading, component styling, and README tree entries. The UI keeps the phase global-only, requires reasons for manual actions/reversals/suppression, preserves fixed `RANK0`-`RANK10` codes, and states that suppression affects leaderboard display rather than XP deletion. No files were removed.
+
 - Added an Admin custom trigger preview diagnostics panel to `docs/views/triggers.html` and `docs/js/triggers.js`. Admins can select a creator-owned custom row, choose a simulated platform/message/actor/context, and call `POST /api/admin/livechat/custom-triggers/preview` for runtime/Auth dry-run match and rendering diagnostics.
 - The admin preview renders dry-run/no-send flags, creator/custom trigger IDs, match reason, variables used, actor normalization summary, platform max chars, response mode, warnings, rendered text, and split pages. It does not call transport routes, live dispatch, playable game logic, or mutate the global seed registry. No files were created or removed; the trigger oversight JS/view/test files are longer due to the added diagnostic surface.
 

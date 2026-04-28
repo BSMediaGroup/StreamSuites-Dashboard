@@ -23,12 +23,13 @@ Admin-facing StreamSuites surface deployed to Cloudflare Pages at `https://admin
 ```mermaid
 flowchart TD
     Admin["Admin operator"] --> Gate["Admin session gate<br/>docs/auth + admin-gate.js"]
-    Gate --> Shell["Dashboard shell and routes<br/>/overview /accounts /alerts /analytics /bots /settings /permissions /profiles/integrations"]
+    Gate --> Shell["Dashboard shell and routes<br/>/overview /accounts /progression /alerts /analytics /bots /settings /permissions /profiles/integrations"]
 
     Shell --> Accounts["Accounts and creators views"]
     Shell --> Alerts["Alerts workspace<br/>rules, targets, preferences, history"]
     Shell --> Analytics["Analytics, activity, auth-events"]
     Shell --> Bots["Bots, jobs, runtime status"]
+    Shell --> Progression["XP/rank admin controls<br/>runtime-owned global progression"]
     Shell --> Integrations["Creator integrations inspection"]
     Shell --> Settings["Tier, auth, and admin settings"]
 
@@ -156,6 +157,7 @@ StreamSuites-Dashboard/
 │   │   ├── notifications.js
 │   │   ├── overview.js
 │   │   ├── permissions.js
+│   │   ├── progression.js
 │   │   ├── settings.js
 │   │   ├── state.js
 │   │   ├── triggers.js
@@ -198,6 +200,7 @@ StreamSuites-Dashboard/
 │       ├── notifications.html
 │       ├── overview.html
 │       ├── permissions.html
+│       ├── progression.html
 │       ├── settings.html
 │       ├── triggers.html
 │       ├── user-detail.html
@@ -226,6 +229,7 @@ StreamSuites-Dashboard/
 │   ├── jobs-runtime-authority.test.mjs
 │   ├── public-authority-approvals.test.mjs
 │   ├── notifications-runtime-authority.test.mjs
+│   ├── progression-admin-controls.test.mjs
 │   ├── rumble-challenge-session-posture.test.mjs
 │   └── triggers-runtime-authority.test.mjs
 ├── shared/

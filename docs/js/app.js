@@ -1908,6 +1908,7 @@ const SIDEBAR_VIEW_ICON_MAP = Object.freeze({
   "creator-integrations": "/assets/icons/ui/automation.svg",
   "creator-stats": "/assets/icons/ui/statgraph.svg",
   accounts: "/assets/icons/ui/identity.svg",
+  progression: "/assets/icons/ui/statgraph.svg",
   tiers: "/assets/icons/ui/verifiedbadge.svg",
   audit: "/assets/icons/ui/audit.svg",
   approvals: "/assets/icons/ui/tickbox.svg",
@@ -2728,6 +2729,11 @@ registerView("approvals", {
   templatePath: "approvals",
   onLoad: () => window.ApprovalsView?.init?.(),
   onUnload: () => window.ApprovalsView?.destroy?.()
+});
+registerView("progression", {
+  templatePath: "progression",
+  onLoad: () => window.ProgressionAdminView?.init?.(),
+  onUnload: () => window.ProgressionAdminView?.destroy?.()
 });
 registerView("api-usage", {
   templatePath: "api-usage",
