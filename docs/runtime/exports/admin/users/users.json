@@ -1,10 +1,10 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-04-23T18:07:59.450353Z",
+  "exported_at": "2026-04-25T06:25:28.137351Z",
   "runtime": {
     "project": "StreamSuites™ Runtime",
     "version": "0.4.2-alpha",
-    "build": "2026.04.23+005"
+    "build": "2026.04.23+009"
   },
   "users": [
     {
@@ -91,8 +91,8 @@
         }
       ],
       "created_at": "2026-04-02T22:30:51Z",
-      "last_login_at": "2026-04-09T05:43:43Z",
-      "updated_at": "2026-04-23T17:34:54Z"
+      "last_login_at": "2026-04-23T21:50:32Z",
+      "updated_at": "2026-04-23T21:50:32Z"
     },
     {
       "id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
@@ -181,8 +181,8 @@
         }
       ],
       "created_at": "2026-03-28T18:35:44Z",
-      "last_login_at": "2026-04-23T17:28:53Z",
-      "updated_at": "2026-04-23T17:28:54Z"
+      "last_login_at": "2026-04-23T22:09:09Z",
+      "updated_at": "2026-04-23T22:09:09Z"
     },
     {
       "id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
@@ -271,8 +271,8 @@
         }
       ],
       "created_at": "2026-03-28T18:35:43Z",
-      "last_login_at": "2026-04-23T17:29:55Z",
-      "updated_at": "2026-04-23T17:29:55Z"
+      "last_login_at": "2026-04-23T22:49:43Z",
+      "updated_at": "2026-04-23T22:49:43Z"
     },
     {
       "id": "d61f5f01-a8e2-4f8c-8a7d-d6023652ae49",
@@ -351,7 +351,7 @@
       "providers": [],
       "created_at": "2026-03-27T14:51:44Z",
       "last_login_at": null,
-      "updated_at": "2026-04-23T17:28:54Z"
+      "updated_at": "2026-04-23T22:09:10Z"
     },
     {
       "id": "494098e5-1409-40ea-99a5-ec4a1b797da4",
@@ -456,11 +456,14 @@
         "findmehere_status_reason": "visible",
         "findmehere_profile_url": "https://findmehere.live/bsmediagroup",
         "findmehere_share_url": "https://findmehere.live/bsmediagroup",
-        "cover_image_url": "https://cdn.streamsuites.app/u/YR992ZS/cover/v1.webp",
-        "banner_image_url": "https://cdn.streamsuites.app/u/YR992ZS/cover/v1.webp",
+        "cover_image_url": "https://cdn.streamsuites.app/u/YR992ZS/cover/v2.webp",
+        "banner_image_url": "https://cdn.streamsuites.app/u/YR992ZS/cover/v2.webp",
         "background_image_url": "",
-        "bio": "Administrator account for StreamSuites™ systems.",
+        "bio": "Administrator account for StreamSuites™ systems. For assistance, contact support@streamsuites.app. Main account: streamsuites.app/@DanielClancy",
         "social_links": {
+          "discord": "https://discord.gg/rg7x363j5h",
+          "pilled": "https://pilled.net/streamsuites",
+          "rumble": "https://rumble.com/streamsuites",
           "twitch": "https://twitch.tv/streamsuites",
           "website": "https://brainstream.media",
           "x": "https://x.com/thebsmediagroup",
@@ -485,14 +488,14 @@
       "public_surface_account_type": "creator_capable",
       "creator_capable": true,
       "viewer_only": false,
-      "cover_image_url": "https://cdn.streamsuites.app/u/YR992ZS/cover/v1.webp",
-      "banner_image_url": "https://cdn.streamsuites.app/u/YR992ZS/cover/v1.webp",
+      "cover_image_url": "https://cdn.streamsuites.app/u/YR992ZS/cover/v2.webp",
+      "banner_image_url": "https://cdn.streamsuites.app/u/YR992ZS/cover/v2.webp",
       "background_image_url": "",
       "user_code": "YR992ZS",
       "email": "admin@streamsuites.app",
       "email_verified": true,
       "display_name": "Admin",
-      "avatar_url": "https://cdn.streamsuites.app/u/YR992ZS/avatar/v1.webp",
+      "avatar_url": "https://cdn.streamsuites.app/u/YR992ZS/avatar/v2.webp",
       "role": "admin",
       "account_type": "ADMIN",
       "tier": "pro",
@@ -525,8 +528,8 @@
         }
       ],
       "created_at": "2026-02-21T20:51:09Z",
-      "last_login_at": "2026-04-23T17:28:53Z",
-      "updated_at": "2026-04-23T17:34:55Z"
+      "last_login_at": "2026-04-23T22:49:19Z",
+      "updated_at": "2026-04-23T23:30:05Z"
     },
     {
       "id": "338edf81-9e24-4730-977a-c9972aecba4d",
@@ -1046,11 +1049,20 @@
         "findmehere_status_reason": "visible",
         "findmehere_profile_url": "https://findmehere.live/thirdrailify",
         "findmehere_share_url": "https://findmehere.live/thirdrailify",
-        "cover_image_url": "",
-        "banner_image_url": "",
+        "cover_image_url": "https://cdn.streamsuites.app/u/fowTR0T/cover/v1.webp",
+        "banner_image_url": "https://cdn.streamsuites.app/u/fowTR0T/cover/v1.webp",
         "background_image_url": "",
-        "bio": "",
-        "social_links": {},
+        "bio": "Welcome to Third Railify – where we grab the third rail of free speech, pop culture, conspiracies, and unfiltered takes, and refuse to let go! Hosted by your favourite Canadian chaos agent, alongside the legendary Gina – my co-host, best friend, right-hand legend, and absolute lifeblood of the channel.\nWe crush it live every night starting at 10 PM EST with raw, no-holds-barred discussions, Aboot Nothing (our chill hangout vibes), Pop Culture Beat Down, News Hangout (the GOAT news show that barely talks news), Just Gina energy, and whatever wild tangents the chat throws at us.\nLate-night warriors unite – we’re the spot for unapologetic commentary, laughs, rants, and community that doesn’t sleep on the truth. If you’re tired of censored 9-5 content, pull up a chair. Gina and I got you covered.\nJoin the chaos. Hit subscribe, ring the bell, and let’s electrify 2026! 🔥\n\nMerch & more: thirdrailify.com",
+        "social_links": {
+          "custom": "https://pickax.com/thirdrailify",
+          "discord": "https://discord.com/invite/Bd8hU5aFxA",
+          "pilled": "https://pilled.net/ThirdRailify",
+          "rumble": "https://rumble.com/ThirdRailify",
+          "tiktok": "https://tiktok.com/@thirdrailifyoffical",
+          "website": "https://thirdrailify.com",
+          "x": "https://x.com/ThirdRailify",
+          "youtube": "https://youtube.com/@ThirdRailify"
+        },
         "custom_links": [],
         "is_anonymous": false,
         "is_listed": true
@@ -1070,18 +1082,23 @@
       "public_surface_account_type": "creator_capable",
       "creator_capable": true,
       "viewer_only": false,
-      "cover_image_url": "",
-      "banner_image_url": "",
+      "cover_image_url": "https://cdn.streamsuites.app/u/fowTR0T/cover/v1.webp",
+      "banner_image_url": "https://cdn.streamsuites.app/u/fowTR0T/cover/v1.webp",
       "background_image_url": "",
       "user_code": "fowTR0T",
       "email": "thirdmailify@gmail.com",
-      "email_verified": false,
+      "email_verified": true,
       "display_name": "Third Railify",
-      "avatar_url": null,
+      "avatar_url": "https://cdn.streamsuites.app/u/fowTR0T/avatar/v1.webp",
       "role": "creator",
       "account_type": "CREATOR",
-      "tier": "core",
+      "tier": "pro",
       "badges": [
+        {
+          "kind": "tier",
+          "value": "pro",
+          "label": "PRO"
+        },
         {
           "kind": "role",
           "value": "creator",
@@ -1100,8 +1117,8 @@
         }
       ],
       "created_at": "2026-01-18T13:18:51Z",
-      "last_login_at": null,
-      "updated_at": "2026-03-28T03:44:22Z"
+      "last_login_at": "2026-04-24T10:06:36Z",
+      "updated_at": "2026-04-24T11:53:16Z"
     },
     {
       "id": "8b391d1d-d2bb-4627-96dc-33d171841b20",
@@ -1211,8 +1228,8 @@
         "findmehere_status_reason": "visible",
         "findmehere_profile_url": "https://findmehere.live/danielclancy",
         "findmehere_share_url": "https://findmehere.live/danielclancy",
-        "cover_image_url": "https://cdn.streamsuites.app/u/4TiOlvS/cover/v2.webp",
-        "banner_image_url": "https://cdn.streamsuites.app/u/4TiOlvS/cover/v2.webp",
+        "cover_image_url": "https://cdn.streamsuites.app/u/4TiOlvS/cover/v3.webp",
+        "banner_image_url": "https://cdn.streamsuites.app/u/4TiOlvS/cover/v3.webp",
         "background_image_url": "",
         "bio": "Designer, Developer & Content Creator. Owner and Developer of StreamSuites™ and related surfaces. Principal at Brainstream Media Group.",
         "social_links": {
@@ -1250,14 +1267,14 @@
       "public_surface_account_type": "creator_capable",
       "creator_capable": true,
       "viewer_only": false,
-      "cover_image_url": "https://cdn.streamsuites.app/u/4TiOlvS/cover/v2.webp",
-      "banner_image_url": "https://cdn.streamsuites.app/u/4TiOlvS/cover/v2.webp",
+      "cover_image_url": "https://cdn.streamsuites.app/u/4TiOlvS/cover/v3.webp",
+      "banner_image_url": "https://cdn.streamsuites.app/u/4TiOlvS/cover/v3.webp",
       "background_image_url": "",
       "user_code": "4TiOlvS",
       "email": "daniel@brainstream.media",
       "email_verified": true,
       "display_name": "Daniel Clancy",
-      "avatar_url": "https://cdn.streamsuites.app/u/4TiOlvS/avatar/v2.webp",
+      "avatar_url": "https://cdn.streamsuites.app/u/4TiOlvS/avatar/v3.webp",
       "role": "admin",
       "account_type": "ADMIN",
       "tier": "pro",
@@ -1295,8 +1312,8 @@
         }
       ],
       "created_at": "2026-01-17T17:32:32Z",
-      "last_login_at": "2026-04-23T17:42:08Z",
-      "updated_at": "2026-04-23T17:53:39Z"
+      "last_login_at": "2026-04-23T18:54:35Z",
+      "updated_at": "2026-04-23T18:58:57Z"
     },
     {
       "id": "064370cb-161a-438d-b657-d57a54aa1712",

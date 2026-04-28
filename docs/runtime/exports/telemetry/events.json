@@ -1,62 +1,7 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-04-23T18:08:11.744608Z",
+  "generated_at": "2026-04-25T06:25:27.286453Z",
   "events": [
-    {
-      "timestamp": "2026-01-22T05:45:05Z",
-      "source": "auth",
-      "severity": "info",
-      "message": "Auth event: rate_limit email=signup_email user=email:ka***@gmail.com result=allowed",
-      "event_type": "rate_limit",
-      "email_type": "signup_email",
-      "user_identifier": "email:ka***@gmail.com",
-      "provider_message_id": null,
-      "result": "allowed"
-    },
-    {
-      "timestamp": "2026-01-22T05:45:06Z",
-      "source": "auth",
-      "severity": "error",
-      "message": "Auth event: email_sent email=verification user=email:ka***@gmail.com result=failed",
-      "event_type": "email_sent",
-      "email_type": "verification",
-      "user_identifier": "email:ka***@gmail.com",
-      "provider_message_id": null,
-      "result": "failed"
-    },
-    {
-      "timestamp": "2026-01-22T05:47:24Z",
-      "source": "auth",
-      "severity": "info",
-      "message": "Auth event: token_invalidated user=user_code:fowTR0T result=sent",
-      "event_type": "token_invalidated",
-      "email_type": null,
-      "user_identifier": "user_code:fowTR0T",
-      "provider_message_id": null,
-      "result": "sent"
-    },
-    {
-      "timestamp": "2026-01-22T05:47:24Z",
-      "source": "auth",
-      "severity": "error",
-      "message": "Auth event: email_sent email=verification user=email:th***@gmail.com result=failed",
-      "event_type": "email_sent",
-      "email_type": "verification",
-      "user_identifier": "email:th***@gmail.com",
-      "provider_message_id": null,
-      "result": "failed"
-    },
-    {
-      "timestamp": "2026-01-22T05:47:41Z",
-      "source": "auth",
-      "severity": "info",
-      "message": "Auth event: token_invalidated user=user_code:JqhcS2m result=sent",
-      "event_type": "token_invalidated",
-      "email_type": null,
-      "user_identifier": "user_code:JqhcS2m",
-      "provider_message_id": null,
-      "result": "sent"
-    },
     {
       "timestamp": "2026-01-22T05:47:41Z",
       "source": "auth",
@@ -2082,12 +2027,6 @@
       "result": "success"
     },
     {
-      "timestamp": "2026-04-23T17:29:08.958588Z",
-      "source": "system",
-      "severity": "info",
-      "message": "Runtime boot sequence started"
-    },
-    {
       "timestamp": "2026-04-23T17:39:13Z",
       "source": "auth",
       "severity": "info",
@@ -2106,6 +2045,155 @@
       "event_type": "session_issued",
       "email_type": "github",
       "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-04-23T18:54:36Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
+      "event_type": "session_issued",
+      "email_type": "github",
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-04-23T21:48:17Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:4TiOlvS result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-04-23T21:50:24Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=auth_debug_unlock result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "auth_debug_unlock",
+      "user_identifier": null,
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-04-23T21:50:32Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:de***@streamsuites.app result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:de***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-04-23T21:50:32Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=security_alert user=email:de***@streamsuites.app result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "security_alert",
+      "user_identifier": "email:de***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-04-23T21:50:34Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: security_alert email=password_login_new_session user=account_id:880d5c4b-a5af-4058-8237-bf3c687becea email:de***@streamsuites.app result=sent message_id=90876d37-01b3-4fc8-9ed9-16a2a90d15c3",
+      "event_type": "security_alert",
+      "email_type": "password_login_new_session",
+      "user_identifier": "account_id:880d5c4b-a5af-4058-8237-bf3c687becea email:de***@streamsuites.app",
+      "provider_message_id": "90876d37-01b3-4fc8-9ed9-16a2a90d15c3",
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-04-23T21:50:35Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=email user=user_code:R8UVPMQ result=success",
+      "event_type": "session_issued",
+      "email_type": "email",
+      "user_identifier": "user_code:R8UVPMQ",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-04-23T22:09:22.944212Z",
+      "source": "system",
+      "severity": "info",
+      "message": "Runtime boot sequence started"
+    },
+    {
+      "timestamp": "2026-04-23T22:49:19Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:ad***@streamsuites.app result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:ad***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-04-23T22:49:19Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=security_alert user=email:ad***@streamsuites.app result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "security_alert",
+      "user_identifier": "email:ad***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-04-23T22:49:20Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: security_alert email=password_login_new_session user=account_id:3c426a3d-2409-4409-a0bf-c26960081027 email:ad***@streamsuites.app result=sent message_id=5c3a9f3c-4233-429d-adfd-f1b5953ee13c",
+      "event_type": "security_alert",
+      "email_type": "password_login_new_session",
+      "user_identifier": "account_id:3c426a3d-2409-4409-a0bf-c26960081027 email:ad***@streamsuites.app",
+      "provider_message_id": "5c3a9f3c-4233-429d-adfd-f1b5953ee13c",
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-04-23T22:49:22Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=email user=user_code:YR992ZS result=success",
+      "event_type": "session_issued",
+      "email_type": "email",
+      "user_identifier": "user_code:YR992ZS",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-04-24T10:05:43Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=auth_debug_unlock result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "auth_debug_unlock",
+      "user_identifier": null,
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-04-24T10:06:38Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=google user=user_code:fowTR0T result=success",
+      "event_type": "session_issued",
+      "email_type": "google",
+      "user_identifier": "user_code:fowTR0T",
       "provider_message_id": null,
       "result": "success"
     }
