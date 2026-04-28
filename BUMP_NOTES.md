@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Replaced the Admin trigger oversight page with a read-only livechat registry view hydrated from the authoritative runtime/Auth `/api/livechat/*` endpoints. The page now shows summary counts, platform caps, filters/search, trigger technical metadata, Games registry foundation rows, and explicit runtime/Auth authority/source without using creator-specific local mutation scaffolds.
+- Removed active Admin trigger create/edit/delete/manual-send controls from this route because this task is registry hydration only. No files were created or removed; `docs/js/triggers.js` and `docs/views/triggers.html` were replaced in place and are expected to be shorter because the previous creator-specific mutation workflow was removed.
+
 - Re-verified admin `/integrations/rumble` as a consumer of the repaired runtime/Auth Rumble posture contract. No dashboard runtime code needed to originate the fix; the existing `docs/js/platforms/rumble.js` surface remains compatible with masked session posture fields and copyable sanitized raw debug. `tests/notifications-runtime-authority.test.mjs` was run to confirm the consumer contract. No files were created or removed.
 
 - Extended admin `/integrations/rumble` in `docs/js/platforms/rumble.js` so the authenticated-session diagnostics now show selected material type, validation errors, safe material-updated timestamp, and whether authenticated mode actually changed the outcome compared with the sample path, while still keeping raw runtime debug copyable and secret-safe.

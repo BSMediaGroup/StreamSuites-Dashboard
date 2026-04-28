@@ -1,159 +1,93 @@
-<!-- StreamSuites — Chat Triggers (VIEW PARTIAL) -->
+<!-- StreamSuites - Livechat Trigger Registry (VIEW PARTIAL) -->
 <header class="ss-header">
   <div class="ss-header-left">
     <h1 class="ss-title">StreamSuites</h1>
-    <span class="ss-subtitle">Trigger Oversight</span>
+    <span class="ss-subtitle">Livechat Registry Oversight</span>
   </div>
 </header>
 
-<div id="triggers-banner" class="ss-alert"></div>
+<div id="triggers-banner" class="ss-alert hidden"></div>
 
 <section class="ss-panel">
   <header class="ss-panel-header">
     <div class="ss-panel-header-main">
-      <h2>Authoritative Creator Selector</h2>
+      <h2>Authoritative Runtime Registry</h2>
       <p class="muted" style="margin:6px 0 0;">
-        Hydrated from the admin creator-integrations summary and the registered creator directory so operators can inspect real trigger footing without inventing local selector state.
+        Hydrated from StreamSuites runtime/Auth livechat endpoints. This page is read-only and does not mutate trigger, game, transport, or creator configuration state.
+      </p>
+    </div>
+    <button id="btn-refresh-triggers" class="ss-btn ss-btn-secondary">Refresh from runtime/Auth</button>
+  </header>
+  <div class="ss-panel-body">
+    <div id="triggers-runtime-state" class="muted">Loading authoritative runtime registry...</div>
+    <div id="triggers-registry-summary" class="ss-grid ss-grid-3" style="margin-top:16px;"></div>
+  </div>
+</section>
+
+<section class="ss-panel">
+  <header class="ss-panel-header">
+    <div class="ss-panel-header-main">
+      <h2>Trigger Definitions</h2>
+      <p class="muted" style="margin:6px 0 0;">
+        Registry rows expose command metadata, platform eligibility, response mode, cooldown, actor resolution, mention behavior, identity requirement, profile binding, and role gate source. They do not imply dispatch support.
       </p>
     </div>
   </header>
   <div class="ss-panel-body">
     <div class="ss-toolbar">
       <div class="ss-toolbar-left">
-        <label class="ss-field" style="min-width: 320px;">
-          <span class="muted">Creator</span>
-          <select id="triggers-creator-select" class="ss-input"></select>
+        <label class="ss-field">
+          <span class="muted">Module</span>
+          <select id="triggers-module-filter" class="ss-input"></select>
         </label>
-        <button id="btn-refresh-triggers" class="ss-btn ss-btn-secondary">Refresh from runtime/Auth</button>
-        <button id="btn-add-trigger" class="ss-btn ss-btn-primary">Add Rumble text trigger</button>
+        <label class="ss-field">
+          <span class="muted">Status</span>
+          <select id="triggers-status-filter" class="ss-input"></select>
+        </label>
+        <label class="ss-field">
+          <span class="muted">Platform</span>
+          <select id="triggers-platform-filter" class="ss-input"></select>
+        </label>
+        <label class="ss-field" style="min-width: 260px;">
+          <span class="muted">Search</span>
+          <input id="triggers-search" class="ss-input" type="search" placeholder="ID, trigger, alias" />
+        </label>
       </div>
     </div>
-    <div id="triggers-runtime-state" class="muted">Loading authoritative trigger state...</div>
-    <div id="triggers-selector-summary" class="ss-meta-row" style="margin-top:12px;"></div>
-    <div id="triggers-message" class="ss-alert hidden"></div>
-  </div>
-</section>
-
-<section class="ss-panel">
-  <header class="ss-panel-header">
-    <div class="ss-panel-header-main">
-      <h2>Creator Runtime Footing</h2>
-      <p class="muted" style="margin:6px 0 0;">
-        This page is the real admin oversight surface for first-phase Rumble text triggers, their current managed-session posture, and controlled admin dispatches.
-      </p>
-    </div>
-  </header>
-  <div class="ss-panel-body">
-    <div class="ss-meta-row">
-      <div class="ss-chip">Creator: <span id="triggers-creator-label">—</span></div>
-      <div class="ss-chip">Snapshot: <span id="triggers-snapshot-label">—</span></div>
-      <div class="ss-chip">Session: <span id="triggers-session-label">—</span></div>
-    </div>
-    <div id="triggers-overview-cards" class="ss-grid ss-grid-3" style="margin-top:16px;"></div>
-    <ul id="triggers-phase-notes" class="ss-list muted" style="margin-top:16px;"></ul>
-  </div>
-</section>
-
-<section class="ss-panel">
-  <header class="ss-panel-header">
-    <div class="ss-panel-header-main">
-      <h2>Trigger Rows</h2>
-      <p class="muted" style="margin:6px 0 0;">
-        Supported in this phase: basic Rumble text reply triggers only. Unsupported trigger types remain visible as out-of-scope rows instead of being hidden.
-      </p>
-    </div>
-  </header>
-  <div class="ss-panel-body">
     <table class="ss-table">
       <thead>
         <tr>
-          <th>Command</th>
-          <th>Scope</th>
+          <th>ID / Trigger</th>
+          <th>Module</th>
           <th>Status</th>
-          <th>Phase posture</th>
-          <th>Updated</th>
-          <th class="align-right">Actions</th>
+          <th>Type</th>
+          <th>Platforms</th>
+          <th>Response / Cooldown</th>
+          <th>Actor / Identity</th>
         </tr>
       </thead>
       <tbody id="triggers-table-body"></tbody>
     </table>
-
-    <div id="triggers-empty" class="ss-empty hidden">
-      No trigger rows returned for the selected creator.
-    </div>
+    <div id="triggers-empty" class="ss-empty hidden">No runtime registry rows match the current filters.</div>
   </div>
 </section>
 
 <section class="ss-panel">
   <header class="ss-panel-header">
     <div class="ss-panel-header-main">
-      <h2>Controlled Admin Send</h2>
+      <h2>Games Registry Foundation</h2>
       <p class="muted" style="margin:6px 0 0;">
-        Operator-driven test dispatch through the existing managed Rumble send path. This is separate from creator-controlled manual sends and from automatic trigger-generated replies.
+        Games rows, including Pilled-capable registry metadata, are planned/foundation definitions only. No playable game engine, persistence, or transport execution is implemented on this page.
       </p>
     </div>
   </header>
   <div class="ss-panel-body">
-    <form id="triggers-manual-send-form" autocomplete="off">
-      <div class="ss-form-row">
-        <label for="triggers-manual-message">Test message</label>
-        <textarea id="triggers-manual-message" class="ss-input" rows="3" maxlength="500" placeholder="Admin operator test via managed Rumble dispatch." required></textarea>
-      </div>
-      <div class="ss-form-actions">
-        <button type="submit" class="ss-btn ss-btn-primary">Send controlled test</button>
-      </div>
-    </form>
-    <div id="triggers-manual-status" class="muted">Waiting for creator selection...</div>
-    <ul id="triggers-activity-list" class="ss-list muted"></ul>
-    <div id="triggers-activity-empty" class="ss-empty hidden">No recent managed dispatch rows are exported for this creator.</div>
-  </div>
-</section>
-
-<section id="trigger-editor" class="ss-panel hidden">
-  <header class="ss-panel-header">
-    <div class="ss-panel-header-main">
-      <h2 id="trigger-editor-title">Add Rumble text trigger</h2>
-      <span id="trigger-editor-mode" class="muted">Creating a new first-phase Rumble text trigger.</span>
-    </div>
-  </header>
-  <div class="ss-panel-body">
-    <form id="trigger-form" autocomplete="off">
-      <div class="ss-form-row">
-        <label class="inline-label switch-button" aria-label="Trigger enabled">
-          <div class="switch-scale">
-            <div class="switch-outer">
-              <input type="checkbox" id="trigger-enabled" checked />
-              <div class="ss-switch-inner">
-                <span class="ss-switch-toggle"></span>
-                <span class="ss-switch-indicator"></span>
-              </div>
-            </div>
-          </div>
-          <span class="sr-only">Enabled</span>
-        </label>
-      </div>
-      <div class="ss-form-row">
-        <label for="trigger-command-text">Command text</label>
-        <input type="text" id="trigger-command-text" class="ss-input" maxlength="80" placeholder="!help" required />
-      </div>
-      <div class="ss-form-row">
-        <label for="trigger-response-text">Response text</label>
-        <textarea id="trigger-response-text" class="ss-input" rows="4" maxlength="500" placeholder="Available commands: !ping, !help" required></textarea>
-      </div>
-      <div class="ss-form-row">
-        <label for="trigger-cooldown-seconds">Cooldown seconds</label>
-        <input type="number" id="trigger-cooldown-seconds" class="ss-input" min="0" max="300" step="1" value="5" />
-      </div>
-      <div class="ss-form-actions">
-        <button type="submit" class="ss-btn ss-btn-primary">Save Trigger</button>
-        <button type="button" id="btn-cancel-trigger" class="ss-btn ss-btn-secondary">Cancel</button>
-      </div>
-    </form>
+    <ul id="triggers-games-list" class="ss-list muted"></ul>
   </div>
 </section>
 
 <footer class="ss-footer">
   <span class="muted">
-    This route is runtime/Auth-backed oversight for creator-configured Rumble text triggers in phase one.
+    Runtime/Auth is the authority. Creator/Admin trigger configuration controls are future managed phases and are intentionally not exposed here.
   </span>
 </footer>

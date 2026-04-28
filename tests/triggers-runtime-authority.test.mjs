@@ -16,28 +16,30 @@ test("admin triggers route is runtime/Auth-backed and unload-safe", () => {
 
   assert.match(appJs, /registerView\("triggers"/);
   assert.match(appJs, /onUnload:\s*\(\)\s*=>\s*window\.TriggersView\?\.destroy\?\.\(\)/);
-  assert.match(triggersJs, /Promise\.allSettled/);
-  assert.match(triggersJs, /requestJson\("\/api\/admin\/creator-integrations", \{ signal \}\)/);
-  assert.match(triggersJs, /requestJson\("\/api\/admin\/creators", \{ signal \}\)/);
-  assert.match(triggersJs, /requestJson\(`\/api\/admin\/accounts\/\$\{encodeURIComponent\(creator\.account_id\)\}\/creator-integrations`/);
-  assert.match(triggersJs, /requestJson\(`\/api\/admin\/users\/\$\{encodeURIComponent\(creator\.user_code\)\}`/);
+  assert.match(triggersJs, /requestJson\("\/api\/livechat\/registry-summary", \{ signal \}\)/);
+  assert.match(triggersJs, /requestJson\("\/api\/livechat\/triggers", \{ signal \}\)/);
+  assert.match(triggersJs, /requestJson\("\/api\/livechat\/games", \{ signal \}\)/);
+  assert.match(triggersJs, /requestJson\("\/api\/livechat\/capabilities", \{ signal \}\)/);
+  assert.match(triggersJs, /requestJson\("\/api\/livechat\/game-assets", \{ signal \}\)/);
   assert.match(triggersJs, /state\.abortController = new AbortController\(\)/);
   assert.match(triggersJs, /destroy\(\) \{/);
-  assert.match(triggersHtml, /Authoritative Creator Selector/);
-  assert.match(triggersHtml, /Trigger Rows/);
-  assert.match(triggersHtml, /runtime\/Auth-backed oversight for creator-configured Rumble text triggers in phase one/);
-  assert.match(triggersHtml, /Unsupported trigger types remain visible as out-of-scope rows/);
+  assert.match(triggersHtml, /Authoritative Runtime Registry/);
+  assert.match(triggersHtml, /Trigger Definitions/);
+  assert.match(triggersHtml, /read-only and does not mutate trigger, game, transport, or creator configuration state/);
+  assert.match(triggersHtml, /No playable game engine, persistence, or transport execution is implemented/);
 });
 
-test("admin trigger oversight distinguishes admin, creator, and automatic dispatch rows", () => {
+test("admin trigger oversight exposes technical read-only registry metadata", () => {
   const triggersJs = read("docs/js/triggers.js");
+  const triggersHtml = read("docs/views/triggers.html");
 
-  assert.match(triggersJs, /function dispatchLabel/);
-  assert.match(triggersJs, /source === "trigger_runtime"/);
-  assert.match(triggersJs, /source === "creator_dashboard"/);
-  assert.match(triggersJs, /"Manual admin send"/);
-  assert.match(triggersJs, /"Manual creator send"/);
-  assert.match(triggersJs, /"Automatic trigger reply"/);
-  assert.match(triggersJs, /\/api\/admin\/runtime\/rumble-dispatch/);
-  assert.match(triggersJs, /Outside first-phase Rumble text trigger scope/);
+  assert.match(triggersJs, /actor_resolution/);
+  assert.match(triggersJs, /mention_behavior/);
+  assert.match(triggersJs, /identity_required/);
+  assert.match(triggersJs, /profile_binding/);
+  assert.match(triggersJs, /role_gate_source/);
+  assert.match(triggersJs, /platformCapsSummary/);
+  assert.doesNotMatch(triggersJs, /\/api\/admin\/runtime\/rumble-dispatch/);
+  assert.match(triggersHtml, /Actor \/ Identity/);
+  assert.match(triggersHtml, /Creator\/Admin trigger configuration controls are future managed phases/);
 });
