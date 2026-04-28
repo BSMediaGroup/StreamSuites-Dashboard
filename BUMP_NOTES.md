@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Added an Admin custom trigger preview diagnostics panel to `docs/views/triggers.html` and `docs/js/triggers.js`. Admins can select a creator-owned custom row, choose a simulated platform/message/actor/context, and call `POST /api/admin/livechat/custom-triggers/preview` for runtime/Auth dry-run match and rendering diagnostics.
+- The admin preview renders dry-run/no-send flags, creator/custom trigger IDs, match reason, variables used, actor normalization summary, platform max chars, response mode, warnings, rendered text, and split pages. It does not call transport routes, live dispatch, playable game logic, or mutate the global seed registry. No files were created or removed; the trigger oversight JS/view/test files are longer due to the added diagnostic surface.
+
 - Extended Admin Trigger Oversight with a separate creator-owned custom trigger config section hydrated from `GET /api/admin/livechat/custom-triggers` while preserving the global `/api/livechat/*` registry as read-only seed data. The new oversight table includes creator/account owner, enabled/status, command/aliases, platforms, response mode, cooldown, access, timestamps, and creator/status/platform/search filters.
 - Added runtime/Auth-only admin enable/disable and delete actions for addressable custom rows through the existing account-scoped `/api/admin/accounts/{account_id}/creator-triggers/{trigger_id}` authority path, with truthful copy that this is configuration management for future dispatch and not live execution. No files were created or removed; `docs/js/triggers.js`, `docs/views/triggers.html`, and the trigger source test were updated in place and are expected to be longer due to the added custom-config oversight surface.
 

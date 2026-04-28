@@ -53,10 +53,16 @@ test("admin trigger oversight hydrates custom configs from runtime/Auth and muta
   assert.match(triggersJs, /state\.customItems/);
   assert.match(triggersJs, /filteredCustomTriggers/);
   assert.match(triggersJs, /\/api\/admin\/livechat\/custom-triggers/);
+  assert.match(triggersJs, /\/api\/admin\/livechat\/custom-triggers\/preview/);
+  assert.match(triggersJs, /runPreview/);
   assert.match(triggersJs, /\/api\/admin\/accounts\/\$\{encodeURIComponent\(creatorId\)\}\/creator-triggers\/\$\{encodeURIComponent\(triggerId\)\}/);
   assert.match(triggersJs, /data-custom-trigger-toggle/);
   assert.match(triggersJs, /data-custom-trigger-delete/);
   assert.match(triggersHtml, /Admin edits\/deletes use runtime\/Auth account-scoped trigger endpoints/);
+  assert.match(triggersHtml, /Custom Trigger Preview Diagnostics/);
+  assert.match(triggersHtml, /Dry-run preview only/);
+  assert.match(triggersHtml, /triggers-preview-form/);
   assert.match(triggersHtml, /future dispatch/);
   assert.doesNotMatch(triggersJs, /localStorage/);
+  assert.doesNotMatch(triggersJs, /rumble-dispatch/);
 });

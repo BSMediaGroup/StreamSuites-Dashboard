@@ -27,6 +27,56 @@
 <section class="ss-panel">
   <header class="ss-panel-header">
     <div class="ss-panel-header-main">
+      <h2>Custom Trigger Preview Diagnostics</h2>
+      <p class="muted" style="margin:6px 0 0;">
+        Dry-run preview only. Runtime/Auth matches and renders the creator-owned config without sending live chat messages, invoking transport, or dispatching gameplay.
+      </p>
+    </div>
+  </header>
+  <div class="ss-panel-body">
+    <form id="triggers-preview-form" class="ss-form-row">
+      <label>
+        <span>Custom trigger</span>
+        <select id="triggers-preview-trigger" class="ss-input">
+          <option value="">Match simulated message</option>
+        </select>
+      </label>
+      <label>
+        <span>Platform</span>
+        <select id="triggers-preview-platform" class="ss-input">
+          <option value="rumble">Rumble</option>
+          <option value="youtube">YouTube</option>
+          <option value="twitch">Twitch</option>
+          <option value="kick">Kick</option>
+          <option value="streamsuites_unified">StreamSuites Unified</option>
+          <option value="pilled">Pilled planned/disabled</option>
+        </select>
+      </label>
+      <label>
+        <span>Simulated message</span>
+        <input id="triggers-preview-message" class="ss-input" type="text" value="!hello" />
+      </label>
+      <label>
+        <span>Actor display</span>
+        <input id="triggers-preview-display" class="ss-input" type="text" value="Preview Viewer" />
+      </label>
+      <label>
+        <span>Actor handle</span>
+        <input id="triggers-preview-handle" class="ss-input" type="text" value="previewviewer" />
+      </label>
+      <label>
+        <span>Stream title</span>
+        <input id="triggers-preview-stream-title" class="ss-input" type="text" placeholder="Optional stream context" />
+      </label>
+      <button id="triggers-preview-submit" class="ss-btn ss-btn-primary" type="submit">Run dry-run preview</button>
+    </form>
+    <div id="triggers-preview-result" class="muted" style="margin-top:16px;">No preview run yet. Dry-run responses will show no-send flags, match metadata, variables, and split pages here.</div>
+  </div>
+</section>
+
+<section class="ss-panel">
+  <header class="ss-panel-header">
+    <div class="ss-panel-header-main">
       <h2>Creator-Owned Custom Triggers</h2>
       <p class="muted" style="margin:6px 0 0;">
         Hydrated from runtime/Auth custom trigger config endpoints. These rows are creator-owned config for future dispatch; they do not mutate the global seed registry and do not imply live execution.

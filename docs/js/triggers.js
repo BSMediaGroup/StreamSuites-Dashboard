@@ -6,6 +6,7 @@
     filters: { module: "", status: "", platform: "", search: "" },
     customItems: [],
     customFilters: { creator: "", status: "", platform: "", search: "" },
+    previewResult: null,
     abortController: null,
   };
 
@@ -293,6 +294,85 @@
         </tr>
       `;
     }).join("");
+    renderPreviewTriggerOptions();
+  }
+
+  function renderPreviewTriggerOptions() {
+    if (!(el.previewTrigger instanceof HTMLSelectElement)) return;
+    const selected = el.previewTrigger.value;
+    el.previewTrigger.innerHTML = `<option value="">Match simulated message</option>${state.customItems.map((item) => {
+      const id = item.id || item.custom_trigger_id || "";
+      return `<option value="${escapeHtml(id)}" data-creator-id="${escapeHtml(item.creator_id || item.creator_account_id || "")}">${escapeHtml(item.command_text || id)} - ${escapeHtml(item.owner_user_code || item.creator_id || "")}</option>`;
+    }).join("")}`;
+    if (selected && state.customItems.some((item) => String(item.id || item.custom_trigger_id || "") === selected)) {
+      el.previewTrigger.value = selected;
+    }
+  }
+
+  function selectedPreviewTrigger() {
+    const id = el.previewTrigger?.value || "";
+    return state.customItems.find((item) => String(item.id || item.custom_trigger_id || "") === id) || null;
+  }
+
+  function renderPreviewResult(payload) {
+    if (!(el.previewResult instanceof HTMLElement)) return;
+    if (!payload) {
+      el.previewResult.textContent = "No preview run yet. Dry-run responses will show no-send flags, match metadata, variables, and split pages here.";
+      return;
+    }
+    const pages = Array.isArray(payload.pages) ? payload.pages : [];
+    const warnings = Array.isArray(payload.validation_warnings) ? payload.validation_warnings : [];
+    const variables = payload.variables_used && typeof payload.variables_used === "object" ? payload.variables_used : {};
+    el.previewResult.innerHTML = `
+      <div class="ss-grid ss-grid-3">
+        <article class="ss-stat-card"><div class="muted">Dry run</div><strong>${escapeHtml(String(payload.dry_run))}</strong><span class="muted">posted: ${escapeHtml(String(payload.posted))}</span></article>
+        <article class="ss-stat-card"><div class="muted">Would post</div><strong>${escapeHtml(String(payload.would_post))}</strong><span class="muted">${escapeHtml(payload.blocked_reason || "not blocked")}</span></article>
+        <article class="ss-stat-card"><div class="muted">Match</div><strong>${escapeHtml(payload.trigger_id || "none")}</strong><span class="muted">${escapeHtml(payload.match_reason || "no_match")}</span></article>
+      </div>
+      <table class="ss-table ss-table-compact" style="margin-top:16px;">
+        <tbody>
+          <tr><th>Creator</th><td>${escapeHtml(payload.creator_id || selectedPreviewTrigger()?.creator_id || "-")}</td></tr>
+          <tr><th>Custom trigger ID</th><td>${escapeHtml(payload.custom_trigger_id || "-")}</td></tr>
+          <tr><th>Platform max chars</th><td>${escapeHtml(payload.platform || "-")} / ${escapeHtml(payload.platform_max_chars || "-")}</td></tr>
+          <tr><th>Response mode</th><td>${escapeHtml(payload.response_mode || "-")}</td></tr>
+          <tr><th>Variables used</th><td>${escapeHtml(JSON.stringify(variables))}</td></tr>
+          <tr><th>Actor</th><td>${escapeHtml(JSON.stringify(payload.actor || {}))}</td></tr>
+          <tr><th>Warnings</th><td>${escapeHtml(warnings.join(", ") || "none")}</td></tr>
+          <tr><th>Rendered text</th><td>${escapeHtml(payload.rendered_text || "")}</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:16px;">
+        <strong>Pages (${escapeHtml(pages.length)})</strong>
+        ${pages.length ? pages.map((page) => `<p class="muted">${escapeHtml(page.page_index)}/${escapeHtml(page.total_pages)} ${escapeHtml(page.text)}</p>`).join("") : `<p class="muted">No pages returned.</p>`}
+      </div>
+    `;
+  }
+
+  async function runPreview() {
+    const selected = selectedPreviewTrigger();
+    const creatorId = selected?.creator_id || selected?.creator_account_id || "";
+    const payload = {
+      creator_id: creatorId,
+      custom_trigger_id: el.previewTrigger?.value || undefined,
+      platform: el.previewPlatform?.value || "rumble",
+      message: el.previewMessage?.value || "",
+      actor: {
+        display_name: el.previewDisplay?.value || "Preview Viewer",
+        handle: el.previewHandle?.value || "previewviewer",
+      },
+      stream_context: {
+        stream_title: el.previewStreamTitle?.value || "",
+      },
+    };
+    if (!payload.creator_id && state.customItems.length) {
+      payload.creator_id = state.customItems[0].creator_id || state.customItems[0].creator_account_id || "";
+    }
+    state.previewResult = await requestJson("/api/admin/livechat/custom-triggers/preview", {
+      method: "POST",
+      body: JSON.stringify(payload),
+      headers: { "Content-Type": "application/json" },
+    });
+    renderPreviewResult(state.previewResult);
   }
 
   function renderAll() {
@@ -371,6 +451,14 @@
     el.customSearch = $("triggers-custom-search");
     el.customTableBody = $("triggers-custom-table-body");
     el.customEmpty = $("triggers-custom-empty");
+    el.previewForm = $("triggers-preview-form");
+    el.previewTrigger = $("triggers-preview-trigger");
+    el.previewPlatform = $("triggers-preview-platform");
+    el.previewMessage = $("triggers-preview-message");
+    el.previewDisplay = $("triggers-preview-display");
+    el.previewHandle = $("triggers-preview-handle");
+    el.previewStreamTitle = $("triggers-preview-stream-title");
+    el.previewResult = $("triggers-preview-result");
     $("btn-refresh-triggers")?.addEventListener("click", () => void refreshAll().catch((err) => setBanner(err?.message || "Unable to refresh registry.", "danger")), { signal });
     [el.moduleFilter, el.statusFilter, el.platformFilter, el.search].forEach((control) => {
       control?.addEventListener("input", () => {
@@ -409,6 +497,10 @@
         ).catch((err) => setBanner(err?.message || "Unable to delete custom trigger.", "danger"));
       }
     }, { signal });
+    el.previewForm?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      void runPreview().catch((err) => setBanner(err?.message || "Unable to run custom trigger preview.", "danger"));
+    }, { signal });
     try {
       await refreshAll();
     } catch (err) {
@@ -426,6 +518,7 @@
       }
       state.registry = { triggers: [], games: [], capabilities: [], assets: [], schemas: [], summary: null };
       state.customItems = [];
+      state.previewResult = null;
     },
   };
 })();
