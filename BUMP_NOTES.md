@@ -2,6 +2,8 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Tightened the `/progression` admin consumer so identity rows now render the avatar image, display name, and canonical account `user_code` when the runtime marks a public identity as claimed/assigned. The fallback `public-user...` identity code remains visible only as a diagnostic line/public identity value and remains the displayed code only when no account user code exists. Added the missing Cloudflare Pages SPA allowlist entries for `/progression`, `/xp`, and `/ranks` so the registered admin route can load directly in real Pages routing. Added focused source coverage for the canonical-code resolver, compact avatar cell styling, and route allowlist. No files were created or removed.
+
 - Added a new `/progression` admin route for runtime-owned XP/rank controls. The compact dark admin surface loads `GET/PATCH /api/admin/progression/ranks`, `GET/PATCH /api/admin/progression/rules`, identity search/detail/history endpoints, manual grant/penalty/adjustment event creation, append-only reversal creation, and leaderboard visibility suppression without storing progression authority in Dashboard.
 - Added `docs/views/progression.html`, `docs/js/progression.js`, and `tests/progression-admin-controls.test.mjs`; updated route registration, shell nav/script loading, component styling, and README tree entries. The UI keeps the phase global-only, requires reasons for manual actions/reversals/suppression, preserves fixed `RANK0`-`RANK10` codes, and states that suppression affects leaderboard display rather than XP deletion. No files were removed.
 

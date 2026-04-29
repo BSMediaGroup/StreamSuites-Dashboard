@@ -99,6 +99,35 @@
     return text(value).replace(/[_-]+/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
   }
 
+  function identityUserCode(identity = {}, summary = {}) {
+    return text(
+      identity.user_code ||
+        identity.canonical_user_code ||
+        identity.account_user_code ||
+        summary.user_code ||
+        summary.account_user_code ||
+        identity.identity_code ||
+        summary.identity_code
+    );
+  }
+
+  function identityFallbackCode(identity = {}, summary = {}) {
+    return text(identity.public_identity_code || identity.fallback_public_identity_code || identity.identity_code || summary.public_identity_code || summary.identity_code);
+  }
+
+  function identityAvatar(identity = {}, summary = {}) {
+    return text(identity.avatar_url || summary.avatar_url);
+  }
+
+  function renderIdentityAvatar(identity = {}, summary = {}) {
+    const avatarUrl = identityAvatar(identity, summary);
+    const displayName = text(identity.display_name || summary.display_name || identityUserCode(identity, summary) || "Identity");
+    if (avatarUrl) {
+      return `<span class="ss-progression-avatar has-image"><img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(displayName)} avatar" loading="lazy" decoding="async" /></span>`;
+    }
+    return `<span class="ss-progression-avatar" aria-hidden="true">${escapeHtml((displayName || "?").slice(0, 1).toUpperCase())}</span>`;
+  }
+
   function rankDirty() {
     return JSON.stringify(state.ranks) !== JSON.stringify(state.originalRanks);
   }
@@ -216,12 +245,17 @@
         const identity = item.identity || {};
         const summary = item.summary || {};
         const code = identity.identity_code || summary.identity_code || "";
+        const displayCode = identityUserCode(identity, summary);
+        const fallbackCode = identityFallbackCode(identity, summary);
+        const diagnostic = displayCode && fallbackCode && displayCode !== fallbackCode ? `Public identity: ${fallbackCode}` : fallbackCode;
         const selected = code && code === state.selectedIdentityCode;
         return `
           <button class="ss-progression-identity${selected ? " is-selected" : ""}" type="button" data-identity-code="${escapeHtml(code)}">
+            ${renderIdentityAvatar(identity, summary)}
             <span>
-              <strong>${escapeHtml(identity.display_name || identity.source_display_name || code)}</strong>
-              <small>${escapeHtml(code)}</small>
+              <strong>${escapeHtml(identity.display_name || summary.display_name || identity.source_display_name || displayCode)}</strong>
+              <small>${escapeHtml(displayCode || fallbackCode)}</small>
+              ${diagnostic && diagnostic !== displayCode ? `<small>${escapeHtml(diagnostic)}</small>` : ""}
             </span>
             <span>
               <strong>${formatNumber(summary.xp_total)} XP</strong>
@@ -262,10 +296,14 @@
     const summary = selectedSummary();
     if (!summary || !el.inspector) return;
     const identity = state.detail?.identity || {};
+    const displayCode = identityUserCode(identity, summary);
+    const fallbackCode = identityFallbackCode(identity, summary);
     el.inspector.classList.remove("ss-empty");
     el.inspector.innerHTML = `
       <div class="ss-progression-summary">
-        <div><span class="muted">Identity</span><strong>${escapeHtml(identity.display_name || identity.source_display_name || summary.identity_code)}</strong></div>
+        <div><span class="muted">User code</span><strong>${escapeHtml(displayCode || fallbackCode)}</strong></div>
+        <div><span class="muted">Display name</span><strong>${escapeHtml(identity.display_name || summary.display_name || identity.source_display_name || displayCode || fallbackCode)}</strong></div>
+        <div><span class="muted">Public identity</span><strong>${escapeHtml(fallbackCode || "Not available")}</strong></div>
         <div><span class="muted">XP total</span><strong>${formatNumber(summary.xp_total)}</strong></div>
         <div><span class="muted">Current rank</span><strong>${escapeHtml(summary.rank_label || summary.current_rank_code)}</strong></div>
         <div><span class="muted">Leaderboard</span><strong>${summary.is_leaderboard_visible ? "Visible" : "Suppressed"}</strong></div>

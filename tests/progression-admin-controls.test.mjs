@@ -11,12 +11,16 @@ function read(relativePath) {
 
 test("progression admin route is registered and loaded by the dashboard shell", () => {
   const routes = read("docs/js/admin-routes.js");
+  const pagesFunction = read("functions/[[path]].js");
   const app = read("docs/js/app.js");
   const root = read("index.html");
   const docsRoot = read("docs/index.html");
 
   assert.match(routes, /progression:\s*\{\s*canonical:\s*"\/progression"/);
   assert.match(routes, /aliases:\s*\["\/xp",\s*"\/ranks"\]/);
+  assert.match(pagesFunction, /"\/progression"/);
+  assert.match(pagesFunction, /"\/xp"/);
+  assert.match(pagesFunction, /"\/ranks"/);
   assert.match(app, /registerView\("progression"/);
   assert.match(app, /window\.ProgressionAdminView\?\.init\?\.\(\)/);
   assert.match(root, /data-view="progression">XP \/ Rank Controls/);
@@ -48,6 +52,11 @@ test("progression controller uses only runtime authority endpoints", () => {
   assert.match(js, /IDENTITY_EVENTS = \(identityCode\) => `\/api\/admin\/progression\/identities\/\$\{encodeURIComponent\(identityCode\)\}\/events`/);
   assert.match(js, /EVENT_REVERSE = \(eventCode\) => `\/api\/admin\/progression\/events\/\$\{encodeURIComponent\(eventCode\)\}\/reverse`/);
   assert.match(js, /LEADERBOARD = \(identityCode\) => `\/api\/admin\/progression\/identities\/\$\{encodeURIComponent\(identityCode\)\}\/leaderboard`/);
+  assert.match(js, /function identityUserCode/);
+  assert.match(js, /identity\.user_code \|\|[\s\S]*identity\.canonical_user_code \|\|[\s\S]*identity\.account_user_code/);
+  assert.match(js, /function renderIdentityAvatar/);
+  assert.match(js, /ss-progression-avatar has-image/);
+  assert.match(js, /Public identity:/);
   assert.match(js, /validateRanks/);
   assert.match(js, /RANK0 threshold must stay 0/);
   assert.match(js, /Manual XP actions require a reason/);
@@ -55,4 +64,12 @@ test("progression controller uses only runtime authority endpoints", () => {
   assert.match(js, /Reversal requires a reason/);
   assert.doesNotMatch(js, /localStorage/);
   assert.doesNotMatch(js, /creator-scoped leaderboard/i);
+});
+
+test("progression styling includes compact avatar cells for identity rows", () => {
+  const css = read("docs/css/components.css");
+
+  assert.match(css, /\.ss-progression-identity\s*\{[\s\S]*grid-template-columns:\s*38px minmax\(0,\s*1fr\) auto/);
+  assert.match(css, /\.ss-progression-avatar\s*\{/);
+  assert.match(css, /\.ss-progression-avatar img\s*\{[\s\S]*object-fit:\s*cover/);
 });
