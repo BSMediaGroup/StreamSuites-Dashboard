@@ -7403,6 +7403,81 @@ body.ss-col-resizing-active {
   color: var(--text-primary);
 }
 
+.ss-progression-xp-value,
+.ss-progression-rank-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  vertical-align: middle;
+}
+
+.ss-progression-xp-value {
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+.ss-progression-xp-value--compact,
+.ss-progression-rank-chip--compact {
+  gap: 6px;
+  font-size: 12px;
+}
+
+.ss-progression-xp-icon,
+.ss-progression-rank-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  object-fit: contain;
+}
+
+.ss-progression-xp-value--compact .ss-progression-xp-icon,
+.ss-progression-rank-chip--compact .ss-progression-rank-icon {
+  width: 16px;
+  height: 16px;
+  flex-basis: 16px;
+}
+
+.ss-progression-rank-chip {
+  --ss-rank-color: #8F4700;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 28px;
+  padding: 4px 10px 4px 6px;
+  border: 1px solid color-mix(in srgb, var(--ss-rank-color) 72%, white 16%);
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--ss-rank-color) 30%, rgba(8, 12, 22, 0.9)), rgba(8, 12, 22, 0.76)),
+    rgba(8, 12, 22, 0.82);
+  color: #f7fbff;
+  font-weight: 850;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 0 14px color-mix(in srgb, var(--ss-rank-color) 28%, transparent);
+}
+
+.ss-progression-summary .ss-progression-xp-value,
+.ss-progression-summary .ss-progression-rank-chip,
+.ss-progression-summary .ss-progression-xp-value span,
+.ss-progression-summary .ss-progression-rank-chip span {
+  display: inline-flex;
+  color: inherit;
+}
+
+.ss-progression-rank-chip::after {
+  content: "";
+  position: absolute;
+  inset: 1px 4px auto 26px;
+  height: 45%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0));
+  pointer-events: none;
+  z-index: -1;
+}
+
 .ss-progression-toggle {
   display: inline-flex;
   align-items: center;

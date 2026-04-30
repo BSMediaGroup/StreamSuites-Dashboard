@@ -12,6 +12,7 @@
   const IDENTITY_EVENTS = (identityCode) => `/api/admin/progression/identities/${encodeURIComponent(identityCode)}/events`;
   const EVENT_REVERSE = (eventCode) => `/api/admin/progression/events/${encodeURIComponent(eventCode)}/reverse`;
   const LEADERBOARD = (identityCode) => `/api/admin/progression/identities/${encodeURIComponent(identityCode)}/leaderboard`;
+  const XP_ICON_PATH = "/assets/games/xpstar.webp";
 
   const state = {
     ranks: [],
@@ -119,6 +120,47 @@
     return text(identity.avatar_url || summary.avatar_url);
   }
 
+  function normalizeAssetPath(path) {
+    const clean = text(path).replace(/\\/g, "/");
+    if (!clean) return "";
+    if (/^https?:\/\//i.test(clean) || clean.startsWith("/")) return clean;
+    return `/${clean.replace(/^\/+/, "")}`;
+  }
+
+  function normalizeRankColor(value) {
+    const color = text(value);
+    return /^#[0-9a-f]{6}$/i.test(color) ? color : "#8F4700";
+  }
+
+  function rankPresentation(summary = {}) {
+    const rank = summary?.rank && typeof summary.rank === "object" ? summary.rank : summary || {};
+    return {
+      code: text(summary.current_rank_code || rank.rank_code || rank.rank_key || "RANK0"),
+      label: text(summary.rank_label || rank.rank_label || rank.label || summary.current_rank_code || rank.rank_code || "Bronze"),
+      color: normalizeRankColor(rank.color_hex || summary.color_hex),
+      icon: normalizeAssetPath(rank.icon_path || summary.icon_path || "assets/games/rank0-bronze.webp")
+    };
+  }
+
+  function renderRankChip(summary = {}, options = {}) {
+    const rank = rankPresentation(summary);
+    return `
+      <span class="ss-progression-rank-chip${options.compact ? " ss-progression-rank-chip--compact" : ""}" style="--ss-rank-color:${escapeHtml(rank.color)}" title="${escapeHtml(`${rank.label} (${rank.code})`)}">
+        <img class="ss-progression-rank-icon" src="${escapeHtml(rank.icon)}" alt="" loading="lazy" decoding="async" />
+        <span>${escapeHtml(rank.label)}</span>
+      </span>
+    `;
+  }
+
+  function renderXpValue(value, options = {}) {
+    return `
+      <span class="ss-progression-xp-value${options.compact ? " ss-progression-xp-value--compact" : ""}">
+        <img class="ss-progression-xp-icon" src="${XP_ICON_PATH}" alt="" loading="lazy" decoding="async" />
+        <span>${formatNumber(value)} XP</span>
+      </span>
+    `;
+  }
+
   function renderIdentityAvatar(identity = {}, summary = {}) {
     const avatarUrl = identityAvatar(identity, summary);
     const displayName = text(identity.display_name || summary.display_name || identityUserCode(identity, summary) || "Identity");
@@ -178,7 +220,8 @@
           <article class="ss-progression-row">
             <div>
               <strong>${escapeHtml(rank.rank_code)}</strong>
-              <span class="muted">Fixed internal code</span>
+              ${renderRankChip(rank, { compact: true })}
+              <span class="muted">${escapeHtml(rank.color_hex || "No color configured")} · ${escapeHtml(rank.icon_path || "No icon configured")}</span>
             </div>
             <div class="ss-form-row">
               <label for="progression-rank-label-${index}">Label</label>
@@ -254,12 +297,12 @@
             ${renderIdentityAvatar(identity, summary)}
             <span>
               <strong>${escapeHtml(identity.display_name || summary.display_name || identity.source_display_name || displayCode)}</strong>
-              <small>${escapeHtml(displayCode || fallbackCode)}</small>
+              <small>User code: ${escapeHtml(displayCode || "Not linked")}</small>
               ${diagnostic && diagnostic !== displayCode ? `<small>${escapeHtml(diagnostic)}</small>` : ""}
             </span>
             <span>
-              <strong>${formatNumber(summary.xp_total)} XP</strong>
-              <small>${escapeHtml(summary.rank_label || summary.current_rank_code || "RANK0")}</small>
+              <strong>${renderXpValue(summary.xp_total, { compact: true })}</strong>
+              ${renderRankChip(summary, { compact: true })}
             </span>
           </button>
         `;
@@ -304,8 +347,8 @@
         <div><span class="muted">User code</span><strong>${escapeHtml(displayCode || fallbackCode)}</strong></div>
         <div><span class="muted">Display name</span><strong>${escapeHtml(identity.display_name || summary.display_name || identity.source_display_name || displayCode || fallbackCode)}</strong></div>
         <div><span class="muted">Public identity</span><strong>${escapeHtml(fallbackCode || "Not available")}</strong></div>
-        <div><span class="muted">XP total</span><strong>${formatNumber(summary.xp_total)}</strong></div>
-        <div><span class="muted">Current rank</span><strong>${escapeHtml(summary.rank_label || summary.current_rank_code)}</strong></div>
+        <div><span class="muted">XP total</span><strong>${renderXpValue(summary.xp_total)}</strong></div>
+        <div><span class="muted">Current rank</span><strong>${renderRankChip(summary)}</strong></div>
         <div><span class="muted">Leaderboard</span><strong>${summary.is_leaderboard_visible ? "Visible" : "Suppressed"}</strong></div>
       </div>
       <form id="progression-manual-form" class="ss-progression-action-form">

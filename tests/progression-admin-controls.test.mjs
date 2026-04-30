@@ -56,6 +56,12 @@ test("progression controller uses only runtime authority endpoints", () => {
   assert.match(js, /identity\.user_code \|\|[\s\S]*identity\.canonical_user_code \|\|[\s\S]*identity\.account_user_code/);
   assert.match(js, /function renderIdentityAvatar/);
   assert.match(js, /ss-progression-avatar has-image/);
+  assert.match(js, /XP_ICON_PATH = "\/assets\/games\/xpstar\.webp"/);
+  assert.match(js, /function renderRankChip/);
+  assert.match(js, /function renderXpValue/);
+  assert.match(js, /User code:/);
+  assert.match(js, /rank\.color_hex/);
+  assert.match(js, /rank\.icon_path/);
   assert.match(js, /Public identity:/);
   assert.match(js, /validateRanks/);
   assert.match(js, /RANK0 threshold must stay 0/);
@@ -72,4 +78,6 @@ test("progression styling includes compact avatar cells for identity rows", () =
   assert.match(css, /\.ss-progression-identity\s*\{[\s\S]*grid-template-columns:\s*38px minmax\(0,\s*1fr\) auto/);
   assert.match(css, /\.ss-progression-avatar\s*\{/);
   assert.match(css, /\.ss-progression-avatar img\s*\{[\s\S]*object-fit:\s*cover/);
+  assert.match(css, /\.ss-progression-rank-chip\s*\{/);
+  assert.match(css, /\.ss-progression-xp-icon/);
 });
