@@ -80,4 +80,8 @@ test("progression styling includes compact avatar cells for identity rows", () =
   assert.match(css, /\.ss-progression-avatar img\s*\{[\s\S]*object-fit:\s*cover/);
   assert.match(css, /\.ss-progression-rank-chip\s*\{/);
   assert.match(css, /\.ss-progression-xp-icon/);
+  assert.match(css, /\.ss-progression-rank-chip::before\s*\{/);
+  assert.match(css, /\.ss-progression-rank-chip:hover::before,[\s\S]*\.ss-progression-rank-chip:focus-visible::before\s*\{[\s\S]*animation:\s*ss-progression-rank-chip-sheen 3\.2s/);
+  assert.match(css, /@keyframes ss-progression-rank-chip-sheen/);
+  assert.match(css, /prefers-reduced-motion:\s*reduce[\s\S]*\.ss-progression-rank-chip::before/);
 });

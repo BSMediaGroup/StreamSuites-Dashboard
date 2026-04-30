@@ -7478,6 +7478,53 @@ body.ss-col-resizing-active {
   z-index: -1;
 }
 
+.ss-progression-rank-chip::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    transparent 34%,
+    rgba(255, 255, 255, 0.2) 48%,
+    transparent 62%,
+    transparent 100%
+  );
+  opacity: 0;
+  transform: translateX(-130%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ss-progression-rank-chip:hover::before,
+.ss-progression-rank-chip:focus-visible::before {
+  opacity: 0.3;
+  animation: ss-progression-rank-chip-sheen 3.2s cubic-bezier(0.2, 0.8, 0.3, 1) infinite;
+}
+
+.ss-progression-rank-chip > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes ss-progression-rank-chip-sheen {
+  0% {
+    transform: translateX(-130%);
+  }
+  100% {
+    transform: translateX(130%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ss-progression-rank-chip::before,
+  .ss-progression-rank-chip:hover::before,
+  .ss-progression-rank-chip:focus-visible::before {
+    animation: none !important;
+  }
+}
+
 .ss-progression-toggle {
   display: inline-flex;
   align-items: center;
