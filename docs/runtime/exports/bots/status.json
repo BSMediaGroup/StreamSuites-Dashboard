@@ -1,7 +1,7 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-04-28T11:10:09.599121Z",
-  "server_generated_at": "2026-04-28T11:10:09.599121Z",
+  "generated_at": "2026-05-02T14:35:42.412416Z",
+  "server_generated_at": "2026-05-02T14:35:42.412416Z",
   "count": 15,
   "bots": [
     {
@@ -22,14 +22,14 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-25T06:25:08.657617Z",
-      "last_transition_at": "2026-04-23T22:09:32.296639Z",
+      "last_evaluated_at": "2026-05-02T14:35:38.325609Z",
+      "last_transition_at": "2026-04-30T01:13:21.368052Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
         "video_id": null,
         "chat_id": null,
-        "channel_handle": "@DanielClancy",
+        "channel_handle": "DanielClancy",
         "channel_url": "https://rumble.com/user/danielclancy",
         "channel_slug": "danielclancy"
       },
@@ -53,8 +53,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-25T06:25:08.657617Z",
-      "last_transition_at": "2026-04-23T22:09:32.296639Z",
+      "last_evaluated_at": "2026-05-02T14:35:38.325609Z",
+      "last_transition_at": "2026-04-30T01:13:21.368052Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -84,8 +84,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-25T06:25:08.657617Z",
-      "last_transition_at": "2026-04-23T22:09:32.296639Z",
+      "last_evaluated_at": "2026-05-02T14:35:38.325609Z",
+      "last_transition_at": "2026-04-30T01:13:21.368052Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -115,8 +115,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-25T06:25:08.657617Z",
-      "last_transition_at": "2026-04-23T22:09:32.296639Z",
+      "last_evaluated_at": "2026-05-02T14:35:38.325609Z",
+      "last_transition_at": "2026-04-30T01:13:21.368052Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -146,8 +146,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-25T06:25:08.657617Z",
-      "last_transition_at": "2026-04-23T22:09:32.296639Z",
+      "last_evaluated_at": "2026-05-02T14:35:38.325609Z",
+      "last_transition_at": "2026-04-30T01:13:21.368052Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -177,8 +177,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-25T06:25:08.657617Z",
-      "last_transition_at": "2026-04-23T22:09:32.296639Z",
+      "last_evaluated_at": "2026-05-02T14:35:38.325609Z",
+      "last_transition_at": "2026-04-30T01:13:21.368052Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -208,8 +208,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-25T06:25:08.657617Z",
-      "last_transition_at": "2026-04-23T22:09:32.296639Z",
+      "last_evaluated_at": "2026-05-02T14:35:38.325609Z",
+      "last_transition_at": "2026-04-30T01:13:21.368052Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -239,8 +239,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-25T06:25:08.657617Z",
-      "last_transition_at": "2026-04-23T22:09:32.296639Z",
+      "last_evaluated_at": "2026-05-02T14:35:38.325609Z",
+      "last_transition_at": "2026-04-30T01:13:21.368052Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -270,8 +270,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-25T06:25:08.657617Z",
-      "last_transition_at": "2026-04-23T22:09:32.296639Z",
+      "last_evaluated_at": "2026-05-02T14:35:38.325609Z",
+      "last_transition_at": "2026-04-30T01:13:21.368052Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -301,8 +301,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-25T06:25:08.657617Z",
-      "last_transition_at": "2026-04-23T22:09:32.296639Z",
+      "last_evaluated_at": "2026-05-02T14:35:38.325609Z",
+      "last_transition_at": "2026-04-30T01:13:21.368052Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -332,8 +332,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-25T06:25:08.657617Z",
-      "last_transition_at": "2026-04-23T22:09:32.296639Z",
+      "last_evaluated_at": "2026-05-02T14:35:38.325609Z",
+      "last_transition_at": "2026-04-30T01:13:21.368052Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -363,8 +363,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-25T06:25:08.657617Z",
-      "last_transition_at": "2026-04-23T22:09:32.296639Z",
+      "last_evaluated_at": "2026-05-02T14:35:38.325609Z",
+      "last_transition_at": "2026-04-30T01:13:21.368052Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -394,8 +394,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-25T06:25:08.657617Z",
-      "last_transition_at": "2026-04-23T22:09:32.296639Z",
+      "last_evaluated_at": "2026-05-02T14:35:38.325609Z",
+      "last_transition_at": "2026-04-30T01:13:21.368052Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -425,8 +425,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-25T06:25:08.657617Z",
-      "last_transition_at": "2026-04-23T22:09:32.296639Z",
+      "last_evaluated_at": "2026-05-02T14:35:38.325609Z",
+      "last_transition_at": "2026-04-30T01:13:21.368052Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -456,8 +456,8 @@
       "runner_kind": "managed_transport",
       "runner_state": "stopped",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-04-25T06:25:08.657617Z",
-      "last_transition_at": "2026-04-23T22:09:32.296639Z",
+      "last_evaluated_at": "2026-05-02T14:35:38.325609Z",
+      "last_transition_at": "2026-04-30T01:13:21.368052Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -672,30 +672,32 @@
         "required_env_keys": [],
         "missing_env_keys": []
       },
-      "last_log": null
+      "last_log": {
+        "timestamp": "2026-04-30T01:13:21.368052Z",
+        "severity": "warning",
+        "message": "[VIvXsPS] Managed session state updated to disabled."
+      }
     },
     {
       "platform": "twitch",
       "label": "Twitch",
-      "available": false,
+      "available": true,
       "implemented": true,
-      "runtime_ready": false,
-      "status": "not_configured",
-      "global_status": "not_configured",
+      "runtime_ready": true,
+      "status": "ready",
+      "global_status": "ready",
       "session_status": "inactive",
       "session_blocking_code": null,
       "session_blocking_codes": [],
       "paused": false,
       "paused_reason": null,
-      "error": "Missing runtime prerequisites: TWITCH_OAUTH_TOKEN_DANIEL.",
+      "error": null,
       "staged": false,
       "disabled_reason": "",
       "required_env_keys": [
         "TWITCH_OAUTH_TOKEN_DANIEL"
       ],
-      "missing_env_keys": [
-        "TWITCH_OAUTH_TOKEN_DANIEL"
-      ],
+      "missing_env_keys": [],
       "details": {
         "bot_count": 0,
         "bot_online_count": 0,
@@ -705,7 +707,7 @@
         "bot_blocked_count": 0,
         "manual_override_count": 0,
         "implemented": true,
-        "runtime_ready": false,
+        "runtime_ready": true,
         "global_state": "active",
         "global_enabled": true,
         "session_status": "inactive",
@@ -716,34 +718,30 @@
         "required_env_keys": [
           "TWITCH_OAUTH_TOKEN_DANIEL"
         ],
-        "missing_env_keys": [
-          "TWITCH_OAUTH_TOKEN_DANIEL"
-        ]
+        "missing_env_keys": []
       },
       "last_log": null
     },
     {
       "platform": "youtube",
       "label": "YouTube",
-      "available": false,
+      "available": true,
       "implemented": true,
-      "runtime_ready": false,
-      "status": "not_configured",
-      "global_status": "not_configured",
+      "runtime_ready": true,
+      "status": "ready",
+      "global_status": "ready",
       "session_status": "inactive",
       "session_blocking_code": null,
       "session_blocking_codes": [],
       "paused": false,
       "paused_reason": null,
-      "error": "Missing runtime prerequisites: YOUTUBE_API_KEY_DANIEL.",
+      "error": null,
       "staged": false,
       "disabled_reason": "",
       "required_env_keys": [
         "YOUTUBE_API_KEY_DANIEL"
       ],
-      "missing_env_keys": [
-        "YOUTUBE_API_KEY_DANIEL"
-      ],
+      "missing_env_keys": [],
       "details": {
         "bot_count": 0,
         "bot_online_count": 0,
@@ -753,7 +751,7 @@
         "bot_blocked_count": 0,
         "manual_override_count": 0,
         "implemented": true,
-        "runtime_ready": false,
+        "runtime_ready": true,
         "global_state": "active",
         "global_enabled": true,
         "session_status": "inactive",
@@ -764,9 +762,7 @@
         "required_env_keys": [
           "YOUTUBE_API_KEY_DANIEL"
         ],
-        "missing_env_keys": [
-          "YOUTUBE_API_KEY_DANIEL"
-        ]
+        "missing_env_keys": []
       },
       "last_log": null
     }
