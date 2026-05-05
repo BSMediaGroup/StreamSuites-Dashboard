@@ -5352,6 +5352,32 @@ body.ss-col-resizing-active {
   gap: 14px;
 }
 
+.ss-economy-master-detail {
+  display: grid;
+  grid-template-columns: minmax(440px, 1.35fr) minmax(320px, 0.85fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.ss-economy-master-pane,
+.ss-economy-detail-pane {
+  min-width: 0;
+}
+
+.ss-economy-detail-pane {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.025);
+  padding: 12px;
+}
+
+.ss-economy-detail-pane h3 {
+  margin: 0 0 6px;
+  font-family: "RechargeBd", sans-serif;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+}
+
 .ss-economy-search-row,
 .ss-economy-action-grid,
 .ss-economy-reversal-box {
@@ -5374,6 +5400,7 @@ body.ss-col-resizing-active {
 .ss-economy-inspector {
   display: grid;
   gap: 10px;
+  min-width: 0;
 }
 
 .ss-economy-identity {
@@ -5524,10 +5551,40 @@ body.ss-col-resizing-active {
 }
 
 .ss-economy-item-definition {
-  grid-template-columns: 38px minmax(0, 1fr);
+  grid-template-columns: 1fr;
+  align-items: stretch;
+}
+
+.ss-economy-item-definition-summary {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
+
+.ss-economy-item-definition-main {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ss-economy-item-path,
+.ss-economy-item-notes {
+  overflow-wrap: anywhere;
+}
+
+.ss-economy-item-editor {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .ss-economy-item-definition label,
+.ss-economy-item-editor label,
 .ss-economy-actions label {
   display: grid;
   gap: 5px;
@@ -5536,6 +5593,8 @@ body.ss-col-resizing-active {
 }
 
 .ss-economy-item-definition input,
+.ss-economy-item-definition select,
+.ss-economy-item-definition textarea,
 .ss-economy-actions input,
 .ss-economy-actions select {
   width: 100%;
@@ -5576,6 +5635,7 @@ body.ss-col-resizing-active {
 
 @media (max-width: 1120px) {
   .ss-economy-grid,
+  .ss-economy-master-detail,
   .ss-economy-search-row {
     grid-template-columns: 1fr;
   }
@@ -5586,6 +5646,8 @@ body.ss-col-resizing-active {
   .ss-economy-event,
   .ss-economy-item-row,
   .ss-economy-item-definition,
+  .ss-economy-item-definition-summary,
+  .ss-economy-item-editor,
   .ss-economy-action-grid,
   .ss-economy-reversal-box,
   .ss-economy-kpis {
@@ -5595,6 +5657,11 @@ body.ss-col-resizing-active {
   .ss-economy-identity-side,
   .ss-economy-event-side {
     justify-items: start;
+  }
+
+  .ss-admin-pager {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 
@@ -6716,6 +6783,33 @@ body.ss-col-resizing-active {
   font-size: 12px;
 }
 
+.ss-admin-control-section {
+  min-width: 0;
+}
+
+.ss-admin-collapsible.is-collapsed .ss-admin-collapsible-body {
+  display: none;
+}
+
+.ss-admin-collapse-toggle {
+  min-width: 86px;
+}
+
+.ss-admin-pager {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.ss-empty-compact {
+  min-height: 0;
+  padding: 12px;
+}
+
 .ss-form-row label {
   font-size: 12px;
   color: var(--text-secondary);
@@ -7620,6 +7714,25 @@ body.ss-col-resizing-active {
   align-items: start;
 }
 
+.ss-progression-master-detail {
+  display: grid;
+  grid-template-columns: minmax(430px, 1.15fr) minmax(360px, 0.85fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.ss-progression-master-pane,
+.ss-progression-detail-pane {
+  min-width: 0;
+}
+
+.ss-progression-detail-pane {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.025);
+  padding: 12px;
+}
+
 .ss-progression-search-row,
 .ss-progression-action-form {
   display: grid;
@@ -7640,11 +7753,12 @@ body.ss-col-resizing-active {
 .ss-progression-list {
   display: grid;
   gap: 10px;
+  min-width: 0;
 }
 
 .ss-progression-row {
   display: grid;
-  grid-template-columns: minmax(130px, 0.55fr) minmax(140px, 1fr) minmax(120px, 0.65fr);
+  grid-template-columns: minmax(260px, 1.2fr) minmax(180px, 0.8fr) minmax(160px, 0.65fr) minmax(140px, 0.55fr);
   gap: 10px;
   align-items: end;
   border: 1px solid var(--border-subtle);
@@ -7654,7 +7768,7 @@ body.ss-col-resizing-active {
 }
 
 .ss-progression-rule-row {
-  grid-template-columns: minmax(160px, 1fr) auto repeat(3, minmax(96px, 0.55fr));
+  grid-template-columns: minmax(220px, 1.1fr) auto repeat(3, minmax(130px, 0.55fr));
 }
 
 .ss-progression-row strong,
@@ -7891,6 +8005,7 @@ body.ss-col-resizing-active {
 @media (max-width: 980px) {
   .ss-approvals-authority-layout,
   .ss-progression-grid,
+  .ss-progression-master-detail,
   .ss-progression-search-row,
   .ss-progression-action-form,
   .ss-progression-row,

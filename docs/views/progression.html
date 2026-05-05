@@ -40,8 +40,7 @@
     </div>
   </section>
 
-  <div class="ss-progression-grid">
-    <section class="ss-panel">
+  <section class="ss-panel ss-admin-control-section">
       <header class="ss-panel-header">
         <div class="ss-panel-header-main">
           <h2>Level Definitions</h2>
@@ -57,9 +56,9 @@
       <div class="ss-panel-body">
         <div id="progression-ranks-list" class="ss-progression-list"></div>
       </div>
-    </section>
+  </section>
 
-    <section class="ss-panel">
+  <section class="ss-panel ss-admin-control-section ss-admin-collapsible" data-collapsible-section="progression-rules">
       <header class="ss-panel-header">
         <div class="ss-panel-header-main">
           <h2>XP Rules</h2>
@@ -69,17 +68,16 @@
         </div>
         <div class="ss-panel-header-actions">
           <span id="progression-rules-status" class="muted">No pending changes</span>
+          <button class="ss-btn ss-btn-secondary ss-admin-collapse-toggle" type="button" data-collapse-target="progression-rules" aria-expanded="false">Expand</button>
           <button id="progression-rules-save" class="ss-btn" type="button" disabled>Save rules</button>
         </div>
       </header>
-      <div class="ss-panel-body">
+      <div class="ss-panel-body ss-admin-collapsible-body" id="progression-rules-panel">
         <div id="progression-rules-list" class="ss-progression-list"></div>
       </div>
-    </section>
-  </div>
+  </section>
 
-  <div class="ss-progression-grid">
-    <section class="ss-panel">
+  <section class="ss-panel ss-admin-control-section ss-progression-identity-workspace">
       <header class="ss-panel-header">
         <div class="ss-panel-header-main">
           <h2>Identity Progression Inspector</h2>
@@ -89,29 +87,21 @@
         </div>
       </header>
       <div class="ss-panel-body">
-        <div id="progression-identities-list" class="ss-progression-list"></div>
-        <div id="progression-identities-empty" class="ss-empty hidden">No progression identities match the current search.</div>
-      </div>
-    </section>
-
-    <section class="ss-panel">
-      <header class="ss-panel-header">
-        <div class="ss-panel-header-main">
-          <h2>Manual Actions</h2>
-          <p class="muted" style="margin:6px 0 0;">
-            Grants, penalties, adjustments, and reversals create new ledger events. Existing history is not edited.
-          </p>
-        </div>
-      </header>
-      <div class="ss-panel-body">
-        <div id="progression-inspector" class="ss-progression-inspector ss-empty">
-          Select an identity to inspect progression and apply controls.
+        <div class="ss-progression-master-detail">
+          <div class="ss-progression-master-pane">
+            <div id="progression-identities-list" class="ss-progression-list"></div>
+            <div id="progression-identities-empty" class="ss-empty hidden">No progression identities match the current search.</div>
+          </div>
+          <div class="ss-progression-detail-pane">
+            <div id="progression-inspector" class="ss-progression-inspector ss-empty">
+              Select an identity to inspect progression and apply manual ledger controls.
+            </div>
+          </div>
         </div>
       </div>
-    </section>
-  </div>
+  </section>
 
-  <section class="ss-panel">
+  <section class="ss-panel ss-admin-control-section ss-admin-collapsible" data-collapsible-section="progression-leaderboard">
     <header class="ss-panel-header">
       <div class="ss-panel-header-main">
         <h2>Leaderboard Hygiene</h2>
@@ -119,8 +109,11 @@
           Suppression affects public leaderboard display only. XP totals and ledger history remain intact.
         </p>
       </div>
+      <div class="ss-panel-header-actions">
+        <button class="ss-btn ss-btn-secondary ss-admin-collapse-toggle" type="button" data-collapse-target="progression-leaderboard" aria-expanded="true">Collapse</button>
+      </div>
     </header>
-    <div class="ss-panel-body">
+    <div class="ss-panel-body ss-admin-collapsible-body" id="progression-leaderboard-panel">
       <div id="progression-leaderboard-hygiene" class="ss-progression-hygiene ss-empty">
         Select an identity to review or change public leaderboard visibility.
       </div>

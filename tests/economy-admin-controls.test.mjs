@@ -25,7 +25,7 @@ test("economy admin route is registered and loaded by the dashboard shell", () =
   assert.match(docsPagesFunction, /"\/economy"/);
   assert.match(app, /registerView\("economy"/);
   assert.match(app, /window\.EconomyInventoryAdminView\?\.init\?\.\(\)/);
-  assert.match(app, /economy:\s*"\/assets\/games\/sscoin\.webp"/);
+  assert.match(app, /economy:\s*"\/assets\/icons\/economy\.svg"/);
   assert.match(root, /data-view="economy">Economy \/ Inventory/);
   assert.match(root, /"js\/economy\.js"/);
   assert.match(docsRoot, /data-view="economy">Economy \/ Inventory/);
@@ -45,6 +45,12 @@ test("economy view exposes required control sections and boundary copy", () => {
   assert.match(html, /Item Definitions/);
   assert.match(html, /Reversal rows are new ledger events/);
   assert.match(html, /No storefront, trading, transfers, consumption loop/);
+  assert.match(html, /ss-admin-control-section/);
+  assert.match(html, /ss-economy-master-detail/);
+  assert.match(html, /data-collapse-target="economy-ledger"/);
+  assert.match(html, /data-collapse-target="economy-actions"/);
+  assert.match(html, /data-collapse-target="inventory-actions"/);
+  assert.doesNotMatch(html, /<div class="ss-economy-grid">/);
 });
 
 test("economy controller uses runtime authority endpoints and canonical coin asset", () => {
@@ -64,6 +70,13 @@ test("economy controller uses runtime authority endpoints and canonical coin ass
   assert.match(js, /Manual inventory actions require a reason/);
   assert.match(js, /Inventory reversal requires an event code and reason/);
   assert.match(js, /Item definition metadata changes require a reason/);
+  assert.match(js, /IDENTITY_PAGE_SIZE = 10/);
+  assert.match(js, /EVENT_PAGE_SIZE = 8/);
+  assert.match(js, /ITEM_PAGE_SIZE = 6/);
+  assert.match(js, /data-economy-page/);
+  assert.match(js, /ss-economy-item-editor/);
+  assert.match(js, /category: readField\("category"\)/);
+  assert.match(js, /is_enabled: readField\("is_enabled"\) !== "false"/);
   assert.doesNotMatch(js, /localStorage/);
   assert.doesNotMatch(js, /storefront|trading|transfer|consume item/i);
 });
@@ -76,4 +89,8 @@ test("economy styling includes compact identity rows and sscoin icon treatment",
   assert.match(css, /\.ss-economy-coin-icon\s*\{[\s\S]*object-fit:\s*contain/);
   assert.match(css, /\.ss-economy-coin-value--compact \.ss-economy-coin-icon\s*\{[\s\S]*width:\s*16px/);
   assert.match(css, /\.ss-economy-state-reversed,[\s\S]*\.ss-economy-state-reversal/);
+  assert.match(css, /\.ss-economy-master-detail\s*\{[\s\S]*grid-template-columns:\s*minmax\(440px,\s*1\.35fr\) minmax\(320px,\s*0\.85fr\)/);
+  assert.match(css, /\.ss-economy-item-definition-summary\s*\{[\s\S]*grid-template-columns:\s*38px minmax\(0,\s*1fr\) auto/);
+  assert.match(css, /\.ss-economy-item-editor\s*\{[\s\S]*grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(css, /\.ss-admin-pager\s*\{/);
 });

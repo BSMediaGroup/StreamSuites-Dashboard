@@ -39,8 +39,7 @@
     </div>
   </section>
 
-  <div class="ss-economy-grid">
-    <section class="ss-panel">
+  <section class="ss-panel ss-admin-control-section ss-economy-identity-workspace">
       <header class="ss-panel-header">
         <div class="ss-panel-header-main">
           <h2>Identity Search</h2>
@@ -50,30 +49,25 @@
         </div>
       </header>
       <div class="ss-panel-body">
-        <div id="economy-identities-list" class="ss-economy-list"></div>
-        <div id="economy-identities-empty" class="ss-empty hidden">No public economy identities match the current search.</div>
-      </div>
-    </section>
-
-    <section class="ss-panel">
-      <header class="ss-panel-header">
-        <div class="ss-panel-header-main">
-          <h2>Wallet Inspector</h2>
-          <p class="muted" style="margin:6px 0 0;">
-            Wallet totals are read from the authoritative summary updated by event application.
-          </p>
-        </div>
-      </header>
-      <div class="ss-panel-body">
-        <div id="economy-wallet-inspector" class="ss-economy-inspector ss-empty">
-          Select an identity to inspect wallet state.
+        <div class="ss-economy-master-detail">
+          <div class="ss-economy-master-pane">
+            <div id="economy-identities-list" class="ss-economy-list"></div>
+            <div id="economy-identities-empty" class="ss-empty hidden">No public economy identities match the current search.</div>
+          </div>
+          <div class="ss-economy-detail-pane">
+            <h3>Wallet Inspector</h3>
+            <p class="muted" style="margin:0 0 10px;">
+              Wallet totals are read from the authoritative summary updated by event application.
+            </p>
+            <div id="economy-wallet-inspector" class="ss-economy-inspector ss-empty">
+              Select an identity to inspect wallet state.
+            </div>
+          </div>
         </div>
       </div>
-    </section>
-  </div>
+  </section>
 
-  <div class="ss-economy-grid">
-    <section class="ss-panel">
+  <section class="ss-panel ss-admin-control-section ss-admin-collapsible" data-collapsible-section="economy-ledger">
       <header class="ss-panel-header">
         <div class="ss-panel-header-main">
           <h2>Economy Ledger</h2>
@@ -81,13 +75,16 @@
             Reversal rows are new ledger events. Existing rows are not edited or deleted.
           </p>
         </div>
+        <div class="ss-panel-header-actions">
+          <button class="ss-btn ss-btn-secondary ss-admin-collapse-toggle" type="button" data-collapse-target="economy-ledger" aria-expanded="true">Collapse</button>
+        </div>
       </header>
-      <div class="ss-panel-body">
+      <div class="ss-panel-body ss-admin-collapsible-body" id="economy-ledger-panel">
         <div id="economy-ledger-list" class="ss-economy-list ss-economy-event-list"></div>
       </div>
-    </section>
+  </section>
 
-    <section class="ss-panel">
+  <section class="ss-panel ss-admin-control-section ss-admin-collapsible" data-collapsible-section="economy-actions">
       <header class="ss-panel-header">
         <div class="ss-panel-header-main">
           <h2>Manual Economy Actions</h2>
@@ -95,17 +92,18 @@
             Grants, penalties, adjustments, and reversals require a reason and call runtime authority endpoints.
           </p>
         </div>
+        <div class="ss-panel-header-actions">
+          <button class="ss-btn ss-btn-secondary ss-admin-collapse-toggle" type="button" data-collapse-target="economy-actions" aria-expanded="false">Expand</button>
+        </div>
       </header>
-      <div class="ss-panel-body">
+      <div class="ss-panel-body ss-admin-collapsible-body" id="economy-actions-panel">
         <div id="economy-actions" class="ss-economy-actions ss-empty">
           Select an identity to apply manual economy controls.
         </div>
       </div>
-    </section>
-  </div>
+  </section>
 
-  <div class="ss-economy-grid">
-    <section class="ss-panel">
+  <section class="ss-panel ss-admin-control-section">
       <header class="ss-panel-header">
         <div class="ss-panel-header-main">
           <h2>Inventory Inspector</h2>
@@ -117,9 +115,9 @@
       <div class="ss-panel-body">
         <div id="economy-inventory-list" class="ss-economy-list"></div>
       </div>
-    </section>
+  </section>
 
-    <section class="ss-panel">
+  <section class="ss-panel ss-admin-control-section ss-admin-collapsible" data-collapsible-section="inventory-actions">
       <header class="ss-panel-header">
         <div class="ss-panel-header-main">
           <h2>Manual Inventory Actions</h2>
@@ -127,17 +125,18 @@
             Grants, removals, adjustments, and reversals create new inventory history rows.
           </p>
         </div>
+        <div class="ss-panel-header-actions">
+          <button class="ss-btn ss-btn-secondary ss-admin-collapse-toggle" type="button" data-collapse-target="inventory-actions" aria-expanded="false">Expand</button>
+        </div>
       </header>
-      <div class="ss-panel-body">
+      <div class="ss-panel-body ss-admin-collapsible-body" id="inventory-actions-panel">
         <div id="economy-inventory-actions" class="ss-economy-actions ss-empty">
           Select an identity to apply manual inventory controls.
         </div>
       </div>
-    </section>
-  </div>
+  </section>
 
-  <div class="ss-economy-grid">
-    <section class="ss-panel">
+  <section class="ss-panel ss-admin-control-section ss-admin-collapsible" data-collapsible-section="inventory-events">
       <header class="ss-panel-header">
         <div class="ss-panel-header-main">
           <h2>Inventory Events</h2>
@@ -145,13 +144,16 @@
             Event history remains append-only, including manual reversal events.
           </p>
         </div>
+        <div class="ss-panel-header-actions">
+          <button class="ss-btn ss-btn-secondary ss-admin-collapse-toggle" type="button" data-collapse-target="inventory-events" aria-expanded="true">Collapse</button>
+        </div>
       </header>
-      <div class="ss-panel-body">
+      <div class="ss-panel-body ss-admin-collapsible-body" id="inventory-events-panel">
         <div id="economy-inventory-events-list" class="ss-economy-list ss-economy-event-list"></div>
       </div>
-    </section>
+  </section>
 
-    <section class="ss-panel">
+  <section class="ss-panel ss-admin-control-section">
       <header class="ss-panel-header">
         <div class="ss-panel-header-main">
           <h2>Item Definitions</h2>
@@ -163,8 +165,7 @@
       <div class="ss-panel-body">
         <div id="economy-item-definitions" class="ss-economy-list"></div>
       </div>
-    </section>
-  </div>
+  </section>
 </main>
 
 <footer class="ss-footer">

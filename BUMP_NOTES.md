@@ -2,6 +2,8 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Repaired the Admin `/progression` and `/economy` control-page layouts so dense editors no longer sit in cramped equal-width two-column grids. Progression now uses full-width level definitions with local pagination, a collapsible XP Rules section, a readable identity master/detail workspace, paginated XP history, and collapsible leaderboard hygiene while keeping existing runtime/Auth endpoints unchanged. Economy now uses a full-width identity/wallet workspace, collapsible paginated economy and inventory event sections, collapsible manual action sections, a compact full-width inventory inspector, and paginated expandable item-definition editors that expose label, category, rarity, enabled state, icon path, metadata notes, and required save reason without changing authority ownership. Updated focused source tests to pin the stacked layout, collapse controls, pagination controls, and expandable item editor. No files were created, removed, or renamed; the runtime/Auth repo remained read-only.
+
 - Removed the redundant visible `Level` text prefix from Dashboard progression level chips in `docs/js/progression.js`; chips now render the configured level label only while nearby headings/fields provide the level context. Source tests now pin that the chip renderer does not reintroduce the prefix. No files were created or removed.
 
 - Narrow-corrected the Dashboard sidebar icon for the new `/economy` route in `docs/js/app.js` so the nav item uses `/assets/icons/economy.svg` instead of the coin asset. This does not replace the coin icon inside the Economy page; `docs/js/economy.js` continues to use `/assets/games/sscoin.webp` for balances. No files were created or removed.

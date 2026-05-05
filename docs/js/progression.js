@@ -13,6 +13,10 @@
   const EVENT_REVERSE = (eventCode) => `/api/admin/progression/events/${encodeURIComponent(eventCode)}/reverse`;
   const LEADERBOARD = (identityCode) => `/api/admin/progression/identities/${encodeURIComponent(identityCode)}/leaderboard`;
   const XP_ICON_PATH = "/assets/games/xpstar.webp";
+  const LEVEL_PAGE_SIZE = 6;
+  const RULE_PAGE_SIZE = 5;
+  const IDENTITY_PAGE_SIZE = 10;
+  const EVENT_PAGE_SIZE = 8;
 
   const state = {
     ranks: [],
@@ -22,6 +26,10 @@
     identities: [],
     selectedIdentityCode: "",
     detail: null,
+    levelPage: 1,
+    rulePage: 1,
+    identityPage: 1,
+    eventPage: 1,
     token: 0,
     saving: false,
     bound: false
@@ -98,6 +106,35 @@
 
   function formatLabel(value) {
     return text(value).replace(/[_-]+/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+
+  function clampPage(page, totalItems, pageSize) {
+    const max = Math.max(1, Math.ceil((totalItems || 0) / pageSize));
+    return Math.min(Math.max(1, Number(page) || 1), max);
+  }
+
+  function pageSlice(items, page, pageSize) {
+    const list = Array.isArray(items) ? items : [];
+    const current = clampPage(page, list.length, pageSize);
+    return {
+      page: current,
+      totalPages: Math.max(1, Math.ceil(list.length / pageSize)),
+      totalItems: list.length,
+      items: list.slice((current - 1) * pageSize, current * pageSize)
+    };
+  }
+
+  function renderPager(kind, pageInfo, label) {
+    if (!pageInfo || pageInfo.totalPages <= 1) return "";
+    return `
+      <div class="ss-admin-pager" data-pager-kind="${escapeHtml(kind)}">
+        <span class="muted">${escapeHtml(label)} ${formatNumber(pageInfo.page)} of ${formatNumber(pageInfo.totalPages)} · ${formatNumber(pageInfo.totalItems)} total</span>
+        <div class="pager-controls">
+          <button class="ss-btn ss-btn-secondary" type="button" data-progress-page="${escapeHtml(kind)}" data-page="${pageInfo.page - 1}" ${pageInfo.page <= 1 ? "disabled" : ""}>Previous</button>
+          <button class="ss-btn ss-btn-secondary" type="button" data-progress-page="${escapeHtml(kind)}" data-page="${pageInfo.page + 1}" ${pageInfo.page >= pageInfo.totalPages ? "disabled" : ""}>Next</button>
+        </div>
+      </div>
+    `;
   }
 
   function identityUserCode(identity = {}, summary = {}) {
@@ -218,9 +255,13 @@
 
   function renderRanks() {
     if (!el.ranksList) return;
-    el.ranksList.innerHTML = state.ranks
+    const pageInfo = pageSlice(state.ranks, state.levelPage, LEVEL_PAGE_SIZE);
+    state.levelPage = pageInfo.page;
+    el.ranksList.innerHTML = pageInfo.items
       .map(
-        (rank, index) => `
+        (rank, pageIndex) => {
+          const index = (pageInfo.page - 1) * LEVEL_PAGE_SIZE + pageIndex;
+          return `
           <article class="ss-progression-row">
             <div>
               <strong>${escapeHtml(rank.level_code || rank.rank_code)}</strong>
@@ -243,17 +284,22 @@
               </select>
             </div>
           </article>
-        `
+        `;
+        }
       )
-      .join("");
+      .join("") + renderPager("levels", pageInfo, "Level page");
     updateSaveState();
   }
 
   function renderRules() {
     if (!el.rulesList) return;
-    el.rulesList.innerHTML = state.rules
+    const pageInfo = pageSlice(state.rules, state.rulePage, RULE_PAGE_SIZE);
+    state.rulePage = pageInfo.page;
+    el.rulesList.innerHTML = pageInfo.items
       .map(
-        (rule, index) => `
+        (rule, pageIndex) => {
+          const index = (pageInfo.page - 1) * RULE_PAGE_SIZE + pageIndex;
+          return `
           <article class="ss-progression-row ss-progression-rule-row">
             <div>
               <strong>${escapeHtml(rule.rule_code)}</strong>
@@ -280,9 +326,10 @@
               <input data-rule-index="${index}" data-rule-field="reason_text" value="${escapeHtml(rule.reason_text)}" />
             </div>
           </article>
-        `
+        `;
+        }
       )
-      .join("");
+      .join("") + renderPager("rules", pageInfo, "Rule page");
     updateSaveState();
   }
 
@@ -294,7 +341,9 @@
     if (!el.identitiesList) return;
     if (el.identityCount) el.identityCount.textContent = formatNumber(state.identities.length);
     if (el.identitiesEmpty) el.identitiesEmpty.classList.toggle("hidden", state.identities.length > 0);
-    el.identitiesList.innerHTML = state.identities
+    const pageInfo = pageSlice(state.identities, state.identityPage, IDENTITY_PAGE_SIZE);
+    state.identityPage = pageInfo.page;
+    el.identitiesList.innerHTML = pageInfo.items
       .map((item) => {
         const identity = item.identity || {};
         const summary = item.summary || {};
@@ -318,11 +367,13 @@
           </button>
         `;
       })
-      .join("");
+      .join("") + renderPager("identities", pageInfo, "Identity page");
   }
 
   function renderHistory(events) {
-    const rows = (events || []).map(
+    const pageInfo = pageSlice(events || [], state.eventPage, EVENT_PAGE_SIZE);
+    state.eventPage = pageInfo.page;
+    const rows = pageInfo.items.map(
       (event) => `
         <tr>
           <td>${escapeHtml(event.xp_event_code)}</td>
@@ -343,6 +394,7 @@
           <tbody>${rows.join("") || `<tr><td colspan="6" class="muted">No XP history yet.</td></tr>`}</tbody>
         </table>
       </div>
+      ${renderPager("events", pageInfo, "XP event page")}
     `;
   }
 
@@ -430,6 +482,7 @@
     const params = query ? `?q=${encodeURIComponent(query)}&limit=25` : "?limit=25";
     const payload = await requestJson(`${IDENTITIES}${params}`);
     state.identities = payload.identities || [];
+    state.identityPage = 1;
     if (!state.selectedIdentityCode && state.identities[0]?.summary?.identity_code) {
       state.selectedIdentityCode = state.identities[0].summary.identity_code;
       await loadIdentity(state.selectedIdentityCode, { renderList: false });
@@ -441,9 +494,26 @@
     const payload = await requestJson(`${IDENTITY_DETAIL(identityCode)}?limit=50`);
     state.selectedIdentityCode = identityCode;
     state.detail = payload;
+    state.eventPage = 1;
     renderInspector();
     renderHygiene();
     if (options.renderList !== false) renderIdentities();
+  }
+
+  function setCollapsed(sectionKey, collapsed) {
+    const section = document.querySelector(`[data-collapsible-section="${sectionKey}"]`);
+    const button = document.querySelector(`[data-collapse-target="${sectionKey}"]`);
+    if (!section || !button) return;
+    section.classList.toggle("is-collapsed", collapsed);
+    button.setAttribute("aria-expanded", collapsed ? "false" : "true");
+    button.textContent = collapsed ? "Expand" : "Collapse";
+  }
+
+  function initializeCollapsibles() {
+    document.querySelectorAll("[data-collapse-target]").forEach((button) => {
+      const key = button.dataset.collapseTarget;
+      setCollapsed(key, button.getAttribute("aria-expanded") === "false");
+    });
   }
 
   async function refresh() {
@@ -618,6 +688,32 @@
       }
     });
     document.addEventListener("click", (event) => {
+      const collapseButton = event.target.closest("[data-collapse-target]");
+      if (collapseButton) {
+        const key = collapseButton.dataset.collapseTarget;
+        const expanded = collapseButton.getAttribute("aria-expanded") === "true";
+        setCollapsed(key, expanded);
+        return;
+      }
+      const pageButton = event.target.closest("[data-progress-page]");
+      if (pageButton) {
+        const kind = pageButton.dataset.progressPage;
+        const nextPage = Number(pageButton.dataset.page || 1);
+        if (kind === "levels") {
+          state.levelPage = nextPage;
+          renderRanks();
+        } else if (kind === "rules") {
+          state.rulePage = nextPage;
+          renderRules();
+        } else if (kind === "identities") {
+          state.identityPage = nextPage;
+          renderIdentities();
+        } else if (kind === "events") {
+          state.eventPage = nextPage;
+          renderInspector();
+        }
+        return;
+      }
       const button = event.target.closest("[data-reverse-event]");
       if (button) {
         reverseEvent(button.dataset.reverseEvent).catch((err) => setStatus(err.message, "error"));
@@ -650,6 +746,7 @@
     init() {
       cacheElements();
       bindEvents();
+      initializeCollapsibles();
       return refresh();
     },
     destroy() {

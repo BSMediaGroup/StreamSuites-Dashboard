@@ -36,11 +36,15 @@ test("progression view exposes the required admin control sections", () => {
   assert.match(html, /Level Definitions/);
   assert.match(html, /XP Rules/);
   assert.match(html, /Identity Progression Inspector/);
-  assert.match(html, /Manual Actions/);
+  assert.match(html, /apply manual ledger controls/);
   assert.match(html, /Leaderboard Hygiene/);
   assert.match(html, /LEVEL0 through LEVEL24/);
   assert.match(html, /Suppression affects public leaderboard display only/);
   assert.match(html, /Creator-private analytics remain separate/);
+  assert.match(html, /ss-admin-control-section/);
+  assert.match(html, /data-collapse-target="progression-rules"/);
+  assert.match(html, /ss-progression-master-detail/);
+  assert.doesNotMatch(html, /<div class="ss-progression-grid">/);
 });
 
 test("progression controller uses only runtime authority endpoints", () => {
@@ -70,6 +74,11 @@ test("progression controller uses only runtime authority endpoints", () => {
   assert.match(js, /Manual XP actions require a reason/);
   assert.match(js, /Leaderboard suppression requires a reason/);
   assert.match(js, /Reversal requires a reason/);
+  assert.match(js, /LEVEL_PAGE_SIZE = 6/);
+  assert.match(js, /IDENTITY_PAGE_SIZE = 10/);
+  assert.match(js, /EVENT_PAGE_SIZE = 8/);
+  assert.match(js, /data-progress-page/);
+  assert.match(js, /data-collapse-target/);
   assert.doesNotMatch(js, /localStorage/);
   assert.doesNotMatch(js, /creator-scoped leaderboard/i);
 });
@@ -86,4 +95,8 @@ test("progression styling includes compact avatar cells for identity rows", () =
   assert.match(css, /\.ss-progression-level-chip:hover::before,[\s\S]*\.ss-progression-rank-chip:focus-visible::before\s*\{[\s\S]*animation:\s*ss-progression-rank-chip-sheen 3\.2s/);
   assert.match(css, /@keyframes ss-progression-rank-chip-sheen/);
   assert.match(css, /prefers-reduced-motion:\s*reduce[\s\S]*\.ss-progression-rank-chip::before/);
+  assert.match(css, /\.ss-admin-collapsible\.is-collapsed \.ss-admin-collapsible-body/);
+  assert.match(css, /\.ss-admin-pager\s*\{/);
+  assert.match(css, /\.ss-progression-master-detail\s*\{[\s\S]*grid-template-columns:\s*minmax\(430px,\s*1\.15fr\) minmax\(360px,\s*0\.85fr\)/);
+  assert.match(css, /\.ss-progression-row\s*\{[\s\S]*grid-template-columns:\s*minmax\(260px,\s*1\.2fr\)/);
 });
