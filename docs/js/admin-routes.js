@@ -20,7 +20,7 @@
       title: "Bots / Runtime Status"
     },
     approvals: { canonical: "/approvals", title: "Approvals" },
-    progression: { canonical: "/progression", aliases: ["/xp", "/ranks"], title: "XP / Rank Controls" },
+    progression: { canonical: "/progression", aliases: ["/xp", "/ranks"], title: "XP / Level Controls" },
     economy: { canonical: "/economy", aliases: ["/economy-inventory", "/inventory"], title: "Economy / Inventory Controls" },
     accounts: { canonical: "/users", aliases: ["/accounts"], title: "Accounts" },
     "user-detail": { canonical: "/users/:user_code", title: "User Detail" },

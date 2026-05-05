@@ -23,9 +23,9 @@ test("progression admin route is registered and loaded by the dashboard shell", 
   assert.match(pagesFunction, /"\/ranks"/);
   assert.match(app, /registerView\("progression"/);
   assert.match(app, /window\.ProgressionAdminView\?\.init\?\.\(\)/);
-  assert.match(root, /data-view="progression">XP \/ Rank Controls/);
+  assert.match(root, /data-view="progression">XP \/ Level Controls/);
   assert.match(root, /"js\/progression\.js"/);
-  assert.match(docsRoot, /data-view="progression">XP \/ Rank Controls/);
+  assert.match(docsRoot, /data-view="progression">XP \/ Level Controls/);
   assert.match(docsRoot, /"js\/progression\.js"/);
 });
 
@@ -33,12 +33,12 @@ test("progression view exposes the required admin control sections", () => {
   const html = read("docs/views/progression.html");
 
   assert.match(html, /Progression Overview \/ Search/);
-  assert.match(html, /Rank Definitions/);
+  assert.match(html, /Level Definitions/);
   assert.match(html, /XP Rules/);
   assert.match(html, /Identity Progression Inspector/);
   assert.match(html, /Manual Actions/);
   assert.match(html, /Leaderboard Hygiene/);
-  assert.match(html, /RANK0 through RANK10/);
+  assert.match(html, /LEVEL0 through LEVEL24/);
   assert.match(html, /Suppression affects public leaderboard display only/);
   assert.match(html, /Creator-private analytics remain separate/);
 });
@@ -57,14 +57,14 @@ test("progression controller uses only runtime authority endpoints", () => {
   assert.match(js, /function renderIdentityAvatar/);
   assert.match(js, /ss-progression-avatar has-image/);
   assert.match(js, /XP_ICON_PATH = "\/assets\/games\/xpstar\.webp"/);
-  assert.match(js, /function renderRankChip/);
+  assert.match(js, /function renderLevelChip/);
   assert.match(js, /function renderXpValue/);
   assert.match(js, /User code:/);
-  assert.match(js, /rank\.color_hex/);
-  assert.match(js, /rank\.icon_path/);
+  assert.match(js, /level_color_hex/);
+  assert.match(js, /level_icon_path/);
   assert.match(js, /Public identity:/);
   assert.match(js, /validateRanks/);
-  assert.match(js, /RANK0 threshold must stay 0/);
+  assert.match(js, /LEVEL0 threshold must stay 0/);
   assert.match(js, /Manual XP actions require a reason/);
   assert.match(js, /Leaderboard suppression requires a reason/);
   assert.match(js, /Reversal requires a reason/);
@@ -78,10 +78,10 @@ test("progression styling includes compact avatar cells for identity rows", () =
   assert.match(css, /\.ss-progression-identity\s*\{[\s\S]*grid-template-columns:\s*38px minmax\(0,\s*1fr\) auto/);
   assert.match(css, /\.ss-progression-avatar\s*\{/);
   assert.match(css, /\.ss-progression-avatar img\s*\{[\s\S]*object-fit:\s*cover/);
-  assert.match(css, /\.ss-progression-rank-chip\s*\{/);
+  assert.match(css, /\.ss-progression-level-chip/);
   assert.match(css, /\.ss-progression-xp-icon/);
-  assert.match(css, /\.ss-progression-rank-chip::before\s*\{/);
-  assert.match(css, /\.ss-progression-rank-chip:hover::before,[\s\S]*\.ss-progression-rank-chip:focus-visible::before\s*\{[\s\S]*animation:\s*ss-progression-rank-chip-sheen 3\.2s/);
+  assert.match(css, /\.ss-progression-level-chip::before,[\s\S]*\.ss-progression-rank-chip::before\s*\{/);
+  assert.match(css, /\.ss-progression-level-chip:hover::before,[\s\S]*\.ss-progression-rank-chip:focus-visible::before\s*\{[\s\S]*animation:\s*ss-progression-rank-chip-sheen 3\.2s/);
   assert.match(css, /@keyframes ss-progression-rank-chip-sheen/);
   assert.match(css, /prefers-reduced-motion:\s*reduce[\s\S]*\.ss-progression-rank-chip::before/);
 });

@@ -29,7 +29,7 @@ flowchart TD
     Shell --> Alerts["Alerts workspace<br/>rules, targets, preferences, history"]
     Shell --> Analytics["Analytics, activity, auth-events"]
     Shell --> Bots["Bots, jobs, runtime status"]
-    Shell --> Progression["XP/rank admin controls<br/>runtime-owned global progression"]
+    Shell --> Progression["XP/level admin controls<br/>runtime-owned global progression"]
     Shell --> Economy["Economy/inventory admin controls<br/>runtime-owned public identity authority"]
     Shell --> Integrations["Creator integrations inspection"]
     Shell --> Settings["Tier, auth, and admin settings"]

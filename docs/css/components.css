@@ -7665,6 +7665,7 @@ body.ss-col-resizing-active {
 }
 
 .ss-progression-xp-value,
+.ss-progression-level-chip,
 .ss-progression-rank-chip {
   display: inline-flex;
   align-items: center;
@@ -7679,12 +7680,14 @@ body.ss-col-resizing-active {
 }
 
 .ss-progression-xp-value--compact,
+.ss-progression-level-chip--compact,
 .ss-progression-rank-chip--compact {
   gap: 6px;
   font-size: 12px;
 }
 
 .ss-progression-xp-icon,
+.ss-progression-level-icon,
 .ss-progression-rank-icon {
   width: 18px;
   height: 18px;
@@ -7693,14 +7696,17 @@ body.ss-col-resizing-active {
 }
 
 .ss-progression-xp-value--compact .ss-progression-xp-icon,
+.ss-progression-level-chip--compact .ss-progression-level-icon,
 .ss-progression-rank-chip--compact .ss-progression-rank-icon {
   width: 16px;
   height: 16px;
   flex-basis: 16px;
 }
 
+.ss-progression-level-chip,
 .ss-progression-rank-chip {
   --ss-rank-color: #8F4700;
+  --ss-level-color: var(--ss-rank-color);
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -7721,13 +7727,16 @@ body.ss-col-resizing-active {
 }
 
 .ss-progression-summary .ss-progression-xp-value,
+.ss-progression-summary .ss-progression-level-chip,
 .ss-progression-summary .ss-progression-rank-chip,
 .ss-progression-summary .ss-progression-xp-value span,
+.ss-progression-summary .ss-progression-level-chip span,
 .ss-progression-summary .ss-progression-rank-chip span {
   display: inline-flex;
   color: inherit;
 }
 
+.ss-progression-level-chip::after,
 .ss-progression-rank-chip::after {
   content: "";
   position: absolute;
@@ -7739,6 +7748,7 @@ body.ss-col-resizing-active {
   z-index: -1;
 }
 
+.ss-progression-level-chip::before,
 .ss-progression-rank-chip::before {
   content: "";
   position: absolute;
@@ -7758,12 +7768,15 @@ body.ss-col-resizing-active {
   z-index: 0;
 }
 
+.ss-progression-level-chip:hover::before,
+.ss-progression-level-chip:focus-visible::before,
 .ss-progression-rank-chip:hover::before,
 .ss-progression-rank-chip:focus-visible::before {
   opacity: 0.3;
   animation: ss-progression-rank-chip-sheen 3.2s cubic-bezier(0.2, 0.8, 0.3, 1) infinite;
 }
 
+.ss-progression-level-chip > *,
 .ss-progression-rank-chip > * {
   position: relative;
   z-index: 1;
@@ -7779,6 +7792,9 @@ body.ss-col-resizing-active {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .ss-progression-level-chip::before,
+  .ss-progression-level-chip:hover::before,
+  .ss-progression-level-chip:focus-visible::before,
   .ss-progression-rank-chip::before,
   .ss-progression-rank-chip:hover::before,
   .ss-progression-rank-chip:focus-visible::before {

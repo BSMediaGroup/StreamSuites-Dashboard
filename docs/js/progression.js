@@ -1,5 +1,5 @@
 /* ============================================================
-   StreamSuites Dashboard - XP / Rank admin controls
+   StreamSuites Dashboard - XP / Level admin controls
    ============================================================ */
 
 (() => {
@@ -127,30 +127,34 @@
     return `/${clean.replace(/^\/+/, "")}`;
   }
 
-  function normalizeRankColor(value) {
+  function normalizeLevelColor(value) {
     const color = text(value);
     return /^#[0-9a-f]{6}$/i.test(color) ? color : "#8F4700";
   }
 
-  function rankPresentation(summary = {}) {
+  function levelPresentation(summary = {}) {
     const rank = summary?.rank && typeof summary.rank === "object" ? summary.rank : summary || {};
     return {
-      code: text(summary.current_rank_code || rank.rank_code || rank.rank_key || "RANK0"),
-      label: text(summary.rank_label || rank.rank_label || rank.label || summary.current_rank_code || rank.rank_code || "Bronze"),
-      color: normalizeRankColor(rank.color_hex || summary.color_hex),
-      icon: normalizeAssetPath(rank.icon_path || summary.icon_path || "assets/games/rank0-bronze.webp")
+      code: text(summary.current_level_code || summary.level_code || rank.level_code || summary.current_rank_code || rank.rank_code || "LEVEL0"),
+      label: text(summary.current_level_label || summary.level_label || rank.level_label || summary.rank_label || rank.rank_label || rank.label || "Stone"),
+      color: normalizeLevelColor(summary.level_color_hex || rank.level_color_hex || rank.color_hex || summary.color_hex || "#38382E"),
+      icon: normalizeAssetPath(summary.level_icon_path || rank.level_icon_path || rank.icon_path || summary.icon_path || "assets/games/00-stone.webp"),
+      visibility: text(summary.level_visibility || rank.level_visibility || "public"),
+      isSecret: Boolean(summary.level_is_secret || rank.level_is_secret)
     };
   }
 
-  function renderRankChip(summary = {}, options = {}) {
-    const rank = rankPresentation(summary);
+  function renderLevelChip(summary = {}, options = {}) {
+    const level = levelPresentation(summary);
     return `
-      <span class="ss-progression-rank-chip${options.compact ? " ss-progression-rank-chip--compact" : ""}" style="--ss-rank-color:${escapeHtml(rank.color)}" title="${escapeHtml(`${rank.label} (${rank.code})`)}">
-        <img class="ss-progression-rank-icon" src="${escapeHtml(rank.icon)}" alt="" loading="lazy" decoding="async" />
-        <span>${escapeHtml(rank.label)}</span>
+      <span class="ss-progression-level-chip ss-progression-rank-chip${options.compact ? " ss-progression-level-chip--compact ss-progression-rank-chip--compact" : ""}${level.isSecret ? " is-secret-level" : ""}" style="--ss-level-color:${escapeHtml(level.color)};--ss-rank-color:${escapeHtml(level.color)}" title="${escapeHtml(`Level ${level.label} (${level.code})`)}">
+        <img class="ss-progression-level-icon ss-progression-rank-icon" src="${escapeHtml(level.icon)}" alt="" loading="lazy" decoding="async" />
+        <span>Level ${escapeHtml(level.label)}</span>
       </span>
     `;
   }
+
+  const renderRankChip = renderLevelChip;
 
   function renderXpValue(value, options = {}) {
     return `
@@ -181,15 +185,15 @@
   function validateRanks() {
     let previous = -1;
     for (const rank of state.ranks) {
-      const threshold = Number(rank.threshold_xp);
-      if (!rank.label || !Number.isInteger(threshold) || threshold < 0) {
-        return "Every rank needs a label and non-negative integer threshold.";
+      const threshold = Number(rank.level_xp_min ?? rank.threshold_xp);
+      if (!(rank.level_label || rank.label) || !Number.isInteger(threshold) || threshold < 0) {
+        return "Every level needs a label and non-negative integer threshold.";
       }
-      if (rank.rank_code === "RANK0" && threshold !== 0) {
-        return "RANK0 threshold must stay 0.";
+      if ((rank.level_code || rank.rank_code) === "LEVEL0" && threshold !== 0) {
+        return "LEVEL0 threshold must stay 0.";
       }
       if (threshold <= previous) {
-        return "Rank thresholds must stay strictly increasing.";
+        return "Level thresholds must stay strictly increasing.";
       }
       previous = threshold;
     }
@@ -199,7 +203,7 @@
   function updateSaveState() {
     const rankError = validateRanks();
     if (el.ranksStatus) {
-      el.ranksStatus.textContent = rankError || (rankDirty() ? "Unsaved rank changes" : "No pending changes");
+      el.ranksStatus.textContent = rankError || (rankDirty() ? "Unsaved level changes" : "No pending changes");
     }
     if (el.ranksSave) {
       el.ranksSave.disabled = Boolean(rankError) || !rankDirty() || state.saving;
@@ -219,17 +223,24 @@
         (rank, index) => `
           <article class="ss-progression-row">
             <div>
-              <strong>${escapeHtml(rank.rank_code)}</strong>
-              ${renderRankChip(rank, { compact: true })}
-              <span class="muted">${escapeHtml(rank.color_hex || "No color configured")} · ${escapeHtml(rank.icon_path || "No icon configured")}</span>
+              <strong>${escapeHtml(rank.level_code || rank.rank_code)}</strong>
+              ${renderLevelChip(rank, { compact: true })}
+              <span class="muted">${escapeHtml(rank.level_visibility || "public")} · ${escapeHtml(rank.level_color_hex || rank.color_hex || "No color configured")} · ${escapeHtml(rank.level_icon_path || rank.icon_path || "No icon configured")}</span>
             </div>
             <div class="ss-form-row">
               <label for="progression-rank-label-${index}">Label</label>
-              <input id="progression-rank-label-${index}" data-rank-index="${index}" data-rank-field="label" value="${escapeHtml(rank.label)}" />
+              <input id="progression-rank-label-${index}" data-rank-index="${index}" data-rank-field="level_label" value="${escapeHtml(rank.level_label || rank.label)}" />
             </div>
             <div class="ss-form-row">
               <label for="progression-rank-threshold-${index}">Threshold XP</label>
-              <input id="progression-rank-threshold-${index}" data-rank-index="${index}" data-rank-field="threshold_xp" type="number" min="0" step="1" value="${escapeHtml(rank.threshold_xp)}" ${rank.rank_code === "RANK0" ? "readonly" : ""} />
+              <input id="progression-rank-threshold-${index}" data-rank-index="${index}" data-rank-field="level_xp_min" type="number" min="0" step="1" value="${escapeHtml(rank.level_xp_min ?? rank.threshold_xp)}" ${(rank.level_code || rank.rank_code) === "LEVEL0" ? "readonly" : ""} />
+            </div>
+            <div class="ss-form-row">
+              <label for="progression-rank-visibility-${index}">Visibility</label>
+              <select id="progression-rank-visibility-${index}" data-rank-index="${index}" data-rank-field="level_visibility">
+                <option value="public" ${(rank.level_visibility || "public") === "public" ? "selected" : ""}>Public</option>
+                <option value="secret" ${(rank.level_visibility || "") === "secret" ? "selected" : ""}>Secret</option>
+              </select>
             </div>
           </article>
         `
@@ -302,7 +313,7 @@
             </span>
             <span>
               <strong>${renderXpValue(summary.xp_total, { compact: true })}</strong>
-              ${renderRankChip(summary, { compact: true })}
+              ${renderLevelChip(summary, { compact: true })}
             </span>
           </button>
         `;
@@ -348,7 +359,7 @@
         <div><span class="muted">Display name</span><strong>${escapeHtml(identity.display_name || summary.display_name || identity.source_display_name || displayCode || fallbackCode)}</strong></div>
         <div><span class="muted">Public identity</span><strong>${escapeHtml(fallbackCode || "Not available")}</strong></div>
         <div><span class="muted">XP total</span><strong>${renderXpValue(summary.xp_total)}</strong></div>
-        <div><span class="muted">Current rank</span><strong>${renderRankChip(summary)}</strong></div>
+        <div><span class="muted">Current level</span><strong>${renderLevelChip(summary)}</strong></div>
         <div><span class="muted">Leaderboard</span><strong>${summary.is_leaderboard_visible ? "Visible" : "Suppressed"}</strong></div>
       </div>
       <form id="progression-manual-form" class="ss-progression-action-form">
@@ -403,7 +414,7 @@
 
   async function loadConfig() {
     const payload = await requestJson(CONFIG_RANKS);
-    state.ranks = clone(payload.rank_definitions || []);
+    state.ranks = clone(payload.level_definitions || payload.rank_definitions || []);
     state.originalRanks = clone(state.ranks);
     state.rules = clone(payload.rules || []);
     state.originalRules = clone(state.rules);
@@ -458,15 +469,15 @@
     try {
       const payload = await requestJson(CONFIG_RANKS, {
         method: "PATCH",
-        body: JSON.stringify({ rank_definitions: state.ranks })
+        body: JSON.stringify({ level_definitions: state.ranks })
       });
-      state.ranks = clone(payload.rank_definitions || []);
+      state.ranks = clone(payload.level_definitions || payload.rank_definitions || []);
       state.originalRanks = clone(state.ranks);
       renderRanks();
-      setStatus("Rank definitions saved.", "success");
+      setStatus("Level definitions saved.", "success");
       if (state.selectedIdentityCode) await loadIdentity(state.selectedIdentityCode);
     } catch (err) {
-      setStatus(err.message || "Rank save failed.", "error");
+      setStatus(err.message || "Level save failed.", "error");
     } finally {
       state.saving = false;
       updateSaveState();
@@ -567,7 +578,15 @@
       const index = Number(target?.dataset?.rankIndex);
       const field = target?.dataset?.rankField;
       if (!Number.isInteger(index) || !field || !state.ranks[index]) return;
-      state.ranks[index][field] = field === "threshold_xp" ? Number(target.value || 0) : target.value;
+      state.ranks[index][field] = field === "threshold_xp" || field === "level_xp_min" ? Number(target.value || 0) : target.value;
+      updateSaveState();
+    });
+    el.ranksList?.addEventListener("change", (event) => {
+      const target = event.target;
+      const index = Number(target?.dataset?.rankIndex);
+      const field = target?.dataset?.rankField;
+      if (!Number.isInteger(index) || !field || !state.ranks[index]) return;
+      state.ranks[index][field] = target.value;
       updateSaveState();
     });
     el.rulesList?.addEventListener("input", (event) => {
