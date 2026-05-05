@@ -147,9 +147,9 @@
   function renderLevelChip(summary = {}, options = {}) {
     const level = levelPresentation(summary);
     return `
-      <span class="ss-progression-level-chip ss-progression-rank-chip${options.compact ? " ss-progression-level-chip--compact ss-progression-rank-chip--compact" : ""}${level.isSecret ? " is-secret-level" : ""}" style="--ss-level-color:${escapeHtml(level.color)};--ss-rank-color:${escapeHtml(level.color)}" title="${escapeHtml(`Level ${level.label} (${level.code})`)}">
+      <span class="ss-progression-level-chip ss-progression-rank-chip${options.compact ? " ss-progression-level-chip--compact ss-progression-rank-chip--compact" : ""}${level.isSecret ? " is-secret-level" : ""}" style="--ss-level-color:${escapeHtml(level.color)};--ss-rank-color:${escapeHtml(level.color)}" title="${escapeHtml(`${level.label} (${level.code})`)}">
         <img class="ss-progression-level-icon ss-progression-rank-icon" src="${escapeHtml(level.icon)}" alt="" loading="lazy" decoding="async" />
-        <span>Level ${escapeHtml(level.label)}</span>
+        <span>${escapeHtml(level.label)}</span>
       </span>
     `;
   }

@@ -58,6 +58,8 @@ test("progression controller uses only runtime authority endpoints", () => {
   assert.match(js, /ss-progression-avatar has-image/);
   assert.match(js, /XP_ICON_PATH = "\/assets\/games\/xpstar\.webp"/);
   assert.match(js, /function renderLevelChip/);
+  assert.match(js, /<span>\$\{escapeHtml\(level\.label\)\}<\/span>/);
+  assert.doesNotMatch(js, /<span>Level \$\{escapeHtml\(level\.label\)\}<\/span>/);
   assert.match(js, /function renderXpValue/);
   assert.match(js, /User code:/);
   assert.match(js, /level_color_hex/);

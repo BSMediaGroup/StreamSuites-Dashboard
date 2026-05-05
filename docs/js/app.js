@@ -1909,7 +1909,7 @@ const SIDEBAR_VIEW_ICON_MAP = Object.freeze({
   "creator-stats": "/assets/icons/ui/statgraph.svg",
   accounts: "/assets/icons/ui/identity.svg",
   progression: "/assets/icons/ui/statgraph.svg",
-  economy: "/assets/games/sscoin.webp",
+  economy: "/assets/icons/economy.svg",
   tiers: "/assets/icons/ui/verifiedbadge.svg",
   audit: "/assets/icons/ui/audit.svg",
   approvals: "/assets/icons/ui/tickbox.svg",
