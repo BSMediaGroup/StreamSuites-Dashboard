@@ -50,6 +50,14 @@ test("economy view exposes required control sections and boundary copy", () => {
   assert.match(html, /data-collapse-target="economy-ledger"/);
   assert.match(html, /data-collapse-target="economy-actions"/);
   assert.match(html, /data-collapse-target="inventory-actions"/);
+  assert.match(html, /id="economy-identity-search-section"/);
+  assert.match(html, /id="economy-wallet-section"/);
+  assert.match(html, /id="economy-ledger-section"/);
+  assert.match(html, /id="economy-actions-section"/);
+  assert.match(html, /id="economy-inventory-section"/);
+  assert.match(html, /id="economy-inventory-events-section"/);
+  assert.match(html, /id="economy-inventory-actions-section"/);
+  assert.match(html, /id="economy-item-definitions-section"/);
   assert.doesNotMatch(html, /<div class="ss-economy-grid">/);
 });
 
@@ -70,6 +78,13 @@ test("economy controller uses runtime authority endpoints and canonical coin ass
   assert.match(js, /Manual inventory actions require a reason/);
   assert.match(js, /Inventory reversal requires an event code and reason/);
   assert.match(js, /Item definition metadata changes require a reason/);
+  assert.match(js, /activeFieldValue\("#economy-actions \.ss-economy-action-grid", "#economy-action-reason"\)/);
+  assert.match(js, /body: JSON\.stringify\(\{ event_type: eventType, amount_delta: amount, reason_text: reason \}\)/);
+  assert.match(js, /activeFieldValue\("#economy-inventory-actions \.ss-economy-action-grid", "#inventory-action-reason"\)/);
+  assert.match(js, /body: JSON\.stringify\(\{ event_type: eventType, item_code: itemCode, quantity_delta: quantity, reason_text: reason \}\)/);
+  assert.match(js, /activeFieldValue\("#economy-actions \.ss-economy-reversal-box", "#economy-reversal-reason"\)/);
+  assert.match(js, /body: JSON\.stringify\(\{ reason_text: reason \}\)/);
+  assert.match(js, /activeFieldValue\("#economy-inventory-actions \.ss-economy-reversal-box", "#inventory-reversal-reason"\)/);
   assert.match(js, /IDENTITY_PAGE_SIZE = 10/);
   assert.match(js, /EVENT_PAGE_SIZE = 8/);
   assert.match(js, /ITEM_PAGE_SIZE = 6/);
@@ -79,6 +94,51 @@ test("economy controller uses runtime authority endpoints and canonical coin ass
   assert.match(js, /is_enabled: readField\("is_enabled"\) !== "false"/);
   assert.doesNotMatch(js, /localStorage/);
   assert.doesNotMatch(js, /storefront|trading|transfer|consume item/i);
+});
+
+test("economy manual and reversal controls read visible reason fields", () => {
+  const js = read("docs/js/economy.js");
+
+  assert.match(js, /function activeFieldValue\(formSelector, fieldSelector\)/);
+  assert.match(js, /const reason = activeFieldValue\("#economy-actions \.ss-economy-action-grid", "#economy-action-reason"\);/);
+  assert.match(js, /const reason = activeFieldValue\("#economy-inventory-actions \.ss-economy-action-grid", "#inventory-action-reason"\);/);
+  assert.match(js, /const reason = activeFieldValue\("#economy-actions \.ss-economy-reversal-box", "#economy-reversal-reason"\);/);
+  assert.match(js, /const reason = activeFieldValue\("#economy-inventory-actions \.ss-economy-reversal-box", "#inventory-reversal-reason"\);/);
+  assert.match(js, /const eventType = activeFieldValue\("#economy-actions \.ss-economy-action-grid", "#economy-action-type"\);/);
+  assert.match(js, /<option value="grant">Grant<\/option><option value="penalty">Penalty<\/option><option value="adjustment">Adjustment<\/option>/);
+  assert.match(js, /const eventType = activeFieldValue\("#economy-inventory-actions \.ss-economy-action-grid", "#inventory-action-type"\);/);
+  assert.match(js, /<option value="grant">Grant<\/option><option value="remove">Remove<\/option><option value="adjustment">Adjust<\/option>/);
+});
+
+test("economy collapsible sections default expanded", () => {
+  const html = read("docs/views/economy.html");
+
+  assert.match(html, /data-collapse-target="economy-ledger" aria-expanded="true">Collapse/);
+  assert.match(html, /data-collapse-target="economy-actions" aria-expanded="true">Collapse/);
+  assert.match(html, /data-collapse-target="inventory-actions" aria-expanded="true">Collapse/);
+  assert.match(html, /data-collapse-target="inventory-events" aria-expanded="true">Collapse/);
+  assert.match(html, /ss-admin-collapse-toggle/);
+  assert.match(html, /ss-admin-collapsible-body/);
+  assert.doesNotMatch(html, /data-collapse-target="(?:economy-ledger|economy-actions|inventory-actions|inventory-events)" aria-expanded="false"/);
+});
+
+test("economy route uses the shared top-bar section anchor row", () => {
+  const app = read("docs/js/app.js");
+
+  assert.match(app, /economy:\s*Object\.freeze\(\{/);
+  assert.match(app, /storageKey:\s*"ss_economy_shell_tabs_collapsed"/);
+  assert.match(app, /toggleLabel:\s*"economy section tabs"/);
+  assert.match(app, /\{ id: "economy-identity-search-section", label: "Identity Search" \}/);
+  assert.match(app, /\{ id: "economy-wallet-section", label: "Wallet" \}/);
+  assert.match(app, /\{ id: "economy-ledger-section", label: "Economy Ledger" \}/);
+  assert.match(app, /\{ id: "economy-actions-section", label: "Manual Economy Actions" \}/);
+  assert.match(app, /\{ id: "economy-inventory-section", label: "Inventory" \}/);
+  assert.match(app, /\{ id: "economy-inventory-events-section", label: "Inventory Events" \}/);
+  assert.match(app, /\{ id: "economy-inventory-actions-section", label: "Manual Inventory Actions" \}/);
+  assert.match(app, /\{ id: "economy-item-definitions-section", label: "Item Definitions" \}/);
+  assert.match(app, /data-accounts-shell-anchor="\$\{section\.id\}"/);
+  assert.match(app, /scrollToAccountsShellSection\(sectionId\)/);
+  assert.match(app, /if \(!resolveSectionShellConfig\(App\.currentView\)\) return;/);
 });
 
 test("economy styling includes compact identity rows and sscoin icon treatment", () => {

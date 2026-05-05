@@ -992,6 +992,20 @@ const SECTION_SHELL_CONFIG = Object.freeze({
       { id: "billing-codes-section", label: "Billing Codes" }
     ])
   }),
+  economy: Object.freeze({
+    storageKey: "ss_economy_shell_tabs_collapsed",
+    toggleLabel: "economy section tabs",
+    sections: Object.freeze([
+      { id: "economy-identity-search-section", label: "Identity Search" },
+      { id: "economy-wallet-section", label: "Wallet" },
+      { id: "economy-ledger-section", label: "Economy Ledger" },
+      { id: "economy-actions-section", label: "Manual Economy Actions" },
+      { id: "economy-inventory-section", label: "Inventory" },
+      { id: "economy-inventory-events-section", label: "Inventory Events" },
+      { id: "economy-inventory-actions-section", label: "Manual Inventory Actions" },
+      { id: "economy-item-definitions-section", label: "Item Definitions" }
+    ])
+  }),
   alerts: Object.freeze({
     storageKey: "ss_alerts_shell_tabs_collapsed",
     toggleLabel: "alerts section tabs",
@@ -1678,7 +1692,7 @@ function bindAccountsShell() {
       { passive: true }
     );
     window.addEventListener("hashchange", () => {
-      if (App.currentView !== "accounts") return;
+      if (!resolveSectionShellConfig(App.currentView)) return;
       refreshAccountsShellSections();
       applyAccountsShellHashTarget();
       updateAccountsShellOverflowState();

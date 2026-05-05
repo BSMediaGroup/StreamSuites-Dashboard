@@ -425,6 +425,12 @@
       .join("") + renderPager("items", pageInfo, "Item page");
   }
 
+  function activeFieldValue(formSelector, fieldSelector) {
+    const form = document.querySelector(formSelector);
+    const field = form?.querySelector(fieldSelector);
+    return text(field?.value);
+  }
+
   function renderAll() {
     renderIdentities();
     renderWallet();
@@ -476,9 +482,9 @@
 
   async function applyEconomyAction() {
     if (!state.selectedIdentityCode || state.saving) return;
-    const eventType = text($("#economy-action-type")?.value);
-    const amount = Number($("#economy-action-amount")?.value || 0);
-    const reason = text($("#economy-action-reason")?.value);
+    const eventType = activeFieldValue("#economy-actions .ss-economy-action-grid", "#economy-action-type");
+    const amount = Number(activeFieldValue("#economy-actions .ss-economy-action-grid", "#economy-action-amount") || 0);
+    const reason = activeFieldValue("#economy-actions .ss-economy-action-grid", "#economy-action-reason");
     if (!reason) {
       setStatus("Manual economy actions require a reason.", "error");
       return;
@@ -500,7 +506,7 @@
   }
 
   async function reverseEconomyEvent(code = text($("#economy-reversal-code")?.value)) {
-    const reason = text($("#economy-reversal-reason")?.value);
+    const reason = activeFieldValue("#economy-actions .ss-economy-reversal-box", "#economy-reversal-reason");
     if (!code || !reason) {
       setStatus("Economy reversal requires an event code and reason.", "error");
       return;
@@ -516,10 +522,10 @@
 
   async function applyInventoryAction() {
     if (!state.selectedIdentityCode || state.saving) return;
-    const eventType = text($("#inventory-action-type")?.value);
-    const itemCode = text($("#inventory-action-item")?.value);
-    const quantity = Number($("#inventory-action-quantity")?.value || 0);
-    const reason = text($("#inventory-action-reason")?.value);
+    const eventType = activeFieldValue("#economy-inventory-actions .ss-economy-action-grid", "#inventory-action-type");
+    const itemCode = activeFieldValue("#economy-inventory-actions .ss-economy-action-grid", "#inventory-action-item");
+    const quantity = Number(activeFieldValue("#economy-inventory-actions .ss-economy-action-grid", "#inventory-action-quantity") || 0);
+    const reason = activeFieldValue("#economy-inventory-actions .ss-economy-action-grid", "#inventory-action-reason");
     if (!reason) {
       setStatus("Manual inventory actions require a reason.", "error");
       return;
@@ -541,7 +547,7 @@
   }
 
   async function reverseInventoryEvent(code = text($("#inventory-reversal-code")?.value)) {
-    const reason = text($("#inventory-reversal-reason")?.value);
+    const reason = activeFieldValue("#economy-inventory-actions .ss-economy-reversal-box", "#inventory-reversal-reason");
     if (!code || !reason) {
       setStatus("Inventory reversal requires an event code and reason.", "error");
       return;
