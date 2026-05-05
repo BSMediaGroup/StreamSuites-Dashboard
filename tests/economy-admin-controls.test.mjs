@@ -36,6 +36,8 @@ test("economy view exposes required control sections and boundary copy", () => {
   const html = read("docs/views/economy.html");
 
   assert.match(html, /Economy Overview \/ Identity Search/);
+  assert.match(html, /Economy Settings/);
+  assert.match(html, /Denominations/);
   assert.match(html, /Wallet Inspector/);
   assert.match(html, /Economy Ledger/);
   assert.match(html, /Manual Economy Actions/);
@@ -51,6 +53,8 @@ test("economy view exposes required control sections and boundary copy", () => {
   assert.match(html, /data-collapse-target="economy-actions"/);
   assert.match(html, /data-collapse-target="inventory-actions"/);
   assert.match(html, /id="economy-identity-search-section"/);
+  assert.match(html, /id="economy-settings-section"/);
+  assert.match(html, /id="economy-denominations-section"/);
   assert.match(html, /id="economy-wallet-section"/);
   assert.match(html, /id="economy-ledger-section"/);
   assert.match(html, /id="economy-actions-section"/);
@@ -61,7 +65,7 @@ test("economy view exposes required control sections and boundary copy", () => {
   assert.doesNotMatch(html, /<div class="ss-economy-grid">/);
 });
 
-test("economy controller uses runtime authority endpoints and canonical coin asset", () => {
+test("economy controller uses runtime authority endpoints and configurable currency model", () => {
   const js = read("docs/js/economy.js");
 
   assert.match(js, /IDENTITIES = "\/api\/admin\/economy\/identities"/);
@@ -70,7 +74,10 @@ test("economy controller uses runtime authority endpoints and canonical coin ass
   assert.match(js, /INVENTORY_EVENT_CREATE = \(identityCode\) => `\/api\/admin\/inventory\/identities\/\$\{encodeURIComponent\(identityCode\)\}\/events`/);
   assert.match(js, /INVENTORY_EVENT_REVERSE = \(eventCode\) => `\/api\/admin\/inventory\/events\/\$\{encodeURIComponent\(eventCode\)\}\/reverse`/);
   assert.match(js, /ITEM_DEFINITIONS = "\/api\/admin\/inventory\/items"/);
-  assert.match(js, /COIN_ICON_PATH = "\/assets\/games\/sscoin\.webp"/);
+  assert.match(js, /ECONOMY_SETTINGS = "\/api\/admin\/economy\/settings"/);
+  assert.match(js, /ECONOMY_DENOMINATIONS = "\/api\/admin\/economy\/denominations"/);
+  assert.match(js, /currency_unit_label:\s*"Credit"/);
+  assert.match(js, /currency_symbol_path:\s*"assets\/games\/currencyunit\.svg"/);
   assert.match(js, /function identityUserCode/);
   assert.match(js, /identity\.user_code \|\|[\s\S]*identity\.canonical_user_code \|\|[\s\S]*identity\.account_user_code/);
   assert.match(js, /Manual economy actions require a reason/);
@@ -78,6 +85,7 @@ test("economy controller uses runtime authority endpoints and canonical coin ass
   assert.match(js, /Manual inventory actions require a reason/);
   assert.match(js, /Inventory reversal requires an event code and reason/);
   assert.match(js, /Item definition metadata changes require a reason/);
+  assert.match(js, /Economy settings changes require a reason/);
   assert.match(js, /activeFieldValue\("#economy-actions \.ss-economy-action-grid", "#economy-action-reason"\)/);
   assert.match(js, /body: JSON\.stringify\(\{ event_type: eventType, amount_delta: amount, reason_text: reason \}\)/);
   assert.match(js, /activeFieldValue\("#economy-inventory-actions \.ss-economy-action-grid", "#inventory-action-reason"\)/);
@@ -90,6 +98,8 @@ test("economy controller uses runtime authority endpoints and canonical coin ass
   assert.match(js, /ITEM_PAGE_SIZE = 6/);
   assert.match(js, /data-economy-page/);
   assert.match(js, /ss-economy-item-editor/);
+  assert.match(js, /renderDenominationBreakdown\(wallet\)/);
+  assert.match(js, /wallet\.balance_total_credits \?\? wallet\.balance_current/);
   assert.match(js, /category: readField\("category"\)/);
   assert.match(js, /is_enabled: readField\("is_enabled"\) !== "false"/);
   assert.doesNotMatch(js, /localStorage/);
@@ -110,6 +120,30 @@ test("economy manual and reversal controls read visible reason fields", () => {
   assert.match(js, /<option value="grant">Grant<\/option><option value="remove">Remove<\/option><option value="adjustment">Adjust<\/option>/);
 });
 
+test("item definition save reads the visible editor reason and sends reason_text", () => {
+  const js = read("docs/js/economy.js");
+
+  assert.match(js, /const row = button\.closest\("\.ss-economy-item-definition"\);/);
+  assert.match(js, /const readField = \(field\) => text\(row\?\.querySelector\(`\[data-item-field="\$\{field\}"\]`\)\?\.value\);/);
+  assert.match(js, /const reason = readField\("reason_text"\);/);
+  assert.match(js, /reason_text: reason/);
+  assert.doesNotMatch(js, /button\.closest\("\[data-item-code\]"\)/);
+});
+
+test("economy settings controls and denomination rendering are wired", () => {
+  const js = read("docs/js/economy.js");
+
+  assert.match(js, /function renderEconomySettings\(\)/);
+  assert.match(js, /id="economy-setting-label"/);
+  assert.match(js, /id="economy-setting-plural"/);
+  assert.match(js, /id="economy-setting-symbol"/);
+  assert.match(js, /id="economy-setting-reason"/);
+  assert.match(js, /body: JSON\.stringify\(\{ settings, reason_text: reason \}\)/);
+  assert.match(js, /function renderDenominations\(\)/);
+  assert.match(js, /always_show_in_balance \? "Always shown in balance" : "Shown only when nonzero"/);
+  assert.match(js, /is_high_value_unit \? "High-value unit" : "Base unit"/);
+});
+
 test("economy collapsible sections default expanded", () => {
   const html = read("docs/views/economy.html");
 
@@ -128,6 +162,8 @@ test("economy route uses the shared top-bar section anchor row", () => {
   assert.match(app, /economy:\s*Object\.freeze\(\{/);
   assert.match(app, /storageKey:\s*"ss_economy_shell_tabs_collapsed"/);
   assert.match(app, /toggleLabel:\s*"economy section tabs"/);
+  assert.match(app, /\{ id: "economy-settings-section", label: "Economy Settings" \}/);
+  assert.match(app, /\{ id: "economy-denominations-section", label: "Denominations" \}/);
   assert.match(app, /\{ id: "economy-identity-search-section", label: "Identity Search" \}/);
   assert.match(app, /\{ id: "economy-wallet-section", label: "Wallet" \}/);
   assert.match(app, /\{ id: "economy-ledger-section", label: "Economy Ledger" \}/);
@@ -141,13 +177,16 @@ test("economy route uses the shared top-bar section anchor row", () => {
   assert.match(app, /if \(!resolveSectionShellConfig\(App\.currentView\)\) return;/);
 });
 
-test("economy styling includes compact identity rows and sscoin icon treatment", () => {
+test("economy styling includes compact identity rows and currency/denomination treatments", () => {
   const css = read("docs/css/components.css");
 
   assert.match(css, /\.ss-economy-identity\s*\{[\s\S]*grid-template-columns:\s*38px minmax\(0,\s*1fr\) auto/);
   assert.match(css, /\.ss-economy-avatar img,[\s\S]*\.ss-economy-item-icon img\s*\{[\s\S]*object-fit:\s*cover/);
-  assert.match(css, /\.ss-economy-coin-icon\s*\{[\s\S]*object-fit:\s*contain/);
-  assert.match(css, /\.ss-economy-coin-value--compact \.ss-economy-coin-icon\s*\{[\s\S]*width:\s*16px/);
+  assert.match(css, /\.ss-economy-currency-symbol\s*\{[\s\S]*mask:\s*var\(--economy-currency-symbol\) center \/ contain no-repeat/);
+  assert.match(css, /\.ss-economy-credit-value--compact \.ss-economy-currency-symbol/);
+  assert.match(css, /\.ss-economy-denomination-breakdown\s*\{/);
+  assert.match(css, /\.ss-economy-denomination-chip img\s*\{[\s\S]*object-fit:\s*contain/);
+  assert.match(css, /\.ss-economy-item-chip\s*\{/);
   assert.match(css, /\.ss-economy-state-reversed,[\s\S]*\.ss-economy-state-reversal/);
   assert.match(css, /\.ss-economy-master-detail\s*\{[\s\S]*grid-template-columns:\s*minmax\(440px,\s*1\.35fr\) minmax\(320px,\s*0\.85fr\)/);
   assert.match(css, /\.ss-economy-item-definition-summary\s*\{[\s\S]*grid-template-columns:\s*38px minmax\(0,\s*1fr\) auto/);

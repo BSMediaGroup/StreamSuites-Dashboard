@@ -5471,29 +5471,93 @@ body.ss-col-resizing-active {
   color: var(--text-secondary);
 }
 
-.ss-economy-coin-value {
+.ss-economy-credit-value {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  color: #ffe8ad;
+  color: var(--text-primary);
   white-space: nowrap;
 }
 
-.ss-economy-coin-value--compact {
+.ss-economy-credit-value--compact {
   font-size: 12px;
 }
 
-.ss-economy-coin-icon {
+.ss-economy-currency-symbol {
   width: 22px;
   height: 22px;
-  object-fit: contain;
   display: block;
-  filter: drop-shadow(0 2px 6px rgba(255, 190, 70, 0.28));
+  flex: 0 0 22px;
+  background: currentColor;
+  -webkit-mask: var(--economy-currency-symbol) center / contain no-repeat;
+  mask: var(--economy-currency-symbol) center / contain no-repeat;
 }
 
-.ss-economy-coin-value--compact .ss-economy-coin-icon {
+.ss-economy-credit-value--compact .ss-economy-currency-symbol,
+.ss-economy-currency-symbol--compact {
   width: 16px;
   height: 16px;
+  flex-basis: 16px;
+}
+
+.ss-economy-credit-value--prominent .ss-economy-currency-symbol {
+  width: 28px;
+  height: 28px;
+  flex-basis: 28px;
+}
+
+.ss-economy-denomination-breakdown {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ss-economy-denomination-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  padding: 4px 9px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+.ss-economy-denomination-chip img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.ss-economy-denomination-row {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.025);
+  padding: 10px;
+}
+
+.ss-economy-denomination-main {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ss-economy-item-chip {
+  justify-self: start;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  padding: 2px 7px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .ss-economy-wallet-head {
@@ -5650,6 +5714,7 @@ body.ss-col-resizing-active {
   .ss-economy-item-editor,
   .ss-economy-action-grid,
   .ss-economy-reversal-box,
+  .ss-economy-denomination-row,
   .ss-economy-kpis {
     grid-template-columns: 1fr;
   }

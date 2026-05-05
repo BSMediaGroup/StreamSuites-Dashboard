@@ -14,7 +14,8 @@
   const INVENTORY_EVENT_REVERSE = (eventCode) => `/api/admin/inventory/events/${encodeURIComponent(eventCode)}/reverse`;
   const ITEM_DEFINITIONS = "/api/admin/inventory/items";
   const ITEM_DEFINITION = (itemCode) => `/api/admin/inventory/items/${encodeURIComponent(itemCode)}`;
-  const COIN_ICON_PATH = "/assets/games/sscoin.webp";
+  const ECONOMY_SETTINGS = "/api/admin/economy/settings";
+  const ECONOMY_DENOMINATIONS = "/api/admin/economy/denominations";
   const IDENTITY_PAGE_SIZE = 10;
   const EVENT_PAGE_SIZE = 8;
   const ITEM_PAGE_SIZE = 6;
@@ -24,6 +25,12 @@
     selectedIdentityCode: "",
     detail: null,
     itemDefinitions: [],
+    economySettings: {
+      currency_unit_label: "Credit",
+      currency_unit_plural_label: "Credits",
+      currency_symbol_path: "assets/games/currencyunit.svg"
+    },
+    denominations: [],
     identityPage: 1,
     economyEventPage: 1,
     inventoryEventPage: 1,
@@ -103,6 +110,18 @@
     return text(value).replace(/[_-]+/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
   }
 
+  function assetPath(path) {
+    const value = text(path);
+    if (!value) return "";
+    return value.startsWith("/") || /^https?:\/\//i.test(value) ? value : `/${value.replace(/^\/+/, "")}`;
+  }
+
+  function currencyPluralLabel(value = 0) {
+    const singular = text(state.economySettings.currency_unit_label) || "Credit";
+    const plural = text(state.economySettings.currency_unit_plural_label) || `${singular}s`;
+    return Math.abs(Number(value || 0)) === 1 ? singular : plural;
+  }
+
   function clampPage(page, totalItems, pageSize) {
     const max = Math.max(1, Math.ceil((totalItems || 0) / pageSize));
     return Math.min(Math.max(1, Number(page) || 1), max);
@@ -161,12 +180,34 @@
     return `<span class="ss-economy-avatar" aria-hidden="true">${escapeHtml((displayName || "?").slice(0, 1).toUpperCase())}</span>`;
   }
 
-  function renderCoinValue(value, options = {}) {
+  function renderCurrencySymbol(options = {}) {
+    const path = assetPath(state.economySettings.currency_symbol_path || "assets/games/currencyunit.svg");
+    return `<span class="ss-economy-currency-symbol${options.compact ? " ss-economy-currency-symbol--compact" : ""}" style="--economy-currency-symbol: url('${escapeHtml(path)}')" aria-hidden="true"></span>`;
+  }
+
+  function renderCreditValue(value, options = {}) {
     return `
-      <span class="ss-economy-coin-value${options.compact ? " ss-economy-coin-value--compact" : ""}">
-        <img class="ss-economy-coin-icon" src="${COIN_ICON_PATH}" alt="" loading="lazy" decoding="async" />
-        <span>${formatNumber(value)} coins</span>
+      <span class="ss-economy-credit-value${options.compact ? " ss-economy-credit-value--compact" : ""}${options.prominent ? " ss-economy-credit-value--prominent" : ""}">
+        ${renderCurrencySymbol(options)}
+        <span>${formatNumber(value)} ${escapeHtml(currencyPluralLabel(value))}</span>
       </span>
+    `;
+  }
+
+  function renderDenominationBreakdown(wallet = {}) {
+    const breakdown = Array.isArray(wallet.denomination_breakdown) ? wallet.denomination_breakdown : [];
+    const visible = breakdown.filter((item) => item?.should_display || item?.always_show_in_balance || Number(item?.count || 0) > 0);
+    if (!visible.length) return `<div class="ss-empty ss-empty-compact">No denomination breakdown returned.</div>`;
+    return `
+      <div class="ss-economy-denomination-breakdown">
+        ${visible.map((item) => `
+          <span class="ss-economy-denomination-chip" title="${escapeHtml(formatNumber(item.value_in_credits || 0))} credits each">
+            <img src="${escapeHtml(assetPath(item.icon_path))}" alt="" loading="lazy" decoding="async" />
+            <strong>${formatNumber(item.count || 0)}</strong>
+            <span>${escapeHtml(Number(item.count || 0) === 1 ? item.label : item.plural_label || item.label)}</span>
+          </span>
+        `).join("")}
+      </div>
     `;
   }
 
@@ -215,7 +256,7 @@
           <span class="muted">${escapeHtml(event.created_at || "No timestamp")}</span>
         </div>
         <div class="ss-economy-event-side">
-          ${renderCoinValue(event.amount_delta || 0, { compact: true })}
+          ${renderCreditValue(event.amount_delta || 0, { compact: true })}
           <span class="ss-economy-state ss-economy-state-${escapeHtml(stateLabel)}">${escapeHtml(formatLabel(stateLabel))}</span>
           <span class="muted">After ${formatNumber(event.balance_after || 0)}</span>
           <button class="ss-btn ss-btn-secondary ss-economy-reverse-economy" type="button" data-event-code="${escapeHtml(event.economy_event_code)}" ${stateLabel !== "active" ? "disabled" : ""}>Reverse</button>
@@ -270,7 +311,7 @@
               <span>Public identity: ${escapeHtml(fallbackCode || identityCode)}</span>
             </span>
             <span class="ss-economy-identity-side">
-              ${renderCoinValue(wallet.balance_current || 0, { compact: true })}
+              ${renderCreditValue(wallet.balance_total_credits ?? wallet.balance_current ?? 0, { compact: true })}
               <span>${formatNumber(entry.inventory_item_count || 0)} items</span>
             </span>
           </button>
@@ -299,12 +340,13 @@
         </div>
       </div>
       <div class="ss-economy-kpis">
-        <div><span>Current balance</span><strong>${renderCoinValue(wallet.balance_current || 0)}</strong></div>
+        <div><span>Total balance</span><strong>${renderCreditValue(wallet.balance_total_credits ?? wallet.balance_current ?? 0, { prominent: true })}</strong></div>
         <div><span>Earned lifetime</span><strong>${formatNumber(wallet.earned_lifetime || 0)}</strong></div>
         <div><span>Spent lifetime</span><strong>${formatNumber(wallet.spent_lifetime || 0)}</strong></div>
         <div><span>Adjusted total</span><strong>${formatNumber(wallet.adjusted_total || 0)}</strong></div>
         <div><span>Last event</span><strong>${escapeHtml(wallet.last_event_at || "No events")}</strong></div>
       </div>
+      ${renderDenominationBreakdown(wallet)}
     `;
   }
 
@@ -341,6 +383,39 @@
     el.inventoryEventsList.innerHTML = inventoryEvents.length
       ? inventoryPage.items.map(renderInventoryEvent).join("") + renderPager("inventory-events", inventoryPage, "Inventory event page")
       : `<div class="ss-empty ss-empty-compact">No inventory history events yet.</div>`;
+  }
+
+  function renderEconomySettings() {
+    if (!el.settingsForm) return;
+    const settings = state.economySettings || {};
+    el.settingsForm.className = "ss-economy-actions";
+    el.settingsForm.innerHTML = `
+      <div class="ss-economy-action-grid ss-economy-settings-grid">
+        <label>Currency unit label<input id="economy-setting-label" type="text" value="${escapeHtml(settings.currency_unit_label || "Credit")}" /></label>
+        <label>Plural label<input id="economy-setting-plural" type="text" value="${escapeHtml(settings.currency_unit_plural_label || "Credits")}" /></label>
+        <label class="ss-economy-wide">Currency symbol path<input id="economy-setting-symbol" type="text" value="${escapeHtml(settings.currency_symbol_path || "assets/games/currencyunit.svg")}" /></label>
+        <label class="ss-economy-wide">Reason<input id="economy-setting-reason" type="text" placeholder="Required settings update note" /></label>
+        <button id="economy-setting-submit" class="ss-btn" type="button">Save economy settings</button>
+      </div>
+    `;
+  }
+
+  function renderDenominations() {
+    if (!el.denominationsList) return;
+    const denominations = Array.isArray(state.denominations) ? state.denominations : [];
+    el.denominationsList.innerHTML = denominations.length
+      ? denominations.map((item) => `
+          <article class="ss-economy-denomination-row">
+            ${renderItemIcon({ label: item.label, icon_path: item.icon_path })}
+            <div class="ss-economy-denomination-main">
+              <strong>${escapeHtml(item.label || item.denomination_code)}</strong>
+              <span class="muted">${escapeHtml(item.denomination_code)} · ${formatNumber(item.value_in_credits || 0)} ${escapeHtml(currencyPluralLabel(item.value_in_credits || 0))}</span>
+              <span class="muted">${item.always_show_in_balance ? "Always shown in balance" : "Shown only when nonzero"} · ${item.is_high_value_unit ? "High-value unit" : "Base unit"} · ${item.is_enabled ? "Enabled" : "Disabled"}</span>
+            </div>
+            <span class="ss-economy-state ${item.is_enabled ? "ss-economy-state-active" : "ss-economy-state-reversed"}">${escapeHtml(item.is_enabled ? "Enabled" : "Disabled")}</span>
+          </article>
+        `).join("")
+      : `<div class="ss-empty">No denomination definitions returned by runtime.</div>`;
   }
 
   function renderActions() {
@@ -392,6 +467,10 @@
       .map((item) => {
         const metadata = item.metadata && typeof item.metadata === "object" ? item.metadata : {};
         const notes = text(metadata.notes || metadata.admin_notes || metadata.description || "");
+        const systemType = text(metadata.system_asset_type || metadata.denomination_code || "");
+        const assetChip = systemType
+          ? (metadata.wallet_balance_unit ? "Currency unit" : "Denomination")
+          : "Inventory item";
         const isEditing = state.itemEditorCode === item.item_code;
         return `
           <article class="ss-economy-item-definition${isEditing ? " is-editing" : ""}" data-item-code="${escapeHtml(item.item_code)}">
@@ -400,6 +479,7 @@
               <div class="ss-economy-item-definition-main">
                 <strong>${escapeHtml(item.label || item.item_code)}</strong>
                 <span class="muted">${escapeHtml(item.item_code)} · ${escapeHtml(item.category || "Uncategorized")} · ${escapeHtml(item.rarity || "No rarity")} · ${item.is_enabled === false ? "disabled" : "enabled"}</span>
+                <span class="ss-economy-item-chip">${escapeHtml(assetChip)}</span>
                 <span class="muted ss-economy-item-path">${escapeHtml(item.icon_path || "No icon path configured")}</span>
                 ${notes ? `<span class="muted ss-economy-item-notes">${escapeHtml(notes)}</span>` : ""}
               </div>
@@ -432,6 +512,8 @@
   }
 
   function renderAll() {
+    renderEconomySettings();
+    renderDenominations();
     renderIdentities();
     renderWallet();
     renderInventory();
@@ -452,6 +534,19 @@
     state.itemDefinitions = Array.isArray(payload.item_definitions) ? payload.item_definitions : [];
   }
 
+  async function loadEconomyConfig() {
+    const [settingsPayload, denominationPayload] = await Promise.all([
+      requestJson(ECONOMY_SETTINGS),
+      requestJson(ECONOMY_DENOMINATIONS)
+    ]);
+    state.economySettings = settingsPayload.settings || state.economySettings;
+    state.denominations = Array.isArray(denominationPayload.denominations)
+      ? denominationPayload.denominations
+      : Array.isArray(settingsPayload.denominations)
+        ? settingsPayload.denominations
+        : [];
+  }
+
   async function loadDetail(identityCode = state.selectedIdentityCode) {
     if (!identityCode) {
       state.detail = null;
@@ -468,7 +563,7 @@
     const token = ++state.token;
     setStatus("Loading economy controls...");
     try {
-      await Promise.all([loadItems(), loadIdentities()]);
+      await Promise.all([loadEconomyConfig(), loadItems(), loadIdentities()]);
       if (state.selectedIdentityCode) {
         await loadDetail(state.selectedIdentityCode);
       }
@@ -561,8 +656,29 @@
     setStatus("Inventory reversal recorded.", "success");
   }
 
+  async function saveEconomySettings() {
+    const reason = activeFieldValue("#economy-settings-form .ss-economy-settings-grid", "#economy-setting-reason");
+    if (!reason) {
+      setStatus("Economy settings changes require a reason.", "error");
+      return;
+    }
+    const settings = {
+      currency_unit_label: activeFieldValue("#economy-settings-form .ss-economy-settings-grid", "#economy-setting-label"),
+      currency_unit_plural_label: activeFieldValue("#economy-settings-form .ss-economy-settings-grid", "#economy-setting-plural"),
+      currency_symbol_path: activeFieldValue("#economy-settings-form .ss-economy-settings-grid", "#economy-setting-symbol")
+    };
+    const payload = await requestJson(ECONOMY_SETTINGS, {
+      method: "PATCH",
+      body: JSON.stringify({ settings, reason_text: reason })
+    });
+    state.economySettings = payload.settings || state.economySettings;
+    await loadDetail();
+    renderAll();
+    setStatus("Economy settings saved.", "success");
+  }
+
   async function saveItemDefinition(button) {
-    const row = button.closest("[data-item-code]");
+    const row = button.closest(".ss-economy-item-definition");
     const itemCode = text(row?.dataset?.itemCode);
     const readField = (field) => text(row?.querySelector(`[data-item-field="${field}"]`)?.value);
     const reason = readField("reason_text");
@@ -685,6 +801,14 @@
         }
         return;
       }
+      if (event.target.closest?.("#economy-setting-submit")) {
+        try {
+          await saveEconomySettings();
+        } catch (err) {
+          setStatus(err?.message || "Economy settings save failed.", "error");
+        }
+        return;
+      }
       const itemSaveButton = event.target.closest?.(".ss-economy-item-save");
       if (itemSaveButton) {
         try {
@@ -718,6 +842,8 @@
     el.inventoryActions = $("economy-inventory-actions");
     el.inventoryEventsList = $("economy-inventory-events-list");
     el.itemDefinitions = $("economy-item-definitions");
+    el.settingsForm = $("economy-settings-form");
+    el.denominationsList = $("economy-denominations-list");
   }
 
   window.EconomyInventoryAdminView = {

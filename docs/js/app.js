@@ -996,6 +996,8 @@ const SECTION_SHELL_CONFIG = Object.freeze({
     storageKey: "ss_economy_shell_tabs_collapsed",
     toggleLabel: "economy section tabs",
     sections: Object.freeze([
+      { id: "economy-settings-section", label: "Economy Settings" },
+      { id: "economy-denominations-section", label: "Denominations" },
       { id: "economy-identity-search-section", label: "Identity Search" },
       { id: "economy-wallet-section", label: "Wallet" },
       { id: "economy-ledger-section", label: "Economy Ledger" },
