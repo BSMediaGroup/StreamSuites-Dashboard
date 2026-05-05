@@ -1909,6 +1909,7 @@ const SIDEBAR_VIEW_ICON_MAP = Object.freeze({
   "creator-stats": "/assets/icons/ui/statgraph.svg",
   accounts: "/assets/icons/ui/identity.svg",
   progression: "/assets/icons/ui/statgraph.svg",
+  economy: "/assets/games/sscoin.webp",
   tiers: "/assets/icons/ui/verifiedbadge.svg",
   audit: "/assets/icons/ui/audit.svg",
   approvals: "/assets/icons/ui/tickbox.svg",
@@ -2734,6 +2735,11 @@ registerView("progression", {
   templatePath: "progression",
   onLoad: () => window.ProgressionAdminView?.init?.(),
   onUnload: () => window.ProgressionAdminView?.destroy?.()
+});
+registerView("economy", {
+  templatePath: "economy",
+  onLoad: () => window.EconomyInventoryAdminView?.init?.(),
+  onUnload: () => window.EconomyInventoryAdminView?.destroy?.()
 });
 registerView("api-usage", {
   templatePath: "api-usage",

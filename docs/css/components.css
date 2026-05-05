@@ -5338,6 +5338,267 @@ body.ss-col-resizing-active {
 }
 
 /* ----------------------------------------------------------------------
+   Economy / Inventory Admin
+   ---------------------------------------------------------------------- */
+
+.ss-economy-admin {
+  display: grid;
+  gap: 14px;
+}
+
+.ss-economy-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.92fr);
+  gap: 14px;
+}
+
+.ss-economy-search-row,
+.ss-economy-action-grid,
+.ss-economy-reversal-box {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.ss-economy-action-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ss-economy-wide {
+  grid-column: 1 / -1;
+}
+
+.ss-economy-list,
+.ss-economy-actions,
+.ss-economy-inspector {
+  display: grid;
+  gap: 10px;
+}
+
+.ss-economy-identity {
+  width: 100%;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--text-primary);
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ss-economy-identity:hover,
+.ss-economy-identity:focus-visible,
+.ss-economy-identity.is-selected {
+  border-color: rgba(255, 210, 110, 0.44);
+  background: rgba(255, 210, 110, 0.07);
+  outline: 0;
+}
+
+.ss-economy-avatar,
+.ss-economy-item-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffe29a;
+  font-size: 13px;
+  font-weight: 700;
+  overflow: hidden;
+}
+
+.ss-economy-avatar img,
+.ss-economy-item-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ss-economy-identity-main,
+.ss-economy-identity-side,
+.ss-economy-event-main,
+.ss-economy-event-side {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ss-economy-identity-main span,
+.ss-economy-event-main span {
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.ss-economy-identity-side {
+  justify-items: end;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.ss-economy-coin-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #ffe8ad;
+  white-space: nowrap;
+}
+
+.ss-economy-coin-value--compact {
+  font-size: 12px;
+}
+
+.ss-economy-coin-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba(255, 190, 70, 0.28));
+}
+
+.ss-economy-coin-value--compact .ss-economy-coin-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.ss-economy-wallet-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.ss-economy-wallet-head > div {
+  display: grid;
+  gap: 3px;
+}
+
+.ss-economy-kpis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.ss-economy-kpis div,
+.ss-economy-item-row,
+.ss-economy-event,
+.ss-economy-item-definition {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.025);
+  padding: 10px;
+}
+
+.ss-economy-kpis span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ss-economy-kpis strong {
+  font-size: 15px;
+}
+
+.ss-economy-event,
+.ss-economy-item-row,
+.ss-economy-item-definition {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.ss-economy-item-row,
+.ss-economy-item-definition {
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+}
+
+.ss-economy-item-definition {
+  grid-template-columns: 38px minmax(0, 1fr);
+}
+
+.ss-economy-item-definition label,
+.ss-economy-actions label {
+  display: grid;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.ss-economy-item-definition input,
+.ss-economy-actions input,
+.ss-economy-actions select {
+  width: 100%;
+}
+
+.ss-economy-event-side {
+  justify-items: end;
+}
+
+.ss-economy-state {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 2px 7px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ss-economy-state-active {
+  color: #b9efc9;
+  border-color: rgba(95, 203, 126, 0.42);
+}
+
+.ss-economy-state-reversed,
+.ss-economy-state-reversal {
+  color: #ffdfad;
+  border-color: rgba(255, 205, 99, 0.45);
+}
+
+.ss-economy-reversal-box {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 10px;
+  margin-top: 2px;
+}
+
+@media (max-width: 1120px) {
+  .ss-economy-grid,
+  .ss-economy-search-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .ss-economy-identity,
+  .ss-economy-event,
+  .ss-economy-item-row,
+  .ss-economy-item-definition,
+  .ss-economy-action-grid,
+  .ss-economy-reversal-box,
+  .ss-economy-kpis {
+    grid-template-columns: 1fr;
+  }
+
+  .ss-economy-identity-side,
+  .ss-economy-event-side {
+    justify-items: start;
+  }
+}
+
+/* ----------------------------------------------------------------------
    Creator Stats (Admin)
    ---------------------------------------------------------------------- */
 

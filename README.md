@@ -23,13 +23,14 @@ Admin-facing StreamSuites surface deployed to Cloudflare Pages at `https://admin
 ```mermaid
 flowchart TD
     Admin["Admin operator"] --> Gate["Admin session gate<br/>docs/auth + admin-gate.js"]
-    Gate --> Shell["Dashboard shell and routes<br/>/overview /accounts /progression /alerts /analytics /bots /settings /permissions /profiles/integrations"]
+    Gate --> Shell["Dashboard shell and routes<br/>/overview /accounts /progression /economy /alerts /analytics /bots /settings /permissions /profiles/integrations"]
 
     Shell --> Accounts["Accounts and creators views"]
     Shell --> Alerts["Alerts workspace<br/>rules, targets, preferences, history"]
     Shell --> Analytics["Analytics, activity, auth-events"]
     Shell --> Bots["Bots, jobs, runtime status"]
     Shell --> Progression["XP/rank admin controls<br/>runtime-owned global progression"]
+    Shell --> Economy["Economy/inventory admin controls<br/>runtime-owned public identity authority"]
     Shell --> Integrations["Creator integrations inspection"]
     Shell --> Settings["Tier, auth, and admin settings"]
 
@@ -153,6 +154,7 @@ StreamSuites-Dashboard/
 │   │   ├── bots.js
 │   │   ├── creator-integrations.js
 │   │   ├── creators.js
+│   │   ├── economy.js
 │   │   ├── jobs.js
 │   │   ├── notifications.js
 │   │   ├── overview.js
@@ -196,6 +198,7 @@ StreamSuites-Dashboard/
 │       ├── bots.html
 │       ├── creator-integrations.html
 │       ├── creators.html
+│       ├── economy.html
 │       ├── jobs.html
 │       ├── notifications.html
 │       ├── overview.html
@@ -226,6 +229,7 @@ StreamSuites-Dashboard/
 │   └── platform/
 ├── tests/
 │   ├── admin-auth-turnstile.test.mjs
+│   ├── economy-admin-controls.test.mjs
 │   ├── jobs-runtime-authority.test.mjs
 │   ├── public-authority-approvals.test.mjs
 │   ├── notifications-runtime-authority.test.mjs
