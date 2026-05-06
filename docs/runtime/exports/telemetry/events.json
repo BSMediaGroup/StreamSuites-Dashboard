@@ -1,18 +1,7 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-05-02T14:35:43.679710Z",
+  "generated_at": "2026-05-06T17:42:26.953839Z",
   "events": [
-    {
-      "timestamp": "2026-01-22T05:53:46Z",
-      "source": "auth",
-      "severity": "info",
-      "message": "Auth event: token_invalidated user=user_code:hVRt8Qp result=sent",
-      "event_type": "token_invalidated",
-      "email_type": null,
-      "user_identifier": "user_code:hVRt8Qp",
-      "provider_message_id": null,
-      "result": "sent"
-    },
     {
       "timestamp": "2026-01-22T05:54:23Z",
       "source": "auth",
@@ -2192,7 +2181,18 @@
       "result": "success"
     },
     {
-      "timestamp": "2026-04-30T01:13:10.623431Z",
+      "timestamp": "2026-05-06T11:06:18Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
+      "event_type": "session_issued",
+      "email_type": "github",
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-05-06T13:47:18.754099Z",
       "source": "system",
       "severity": "info",
       "message": "Runtime boot sequence started"
