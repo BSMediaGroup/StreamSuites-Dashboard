@@ -351,6 +351,8 @@
       </div>
       <div class="ss-economy-kpis">
         <div><span>Total balance</span><strong>${renderCreditValue(wallet.balance_total_credits ?? wallet.balance_current ?? 0, { prominent: true })}</strong></div>
+        <div><span>Cash balance</span><strong>${renderCreditValue(wallet.cash_balance_credits ?? wallet.balance_current ?? 0)}</strong></div>
+        <div><span>Held item value</span><strong>${renderCreditValue(wallet.held_value_credits ?? 0)}</strong></div>
         <div><span>Earned lifetime</span><strong>${formatNumber(wallet.earned_lifetime || 0)}</strong></div>
         <div><span>Spent lifetime</span><strong>${formatNumber(wallet.spent_lifetime || 0)}</strong></div>
         <div><span>Adjusted total</span><strong>${formatNumber(wallet.adjusted_total || 0)}</strong></div>

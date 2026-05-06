@@ -108,6 +108,8 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /ss-economy-item-editor/);
   assert.match(js, /renderDenominationBreakdown\(wallet\)/);
   assert.match(js, /wallet\.balance_total_credits \?\? wallet\.balance_current/);
+  assert.match(js, /wallet\.cash_balance_credits \?\? wallet\.balance_current/);
+  assert.match(js, /wallet\.held_value_credits \?\? 0/);
   assert.match(js, /category: readField\("category"\)/);
   assert.match(js, /categoryPresets/);
   assert.match(js, /rarityPresets/);
