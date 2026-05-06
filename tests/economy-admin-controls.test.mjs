@@ -45,6 +45,9 @@ test("economy view exposes required control sections and boundary copy", () => {
   assert.match(html, /Manual Inventory Actions/);
   assert.match(html, /Inventory Events/);
   assert.match(html, /Item Definitions/);
+  assert.match(html, /Danger Zone/);
+  assert.match(html, /id="economy-item-create-form"/);
+  assert.match(html, /id="economy-danger-zone"/);
   assert.match(html, /Reversal rows are new ledger events/);
   assert.match(html, /No storefront, trading, transfers, consumption loop/);
   assert.match(html, /ss-admin-control-section/);
@@ -62,6 +65,7 @@ test("economy view exposes required control sections and boundary copy", () => {
   assert.match(html, /id="economy-inventory-events-section"/);
   assert.match(html, /id="economy-inventory-actions-section"/);
   assert.match(html, /id="economy-item-definitions-section"/);
+  assert.match(html, /id="economy-danger-zone-section"/);
   assert.doesNotMatch(html, /<div class="ss-economy-grid">/);
 });
 
@@ -76,6 +80,8 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /ITEM_DEFINITIONS = "\/api\/admin\/inventory\/items"/);
   assert.match(js, /ECONOMY_SETTINGS = "\/api\/admin\/economy\/settings"/);
   assert.match(js, /ECONOMY_DENOMINATIONS = "\/api\/admin\/economy\/denominations"/);
+  assert.match(js, /PUBLIC_GAME_BACKUP = "\/api\/admin\/public-game-authority\/backup"/);
+  assert.match(js, /PUBLIC_GAME_RESET = "\/api\/admin\/public-game-authority\/reset"/);
   assert.match(js, /currency_unit_label:\s*"Credit"/);
   assert.match(js, /currency_symbol_path:\s*"assets\/games\/currencyunit\.svg"/);
   assert.match(js, /function identityUserCode/);
@@ -85,6 +91,8 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /Manual inventory actions require a reason/);
   assert.match(js, /Inventory reversal requires an event code and reason/);
   assert.match(js, /Item definition metadata changes require a reason/);
+  assert.match(js, /New item definitions require a reason/);
+  assert.match(js, /Reset requires the exact confirmation phrase and a reason/);
   assert.match(js, /Economy settings changes require a reason/);
   assert.match(js, /activeFieldValue\("#economy-actions \.ss-economy-action-grid", "#economy-action-reason"\)/);
   assert.match(js, /body: JSON\.stringify\(\{ event_type: eventType, amount_delta: amount, reason_text: reason \}\)/);
@@ -101,6 +109,10 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /renderDenominationBreakdown\(wallet\)/);
   assert.match(js, /wallet\.balance_total_credits \?\? wallet\.balance_current/);
   assert.match(js, /category: readField\("category"\)/);
+  assert.match(js, /categoryPresets/);
+  assert.match(js, /rarityPresets/);
+  assert.match(js, /function presetOptions/);
+  assert.match(js, /item_code: text\(\$\(("#economy-item-create-code"|'economy-item-create-code')\)/);
   assert.match(js, /is_enabled: readField\("is_enabled"\) !== "false"/);
   assert.doesNotMatch(js, /localStorage/);
   assert.doesNotMatch(js, /storefront|trading|transfer|consume item/i);
@@ -127,6 +139,8 @@ test("item definition save reads the visible editor reason and sends reason_text
   assert.match(js, /const readField = \(field\) => text\(row\?\.querySelector\(`\[data-item-field="\$\{field\}"\]`\)\?\.value\);/);
   assert.match(js, /const reason = readField\("reason_text"\);/);
   assert.match(js, /reason_text: reason/);
+  assert.match(js, /Category<select data-item-field="category">/);
+  assert.match(js, /Rarity<select data-item-field="rarity">/);
   assert.doesNotMatch(js, /button\.closest\("\[data-item-code\]"\)/);
 });
 
@@ -172,6 +186,7 @@ test("economy route uses the shared top-bar section anchor row", () => {
   assert.match(app, /\{ id: "economy-inventory-events-section", label: "Inventory Events" \}/);
   assert.match(app, /\{ id: "economy-inventory-actions-section", label: "Manual Inventory Actions" \}/);
   assert.match(app, /\{ id: "economy-item-definitions-section", label: "Item Definitions" \}/);
+  assert.match(app, /\{ id: "economy-danger-zone-section", label: "Danger Zone" \}/);
   assert.match(app, /data-accounts-shell-anchor="\$\{section\.id\}"/);
   assert.match(app, /scrollToAccountsShellSection\(sectionId\)/);
   assert.match(app, /if \(!resolveSectionShellConfig\(App\.currentView\)\) return;/);

@@ -223,8 +223,12 @@
     let previous = -1;
     for (const rank of state.ranks) {
       const threshold = Number(rank.level_xp_min ?? rank.threshold_xp);
+      const color = text(rank.level_color_hex || rank.color_hex);
       if (!(rank.level_label || rank.label) || !Number.isInteger(threshold) || threshold < 0) {
         return "Every level needs a label and non-negative integer threshold.";
+      }
+      if (!/^#[0-9a-f]{6}$/i.test(color)) {
+        return "Every level color must be a valid #RRGGBB hex value.";
       }
       if ((rank.level_code || rank.rank_code) === "LEVEL0" && threshold !== 0) {
         return "LEVEL0 threshold must stay 0.";
@@ -282,6 +286,18 @@
                 <option value="public" ${(rank.level_visibility || "public") === "public" ? "selected" : ""}>Public</option>
                 <option value="secret" ${(rank.level_visibility || "") === "secret" ? "selected" : ""}>Secret</option>
               </select>
+            </div>
+            <div class="ss-form-row">
+              <label for="progression-rank-color-picker-${index}">Color</label>
+              <input id="progression-rank-color-picker-${index}" data-rank-index="${index}" data-rank-field="level_color_hex" data-rank-color-kind="picker" type="color" value="${escapeHtml(normalizeLevelColor(rank.level_color_hex || rank.color_hex))}" />
+            </div>
+            <div class="ss-form-row">
+              <label for="progression-rank-color-text-${index}">Hex color</label>
+              <input id="progression-rank-color-text-${index}" data-rank-index="${index}" data-rank-field="level_color_hex" data-rank-color-kind="text" value="${escapeHtml(normalizeLevelColor(rank.level_color_hex || rank.color_hex))}" />
+            </div>
+            <div class="ss-form-row ss-progression-wide">
+              <label for="progression-rank-icon-${index}">Icon asset path</label>
+              <input id="progression-rank-icon-${index}" data-rank-index="${index}" data-rank-field="level_icon_path" value="${escapeHtml(rank.level_icon_path || rank.icon_path || "")}" />
             </div>
           </article>
         `;
@@ -649,6 +665,11 @@
       const field = target?.dataset?.rankField;
       if (!Number.isInteger(index) || !field || !state.ranks[index]) return;
       state.ranks[index][field] = field === "threshold_xp" || field === "level_xp_min" ? Number(target.value || 0) : target.value;
+      if (field === "level_color_hex" && /^#[0-9a-f]{6}$/i.test(target.value)) {
+        el.ranksList.querySelectorAll(`[data-rank-index="${index}"][data-rank-field="level_color_hex"]`).forEach((input) => {
+          if (input !== target) input.value = target.value;
+        });
+      }
       updateSaveState();
     });
     el.ranksList?.addEventListener("change", (event) => {

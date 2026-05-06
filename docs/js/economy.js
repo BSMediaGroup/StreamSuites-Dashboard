@@ -16,6 +16,8 @@
   const ITEM_DEFINITION = (itemCode) => `/api/admin/inventory/items/${encodeURIComponent(itemCode)}`;
   const ECONOMY_SETTINGS = "/api/admin/economy/settings";
   const ECONOMY_DENOMINATIONS = "/api/admin/economy/denominations";
+  const PUBLIC_GAME_BACKUP = "/api/admin/public-game-authority/backup";
+  const PUBLIC_GAME_RESET = "/api/admin/public-game-authority/reset";
   const IDENTITY_PAGE_SIZE = 10;
   const EVENT_PAGE_SIZE = 8;
   const ITEM_PAGE_SIZE = 6;
@@ -25,6 +27,8 @@
     selectedIdentityCode: "",
     detail: null,
     itemDefinitions: [],
+    categoryPresets: [],
+    rarityPresets: [],
     economySettings: {
       currency_unit_label: "Credit",
       currency_unit_plural_label: "Credits",
@@ -228,6 +232,12 @@
   function itemIcon(item = {}) {
     const definition = item.definition || itemDefinitionFor(item.item_code) || {};
     return text(definition.icon_path || item.icon_path);
+  }
+
+  function presetOptions(values = [], selected = "") {
+    return (Array.isArray(values) ? values : [])
+      .map((value) => `<option value="${escapeHtml(value)}" ${text(value) === text(selected) ? "selected" : ""}>${escapeHtml(value)}</option>`)
+      .join("");
   }
 
   function renderItemIcon(item = {}) {
@@ -445,7 +455,7 @@
     el.inventoryActions.innerHTML = `
       <div class="ss-economy-action-grid">
         <label>Action<select id="inventory-action-type"><option value="grant">Grant</option><option value="remove">Remove</option><option value="adjustment">Adjust</option></select></label>
-        <label>Item<select id="inventory-action-item">${state.itemDefinitions.map((item) => `<option value="${escapeHtml(item.item_code)}">${escapeHtml(item.label || item.item_code)}</option>`).join("")}</select></label>
+        <label>Item<select id="inventory-action-item">${state.itemDefinitions.map((item) => `<option value="${escapeHtml(item.item_code)}">${escapeHtml(item.item_code)} - ${escapeHtml(item.label || item.item_code)}</option>`).join("")}</select></label>
         <label>Quantity<input id="inventory-action-quantity" type="number" step="1" value="0" /></label>
         <label class="ss-economy-wide">Reason<input id="inventory-action-reason" type="text" placeholder="Required manual action note" /></label>
         <button id="inventory-action-submit" class="ss-btn" type="button">Apply inventory action</button>
@@ -478,7 +488,7 @@
               ${renderItemIcon(item)}
               <div class="ss-economy-item-definition-main">
                 <strong>${escapeHtml(item.label || item.item_code)}</strong>
-                <span class="muted">${escapeHtml(item.item_code)} · ${escapeHtml(item.category || "Uncategorized")} · ${escapeHtml(item.rarity || "No rarity")} · ${item.is_enabled === false ? "disabled" : "enabled"}</span>
+                <span class="muted">item_code: ${escapeHtml(item.item_code)} · ${escapeHtml(item.category || "Uncategorized")} · ${escapeHtml(item.rarity || "No rarity")} · ${item.is_enabled === false ? "disabled" : "enabled"}</span>
                 <span class="ss-economy-item-chip">${escapeHtml(assetChip)}</span>
                 <span class="muted ss-economy-item-path">${escapeHtml(item.icon_path || "No icon path configured")}</span>
                 ${notes ? `<span class="muted ss-economy-item-notes">${escapeHtml(notes)}</span>` : ""}
@@ -489,8 +499,8 @@
               isEditing
                 ? `<div class="ss-economy-item-editor">
                     <label>Label<input data-item-field="label" value="${escapeHtml(item.label || "")}" /></label>
-                    <label>Category<input data-item-field="category" value="${escapeHtml(item.category || "")}" /></label>
-                    <label>Rarity<input data-item-field="rarity" value="${escapeHtml(item.rarity || "")}" /></label>
+                    <label>Category<select data-item-field="category">${presetOptions(state.categoryPresets, item.category || "")}</select></label>
+                    <label>Rarity<select data-item-field="rarity">${presetOptions(state.rarityPresets, item.rarity || "")}</select></label>
                     <label>Enabled<select data-item-field="is_enabled"><option value="true" ${item.is_enabled === false ? "" : "selected"}>Enabled</option><option value="false" ${item.is_enabled === false ? "selected" : ""}>Disabled</option></select></label>
                     <label class="ss-economy-wide">Icon path<input data-item-field="icon_path" value="${escapeHtml(item.icon_path || "")}" placeholder="assets/games/sscoin.webp" /></label>
                     <label class="ss-economy-wide">Metadata notes<textarea data-item-field="metadata_notes" rows="3">${escapeHtml(notes)}</textarea></label>
@@ -503,6 +513,39 @@
         `;
       })
       .join("") + renderPager("items", pageInfo, "Item page");
+  }
+
+  function renderItemCreateForm() {
+    if (!el.itemCreateForm) return;
+    el.itemCreateForm.innerHTML = `
+      <div class="ss-economy-action-grid ss-economy-item-create-grid">
+        <label>Item code<input id="economy-item-create-code" type="text" placeholder="category.item_name" /></label>
+        <label>Label<input id="economy-item-create-label" type="text" placeholder="Display label" /></label>
+        <label>Category<select id="economy-item-create-category">${presetOptions(state.categoryPresets)}</select></label>
+        <label>Rarity<select id="economy-item-create-rarity">${presetOptions(state.rarityPresets)}</select></label>
+        <label>Enabled<select id="economy-item-create-enabled"><option value="true">Enabled</option><option value="false">Disabled</option></select></label>
+        <label class="ss-economy-wide">Icon path<input id="economy-item-create-icon" type="text" placeholder="assets/games/example.webp" /></label>
+        <label class="ss-economy-wide">Metadata notes<textarea id="economy-item-create-notes" rows="3"></textarea></label>
+        <label class="ss-economy-wide">Reason<input id="economy-item-create-reason" type="text" placeholder="Required creation note" /></label>
+        <button id="economy-item-create-submit" class="ss-btn" type="button">Create item definition</button>
+      </div>
+    `;
+  }
+
+  function renderDangerZone() {
+    if (!el.dangerZone) return;
+    el.dangerZone.innerHTML = `
+      <div class="ss-alert ss-alert-danger">
+        Export creates a JSON backup of XP, economy, inventory, item definition, and denomination tables. Reset creates append-only correction events to zero selected state; identity/profile records are not changed.
+      </div>
+      <div class="ss-economy-action-grid">
+        <label>Scope<select id="economy-danger-scope"><option value="all">All public game state</option><option value="progression">XP / progression only</option><option value="economy">Wallet economy only</option><option value="inventory">Inventory only</option></select></label>
+        <label class="ss-economy-wide">Reason<input id="economy-danger-reason" type="text" placeholder="Required reset reason" /></label>
+        <label class="ss-economy-wide">Type RESET PUBLIC GAME STATE<input id="economy-danger-confirmation" type="text" autocomplete="off" /></label>
+        <button id="economy-backup-export" class="ss-btn ss-btn-secondary" type="button">Export backup JSON</button>
+        <button id="economy-reset-submit" class="ss-btn ss-btn-danger" type="button">Reset selected state</button>
+      </div>
+    `;
   }
 
   function activeFieldValue(formSelector, fieldSelector) {
@@ -520,6 +563,8 @@
     renderEvents();
     renderActions();
     renderItemDefinitions();
+    renderItemCreateForm();
+    renderDangerZone();
   }
 
   async function loadIdentities() {
@@ -532,6 +577,8 @@
   async function loadItems() {
     const payload = await requestJson(ITEM_DEFINITIONS);
     state.itemDefinitions = Array.isArray(payload.item_definitions) ? payload.item_definitions : [];
+    state.categoryPresets = Array.isArray(payload.category_presets) ? payload.category_presets : [];
+    state.rarityPresets = Array.isArray(payload.rarity_presets) ? payload.rarity_presets : [];
   }
 
   async function loadEconomyConfig() {
@@ -705,6 +752,65 @@
     setStatus("Item definition metadata saved.", "success");
   }
 
+  async function createItemDefinition() {
+    const reason = text($("#economy-item-create-reason")?.value);
+    if (!reason) {
+      setStatus("New item definitions require a reason.", "error");
+      return;
+    }
+    await requestJson(ITEM_DEFINITIONS, {
+      method: "POST",
+      body: JSON.stringify({
+        item: {
+          item_code: text($("#economy-item-create-code")?.value),
+          label: text($("#economy-item-create-label")?.value),
+          category: text($("#economy-item-create-category")?.value),
+          rarity: text($("#economy-item-create-rarity")?.value),
+          icon_path: text($("#economy-item-create-icon")?.value),
+          is_enabled: text($("#economy-item-create-enabled")?.value) !== "false",
+          metadata: { notes: text($("#economy-item-create-notes")?.value) }
+        },
+        reason_text: reason
+      })
+    });
+    await loadItems();
+    renderAll();
+    setStatus("Item definition created.", "success");
+  }
+
+  async function exportBackup() {
+    const payload = await requestJson(PUBLIC_GAME_BACKUP);
+    const blob = new Blob([JSON.stringify(payload.backup || payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `streamsuites-public-game-backup-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setStatus("Public game authority backup exported.", "success");
+  }
+
+  async function resetPublicGameState() {
+    const confirmation = text($("#economy-danger-confirmation")?.value);
+    const reason = text($("#economy-danger-reason")?.value);
+    if (confirmation !== "RESET PUBLIC GAME STATE" || !reason) {
+      setStatus("Reset requires the exact confirmation phrase and a reason.", "error");
+      return;
+    }
+    await requestJson(PUBLIC_GAME_RESET, {
+      method: "POST",
+      body: JSON.stringify({
+        scope: text($("#economy-danger-scope")?.value) || "all",
+        confirmation,
+        reason_text: reason
+      })
+    });
+    await refresh();
+    setStatus("Reset correction events were recorded.", "success");
+  }
+
   function setCollapsed(sectionKey, collapsed) {
     const section = document.querySelector(`[data-collapsible-section="${sectionKey}"]`);
     const button = document.querySelector(`[data-collapse-target="${sectionKey}"]`);
@@ -809,6 +915,30 @@
         }
         return;
       }
+      if (event.target.closest?.("#economy-item-create-submit")) {
+        try {
+          await createItemDefinition();
+        } catch (err) {
+          setStatus(err?.message || "Item definition create failed.", "error");
+        }
+        return;
+      }
+      if (event.target.closest?.("#economy-backup-export")) {
+        try {
+          await exportBackup();
+        } catch (err) {
+          setStatus(err?.message || "Backup export failed.", "error");
+        }
+        return;
+      }
+      if (event.target.closest?.("#economy-reset-submit")) {
+        try {
+          await resetPublicGameState();
+        } catch (err) {
+          setStatus(err?.message || "Reset failed.", "error");
+        }
+        return;
+      }
       const itemSaveButton = event.target.closest?.(".ss-economy-item-save");
       if (itemSaveButton) {
         try {
@@ -842,6 +972,8 @@
     el.inventoryActions = $("economy-inventory-actions");
     el.inventoryEventsList = $("economy-inventory-events-list");
     el.itemDefinitions = $("economy-item-definitions");
+    el.itemCreateForm = $("economy-item-create-form");
+    el.dangerZone = $("economy-danger-zone");
     el.settingsForm = $("economy-settings-form");
     el.denominationsList = $("economy-denominations-list");
   }

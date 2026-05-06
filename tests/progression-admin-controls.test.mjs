@@ -68,6 +68,10 @@ test("progression controller uses only runtime authority endpoints", () => {
   assert.match(js, /User code:/);
   assert.match(js, /level_color_hex/);
   assert.match(js, /level_icon_path/);
+  assert.match(js, /data-rank-color-kind="picker"/);
+  assert.match(js, /data-rank-color-kind="text"/);
+  assert.match(js, /Every level color must be a valid #RRGGBB hex value/);
+  assert.match(js, /Icon asset path/);
   assert.match(js, /Public identity:/);
   assert.match(js, /validateRanks/);
   assert.match(js, /LEVEL0 threshold must stay 0/);
