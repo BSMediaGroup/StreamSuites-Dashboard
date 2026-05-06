@@ -5391,6 +5391,30 @@ body.ss-col-resizing-active {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.ss-economy-exchange-grid {
+  grid-template-columns: minmax(180px, 1.1fr) minmax(100px, 0.5fr) minmax(140px, 0.6fr);
+}
+
+.ss-economy-exchange-preview {
+  display: grid;
+  gap: 4px;
+  align-self: end;
+  min-height: 58px;
+  padding: 9px 11px;
+  border: 1px solid rgba(132, 184, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(11, 18, 32, 0.58);
+}
+
+.ss-economy-exchange-preview span {
+  color: var(--ss-muted);
+  font-size: 0.78rem;
+}
+
+.ss-economy-exchange-preview strong {
+  color: var(--ss-text);
+}
+
 .ss-economy-wide {
   grid-column: 1 / -1;
 }

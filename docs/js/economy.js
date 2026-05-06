@@ -8,6 +8,7 @@
   const IDENTITIES = "/api/admin/economy/identities";
   const ECONOMY_DETAIL = (identityCode) => `/api/admin/economy/identities/${encodeURIComponent(identityCode)}`;
   const ECONOMY_EVENTS = (identityCode) => `/api/admin/economy/identities/${encodeURIComponent(identityCode)}/events`;
+  const ECONOMY_EXCHANGE = (identityCode) => `/api/admin/economy/identities/${encodeURIComponent(identityCode)}/exchange`;
   const ECONOMY_EVENT_REVERSE = (eventCode) => `/api/admin/economy/events/${encodeURIComponent(eventCode)}/reverse`;
   const INVENTORY_EVENTS = (identityCode) => `/api/admin/inventory/identities/${encodeURIComponent(identityCode)}/events`;
   const INVENTORY_EVENT_CREATE = (identityCode) => `/api/admin/inventory/identities/${encodeURIComponent(identityCode)}/events`;
@@ -437,6 +438,10 @@
       el.economyActions.textContent = "Select an identity to apply manual economy controls.";
       el.inventoryActions.className = "ss-economy-actions ss-empty";
       el.inventoryActions.textContent = "Select an identity to apply manual inventory controls.";
+      if (el.exchangeActions) {
+        el.exchangeActions.className = "ss-economy-actions ss-empty";
+        el.exchangeActions.textContent = "Select an identity with held gems or diamonds to exchange.";
+      }
       return;
     }
     el.economyActions.className = "ss-economy-actions";
@@ -468,6 +473,43 @@
         <button id="inventory-reversal-submit" class="ss-btn ss-btn-secondary" type="button">Create inventory reversal</button>
       </div>
     `;
+    renderExchangeActions();
+  }
+
+  function renderExchangeActions() {
+    if (!el.exchangeActions) return;
+    const exchangeable = Array.isArray(state.detail?.exchangeable_items)
+      ? state.detail.exchangeable_items.filter((item) => Number(item?.quantity || 0) > 0)
+      : [];
+    if (!state.selectedIdentityCode) {
+      el.exchangeActions.className = "ss-economy-actions ss-empty";
+      el.exchangeActions.textContent = "Select an identity with held gems or diamonds to exchange.";
+      return;
+    }
+    if (!exchangeable.length) {
+      el.exchangeActions.className = "ss-economy-actions ss-empty";
+      el.exchangeActions.textContent = "No exchangeable held gems or diamonds were returned for this identity.";
+      return;
+    }
+    el.exchangeActions.className = "ss-economy-actions";
+    const options = exchangeable.map((item) => `
+      <option value="${escapeHtml(item.item_code)}" data-value-credits="${escapeHtml(item.value_in_credits || 0)}" data-quantity="${escapeHtml(item.quantity || 0)}">
+        ${escapeHtml(item.label || item.item_code)} - ${formatNumber(item.quantity || 0)} held
+      </option>
+    `).join("");
+    el.exchangeActions.innerHTML = `
+      <div class="ss-alert">
+        Gems and diamonds cannot be purchased here. This control only exchanges value-bearing items already held by the selected identity.
+      </div>
+      <div class="ss-economy-action-grid ss-economy-exchange-grid">
+        <label>Held item<select id="economy-exchange-item">${options}</select></label>
+        <label>Quantity<input id="economy-exchange-quantity" type="number" min="1" step="1" value="1" /></label>
+        <div class="ss-economy-exchange-preview"><span>Credit value</span><strong id="economy-exchange-value">0</strong></div>
+        <label class="ss-economy-wide">Reason<input id="economy-exchange-reason" type="text" placeholder="Required exchange note" /></label>
+        <button id="economy-exchange-submit" class="ss-btn" type="button">Exchange held item</button>
+      </div>
+    `;
+    syncExchangePreview();
   }
 
   function renderItemDefinitions() {
@@ -554,6 +596,24 @@
     const form = document.querySelector(formSelector);
     const field = form?.querySelector(fieldSelector);
     return text(field?.value);
+  }
+
+  function currentExchangeItem() {
+    const itemCode = activeFieldValue("#economy-exchange-actions .ss-economy-exchange-grid", "#economy-exchange-item");
+    const exchangeable = Array.isArray(state.detail?.exchangeable_items) ? state.detail.exchangeable_items : [];
+    return exchangeable.find((item) => text(item.item_code) === itemCode) || exchangeable[0] || null;
+  }
+
+  function syncExchangePreview() {
+    const item = currentExchangeItem();
+    const quantityInput = $("#economy-exchange-quantity");
+    const valueOutput = $("#economy-exchange-value");
+    if (!item || !quantityInput || !valueOutput) return;
+    const maxQuantity = Math.max(1, Number(item.quantity || 1));
+    quantityInput.max = String(maxQuantity);
+    const quantity = Math.max(1, Math.min(maxQuantity, Number(quantityInput.value || 1)));
+    if (String(quantity) !== String(quantityInput.value)) quantityInput.value = String(quantity);
+    valueOutput.textContent = `${formatNumber(quantity * Number(item.value_in_credits || 0))} ${escapeHtml(currencyPluralLabel(quantity * Number(item.value_in_credits || 0)))}`;
   }
 
   function renderAll() {
@@ -685,6 +745,32 @@
       setStatus("Inventory action recorded.", "success");
     } catch (err) {
       setStatus(err?.message || "Inventory action failed.", "error");
+    } finally {
+      state.saving = false;
+    }
+  }
+
+  async function applyExchangeAction() {
+    if (!state.selectedIdentityCode || state.saving) return;
+    const item = currentExchangeItem();
+    const itemCode = text(item?.item_code || activeFieldValue("#economy-exchange-actions .ss-economy-exchange-grid", "#economy-exchange-item"));
+    const quantity = Number(activeFieldValue("#economy-exchange-actions .ss-economy-exchange-grid", "#economy-exchange-quantity") || 0);
+    const reason = activeFieldValue("#economy-exchange-actions .ss-economy-exchange-grid", "#economy-exchange-reason");
+    if (!itemCode || !quantity || quantity <= 0 || !reason) {
+      setStatus("Gem/diamond exchange requires an item, positive quantity, and reason.", "error");
+      return;
+    }
+    state.saving = true;
+    try {
+      await requestJson(ECONOMY_EXCHANGE(state.selectedIdentityCode), {
+        method: "POST",
+        body: JSON.stringify({ identity_code: state.selectedIdentityCode, item_code: itemCode, quantity, reason_text: reason })
+      });
+      await loadDetail();
+      renderAll();
+      setStatus("Held gem/diamond exchanged into credits.", "success");
+    } catch (err) {
+      setStatus(err?.message || "Gem/diamond exchange failed.", "error");
     } finally {
       state.saving = false;
     }
@@ -879,6 +965,10 @@
         await applyInventoryAction();
         return;
       }
+      if (event.target.closest?.("#economy-exchange-submit")) {
+        await applyExchangeAction();
+        return;
+      }
       const economyReverseButton = event.target.closest?.(".ss-economy-reverse-economy");
       if (economyReverseButton) {
         const input = $("#economy-reversal-code");
@@ -956,6 +1046,16 @@
         renderItemDefinitions();
       }
     });
+    document.addEventListener("input", (event) => {
+      if (event.target.closest?.("#economy-exchange-actions")) {
+        syncExchangePreview();
+      }
+    });
+    document.addEventListener("change", (event) => {
+      if (event.target.closest?.("#economy-exchange-actions")) {
+        syncExchangePreview();
+      }
+    });
   }
 
   function cacheElements() {
@@ -972,6 +1072,7 @@
     el.economyActions = $("economy-actions");
     el.inventoryList = $("economy-inventory-list");
     el.inventoryActions = $("economy-inventory-actions");
+    el.exchangeActions = $("economy-exchange-actions");
     el.inventoryEventsList = $("economy-inventory-events-list");
     el.itemDefinitions = $("economy-item-definitions");
     el.itemCreateForm = $("economy-item-create-form");

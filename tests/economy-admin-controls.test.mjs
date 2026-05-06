@@ -43,6 +43,7 @@ test("economy view exposes required control sections and boundary copy", () => {
   assert.match(html, /Manual Economy Actions/);
   assert.match(html, /Inventory Inspector/);
   assert.match(html, /Manual Inventory Actions/);
+  assert.match(html, /Gem \/ Diamond Exchange/);
   assert.match(html, /Inventory Events/);
   assert.match(html, /Item Definitions/);
   assert.match(html, /Danger Zone/);
@@ -64,6 +65,7 @@ test("economy view exposes required control sections and boundary copy", () => {
   assert.match(html, /id="economy-inventory-section"/);
   assert.match(html, /id="economy-inventory-events-section"/);
   assert.match(html, /id="economy-inventory-actions-section"/);
+  assert.match(html, /id="economy-exchange-section"/);
   assert.match(html, /id="economy-item-definitions-section"/);
   assert.match(html, /id="economy-danger-zone-section"/);
   assert.doesNotMatch(html, /<div class="ss-economy-grid">/);
@@ -74,6 +76,7 @@ test("economy controller uses runtime authority endpoints and configurable curre
 
   assert.match(js, /IDENTITIES = "\/api\/admin\/economy\/identities"/);
   assert.match(js, /ECONOMY_EVENTS = \(identityCode\) => `\/api\/admin\/economy\/identities\/\$\{encodeURIComponent\(identityCode\)\}\/events`/);
+  assert.match(js, /ECONOMY_EXCHANGE = \(identityCode\) => `\/api\/admin\/economy\/identities\/\$\{encodeURIComponent\(identityCode\)\}\/exchange`/);
   assert.match(js, /ECONOMY_EVENT_REVERSE = \(eventCode\) => `\/api\/admin\/economy\/events\/\$\{encodeURIComponent\(eventCode\)\}\/reverse`/);
   assert.match(js, /INVENTORY_EVENT_CREATE = \(identityCode\) => `\/api\/admin\/inventory\/identities\/\$\{encodeURIComponent\(identityCode\)\}\/events`/);
   assert.match(js, /INVENTORY_EVENT_REVERSE = \(eventCode\) => `\/api\/admin\/inventory\/events\/\$\{encodeURIComponent\(eventCode\)\}\/reverse`/);
@@ -98,6 +101,8 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /body: JSON\.stringify\(\{ event_type: eventType, amount_delta: amount, reason_text: reason \}\)/);
   assert.match(js, /activeFieldValue\("#economy-inventory-actions \.ss-economy-action-grid", "#inventory-action-reason"\)/);
   assert.match(js, /body: JSON\.stringify\(\{ event_type: eventType, item_code: itemCode, quantity_delta: quantity, reason_text: reason \}\)/);
+  assert.match(js, /activeFieldValue\("#economy-exchange-actions \.ss-economy-exchange-grid", "#economy-exchange-reason"\)/);
+  assert.match(js, /body: JSON\.stringify\(\{ identity_code: state\.selectedIdentityCode, item_code: itemCode, quantity, reason_text: reason \}\)/);
   assert.match(js, /activeFieldValue\("#economy-actions \.ss-economy-reversal-box", "#economy-reversal-reason"\)/);
   assert.match(js, /body: JSON\.stringify\(\{ reason_text: reason \}\)/);
   assert.match(js, /activeFieldValue\("#economy-inventory-actions \.ss-economy-reversal-box", "#inventory-reversal-reason"\)/);
@@ -187,6 +192,7 @@ test("economy route uses the shared top-bar section anchor row", () => {
   assert.match(app, /\{ id: "economy-inventory-section", label: "Inventory" \}/);
   assert.match(app, /\{ id: "economy-inventory-events-section", label: "Inventory Events" \}/);
   assert.match(app, /\{ id: "economy-inventory-actions-section", label: "Manual Inventory Actions" \}/);
+  assert.match(app, /\{ id: "economy-exchange-section", label: "Gem \/ Diamond Exchange" \}/);
   assert.match(app, /\{ id: "economy-item-definitions-section", label: "Item Definitions" \}/);
   assert.match(app, /\{ id: "economy-danger-zone-section", label: "Danger Zone" \}/);
   assert.match(app, /data-accounts-shell-anchor="\$\{section\.id\}"/);
@@ -208,5 +214,24 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-master-detail\s*\{[\s\S]*grid-template-columns:\s*minmax\(440px,\s*1\.35fr\) minmax\(320px,\s*0\.85fr\)/);
   assert.match(css, /\.ss-economy-item-definition-summary\s*\{[\s\S]*grid-template-columns:\s*38px minmax\(0,\s*1fr\) auto/);
   assert.match(css, /\.ss-economy-item-editor\s*\{[\s\S]*grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(css, /\.ss-economy-exchange-grid\s*\{/);
   assert.match(css, /\.ss-admin-pager\s*\{/);
+});
+
+test("economy exchange controls preview held gem and diamond values", () => {
+  const js = read("docs/js/economy.js");
+  const css = read("docs/css/components.css");
+
+  assert.match(js, /function renderExchangeActions\(\)/);
+  assert.match(js, /state\.detail\?\.exchangeable_items/);
+  assert.match(js, /No exchangeable held gems or diamonds/);
+  assert.match(js, /Gems and diamonds cannot be purchased here/);
+  assert.match(js, /id="economy-exchange-item"/);
+  assert.match(js, /id="economy-exchange-quantity"/);
+  assert.match(js, /id="economy-exchange-value"/);
+  assert.match(js, /id="economy-exchange-reason"/);
+  assert.match(js, /function syncExchangePreview\(\)/);
+  assert.match(js, /quantity \* Number\(item\.value_in_credits \|\| 0\)/);
+  assert.match(js, /await requestJson\(ECONOMY_EXCHANGE\(state\.selectedIdentityCode\)/);
+  assert.match(css, /\.ss-economy-exchange-preview/);
 });
