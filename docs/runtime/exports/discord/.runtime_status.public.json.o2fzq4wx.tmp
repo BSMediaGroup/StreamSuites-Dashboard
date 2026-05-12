@@ -1,12 +1,12 @@
 {
-  "profile": "admin",
-  "bot_user_id": 1452732468405997713,
+  "profile": "public",
+  "bot_user_id": 1449280789010321420,
   "running": true,
   "connected": true,
-  "last_heartbeat_ts": "2026-05-10T00:04:12.428482+00:00",
+  "last_heartbeat_ts": "2026-05-10T00:04:39.711372+00:00",
   "task_count": 2,
   "tasks": 2,
-  "guild_count": 1,
+  "guild_count": 5,
   "guild_config_count": 5,
   "enabled_guild_count": 1,
   "guild_config_summary": {
@@ -89,22 +89,22 @@
   "status": {
     "text": "\ud83c\udf0e streamsuites.app",
     "emoji": null,
-    "profile": "admin"
+    "profile": "public"
   },
   "presence": {
     "status_text": "\ud83c\udf0e streamsuites.app",
     "status_emoji": null
   },
   "heartbeat": {
-    "started_at": "2026-05-09T09:46:40.950229+00:00",
-    "last_tick_at": "2026-05-10T00:04:12.428482+00:00",
+    "started_at": "2026-05-09T09:46:40.535558+00:00",
+    "last_tick_at": "2026-05-10T00:04:39.711372+00:00",
     "connected": true,
     "metadata": {}
   },
   "heartbeat_status": {
-    "profile": "admin",
-    "bot_user_id": 1452732468405997713,
-    "connected_guild_count": 1,
+    "profile": "public",
+    "bot_user_id": 1449280789010321420,
+    "connected_guild_count": 5,
     "runtime_resources_detected": true,
     "runtime_connectivity_detected": true
   }
