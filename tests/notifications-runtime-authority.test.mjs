@@ -807,12 +807,15 @@ test("admin bots surface distinguishes managed sessions and transport posture", 
   const botsHtml = read("docs/views/bots.html");
   const botsJs = read("docs/js/bots.js");
 
-  assert.match(botsHtml, /<th>Session<\/th>/);
-  assert.match(botsHtml, /<th>Lifecycle<\/th>/);
-  assert.match(botsHtml, /<th>Transport<\/th>/);
-  assert.match(botsHtml, /<th>Blocking \/ Error<\/th>/);
+  assert.match(botsHtml, /<th>Platforms<\/th>/);
+  assert.match(botsHtml, /<th>Posture<\/th>/);
+  assert.match(botsHtml, /<th>Instances<\/th>/);
+  assert.match(botsHtml, /<th>Worst Issue<\/th>/);
   assert.match(botsJs, /session_type/);
   assert.match(botsJs, /Managed/);
+  assert.match(botsJs, /buildCreatorGroups/);
+  assert.match(botsJs, /ss-bots-detail-drawer/);
+  assert.match(botsJs, /data-bot-expand/);
   assert.match(botsJs, /renderTargetCell/);
   assert.match(botsJs, /renderBlockingCell/);
   assert.match(botsJs, /Open watch target/);
@@ -822,6 +825,53 @@ test("admin bots surface distinguishes managed sessions and transport posture", 
   assert.match(botsJs, /sessionStatus === "awaiting_live"/);
   assert.match(botsJs, /sessionStatus === "live_target_unresolved"/);
   assert.match(botsJs, /creator-managed session/);
+});
+
+test("bots view groups main runtime rows by creator and keeps platform details in the drawer", async () => {
+  const payload = createBotsPayload({ unchanged: true });
+  payload.supported_platforms = ["rumble", "kick"];
+  payload.platform_capabilities.kick = {
+    platform: "kick",
+    label: "Kick",
+    manual_deploy_enabled: true,
+    staged: false
+  };
+  payload.platforms.push({
+    platform: "kick",
+    label: "Kick",
+    available: true,
+    status: "ready",
+    global_status: "ready",
+    paused: false,
+    details: {}
+  });
+  payload.bots.push({
+    creator_id: "daniel",
+    platform: "kick",
+    session_type: "manual",
+    manual_override: true,
+    status: "online",
+    lifecycle_state: "attached",
+    desired: true,
+    status_reason: "Kick manual bot is attached.",
+    runner_state: "listening",
+    active_target: "danielclancy",
+    resolved_target: { channel_handle: "danielclancy" },
+    last_heartbeat_at: "2026-04-21T10:00:03Z",
+    uptime_seconds: 99
+  });
+
+  const { sandbox, elements } = buildBotsSandbox({ botPayloads: [payload] });
+  sandbox.window.BotsView.init();
+  await flushMicrotasks();
+
+  const tableHtml = elements.get("bots-table-body").innerHTML;
+  assert.equal((tableHtml.match(/ss-bots-creator-row/g) || []).length, 1);
+  assert.match(tableHtml, /Daniel/);
+  assert.match(tableHtml, /Rumble/);
+  assert.match(tableHtml, /Kick/);
+  assert.match(tableHtml, /2 total/);
+  assert.doesNotMatch(tableHtml, /ss-bot-instance-card/);
 });
 
 test("bots view does not stack duplicate pollers across repeated mounts", async () => {
@@ -868,11 +918,11 @@ test("bots view shows calmer rumble pre-live probe degradation on the platform s
 
   assert.match(elements.get("bots-platforms-grid").innerHTML, /Pending/);
   assert.match(elements.get("bots-platforms-grid").innerHTML, /awaiting trustworthy live verification/i);
-  assert.match(elements.get("bots-table-body").innerHTML, /browse_live_request_failed/);
   assert.match(
     elements.get("bots-table-body").innerHTML,
     /Rumble browse\/live detection failed before a trustworthy offline result could be established\./
   );
+  assert.match(read("docs/js/bots.js"), /renderBlockingCell\(bot, platformState\)/);
 });
 
 test("admin rumble platform view reads live runtime posture instead of a hardcoded paused scaffold", () => {

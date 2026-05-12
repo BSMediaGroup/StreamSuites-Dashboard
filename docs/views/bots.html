@@ -20,7 +20,7 @@
       <div class="ss-panel-header-main">
         <h2>Bots</h2>
         <p class="muted">
-          Live creator x platform bot runtime states, including managed Rumble sessions, with manual deploy/detach controls for admin debug.
+          Live creator-grouped bot runtime states, including managed Rumble sessions, with manual deploy/detach controls for admin debug.
         </p>
       </div>
       <div class="ss-panel-header-actions">
@@ -30,7 +30,7 @@
     <div class="ss-panel-body">
       <div class="table-toolbar">
         <div class="muted" id="bots-status">Loading runtime status...</div>
-        <div class="muted" id="bots-count">-- rows</div>
+        <div class="muted" id="bots-count">-- creators</div>
       </div>
       <div class="table-toolbar">
         <div class="muted" id="bots-generated-at">Generated: --</div>
@@ -98,14 +98,12 @@
           <thead>
             <tr>
               <th>Creator</th>
-              <th>Platform</th>
-              <th>Session</th>
-              <th>Lifecycle</th>
-              <th>Transport</th>
-              <th>Target</th>
-              <th>Heartbeat</th>
-              <th>Blocking / Error</th>
-              <th>Actions</th>
+              <th>Platforms</th>
+              <th>Posture</th>
+              <th>Instances</th>
+              <th>Last Check</th>
+              <th>Worst Issue</th>
+              <th>Details</th>
             </tr>
           </thead>
           <tbody id="bots-table-body"></tbody>

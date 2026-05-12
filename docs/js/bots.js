@@ -99,6 +99,7 @@
     hydrationLive: false,
     hydrationLabel: "Waiting for runtime status...",
     rowUi: Object.create(null),
+    expandedCreators: Object.create(null),
     onBodyClick: null,
     onManualToggleClick: null,
     onManualCancelClick: null,
@@ -549,7 +550,7 @@
 
   function statusTone(status) {
     const normalized = String(status || "").trim().toLowerCase();
-    if (["online", "running", "active", "attached", "listening", "connected"].includes(normalized)) {
+    if (["ready", "online", "running", "active", "attached", "listening", "connected"].includes(normalized)) {
       return "ss-bot-status-online";
     }
     if (["offline", "disabled", "unavailable", "stopped"].includes(normalized)) {
@@ -558,7 +559,7 @@
     if (["error", "transport_error", "auth_failed", "target_unresolved", "blocked", "stale"].includes(normalized)) {
       return "ss-bot-status-error";
     }
-    if (["paused", "desired", "starting", "attaching", "awaiting_transport"].includes(normalized)) {
+    if (["mixed", "pending", "paused", "desired", "starting", "attaching", "awaiting_transport"].includes(normalized)) {
       return "ss-bot-status-paused";
     }
     return "";
@@ -573,6 +574,11 @@
     const tone = statusTone(status);
     const classes = ["ss-bot-status", tone].filter(Boolean).join(" ");
     return `<span class="${classes}">${escapeHtml(statusLabel(status))}</span>`;
+  }
+
+  function creatorKey(value) {
+    const text = String(value || "").trim();
+    return text || "unknown";
   }
 
   function rowKey(creatorId, platform) {
@@ -613,6 +619,11 @@
 
   function renderBadge(label, tone = "") {
     const classes = ["ss-badge", tone].filter(Boolean).join(" ");
+    return `<span class="${classes}">${escapeHtml(label)}</span>`;
+  }
+
+  function renderCompactChip(label, tone = "") {
+    const classes = ["ss-bot-chip", tone].filter(Boolean).join(" ");
     return `<span class="${classes}">${escapeHtml(label)}</span>`;
   }
 
@@ -724,6 +735,164 @@
     `;
   }
 
+  function botStatusRank(bot, platformState) {
+    const values = [
+      bot?.status,
+      bot?.lifecycle_state,
+      bot?.runner_state,
+      platformState?.availability,
+      platformState?.status
+    ]
+      .map((value) => String(value || "").trim().toLowerCase())
+      .filter(Boolean);
+    const platformAvailability = String(platformState?.availability || "").trim().toLowerCase();
+    const platformError =
+      Boolean(String(platformState?.error || "").trim()) &&
+      !["pending", "blocked", "active"].includes(platformAvailability);
+    if (platformError || values.some((value) => ["error", "transport_error", "auth_failed"].includes(value))) {
+      return { label: "Error", rank: 6, tone: "ss-badge-danger" };
+    }
+    if (values.some((value) => ["blocked", "target_unresolved", "stale", "live_target_unresolved"].includes(value))) {
+      return { label: "Blocked", rank: 5, tone: "ss-badge-danger" };
+    }
+    if (values.some((value) => ["disabled", "offline", "stopped", "unavailable", "staged"].includes(value))) {
+      return { label: "Disabled", rank: 4, tone: "" };
+    }
+    if (values.some((value) => ["pending", "desired", "starting", "attaching", "awaiting_transport", "awaiting_live"].includes(value))) {
+      return { label: "Pending", rank: 3, tone: "ss-badge-warning" };
+    }
+    if (values.some((value) => ["ready", "online", "running", "active", "attached", "listening", "connected"].includes(value))) {
+      return { label: "Ready", rank: 1, tone: "ss-badge-success" };
+    }
+    return { label: "Pending", rank: 2, tone: "ss-badge-warning" };
+  }
+
+  function botLastCheckValue(bot) {
+    return (
+      bot?.last_heartbeat_at ||
+      bot?.last_transport_heartbeat_at ||
+      bot?.last_evaluated_at ||
+      bot?.last_transition_at ||
+      bot?.connected_at ||
+      null
+    );
+  }
+
+  function timestampMs(value) {
+    if (!value) return 0;
+    const parsed = new Date(value).getTime();
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+
+  function collectBotReasons(bot, platformState) {
+    return [
+      String(bot?.status_reason || "").trim(),
+      String(bot?.last_error || "").trim(),
+      String(bot?.pause_reason || "").trim(),
+      String(platformState?.error || "").trim(),
+      String(platformState?.pausedReason || "").trim(),
+      String(platformState?.reason || "").trim()
+    ].filter(Boolean);
+  }
+
+  function buildCreatorGroups(normalized, platformSummary) {
+    const groups = Object.create(null);
+    const creatorLabels = Object.create(null);
+    (Array.isArray(state.creators) ? state.creators : []).forEach((creator) => {
+      const id = creatorKey(creator?.creator_id);
+      creatorLabels[id] = String(creator?.display_name || id).trim() || id;
+    });
+
+    (Array.isArray(normalized?.bots) ? normalized.bots : []).forEach((bot) => {
+      const id = creatorKey(bot?.creator_id || bot?.creator_account_id || bot?.account_id);
+      if (!groups[id]) {
+        groups[id] = {
+          creatorId: id,
+          label: creatorLabels[id] || id,
+          bots: [],
+          platforms: [],
+          platformStates: Object.create(null),
+          posture: { label: "Pending", rank: 0, tone: "ss-badge-warning" },
+          hasMixedPosture: false,
+          activeManagedCount: 0,
+          blockedErrorCount: 0,
+          lastCheck: null,
+          reason: ""
+        };
+      }
+      const group = groups[id];
+      const platform = normalizePlatformKey(bot?.platform);
+      const platformState = platformSummary?.[platform] || null;
+      const posture = botStatusRank(bot, platformState);
+      const reasons = collectBotReasons(bot, platformState);
+      const lastCheck = botLastCheckValue(bot);
+      const sessionType = String(bot?.session_type || "manual").trim().toLowerCase();
+
+      group.bots.push(bot);
+      if (platform && !group.platforms.includes(platform)) {
+        group.platforms.push(platform);
+      }
+      if (platform) {
+        group.platformStates[platform] = platformState;
+      }
+      if (posture.rank > group.posture.rank) {
+        group.posture = posture;
+        group.reason = reasons[0] || String(bot?.status_reason || "").trim() || platformState?.reason || "";
+      } else if (!group.reason && reasons.length) {
+        group.reason = reasons[0];
+      }
+      if (sessionType === "auto" || isBotAttached(bot)) {
+        group.activeManagedCount += 1;
+      }
+      if (["Blocked", "Error"].includes(posture.label)) {
+        group.blockedErrorCount += 1;
+      }
+      if (timestampMs(lastCheck) > timestampMs(group.lastCheck)) {
+        group.lastCheck = lastCheck;
+      }
+    });
+
+    const rows = Object.values(groups).map((group) => {
+      group.platforms = sortPlatformKeys(group.platforms);
+      const labels = new Set(
+        group.bots.map((bot) => botStatusRank(bot, group.platformStates[normalizePlatformKey(bot?.platform)]).label)
+      );
+      group.hasMixedPosture = labels.size > 1;
+      if (group.hasMixedPosture && group.posture.rank < 5) {
+        group.posture = { label: "Mixed", rank: 3, tone: "ss-badge-warning" };
+      }
+      group.reason = group.reason || "No blocking/error reason.";
+      return group;
+    });
+
+    return rows.sort((a, b) => a.label.localeCompare(b.label) || a.creatorId.localeCompare(b.creatorId));
+  }
+
+  function buildCreatorGroupSignature(normalized, platformSummary) {
+    const groups = buildCreatorGroups(normalized, platformSummary);
+    return stableStringify(
+      groups.map((group) => ({
+        creatorId: group.creatorId,
+        label: group.label,
+        platforms: group.platforms,
+        posture: group.posture,
+        activeManagedCount: group.activeManagedCount,
+        blockedErrorCount: group.blockedErrorCount,
+        lastCheck: group.lastCheck,
+        reason: group.reason,
+        expanded: state.expandedCreators[group.creatorId] === true,
+        bots: group.bots.map((bot) => {
+          const platform = normalizePlatformKey(bot?.platform);
+          return {
+            bot,
+            platformState: group.platformStates[platform] || null,
+            ui: getRowUi(String(bot?.creator_id || group.creatorId), platform)
+          };
+        })
+      }))
+    );
+  }
+
   function buildPlatformSummarySignature(platformSummary, options = {}) {
     const liveCounts = options?.liveCounts || { byPlatform: {}, total: 0 };
     const rows = sortPlatformKeys(Object.keys(platformSummary || {})).map((platform) => {
@@ -751,30 +920,7 @@
   }
 
   function buildRowsSignature(normalized, platformSummary) {
-    const bots = Array.isArray(normalized?.bots) ? normalized.bots : [];
-    const rows = bots.map((bot) => {
-      const creatorId = String(bot?.creator_id || "");
-      const platform = normalizePlatformKey(bot?.platform);
-      const platformState = platformSummary?.[platform] || null;
-      const ui = getRowUi(creatorId, platform);
-      return {
-        creatorId,
-        platform,
-        bot,
-        platformState: platformState
-          ? {
-            availability: platformState.availability,
-            reason: platformState.reason,
-            paused: platformState.paused,
-            pausedReason: platformState.pausedReason,
-            status: platformState.status,
-            sessionStatus: platformState.sessionStatus
-          }
-          : null,
-        ui
-      };
-    });
-    return stableStringify(rows);
+    return buildCreatorGroupSignature(normalized, platformSummary);
   }
 
   function buildCreatorsSignature(creators) {
@@ -1244,26 +1390,129 @@
     return Math.max(0, Math.floor(base));
   }
 
+  function renderCreatorSummaryCell(group) {
+    const secondary = group.label !== group.creatorId ? group.creatorId : "Runtime creator";
+    return `
+      <div class="ss-bot-creator-summary">
+        <div class="ss-bot-creator-name">${escapeHtml(group.label)}</div>
+        <div class="muted">${escapeHtml(secondary)}</div>
+      </div>
+    `;
+  }
+
+  function renderPlatformSummaryChips(group) {
+    if (!group.platforms.length) {
+      return '<span class="muted">No platform exported.</span>';
+    }
+    return `
+      <div class="ss-bot-platform-list">
+        ${group.platforms
+          .map((platform) => {
+            const label = platformDisplayName(platform);
+            return `
+              <span class="ss-bot-platform-chip-small">
+                <img src="${escapeHtml(platformIconPath(platform))}" alt="" loading="lazy" decoding="async" />
+                ${escapeHtml(label)}
+              </span>
+            `;
+          })
+          .join("")}
+      </div>
+    `;
+  }
+
+  function renderCreatorCounts(group) {
+    return `
+      <div class="ss-bot-counts">
+        ${renderCompactChip(`${group.activeManagedCount} active/managed`, group.activeManagedCount > 0 ? "ss-badge-success" : "")}
+        ${renderCompactChip(`${group.blockedErrorCount} blocked/error`, group.blockedErrorCount > 0 ? "ss-badge-danger" : "")}
+        ${renderCompactChip(`${group.bots.length} total`, "")}
+      </div>
+    `;
+  }
+
+  function renderCreatorDrawer(group) {
+    const detailId = `bots-detail-${encodeData(group.creatorId)}`;
+    return `
+      <tr class="ss-bots-detail-row" id="${escapeHtml(detailId)}">
+        <td colspan="7">
+          <div class="ss-bots-detail-drawer">
+            ${group.bots
+              .map((bot) => {
+                const platformKey = normalizePlatformKey(bot?.platform);
+                const platformState = group.platformStates[platformKey] || null;
+                return `
+                  <article class="ss-bot-instance-card">
+                    <div class="ss-bot-instance-head">
+                      <div class="ss-bot-instance-platform">
+                        <img src="${escapeHtml(platformIconPath(platformKey))}" alt="" loading="lazy" decoding="async" />
+                        <span>${escapeHtml(platformDisplayName(platformKey))}</span>
+                      </div>
+                      ${renderActionCell(bot, platformState)}
+                    </div>
+                    <div class="ss-bot-instance-grid">
+                      <div>
+                        <div class="ss-bot-field-label">Session</div>
+                        ${renderSessionCell(bot)}
+                      </div>
+                      <div>
+                        <div class="ss-bot-field-label">Lifecycle</div>
+                        ${renderLifecycleCell(bot)}
+                      </div>
+                      <div>
+                        <div class="ss-bot-field-label">Transport / Runner</div>
+                        ${renderTransportCell(bot)}
+                      </div>
+                      <div>
+                        <div class="ss-bot-field-label">Target</div>
+                        ${renderTargetCell(bot)}
+                      </div>
+                      <div>
+                        <div class="ss-bot-field-label">Heartbeat / Check</div>
+                        ${renderHeartbeatCell(bot)}
+                      </div>
+                      <div>
+                        <div class="ss-bot-field-label">Blocking / Error</div>
+                        ${renderBlockingCell(bot, platformState)}
+                      </div>
+                    </div>
+                  </article>
+                `;
+              })
+              .join("")}
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+
   function renderRows(normalized, receivedAt, platformSummary) {
-    const rows = normalized.bots.map((bot) => {
-      const status = String(bot?.status || "").trim().toLowerCase();
-      const platformKey = normalizePlatformKey(bot?.platform);
-      const platformState = platformSummary?.[platformKey] || null;
-      const isPaused = status === "paused" || platformState?.paused === true;
-      const rowClass = isPaused ? "ss-bots-row-paused" : "";
+    const groups = buildCreatorGroups(normalized, platformSummary);
+    const rows = groups.map((group) => {
+      const expanded = state.expandedCreators[group.creatorId] === true;
+      const rowClass = group.posture.label === "Disabled" ? "ss-bots-row-paused" : "";
+      const issue = truncateForCard(group.reason, 150);
+      const detailId = `bots-detail-${encodeData(group.creatorId)}`;
 
       return `
-        <tr class="${rowClass}">
-          <td>${escapeHtml(bot?.creator_id)}</td>
-          <td>${escapeHtml(platformDisplayName(bot?.platform))}</td>
-          <td>${renderSessionCell(bot)}</td>
-          <td>${renderLifecycleCell(bot)}</td>
-          <td>${renderTransportCell(bot)}</td>
-          <td>${renderTargetCell(bot)}</td>
-          <td>${renderHeartbeatCell(bot)}</td>
-          <td>${renderBlockingCell(bot, platformState)}</td>
-          <td>${renderActionCell(bot, platformState)}</td>
+        <tr class="ss-bots-creator-row ${rowClass}">
+          <td>${renderCreatorSummaryCell(group)}</td>
+          <td>${renderPlatformSummaryChips(group)}</td>
+          <td>${renderStatus(group.posture.label)}</td>
+          <td>${renderCreatorCounts(group)}</td>
+          <td>${escapeHtml(formatTimestamp(group.lastCheck))}</td>
+          <td><span class="ss-bot-issue-summary" title="${escapeHtml(group.reason)}">${escapeHtml(issue)}</span></td>
+          <td>
+            <button
+              class="ss-btn ss-btn-small ss-btn-secondary ss-bot-expand"
+              type="button"
+              data-bot-expand="${encodeData(group.creatorId)}"
+              aria-expanded="${expanded ? "true" : "false"}"
+              aria-controls="${escapeHtml(detailId)}"
+            >${expanded ? "Hide" : "Show"}</button>
+          </td>
         </tr>
+        ${expanded ? renderCreatorDrawer(group) : ""}
       `;
     });
 
@@ -1633,8 +1882,9 @@
 
   function updateMeta(normalized, receivedAt) {
     if (el.count) {
+      const creatorCount = buildCreatorGroups(normalized, state.platformSummary).length;
       const rowCount = Array.isArray(normalized?.bots) ? normalized.bots.length : 0;
-      el.count.textContent = `${rowCount} rows`;
+      el.count.textContent = `${creatorCount} creator${creatorCount === 1 ? "" : "s"} / ${rowCount} bot${rowCount === 1 ? "" : "s"}`;
     }
     if (el.generatedAt) {
       el.generatedAt.textContent = `Generated: ${formatTimestamp(normalized?.generatedAt)}`;
@@ -1782,7 +2032,7 @@
             el.status.textContent = state.hydrationLabel;
           }
           if (el.count) {
-            el.count.textContent = "-- rows";
+            el.count.textContent = "-- creators";
           }
           if (el.generatedAt) {
             el.generatedAt.textContent = "Generated: --";
@@ -1834,7 +2084,7 @@
       el.status.textContent = state.hydrationLabel;
     }
     if (el.count) {
-      el.count.textContent = "-- rows";
+      el.count.textContent = "-- creators";
     }
     if (el.generatedAt) {
       el.generatedAt.textContent = "Generated: --";
@@ -2031,6 +2281,16 @@
   }
 
   function onBodyClick(event) {
+    const expandButton = event.target.closest("[data-bot-expand]");
+    if (expandButton instanceof HTMLButtonElement && !expandButton.disabled) {
+      const creatorId = decodeData(expandButton.dataset.botExpand || "");
+      if (!creatorId) return;
+      state.expandedCreators[creatorId] = state.expandedCreators[creatorId] !== true;
+      state.renderCache.rowSignature = "";
+      renderRowsAndCountersFromState();
+      return;
+    }
+
     const button = event.target.closest("[data-bot-action]");
     if (!(button instanceof HTMLButtonElement) || button.disabled) return;
 
@@ -2166,6 +2426,7 @@
     state.hydrationLive = false;
     state.hydrationLabel = "Waiting for runtime status...";
     state.rowUi = Object.create(null);
+    state.expandedCreators = Object.create(null);
     state.renderCache = {
       rowSignature: "",
       platformSignature: "",
