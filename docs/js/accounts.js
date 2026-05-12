@@ -45,6 +45,10 @@
     badgeGovernanceLoading: false,
     badgeGovernanceEditing: false,
     billingDiscountCodes: [],
+    accountsHydrationRequest: null,
+    accountsHydrationAttempt: 0,
+    accountsLastSuccessAt: 0,
+    bannerDedupe: Object.create(null),
     columnResize: null,
     columnResizeHydrated: false,
     escapeBound: false,
@@ -1615,15 +1619,30 @@ function normalizeUser(raw = {}) {
     return [];
   }
 
+  function hasAccountListShape(payload) {
+    return (
+      Array.isArray(payload) ||
+      Array.isArray(payload?.users) ||
+      Array.isArray(payload?.items) ||
+      Array.isArray(payload?.data)
+    );
+  }
+
   function setBanner(message, visible, options = {}) {
+    const key = options.key || "accounts-banner";
     if (visible && message) {
-      window.StreamSuitesToast?.[options.tone || "warning"]?.(message, {
-        key: options.key || "accounts-banner",
-        title: options.title || "Accounts",
-        autoDismissMs: options.autoDismissMs
-      });
+      const dedupeValue = `${options.tone || "warning"}:${options.title || "Accounts"}:${message}`;
+      if (state.bannerDedupe[key] !== dedupeValue || options.forceToast === true) {
+        state.bannerDedupe[key] = dedupeValue;
+        window.StreamSuitesToast?.[options.tone || "warning"]?.(message, {
+          key,
+          title: options.title || "Accounts",
+          autoDismissMs: options.autoDismissMs
+        });
+      }
     } else if (!visible) {
-      window.StreamSuitesToast?.dismiss?.(options.key || "accounts-banner");
+      delete state.bannerDedupe[key];
+      window.StreamSuitesToast?.dismiss?.(key);
     }
     if (!el.banner) return;
     if (options.inline === false) {
@@ -1651,6 +1670,19 @@ function normalizeUser(raw = {}) {
 
   function setStatus(message) {
     if (el.status) el.status.textContent = message;
+  }
+
+  function clearAccountsHydrationBanners() {
+    [
+      "accounts-hydration-unauthorized",
+      "accounts-hydration-forbidden",
+      "accounts-hydration-malformed",
+      "accounts-hydration-client_render",
+      "accounts-hydration-runtime_error",
+      "accounts-hydration-runtime_unavailable",
+      "accounts-hydration-error"
+    ].forEach((key) => setBanner("", false, { key, inline: false }));
+    setBanner("", false);
   }
 
   function setSource(label) {
@@ -2914,52 +2946,203 @@ function normalizeUser(raw = {}) {
     }
   }
 
-  
-  async function loadUsers() {
+  function createAccountsHydrationError(kind, message, details = {}) {
+    const error = new Error(message);
+    error.kind = kind;
+    Object.assign(error, details);
+    return error;
+  }
+
+  async function requestAccountList(options = {}) {
+    const retry = options.retry === true;
+    const attempt = Number(options.attempt || 0);
+    let res = null;
+    try {
+      res = await fetchJson(buildApiUrl(RUNTIME_ENDPOINT), { timeoutMs: 4500 });
+    } catch (err) {
+      if (retry && attempt === 0 && (err?.name === "AbortError" || err instanceof TypeError)) {
+        await new Promise((resolve) => setTimeout(resolve, 450));
+        return requestAccountList({ ...options, attempt: attempt + 1 });
+      }
+      throw err;
+    }
+    if (res.status === 401) {
+      throw createAccountsHydrationError("unauthorized", "Your admin session is missing or expired. Sign in to continue.", { status: res.status });
+    }
+    if (res.status === 403) {
+      throw createAccountsHydrationError("forbidden", "Your account does not have permission to view admin accounts.", { status: res.status });
+    }
+    if (!res.ok) {
+      const message = await readErrorMessage(res);
+      const shouldRetry = retry && attempt === 0 && (res.status === 0 || res.status >= 500);
+      if (shouldRetry) {
+        await new Promise((resolve) => setTimeout(resolve, 450));
+        return requestAccountList({ ...options, attempt: attempt + 1 });
+      }
+      throw createAccountsHydrationError(
+        res.status >= 500 ? "runtime_unavailable" : "runtime_error",
+        message || `Runtime account list request failed (${res.status}).`,
+        { status: res.status }
+      );
+    }
+    let payload = null;
+    try {
+      payload = await res.json();
+    } catch (_err) {
+      throw createAccountsHydrationError("malformed", "Runtime returned invalid JSON for the account list.", { status: res.status });
+    }
+    if (!hasAccountListShape(payload)) {
+      throw createAccountsHydrationError("malformed", "Runtime returned an account list shape this Dashboard does not understand.", {
+        status: res.status
+      });
+    }
+    return payload;
+  }
+
+  function classifyAccountsHydrationError(err) {
+    if (err?.kind) return err;
+    if (err?.name === "AbortError") {
+      return createAccountsHydrationError("runtime_unavailable", "Runtime account list request timed out.", { originalError: err });
+    }
+    if (err instanceof TypeError) {
+      return createAccountsHydrationError("runtime_unavailable", "Runtime API is unreachable from this browser session.", {
+        originalError: err
+      });
+    }
+    return createAccountsHydrationError("client_render", err?.message || "Dashboard failed while rendering the account table.", {
+      originalError: err
+    });
+  }
+
+  function renderAccountsHydrationFailure(err, options = {}) {
+    const classified = classifyAccountsHydrationError(err);
+    const hasLastGoodData = state.raw.length > 0;
+    const retryAction = "accounts";
+    let status = "Account hydration failed.";
+    let source = "Unavailable";
+    let title = "Accounts unavailable";
+    let tone = "warning";
+    let message = classified.message;
+
+    if (classified.kind === "unauthorized") {
+      status = "Admin session required. Sign in to view accounts.";
+      source = "Unauthorized";
+      title = "Admin session expired";
+      tone = "error";
+      state.canManage = false;
+      state.sourceMode = "unauthorized";
+    } else if (classified.kind === "forbidden") {
+      status = "Admin permission denied for account management.";
+      source = "Forbidden";
+      title = "Accounts forbidden";
+      tone = "error";
+      state.canManage = false;
+      state.sourceMode = "forbidden";
+    } else if (classified.kind === "malformed") {
+      status = "Runtime account response did not match the Dashboard contract.";
+      source = "Contract mismatch";
+      title = "Accounts contract mismatch";
+      tone = "error";
+      state.sourceMode = "malformed";
+    } else if (classified.kind === "client_render") {
+      status = "Dashboard account renderer failed after loading data.";
+      source = "Client render issue";
+      title = "Accounts render failed";
+      tone = "error";
+      message = "Dashboard loaded account data but failed while rendering it. Retry after refreshing the page.";
+      state.sourceMode = "client-render-error";
+    } else if (classified.kind === "runtime_error") {
+      status = "Runtime rejected the account list request.";
+      source = `Runtime error${classified.status ? ` ${classified.status}` : ""}`;
+      title = "Accounts request failed";
+      tone = "error";
+      state.sourceMode = "runtime-error";
+    } else {
+      status = hasLastGoodData
+        ? "Runtime API unavailable. Showing last loaded accounts."
+        : "Runtime API unavailable. Retry or contact an admin.";
+      source = "Unavailable";
+      title = "Accounts unavailable";
+      tone = "warning";
+      state.sourceMode = "unavailable";
+      message = "Runtime API unavailable. Retry or check runtime connectivity.";
+    }
+
+    setStatus(status);
+    setSource(source);
+    if (!hasLastGoodData || classified.kind === "unauthorized" || classified.kind === "forbidden") {
+      state.raw = [];
+      state.manager?.setData([]);
+      updateEmptyStateMessage(0);
+    }
+    setBanner(message, true, {
+      retryAction,
+      tone,
+      key: `accounts-hydration-${classified.kind || "error"}`,
+      title,
+      autoDismissMs: options.autoDismissMs
+    });
+  }
+
+  async function performLoadUsers(options = {}) {
     setStatus("Loading live accounts...");
-    setBanner("", false);
+    clearAccountsHydrationBanners();
+    const attempt = ++state.accountsHydrationAttempt;
 
     try {
-      const res = await fetchJson(buildApiUrl(RUNTIME_ENDPOINT));
-      if (res.status === 401 || res.status === 403) {
-        setStatus("Admin session required. Sign in to view accounts.");
-        setSource("Unauthorized");
-        state.raw = [];
-        state.canManage = false;
-        state.sourceMode = "unauthorized";
-        state.manager?.setData([]);
-        updateEmptyStateMessage(0);
-        setBanner("Your admin session is missing or expired. Sign in to continue.", true);
-        return;
-      }
-      if (!res.ok) throw new Error(`Runtime error ${res.status}`);
-      const payload = await res.json();
-      const normalized = extractUsers(payload).map(normalizeUser);
+      const payload = await requestAccountList({ retry: options.retry === true });
+      const normalized = extractUsers(payload).map((item) => {
+        try {
+          return normalizeUser(item || {});
+        } catch (err) {
+          throw createAccountsHydrationError("malformed", "Runtime account response contained an account row this Dashboard could not normalize.", {
+            originalError: err
+          });
+        }
+      });
       state.raw = normalized;
       state.canManage = canManageAccounts();
       state.sourceMode = "runtime";
-      updateFilterOptions(normalized);
-      applyFilters();
-      setBanner("", false);
-      setStatus(state.canManage ? "Live runtime data" : "Live runtime data (read-only)");
+      try {
+        updateFilterOptions(normalized);
+        applyFilters();
+      } catch (err) {
+        throw createAccountsHydrationError("client_render", err?.message || "Dashboard failed while rendering the account table.", {
+          originalError: err
+        });
+      }
+      state.accountsLastSuccessAt = Date.now();
+      clearAccountsHydrationBanners();
+      setStatus(
+        normalized.length === 0
+          ? "Live runtime data returned no accounts."
+          : state.canManage
+            ? "Live runtime data"
+            : "Live runtime data (read-only)"
+      );
       setSource("Runtime API");
     } catch (err) {
-      console.warn("[Accounts] Failed to load runtime accounts", err);
-      setStatus("Runtime API unavailable. Retry or contact an admin.");
-      setSource("Unavailable");
-      state.raw = [];
-      state.canManage = false;
-      state.sourceMode = "unavailable";
-      state.manager?.setData([]);
-      updateEmptyStateMessage(0);
-      setBanner("Runtime API unavailable. Retry or check runtime connectivity.", true, {
-        retryAction: "accounts",
-        tone: "warning",
-        key: "accounts-runtime-unavailable",
-        title: "Accounts unavailable",
-        autoDismissMs: 6800
-      });
+      if (attempt !== state.accountsHydrationAttempt) return;
+      console.warn("[Accounts] Account list hydration failed", err);
+      renderAccountsHydrationFailure(err, { autoDismissMs: 6800 });
     }
+  }
+
+  async function loadUsers(options = {}) {
+    if (state.accountsHydrationRequest) {
+      return state.accountsHydrationRequest;
+    }
+    state.accountsHydrationRequest = performLoadUsers(options).finally(() => {
+      state.accountsHydrationRequest = null;
+    });
+    return state.accountsHydrationRequest;
+  }
+
+  function retryLoadUsers() {
+    if (state.accountsHydrationRequest) {
+      return state.accountsHydrationRequest;
+    }
+    return loadUsers({ retry: true });
   }
 
   function setBadgeGovernanceStatus(message) {
@@ -3833,7 +4016,7 @@ function normalizeUser(raw = {}) {
       if (!retryButton) return;
       const action = retryButton.getAttribute("data-accounts-retry");
       if (action === "accounts") {
-        void loadUsers();
+        void retryLoadUsers();
       }
     });
 

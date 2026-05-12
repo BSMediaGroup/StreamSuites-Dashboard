@@ -135,3 +135,21 @@ test("account badge governance drawer uses compact summary and modal editor", ()
   assert.match(componentsCss, /max-height: min\(88dvh, 920px\)/);
   assert.match(componentsCss, /overflow: auto/);
 });
+
+test("accounts list hydration is deduped and classifies failures without retry storms", () => {
+  const accountsJs = read("docs/js/accounts.js");
+
+  assert.match(accountsJs, /accountsHydrationRequest/);
+  assert.match(accountsJs, /if \(state\.accountsHydrationRequest\) \{/);
+  assert.match(accountsJs, /performLoadUsers\(options\)\.finally/);
+  assert.match(accountsJs, /requestAccountList\(\{ retry: options\.retry === true \}\)/);
+  assert.match(accountsJs, /createAccountsHydrationError\("unauthorized"/);
+  assert.match(accountsJs, /createAccountsHydrationError\("forbidden"/);
+  assert.match(accountsJs, /createAccountsHydrationError\("malformed"/);
+  assert.match(accountsJs, /createAccountsHydrationError\("client_render"/);
+  assert.match(accountsJs, /Runtime account response did not match the Dashboard contract/);
+  assert.match(accountsJs, /Runtime API unavailable\. Showing last loaded accounts\./);
+  assert.match(accountsJs, /retryLoadUsers/);
+  assert.match(accountsJs, /state\.bannerDedupe/);
+  assert.doesNotMatch(accountsJs, /catch \(err\) \{\s*console\.warn\("\[Accounts\] Failed to load runtime accounts"/);
+});
