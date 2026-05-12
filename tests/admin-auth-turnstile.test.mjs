@@ -134,6 +134,9 @@ test("account badge governance drawer uses compact summary and modal editor", ()
   assert.match(componentsCss, /accounts-badge-governance-modal-body/);
   assert.match(componentsCss, /max-height: min\(88dvh, 920px\)/);
   assert.match(componentsCss, /overflow: auto/);
+  assert.match(componentsCss, /accounts-badge-governance-modal-body \.badge-governance-summary-grid \.badge-governance-matrix-card/);
+  assert.match(componentsCss, /grid-column: 1 \/ -1/);
+  assert.match(componentsCss, /min-width: max\(100%, 960px\)/);
 });
 
 test("accounts list hydration is deduped and classifies failures without retry storms", () => {

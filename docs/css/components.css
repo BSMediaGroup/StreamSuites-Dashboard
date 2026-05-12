@@ -4499,7 +4499,7 @@
   top: 50%;
   left: 50%;
   z-index: 1501;
-  width: clamp(620px, 78vw, 1120px);
+  width: clamp(720px, 88vw, 1280px);
   max-width: calc(100vw - 32px);
   max-height: min(88dvh, 920px);
   display: flex;
@@ -4572,7 +4572,36 @@
 }
 
 .accounts-badge-governance-modal-body .badge-governance-summary-grid {
-  grid-template-columns: minmax(180px, 0.72fr) minmax(220px, 0.95fr) minmax(0, 1.7fr);
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  align-items: stretch;
+}
+
+.accounts-badge-governance-modal-body .badge-governance-summary-grid .badge-governance-summary-card,
+.accounts-badge-governance-modal-body .badge-governance-summary-grid .badge-governance-matrix-card {
+  min-width: 0;
+}
+
+.accounts-badge-governance-modal-body .badge-governance-summary-grid .badge-governance-matrix-card {
+  grid-column: 1 / -1;
+}
+
+.accounts-badge-governance-modal-body .badge-governance-table-scroll {
+  max-width: 100%;
+}
+
+.accounts-badge-governance-modal-body .badge-governance-table {
+  min-width: max(100%, 960px);
+}
+
+.accounts-badge-governance-modal-body .badge-governance-row-label {
+  max-width: 260px;
+  white-space: normal;
+}
+
+.accounts-badge-governance-modal-body .accounts-badge-choice-copy,
+.accounts-badge-governance-modal-body .accounts-badge-choice-label,
+.accounts-badge-governance-modal-body .accounts-badge-choice-meta {
+  overflow-wrap: anywhere;
 }
 
 .accounts-governance-badge-grid {
