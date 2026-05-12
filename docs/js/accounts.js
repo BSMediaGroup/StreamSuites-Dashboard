@@ -2062,6 +2062,77 @@ function normalizeUser(raw = {}) {
     `;
   }
 
+  function normalizePublicHandleInput(value) {
+    return String(value || "")
+      .trim()
+      .replace(/^@+/, "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, "")
+      .replace(/[-_]{2,}/g, (match) => match[0])
+      .replace(/^[-_]+|[-_]+$/g, "");
+  }
+
+  function publicHandleErrorMessage(error, fallback = "Unable to update the public handle.") {
+    const normalized = String(error || "").trim().toLowerCase();
+    switch (normalized) {
+      case "public_slug_empty":
+        return "Enter a public profile handle.";
+      case "public_slug_reserved":
+        return "That handle is reserved. Choose a different handle.";
+      case "public_slug_too_long":
+        return "Public profile handles must be 64 characters or fewer.";
+      case "public_slug_taken":
+        return "That handle is already in use.";
+      case "account_deleted":
+        return "Deleted accounts cannot be edited.";
+      case "account_not_found":
+        return "Account not found.";
+      default:
+        return fallback;
+    }
+  }
+
+  function renderPublicHandleEditor(user) {
+    const accountId = normalizeAccountId(user?.id);
+    const currentHandle = coerceText(user?.publicSlug);
+    const disabled = !state.canManage || !accountId || user?.accountStatus === "deleted";
+    return `
+      <div class="accounts-public-handle-editor" data-account-public-handle-editor="${escapeHtml(accountId)}">
+        <div class="accounts-public-handle-current">
+          <span class="accounts-details-keyline-label">Current handle</span>
+          <strong class="accounts-public-handle-value">${escapeHtml(currentHandle ? `@${currentHandle}` : "No handle")}</strong>
+        </div>
+        <label class="accounts-public-handle-field">
+          <span class="accounts-details-keyline-label">Edit public handle</span>
+          <span class="accounts-public-handle-input-row">
+            <span class="accounts-public-handle-prefix" aria-hidden="true">@</span>
+            <input
+              class="ss-input accounts-public-handle-input"
+              type="text"
+              value="${escapeHtml(currentHandle)}"
+              autocomplete="off"
+              spellcheck="false"
+              maxlength="64"
+              data-account-public-handle-input="${escapeHtml(accountId)}"
+              ${disabled ? "disabled" : ""}
+            />
+          </span>
+        </label>
+        <div class="accounts-public-handle-footer">
+          <p class="accounts-public-handle-help">Runtime/Auth owns this canonical /u/ handle. Old handles stay as aliases when the backend accepts the change.</p>
+          <button
+            type="button"
+            class="ss-btn ss-btn-small ss-btn-secondary"
+            data-account-public-handle-save="${escapeHtml(accountId)}"
+            ${disabled ? "disabled" : ""}
+          >Save handle</button>
+        </div>
+        <div class="accounts-public-handle-status" data-account-public-handle-status="${escapeHtml(accountId)}" aria-live="polite"></div>
+      </div>
+    `;
+  }
+
   function isInlineDataUrl(value) {
     return String(value || "").trim().toLowerCase().startsWith("data:");
   }
@@ -2266,6 +2337,7 @@ function normalizeUser(raw = {}) {
             ${renderBooleanBadge(user.viewerOnly, "Viewer-only", "Not viewer-only")}
             ${renderBooleanBadge(user.creatorCapable, "Creator-capable", "Not creator-capable")}
           </div>
+          ${renderPublicHandleEditor(user)}
           <div class="accounts-details-meta-grid">
             <div><span class="label">Canonical Slug</span><span class="value accounts-system-text">${escapeHtml(
               user.publicSlug || "—"
@@ -2669,7 +2741,7 @@ function normalizeUser(raw = {}) {
     if (!(target instanceof Element)) return false;
     return Boolean(
       target.closest(
-        "button, a, input, select, textarea, label, [data-account-action], [data-account-open-actions], [data-account-close-details], [data-account-tier]"
+        "button, a, input, select, textarea, label, [data-account-action], [data-account-open-actions], [data-account-close-details], [data-account-tier], [data-account-public-handle-save]"
       )
     );
   }
@@ -3076,7 +3148,7 @@ function normalizeUser(raw = {}) {
 
   function setRowActionLoading(row, activeButton, isLoading) {
     if (!row) return;
-    const buttons = row.querySelectorAll("[data-account-action], [data-account-billing-submit], [data-account-billing-revoke]");
+    const buttons = row.querySelectorAll("[data-account-action], [data-account-billing-submit], [data-account-billing-revoke], [data-account-public-handle-save]");
     const tierSelect = row.querySelector("[data-account-tier]");
     buttons.forEach((button) => {
       if (!(button instanceof HTMLButtonElement)) return;
@@ -3111,6 +3183,80 @@ function normalizeUser(raw = {}) {
         tierSelect.disabled = tierSelect.dataset.originalDisabled === "true";
         delete tierSelect.dataset.originalDisabled;
       }
+    }
+  }
+
+  function setPublicHandleStatus(accountId, message, tone = "") {
+    const status = document.querySelector(`[data-account-public-handle-status="${escapeSelectorValue(accountId)}"]`);
+    if (!(status instanceof HTMLElement)) return;
+    status.textContent = message || "";
+    status.dataset.tone = tone || "";
+  }
+
+  async function saveAccountPublicHandle(user, scope, button) {
+    if (!user || !state.canManage) return;
+    const accountId = normalizeAccountId(user.id);
+    const input = document.querySelector(`[data-account-public-handle-input="${escapeSelectorValue(accountId)}"]`);
+    if (!(input instanceof HTMLInputElement)) return;
+    const normalizedHandle = normalizePublicHandleInput(input.value);
+    input.value = normalizedHandle;
+    if (!normalizedHandle) {
+      setPublicHandleStatus(accountId, "Enter a public profile handle.", "error");
+      return;
+    }
+    if (normalizedHandle.length > 64) {
+      setPublicHandleStatus(accountId, "Public profile handles must be 64 characters or fewer.", "error");
+      return;
+    }
+    if (normalizedHandle === normalizePublicHandleInput(user.publicSlug)) {
+      setPublicHandleStatus(accountId, "This account already uses that handle.", "info");
+      return;
+    }
+
+    setPublicHandleStatus(accountId, "Saving handle...", "saving");
+    setRowActionLoading(scope, button, true);
+    try {
+      const res = await fetchJson(buildApiUrl(`/api/admin/accounts/${encodeURIComponent(accountId)}/public-profile-slug`), {
+        method: "PATCH",
+        timeoutMs: 6500,
+        body: JSON.stringify({ public_slug: normalizedHandle }),
+        headers: { "Content-Type": "application/json", Accept: "application/json" }
+      });
+      let payload = {};
+      try {
+        payload = await res.json();
+      } catch (_err) {
+        payload = {};
+      }
+      if (!res.ok || payload?.success === false) {
+        const message = publicHandleErrorMessage(payload?.error, payload?.message || `Handle update failed (${res.status})`);
+        setPublicHandleStatus(accountId, message, "error");
+        setInlineError(message, {
+          tone: "error",
+          key: "accounts-public-handle-save-failed",
+          title: "Handle save failed",
+          autoDismissMs: 6800
+        });
+        return;
+      }
+      updateUserAfterAction(accountId, "public-profile-slug", payload);
+      applyFilters();
+      const updated = getUserById(accountId) || user;
+      renderDrawerForAccount(updated);
+      setPublicHandleStatus(accountId, "Handle saved.", "success");
+      setStatus("Public handle saved.");
+    } catch (err) {
+      console.warn("[Accounts] Public handle save failed", err);
+      const message = err?.name === "AbortError" ? "Handle save timed out." : "Unable to update the public handle.";
+      setPublicHandleStatus(accountId, message, "error");
+      setInlineError(message, {
+        tone: "error",
+        key: "accounts-public-handle-save-error",
+        title: "Handle save failed",
+        autoDismissMs: 6800
+      });
+    } finally {
+      setRowActionLoading(scope, button, false);
     }
   }
 
@@ -3674,6 +3820,23 @@ function normalizeUser(raw = {}) {
 
       const button = target.closest("[data-account-action]");
       const billingSubmit = target.closest("[data-account-billing-submit]");
+      const publicHandleSave = target.closest("[data-account-public-handle-save]");
+      if (publicHandleSave) {
+        event.preventDefault();
+        const accountId = normalizeAccountId(publicHandleSave.getAttribute("data-account-public-handle-save"));
+        const user = getUserById(accountId);
+        if (!user) return;
+        void saveAccountPublicHandle(user, el.detailsProfile || el.detailsDrawer, publicHandleSave).catch((err) => {
+          console.warn("[Accounts] Public handle save failed", err);
+          setInlineError(err?.message || "Failed to save public handle.", {
+            tone: "error",
+            key: "accounts-public-handle-save-failed",
+            title: "Handle save failed",
+            autoDismissMs: 6800
+          });
+        });
+        return;
+      }
       if (billingSubmit) {
         event.preventDefault();
         const accountId = normalizeAccountId(billingSubmit.getAttribute("data-account-id"));

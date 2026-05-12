@@ -4817,9 +4817,10 @@ body.ss-col-resizing-active {
   position: fixed;
   top: 0;
   right: 0;
-  width: clamp(420px, 36vw, 520px);
-  max-width: 100vw;
+  width: clamp(480px, 42vw, 680px);
+  max-width: min(100vw, 720px);
   height: 100dvh;
+  max-height: 100dvh;
   z-index: 1401;
   display: flex;
   flex-direction: column;
@@ -4841,7 +4842,10 @@ body.ss-col-resizing-active {
   gap: 12px;
   padding: 14px;
   border-bottom: 1px solid var(--border-subtle);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+  background: linear-gradient(180deg, rgba(22, 27, 37, 0.99), rgba(16, 20, 29, 0.98));
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 .accounts-details-header-text {
@@ -4864,10 +4868,10 @@ body.ss-col-resizing-active {
 .accounts-details-content {
   flex: 1 1 auto;
   min-height: 0;
-  overflow-y: auto;
-  padding: 14px;
+  overflow: auto;
+  padding: 16px;
   display: grid;
-  gap: 14px;
+  gap: 16px;
   scrollbar-width: thin;
   scrollbar-color: rgba(148, 162, 184, 0.52) rgba(7, 10, 16, 0.75);
   align-items: start;
@@ -4962,13 +4966,17 @@ body.ss-col-resizing-active {
 .accounts-details-name {
   font-size: 14px;
   line-height: 1.2;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .accounts-details-user-code {
+  min-width: 0;
   color: var(--text-secondary);
   font-size: 12px;
   font-family: var(--system-mono-font);
   font-variation-settings: "wght" 460;
+  overflow-wrap: anywhere;
 }
 
 .accounts-details-role-row {
@@ -4997,9 +5005,10 @@ body.ss-col-resizing-active {
   min-width: 0;
   font-size: 12px;
   color: var(--text-primary);
-  white-space: nowrap;
+  white-space: normal;
   overflow: hidden;
   text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 
 .accounts-details-meta-grid .value .ss-badge {
@@ -5026,6 +5035,8 @@ body.ss-col-resizing-active {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.02);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .accounts-details-group-title {
@@ -5069,6 +5080,7 @@ body.ss-col-resizing-active {
   min-width: 0;
   font-size: 12px;
   color: var(--text-primary);
+  overflow-wrap: anywhere;
 }
 
 .accounts-details-keyline-value.is-muted {
@@ -5082,6 +5094,95 @@ body.ss-col-resizing-active {
   border-radius: var(--radius-sm);
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(0, 0, 0, 0.18);
+  min-width: 0;
+}
+
+.accounts-public-handle-editor {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(120, 195, 255, 0.2);
+  border-radius: var(--radius-sm);
+  background: rgba(8, 14, 24, 0.42);
+}
+
+.accounts-public-handle-current {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.accounts-public-handle-value {
+  min-width: 0;
+  color: var(--text-primary);
+  font-family: var(--system-mono-font);
+  font-variation-settings: "wght" 560;
+  overflow-wrap: anywhere;
+}
+
+.accounts-public-handle-field {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.accounts-public-handle-input-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  min-width: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: rgba(5, 9, 15, 0.68);
+  overflow: hidden;
+}
+
+.accounts-public-handle-prefix {
+  padding: 0 0 0 10px;
+  color: var(--text-secondary);
+  font-family: var(--system-mono-font);
+}
+
+.accounts-public-handle-input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+}
+
+.accounts-public-handle-footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.accounts-public-handle-help {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.accounts-public-handle-status {
+  min-height: 16px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.accounts-public-handle-status[data-tone="error"] {
+  color: #ff9b9b;
+}
+
+.accounts-public-handle-status[data-tone="success"] {
+  color: #9ee6bd;
+}
+
+.accounts-public-handle-status[data-tone="saving"] {
+  color: #9ad1ff;
 }
 
 .accounts-details-url-card .accounts-details-keyline-value {
@@ -5303,7 +5404,7 @@ body.ss-col-resizing-active {
 
 @media (max-width: 1024px) {
   .accounts-details-drawer {
-    width: min(92vw, 520px);
+    width: min(94vw, 640px);
   }
 }
 
@@ -5334,6 +5435,11 @@ body.ss-col-resizing-active {
 
   .accounts-details-link-grid {
     grid-template-columns: 1fr;
+  }
+
+  .accounts-public-handle-footer {
+    align-items: stretch;
+    flex-direction: column;
   }
 }
 

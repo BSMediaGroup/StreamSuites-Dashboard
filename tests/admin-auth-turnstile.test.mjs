@@ -101,6 +101,9 @@ test("account management uses dedicated developer access controls instead of dev
   assert.match(accountsJs, /Grant Developer/);
   assert.match(accountsJs, /Revoke Developer/);
   assert.match(accountsJs, /developer-access/);
+  assert.match(accountsJs, /data-account-public-handle-save/);
+  assert.match(accountsJs, /\/api\/admin\/accounts\/\$\{encodeURIComponent\(accountId\)\}\/public-profile-slug/);
+  assert.match(accountsJs, /public_slug_taken/);
 
   assert.doesNotMatch(userDetailJs, /<option value="DEVELOPER"/);
   assert.match(userDetailJs, /Grant Developer/);
