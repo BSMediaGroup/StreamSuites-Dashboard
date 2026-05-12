@@ -38,6 +38,7 @@
     sourceMode: "runtime",
     exportLoading: false,
     openDrawerId: "",
+    badgeGovernanceModalAccountId: "",
     pendingNavAccountId: "",
     drawerDetailToken: 0,
     badgeGovernance: null,
@@ -88,7 +89,13 @@
     detailsActions: null,
     detailsProfileSection: null,
     detailsActionsSection: null,
-    detailsActionsHeading: null
+    detailsActionsHeading: null,
+    badgeGovernanceModalBackdrop: null,
+    badgeGovernanceModal: null,
+    badgeGovernanceModalClose: null,
+    badgeGovernanceModalTitle: null,
+    badgeGovernanceModalSubtitle: null,
+    badgeGovernanceModalBody: null
   };
 
   function $(id) {
@@ -1281,7 +1288,75 @@ function normalizeUser(raw = {}) {
     return renderBadgeIconStrip(items, emptyLabel);
   }
 
-  function renderAccountBadgeGovernance(user) {
+  function resolveBadgeVisibilityOverrideMode(entry) {
+    if (entry && typeof entry === "object") {
+      if (entry.visible === true) return "show";
+      if (entry.visible === false) return "hide";
+      return "default";
+    }
+    if (entry === true) return "show";
+    if (entry === false) return "hide";
+    return "default";
+  }
+
+  function renderAccountBadgeGovernanceSummary(user) {
+    const badgeState = user?.badgeState && typeof user.badgeState === "object" ? user.badgeState : {};
+    const entitlements = badgeState.entitlements && typeof badgeState.entitlements === "object" ? badgeState.entitlements : {};
+    const visibilityOverrides =
+      badgeState.visibility_overrides && typeof badgeState.visibility_overrides === "object"
+        ? badgeState.visibility_overrides
+        : {};
+    const activeBadges = normalizeBadgeItems(user?.badges);
+    const activeBadgeStrip = renderBadgeStateSummary(user?.badges, "No effective badge icons");
+    const enabledManualEntitlements = ["founder", "moderator"].filter((key) => entitlements[key]?.enabled === true);
+    const visibilityKeys = getGovernedBadgeKeys(user);
+    const surfaceCatalog = getBadgeSurfaceCatalog(badgeState || state.badgeGovernance || {});
+    const overrideCount = Object.values(visibilityOverrides).reduce((count, row) => {
+      if (!row || typeof row !== "object") return count;
+      return count + Object.values(row).filter((entry) => resolveBadgeVisibilityOverrideMode(entry) !== "default").length;
+    }, 0);
+    const activeBadgePreview = activeBadges.length
+      ? activeBadges.slice(0, 4).map((badge) => escapeHtml(badge.label)).join(", ")
+      : "No effective badges";
+    const extraBadgeCount = activeBadges.length > 4 ? ` +${activeBadges.length - 4} more` : "";
+    const entitlementSummary = enabledManualEntitlements.length
+      ? enabledManualEntitlements.map((key) => renderBadge(key, "ss-badge-success")).join("")
+      : '<span class="muted">No manual entitlements enabled</span>';
+    const accountId = normalizeAccountId(user?.id);
+    return `
+      <section class="accounts-details-group badge-governance-section accounts-badge-governance-summary" style="margin-top:18px;">
+        <div class="badge-governance-card-head">
+          <h5 class="accounts-details-group-title">Badge Governance</h5>
+          <span class="badge-governance-card-note">${escapeHtml(String(surfaceCatalog.length || 0))} surfaces</span>
+        </div>
+        <div class="accounts-badge-governance-summary-card">
+          <div class="accounts-badge-governance-summary-main">
+            <div>
+              <span class="accounts-details-placeholder-title">Effective badges</span>
+              <div class="accounts-details-placeholder-value badge-governance-icon-strip">${activeBadgeStrip}</div>
+              <p class="muted accounts-badge-governance-preview">${activeBadgePreview}${escapeHtml(extraBadgeCount)}</p>
+            </div>
+            <div>
+              <span class="accounts-details-placeholder-title">Manual entitlements</span>
+              <div class="accounts-details-kpi-row accounts-badge-governance-entitlement-preview">${entitlementSummary}</div>
+            </div>
+          </div>
+          <div class="accounts-details-meta-grid accounts-badge-governance-compact-stats">
+            <div><span class="label">Governed badges</span><span class="value">${escapeHtml(String(visibilityKeys.length || 0))}</span></div>
+            <div><span class="label">Admin overrides</span><span class="value">${escapeHtml(String(overrideCount || 0))}</span></div>
+          </div>
+          <p class="muted badge-governance-intro">Admin overrides take priority over creator-side preferences. Open the editor for entitlement toggles and surface visibility controls.</p>
+          <div class="accounts-inline-actions badge-governance-actions-row">
+            <button type="button" class="ss-btn ss-btn-small ss-btn-primary" data-account-badge-governance-open data-account-id="${escapeHtml(accountId)}">
+              Edit badge governance
+            </button>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  function renderAccountBadgeGovernanceEditor(user) {
     const badgeState = user?.badgeState && typeof user.badgeState === "object" ? user.badgeState : {};
     const entitlements = badgeState.entitlements && typeof badgeState.entitlements === "object" ? badgeState.entitlements : {};
     const visibilityOverrides =
@@ -1319,12 +1394,7 @@ function normalizeUser(raw = {}) {
               visibilityOverrides[key] && typeof visibilityOverrides[key] === "object"
                 ? visibilityOverrides[key][surface.key]
                 : null;
-            const value =
-              overrideEntry && typeof overrideEntry === "object" && overrideEntry.visible === true
-                ? "show"
-                : overrideEntry && typeof overrideEntry === "object" && overrideEntry.visible === false
-                ? "hide"
-                : "default";
+            const value = resolveBadgeVisibilityOverrideMode(overrideEntry);
             const helper =
               cell.state === "admin_hidden"
                 ? "Hidden by admin override"
@@ -1356,7 +1426,7 @@ function normalizeUser(raw = {}) {
       })
       .join("");
     return `
-      <section class="accounts-details-group badge-governance-section" style="margin-top:18px;">
+      <section class="accounts-details-group badge-governance-section accounts-badge-governance-editor">
         <h5 class="accounts-details-group-title">Badge Governance</h5>
         <p class="muted badge-governance-intro">Effective visibility by surface. Admin overrides here take priority over creator-side preferences.</p>
         <div class="accounts-details-placeholder-group badge-governance-summary-grid">
@@ -1387,10 +1457,17 @@ function normalizeUser(raw = {}) {
           </div>
         </div>
         <div class="accounts-inline-actions badge-governance-actions-row">
+          <button type="button" class="ss-btn ss-btn-small ss-btn-secondary" data-account-badge-governance-close>
+            Cancel
+          </button>
           <button type="button" class="ss-btn ss-btn-small ss-btn-primary" data-account-badge-governance-save data-account-id="${escapeHtml(accountId)}">Save badge settings</button>
         </div>
       </section>
     `;
+  }
+
+  function renderAccountBadgeGovernance(user) {
+    return renderAccountBadgeGovernanceSummary(user);
   }
 
   function renderSystemBadgeGovernancePanel() {
@@ -2625,6 +2702,72 @@ function normalizeUser(raw = {}) {
     void hydrateDrawerCreatorDetail(user);
   }
 
+  function renderBadgeGovernanceModalForAccount(user) {
+    if (!el.badgeGovernanceModalBody) return;
+    if (!user) {
+      el.badgeGovernanceModalBody.innerHTML = '<div class="muted">Account badge governance is unavailable.</div>';
+      return;
+    }
+    const title = user.displayName || user.userCode || user.email || "Account";
+    const subtitleParts = [user.userCode, user.email].map((part) => String(part || "").trim()).filter(Boolean);
+    if (el.badgeGovernanceModalTitle) {
+      el.badgeGovernanceModalTitle.textContent = "Badge Governance";
+    }
+    if (el.badgeGovernanceModalSubtitle) {
+      el.badgeGovernanceModalSubtitle.textContent = `${title}${subtitleParts.length ? ` - ${subtitleParts.join(" - ")}` : ""}`;
+    }
+    el.badgeGovernanceModalBody.innerHTML = renderAccountBadgeGovernanceEditor(user);
+  }
+
+  function openBadgeGovernanceModal(accountId) {
+    const id = normalizeAccountId(accountId);
+    const user = getUserById(id);
+    if (!id || !user || !el.badgeGovernanceModal || !el.badgeGovernanceModalBackdrop) return;
+    state.badgeGovernanceModalAccountId = id;
+    renderBadgeGovernanceModalForAccount(user);
+    el.badgeGovernanceModalBackdrop.classList.remove("hidden");
+    el.badgeGovernanceModal.classList.remove("hidden");
+    el.badgeGovernanceModalBackdrop.setAttribute("aria-hidden", "false");
+    el.badgeGovernanceModal.setAttribute("aria-hidden", "false");
+    window.requestAnimationFrame(() => {
+      el.badgeGovernanceModalBackdrop?.classList.add("is-open");
+      el.badgeGovernanceModal?.classList.add("is-open");
+    });
+    window.requestAnimationFrame(() => {
+      el.badgeGovernanceModalClose?.focus({ preventScroll: true });
+    });
+  }
+
+  function closeBadgeGovernanceModal() {
+    if (!el.badgeGovernanceModal || !el.badgeGovernanceModalBackdrop) return;
+    state.badgeGovernanceModalAccountId = "";
+    el.badgeGovernanceModal.classList.remove("is-open");
+    el.badgeGovernanceModalBackdrop.classList.remove("is-open");
+    el.badgeGovernanceModal.setAttribute("aria-hidden", "true");
+    el.badgeGovernanceModalBackdrop.setAttribute("aria-hidden", "true");
+    window.setTimeout(() => {
+      if (!el.badgeGovernanceModal?.classList.contains("is-open")) {
+        el.badgeGovernanceModal?.classList.add("hidden");
+        if (el.badgeGovernanceModalBody) el.badgeGovernanceModalBody.innerHTML = "";
+      }
+      if (!el.badgeGovernanceModalBackdrop?.classList.contains("is-open")) {
+        el.badgeGovernanceModalBackdrop?.classList.add("hidden");
+      }
+    }, 180);
+  }
+
+  function refreshOpenBadgeGovernanceSurfaces(accountId) {
+    const id = normalizeAccountId(accountId);
+    const updated = getUserById(id);
+    if (!updated) return;
+    if (normalizeAccountId(state.openDrawerId) === id) {
+      renderDrawerForAccount(updated);
+    }
+    if (normalizeAccountId(state.badgeGovernanceModalAccountId) === id) {
+      renderBadgeGovernanceModalForAccount(updated);
+    }
+  }
+
   function closeOpenDrawer(options = {}) {
     const keepState = options.keepState === true;
     clearDrawerCloseTimer();
@@ -2741,7 +2884,7 @@ function normalizeUser(raw = {}) {
     if (!(target instanceof Element)) return false;
     return Boolean(
       target.closest(
-        "button, a, input, select, textarea, label, [data-account-action], [data-account-open-actions], [data-account-close-details], [data-account-tier], [data-account-public-handle-save]"
+        "button, a, input, select, textarea, label, [data-account-action], [data-account-open-actions], [data-account-close-details], [data-account-tier], [data-account-public-handle-save], [data-account-badge-governance-open]"
       )
     );
   }
@@ -3698,6 +3841,10 @@ function normalizeUser(raw = {}) {
       state.escapeBound = true;
       document.addEventListener("keydown", (event) => {
         if (event.key !== "Escape") return;
+        if (state.badgeGovernanceModalAccountId) {
+          closeBadgeGovernanceModal();
+          return;
+        }
         if (state.openDrawerId) {
           closeOpenDrawer();
         }
@@ -3783,6 +3930,44 @@ function normalizeUser(raw = {}) {
       closeOpenDrawer();
     });
 
+    el.badgeGovernanceModalBackdrop?.addEventListener("click", () => {
+      closeBadgeGovernanceModal();
+    });
+
+    el.badgeGovernanceModalClose?.addEventListener("click", (event) => {
+      event.preventDefault();
+      closeBadgeGovernanceModal();
+    });
+
+    el.badgeGovernanceModal?.addEventListener("click", (event) => {
+      const target = getEventTargetElement(event);
+      if (!target) return;
+      const closeButton = target.closest("[data-account-badge-governance-close]");
+      if (closeButton) {
+        event.preventDefault();
+        closeBadgeGovernanceModal();
+        return;
+      }
+      const badgeSave = target.closest("[data-account-badge-governance-save]");
+      if (badgeSave) {
+        event.preventDefault();
+        const accountId = normalizeAccountId(badgeSave.getAttribute("data-account-id"));
+        const user = getUserById(accountId);
+        if (!user) return;
+        void saveAccountBadgeGovernance(user, el.badgeGovernanceModal || el.detailsDrawer, badgeSave)
+          .then(() => refreshOpenBadgeGovernanceSurfaces(accountId))
+          .catch((err) => {
+            console.warn("[Accounts] Account badge governance save failed", err);
+            setInlineError(err?.message || "Failed to save account badge governance.", {
+              tone: "error",
+              key: "accounts-badge-save-failed",
+              title: "Badge save failed",
+              autoDismissMs: 6800
+            });
+          });
+      }
+    });
+
     el.detailsDrawer?.addEventListener("click", (event) => {
       const target = getEventTargetElement(event);
       if (!target) return;
@@ -3794,6 +3979,13 @@ function normalizeUser(raw = {}) {
       }
 
       const userDetailButton = target.closest("[data-account-open-user-detail]");
+      const badgeGovernanceOpen = target.closest("[data-account-badge-governance-open]");
+      if (badgeGovernanceOpen) {
+        event.preventDefault();
+        const accountId = normalizeAccountId(badgeGovernanceOpen.getAttribute("data-account-id"));
+        openBadgeGovernanceModal(accountId);
+        return;
+      }
       if (userDetailButton) {
         event.preventDefault();
         const userCode = userDetailButton.getAttribute("data-account-open-user-detail") || "";
@@ -3877,15 +4069,17 @@ function normalizeUser(raw = {}) {
         const accountId = normalizeAccountId(badgeSave.getAttribute("data-account-id"));
         const user = getUserById(accountId);
         if (!user) return;
-        void saveAccountBadgeGovernance(user, el.detailsActions || el.detailsDrawer, badgeSave).catch((err) => {
-          console.warn("[Accounts] Account badge governance save failed", err);
-          setInlineError(err?.message || "Failed to save account badge governance.", {
-            tone: "error",
-            key: "accounts-badge-save-failed",
-            title: "Badge save failed",
-            autoDismissMs: 6800
+        void saveAccountBadgeGovernance(user, el.detailsActions || el.detailsDrawer, badgeSave)
+          .then(() => refreshOpenBadgeGovernanceSurfaces(accountId))
+          .catch((err) => {
+            console.warn("[Accounts] Account badge governance save failed", err);
+            setInlineError(err?.message || "Failed to save account badge governance.", {
+              tone: "error",
+              key: "accounts-badge-save-failed",
+              title: "Badge save failed",
+              autoDismissMs: 6800
+            });
           });
-        });
         return;
       }
       if (!button) return;
@@ -3998,7 +4192,14 @@ function normalizeUser(raw = {}) {
     el.detailsProfileSection = $("accounts-details-profile-section");
     el.detailsActionsSection = $("accounts-details-actions-section");
     el.detailsActionsHeading = $("accounts-details-actions-heading");
+    el.badgeGovernanceModalBackdrop = $("accounts-badge-governance-modal-backdrop");
+    el.badgeGovernanceModal = $("accounts-badge-governance-modal");
+    el.badgeGovernanceModalClose = $("accounts-badge-governance-modal-close");
+    el.badgeGovernanceModalTitle = $("accounts-badge-governance-modal-title");
+    el.badgeGovernanceModalSubtitle = $("accounts-badge-governance-modal-subtitle");
+    el.badgeGovernanceModalBody = $("accounts-badge-governance-modal-body");
     state.openDrawerId = "";
+    state.badgeGovernanceModalAccountId = "";
     state.pendingNavAccountId = consumePendingAccountFocus();
     state.columnResizeHydrated = false;
     clearRowClickTimer();

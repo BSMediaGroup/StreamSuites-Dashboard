@@ -4442,6 +4442,139 @@
   margin-top: 12px;
 }
 
+.accounts-badge-governance-summary-card {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015));
+  min-width: 0;
+}
+
+.accounts-badge-governance-summary-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+}
+
+.accounts-badge-governance-preview {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.accounts-badge-governance-entitlement-preview {
+  margin-top: 6px;
+  min-width: 0;
+}
+
+.accounts-badge-governance-compact-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.accounts-badge-governance-editor {
+  margin-top: 0;
+}
+
+.accounts-badge-governance-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  background: rgba(6, 9, 14, 0.56);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+.accounts-badge-governance-modal-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.accounts-badge-governance-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 1501;
+  width: clamp(620px, 78vw, 1120px);
+  max-width: calc(100vw - 32px);
+  max-height: min(88dvh, 920px);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, rgba(22, 27, 37, 0.99), rgba(13, 17, 25, 0.99));
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.52);
+  opacity: 0;
+  transform: translate(-50%, -48%) scale(0.985);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.accounts-badge-governance-modal.is-open {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.accounts-badge-governance-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: linear-gradient(180deg, rgba(22, 27, 37, 0.99), rgba(16, 20, 29, 0.98));
+  flex: 0 0 auto;
+}
+
+.accounts-badge-governance-modal-title-wrap {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.accounts-badge-governance-modal-title-wrap h3 {
+  margin: 0;
+  font-size: 15px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.accounts-badge-governance-modal-title-wrap p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.accounts-badge-governance-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 162, 184, 0.52) rgba(7, 10, 16, 0.75);
+}
+
+.accounts-badge-governance-modal-body::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.accounts-badge-governance-modal-body::-webkit-scrollbar-track {
+  background: rgba(7, 10, 16, 0.75);
+}
+
+.accounts-badge-governance-modal-body::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(148, 162, 184, 0.5);
+}
+
+.accounts-badge-governance-modal-body .badge-governance-summary-grid {
+  grid-template-columns: minmax(180px, 0.72fr) minmax(220px, 0.95fr) minmax(0, 1.7fr);
+}
+
 .accounts-governance-badge-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -5392,6 +5525,10 @@ body.ss-col-resizing-active {
     grid-template-columns: 1fr 1fr;
   }
 
+  .accounts-badge-governance-modal-body .badge-governance-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
   .accounts-badge-visibility-row {
     align-items: stretch;
     flex-direction: column;
@@ -5427,6 +5564,28 @@ body.ss-col-resizing-active {
   .accounts-details-drawer {
     width: 100vw;
     border-left: 0;
+  }
+
+  .accounts-badge-governance-modal {
+    width: calc(100vw - 20px);
+    max-width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+    border-radius: var(--radius-md);
+  }
+
+  .accounts-badge-governance-modal-header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .accounts-badge-governance-modal-header .ss-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .accounts-badge-governance-compact-stats {
+    grid-template-columns: 1fr;
   }
 
   .accounts-details-meta-grid {

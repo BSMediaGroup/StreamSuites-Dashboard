@@ -110,3 +110,28 @@ test("account management uses dedicated developer access controls instead of dev
   assert.match(userDetailJs, /Revoke Developer/);
   assert.match(userDetailJs, /developer-access/);
 });
+
+test("account badge governance drawer uses compact summary and modal editor", () => {
+  const accountsView = read("docs/views/accounts.html");
+  const accountsJs = read("docs/js/accounts.js");
+  const componentsCss = read("docs/css/components.css");
+
+  assert.match(accountsView, /accounts-badge-governance-modal/);
+  assert.match(accountsView, /role="dialog"/);
+  assert.match(accountsView, /aria-modal="true"/);
+
+  assert.match(accountsJs, /renderAccountBadgeGovernanceSummary/);
+  assert.match(accountsJs, /renderAccountBadgeGovernanceEditor/);
+  assert.match(accountsJs, /data-account-badge-governance-open/);
+  assert.match(accountsJs, /Edit badge governance/);
+  assert.match(accountsJs, /openBadgeGovernanceModal/);
+  assert.match(accountsJs, /refreshOpenBadgeGovernanceSurfaces/);
+  assert.match(accountsJs, /resolveBadgeVisibilityOverrideMode/);
+  assert.match(accountsJs, /data-account-badge-governance-close/);
+  assert.match(accountsJs, /saveAccountBadgeGovernance\(user, el\.badgeGovernanceModal/);
+
+  assert.match(componentsCss, /accounts-badge-governance-summary-card/);
+  assert.match(componentsCss, /accounts-badge-governance-modal-body/);
+  assert.match(componentsCss, /max-height: min\(88dvh, 920px\)/);
+  assert.match(componentsCss, /overflow: auto/);
+});

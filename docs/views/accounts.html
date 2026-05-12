@@ -224,3 +224,34 @@
     </section>
   </div>
 </aside>
+
+<div id="accounts-badge-governance-modal-backdrop" class="accounts-badge-governance-modal-backdrop hidden" aria-hidden="true"></div>
+
+<section
+  id="accounts-badge-governance-modal"
+  class="accounts-badge-governance-modal hidden"
+  role="dialog"
+  aria-modal="true"
+  aria-hidden="true"
+  aria-labelledby="accounts-badge-governance-modal-title"
+  data-ss-profile-hover="off"
+  tabindex="-1"
+>
+  <header class="accounts-badge-governance-modal-header">
+    <div class="accounts-badge-governance-modal-title-wrap">
+      <span class="accounts-governance-kicker">Account Editor</span>
+      <h3 id="accounts-badge-governance-modal-title">Badge Governance</h3>
+      <p id="accounts-badge-governance-modal-subtitle" class="muted">Select an account to edit badge governance.</p>
+    </div>
+    <button
+      type="button"
+      id="accounts-badge-governance-modal-close"
+      class="ss-btn ss-btn-small ss-btn-secondary"
+      data-account-badge-governance-close
+      aria-label="Close badge governance editor"
+    >
+      Close
+    </button>
+  </header>
+  <div id="accounts-badge-governance-modal-body" class="accounts-badge-governance-modal-body"></div>
+</section>
