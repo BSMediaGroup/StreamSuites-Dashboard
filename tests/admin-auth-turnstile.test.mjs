@@ -93,6 +93,16 @@ test("admin session consumer hydrates the dropdown overview card", () => {
   assert.match(css, /ss-user-menu-overview/);
 });
 
+test("admin sidebar keeps the desktop rail tight and centers collapsed nav icons", () => {
+  const css = read("docs/css/base.css");
+
+  assert.match(css, /--app-sidebar-width:\s*258px;/);
+  assert.match(css, /html\.ss-sidebar-collapsed #app-nav \.nav-shell,[\s\S]*padding-inline:\s*0;/);
+  assert.match(css, /html\.ss-sidebar-collapsed #app-nav #app-nav-list,[\s\S]*align-items:\s*center !important;[\s\S]*padding-left:\s*0;[\s\S]*scrollbar-gutter:\s*auto;/);
+  assert.match(css, /html\.ss-sidebar-collapsed #app-nav #app-nav-list > li\[data-view\],[\s\S]*width:\s*calc\(var\(--app-sidebar-collapsed-width\) - 24px\) !important;[\s\S]*justify-content:\s*center;[\s\S]*gap:\s*0;[\s\S]*padding-left:\s*0;[\s\S]*padding-right:\s*0;/);
+  assert.match(css, /@media \(max-width:\s*980px\)[\s\S]*html\.ss-sidebar-collapsed #app-nav \.nav-shell,[\s\S]*padding-inline:\s*0;/);
+});
+
 test("account management uses dedicated developer access controls instead of developer tier options", () => {
   const accountsJs = read("docs/js/accounts.js");
   const userDetailJs = read("docs/js/user-detail.js");

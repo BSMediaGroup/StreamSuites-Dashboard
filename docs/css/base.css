@@ -1353,7 +1353,7 @@ button {
    ------------------------------ */
 
 :root {
-  --app-sidebar-width: 286px;
+  --app-sidebar-width: 258px;
 }
 
 #app {
@@ -2737,11 +2737,28 @@ body.ss-sidebar-collapsed .ss-sidebar-brand .dashboard-badge {
   display: none;
 }
 
-html.ss-sidebar-collapsed #app-nav li[data-view],
-body.ss-sidebar-collapsed #app-nav li[data-view] {
+html.ss-sidebar-collapsed #app-nav .nav-shell,
+body.ss-sidebar-collapsed #app-nav .nav-shell {
+  align-items: center;
+  padding-inline: 0;
+}
+
+html.ss-sidebar-collapsed #app-nav #app-nav-list,
+body.ss-sidebar-collapsed #app-nav #app-nav-list {
+  align-items: center !important;
+  padding-left: 0;
+  padding-right: 0;
+  scrollbar-gutter: auto;
+}
+
+html.ss-sidebar-collapsed #app-nav #app-nav-list > li[data-view],
+body.ss-sidebar-collapsed #app-nav #app-nav-list > li[data-view] {
+  width: calc(var(--app-sidebar-collapsed-width) - 24px) !important;
+  max-width: calc(var(--app-sidebar-collapsed-width) - 24px) !important;
   justify-content: center;
-  padding-left: 8px;
-  padding-right: 8px;
+  gap: 0;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 html.ss-sidebar-collapsed #app-nav li[data-view] .nav-label,
@@ -2790,6 +2807,11 @@ body.ss-sidebar-collapsed #app-nav li.nav-section::after {
   #app-nav .nav-shell {
     max-height: none;
     padding: 10px 8px 10px 10px;
+  }
+
+  html.ss-sidebar-collapsed #app-nav .nav-shell,
+  body.ss-sidebar-collapsed #app-nav .nav-shell {
+    padding-inline: 0;
   }
 
   #app-header {
