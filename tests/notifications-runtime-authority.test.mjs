@@ -215,6 +215,7 @@ function buildBotsSandbox({ botPayloads = [createBotsPayload()], creatorsPayload
     "bots-generated-at",
     "bots-source",
     "bots-error",
+    "bots-hidden-note",
     "bots-platforms-status",
     "bots-platforms-grid",
     "bots-live-total",
@@ -825,6 +826,9 @@ test("admin bots surface distinguishes managed sessions and transport posture", 
   assert.match(botsJs, /sessionStatus === "awaiting_live"/);
   assert.match(botsJs, /sessionStatus === "live_target_unresolved"/);
   assert.match(botsJs, /creator-managed session/);
+  assert.match(botsHtml, /Unconfigured platform placeholders are hidden\./);
+  assert.match(botsJs, /isHiddenPlaceholderBot/);
+  assert.match(botsJs, /visible_in_admin/);
 });
 
 test("bots view groups main runtime rows by creator and keeps platform details in the drawer", async () => {
@@ -872,6 +876,47 @@ test("bots view groups main runtime rows by creator and keeps platform details i
   assert.match(tableHtml, /Kick/);
   assert.match(tableHtml, /2 total/);
   assert.doesNotMatch(tableHtml, /ss-bot-instance-card/);
+});
+
+test("bots view hides unconfigured placeholder rows from older runtime payloads", async () => {
+  const payload = createBotsPayload({ unchanged: true });
+  payload.platforms[0].details.hidden_placeholder_count = 1;
+  payload.bots.unshift({
+    creator_id: "phantom",
+    platform: "rumble",
+    session_type: "auto",
+    manual_override: false,
+    session_id: "rumble-auto-placeholder",
+    status: "disabled",
+    lifecycle_state: "disabled",
+    desired: false,
+    status_reason: "Rumble bot auto-deploy disabled",
+    runner_state: "disabled",
+    pause_reason: "creator_disabled",
+    last_error: "creator_disabled",
+    resolved_target: {},
+    uptime_seconds: 0
+  });
+
+  const { sandbox, elements } = buildBotsSandbox({
+    botPayloads: [payload],
+    creatorsPayload: {
+      creators: [
+        { creator_id: "daniel", display_name: "Daniel", tier: "pro", status: "active" },
+        { creator_id: "phantom", display_name: "Phantom", tier: "core", status: "active" }
+      ]
+    }
+  });
+  sandbox.window.BotsView.init();
+  await flushMicrotasks();
+
+  const tableHtml = elements.get("bots-table-body").innerHTML;
+  assert.match(tableHtml, /Daniel/);
+  assert.doesNotMatch(tableHtml, /Phantom/);
+  assert.doesNotMatch(tableHtml, /Rumble bot auto-deploy disabled/);
+  assert.match(elements.get("bots-count").textContent, /1 creator \/ 1 bot/);
+  assert.match(elements.get("bots-live-total").textContent, /TOTAL LIVE BOTS: 1/);
+  assert.match(elements.get("bots-hidden-note").textContent, /Unconfigured platform placeholders are hidden \(2\)\./);
 });
 
 test("bots view does not stack duplicate pollers across repeated mounts", async () => {

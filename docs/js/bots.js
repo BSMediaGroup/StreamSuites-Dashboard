@@ -84,6 +84,24 @@
       extraHelp: ""
     }
   };
+  const PLACEHOLDER_REASON_CODES = new Set([
+    "auto_deploy_disabled",
+    "creator_disabled",
+    "disabled",
+    "no_target_exported",
+    "not_configured",
+    "rumble_not_connected",
+    "unconfigured"
+  ]);
+  const PLACEHOLDER_LIFECYCLE_STATES = new Set([
+    "",
+    "blocked",
+    "disabled",
+    "not_desired",
+    "offline",
+    "paused",
+    "stopped"
+  ]);
 
   const state = {
     pollHandle: null,
@@ -125,6 +143,7 @@
     generatedAt: null,
     source: null,
     error: null,
+    hiddenNote: null,
     platformsStatus: null,
     platformsGrid: null,
     liveTotal: null,
@@ -255,6 +274,59 @@
 
   function normalizeReasonCode(value) {
     return String(value || "").trim().toLowerCase();
+  }
+
+  function hasExportedTarget(bot) {
+    if (String(bot?.active_target || "").trim()) return true;
+    const target = bot?.resolved_target && typeof bot.resolved_target === "object" ? bot.resolved_target : {};
+    return Object.keys(target).some((key) => String(target[key] || "").trim());
+  }
+
+  function hasAttemptEvidence(bot) {
+    return Boolean(
+      bot?.last_attach_attempt_at ||
+        bot?.last_dispatch_attempt_at ||
+        bot?.last_subscription_attempt_at ||
+        bot?.last_transport_heartbeat_at ||
+        bot?.last_message_at ||
+        bot?.connected_at
+    );
+  }
+
+  function hasPlaceholderReasonOnly(bot) {
+    const reasonValues = [
+      bot?.pause_reason,
+      bot?.last_error,
+      bot?.status_reason,
+      bot?.runner_state,
+      bot?.blocking_reason,
+      bot?.session_blocking_code
+    ]
+      .map((value) => normalizeReasonCode(value))
+      .filter(Boolean);
+    if (!reasonValues.length) return false;
+    return reasonValues.every((value) => (
+      PLACEHOLDER_REASON_CODES.has(value) ||
+      Array.from(PLACEHOLDER_REASON_CODES).some((code) => value.includes(code))
+    ));
+  }
+
+  function isHiddenPlaceholderBot(bot) {
+    if (bot?.visible_in_admin === true || bot?.actionable === true) return false;
+    if (bot?.visible_in_admin === false || bot?.session_origin === "placeholder") return true;
+    const platform = normalizePlatformKey(bot?.platform);
+    if (!["kick", "rumble"].includes(platform)) return false;
+    if (bot?.manual_override === true) return false;
+    if (bot?.desired === true) return false;
+    if (hasExportedTarget(bot)) return false;
+    if (hasAttemptEvidence(bot)) return false;
+    const lifecycle = normalizeReasonCode(bot?.lifecycle_state || bot?.status);
+    const configurationState = normalizeReasonCode(bot?.configuration_state);
+    return (
+      (configurationState === "unconfigured" || !configurationState) &&
+      PLACEHOLDER_LIFECYCLE_STATES.has(lifecycle) &&
+      hasPlaceholderReasonOnly(bot)
+    );
   }
 
   function uniqueReasonCodes(values) {
@@ -388,7 +460,16 @@
       })
       .filter(Boolean);
 
-    const bots = Array.isArray(payload?.bots) ? payload.bots.slice() : [];
+    const rawBots = Array.isArray(payload?.bots) ? payload.bots.slice() : [];
+    const hiddenPlaceholderCount = rawBots.filter((bot) => isHiddenPlaceholderBot(bot)).length;
+    const platformHiddenCount = platformRows.reduce((total, row) => {
+      const direct = Number(row?.hidden_placeholder_count);
+      const nested = Number(row?.details?.hidden_placeholder_count);
+      if (Number.isFinite(direct)) return total + direct;
+      if (Number.isFinite(nested)) return total + nested;
+      return total;
+    }, 0);
+    const bots = rawBots.filter((bot) => !isHiddenPlaceholderBot(bot));
     bots.sort((a, b) => {
       const creatorCompare = String(a?.creator_id || "").localeCompare(String(b?.creator_id || ""));
       if (creatorCompare !== 0) return creatorCompare;
@@ -399,7 +480,8 @@
       schemaVersion: payload?.schema_version || null,
       generatedAt: payload?.generated_at || null,
       serverGeneratedAt: payload?.server_generated_at || payload?.generated_at || null,
-      count: typeof payload?.count === "number" ? payload.count : bots.length,
+      count: bots.length,
+      hiddenPlaceholderCount: hiddenPlaceholderCount + platformHiddenCount,
       supportedPlatforms: sortPlatformKeys(
         supportedPlatforms.map((platform) => normalizePlatformKey(platform))
       ),
@@ -1889,6 +1971,12 @@
     if (el.generatedAt) {
       el.generatedAt.textContent = `Generated: ${formatTimestamp(normalized?.generatedAt)}`;
     }
+    if (el.hiddenNote) {
+      const hiddenCount = Number(normalized?.hiddenPlaceholderCount || 0);
+      el.hiddenNote.textContent = hiddenCount > 0
+        ? `Unconfigured platform placeholders are hidden (${hiddenCount}).`
+        : "Unconfigured platform placeholders are hidden.";
+    }
     if (el.status) {
       if (state.hydrationLive) {
         const received = formatTimestamp(new Date(receivedAt).toISOString());
@@ -2354,6 +2442,7 @@
     el.generatedAt = $("bots-generated-at");
     el.source = $("bots-source");
     el.error = $("bots-error");
+    el.hiddenNote = $("bots-hidden-note");
     el.platformsStatus = $("bots-platforms-status");
     el.platformsGrid = $("bots-platforms-grid");
     el.liveTotal = $("bots-live-total");
