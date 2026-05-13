@@ -8,7 +8,8 @@
   const POLL_INTERVAL_MS = 8000;
   const BOTS_STATUS_ENDPOINT = "/api/admin/bots/status";
   const CREATORS_ENDPOINT = "/api/admin/creators";
-  const MANUAL_DEPLOY_ENDPOINT = "/api/admin/runtime/manual-deploy";
+  const MANUAL_DEPLOY_ENDPOINT = "/api/admin/bots/deploy";
+  const MANUAL_DETACH_ENDPOINT = "/api/admin/bots/detach";
   const MANUAL_RESUME_ENDPOINT = "/api/admin/runtime/manual-resume";
   const MANUAL_CLEAR_ENDPOINT = "/api/admin/runtime/manual-instance";
   const PLATFORM_DISPLAY = {
@@ -101,6 +102,13 @@
     "offline",
     "paused",
     "stopped"
+  ]);
+  const WAITING_STATE_CODES = new Set([
+    "awaiting_chat_room",
+    "awaiting_livestream",
+    "lifecycle_awaiting_livestream",
+    "runner_awaiting_livestream",
+    "transport_awaiting_livestream"
   ]);
 
   const state = {
@@ -274,6 +282,11 @@
 
   function normalizeReasonCode(value) {
     return String(value || "").trim().toLowerCase();
+  }
+
+  function isWaitingStateCode(value) {
+    const normalized = normalizeReasonCode(value);
+    return WAITING_STATE_CODES.has(normalized);
   }
 
   function hasExportedTarget(bot) {
@@ -745,7 +758,7 @@
   function managedSessionTone(value) {
     const normalized = String(value || "").trim().toLowerCase();
     if (["attached", "listening", "running"].includes(normalized)) return "ss-badge-success";
-    if (["desired", "starting", "attaching", "awaiting_transport"].includes(normalized)) return "ss-badge-warning";
+    if (["desired", "starting", "attaching", "awaiting_transport", "awaiting_livestream", "awaiting_chat_room"].includes(normalized)) return "ss-badge-warning";
     if (["blocked", "auth_failed", "target_unresolved", "transport_error", "stale"].includes(normalized)) {
       return "ss-badge-danger";
     }
@@ -804,9 +817,20 @@
     const entries = [
       String(bot?.last_error || "").trim(),
       String(bot?.pause_reason || "").trim(),
-      String(bot?.status_reason || "").trim(),
       String(platformState?.pausedReason || "").trim()
-    ].filter(Boolean);
+    ].filter((entry) => entry && !isWaitingStateCode(entry));
+    const statusReason = String(bot?.status_reason || "").trim();
+    const waitingPosture = [
+      bot?.status,
+      bot?.lifecycle_state,
+      bot?.runner_state,
+      bot?.transport_status,
+      bot?.readiness_status,
+      platformState?.sessionStatus
+    ].some((value) => isWaitingStateCode(value));
+    if (statusReason && !waitingPosture) {
+      entries.push(statusReason);
+    }
     if (!entries.length) {
       return '<span class="muted">No blocking/error reason.</span>';
     }
@@ -840,7 +864,7 @@
     if (values.some((value) => ["disabled", "offline", "stopped", "unavailable", "staged"].includes(value))) {
       return { label: "Disabled", rank: 4, tone: "" };
     }
-    if (values.some((value) => ["pending", "desired", "starting", "attaching", "awaiting_transport", "awaiting_live"].includes(value))) {
+    if (values.some((value) => ["pending", "desired", "starting", "attaching", "awaiting_transport", "awaiting_live", "awaiting_livestream", "awaiting_chat_room"].includes(value))) {
       return { label: "Pending", rank: 3, tone: "ss-badge-warning" };
     }
     if (values.some((value) => ["ready", "online", "running", "active", "attached", "listening", "connected"].includes(value))) {
@@ -1180,6 +1204,11 @@
           reason =
             runtime?.details?.session_status_reason ||
             `${blockedCount} creator-managed session${blockedCount === 1 ? "" : "s"} is live but still missing attach identity.`;
+        } else if (["awaiting_livestream", "awaiting_chat_room"].includes(sessionStatus)) {
+          availability = "pending";
+          reason =
+            runtime?.details?.session_status_reason ||
+            "Kick session is waiting for livestream/chat room before transport attach.";
         } else if (sessionStatus === "blocked" && blockedCount > 0 && probeDegraded) {
           availability = "pending";
           reason = getProbeDegradedSummaryReason(runtime, blockedCount);
@@ -1672,7 +1701,7 @@
     if (schema.deployEnabled !== true) {
       return schema.blockedReason || "Platform deploy is staged/disabled.";
     }
-    if (!isRuntimeAvailable()) return "Runtime is offline.";
+    if (!isRuntimeAvailable()) return "Auth/runtime status API is unavailable.";
     return getPausedPlatformMessage(platform);
   }
 
@@ -1686,12 +1715,12 @@
         display_name: String(creator?.display_name || "").trim()
       }))
       .filter((creator) => creator.creator_id)
-      .sort((a, b) => a.creator_id.localeCompare(b.creator_id));
+      .sort((a, b) => a.display_name.localeCompare(b.display_name) || a.creator_id.localeCompare(b.creator_id));
 
     const optionMarkup = options
       .map((creator) => {
         const label = creator.display_name
-          ? `${creator.creator_id} - ${creator.display_name}`
+          ? `${creator.display_name} - ${creator.creator_id}`
           : creator.creator_id;
         return `<option value="${escapeHtml(creator.creator_id)}">${escapeHtml(label)}</option>`;
       })
@@ -2008,15 +2037,33 @@
       .map((entry) => {
         const creatorId = String(entry?.creator_id || "").trim();
         if (!creatorId) return null;
+        const account = entry?.account && typeof entry.account === "object" ? entry.account : {};
+        const displayName = String(entry?.display_name || account?.display_name || creatorId).trim() || creatorId;
+        const role = String(account?.role || entry?.role || "").trim().toLowerCase();
+        const status = String(entry?.status || "").trim().toLowerCase();
+        const accountStatus = String(account?.account_status || entry?.account_status || "").trim().toLowerCase();
+        const isSystem =
+          role === "system" ||
+          creatorId.toLowerCase() === "system" ||
+          displayName.toLowerCase() === "system" ||
+          Boolean(entry?.internal || account?.internal || entry?.system || account?.system);
+        const deployableRole = !role || ["creator", "developer", "admin"].includes(role);
+        const activeIdentity = !status || status === "active";
+        const activeAccount = !accountStatus || ["active", "enabled", "verified"].includes(accountStatus);
+        if (isSystem || !deployableRole || !activeIdentity || !activeAccount || entry?.orphaned === true) {
+          return null;
+        }
         return {
           creator_id: creatorId,
-          display_name: String(entry?.display_name || creatorId).trim() || creatorId,
+          display_name: displayName,
+          account_id: String(entry?.account_id || account?.account_id || "").trim(),
+          role,
           tier: String(entry?.tier || "").trim().toLowerCase(),
-          status: String(entry?.status || "").trim().toLowerCase()
+          status
         };
       })
       .filter(Boolean)
-      .sort((a, b) => a.creator_id.localeCompare(b.creator_id));
+      .sort((a, b) => a.display_name.localeCompare(b.display_name) || a.creator_id.localeCompare(b.creator_id));
   }
 
   async function fetchCreators(signal) {
@@ -2312,7 +2359,12 @@
           }
         });
       } else {
-        const endpoint = action === "resume" ? MANUAL_RESUME_ENDPOINT : MANUAL_DEPLOY_ENDPOINT;
+        const endpoint =
+          action === "resume"
+            ? MANUAL_RESUME_ENDPOINT
+            : action === "detach"
+              ? MANUAL_DETACH_ENDPOINT
+              : MANUAL_DEPLOY_ENDPOINT;
         const payload = {
           action,
           platform,

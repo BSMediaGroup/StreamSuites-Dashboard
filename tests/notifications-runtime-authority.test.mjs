@@ -208,6 +208,65 @@ function createBotsPayload({ unchanged = true } = {}) {
   };
 }
 
+function createKickAwaitingLivestreamPayload() {
+  return {
+    generated_at: "2026-05-14T01:00:00Z",
+    server_generated_at: "2026-05-14T01:00:00Z",
+    supported_platforms: ["kick"],
+    platform_capabilities: {
+      kick: { platform: "kick", label: "Kick", manual_deploy_enabled: true, staged: false }
+    },
+    platforms: [
+      {
+        platform: "kick",
+        label: "Kick",
+        available: true,
+        status: "ready",
+        global_status: "ready",
+        session_status: "awaiting_livestream",
+        session_blocking_code: null,
+        session_blocking_codes: [],
+        session_waiting_code: "awaiting_livestream",
+        session_waiting_codes: ["awaiting_livestream"],
+        details: {
+          bot_blocked_count: 0,
+          bot_desired_count: 1,
+          session_status: "awaiting_livestream",
+          session_status_reason: "Kick session is waiting for livestream/chat room before transport attach.",
+          session_blocking_codes: [],
+          session_waiting_codes: ["awaiting_livestream"]
+        }
+      }
+    ],
+    bots: [
+      {
+        creator_id: "4TiOlvS",
+        creator_display_name: "Daniel Clancy",
+        platform: "kick",
+        session_type: "manual",
+        manual_override: true,
+        session_id: "kick-manual-1",
+        status: "awaiting_livestream",
+        lifecycle_state: "awaiting_livestream",
+        desired: true,
+        status_reason: "Kick session waiting for livestream/chat room; subscription is tracked separately.",
+        runner_state: "awaiting_livestream",
+        transport_status: "awaiting_livestream",
+        pause_reason: "awaiting_livestream",
+        last_error: "",
+        active_target: "streamsuites",
+        resolved_target: { identifier: "streamsuites", channel_slug: "streamsuites" },
+        subscription_status: "subscription_failed",
+        subscription_optional: true,
+        subscription_required: false,
+        last_transition_at: "2026-05-14T01:00:00Z",
+        visible_in_admin: true,
+        actionable: true
+      }
+    ]
+  };
+}
+
 function buildBotsSandbox({ botPayloads = [createBotsPayload()], creatorsPayload } = {}) {
   const ids = [
     "bots-status",
@@ -968,6 +1027,74 @@ test("bots view shows calmer rumble pre-live probe degradation on the platform s
     /Rumble browse\/live detection failed before a trustworthy offline result could be established\./
   );
   assert.match(read("docs/js/bots.js"), /renderBlockingCell\(bot, platformState\)/);
+});
+
+test("bots view uses Auth admin deploy endpoint instead of runtime-control manual deploy", () => {
+  const botsJs = read("docs/js/bots.js");
+
+  assert.match(botsJs, /const MANUAL_DEPLOY_ENDPOINT = "\/api\/admin\/bots\/deploy";/);
+  assert.doesNotMatch(botsJs, /const MANUAL_DEPLOY_ENDPOINT = "\/api\/admin\/runtime\/manual-deploy";/);
+});
+
+test("bots view renders Kick awaiting livestream as pending without blocked count", async () => {
+  const { sandbox, elements } = buildBotsSandbox({
+    botPayloads: [createKickAwaitingLivestreamPayload()],
+    creatorsPayload: {
+      creators: [
+        {
+          creator_id: "Y55GHS6",
+          display_name: "System",
+          status: "active",
+          account: { role: "system", account_status: "active", display_name: "System" }
+        },
+        {
+          creator_id: "4TiOlvS",
+          display_name: "Daniel Clancy",
+          status: "active",
+          account_id: "acct-daniel",
+          account: { role: "creator", account_status: "active", display_name: "Daniel Clancy" }
+        }
+      ]
+    }
+  });
+
+  sandbox.window.BotsView.init();
+  await flushMicrotasks();
+
+  assert.match(elements.get("bots-table-body").innerHTML, /Pending/);
+  assert.match(elements.get("bots-table-body").innerHTML, /0 blocked\/error/);
+  assert.doesNotMatch(elements.get("bots-table-body").innerHTML, /1 blocked\/error/);
+  assert.match(elements.get("bots-platforms-grid").innerHTML, /Pending/);
+});
+
+test("bots manual creator selector hides system identities and labels real creators readably", async () => {
+  const { sandbox, elements } = buildBotsSandbox({
+    botPayloads: [createKickAwaitingLivestreamPayload()],
+    creatorsPayload: {
+      creators: [
+        {
+          creator_id: "Y55GHS6",
+          display_name: "System",
+          status: "active",
+          account: { role: "system", account_status: "active", display_name: "System" }
+        },
+        {
+          creator_id: "4TiOlvS",
+          display_name: "Daniel Clancy",
+          status: "active",
+          account_id: "acct-daniel",
+          account: { role: "creator", account_status: "active", display_name: "Daniel Clancy" }
+        }
+      ]
+    }
+  });
+
+  sandbox.window.BotsView.init();
+  await flushMicrotasks();
+
+  const optionsHtml = elements.get("bots-manual-creator").innerHTML;
+  assert.match(optionsHtml, /Daniel Clancy - 4TiOlvS/);
+  assert.doesNotMatch(optionsHtml, /Y55GHS6 - System/);
 });
 
 test("admin rumble platform view reads live runtime posture instead of a hardcoded paused scaffold", () => {
