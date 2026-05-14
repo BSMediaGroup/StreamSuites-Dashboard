@@ -1943,7 +1943,7 @@
         target_identifier: values.targetIdentifier,
         target: values.targetIdentifier
       };
-      if (values.platform === "twitch") {
+      if (values.platform === "twitch" || values.platform === "kick") {
         payload.channel_login = values.targetIdentifier;
       }
 
@@ -1960,10 +1960,13 @@
       const responsePayload = await readJsonSafe(response);
       if (!response.ok || responsePayload?.success === false) {
         const detail =
-          responsePayload?.error ||
           responsePayload?.message ||
+          responsePayload?.error ||
           `Manual deploy failed (HTTP ${response.status}).`;
         setManualError(String(detail));
+        if (responsePayload?.session_id || responsePayload?.details?.session_id) {
+          await loadBots({ forceRender: true });
+        }
         return;
       }
 
@@ -2373,7 +2376,7 @@
         };
         if (action === "attach") {
           payload.target = targetIdentifier;
-          if (platform.toLowerCase() === "twitch") {
+          if (platform.toLowerCase() === "twitch" || platform.toLowerCase() === "kick") {
             payload.channel_login = targetIdentifier;
           }
         }
@@ -2391,10 +2394,13 @@
       const responsePayload = await readJsonSafe(response);
       if (!response.ok || responsePayload?.success === false) {
         const detail =
-          responsePayload?.error ||
           responsePayload?.message ||
+          responsePayload?.error ||
           `Manual ${action} failed (HTTP ${response.status}).`;
         ui.error = String(detail);
+        if (responsePayload?.session_id || responsePayload?.details?.session_id) {
+          await loadBots({ forceRender: true });
+        }
         return;
       }
 
