@@ -1036,6 +1036,19 @@ test("bots view uses Auth admin deploy endpoint instead of runtime-control manua
   assert.doesNotMatch(botsJs, /const MANUAL_DEPLOY_ENDPOINT = "\/api\/admin\/runtime\/manual-deploy";/);
 });
 
+test("bots view exposes per-instance debug endpoint and correlation-aware errors", () => {
+  const botsJs = read("docs/js/bots.js");
+  const componentsCss = read("docs/css/components.css");
+
+  assert.match(botsJs, /const BOTS_DEBUG_ENDPOINT = "\/api\/admin\/bots\/debug";/);
+  assert.match(botsJs, /data-bot-debug="1"/);
+  assert.match(botsJs, /renderDebugPanel\(bot, getRowUi/);
+  assert.match(botsJs, /Copy Debug JSON/);
+  assert.match(botsJs, /responsePayload\?\.correlation_id/);
+  assert.match(componentsCss, /\.ss-bot-debug-panel/);
+  assert.match(componentsCss, /\.ss-bot-debug-timeline/);
+});
+
 test("bots view renders Kick awaiting livestream as pending without blocked count", async () => {
   const { sandbox, elements } = buildBotsSandbox({
     botPayloads: [createKickAwaitingLivestreamPayload()],

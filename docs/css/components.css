@@ -8066,6 +8066,99 @@ body.ss-col-resizing-active {
   color: #ffb3b0;
 }
 
+.ss-bot-debug-panel {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(107, 130, 168, 0.28);
+  border-radius: var(--radius-sm);
+  background: rgba(2, 8, 17, 0.38);
+}
+
+.ss-bot-debug-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ss-bot-debug-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ss-bot-debug-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ss-bot-debug-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.ss-bot-debug-grid > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.ss-bot-debug-grid strong {
+  font-size: 12px;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.ss-bot-debug-timeline {
+  display: grid;
+  gap: 8px;
+  max-height: 320px;
+  margin: 0;
+  padding-left: 18px;
+  overflow: auto;
+}
+
+.ss-bot-debug-timeline li {
+  padding: 8px;
+  border: 1px solid rgba(140, 156, 186, 0.16);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.ss-bot-debug-event-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.ss-bot-debug-event-message {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.ss-bot-debug-json {
+  max-height: 260px;
+  margin: 0;
+  padding: 10px;
+  overflow: auto;
+  border: 1px solid rgba(140, 156, 186, 0.18);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .ss-pending-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

@@ -7,6 +7,7 @@
 
   const POLL_INTERVAL_MS = 8000;
   const BOTS_STATUS_ENDPOINT = "/api/admin/bots/status";
+  const BOTS_DEBUG_ENDPOINT = "/api/admin/bots/debug";
   const CREATORS_ENDPOINT = "/api/admin/creators";
   const MANUAL_DEPLOY_ENDPOINT = "/api/admin/bots/deploy";
   const MANUAL_DETACH_ENDPOINT = "/api/admin/bots/detach";
@@ -683,7 +684,15 @@
   function getRowUi(creatorId, platform) {
     const key = rowKey(creatorId, platform);
     if (!state.rowUi[key]) {
-      state.rowUi[key] = { pending: false, pendingAction: "", error: "" };
+      state.rowUi[key] = {
+        pending: false,
+        pendingAction: "",
+        error: "",
+        debugOpen: false,
+        debugPending: false,
+        debugError: "",
+        debugPayload: null
+      };
     }
     return state.rowUi[key];
   }
@@ -838,6 +847,102 @@
       <div class="ss-bot-cell-stack">
         ${entries.map((entry) => `<span class="ss-bot-blocking-text">${escapeHtml(entry)}</span>`).join("")}
       </div>
+    `;
+  }
+
+  function debugValue(payload, path, fallback = "-") {
+    let current = payload;
+    for (const key of path) {
+      if (!current || typeof current !== "object") return fallback;
+      current = current[key];
+    }
+    if (current === null || current === undefined || current === "") return fallback;
+    if (typeof current === "boolean") return current ? "true" : "false";
+    return String(current);
+  }
+
+  function renderDebugTimeline(payload) {
+    const timeline = Array.isArray(payload?.diagnostics?.timeline)
+      ? payload.diagnostics.timeline
+      : [];
+    if (!timeline.length) {
+      const message =
+        payload?.diagnostics?.summary?.message ||
+        "No diagnostic trace has been recorded for this bot instance yet.";
+      return `<div class="muted">${escapeHtml(message)}</div>`;
+    }
+    return `
+      <ol class="ss-bot-debug-timeline">
+        ${timeline
+          .map((event) => `
+            <li>
+              <div class="ss-bot-debug-event-head">
+                <span>${escapeHtml(formatTimestamp(event.timestamp))}</span>
+                <span class="ss-badge ${severityBadgeClass(event.severity)}">${escapeHtml(String(event.severity || "debug").toUpperCase())}</span>
+                <span>${escapeHtml(event.phase || "-")}</span>
+                <span>${escapeHtml(event.step || "-")}</span>
+              </div>
+              <div class="ss-bot-debug-event-message">${escapeHtml(event.message || "-")}</div>
+              ${event.code ? `<div class="muted">code: ${escapeHtml(event.code)}</div>` : ""}
+              ${event.correlation_id ? `<div class="muted">correlation: ${escapeHtml(event.correlation_id)}</div>` : ""}
+            </li>
+          `)
+          .join("")}
+      </ol>
+    `;
+  }
+
+  function renderDebugPanel(bot, ui) {
+    if (!ui.debugOpen) return "";
+    const payload = ui.debugPayload || null;
+    const diagnostics = payload?.diagnostics || {};
+    const detection = diagnostics?.detection || {};
+    const lastException = diagnostics?.last_exception || null;
+    const lastManual = diagnostics?.last_manual_deploy || null;
+    const jsonText = payload ? JSON.stringify(payload, null, 2) : "";
+    return `
+      <section class="ss-bot-debug-panel">
+        <div class="ss-bot-debug-head">
+          <div>
+            <div class="ss-bot-field-label">Debug</div>
+            <div class="ss-bot-debug-title">${escapeHtml(platformDisplayName(bot?.platform))} instance diagnostics</div>
+          </div>
+          <button
+            class="ss-btn ss-btn-small ss-btn-secondary"
+            type="button"
+            data-bot-debug-copy="1"
+            data-creator-id="${encodeData(String(bot?.creator_id || ""))}"
+            data-platform="${encodeData(String(bot?.platform || ""))}"
+            ${payload ? "" : "disabled"}
+          >Copy Debug JSON</button>
+        </div>
+        ${ui.debugPending ? '<div class="muted">Loading debug payload...</div>' : ""}
+        ${ui.debugError ? `<div class="ss-alert ss-alert-danger">${escapeHtml(ui.debugError)}</div>` : ""}
+        ${payload
+          ? `
+            <div class="ss-bot-debug-chip-row">
+              ${renderCompactChip(`Lifecycle ${debugValue(payload, ["bot", "lifecycle_status"])}`, managedSessionTone(debugValue(payload, ["bot", "lifecycle_status"])))}
+              ${renderCompactChip(`Transport ${debugValue(payload, ["bot", "transport_status"])}`, managedSessionTone(debugValue(payload, ["bot", "transport_status"])))}
+              ${renderCompactChip(`Runner ${debugValue(payload, ["bot", "runner_status"])}`, managedSessionTone(debugValue(payload, ["bot", "runner_status"])))}
+              ${renderCompactChip(`Trace ${debugValue(payload, ["diagnostics", "summary", "event_count"], "0")}`, "")}
+            </div>
+            <div class="ss-bot-debug-grid">
+              <div><span class="ss-bot-field-label">Target</span><strong>${escapeHtml(debugValue(payload, ["bot", "target"]))}</strong></div>
+              <div><span class="ss-bot-field-label">Correlation</span><strong>${escapeHtml(debugValue(payload, ["diagnostics", "summary", "latest_correlation_id"]))}</strong></div>
+              <div><span class="ss-bot-field-label">Detection</span><strong>${escapeHtml(debugValue({ detection }, ["detection", "detection_status"], detection.detection_attempted ? "attempted" : "not attempted"))}</strong></div>
+              <div><span class="ss-bot-field-label">Next step</span><strong>${escapeHtml(debugValue({ detection }, ["detection", "next_required_step"]))}</strong></div>
+              <div><span class="ss-bot-field-label">Credential posture</span><strong>${escapeHtml(debugValue(payload, ["diagnostics", "summary", "latest_error_code"], "No trace error"))}</strong></div>
+              <div><span class="ss-bot-field-label">Last manual deploy</span><strong>${escapeHtml(lastManual?.code || lastManual?.phase || "-")}</strong></div>
+              <div><span class="ss-bot-field-label">Last exception</span><strong>${escapeHtml(lastException?.code || lastException?.details?.exception_type || "-")}</strong></div>
+              <div><span class="ss-bot-field-label">Awaiting explanation</span><strong>${escapeHtml(detection.detection_skipped_reason || detection.next_required_step || debugValue(payload, ["bot", "readiness_reason"]))}</strong></div>
+            </div>
+            ${renderDebugTimeline(payload)}
+            <pre class="ss-bot-debug-json" aria-label="Redacted debug JSON">${escapeHtml(jsonText)}</pre>
+          `
+          : !ui.debugPending && !ui.debugError
+            ? '<div class="muted">Debug payload has not been loaded.</div>'
+            : ""}
+      </section>
     `;
   }
 
@@ -1459,6 +1564,14 @@
             data-platform="${encodeData(platform)}"
             ${detachDisabled ? "disabled" : ""}
           >${detachLabel}</button>
+          <button
+            class="ss-btn ss-btn-small ss-btn-secondary"
+            data-bot-debug="1"
+            data-creator-id="${encodeData(creatorId)}"
+            data-platform="${encodeData(platform)}"
+            data-session-id="${encodeData(String(bot?.session_id || ""))}"
+            ${ui.debugPending ? "disabled" : ""}
+          >${ui.debugPending ? "Loading..." : "Debug"}</button>
         </div>
         ${isPaused
           ? `
@@ -1587,6 +1700,7 @@
                         ${renderBlockingCell(bot, platformState)}
                       </div>
                     </div>
+                    ${renderDebugPanel(bot, getRowUi(String(bot?.creator_id || group.creatorId), platformKey))}
                   </article>
                 `;
               })
@@ -1959,11 +2073,12 @@
 
       const responsePayload = await readJsonSafe(response);
       if (!response.ok || responsePayload?.success === false) {
+        const correlation = String(responsePayload?.correlation_id || "").trim();
         const detail =
           responsePayload?.message ||
           responsePayload?.error ||
           `Manual deploy failed (HTTP ${response.status}).`;
-        setManualError(String(detail));
+        setManualError(correlation ? `${String(detail)} (correlation ${correlation})` : String(detail));
         if (responsePayload?.session_id || responsePayload?.details?.session_id) {
           await loadBots({ forceRender: true });
         }
@@ -2393,11 +2508,12 @@
 
       const responsePayload = await readJsonSafe(response);
       if (!response.ok || responsePayload?.success === false) {
+        const correlation = String(responsePayload?.correlation_id || "").trim();
         const detail =
           responsePayload?.message ||
           responsePayload?.error ||
           `Manual ${action} failed (HTTP ${response.status}).`;
-        ui.error = String(detail);
+        ui.error = correlation ? `${String(detail)} (correlation ${correlation})` : String(detail);
         if (responsePayload?.session_id || responsePayload?.details?.session_id) {
           await loadBots({ forceRender: true });
         }
@@ -2426,6 +2542,51 @@
     }
   }
 
+  async function loadBotDebug(creatorId, platform, sessionId = "") {
+    const ui = getRowUi(creatorId, platform);
+    if (ui.debugPending) return;
+    ui.debugOpen = true;
+    ui.debugPending = true;
+    ui.debugError = "";
+    renderRowsAndCountersFromState();
+    try {
+      const params = new URLSearchParams();
+      const normalizedPlatform = normalizePlatformKey(platform);
+      if (normalizedPlatform) params.set("platform", normalizedPlatform);
+      if (creatorId) params.set("creator_id", creatorId);
+      if (sessionId) params.set("session_id", sessionId);
+      const endpoint = `${BOTS_DEBUG_ENDPOINT}?${params.toString()}`;
+      const response = await fetch(buildApiUrl(endpoint), {
+        method: "GET",
+        credentials: "include",
+        headers: { Accept: "application/json" }
+      });
+      const payload = await readJsonSafe(response);
+      if (!response.ok || payload?.success === false) {
+        throw new Error(payload?.message || payload?.error || `Debug request failed (HTTP ${response.status}).`);
+      }
+      ui.debugPayload = payload;
+    } catch (err) {
+      ui.debugError = err?.message ? String(err.message) : "Debug request failed.";
+    } finally {
+      ui.debugPending = false;
+      renderRowsAndCountersFromState();
+    }
+  }
+
+  async function copyBotDebugJson(creatorId, platform) {
+    const ui = getRowUi(creatorId, platform);
+    if (!ui.debugPayload) return;
+    const text = JSON.stringify(ui.debugPayload, null, 2);
+    try {
+      await navigator.clipboard.writeText(text);
+      ui.debugError = "";
+    } catch (err) {
+      ui.debugError = "Clipboard copy failed.";
+    }
+    renderRowsAndCountersFromState();
+  }
+
   function onBodyClick(event) {
     const expandButton = event.target.closest("[data-bot-expand]");
     if (expandButton instanceof HTMLButtonElement && !expandButton.disabled) {
@@ -2434,6 +2595,32 @@
       state.expandedCreators[creatorId] = state.expandedCreators[creatorId] !== true;
       state.renderCache.rowSignature = "";
       renderRowsAndCountersFromState();
+      return;
+    }
+
+    const debugCopyButton = event.target.closest("[data-bot-debug-copy]");
+    if (debugCopyButton instanceof HTMLButtonElement && !debugCopyButton.disabled) {
+      const creatorId = decodeData(debugCopyButton.dataset.creatorId || "");
+      const platform = decodeData(debugCopyButton.dataset.platform || "");
+      if (creatorId && platform) {
+        void copyBotDebugJson(creatorId, platform);
+      }
+      return;
+    }
+
+    const debugButton = event.target.closest("[data-bot-debug]");
+    if (debugButton instanceof HTMLButtonElement && !debugButton.disabled) {
+      const creatorId = decodeData(debugButton.dataset.creatorId || "");
+      const platform = decodeData(debugButton.dataset.platform || "");
+      const sessionId = decodeData(debugButton.dataset.sessionId || "");
+      if (!creatorId || !platform) return;
+      const ui = getRowUi(creatorId, platform);
+      if (ui.debugOpen && ui.debugPayload) {
+        ui.debugOpen = false;
+        renderRowsAndCountersFromState();
+        return;
+      }
+      void loadBotDebug(creatorId, platform, sessionId);
       return;
     }
 

@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Added a targeted Debug action to every Admin Bots / Runtime Status instance row without redesigning the page. `docs/js/bots.js` now calls `GET /api/admin/bots/debug` for the selected creator/platform/session, renders summary chips, lifecycle/transport/runner/target posture, credential/error posture, detection result/next step, last manual deploy, last exception, chronological timeline, redacted debug JSON, and a Copy Debug JSON button inside the existing row drawer. Manual deploy errors now surface backend `message` plus `correlation_id` when present so operators can open the matching debug trace. `docs/css/components.css` adds only the debug panel/timeline/JSON styling. No files were created, removed, or renamed.
+- Human note: Daniel's Kick row can remain `awaiting_livestream`, but the expanded row now has a Debug button that should explain whether detection ran or was skipped and what exact Runtime/Auth phase failed.
+
 - Improved Admin Bots / Runtime Status manual deploy error handling for structured Runtime/Auth blockers. `docs/js/bots.js` now sends Kick `channel_login` alongside the existing `target` and `target_identifier` fields, prefers the backend `message` over machine error codes when rendering deploy failures, and refreshes bot status when a structured deploy blocker includes a created `session_id`. The existing layout, endpoint, selector behavior, row-level deploy controls, and waiting-state presentation are unchanged. No files or assets were created, removed, or renamed.
 - Human note: a Kick deploy blocker should now show the specific backend reason, such as missing credentials or unresolved identity, instead of only "Internal server error"; if runtime created a manual row before returning the blocker, the table refreshes to show it.
 
