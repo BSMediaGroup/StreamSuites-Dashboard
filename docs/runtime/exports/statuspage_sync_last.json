@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-05-12T17:04:45.618383Z",
+  "generated_at": "2026-05-16T17:55:54.764000Z",
   "enabled": true,
   "interval_seconds": 60,
   "ready": true,
   "readiness_errors": [],
-  "last_run_at": "2026-05-12T17:04:27.225876Z",
+  "last_run_at": "2026-05-16T17:55:36.714238Z",
   "last_success_at": null,
   "last_error": "runtime_engine: status push failed (RuntimeError: Statuspage API PATCH /pages/v0hwlmly3pd2/components/replace-with-statuspage-component-id-runtime-engine failed with 404: {\"error\":\"Couldn't find Component with [WHERE \\\"components\\\".\\\"page_id\\\" = $1 AND \\\"components\\\".\\\"code\\\" = $2]\"}); auth_api: status push failed (RuntimeError: Statuspage API PATCH /pages/v0hwlmly3pd2/components/replace-with-statuspage-component-id-auth-api failed with 404: {\"error\":\"Couldn't find Component with [WHERE \\\"components\\\".\\\"page_id\\\" = $1 AND \\\"components\\\".\\\"code\\\" = $2]\"}); creator_dashboard: status push failed (RuntimeError: Statuspage API PATCH /pages/v0hwlmly3pd2/components/replace-with-statuspage-component-id-creator-dashboard failed with 404: {\"error\":\"Couldn't find Component with [WHERE \\\"components\\\".\\\"page_id\\\" = $1 AND \\\"components\\\".\\\"code\\\" = $2]\"}); admin_dashboard: status push failed (RuntimeError: Statuspage API PATCH /pages/v0hwlmly3pd2/components/replace-with-statuspage-component-id-admin-dashboard failed with 404: {\"error\":\"Couldn't find Component with [WHERE \\\"components\\\".\\\"page_id\\\" = $1 AND \\\"components\\\".\\\"code\\\" = $2]\"}); public_pages: status push failed (RuntimeError: Statuspage API PATCH /pages/v0hwlmly3pd2/components/replace-with-statuspage-component-id-public-pages failed with 404: {\"error\":\"Couldn't find Component with [WHERE \\\"components\\\".\\\"page_id\\\" = $1 AND \\\"components\\\".\\\"code\\\" = $2]\"}); support_hub: status push failed (RuntimeError: Statuspage API PATCH /pages/v0hwlmly3pd2/components/replace-with-statuspage-component-id-support-hub failed with 404: {\"error\":\"Couldn't find Component with [WHERE \\\"components\\\".\\\"page_id\\\" = $1 AND \\\"components\\\".\\\"code\\\" = $2]\"}); account_session: status push failed (RuntimeError: Statuspage API PATCH /pages/v0hwlmly3pd2/components/replace-with-statuspage-component-id-account-session failed with 404: {\"error\":\"Couldn't find Component with [WHERE \\\"components\\\".\\\"page_id\\\" = $1 AND \\\"components\\\".\\\"code\\\" = $2]\"}); automation_trigger: status push failed (RuntimeError: Statuspage API PATCH /pages/v0hwlmly3pd2/components/replace-with-statuspage-component-id-automation-trigger failed with 404: {\"error\":\"Couldn't find Component with [WHERE \\\"components\\\".\\\"page_id\\\" = $1 AND \\\"components\\\".\\\"code\\\" = $2]\"}); telemetry_usage: status push failed (RuntimeError: Statuspage API PATCH /pages/v0hwlmly3pd2/components/replace-with-statuspage-component-id-telemetry-usage failed with 404: {\"error\":\"Couldn't find Component with [WHERE \\\"components\\\".\\\"page_id\\\" = $1 AND \\\"components\\\".\\\"code\\\" = $2]\"})",
   "components": {
@@ -14,13 +14,13 @@
       "last_pushed_status": null,
       "last_pushed_at": null,
       "consecutive_failures": 0,
-      "consecutive_successes": 34,
+      "consecutive_successes": 55,
       "last_check": {
         "ok": true,
         "status_code": 200,
-        "latency_ms": 15,
+        "latency_ms": 31,
         "error": null,
-        "checked_at": "2026-05-12T17:04:33.006991Z"
+        "checked_at": "2026-05-16T17:55:42.125509Z"
       }
     },
     "admin_dashboard": {
@@ -29,13 +29,13 @@
       "last_pushed_status": null,
       "last_pushed_at": null,
       "consecutive_failures": 0,
-      "consecutive_successes": 34,
+      "consecutive_successes": 55,
       "last_check": {
         "ok": true,
         "status_code": 200,
-        "latency_ms": 1062,
+        "latency_ms": 1046,
         "error": null,
-        "checked_at": "2026-05-12T17:04:31.587549Z"
+        "checked_at": "2026-05-16T17:55:40.794210Z"
       }
     },
     "auth_api": {
@@ -44,13 +44,13 @@
       "last_pushed_status": null,
       "last_pushed_at": null,
       "consecutive_failures": 0,
-      "consecutive_successes": 34,
+      "consecutive_successes": 55,
       "last_check": {
         "ok": true,
         "status_code": 200,
         "latency_ms": 31,
         "error": null,
-        "checked_at": "2026-05-12T17:04:29.280807Z"
+        "checked_at": "2026-05-16T17:55:38.754019Z"
       }
     },
     "automation_trigger": {
@@ -58,14 +58,14 @@
       "computed_status": "major_outage",
       "last_pushed_status": null,
       "last_pushed_at": null,
-      "consecutive_failures": 34,
+      "consecutive_failures": 55,
       "consecutive_successes": 0,
       "last_check": {
         "ok": false,
         "status_code": null,
-        "latency_ms": 2015,
-        "error": "ConnectionError: HTTPConnectionPool(host='127.0.0.1', port=8787): Max retries exceeded with url: /api/health?scope=automation_trigger (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001ADAD050490>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))",
-        "checked_at": "2026-05-12T17:04:35.021257Z"
+        "latency_ms": 2000,
+        "error": "ConnectionError: HTTPConnectionPool(host='127.0.0.1', port=8787): Max retries exceeded with url: /api/health?scope=automation_trigger (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001B7031B3D10>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))",
+        "checked_at": "2026-05-16T17:55:44.133223Z"
       }
     },
     "creator_dashboard": {
@@ -74,13 +74,13 @@
       "last_pushed_status": null,
       "last_pushed_at": null,
       "consecutive_failures": 0,
-      "consecutive_successes": 34,
+      "consecutive_successes": 55,
       "last_check": {
         "ok": true,
         "status_code": 200,
-        "latency_ms": 1250,
+        "latency_ms": 1000,
         "error": null,
-        "checked_at": "2026-05-12T17:04:30.525313Z"
+        "checked_at": "2026-05-16T17:55:39.757785Z"
       }
     },
     "public_pages": {
@@ -89,13 +89,13 @@
       "last_pushed_status": null,
       "last_pushed_at": null,
       "consecutive_failures": 0,
-      "consecutive_successes": 3,
+      "consecutive_successes": 55,
       "last_check": {
         "ok": true,
         "status_code": 200,
-        "latency_ms": 1140,
+        "latency_ms": 1046,
         "error": null,
-        "checked_at": "2026-05-12T17:04:32.728796Z"
+        "checked_at": "2026-05-16T17:55:41.847587Z"
       }
     },
     "runtime_engine": {
@@ -103,14 +103,14 @@
       "computed_status": "major_outage",
       "last_pushed_status": null,
       "last_pushed_at": null,
-      "consecutive_failures": 34,
+      "consecutive_failures": 55,
       "consecutive_successes": 0,
       "last_check": {
         "ok": false,
         "status_code": null,
-        "latency_ms": 2015,
-        "error": "ConnectionError: HTTPConnectionPool(host='127.0.0.1', port=8787): Max retries exceeded with url: /api/health?scope=runtime_engine (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001ADAD827390>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))",
-        "checked_at": "2026-05-12T17:04:29.253484Z"
+        "latency_ms": 2000,
+        "error": "ConnectionError: HTTPConnectionPool(host='127.0.0.1', port=8787): Max retries exceeded with url: /api/health?scope=runtime_engine (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001B703150A50>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))",
+        "checked_at": "2026-05-16T17:55:38.724530Z"
       }
     },
     "support_hub": {
@@ -119,13 +119,13 @@
       "last_pushed_status": null,
       "last_pushed_at": null,
       "consecutive_failures": 0,
-      "consecutive_successes": 34,
+      "consecutive_successes": 55,
       "last_check": {
         "ok": true,
         "status_code": 200,
         "latency_ms": 250,
         "error": null,
-        "checked_at": "2026-05-12T17:04:32.977480Z"
+        "checked_at": "2026-05-16T17:55:42.093140Z"
       }
     },
     "telemetry_usage": {
@@ -133,14 +133,14 @@
       "computed_status": "major_outage",
       "last_pushed_status": null,
       "last_pushed_at": null,
-      "consecutive_failures": 34,
+      "consecutive_failures": 55,
       "consecutive_successes": 0,
       "last_check": {
         "ok": false,
         "status_code": null,
-        "latency_ms": 2016,
-        "error": "ConnectionError: HTTPConnectionPool(host='127.0.0.1', port=8787): Max retries exceeded with url: /api/health?scope=telemetry_usage (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001ADAD44A490>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))",
-        "checked_at": "2026-05-12T17:04:37.034550Z"
+        "latency_ms": 2014,
+        "error": "ConnectionError: HTTPConnectionPool(host='127.0.0.1', port=8787): Max retries exceeded with url: /api/health?scope=telemetry_usage (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001B7031CB310>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))",
+        "checked_at": "2026-05-16T17:55:46.145412Z"
       }
     }
   },
