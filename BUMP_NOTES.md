@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Fixed the Admin Kick Probe Now abort overwrite and added minimal current subscription request fields to the existing debug drawer. `docs/js/bots.js` now gives each probe its own `AbortController`, renders the backend probe payload before starting the optional status refresh, runs that refresh without awaiting it, and ignores browser abort boilerplate when a valid probe response already exists. The panel now shows subscription auth mode, broadcaster-id included/omitted posture, current probe timestamp, stale state, sanitized outbound request body, validation, redacted response data, and target source without redesigning the page. Focused source tests were updated. No files were created, removed, or renamed.
+- Human note: after clicking Probe Now on Daniel's Kick row, "signal is aborted without reason" should no longer replace a real backend `subscription_failed`/HTTP 400 response. The current sanitized subscription request should be visible at the top of the debug details.
+
 - Fixed the remaining Admin Kick Probe Now abort/rendering issue and aligned labels with webhook-mode runtime truth. `docs/js/bots.js` now renders a successful probe payload before any status reload, ignores a browser `AbortError` when a valid probe response is already available, uses `transport_status` for the transport badge, labels runtime-control failures as diagnostic-only when not required, and surfaces subscription endpoint plus target source fields. The focused Dashboard test pins the render-before-reload/AbortError guard and webhook/subscription label mappings. No files were created, removed, or renamed.
 - Human note: after clicking Probe Now, a valid Kick probe response should remain visible instead of being replaced by "signal is aborted without reason"; runtime-control unavailable should not be shown as the main blocker when Auth-local probe succeeded.
 

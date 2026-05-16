@@ -118,6 +118,7 @@
     pollHandle: null,
     refreshInFlight: null,
     refreshAbortController: null,
+    probeAbortControllers: Object.create(null),
     mounted: false,
     lastPayload: null,
     deployPlatformSchemas: Object.create(null),
@@ -881,6 +882,15 @@
     return String(current);
   }
 
+  function debugRawValue(payload, path, fallback = null) {
+    let current = payload;
+    for (const key of path) {
+      if (!current || typeof current !== "object") return fallback;
+      current = current[key];
+    }
+    return current === null || current === undefined || current === "" ? fallback : current;
+  }
+
   function renderDebugTimeline(payload) {
     const timeline = Array.isArray(payload?.diagnostics?.timeline)
       ? payload.diagnostics.timeline
@@ -916,6 +926,7 @@
     if (!ui.debugOpen) return "";
     const payload = ui.debugPayload || null;
     const diagnostics = payload?.diagnostics || {};
+    const currentAttempt = diagnostics?.current_attempt || {};
     const detection = diagnostics?.detection || {};
     const lastException = diagnostics?.last_exception || null;
     const lastManual = diagnostics?.last_manual_deploy || null;
@@ -969,12 +980,22 @@
               <div><span class="ss-bot-field-label">Subscription HTTP</span><strong>${escapeHtml(debugValue(payload, ["probe", "subscription_http_status"], debugValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_http_status"])))}</strong></div>
               <div><span class="ss-bot-field-label">Subscription message</span><strong>${escapeHtml(debugValue(payload, ["probe", "subscription_response_message"], debugValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_response_message"])))}</strong></div>
               <div><span class="ss-bot-field-label">Subscription endpoint</span><strong>${escapeHtml(debugValue(payload, ["probe", "subscription_endpoint_path"], debugValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_endpoint_path"])))}</strong></div>
+              <div><span class="ss-bot-field-label">Auth mode</span><strong>${escapeHtml(debugValue(payload, ["probe", "subscription_auth_mode"], debugValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_auth_mode"], currentAttempt.current_subscription_auth_mode)))}</strong></div>
+              <div><span class="ss-bot-field-label">Broadcaster id</span><strong>${escapeHtml(debugValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_request_body_redacted", "broadcaster_user_id"], currentAttempt.current_subscription_broadcaster_user_id_included ? "included" : "omitted"))}</strong></div>
+              <div><span class="ss-bot-field-label">Current probe</span><strong>${escapeHtml(formatTimestamp(currentAttempt.current_probe_finished_at || debugValue(payload, ["bot", "last_probe_at"])))}</strong></div>
+              <div><span class="ss-bot-field-label">Stale</span><strong>${escapeHtml(debugValue(payload, ["diagnostics", "summary", "is_stale"], currentAttempt.current_stale ? "true" : "false"))}</strong></div>
               <div><span class="ss-bot-field-label">Dispatch</span><strong>${escapeHtml(debugValue(payload, ["probe", "dispatch_status"], debugValue(payload, ["diagnostics", "exports", "session_snapshot", "dispatch_status"])))}</strong></div>
               <div><span class="ss-bot-field-label">Target source</span><strong>${escapeHtml(debugValue(payload, ["bot", "target_source"], debugValue(payload, ["diagnostics", "exports", "session_snapshot", "target_source"])))}</strong></div>
               <div><span class="ss-bot-field-label">Credential posture</span><strong>${escapeHtml(debugValue(payload, ["diagnostics", "summary", "latest_error_code"], "No trace error"))}</strong></div>
               <div><span class="ss-bot-field-label">Last manual deploy</span><strong>${escapeHtml(lastManual?.code || lastManual?.phase || "-")}</strong></div>
               <div><span class="ss-bot-field-label">Last exception</span><strong>${escapeHtml(lastException?.code || lastException?.details?.exception_type || "-")}</strong></div>
               <div><span class="ss-bot-field-label">Awaiting explanation</span><strong>${escapeHtml(detection.detection_skipped_reason || detection.next_required_step || debugValue(payload, ["bot", "readiness_reason"]))}</strong></div>
+            </div>
+            <div class="ss-bot-debug-grid">
+              <div><span class="ss-bot-field-label">Current attempt</span><strong>${escapeHtml(currentAttempt.current_subscription_result || "-")}</strong></div>
+              <div><span class="ss-bot-field-label">Request body</span><code>${escapeHtml(JSON.stringify(debugRawValue(payload, ["probe", "subscription_request_body_redacted"], currentAttempt.current_subscription_request_body_redacted || debugRawValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_request_body_redacted"], {}))))}</code></div>
+              <div><span class="ss-bot-field-label">Response data</span><code>${escapeHtml(JSON.stringify(debugRawValue(payload, ["probe", "subscription_response_data_redacted"], debugRawValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_response_data_redacted"], {}))))}</code></div>
+              <div><span class="ss-bot-field-label">Validation</span><code>${escapeHtml(JSON.stringify(debugRawValue(payload, ["probe", "subscription_request_validation"], debugRawValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_request_validation"], {}))))}</code></div>
             </div>
             ${renderDebugTimeline(payload)}
             <pre class="ss-bot-debug-json" aria-label="Redacted debug JSON">${escapeHtml(jsonText)}</pre>
@@ -2702,6 +2723,11 @@
     return false;
   }
 
+  function isAbortBoilerplate(err) {
+    const message = String(err?.message || "").toLowerCase();
+    return err?.name === "AbortError" || message.includes("signal is aborted") || message.includes("aborterror");
+  }
+
   async function runBotDebugProbe(creatorId, platform, sessionId = "", target = "") {
     const ui = getRowUi(creatorId, platform);
     if (ui.debugProbePending) return;
@@ -2709,10 +2735,15 @@
     ui.debugProbePending = true;
     ui.debugError = "";
     renderRowsAndCountersFromState();
+    const probeKey = `${normalizePlatformKey(platform)}:${creatorId}:${sessionId || ""}`;
+    state.probeAbortControllers[probeKey]?.abort();
+    const controller = new AbortController();
+    state.probeAbortControllers[probeKey] = controller;
     try {
       const response = await fetch(buildApiUrl(BOTS_DEBUG_PROBE_ENDPOINT), {
         method: "POST",
         credentials: "include",
+        signal: controller.signal,
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json"
@@ -2732,14 +2763,20 @@
       ui.debugError = "";
       ui.debugProbePending = false;
       renderRowsAndCountersFromState();
-      await reloadBotsSafely();
+      void reloadBotsSafely().catch((err) => {
+        if (isAbortBoilerplate(err) && ui.debugPayload) return;
+        console.warn("Bot status reload failed after probe", err);
+      });
     } catch (err) {
-      if (err?.name === "AbortError" && ui.debugPayload) {
+      if (isAbortBoilerplate(err) && ui.debugPayload) {
         ui.debugError = "";
         return;
       }
-      ui.debugError = err?.message ? String(err.message) : "Debug probe failed.";
+      ui.debugError = isAbortBoilerplate(err) ? "Debug probe was cancelled." : err?.message ? String(err.message) : "Debug probe failed.";
     } finally {
+      if (state.probeAbortControllers[probeKey] === controller) {
+        delete state.probeAbortControllers[probeKey];
+      }
       ui.debugProbePending = false;
       renderRowsAndCountersFromState();
     }
@@ -2843,6 +2880,8 @@
       state.pollHandle = null;
     }
     state.refreshAbortController?.abort();
+    Object.values(state.probeAbortControllers || {}).forEach((controller) => controller?.abort?.());
+    state.probeAbortControllers = Object.create(null);
     state.refreshAbortController = null;
     state.refreshInFlight = null;
   }
