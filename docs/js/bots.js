@@ -107,6 +107,7 @@
   ]);
   const WAITING_STATE_CODES = new Set([
     "awaiting_chat_room",
+    "awaiting_first_webhook_event",
     "awaiting_livestream",
     "lifecycle_awaiting_livestream",
     "runner_awaiting_livestream",
@@ -770,9 +771,9 @@
 
   function managedSessionTone(value) {
     const normalized = String(value || "").trim().toLowerCase();
-    if (["attached", "listening", "running"].includes(normalized)) return "ss-badge-success";
-    if (["desired", "starting", "attaching", "awaiting_transport", "awaiting_livestream", "awaiting_chat_room"].includes(normalized)) return "ss-badge-warning";
-    if (["blocked", "auth_failed", "target_unresolved", "transport_error", "stale"].includes(normalized)) {
+    if (["attached", "listening", "running", "listening_via_webhook", "transport_not_required_webhook_mode", "webhook_active"].includes(normalized)) return "ss-badge-success";
+    if (["desired", "starting", "attaching", "awaiting_transport", "awaiting_livestream", "awaiting_chat_room", "awaiting_first_webhook_event", "subscription_pending"].includes(normalized)) return "ss-badge-warning";
+    if (["blocked", "auth_failed", "target_unresolved", "transport_error", "stale", "subscription_failed"].includes(normalized)) {
       return "ss-badge-danger";
     }
     return "";
@@ -949,6 +950,10 @@
               <div><span class="ss-bot-field-label">Runtime control</span><strong>${escapeHtml(debugValue(payload, ["diagnostics", "summary", "runtime_control", "failure"], debugValue(payload, ["probe", "runtime_control_reachable"], "-")))}</strong></div>
               <div><span class="ss-bot-field-label">Detection</span><strong>${escapeHtml(debugValue({ detection }, ["detection", "detection_status"], detection.detection_attempted ? "attempted" : "not attempted"))}</strong></div>
               <div><span class="ss-bot-field-label">Next step</span><strong>${escapeHtml(debugValue({ detection }, ["detection", "next_required_step"]))}</strong></div>
+              <div><span class="ss-bot-field-label">Subscription</span><strong>${escapeHtml(debugValue(payload, ["probe", "subscription_status"], debugValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_status"])))}</strong></div>
+              <div><span class="ss-bot-field-label">Subscription HTTP</span><strong>${escapeHtml(debugValue(payload, ["probe", "subscription_http_status"], debugValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_http_status"])))}</strong></div>
+              <div><span class="ss-bot-field-label">Subscription message</span><strong>${escapeHtml(debugValue(payload, ["probe", "subscription_response_message"], debugValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_response_message"])))}</strong></div>
+              <div><span class="ss-bot-field-label">Dispatch</span><strong>${escapeHtml(debugValue(payload, ["probe", "dispatch_status"], debugValue(payload, ["diagnostics", "exports", "session_snapshot", "dispatch_status"])))}</strong></div>
               <div><span class="ss-bot-field-label">Credential posture</span><strong>${escapeHtml(debugValue(payload, ["diagnostics", "summary", "latest_error_code"], "No trace error"))}</strong></div>
               <div><span class="ss-bot-field-label">Last manual deploy</span><strong>${escapeHtml(lastManual?.code || lastManual?.phase || "-")}</strong></div>
               <div><span class="ss-bot-field-label">Last exception</span><strong>${escapeHtml(lastException?.code || lastException?.details?.exception_type || "-")}</strong></div>
@@ -978,7 +983,7 @@
     const platformError =
       Boolean(String(platformState?.error || "").trim()) &&
       !["pending", "blocked", "active"].includes(platformAvailability);
-    if (platformError || values.some((value) => ["error", "transport_error", "auth_failed"].includes(value))) {
+    if (platformError || values.some((value) => ["error", "transport_error", "auth_failed", "subscription_failed"].includes(value))) {
       return { label: "Error", rank: 6, tone: "ss-badge-danger" };
     }
     if (values.some((value) => ["blocked", "target_unresolved", "stale", "live_target_unresolved"].includes(value))) {
@@ -987,10 +992,10 @@
     if (values.some((value) => ["disabled", "offline", "stopped", "unavailable", "staged"].includes(value))) {
       return { label: "Disabled", rank: 4, tone: "" };
     }
-    if (values.some((value) => ["pending", "desired", "starting", "attaching", "awaiting_transport", "awaiting_live", "awaiting_livestream", "awaiting_chat_room"].includes(value))) {
+    if (values.some((value) => ["pending", "desired", "starting", "attaching", "awaiting_transport", "awaiting_live", "awaiting_livestream", "awaiting_chat_room", "awaiting_first_webhook_event", "subscription_pending"].includes(value))) {
       return { label: "Pending", rank: 3, tone: "ss-badge-warning" };
     }
-    if (values.some((value) => ["ready", "online", "running", "active", "attached", "listening", "connected"].includes(value))) {
+    if (values.some((value) => ["ready", "online", "running", "active", "attached", "listening", "connected", "listening_via_webhook", "transport_not_required_webhook_mode", "webhook_active"].includes(value))) {
       return { label: "Ready", rank: 1, tone: "ss-badge-success" };
     }
     return { label: "Pending", rank: 2, tone: "ss-badge-warning" };
@@ -1327,6 +1332,27 @@
           reason =
             runtime?.details?.session_status_reason ||
             `${blockedCount} creator-managed session${blockedCount === 1 ? "" : "s"} is live but still missing attach identity.`;
+        } else if (sessionStatus === "subscription_failed") {
+          availability = "blocked";
+          reason =
+            runtime?.details?.session_status_reason ||
+            runtime?.error ||
+            "Kick webhook subscription reconciliation failed.";
+        } else if (sessionStatus === "subscription_pending") {
+          availability = "pending";
+          reason =
+            runtime?.details?.session_status_reason ||
+            "Kick webhook subscription reconciliation is pending.";
+        } else if (sessionStatus === "awaiting_first_webhook_event") {
+          availability = "pending";
+          reason =
+            runtime?.details?.session_status_reason ||
+            "Kick webhook subscription is active; waiting for the first webhook event.";
+        } else if (["listening_via_webhook", "webhook_active"].includes(sessionStatus)) {
+          availability = "active";
+          reason =
+            runtime?.details?.session_status_reason ||
+            "Kick inbound chat is listening through official webhooks.";
         } else if (["awaiting_livestream", "awaiting_chat_room"].includes(sessionStatus)) {
           availability = "pending";
           reason =
@@ -2098,7 +2124,7 @@
           `Manual deploy failed (HTTP ${response.status}).`;
         setManualError(correlation ? `${String(detail)} (correlation ${correlation})` : String(detail));
         if (responsePayload?.session_id || responsePayload?.details?.session_id) {
-          await loadBots({ forceRender: true });
+          await reloadBotsSafely();
         }
         return;
       }
@@ -2569,7 +2595,7 @@
           };
         }
         if (responsePayload?.session_id || responsePayload?.details?.session_id) {
-          await loadBots({ forceRender: true });
+          await reloadBotsSafely();
         }
         return;
       }
@@ -2641,6 +2667,24 @@
     renderRowsAndCountersFromState();
   }
 
+  async function reloadBotsSafely() {
+    try {
+      if (typeof refresh === "function") {
+        await refresh();
+        return true;
+      }
+    } catch (err) {
+      console.warn("Bot status reload failed after action", err);
+      return false;
+    }
+    try {
+      renderRowsAndCountersFromState();
+    } catch (err) {
+      console.warn("Bot status fallback render failed after action", err);
+    }
+    return false;
+  }
+
   async function runBotDebugProbe(creatorId, platform, sessionId = "", target = "") {
     const ui = getRowUi(creatorId, platform);
     if (ui.debugProbePending) return;
@@ -2668,7 +2712,7 @@
         throw new Error(payload?.message || payload?.error || `Debug probe failed (HTTP ${response.status}).`);
       }
       ui.debugPayload = payload;
-      await loadBots({ forceRender: true });
+      await reloadBotsSafely();
     } catch (err) {
       ui.debugError = err?.message ? String(err.message) : "Debug probe failed.";
     } finally {

@@ -1045,6 +1045,12 @@ test("bots view exposes per-instance debug endpoint and correlation-aware errors
   assert.match(botsJs, /data-bot-debug="1"/);
   assert.match(botsJs, /data-bot-debug-probe="1"/);
   assert.match(botsJs, /Probe Now/);
+  assert.match(botsJs, /reloadBotsSafely/);
+  assert.doesNotMatch(botsJs, /loadBots\(/);
+  assert.match(botsJs, /subscription_response_message/);
+  assert.match(botsJs, /awaiting_first_webhook_event/);
+  assert.match(botsJs, /listening_via_webhook/);
+  assert.match(botsJs, /subscription_failed/);
   assert.match(botsJs, /renderDebugPanel\(bot, getRowUi/);
   assert.match(botsJs, /Copy Debug JSON/);
   assert.match(botsJs, /responsePayload\?\.correlation_id/);
