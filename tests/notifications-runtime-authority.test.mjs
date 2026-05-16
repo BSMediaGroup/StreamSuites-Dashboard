@@ -1048,6 +1048,13 @@ test("bots view exposes per-instance debug endpoint and correlation-aware errors
   assert.match(botsJs, /reloadBotsSafely/);
   assert.doesNotMatch(botsJs, /loadBots\(/);
   assert.match(botsJs, /subscription_response_message/);
+  assert.match(botsJs, /subscription_endpoint_path/);
+  assert.match(botsJs, /runtimeControlLabel/);
+  assert.match(botsJs, /diagnostic only/);
+  assert.match(botsJs, /ui\.debugPayload = payload;\s*ui\.debugError = "";\s*ui\.debugProbePending = false;\s*renderRowsAndCountersFromState\(\);\s*await reloadBotsSafely\(\);/s);
+  assert.match(botsJs, /err\?\.name === "AbortError" && ui\.debugPayload/);
+  assert.match(botsJs, /bot\?\.transport_status \|\| bot\?\.status/);
+  assert.match(botsJs, /target_source/);
   assert.match(botsJs, /awaiting_first_webhook_event/);
   assert.match(botsJs, /listening_via_webhook/);
   assert.match(botsJs, /subscription_failed/);

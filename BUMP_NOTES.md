@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Fixed the remaining Admin Kick Probe Now abort/rendering issue and aligned labels with webhook-mode runtime truth. `docs/js/bots.js` now renders a successful probe payload before any status reload, ignores a browser `AbortError` when a valid probe response is already available, uses `transport_status` for the transport badge, labels runtime-control failures as diagnostic-only when not required, and surfaces subscription endpoint plus target source fields. The focused Dashboard test pins the render-before-reload/AbortError guard and webhook/subscription label mappings. No files were created, removed, or renamed.
+- Human note: after clicking Probe Now, a valid Kick probe response should remain visible instead of being replaced by "signal is aborted without reason"; runtime-control unavailable should not be shown as the main blocker when Auth-local probe succeeded.
+
 - Fixed the Admin Bots / Runtime Status Probe Now reload bug and updated Kick readiness wording for webhook-first runtime truth. `docs/js/bots.js` no longer calls the nonexistent `loadBots`; Probe Now now uses a guarded `reloadBotsSafely()` path so the debug response remains visible even if a full table refresh fails. The existing debug panel now surfaces subscription status, HTTP status/message, and dispatch status, and status mapping treats `subscription_failed`, `subscription_pending`, `awaiting_first_webhook_event`, `listening_via_webhook`, and `transport_not_required_webhook_mode` as first-class runtime states without showing webhook mode as transport awaiting livestream. Focused Dashboard tests pin the missing reload guard and new subscription/webhook labels. No files were created, removed, or renamed.
 - Human note: after clicking Probe Now on Daniel's Kick row, the Dashboard should not show `loadBots is not defined`; it should keep the probe response visible and refresh the table when possible.
 

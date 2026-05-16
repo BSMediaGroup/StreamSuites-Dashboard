@@ -648,7 +648,7 @@
 
   function statusTone(status) {
     const normalized = String(status || "").trim().toLowerCase();
-    if (["ready", "online", "running", "active", "attached", "listening", "connected"].includes(normalized)) {
+    if (["ready", "online", "running", "active", "attached", "listening", "connected", "listening_via_webhook", "transport_not_required_webhook_mode", "webhook_active"].includes(normalized)) {
       return "ss-bot-status-online";
     }
     if (["offline", "disabled", "unavailable", "stopped"].includes(normalized)) {
@@ -657,7 +657,7 @@
     if (["error", "transport_error", "auth_failed", "target_unresolved", "blocked", "stale"].includes(normalized)) {
       return "ss-bot-status-error";
     }
-    if (["mixed", "pending", "paused", "desired", "starting", "attaching", "awaiting_transport"].includes(normalized)) {
+    if (["mixed", "pending", "paused", "desired", "starting", "attaching", "awaiting_transport", "subscription_pending", "awaiting_first_webhook_event"].includes(normalized)) {
       return "ss-bot-status-paused";
     }
     return "";
@@ -666,6 +666,17 @@
   function statusLabel(status) {
     const text = String(status || "").trim().replace(/_/g, " ");
     return text ? text : "-";
+  }
+
+  function runtimeControlLabel(payload) {
+    const control = payload?.probe?.runtime_control || payload?.diagnostics?.summary?.runtime_control || {};
+    const failure = String(control?.failure || payload?.diagnostics?.summary?.runtime_debug_proxy_error || "").trim();
+    const required = control?.required_for_probe === true || control?.required_for_debug_read === true || control?.required_for_manual_deploy === true;
+    if (failure && !required) return `${failure} (diagnostic only)`;
+    if (failure) return failure;
+    if (control?.reachable === false) return required ? "unavailable" : "unavailable (diagnostic only)";
+    if (control?.reachable === true) return "reachable";
+    return "-";
   }
 
   function renderStatus(status) {
@@ -773,7 +784,7 @@
     const normalized = String(value || "").trim().toLowerCase();
     if (["attached", "listening", "running", "listening_via_webhook", "transport_not_required_webhook_mode", "webhook_active"].includes(normalized)) return "ss-badge-success";
     if (["desired", "starting", "attaching", "awaiting_transport", "awaiting_livestream", "awaiting_chat_room", "awaiting_first_webhook_event", "subscription_pending"].includes(normalized)) return "ss-badge-warning";
-    if (["blocked", "auth_failed", "target_unresolved", "transport_error", "stale", "subscription_failed"].includes(normalized)) {
+    if (["blocked", "auth_failed", "target_unresolved", "transport_error", "stale", "subscription_failed", "dispatch_unavailable"].includes(normalized)) {
       return "ss-badge-danger";
     }
     return "";
@@ -781,7 +792,7 @@
 
   function renderTransportCell(bot) {
     const transport = String(bot?.runner_state || bot?.status || "").trim().toLowerCase();
-    const transportStatus = String(bot?.status || "").trim().toLowerCase();
+    const transportStatus = String(bot?.transport_status || bot?.status || "").trim().toLowerCase();
     const badges = [
       renderBadge(`Transport ${statusLabel(transportStatus)}`, managedSessionTone(transportStatus))
     ];
@@ -811,6 +822,10 @@
     if (resolvedTarget.channel_handle) bits.push(`<span>${escapeHtml(String(resolvedTarget.channel_handle))}</span>`);
     if (resolvedTarget.chat_id) bits.push(`<span>chat ${escapeHtml(String(resolvedTarget.chat_id))}</span>`);
     if (resolvedTarget.video_id) bits.push(`<span>video ${escapeHtml(String(resolvedTarget.video_id))}</span>`);
+    if (bot?.target_source) bits.push(`<span class="muted">source ${escapeHtml(String(bot.target_source))}</span>`);
+    if (bot?.target_input && String(bot.target_input) !== String(bot?.target_normalized || bot?.active_target || "")) {
+      bits.push(`<span class="muted">input ${escapeHtml(String(bot.target_input))}</span>`);
+    }
     return bits.length
       ? `<div class="ss-bot-cell-stack">${bits.join("")}</div>`
       : '<span class="muted">No target exported.</span>';
@@ -947,13 +962,15 @@
               <div><span class="ss-bot-field-label">Target</span><strong>${escapeHtml(debugValue(payload, ["bot", "target"]))}</strong></div>
               <div><span class="ss-bot-field-label">Correlation</span><strong>${escapeHtml(debugValue(payload, ["diagnostics", "summary", "latest_correlation_id"]))}</strong></div>
               <div><span class="ss-bot-field-label">Trace source</span><strong>${escapeHtml(debugValue(payload, ["diagnostics", "summary", "trace_source"]))}</strong></div>
-              <div><span class="ss-bot-field-label">Runtime control</span><strong>${escapeHtml(debugValue(payload, ["diagnostics", "summary", "runtime_control", "failure"], debugValue(payload, ["probe", "runtime_control_reachable"], "-")))}</strong></div>
+              <div><span class="ss-bot-field-label">Runtime control</span><strong>${escapeHtml(runtimeControlLabel(payload))}</strong></div>
               <div><span class="ss-bot-field-label">Detection</span><strong>${escapeHtml(debugValue({ detection }, ["detection", "detection_status"], detection.detection_attempted ? "attempted" : "not attempted"))}</strong></div>
               <div><span class="ss-bot-field-label">Next step</span><strong>${escapeHtml(debugValue({ detection }, ["detection", "next_required_step"]))}</strong></div>
               <div><span class="ss-bot-field-label">Subscription</span><strong>${escapeHtml(debugValue(payload, ["probe", "subscription_status"], debugValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_status"])))}</strong></div>
               <div><span class="ss-bot-field-label">Subscription HTTP</span><strong>${escapeHtml(debugValue(payload, ["probe", "subscription_http_status"], debugValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_http_status"])))}</strong></div>
               <div><span class="ss-bot-field-label">Subscription message</span><strong>${escapeHtml(debugValue(payload, ["probe", "subscription_response_message"], debugValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_response_message"])))}</strong></div>
+              <div><span class="ss-bot-field-label">Subscription endpoint</span><strong>${escapeHtml(debugValue(payload, ["probe", "subscription_endpoint_path"], debugValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_endpoint_path"])))}</strong></div>
               <div><span class="ss-bot-field-label">Dispatch</span><strong>${escapeHtml(debugValue(payload, ["probe", "dispatch_status"], debugValue(payload, ["diagnostics", "exports", "session_snapshot", "dispatch_status"])))}</strong></div>
+              <div><span class="ss-bot-field-label">Target source</span><strong>${escapeHtml(debugValue(payload, ["bot", "target_source"], debugValue(payload, ["diagnostics", "exports", "session_snapshot", "target_source"])))}</strong></div>
               <div><span class="ss-bot-field-label">Credential posture</span><strong>${escapeHtml(debugValue(payload, ["diagnostics", "summary", "latest_error_code"], "No trace error"))}</strong></div>
               <div><span class="ss-bot-field-label">Last manual deploy</span><strong>${escapeHtml(lastManual?.code || lastManual?.phase || "-")}</strong></div>
               <div><span class="ss-bot-field-label">Last exception</span><strong>${escapeHtml(lastException?.code || lastException?.details?.exception_type || "-")}</strong></div>
@@ -983,7 +1000,7 @@
     const platformError =
       Boolean(String(platformState?.error || "").trim()) &&
       !["pending", "blocked", "active"].includes(platformAvailability);
-    if (platformError || values.some((value) => ["error", "transport_error", "auth_failed", "subscription_failed"].includes(value))) {
+    if (platformError || values.some((value) => ["error", "transport_error", "auth_failed", "subscription_failed", "dispatch_unavailable"].includes(value))) {
       return { label: "Error", rank: 6, tone: "ss-badge-danger" };
     }
     if (values.some((value) => ["blocked", "target_unresolved", "stale", "live_target_unresolved"].includes(value))) {
@@ -2712,8 +2729,15 @@
         throw new Error(payload?.message || payload?.error || `Debug probe failed (HTTP ${response.status}).`);
       }
       ui.debugPayload = payload;
+      ui.debugError = "";
+      ui.debugProbePending = false;
+      renderRowsAndCountersFromState();
       await reloadBotsSafely();
     } catch (err) {
+      if (err?.name === "AbortError" && ui.debugPayload) {
+        ui.debugError = "";
+        return;
+      }
       ui.debugError = err?.message ? String(err.message) : "Debug probe failed.";
     } finally {
       ui.debugProbePending = false;
