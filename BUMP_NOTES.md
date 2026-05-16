@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Added active bot debug probing to the existing Admin Bots / Runtime Status drawer. `docs/js/bots.js` now renders a Probe Now button in the existing Debug panel, posts to `POST /api/admin/bots/debug/probe`, refreshes the panel from the returned diagnostics, shows trace source/stale/runtime-control fields, and keeps structured manual deploy failures visible with backend message, error code, correlation id, and debug timeline context instead of generic Internal Server Error text. Stale status payloads now render a compact stale/debug warning without redesigning the page. No files were created, removed, or renamed.
+- Human note: Daniel's Kick row Debug panel should now support a live probe and explain whether the row is current, reconstructed, stale, missing runtime control, missing credentials/scopes/broadcaster/webhook posture, or blocked by the current absence of official Kick live/chat detection.
+
 - Added a targeted Debug action to every Admin Bots / Runtime Status instance row without redesigning the page. `docs/js/bots.js` now calls `GET /api/admin/bots/debug` for the selected creator/platform/session, renders summary chips, lifecycle/transport/runner/target posture, credential/error posture, detection result/next step, last manual deploy, last exception, chronological timeline, redacted debug JSON, and a Copy Debug JSON button inside the existing row drawer. Manual deploy errors now surface backend `message` plus `correlation_id` when present so operators can open the matching debug trace. `docs/css/components.css` adds only the debug panel/timeline/JSON styling. No files were created, removed, or renamed.
 - Human note: Daniel's Kick row can remain `awaiting_livestream`, but the expanded row now has a Debug button that should explain whether detection ran or was skipped and what exact Runtime/Auth phase failed.
 

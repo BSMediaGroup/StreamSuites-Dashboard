@@ -8,6 +8,7 @@
   const POLL_INTERVAL_MS = 8000;
   const BOTS_STATUS_ENDPOINT = "/api/admin/bots/status";
   const BOTS_DEBUG_ENDPOINT = "/api/admin/bots/debug";
+  const BOTS_DEBUG_PROBE_ENDPOINT = "/api/admin/bots/debug/probe";
   const CREATORS_ENDPOINT = "/api/admin/creators";
   const MANUAL_DEPLOY_ENDPOINT = "/api/admin/bots/deploy";
   const MANUAL_DETACH_ENDPOINT = "/api/admin/bots/detach";
@@ -690,6 +691,7 @@
         error: "",
         debugOpen: false,
         debugPending: false,
+        debugProbePending: false,
         debugError: "",
         debugPayload: null
       };
@@ -760,6 +762,8 @@
       <div class="ss-bot-cell-stack">
         <div class="ss-bot-badge-stack">${statusLine}${lifecycleLine}${desiredLine}</div>
         <div class="muted">${escapeHtml(bot?.status_reason || "No lifecycle note.")}</div>
+        ${bot?.is_stale ? `<div class="ss-bot-row-error has-error">Stale/debug warning: ${escapeHtml(bot?.stale_reason || "export state is stale")}</div>` : ""}
+        ${bot?.debug_trace_source === "reconstructed" ? '<div class="muted">Debug trace will be reconstructed from export until a live trace is recorded.</div>' : ""}
       </div>
     `;
   }
@@ -915,6 +919,16 @@
             data-platform="${encodeData(String(bot?.platform || ""))}"
             ${payload ? "" : "disabled"}
           >Copy Debug JSON</button>
+          <button
+            class="ss-btn ss-btn-small ss-btn-primary"
+            type="button"
+            data-bot-debug-probe="1"
+            data-creator-id="${encodeData(String(bot?.creator_id || ""))}"
+            data-platform="${encodeData(String(bot?.platform || ""))}"
+            data-session-id="${encodeData(String(bot?.session_id || ""))}"
+            data-target="${encodeData(String(bot?.active_target || bot?.target_normalized || ""))}"
+            ${ui.debugProbePending ? "disabled" : ""}
+          >${ui.debugProbePending ? "Probing..." : "Probe Now"}</button>
         </div>
         ${ui.debugPending ? '<div class="muted">Loading debug payload...</div>' : ""}
         ${ui.debugError ? `<div class="ss-alert ss-alert-danger">${escapeHtml(ui.debugError)}</div>` : ""}
@@ -925,10 +939,14 @@
               ${renderCompactChip(`Transport ${debugValue(payload, ["bot", "transport_status"])}`, managedSessionTone(debugValue(payload, ["bot", "transport_status"])))}
               ${renderCompactChip(`Runner ${debugValue(payload, ["bot", "runner_status"])}`, managedSessionTone(debugValue(payload, ["bot", "runner_status"])))}
               ${renderCompactChip(`Trace ${debugValue(payload, ["diagnostics", "summary", "event_count"], "0")}`, "")}
+              ${renderCompactChip(`Source ${debugValue(payload, ["diagnostics", "summary", "trace_source"])}`, "")}
+              ${debugValue(payload, ["diagnostics", "summary", "is_stale"], "false") === "true" ? renderCompactChip("Stale", "ss-badge-danger") : ""}
             </div>
             <div class="ss-bot-debug-grid">
               <div><span class="ss-bot-field-label">Target</span><strong>${escapeHtml(debugValue(payload, ["bot", "target"]))}</strong></div>
               <div><span class="ss-bot-field-label">Correlation</span><strong>${escapeHtml(debugValue(payload, ["diagnostics", "summary", "latest_correlation_id"]))}</strong></div>
+              <div><span class="ss-bot-field-label">Trace source</span><strong>${escapeHtml(debugValue(payload, ["diagnostics", "summary", "trace_source"]))}</strong></div>
+              <div><span class="ss-bot-field-label">Runtime control</span><strong>${escapeHtml(debugValue(payload, ["diagnostics", "summary", "runtime_control", "failure"], debugValue(payload, ["probe", "runtime_control_reachable"], "-")))}</strong></div>
               <div><span class="ss-bot-field-label">Detection</span><strong>${escapeHtml(debugValue({ detection }, ["detection", "detection_status"], detection.detection_attempted ? "attempted" : "not attempted"))}</strong></div>
               <div><span class="ss-bot-field-label">Next step</span><strong>${escapeHtml(debugValue({ detection }, ["detection", "next_required_step"]))}</strong></div>
               <div><span class="ss-bot-field-label">Credential posture</span><strong>${escapeHtml(debugValue(payload, ["diagnostics", "summary", "latest_error_code"], "No trace error"))}</strong></div>
@@ -2509,11 +2527,47 @@
       const responsePayload = await readJsonSafe(response);
       if (!response.ok || responsePayload?.success === false) {
         const correlation = String(responsePayload?.correlation_id || "").trim();
+        const code = String(responsePayload?.error_code || responsePayload?.error || "").trim();
         const detail =
           responsePayload?.message ||
           responsePayload?.error ||
           `Manual ${action} failed (HTTP ${response.status}).`;
-        ui.error = correlation ? `${String(detail)} (correlation ${correlation})` : String(detail);
+        const codePart = code ? ` [${code}]` : "";
+        ui.error = correlation ? `${String(detail)}${codePart} (correlation ${correlation})` : `${String(detail)}${codePart}`;
+        if (responsePayload?.debug_lookup) {
+          ui.debugOpen = true;
+          ui.debugPayload = {
+            success: false,
+            generated_at: new Date().toISOString(),
+            bot: {
+              platform,
+              creator_id: creatorId,
+              session_id: responsePayload.debug_lookup.session_id || responsePayload.session_id || ""
+            },
+            diagnostics: {
+              summary: {
+                event_count: 1,
+                has_trace: true,
+                latest_correlation_id: correlation,
+                latest_error_code: code,
+                trace_source: "structured_error"
+              },
+              timeline: [{
+                timestamp: new Date().toISOString(),
+                severity: "error",
+                phase: "manual_deploy_error",
+                step: "dashboard_response",
+                message: String(detail),
+                code,
+                correlation_id: correlation
+              }],
+              detection: {
+                detection_attempted: false,
+                next_required_step: "Open Debug or run Probe Now for this correlation."
+              }
+            }
+          };
+        }
         if (responsePayload?.session_id || responsePayload?.details?.session_id) {
           await loadBots({ forceRender: true });
         }
@@ -2587,6 +2641,42 @@
     renderRowsAndCountersFromState();
   }
 
+  async function runBotDebugProbe(creatorId, platform, sessionId = "", target = "") {
+    const ui = getRowUi(creatorId, platform);
+    if (ui.debugProbePending) return;
+    ui.debugOpen = true;
+    ui.debugProbePending = true;
+    ui.debugError = "";
+    renderRowsAndCountersFromState();
+    try {
+      const response = await fetch(buildApiUrl(BOTS_DEBUG_PROBE_ENDPOINT), {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json"
+        },
+        body: JSON.stringify({
+          platform: normalizePlatformKey(platform),
+          creator_id: creatorId,
+          session_id: sessionId || null,
+          target: target || null
+        })
+      });
+      const payload = await readJsonSafe(response);
+      if (!response.ok || payload?.success === false) {
+        throw new Error(payload?.message || payload?.error || `Debug probe failed (HTTP ${response.status}).`);
+      }
+      ui.debugPayload = payload;
+      await loadBots({ forceRender: true });
+    } catch (err) {
+      ui.debugError = err?.message ? String(err.message) : "Debug probe failed.";
+    } finally {
+      ui.debugProbePending = false;
+      renderRowsAndCountersFromState();
+    }
+  }
+
   function onBodyClick(event) {
     const expandButton = event.target.closest("[data-bot-expand]");
     if (expandButton instanceof HTMLButtonElement && !expandButton.disabled) {
@@ -2604,6 +2694,18 @@
       const platform = decodeData(debugCopyButton.dataset.platform || "");
       if (creatorId && platform) {
         void copyBotDebugJson(creatorId, platform);
+      }
+      return;
+    }
+
+    const debugProbeButton = event.target.closest("[data-bot-debug-probe]");
+    if (debugProbeButton instanceof HTMLButtonElement && !debugProbeButton.disabled) {
+      const creatorId = decodeData(debugProbeButton.dataset.creatorId || "");
+      const platform = decodeData(debugProbeButton.dataset.platform || "");
+      const sessionId = decodeData(debugProbeButton.dataset.sessionId || "");
+      const target = decodeData(debugProbeButton.dataset.target || "");
+      if (creatorId && platform) {
+        void runBotDebugProbe(creatorId, platform, sessionId, target);
       }
       return;
     }

@@ -1041,10 +1041,15 @@ test("bots view exposes per-instance debug endpoint and correlation-aware errors
   const componentsCss = read("docs/css/components.css");
 
   assert.match(botsJs, /const BOTS_DEBUG_ENDPOINT = "\/api\/admin\/bots\/debug";/);
+  assert.match(botsJs, /const BOTS_DEBUG_PROBE_ENDPOINT = "\/api\/admin\/bots\/debug\/probe";/);
   assert.match(botsJs, /data-bot-debug="1"/);
+  assert.match(botsJs, /data-bot-debug-probe="1"/);
+  assert.match(botsJs, /Probe Now/);
   assert.match(botsJs, /renderDebugPanel\(bot, getRowUi/);
   assert.match(botsJs, /Copy Debug JSON/);
   assert.match(botsJs, /responsePayload\?\.correlation_id/);
+  assert.match(botsJs, /responsePayload\?\.error_code/);
+  assert.match(botsJs, /trace_source/);
   assert.match(componentsCss, /\.ss-bot-debug-panel/);
   assert.match(componentsCss, /\.ss-bot-debug-timeline/);
 });
