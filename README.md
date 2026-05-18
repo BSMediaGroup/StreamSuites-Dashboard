@@ -119,6 +119,9 @@ StreamSuites-Dashboard/
 │   │   ├── theme-dark.css
 │   │   └── updates.css
 │   ├── assets/
+│   │   ├── games/
+│   │   │   ├── asset-catalog.json
+│   │   │   └── ...
 │   │   ├── js/
 │   │   │   └── ss-social-platforms.js
 │   │   └── icons/

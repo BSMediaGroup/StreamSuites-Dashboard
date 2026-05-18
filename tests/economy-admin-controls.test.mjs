@@ -119,6 +119,17 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /categoryPresets/);
   assert.match(js, /rarityPresets/);
   assert.match(js, /function presetOptions/);
+  assert.match(js, /GAME_ASSET_CATALOG = "\/assets\/games\/asset-catalog\.json"/);
+  assert.match(js, /function normalizeItemIconPath\(path\)/);
+  assert.ok(js.includes('replace(/\\\\/g, "/")'));
+  assert.ok(js.includes('replace(/^docs\\\\/i, "")') || js.includes('replace(/^docs\\/+'));
+  assert.ok(js.includes('assets\\/games\\/([^/?#]+)'));
+  assert.match(js, /function renderAssetPicker\(\)/);
+  assert.match(js, /document\.querySelectorAll\("#economy-asset-picker"\)/);
+  assert.match(js, /data-asset-mode="bundled"/);
+  assert.match(js, /data-asset-mode="custom"/);
+  assert.match(js, /data-asset-use/);
+  assert.match(js, /isLikelyImageUrl/);
   assert.match(js, /item_code: text\(\$\(("#economy-item-create-code"|'economy-item-create-code')\)/);
   assert.match(js, /is_enabled: readField\("is_enabled"\) !== "false"/);
   assert.doesNotMatch(js, /localStorage/);
@@ -148,7 +159,24 @@ test("item definition save reads the visible editor reason and sends reason_text
   assert.match(js, /reason_text: reason/);
   assert.match(js, /Category<select data-item-field="category">/);
   assert.match(js, /Rarity<select data-item-field="rarity">/);
+  assert.match(js, /icon_path: normalizeItemIconPath\(readField\("icon_path"\)\)/);
+  assert.match(js, /icon_path: normalizeItemIconPath\(\$\(("#economy-item-create-icon"|'economy-item-create-icon')\)\?\.value\)/);
+  assert.ok(js.includes("ss-economy-asset-browse"));
+  assert.match(js, /Browse assets/);
+  assert.match(js, /No icon configured/);
+  assert.match(js, /Preview unavailable/);
   assert.doesNotMatch(js, /button\.closest\("\[data-item-code\]"\)/);
+});
+
+test("game asset catalog manifest lists bundled dashboard image assets", () => {
+  const manifest = JSON.parse(read("docs/assets/games/asset-catalog.json"));
+
+  assert.equal(manifest.asset_root, "assets/games");
+  assert.ok(Array.isArray(manifest.items));
+  assert.ok(manifest.items.length >= 1);
+  assert.ok(manifest.items.some((item) => item.path === "assets/games/sscoin.webp"));
+  assert.ok(manifest.items.every((item) => item.path.startsWith("assets/games/")));
+  assert.ok(manifest.items.every((item) => item.filename && item.extension && item.label));
 });
 
 test("economy settings controls and denomination rendering are wired", () => {
@@ -213,7 +241,17 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-state-reversed,[\s\S]*\.ss-economy-state-reversal/);
   assert.match(css, /\.ss-economy-master-detail\s*\{[\s\S]*grid-template-columns:\s*minmax\(440px,\s*1\.35fr\) minmax\(320px,\s*0\.85fr\)/);
   assert.match(css, /\.ss-economy-item-definition-summary\s*\{[\s\S]*grid-template-columns:\s*38px minmax\(0,\s*1fr\) auto/);
-  assert.match(css, /\.ss-economy-item-editor\s*\{[\s\S]*grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(css, /\.ss-economy-item-editor\s*\{[\s\S]*grid-template-columns:\s*minmax\(210px,\s*0\.74fr\) minmax\(0,\s*1\.26fr\)/);
+  assert.match(css, /\.ss-economy-icon-field\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto minmax\(190px,\s*0\.55fr\)/);
+  assert.match(css, /\.ss-economy-asset-modal\s*\{/);
+  assert.match(css, /\.ss-economy-asset-head\s*\{[\s\S]*grid-row:\s*1/);
+  assert.match(css, /\.ss-economy-asset-search,[\s\S]*\.ss-economy-asset-custom\s*\{[\s\S]*grid-row:\s*3/);
+  assert.match(css, /\.ss-economy-asset-grid\s*\{[\s\S]*grid-column:\s*1 \/ 2/);
+  assert.match(css, /\.ss-economy-asset-grid\s*\{[\s\S]*grid-row:\s*4/);
+  assert.match(css, /\.ss-economy-asset-grid\s*\{[\s\S]*grid-template-columns:\s*repeat\(auto-fill,\s*minmax\(145px,\s*1fr\)\)/);
+  assert.match(css, /\.ss-economy-asset-preview\s*\{[\s\S]*grid-column:\s*2 \/ 3/);
+  assert.match(css, /\.ss-economy-asset-tile\.is-selected/);
+  assert.match(css, /\.ss-economy-icon-preview-placeholder/);
   assert.match(css, /\.ss-economy-exchange-grid\s*\{/);
   assert.match(css, /\.ss-admin-pager\s*\{/);
 });
