@@ -1051,7 +1051,7 @@ test("bots view exposes per-instance debug endpoint and correlation-aware errors
   assert.match(botsJs, /subscription_response_message/);
   assert.match(botsJs, /subscription_endpoint_path/);
   assert.match(botsJs, /runtimeControlLabel/);
-  assert.match(botsJs, /diagnostic only/);
+  assert.match(botsJs, /Snapshot fallback active/);
   assert.match(botsJs, /fetch\(buildApiUrl\(`\$\{BOTS_DEBUG_PROBE_ENDPOINT\}\?async=1`\)/);
   assert.match(botsJs, /await pollBotDebugProbeStatus\(ui, token,/);
   assert.match(botsJs, /mode: "async-polling"/);
@@ -1072,6 +1072,8 @@ test("bots view exposes per-instance debug endpoint and correlation-aware errors
   assert.match(botsJs, /bot\?\.transport_status \|\| bot\?\.status/);
   assert.match(botsJs, /target_source/);
   assert.match(botsJs, /awaiting_first_webhook_event/);
+  assert.match(botsJs, /normalized === "awaiting_first_webhook_event"\) return ""/);
+  assert.match(botsJs, /values\.includes\("awaiting_first_webhook_event"\) \? "" : "ss-badge-warning"/);
   assert.match(botsJs, /listening_via_webhook/);
   assert.match(botsJs, /subscription_failed/);
   assert.match(botsJs, /renderDebugPanel\(bot, getRowUi/);
@@ -1080,7 +1082,10 @@ test("bots view exposes per-instance debug endpoint and correlation-aware errors
   assert.match(botsJs, /Trigger Pipeline/);
   assert.match(botsJs, /last_pipeline_outcome/);
   assert.match(botsJs, /last_suppression_reason/);
-  assert.match(botsJs, /Kick official webhook mode active - no socket transport required\./);
+  assert.match(botsJs, /Official webhook mode active - no socket transport required\./);
+  assert.match(botsJs, /Webhook trigger dispatch working\./);
+  assert.match(botsJs, /Kick webhook mode is active, but trigger dispatch failed\./);
+  assert.doesNotMatch(botsJs, /without claiming live\/chat success/);
   assert.match(botsJs, /webhookReadyPosture/);
   assert.match(botsJs, /last_dispatch_response_message/);
   assert.match(botsJs, /responsePayload\?\.correlation_id/);

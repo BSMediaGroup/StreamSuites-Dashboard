@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Cleaned Admin Bots Kick webhook-mode debug rendering without redesigning the panel. `docs/js/bots.js` now labels optional runtime-control fallback as muted "Snapshot fallback active", treats `awaiting_first_webhook_event` as neutral pending instead of warning/error styling, and renders webhook health as official webhook mode, dispatch working, no-trigger-match, awaiting-first-event, or dispatch failed based on the Runtime/Auth debug payload. Copy Debug JSON and async Probe Now remain unchanged.
+- Human note: a working Kick webhook bot should no longer look blocked just because runtime control is unreachable or because the session is waiting for the first webhook event; after `!ping`, the drawer should say webhook trigger dispatch is working.
+
 - Added a compact Kick Trigger Pipeline section to the existing Admin Bots debug drawer. `docs/js/bots.js` now renders runtime-owned `diagnostics.trigger_pipeline` fields for last inbound message, command-safe summary, trigger evaluation, matched trigger refs, action count, dispatch status/HTTP/message, final outcome, suppression reason, and recent messages while keeping async Probe Now and Copy Debug JSON unchanged. Kick webhook-ready status text no longer appears in the red Blocking/Error cell when there is no real blocker, and webhook mode is labeled as official webhook mode with no socket transport required.
 - Human note: after sending `!ping` or `!bot` in Kick chat, the debug drawer should show whether the command matched, was disabled/no-match/suppressed, or attempted/succeeded/failed dispatch without implying a missing socket attach.
 

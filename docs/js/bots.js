@@ -660,7 +660,10 @@
     if (["error", "transport_error", "auth_failed", "target_unresolved", "blocked", "stale"].includes(normalized)) {
       return "ss-bot-status-error";
     }
-    if (["mixed", "pending", "paused", "desired", "starting", "attaching", "awaiting_transport", "subscription_pending", "awaiting_first_webhook_event"].includes(normalized)) {
+    if (normalized === "awaiting_first_webhook_event") {
+      return "";
+    }
+    if (["mixed", "pending", "paused", "desired", "starting", "attaching", "awaiting_transport", "subscription_pending"].includes(normalized)) {
       return "ss-bot-status-paused";
     }
     return "";
@@ -675,6 +678,8 @@
     const control = payload?.probe?.runtime_control || payload?.diagnostics?.summary?.runtime_control || {};
     const failure = String(control?.failure || payload?.diagnostics?.summary?.runtime_debug_proxy_error || "").trim();
     const required = control?.required_for_probe === true || control?.required_for_debug_read === true || control?.required_for_manual_deploy === true;
+    const fallbackActive = control?.runtime_control_fallback_active === true || Boolean(control?.fallback_used);
+    if (fallbackActive && !required) return "Snapshot fallback active";
     if (failure && !required) return `${failure} (diagnostic only)`;
     if (failure) return failure;
     if (control?.reachable === false) return required ? "unavailable" : "unavailable (diagnostic only)";
@@ -802,7 +807,8 @@
   function managedSessionTone(value) {
     const normalized = String(value || "").trim().toLowerCase();
     if (["attached", "listening", "running", "listening_via_webhook", "transport_not_required_webhook_mode", "webhook_active"].includes(normalized)) return "ss-badge-success";
-    if (["desired", "starting", "attaching", "awaiting_transport", "awaiting_livestream", "awaiting_chat_room", "awaiting_first_webhook_event", "subscription_pending"].includes(normalized)) return "ss-badge-warning";
+    if (normalized === "awaiting_first_webhook_event") return "";
+    if (["desired", "starting", "attaching", "awaiting_transport", "awaiting_livestream", "awaiting_chat_room", "subscription_pending"].includes(normalized)) return "ss-badge-warning";
     if (["blocked", "auth_failed", "target_unresolved", "transport_error", "stale", "subscription_failed", "dispatch_unavailable"].includes(normalized)) {
       return "ss-badge-danger";
     }
@@ -920,6 +926,20 @@
       current = current[key];
     }
     return current === null || current === undefined || current === "" ? fallback : current;
+  }
+
+  function kickWebhookHealthLabel(payload) {
+    const health =
+      debugRawValue(payload, ["probe", "webhook_mode_health"], null) ||
+      debugRawValue(payload, ["diagnostics", "kick_webhook_health"], null) ||
+      debugRawValue(payload, ["diagnostics", "summary", "kick_webhook_health"], null) ||
+      {};
+    const triggerHealth = String(health?.trigger_health || "").trim();
+    if (triggerHealth === "dispatch_working") return "Webhook trigger dispatch working.";
+    if (triggerHealth === "dispatch_failed") return "Kick webhook mode is active, but trigger dispatch failed.";
+    if (triggerHealth === "evaluated_no_match") return "Kick webhook events are being received; no trigger matched the latest message.";
+    if (String(health?.webhook_health || "").trim() === "awaiting_first_event") return "Kick webhook subscription is active; waiting for the first webhook event.";
+    return "Official webhook mode active - no socket transport required.";
   }
 
   function renderDebugTimeline(payload) {
@@ -1102,7 +1122,7 @@
               <div><span class="ss-bot-field-label">Last manual deploy</span><strong>${escapeHtml(lastManual?.code || lastManual?.phase || "-")}</strong></div>
               <div><span class="ss-bot-field-label">Last exception</span><strong>${escapeHtml(lastException?.code || lastException?.details?.exception_type || "-")}</strong></div>
               <div><span class="ss-bot-field-label">Awaiting explanation</span><strong>${escapeHtml(detection.detection_skipped_reason || detection.next_required_step || debugValue(payload, ["bot", "readiness_reason"]))}</strong></div>
-              ${String(bot?.platform || "").toLowerCase() === "kick" ? '<div><span class="ss-bot-field-label">Kick mode</span><strong>Kick official webhook mode active - no socket transport required.</strong></div>' : ""}
+              ${String(bot?.platform || "").toLowerCase() === "kick" ? `<div><span class="ss-bot-field-label">Kick mode</span><strong>${escapeHtml(kickWebhookHealthLabel(payload))}</strong></div>` : ""}
             </div>
             <div class="ss-bot-debug-grid">
               <div><span class="ss-bot-field-label">Current attempt</span><strong>${escapeHtml(currentAttempt.current_subscription_result || "-")}</strong></div>
@@ -1146,7 +1166,7 @@
       return { label: "Disabled", rank: 4, tone: "" };
     }
     if (values.some((value) => ["pending", "desired", "starting", "attaching", "awaiting_transport", "awaiting_live", "awaiting_livestream", "awaiting_chat_room", "awaiting_first_webhook_event", "subscription_pending"].includes(value))) {
-      return { label: "Pending", rank: 3, tone: "ss-badge-warning" };
+      return { label: "Pending", rank: 3, tone: values.includes("awaiting_first_webhook_event") ? "" : "ss-badge-warning" };
     }
     if (values.some((value) => ["ready", "online", "running", "active", "attached", "listening", "connected", "listening_via_webhook", "transport_not_required_webhook_mode", "webhook_active"].includes(value))) {
       return { label: "Ready", rank: 1, tone: "ss-badge-success" };
