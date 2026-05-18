@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "generated_at": "2026-05-18T08:12:45Z",
+  "generated_at": "2026-05-18T11:25:47.389606Z",
   "asset_root": "assets/games",
-  "count": 53,
+  "count": 55,
   "items": [
     {
       "path": "assets/games/00-stone.webp",
@@ -10,7 +10,8 @@
       "extension": "webp",
       "label": "Stone",
       "size_bytes": 83774,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/01-iron.webp",
@@ -18,7 +19,8 @@
       "extension": "webp",
       "label": "Iron",
       "size_bytes": 92152,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/02-steel.webp",
@@ -26,7 +28,8 @@
       "extension": "webp",
       "label": "Steel",
       "size_bytes": 74506,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/03-bronze.webp",
@@ -34,7 +37,8 @@
       "extension": "webp",
       "label": "Bronze",
       "size_bytes": 93626,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/04-copper.webp",
@@ -42,7 +46,8 @@
       "extension": "webp",
       "label": "Copper",
       "size_bytes": 102206,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/05-titanium.webp",
@@ -50,7 +55,8 @@
       "extension": "webp",
       "label": "Titanium",
       "size_bytes": 120678,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/06-silver.webp",
@@ -58,7 +64,8 @@
       "extension": "webp",
       "label": "Silver",
       "size_bytes": 128660,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/07-gold.webp",
@@ -66,7 +73,8 @@
       "extension": "webp",
       "label": "Gold",
       "size_bytes": 101416,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/08-platinum.webp",
@@ -74,7 +82,8 @@
       "extension": "webp",
       "label": "Platinum",
       "size_bytes": 60976,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/09-obsidian.webp",
@@ -82,7 +91,8 @@
       "extension": "webp",
       "label": "Obsidian",
       "size_bytes": 83030,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/10-topaz.webp",
@@ -90,7 +100,8 @@
       "extension": "webp",
       "label": "Topaz",
       "size_bytes": 88654,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/11-amethyst.webp",
@@ -98,7 +109,8 @@
       "extension": "webp",
       "label": "Amethyst",
       "size_bytes": 76724,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/12-zircon.webp",
@@ -106,7 +118,8 @@
       "extension": "webp",
       "label": "Zircon",
       "size_bytes": 76634,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/13-sapphire.webp",
@@ -114,7 +127,8 @@
       "extension": "webp",
       "label": "Sapphire",
       "size_bytes": 98856,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/14-emerald.webp",
@@ -122,7 +136,8 @@
       "extension": "webp",
       "label": "Emerald",
       "size_bytes": 88384,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/15-ruby.webp",
@@ -130,7 +145,8 @@
       "extension": "webp",
       "label": "Ruby",
       "size_bytes": 89802,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/16-pearl.webp",
@@ -138,7 +154,8 @@
       "extension": "webp",
       "label": "Pearl",
       "size_bytes": 93126,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/17-opal.webp",
@@ -146,7 +163,8 @@
       "extension": "webp",
       "label": "Opal",
       "size_bytes": 99742,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/18-tanzanite.webp",
@@ -154,7 +172,8 @@
       "extension": "webp",
       "label": "Tanzanite",
       "size_bytes": 115466,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/19-blackopal.webp",
@@ -162,7 +181,8 @@
       "extension": "webp",
       "label": "Blackopal",
       "size_bytes": 120524,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/20-diamond.webp",
@@ -170,7 +190,8 @@
       "extension": "webp",
       "label": "Diamond",
       "size_bytes": 109792,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/21-musgravite.webp",
@@ -178,7 +199,8 @@
       "extension": "webp",
       "label": "Musgravite",
       "size_bytes": 116094,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/22-reddiamond.webp",
@@ -186,7 +208,8 @@
       "extension": "webp",
       "label": "Reddiamond",
       "size_bytes": 108156,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/23-pinkstar.webp",
@@ -194,7 +217,8 @@
       "extension": "webp",
       "label": "Pinkstar",
       "size_bytes": 126214,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/24-bluediamond.webp",
@@ -202,7 +226,8 @@
       "extension": "webp",
       "label": "Bluediamond",
       "size_bytes": 128084,
-      "category": "level"
+      "category": "level",
+      "definition_complete": true
     },
     {
       "path": "assets/games/crate-daily.svg",
@@ -210,7 +235,8 @@
       "extension": "svg",
       "label": "Crate Daily",
       "size_bytes": 6769,
-      "category": "crate"
+      "category": "crate",
+      "definition_complete": true
     },
     {
       "path": "assets/games/crate-daily.webp",
@@ -218,7 +244,8 @@
       "extension": "webp",
       "label": "Crate Daily",
       "size_bytes": 210476,
-      "category": "crate"
+      "category": "crate",
+      "definition_complete": true
     },
     {
       "path": "assets/games/crate-default.svg",
@@ -226,7 +253,8 @@
       "extension": "svg",
       "label": "Crate Default",
       "size_bytes": 4727,
-      "category": "crate"
+      "category": "crate",
+      "definition_complete": true
     },
     {
       "path": "assets/games/crate-default.webp",
@@ -234,7 +262,8 @@
       "extension": "webp",
       "label": "Crate Default",
       "size_bytes": 226754,
-      "category": "crate"
+      "category": "crate",
+      "definition_complete": true
     },
     {
       "path": "assets/games/crate-mystery.svg",
@@ -242,7 +271,8 @@
       "extension": "svg",
       "label": "Crate Mystery",
       "size_bytes": 5533,
-      "category": "crate"
+      "category": "crate",
+      "definition_complete": true
     },
     {
       "path": "assets/games/crate-mystery.webp",
@@ -250,7 +280,8 @@
       "extension": "webp",
       "label": "Crate Mystery",
       "size_bytes": 212586,
-      "category": "crate"
+      "category": "crate",
+      "definition_complete": true
     },
     {
       "path": "assets/games/crate-special.svg",
@@ -258,7 +289,8 @@
       "extension": "svg",
       "label": "Crate Special",
       "size_bytes": 4896,
-      "category": "crate"
+      "category": "crate",
+      "definition_complete": true
     },
     {
       "path": "assets/games/crate-special.webp",
@@ -266,7 +298,8 @@
       "extension": "webp",
       "label": "Crate Special",
       "size_bytes": 215048,
-      "category": "crate"
+      "category": "crate",
+      "definition_complete": true
     },
     {
       "path": "assets/games/currencyunit-outline.svg",
@@ -274,7 +307,8 @@
       "extension": "svg",
       "label": "Currencyunit Outline",
       "size_bytes": 1886,
-      "category": "currency"
+      "category": "currency",
+      "definition_complete": true
     },
     {
       "path": "assets/games/currencyunit.svg",
@@ -282,7 +316,8 @@
       "extension": "svg",
       "label": "Currencyunit",
       "size_bytes": 2086,
-      "category": "currency"
+      "category": "currency",
+      "definition_complete": true
     },
     {
       "path": "assets/games/currencyunit2-outline.svg",
@@ -290,7 +325,8 @@
       "extension": "svg",
       "label": "Currencyunit2 Outline",
       "size_bytes": 2076,
-      "category": "currency"
+      "category": "currency",
+      "definition_complete": true
     },
     {
       "path": "assets/games/currencyunit2.svg",
@@ -298,7 +334,8 @@
       "extension": "svg",
       "label": "Currencyunit2",
       "size_bytes": 1203,
-      "category": "currency"
+      "category": "currency",
+      "definition_complete": true
     },
     {
       "path": "assets/games/currencyunit3-outline.svg",
@@ -306,7 +343,8 @@
       "extension": "svg",
       "label": "Currencyunit3 Outline",
       "size_bytes": 3212,
-      "category": "currency"
+      "category": "currency",
+      "definition_complete": true
     },
     {
       "path": "assets/games/currencyunit3.svg",
@@ -314,7 +352,8 @@
       "extension": "svg",
       "label": "Currencyunit3",
       "size_bytes": 1553,
-      "category": "currency"
+      "category": "currency",
+      "definition_complete": true
     },
     {
       "path": "assets/games/lb-first.webp",
@@ -322,7 +361,8 @@
       "extension": "webp",
       "label": "Lb First",
       "size_bytes": 101214,
-      "category": "leaderboard"
+      "category": "leaderboard",
+      "definition_complete": true
     },
     {
       "path": "assets/games/lb-second.webp",
@@ -330,7 +370,8 @@
       "extension": "webp",
       "label": "Lb Second",
       "size_bytes": 118250,
-      "category": "leaderboard"
+      "category": "leaderboard",
+      "definition_complete": true
     },
     {
       "path": "assets/games/lb-third.webp",
@@ -338,7 +379,34 @@
       "extension": "webp",
       "label": "Lb Third",
       "size_bytes": 102312,
-      "category": "leaderboard"
+      "category": "leaderboard",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/potion.webp",
+      "filename": "potion.webp",
+      "extension": "webp",
+      "label": "Potion",
+      "category": "item",
+      "tags": [
+        "health"
+      ],
+      "notes": "",
+      "updated_at": "2026-05-18T11:25:05.622049Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/potion2.webp",
+      "filename": "potion2.webp",
+      "extension": "webp",
+      "label": "Special Potion",
+      "category": "item",
+      "tags": [
+        "health"
+      ],
+      "notes": "",
+      "updated_at": "2026-05-18T11:25:47.381607Z",
+      "definition_complete": true
     },
     {
       "path": "assets/games/ssbanknote.webp",
@@ -346,7 +414,8 @@
       "extension": "webp",
       "label": "Ssbanknote",
       "size_bytes": 20282,
-      "category": "currency"
+      "category": "currency",
+      "definition_complete": true
     },
     {
       "path": "assets/games/sscoin.svg",
@@ -354,7 +423,8 @@
       "extension": "svg",
       "label": "Sscoin",
       "size_bytes": 6302,
-      "category": "currency"
+      "category": "currency",
+      "definition_complete": true
     },
     {
       "path": "assets/games/sscoin.webp",
@@ -362,7 +432,8 @@
       "extension": "webp",
       "label": "Sscoin",
       "size_bytes": 287404,
-      "category": "currency"
+      "category": "currency",
+      "definition_complete": true
     },
     {
       "path": "assets/games/sscurrency.webp",
@@ -370,7 +441,8 @@
       "extension": "webp",
       "label": "Sscurrency",
       "size_bytes": 219302,
-      "category": "currency"
+      "category": "currency",
+      "definition_complete": true
     },
     {
       "path": "assets/games/sscurrency1.webp",
@@ -378,7 +450,8 @@
       "extension": "webp",
       "label": "Sscurrency1",
       "size_bytes": 217016,
-      "category": "currency"
+      "category": "currency",
+      "definition_complete": true
     },
     {
       "path": "assets/games/ssdiamond.webp",
@@ -386,7 +459,8 @@
       "extension": "webp",
       "label": "Ssdiamond",
       "size_bytes": 73266,
-      "category": "currency"
+      "category": "currency",
+      "definition_complete": true
     },
     {
       "path": "assets/games/ssgem.svg",
@@ -394,7 +468,8 @@
       "extension": "svg",
       "label": "Ssgem",
       "size_bytes": 5014,
-      "category": "currency"
+      "category": "currency",
+      "definition_complete": true
     },
     {
       "path": "assets/games/ssgemblue.webp",
@@ -402,7 +477,8 @@
       "extension": "webp",
       "label": "Ssgemblue",
       "size_bytes": 95426,
-      "category": "currency"
+      "category": "currency",
+      "definition_complete": true
     },
     {
       "path": "assets/games/ssgemgreen.webp",
@@ -410,7 +486,8 @@
       "extension": "webp",
       "label": "Ssgemgreen",
       "size_bytes": 96964,
-      "category": "currency"
+      "category": "currency",
+      "definition_complete": true
     },
     {
       "path": "assets/games/ssgemred.webp",
@@ -418,7 +495,8 @@
       "extension": "webp",
       "label": "Ssgemred",
       "size_bytes": 89358,
-      "category": "currency"
+      "category": "currency",
+      "definition_complete": true
     },
     {
       "path": "assets/games/xpstar.webp",
@@ -426,7 +504,8 @@
       "extension": "webp",
       "label": "Xpstar",
       "size_bytes": 96100,
-      "category": "game"
+      "category": "game",
+      "definition_complete": true
     }
   ]
 }
