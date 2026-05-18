@@ -1,7 +1,7 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-05-16T18:16:12.784461Z",
-  "server_generated_at": "2026-05-16T18:16:12.784461Z",
+  "generated_at": "2026-05-16T19:39:37.770925Z",
+  "server_generated_at": "2026-05-16T19:39:37.770925Z",
   "count": 4,
   "bots": [
     {
@@ -22,7 +22,7 @@
       "runner_kind": "chat_worker",
       "runner_state": "subscription_failed",
       "transport_status": "subscription_failed",
-      "transport_error": null,
+      "transport_error": "subscription_failed",
       "subscription_status": "subscription_failed",
       "subscription_error": "subscription_create_failed",
       "subscription_required": true,
@@ -30,6 +30,26 @@
       "subscription_attempted": true,
       "subscription_http_status": 400,
       "subscription_response_message": "Invalid request",
+      "subscription_response_data_redacted": {},
+      "subscription_error_fields_redacted": null,
+      "subscription_request_body_redacted": {
+        "events": [
+          {
+            "name": "chat.message.sent",
+            "version": 1
+          }
+        ]
+      },
+      "subscription_request_validation": {
+        "valid": true,
+        "errors": [],
+        "auth_mode": "user_access_token",
+        "body_keys": [
+          "events"
+        ]
+      },
+      "subscription_auth_mode": "user_access_token",
+      "subscription_token_type": "user_access_token",
       "subscription_requested_events": [
         {
           "name": "chat.message.sent",
@@ -43,12 +63,12 @@
       "lifecycle_status": "subscription_failed",
       "visible_in_admin": true,
       "actionable": true,
-      "session_origin": "auto",
-      "active_visible_reason": "auto",
+      "session_origin": "auto_configured",
+      "active_visible_reason": "auto_configured",
       "superseded_by": null,
-      "configuration_state": "configured",
-      "last_heartbeat_at": "2026-05-16T18:15:52.997606Z",
-      "last_evaluated_at": "2026-05-16T18:15:52.997606Z",
+      "configuration_state": "connected",
+      "last_heartbeat_at": "2026-05-16T19:39:05.351329Z",
+      "last_evaluated_at": "2026-05-16T19:39:05.351329Z",
       "last_transition_at": null,
       "resolved_target": {
         "platform": "kick",
@@ -60,8 +80,11 @@
         "stream_url": null,
         "chatroom_id": null
       },
-      "target_normalized": null,
-      "target_source": null,
+      "target_normalized": "danielclancy",
+      "target_source": "manual_channel",
+      "target_input": "danielclancy",
+      "target_last_changed_at": "1778957275",
+      "target_changed_by": "creator",
       "detection_attempted_at": null,
       "detection_status": null,
       "detection_error": null,
@@ -73,15 +96,15 @@
       "next_required_step": "Inspect the redacted Kick subscription response and reconnect/configure prerequisites if needed.",
       "state_source": "legacy_export",
       "confidence": "low",
-      "set_by": "debug_probe",
+      "set_by": "kick_auto_deploy",
       "set_at": null,
       "set_reason": "Inspect the redacted Kick subscription response and reconnect/configure prerequisites if needed.",
       "last_manual_deploy_at": null,
-      "last_probe_at": "2026-05-16T18:15:52.997606Z",
+      "last_probe_at": null,
       "last_webhook_event_at": null,
       "last_chat_event_at": null,
       "uptime_seconds": 0,
-      "state_age_seconds": 19,
+      "state_age_seconds": 32,
       "is_stale": false,
       "stale_reason": null,
       "trace_available": true,
@@ -114,6 +137,12 @@
       "subscription_attempted": false,
       "subscription_http_status": null,
       "subscription_response_message": null,
+      "subscription_response_data_redacted": null,
+      "subscription_error_fields_redacted": null,
+      "subscription_request_body_redacted": {},
+      "subscription_request_validation": {},
+      "subscription_auth_mode": null,
+      "subscription_token_type": null,
       "subscription_requested_events": [],
       "subscription_next_step": null,
       "dispatch_ready": false,
@@ -127,8 +156,8 @@
       "superseded_by": null,
       "configuration_state": "connected",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-05-16T17:56:04.094460Z",
-      "last_transition_at": "2026-05-16T16:45:49.408296Z",
+      "last_evaluated_at": "2026-05-16T19:39:22.182130Z",
+      "last_transition_at": "2026-05-16T19:30:13.106516Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -140,6 +169,9 @@
       },
       "target_normalized": null,
       "target_source": null,
+      "target_input": null,
+      "target_last_changed_at": null,
+      "target_changed_by": null,
       "detection_attempted_at": null,
       "detection_status": null,
       "detection_error": null,
@@ -152,16 +184,16 @@
       "state_source": "runtime_export",
       "confidence": "medium",
       "set_by": "kick_auto_deploy",
-      "set_at": "2026-05-16T16:45:49.408296Z",
+      "set_at": "2026-05-16T19:30:13.106516Z",
       "set_reason": "Rumble sample-parity browse/live request failed before a trustworthy offline result could be established.",
       "last_manual_deploy_at": null,
       "last_probe_at": null,
       "last_webhook_event_at": null,
       "last_chat_event_at": null,
       "uptime_seconds": 0,
-      "state_age_seconds": 1208,
-      "is_stale": true,
-      "stale_reason": "state_age_exceeds_threshold",
+      "state_age_seconds": 15,
+      "is_stale": false,
+      "stale_reason": null,
       "trace_available": false,
       "debug_trace_source": "reconstructed",
       "runtime_control_available": true
@@ -184,7 +216,7 @@
       "runner_kind": "chat_worker",
       "runner_state": "subscription_failed",
       "transport_status": "subscription_failed",
-      "transport_error": null,
+      "transport_error": "subscription_failed",
       "subscription_status": "subscription_failed",
       "subscription_error": "subscription_create_failed",
       "subscription_required": true,
@@ -192,6 +224,26 @@
       "subscription_attempted": true,
       "subscription_http_status": 400,
       "subscription_response_message": "Invalid request",
+      "subscription_response_data_redacted": {},
+      "subscription_error_fields_redacted": null,
+      "subscription_request_body_redacted": {
+        "events": [
+          {
+            "name": "chat.message.sent",
+            "version": 1
+          }
+        ]
+      },
+      "subscription_request_validation": {
+        "valid": true,
+        "errors": [],
+        "auth_mode": "user_access_token",
+        "body_keys": [
+          "events"
+        ]
+      },
+      "subscription_auth_mode": "user_access_token",
+      "subscription_token_type": "user_access_token",
       "subscription_requested_events": [
         {
           "name": "chat.message.sent",
@@ -209,8 +261,8 @@
       "active_visible_reason": "auto_configured",
       "superseded_by": null,
       "configuration_state": "connected",
-      "last_heartbeat_at": "2026-05-16T18:16:00.360018Z",
-      "last_evaluated_at": "2026-05-16T18:16:00.360018Z",
+      "last_heartbeat_at": "2026-05-16T19:39:05.351329Z",
+      "last_evaluated_at": "2026-05-16T19:39:05.351329Z",
       "last_transition_at": null,
       "resolved_target": {
         "platform": "kick",
@@ -222,8 +274,11 @@
         "stream_url": null,
         "chatroom_id": null
       },
-      "target_normalized": null,
-      "target_source": null,
+      "target_normalized": "streamsuites",
+      "target_source": "manual_channel",
+      "target_input": "streamsuites",
+      "target_last_changed_at": "1778960335",
+      "target_changed_by": "creator",
       "detection_attempted_at": null,
       "detection_status": null,
       "detection_error": null,
@@ -243,7 +298,7 @@
       "last_webhook_event_at": null,
       "last_chat_event_at": null,
       "uptime_seconds": 0,
-      "state_age_seconds": 12,
+      "state_age_seconds": 32,
       "is_stale": false,
       "stale_reason": null,
       "trace_available": true,
@@ -276,6 +331,12 @@
       "subscription_attempted": false,
       "subscription_http_status": null,
       "subscription_response_message": null,
+      "subscription_response_data_redacted": null,
+      "subscription_error_fields_redacted": null,
+      "subscription_request_body_redacted": {},
+      "subscription_request_validation": {},
+      "subscription_auth_mode": null,
+      "subscription_token_type": null,
       "subscription_requested_events": [],
       "subscription_next_step": null,
       "dispatch_ready": false,
@@ -289,8 +350,8 @@
       "superseded_by": null,
       "configuration_state": "connected",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-05-16T17:56:04.094460Z",
-      "last_transition_at": "2026-05-16T16:45:49.408296Z",
+      "last_evaluated_at": "2026-05-16T19:39:22.182130Z",
+      "last_transition_at": "2026-05-16T19:30:13.106516Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -302,6 +363,9 @@
       },
       "target_normalized": null,
       "target_source": null,
+      "target_input": null,
+      "target_last_changed_at": null,
+      "target_changed_by": null,
       "detection_attempted_at": null,
       "detection_status": null,
       "detection_error": null,
@@ -314,16 +378,16 @@
       "state_source": "runtime_export",
       "confidence": "medium",
       "set_by": "kick_auto_deploy",
-      "set_at": "2026-05-16T16:45:49.408296Z",
+      "set_at": "2026-05-16T19:30:13.106516Z",
       "set_reason": "Creator disabled Rumble bot auto-deploy.",
       "last_manual_deploy_at": null,
       "last_probe_at": null,
       "last_webhook_event_at": null,
       "last_chat_event_at": null,
       "uptime_seconds": 0,
-      "state_age_seconds": 1208,
-      "is_stale": true,
-      "stale_reason": "state_age_exceeds_threshold",
+      "state_age_seconds": 15,
+      "is_stale": false,
+      "stale_reason": null,
       "trace_available": false,
       "debug_trace_source": "reconstructed",
       "runtime_control_available": true
@@ -456,9 +520,9 @@
       },
       "hidden_placeholder_count": 0,
       "last_log": {
-        "timestamp": "2026-05-16T18:16:00.360018Z",
+        "timestamp": "2026-05-16T19:39:05.351329Z",
         "severity": "error",
-        "message": "[YR992ZS] Kick required subscription failed; lifecycle marked subscription_failed."
+        "message": "[4TiOlvS] Kick required subscription failed; lifecycle marked subscription_failed."
       }
     },
     {
@@ -557,7 +621,11 @@
         "hidden_placeholder_count": 0
       },
       "hidden_placeholder_count": 0,
-      "last_log": null
+      "last_log": {
+        "timestamp": "2026-05-16T19:30:13.106516Z",
+        "severity": "warning",
+        "message": "[4TiOlvS] Managed session state updated to blocked."
+      }
     },
     {
       "platform": "twitch",

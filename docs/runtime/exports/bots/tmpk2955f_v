@@ -1,7 +1,7 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-05-17T10:20:32.724577Z",
-  "server_generated_at": "2026-05-17T10:20:32.724577Z",
+  "generated_at": "2026-05-16T18:16:14.612861Z",
+  "server_generated_at": "2026-05-16T18:16:14.612861Z",
   "count": 4,
   "bots": [
     {
@@ -22,7 +22,7 @@
       "runner_kind": "chat_worker",
       "runner_state": "subscription_failed",
       "transport_status": "subscription_failed",
-      "transport_error": "subscription_failed",
+      "transport_error": null,
       "subscription_status": "subscription_failed",
       "subscription_error": "subscription_create_failed",
       "subscription_required": true,
@@ -30,26 +30,6 @@
       "subscription_attempted": true,
       "subscription_http_status": 400,
       "subscription_response_message": "Invalid request",
-      "subscription_response_data_redacted": {},
-      "subscription_error_fields_redacted": null,
-      "subscription_request_body_redacted": {
-        "events": [
-          {
-            "name": "chat.message.sent",
-            "version": 1
-          }
-        ]
-      },
-      "subscription_request_validation": {
-        "valid": true,
-        "errors": [],
-        "auth_mode": "user_access_token",
-        "body_keys": [
-          "events"
-        ]
-      },
-      "subscription_auth_mode": "user_access_token",
-      "subscription_token_type": "user_access_token",
       "subscription_requested_events": [
         {
           "name": "chat.message.sent",
@@ -67,8 +47,8 @@
       "active_visible_reason": "auto_configured",
       "superseded_by": null,
       "configuration_state": "connected",
-      "last_heartbeat_at": "2026-05-17T10:19:51.281201Z",
-      "last_evaluated_at": "2026-05-17T10:19:51.281201Z",
+      "last_heartbeat_at": "2026-05-16T18:15:30.933823Z",
+      "last_evaluated_at": "2026-05-16T18:15:30.933823Z",
       "last_transition_at": null,
       "resolved_target": {
         "platform": "kick",
@@ -80,11 +60,8 @@
         "stream_url": null,
         "chatroom_id": null
       },
-      "target_normalized": "danielclancy",
-      "target_source": "manual_channel",
-      "target_input": "danielclancy",
-      "target_last_changed_at": "1779011781",
-      "target_changed_by": "creator",
+      "target_normalized": null,
+      "target_source": null,
       "detection_attempted_at": null,
       "detection_status": null,
       "detection_error": null,
@@ -104,7 +81,7 @@
       "last_webhook_event_at": null,
       "last_chat_event_at": null,
       "uptime_seconds": 0,
-      "state_age_seconds": 41,
+      "state_age_seconds": 43,
       "is_stale": false,
       "stale_reason": null,
       "trace_available": true,
@@ -137,12 +114,6 @@
       "subscription_attempted": false,
       "subscription_http_status": null,
       "subscription_response_message": null,
-      "subscription_response_data_redacted": null,
-      "subscription_error_fields_redacted": null,
-      "subscription_request_body_redacted": {},
-      "subscription_request_validation": {},
-      "subscription_auth_mode": null,
-      "subscription_token_type": null,
       "subscription_requested_events": [],
       "subscription_next_step": null,
       "dispatch_ready": false,
@@ -156,8 +127,8 @@
       "superseded_by": null,
       "configuration_state": "connected",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-05-17T10:20:07.928528Z",
-      "last_transition_at": "2026-05-17T08:54:33.539194Z",
+      "last_evaluated_at": "2026-05-16T18:15:49.320298Z",
+      "last_transition_at": "2026-05-16T18:03:42.442888Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -169,9 +140,6 @@
       },
       "target_normalized": null,
       "target_source": null,
-      "target_input": null,
-      "target_last_changed_at": null,
-      "target_changed_by": null,
       "detection_attempted_at": null,
       "detection_status": null,
       "detection_error": null,
@@ -184,14 +152,14 @@
       "state_source": "runtime_export",
       "confidence": "medium",
       "set_by": "kick_auto_deploy",
-      "set_at": "2026-05-17T08:54:33.539194Z",
+      "set_at": "2026-05-16T18:03:42.442888Z",
       "set_reason": "Rumble sample-parity browse/live request failed before a trustworthy offline result could be established.",
       "last_manual_deploy_at": null,
       "last_probe_at": null,
       "last_webhook_event_at": null,
       "last_chat_event_at": null,
       "uptime_seconds": 0,
-      "state_age_seconds": 24,
+      "state_age_seconds": 25,
       "is_stale": false,
       "stale_reason": null,
       "trace_available": false,
@@ -216,7 +184,7 @@
       "runner_kind": "chat_worker",
       "runner_state": "subscription_failed",
       "transport_status": "subscription_failed",
-      "transport_error": "subscription_failed",
+      "transport_error": null,
       "subscription_status": "subscription_failed",
       "subscription_error": "subscription_create_failed",
       "subscription_required": true,
@@ -224,26 +192,6 @@
       "subscription_attempted": true,
       "subscription_http_status": 400,
       "subscription_response_message": "Invalid request",
-      "subscription_response_data_redacted": {},
-      "subscription_error_fields_redacted": null,
-      "subscription_request_body_redacted": {
-        "events": [
-          {
-            "name": "chat.message.sent",
-            "version": 1
-          }
-        ]
-      },
-      "subscription_request_validation": {
-        "valid": true,
-        "errors": [],
-        "auth_mode": "user_access_token",
-        "body_keys": [
-          "events"
-        ]
-      },
-      "subscription_auth_mode": "user_access_token",
-      "subscription_token_type": "user_access_token",
       "subscription_requested_events": [
         {
           "name": "chat.message.sent",
@@ -261,8 +209,8 @@
       "active_visible_reason": "auto_configured",
       "superseded_by": null,
       "configuration_state": "connected",
-      "last_heartbeat_at": "2026-05-17T10:20:22.636335Z",
-      "last_evaluated_at": "2026-05-17T10:20:22.636335Z",
+      "last_heartbeat_at": "2026-05-16T18:16:04.008948Z",
+      "last_evaluated_at": "2026-05-16T18:16:04.008948Z",
       "last_transition_at": null,
       "resolved_target": {
         "platform": "kick",
@@ -274,11 +222,8 @@
         "stream_url": null,
         "chatroom_id": null
       },
-      "target_normalized": "streamsuites",
-      "target_source": "manual_channel",
-      "target_input": "streamsuites",
-      "target_last_changed_at": "1779011835",
-      "target_changed_by": "creator",
+      "target_normalized": null,
+      "target_source": null,
       "detection_attempted_at": null,
       "detection_status": null,
       "detection_error": null,
@@ -331,12 +276,6 @@
       "subscription_attempted": false,
       "subscription_http_status": null,
       "subscription_response_message": null,
-      "subscription_response_data_redacted": null,
-      "subscription_error_fields_redacted": null,
-      "subscription_request_body_redacted": {},
-      "subscription_request_validation": {},
-      "subscription_auth_mode": null,
-      "subscription_token_type": null,
       "subscription_requested_events": [],
       "subscription_next_step": null,
       "dispatch_ready": false,
@@ -350,8 +289,8 @@
       "superseded_by": null,
       "configuration_state": "connected",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-05-17T10:20:07.928528Z",
-      "last_transition_at": "2026-05-17T08:54:33.539194Z",
+      "last_evaluated_at": "2026-05-16T18:15:49.320298Z",
+      "last_transition_at": "2026-05-16T18:03:42.442888Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -363,9 +302,6 @@
       },
       "target_normalized": null,
       "target_source": null,
-      "target_input": null,
-      "target_last_changed_at": null,
-      "target_changed_by": null,
       "detection_attempted_at": null,
       "detection_status": null,
       "detection_error": null,
@@ -378,14 +314,14 @@
       "state_source": "runtime_export",
       "confidence": "medium",
       "set_by": "kick_auto_deploy",
-      "set_at": "2026-05-17T08:54:33.539194Z",
+      "set_at": "2026-05-16T18:03:42.442888Z",
       "set_reason": "Creator disabled Rumble bot auto-deploy.",
       "last_manual_deploy_at": null,
       "last_probe_at": null,
       "last_webhook_event_at": null,
       "last_chat_event_at": null,
       "uptime_seconds": 0,
-      "state_age_seconds": 24,
+      "state_age_seconds": 25,
       "is_stale": false,
       "stale_reason": null,
       "trace_available": false,
@@ -520,7 +456,7 @@
       },
       "hidden_placeholder_count": 0,
       "last_log": {
-        "timestamp": "2026-05-17T10:20:22.636335Z",
+        "timestamp": "2026-05-16T18:16:04.008948Z",
         "severity": "error",
         "message": "[YR992ZS] Kick required subscription failed; lifecycle marked subscription_failed."
       }
@@ -622,7 +558,7 @@
       },
       "hidden_placeholder_count": 0,
       "last_log": {
-        "timestamp": "2026-05-17T08:54:33.539194Z",
+        "timestamp": "2026-05-16T18:03:42.442888Z",
         "severity": "warning",
         "message": "[4TiOlvS] Managed session state updated to blocked."
       }
