@@ -6,9 +6,12 @@
   "use strict";
 
   const POLL_INTERVAL_MS = 8000;
+  const ASYNC_PROBE_POLL_INTERVAL_MS = 1500;
+  const ASYNC_PROBE_TIMEOUT_MS = 120000;
   const BOTS_STATUS_ENDPOINT = "/api/admin/bots/status";
   const BOTS_DEBUG_ENDPOINT = "/api/admin/bots/debug";
   const BOTS_DEBUG_PROBE_ENDPOINT = "/api/admin/bots/debug/probe";
+  const BOTS_DEBUG_PROBE_STATUS_ENDPOINT = "/api/admin/bots/debug/probe/status";
   const CREATORS_ENDPOINT = "/api/admin/creators";
   const MANUAL_DEPLOY_ENDPOINT = "/api/admin/bots/deploy";
   const MANUAL_DETACH_ENDPOINT = "/api/admin/bots/detach";
@@ -118,7 +121,6 @@
     pollHandle: null,
     refreshInFlight: null,
     refreshAbortController: null,
-    probeAbortControllers: Object.create(null),
     mounted: false,
     lastPayload: null,
     deployPlatformSchemas: Object.create(null),
@@ -695,6 +697,19 @@
     return `${String(creatorId || "")}::${String(platform || "").toLowerCase()}`;
   }
 
+  function defaultDebugTransport() {
+    return {
+      mode: "",
+      jobId: "",
+      correlationId: "",
+      pollStatus: "",
+      lastPollAt: "",
+      elapsedSeconds: 0,
+      autoRefreshPaused: false,
+      lastBackgroundRefreshNote: ""
+    };
+  }
+
   function getRowUi(creatorId, platform) {
     const key = rowKey(creatorId, platform);
     if (!state.rowUi[key]) {
@@ -707,7 +722,9 @@
         debugProbePending: false,
         debugError: "",
         debugNotice: "",
-        debugPayload: null
+        debugPayload: null,
+        debugProbeToken: null,
+        debugTransport: defaultDebugTransport()
       };
     }
     return state.rowUi[key];
@@ -923,6 +940,24 @@
     `;
   }
 
+  function renderDebugTransport(ui) {
+    const transport = ui?.debugTransport || {};
+    if (!transport.mode) return "";
+    return `
+      <div class="muted">
+        UI Transport:
+        mode: ${escapeHtml(transport.mode || "-")},
+        job_id: ${escapeHtml(transport.jobId || "-")},
+        correlation_id: ${escapeHtml(transport.correlationId || "-")},
+        poll_status: ${escapeHtml(transport.pollStatus || "-")},
+        last_poll_at: ${escapeHtml(formatTimestamp(transport.lastPollAt || null))},
+        elapsed_seconds: ${escapeHtml(String(Number.isFinite(transport.elapsedSeconds) ? transport.elapsedSeconds : 0))},
+        auto_refresh_paused: ${escapeHtml(String(transport.autoRefreshPaused === true))},
+        last_background_refresh_note: ${escapeHtml(transport.lastBackgroundRefreshNote || "-")}
+      </div>
+    `;
+  }
+
   function renderDebugPanel(bot, ui) {
     if (!ui.debugOpen) return "";
     const payload = ui.debugPayload || null;
@@ -959,8 +994,10 @@
           >${ui.debugProbePending ? "Probing..." : "Probe Now"}</button>
         </div>
         ${ui.debugPending ? '<div class="muted">Loading debug payload...</div>' : ""}
+        ${ui.debugProbePending ? '<div class="muted">Probe running...</div>' : ""}
         ${ui.debugError ? `<div class="ss-alert ss-alert-danger">${escapeHtml(ui.debugError)}</div>` : ""}
         ${ui.debugNotice ? `<div class="muted">${escapeHtml(ui.debugNotice)}</div>` : ""}
+        ${renderDebugTransport(ui)}
         ${payload
           ? `
             <div class="ss-bot-debug-chip-row">
@@ -1194,7 +1231,34 @@
   }
 
   function buildRowsSignature(normalized, platformSummary) {
-    return buildCreatorGroupSignature(normalized, platformSummary);
+    return stableStringify({
+      data: buildCreatorGroupSignature(normalized, platformSummary),
+      ui: Object.keys(state.rowUi || {})
+        .sort()
+        .map((key) => {
+          const ui = state.rowUi[key] || {};
+          const transport = ui.debugTransport || {};
+          const payload = ui.debugPayload || {};
+          return {
+            key,
+            debugOpen: ui.debugOpen === true,
+            debugPending: ui.debugPending === true,
+            debugProbePending: ui.debugProbePending === true,
+            debugError: String(ui.debugError || ""),
+            debugNotice: String(ui.debugNotice || ""),
+            payloadCorrelation: String(payload?.correlation_id || payload?.diagnostics?.summary?.latest_correlation_id || ""),
+            payloadGeneratedAt: String(payload?.generated_at || ""),
+            probeMode: String(transport.mode || ""),
+            probeStatus: String(transport.pollStatus || ""),
+            probeJobId: String(transport.jobId || ""),
+            probeCorrelationId: String(transport.correlationId || ""),
+            probeElapsedSeconds: Number.isFinite(transport.elapsedSeconds) ? transport.elapsedSeconds : 0,
+            probeLastPollAt: String(transport.lastPollAt || ""),
+            probeAutoRefreshPaused: transport.autoRefreshPaused === true,
+            probeLastBackgroundRefreshNote: String(transport.lastBackgroundRefreshNote || "")
+          };
+        })
+    });
   }
 
   function buildCreatorsSignature(creators) {
@@ -2338,6 +2402,18 @@
   async function refresh() {
     if (!state.mounted) return;
     if (state.refreshInFlight) return state.refreshInFlight;
+    if (hasRunningDebugProbe()) {
+      Object.values(state.rowUi || {}).forEach((ui) => {
+        if (!ui?.debugProbePending) return;
+        updateDebugTransport(ui, {
+          elapsedSeconds: elapsedSecondsFrom(ui.debugTransport?.lastPollAt || ui.debugPayload?.probe?.started_at || ""),
+          autoRefreshPaused: true,
+          lastBackgroundRefreshNote: "Auto refresh paused while debug probe is running."
+        });
+      });
+      renderRowsAndCountersFromState();
+      return { ok: false, paused: true };
+    }
     state.refreshAbortController?.abort();
     state.refreshAbortController = new AbortController();
     try {
@@ -2694,7 +2770,7 @@
     } catch (err) {
       if (isAbortLikeError(err) && ui.debugPayload) {
         ui.debugError = "";
-        ui.debugNotice = "Background refresh cancelled; probe result preserved.";
+        ui.debugNotice = "Background refresh cancelled; current debug result preserved.";
       } else if (!isAbortLikeError(err)) {
         ui.debugError = normalizeDashboardError(err, "Debug request failed.");
       }
@@ -2721,7 +2797,11 @@
     try {
       if (typeof refresh === "function") {
         const result = await refresh();
-        return { ok: !result?.aborted, aborted: Boolean(result?.aborted) };
+        return {
+          ok: !result?.aborted && !result?.paused,
+          aborted: Boolean(result?.aborted),
+          paused: Boolean(result?.paused)
+        };
       }
     } catch (err) {
       if (isAbortLikeError(err)) {
@@ -2758,6 +2838,173 @@
     return message || fallback;
   }
 
+  function hasRunningDebugProbe() {
+    return Object.values(state.rowUi || {}).some((ui) => ui?.debugProbePending === true);
+  }
+
+  function elapsedSecondsFrom(startedAt) {
+    const startMs = timestampMs(startedAt);
+    if (!startMs) return 0;
+    return Math.max(0, Math.floor((Date.now() - startMs) / 1000));
+  }
+
+  function updateDebugTransport(ui, updates = {}) {
+    ui.debugTransport = {
+      ...(ui.debugTransport || defaultDebugTransport()),
+      ...updates
+    };
+  }
+
+  function cancelDebugProbePolling(ui, { preserveNotice = false } = {}) {
+    if (ui?.debugProbeToken) {
+      ui.debugProbeToken.cancelled = true;
+    }
+    ui.debugProbeToken = null;
+    ui.debugProbePending = false;
+    if (!preserveNotice) {
+      ui.debugNotice = "";
+    }
+    updateDebugTransport(ui, {
+      autoRefreshPaused: false
+    });
+  }
+
+  function buildProbeStatusUrl(jobId, correlationId = "") {
+    const params = new URLSearchParams();
+    if (jobId) params.set("job_id", jobId);
+    if (correlationId) params.set("correlation_id", correlationId);
+    return `${BOTS_DEBUG_PROBE_STATUS_ENDPOINT}?${params.toString()}`;
+  }
+
+  function buildProbeFailureMessage(payload) {
+    const detail =
+      payload?.message ||
+      payload?.error ||
+      "Debug probe failed.";
+    const code = String(payload?.error_code || "").trim();
+    const correlation = String(payload?.correlation_id || "").trim();
+    const codePart = code ? ` [${code}]` : "";
+    return correlation ? `${detail}${codePart} (correlation ${correlation})` : `${detail}${codePart}`;
+  }
+
+  function sleep(ms) {
+    return new Promise((resolve) => window.setTimeout(resolve, ms));
+  }
+
+  async function pollBotDebugProbeStatus(ui, token, { jobId, correlationId, startedAt }) {
+    while (!token.cancelled) {
+      if (Date.now() >= token.deadlineMs) {
+        if (token.cancelled || ui.debugProbeToken !== token) return;
+        ui.debugProbePending = false;
+        ui.debugNotice = "Probe polling timed out after 120 seconds; the last debug result was preserved.";
+        updateDebugTransport(ui, {
+          mode: "async-polling",
+          jobId,
+          correlationId,
+          pollStatus: "timeout",
+          lastPollAt: new Date().toISOString(),
+          elapsedSeconds: elapsedSecondsFrom(startedAt),
+          autoRefreshPaused: false,
+          lastBackgroundRefreshNote: "Auto refresh resumed after probe timeout."
+        });
+        renderRowsAndCountersFromState();
+        return;
+      }
+
+      let response;
+      let payload;
+      try {
+        response = await fetch(buildApiUrl(buildProbeStatusUrl(jobId, correlationId)), {
+          method: "GET",
+          credentials: "include",
+          headers: { Accept: "application/json" }
+        });
+        payload = await readJsonSafe(response);
+      } catch (err) {
+        if (token.cancelled || ui.debugProbeToken !== token) return;
+        if (isAbortLikeError(err)) {
+          ui.debugError = "";
+          if (ui.debugPayload) {
+            ui.debugNotice = "Background refresh cancelled; current debug result preserved.";
+          }
+          updateDebugTransport(ui, {
+            pollStatus: "cancelled",
+            lastPollAt: new Date().toISOString(),
+            elapsedSeconds: elapsedSecondsFrom(startedAt),
+            autoRefreshPaused: false,
+            lastBackgroundRefreshNote: "Async probe polling was cancelled."
+          });
+          renderRowsAndCountersFromState();
+          return;
+        }
+        ui.debugProbePending = false;
+        ui.debugError = normalizeDashboardError(err, "Debug probe polling failed.");
+        updateDebugTransport(ui, {
+          pollStatus: "failed",
+          lastPollAt: new Date().toISOString(),
+          elapsedSeconds: elapsedSecondsFrom(startedAt),
+          autoRefreshPaused: false,
+          lastBackgroundRefreshNote: "Auto refresh resumed after polling error."
+        });
+        renderRowsAndCountersFromState();
+        return;
+      }
+
+      if (token.cancelled || ui.debugProbeToken !== token) return;
+      if (!response?.ok || payload?.success === false) {
+        ui.debugProbePending = false;
+        ui.debugError = buildProbeFailureMessage(payload || { error: `Debug probe status failed (HTTP ${response?.status || "?"}).` });
+        updateDebugTransport(ui, {
+          pollStatus: "failed",
+          lastPollAt: new Date().toISOString(),
+          elapsedSeconds: elapsedSecondsFrom(startedAt),
+          autoRefreshPaused: false,
+          lastBackgroundRefreshNote: "Auto refresh resumed after status failure."
+        });
+        renderRowsAndCountersFromState();
+        return;
+      }
+
+      const pollStatus = String(payload?.status || "").trim().toLowerCase() || "running";
+      const pollTime = String(payload?.last_poll_at || new Date().toISOString());
+      updateDebugTransport(ui, {
+        mode: "async-polling",
+        jobId: String(payload?.job_id || jobId || ""),
+        correlationId: String(payload?.correlation_id || correlationId || ""),
+        pollStatus,
+        lastPollAt: pollTime,
+        elapsedSeconds: elapsedSecondsFrom(startedAt || payload?.started_at || payload?.queued_at || ""),
+        autoRefreshPaused: pollStatus === "queued" || pollStatus === "running",
+        lastBackgroundRefreshNote:
+          pollStatus === "queued" || pollStatus === "running"
+            ? "Auto refresh paused while debug probe is running."
+            : "Auto refresh resumed."
+      });
+
+      if (pollStatus === "succeeded") {
+        ui.debugPayload = payload;
+        ui.debugError = "";
+        ui.debugNotice = "";
+        ui.debugProbePending = false;
+        ui.debugProbeToken = null;
+        renderRowsAndCountersFromState();
+        return;
+      }
+      if (pollStatus === "failed") {
+        ui.debugPayload = payload;
+        ui.debugError = buildProbeFailureMessage(payload);
+        ui.debugNotice = "";
+        ui.debugProbePending = false;
+        ui.debugProbeToken = null;
+        renderRowsAndCountersFromState();
+        return;
+      }
+
+      renderRowsAndCountersFromState();
+      await sleep(ASYNC_PROBE_POLL_INTERVAL_MS);
+    }
+  }
+
   async function runBotDebugProbe(creatorId, platform, sessionId = "", target = "") {
     const ui = getRowUi(creatorId, platform);
     if (ui.debugProbePending) return;
@@ -2765,16 +3012,27 @@
     ui.debugProbePending = true;
     ui.debugError = "";
     ui.debugNotice = "";
+    const startedAt = new Date().toISOString();
+    const token = {
+      cancelled: false,
+      deadlineMs: Date.now() + ASYNC_PROBE_TIMEOUT_MS
+    };
+    ui.debugProbeToken = token;
+    updateDebugTransport(ui, {
+      mode: "async-polling",
+      jobId: "",
+      correlationId: "",
+      pollStatus: "starting",
+      lastPollAt: "",
+      elapsedSeconds: 0,
+      autoRefreshPaused: true,
+      lastBackgroundRefreshNote: "Auto refresh paused while debug probe is running."
+    });
     renderRowsAndCountersFromState();
-    const probeKey = `${normalizePlatformKey(platform)}:${creatorId}:${sessionId || ""}`;
-    state.probeAbortControllers[probeKey]?.abort();
-    const controller = new AbortController();
-    state.probeAbortControllers[probeKey] = controller;
     try {
-      const response = await fetch(buildApiUrl(BOTS_DEBUG_PROBE_ENDPOINT), {
+      const response = await fetch(buildApiUrl(`${BOTS_DEBUG_PROBE_ENDPOINT}?async=1`), {
         method: "POST",
         credentials: "include",
-        signal: controller.signal,
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json"
@@ -2790,38 +3048,51 @@
       if (!response.ok || payload?.success === false) {
         throw new Error(payload?.message || payload?.error || `Debug probe failed (HTTP ${response.status}).`);
       }
-      ui.debugPayload = payload;
-      ui.debugError = "";
-      ui.debugNotice = "";
-      ui.debugProbePending = false;
+      if (token.cancelled || ui.debugProbeToken !== token) return;
+      const correlationId = String(payload?.correlation_id || "");
+      const jobId = String(payload?.job_id || "");
+      const probeStartedAt = String(payload?.started_at || payload?.queued_at || startedAt);
+      updateDebugTransport(ui, {
+        mode: "async-polling",
+        jobId,
+        correlationId,
+        pollStatus: String(payload?.status || "queued"),
+        lastPollAt: "",
+        elapsedSeconds: elapsedSecondsFrom(probeStartedAt),
+        autoRefreshPaused: true,
+        lastBackgroundRefreshNote: "Auto refresh paused while debug probe is running."
+      });
+      ui.debugNotice = "Probe running...";
       renderRowsAndCountersFromState();
-      void reloadBotsSafely().then((result) => {
-        if (result?.aborted && ui.debugPayload) {
-          ui.debugNotice = "Background refresh cancelled; probe result preserved.";
-          renderRowsAndCountersFromState();
-        }
-      }).catch((err) => {
-        if (isAbortLikeError(err) && ui.debugPayload) {
-          ui.debugNotice = "Background refresh cancelled; probe result preserved.";
-          renderRowsAndCountersFromState();
-          return;
-        }
-        console.warn("Bot status reload failed after probe", err);
+      await pollBotDebugProbeStatus(ui, token, {
+        jobId,
+        correlationId,
+        startedAt: probeStartedAt
       });
     } catch (err) {
-      if (isAbortLikeError(err) && ui.debugPayload) {
-        ui.debugError = "";
-        ui.debugNotice = "Background refresh cancelled; probe result preserved.";
+      if (token.cancelled || ui.debugProbeToken !== token) {
         return;
       }
-      if (!isAbortLikeError(err)) {
-        ui.debugError = normalizeDashboardError(err, "Debug probe failed.");
-      }
-    } finally {
-      if (state.probeAbortControllers[probeKey] === controller) {
-        delete state.probeAbortControllers[probeKey];
+      if (isAbortLikeError(err)) {
+        ui.debugError = "";
+        if (ui.debugPayload) {
+          ui.debugNotice = "Background refresh cancelled; current debug result preserved.";
+        }
+        return;
       }
       ui.debugProbePending = false;
+      ui.debugError = normalizeDashboardError(err, "Debug probe failed.");
+      updateDebugTransport(ui, {
+        pollStatus: "failed",
+        lastPollAt: new Date().toISOString(),
+        elapsedSeconds: elapsedSecondsFrom(startedAt),
+        autoRefreshPaused: false,
+        lastBackgroundRefreshNote: "Auto refresh resumed after probe start failure."
+      });
+    } finally {
+      if (ui.debugProbeToken === token && ui.debugProbePending !== true) {
+        ui.debugProbeToken = null;
+      }
       renderRowsAndCountersFromState();
     }
   }
@@ -2866,7 +3137,8 @@
       const sessionId = decodeData(debugButton.dataset.sessionId || "");
       if (!creatorId || !platform) return;
       const ui = getRowUi(creatorId, platform);
-      if (ui.debugOpen && ui.debugPayload) {
+      if (ui.debugOpen && (ui.debugPayload || ui.debugProbePending || ui.debugPending)) {
+        cancelDebugProbePolling(ui, { preserveNotice: true });
         ui.debugOpen = false;
         renderRowsAndCountersFromState();
         return;
@@ -2924,8 +3196,7 @@
       state.pollHandle = null;
     }
     state.refreshAbortController?.abort();
-    Object.values(state.probeAbortControllers || {}).forEach((controller) => controller?.abort?.());
-    state.probeAbortControllers = Object.create(null);
+    Object.values(state.rowUi || {}).forEach((ui) => cancelDebugProbePolling(ui, { preserveNotice: true }));
     state.refreshAbortController = null;
     state.refreshInFlight = null;
   }

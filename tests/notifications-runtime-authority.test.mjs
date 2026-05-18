@@ -1042,6 +1042,7 @@ test("bots view exposes per-instance debug endpoint and correlation-aware errors
 
   assert.match(botsJs, /const BOTS_DEBUG_ENDPOINT = "\/api\/admin\/bots\/debug";/);
   assert.match(botsJs, /const BOTS_DEBUG_PROBE_ENDPOINT = "\/api\/admin\/bots\/debug\/probe";/);
+  assert.match(botsJs, /const BOTS_DEBUG_PROBE_STATUS_ENDPOINT = "\/api\/admin\/bots\/debug\/probe\/status";/);
   assert.match(botsJs, /data-bot-debug="1"/);
   assert.match(botsJs, /data-bot-debug-probe="1"/);
   assert.match(botsJs, /Probe Now/);
@@ -1051,12 +1052,17 @@ test("bots view exposes per-instance debug endpoint and correlation-aware errors
   assert.match(botsJs, /subscription_endpoint_path/);
   assert.match(botsJs, /runtimeControlLabel/);
   assert.match(botsJs, /diagnostic only/);
-  assert.match(botsJs, /ui\.debugPayload = payload;\s*ui\.debugError = "";\s*ui\.debugNotice = "";\s*ui\.debugProbePending = false;\s*renderRowsAndCountersFromState\(\);\s*void reloadBotsSafely\(\)\.then/s);
-  assert.match(botsJs, /isAbortLikeError\(err\) && ui\.debugPayload/);
-  assert.match(botsJs, /Background refresh cancelled; probe result preserved\./);
+  assert.match(botsJs, /fetch\(buildApiUrl\(`\$\{BOTS_DEBUG_PROBE_ENDPOINT\}\?async=1`\)/);
+  assert.match(botsJs, /await pollBotDebugProbeStatus\(ui, token,/);
+  assert.match(botsJs, /mode: "async-polling"/);
+  assert.match(botsJs, /UI Transport:/);
+  assert.match(botsJs, /Background refresh cancelled; current debug result preserved\./);
   assert.match(botsJs, /normalizeDashboardError/);
+  assert.match(botsJs, /poll_status:/);
+  assert.match(botsJs, /Auto refresh paused while debug probe is running\./);
+  assert.match(botsJs, /Probe polling timed out after 120 seconds/);
   assert.doesNotMatch(botsJs, /Debug probe was cancelled\./);
-  assert.match(botsJs, /probeAbortControllers/);
+  assert.doesNotMatch(botsJs, /probeAbortControllers/);
   assert.match(botsJs, /subscription_request_body_redacted/);
   assert.match(botsJs, /subscription_auth_mode/);
   assert.match(botsJs, /bot\?\.transport_status \|\| bot\?\.status/);
