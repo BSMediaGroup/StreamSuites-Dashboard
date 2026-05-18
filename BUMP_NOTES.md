@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Extended the existing Admin Bots / Runtime Status debug drawer with compact Kick Subscription Attempts rendering. `docs/js/bots.js` now displays each redacted attempt label, result, HTTP status/message, method value, broadcaster inclusion, body keys, retryability, and skip reason from the Runtime/Auth `subscription_attempts` payload while preserving async Probe Now polling and Copy Debug JSON.
+- Human note: after Probe Now, admins should clearly see `method: webhook` on Attempt A and whether the broadcaster fallback ran, succeeded, failed, or was skipped.
+
 - Refined the Admin `/economy` Item Definitions section below the asset selector work. `docs/js/economy.js` now renders the create-definition controls as a structured card with a clearer header, grouped metadata/icon/notes areas, a larger create icon preview, and a right-aligned create action while preserving the existing `/api/admin/inventory/items` create payload and Runtime/Auth authority. The item definitions list now has a visible rows-per-page selector with 5, 10, 20, 50, and 100 item options and defaults to 20 rows per page; changing the size resets the list to page 1 and keeps the existing Previous/Next pagination behavior.
 - Human note: the new item-definition form should no longer look like a cramped raw field dump, and admins can scan the inventory definition list in batches sized for quick review or bulk inspection.
 

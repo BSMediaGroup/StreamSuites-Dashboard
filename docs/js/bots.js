@@ -958,6 +958,40 @@
     `;
   }
 
+  function collectSubscriptionAttempts(payload) {
+    const attempts = debugRawValue(payload, ["probe", "subscription_attempts"], null);
+    if (Array.isArray(attempts)) return attempts;
+    const fallback = debugRawValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_attempts"], null);
+    return Array.isArray(fallback) ? fallback : [];
+  }
+
+  function renderSubscriptionAttempts(payload) {
+    const attempts = collectSubscriptionAttempts(payload);
+    if (!attempts.length) return "";
+    return `
+      <div class="ss-bot-debug-grid">
+        <div><span class="ss-bot-field-label">Subscription Attempts</span><strong>${escapeHtml(String(attempts.length))}</strong></div>
+        ${attempts
+          .map((attempt) => {
+            const keys = Array.isArray(attempt?.request_body_keys)
+              ? attempt.request_body_keys.join(", ")
+              : Object.keys(attempt?.request_body_redacted || {}).sort().join(", ");
+            return `
+              <div>
+                <span class="ss-bot-field-label">${escapeHtml(attempt?.attempt_label || "attempt")}</span>
+                <strong>${escapeHtml(attempt?.result || "-")}</strong>
+                <div class="muted">HTTP ${escapeHtml(attempt?.http_status ?? "-")} | message: ${escapeHtml(attempt?.response_message || "-")}</div>
+                <div class="muted">method: ${escapeHtml(attempt?.method_value || "-")} | broadcaster: ${escapeHtml(String(attempt?.broadcaster_user_id_included === true))}</div>
+                <div class="muted">body keys: ${escapeHtml(keys || "-")} | retryable: ${escapeHtml(String(attempt?.retryable === true))}</div>
+                ${attempt?.skip_reason ? `<div class="muted">skip: ${escapeHtml(attempt.skip_reason)}</div>` : ""}
+              </div>
+            `;
+          })
+          .join("")}
+      </div>
+    `;
+  }
+
   function renderDebugPanel(bot, ui) {
     if (!ui.debugOpen) return "";
     const payload = ui.debugPayload || null;
@@ -1036,6 +1070,7 @@
               <div><span class="ss-bot-field-label">Response data</span><code>${escapeHtml(JSON.stringify(debugRawValue(payload, ["probe", "subscription_response_data_redacted"], debugRawValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_response_data_redacted"], {}))))}</code></div>
               <div><span class="ss-bot-field-label">Validation</span><code>${escapeHtml(JSON.stringify(debugRawValue(payload, ["probe", "subscription_request_validation"], debugRawValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_request_validation"], {}))))}</code></div>
             </div>
+            ${renderSubscriptionAttempts(payload)}
             ${renderDebugTimeline(payload)}
             <pre class="ss-bot-debug-json" aria-label="Redacted debug JSON">${escapeHtml(jsonText)}</pre>
           `

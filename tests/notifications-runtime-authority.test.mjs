@@ -1064,6 +1064,10 @@ test("bots view exposes per-instance debug endpoint and correlation-aware errors
   assert.doesNotMatch(botsJs, /Debug probe was cancelled\./);
   assert.doesNotMatch(botsJs, /probeAbortControllers/);
   assert.match(botsJs, /subscription_request_body_redacted/);
+  assert.match(botsJs, /renderSubscriptionAttempts/);
+  assert.match(botsJs, /Subscription Attempts/);
+  assert.match(botsJs, /method:/);
+  assert.match(botsJs, /skip_reason/);
   assert.match(botsJs, /subscription_auth_mode/);
   assert.match(botsJs, /bot\?\.transport_status \|\| bot\?\.status/);
   assert.match(botsJs, /target_source/);
