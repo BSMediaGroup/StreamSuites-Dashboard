@@ -1076,6 +1076,13 @@ test("bots view exposes per-instance debug endpoint and correlation-aware errors
   assert.match(botsJs, /subscription_failed/);
   assert.match(botsJs, /renderDebugPanel\(bot, getRowUi/);
   assert.match(botsJs, /Copy Debug JSON/);
+  assert.match(botsJs, /renderTriggerPipeline/);
+  assert.match(botsJs, /Trigger Pipeline/);
+  assert.match(botsJs, /last_pipeline_outcome/);
+  assert.match(botsJs, /last_suppression_reason/);
+  assert.match(botsJs, /Kick official webhook mode active - no socket transport required\./);
+  assert.match(botsJs, /webhookReadyPosture/);
+  assert.match(botsJs, /last_dispatch_response_message/);
   assert.match(botsJs, /responsePayload\?\.correlation_id/);
   assert.match(botsJs, /responsePayload\?\.error_code/);
   assert.match(botsJs, /trace_source/);

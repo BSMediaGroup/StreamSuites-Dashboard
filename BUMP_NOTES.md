@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Added a compact Kick Trigger Pipeline section to the existing Admin Bots debug drawer. `docs/js/bots.js` now renders runtime-owned `diagnostics.trigger_pipeline` fields for last inbound message, command-safe summary, trigger evaluation, matched trigger refs, action count, dispatch status/HTTP/message, final outcome, suppression reason, and recent messages while keeping async Probe Now and Copy Debug JSON unchanged. Kick webhook-ready status text no longer appears in the red Blocking/Error cell when there is no real blocker, and webhook mode is labeled as official webhook mode with no socket transport required.
+- Human note: after sending `!ping` or `!bot` in Kick chat, the debug drawer should show whether the command matched, was disabled/no-match/suppressed, or attempted/succeeded/failed dispatch without implying a missing socket attach.
+
 - Extended the existing Admin Bots / Runtime Status debug drawer with compact Kick Subscription Attempts rendering. `docs/js/bots.js` now displays each redacted attempt label, result, HTTP status/message, method value, broadcaster inclusion, body keys, retryability, and skip reason from the Runtime/Auth `subscription_attempts` payload while preserving async Probe Now polling and Copy Debug JSON.
 - Human note: after Probe Now, admins should clearly see `method: webhook` on Attempt A and whether the broadcaster fallback ran, succeeded, failed, or was skipped.
 

@@ -876,7 +876,20 @@
       bot?.readiness_status,
       platformState?.sessionStatus
     ].some((value) => isWaitingStateCode(value));
-    if (statusReason && !waitingPosture) {
+    const webhookReadyPosture =
+      String(bot?.platform || "").toLowerCase() === "kick" &&
+      !String(bot?.pause_reason || bot?.last_error || "").trim() &&
+      ["listening_via_webhook", "transport_not_required_webhook_mode", "webhook_active"].some((value) =>
+        [
+          bot?.status,
+          bot?.lifecycle_state,
+          bot?.runner_state,
+          bot?.transport_status,
+          bot?.readiness_status,
+          platformState?.sessionStatus
+        ].map((item) => String(item || "").trim().toLowerCase()).includes(value)
+      );
+    if (statusReason && !waitingPosture && !webhookReadyPosture) {
       entries.push(statusReason);
     }
     if (!entries.length) {
@@ -992,6 +1005,32 @@
     `;
   }
 
+  function renderTriggerPipeline(payload) {
+    const pipeline = debugRawValue(payload, ["diagnostics", "trigger_pipeline"], null);
+    if (!pipeline || typeof pipeline !== "object") return "";
+    const recent = Array.isArray(pipeline.recent_messages) ? pipeline.recent_messages.slice(-10) : [];
+    const matches = Array.isArray(pipeline.last_trigger_matches)
+      ? pipeline.last_trigger_matches.map((item) => item?.name || item?.id || item).filter(Boolean).join(", ")
+      : "";
+    return `
+      <div class="ss-bot-debug-grid">
+        <div><span class="ss-bot-field-label">Trigger Pipeline</span><strong>${escapeHtml(pipeline.last_pipeline_outcome || "-")}</strong></div>
+        <div><span class="ss-bot-field-label">Inbound message</span><strong>${escapeHtml(pipeline.last_inbound_message_id || "-")}</strong></div>
+        <div><span class="ss-bot-field-label">Inbound time</span><strong>${escapeHtml(formatTimestamp(pipeline.last_chat_event_at || pipeline.last_webhook_event_at || ""))}</strong></div>
+        <div><span class="ss-bot-field-label">Command/text</span><strong>${escapeHtml((pipeline.last_inbound_message_text && (pipeline.last_inbound_message_text.command || `length ${pipeline.last_inbound_message_text.length}`)) || "-")}</strong></div>
+        <div><span class="ss-bot-field-label">Sender</span><strong>${escapeHtml(pipeline.last_sender_username || "-")}</strong></div>
+        <div><span class="ss-bot-field-label">Evaluation</span><strong>${escapeHtml(formatTimestamp(pipeline.last_trigger_evaluation_at || ""))}</strong></div>
+        <div><span class="ss-bot-field-label">Matched triggers</span><strong>${escapeHtml(String(pipeline.last_trigger_match_count ?? 0))}${matches ? ` - ${escapeHtml(matches)}` : ""}</strong></div>
+        <div><span class="ss-bot-field-label">Actions</span><strong>${escapeHtml(String(pipeline.last_trigger_action_count ?? 0))}</strong></div>
+        <div><span class="ss-bot-field-label">Dispatch</span><strong>${escapeHtml(pipeline.last_dispatch_status || "-")}</strong></div>
+        <div><span class="ss-bot-field-label">Dispatch HTTP</span><strong>${escapeHtml(String(pipeline.last_dispatch_http_status ?? "-"))}</strong></div>
+        <div><span class="ss-bot-field-label">Dispatch message</span><strong>${escapeHtml(pipeline.last_dispatch_response_message || "-")}</strong></div>
+        <div><span class="ss-bot-field-label">Suppression</span><strong>${escapeHtml(pipeline.last_suppression_reason || "-")}</strong></div>
+        ${recent.length ? `<div><span class="ss-bot-field-label">Recent messages</span><code>${escapeHtml(JSON.stringify(recent))}</code></div>` : ""}
+      </div>
+    `;
+  }
+
   function renderDebugPanel(bot, ui) {
     if (!ui.debugOpen) return "";
     const payload = ui.debugPayload || null;
@@ -1063,6 +1102,7 @@
               <div><span class="ss-bot-field-label">Last manual deploy</span><strong>${escapeHtml(lastManual?.code || lastManual?.phase || "-")}</strong></div>
               <div><span class="ss-bot-field-label">Last exception</span><strong>${escapeHtml(lastException?.code || lastException?.details?.exception_type || "-")}</strong></div>
               <div><span class="ss-bot-field-label">Awaiting explanation</span><strong>${escapeHtml(detection.detection_skipped_reason || detection.next_required_step || debugValue(payload, ["bot", "readiness_reason"]))}</strong></div>
+              ${String(bot?.platform || "").toLowerCase() === "kick" ? '<div><span class="ss-bot-field-label">Kick mode</span><strong>Kick official webhook mode active - no socket transport required.</strong></div>' : ""}
             </div>
             <div class="ss-bot-debug-grid">
               <div><span class="ss-bot-field-label">Current attempt</span><strong>${escapeHtml(currentAttempt.current_subscription_result || "-")}</strong></div>
@@ -1071,6 +1111,7 @@
               <div><span class="ss-bot-field-label">Validation</span><code>${escapeHtml(JSON.stringify(debugRawValue(payload, ["probe", "subscription_request_validation"], debugRawValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_request_validation"], {}))))}</code></div>
             </div>
             ${renderSubscriptionAttempts(payload)}
+            ${renderTriggerPipeline(payload)}
             ${renderDebugTimeline(payload)}
             <pre class="ss-bot-debug-json" aria-label="Redacted debug JSON">${escapeHtml(jsonText)}</pre>
           `
