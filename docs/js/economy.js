@@ -19,8 +19,12 @@
   const ECONOMY_DENOMINATIONS = "/api/admin/economy/denominations";
   const PUBLIC_GAME_BACKUP = "/api/admin/public-game-authority/backup";
   const PUBLIC_GAME_RESET = "/api/admin/public-game-authority/reset";
+  const GAME_ASSETS = "/api/admin/economy/assets/games";
+  const GAME_ASSET_DEFINITIONS = "/api/admin/economy/assets/games/definitions";
+  const GAME_ASSET_UPLOAD = "/api/admin/economy/assets/games/upload";
+  const GAME_ASSET_FILES = "/assets/games/asset-files.json";
   const GAME_ASSET_CATALOG = "/assets/games/asset-catalog.json";
-  const IMAGE_EXTENSION_PATTERN = /\.(avif|gif|jpe?g|png|svg|webp)(?:[?#].*)?$/i;
+  const IMAGE_EXTENSION_PATTERN = /\.(bmp|gif|jpe?g|png|svg|webp)(?:[?#].*)?$/i;
   const IDENTITY_PAGE_SIZE = 10;
   const EVENT_PAGE_SIZE = 8;
   const ITEM_PAGE_SIZE = 6;
@@ -44,6 +48,12 @@
     itemPage: 1,
     itemEditorCode: "",
     assetCatalog: [],
+    assetFiles: [],
+    unresolvedAssets: [],
+    assetWritable: false,
+    assetWritableMessage: "",
+    supportedAssetExtensions: ["webp", "gif", "png", "jpg", "jpeg", "bmp", "svg"],
+    assetUploadPreviewUrl: "",
     assetCatalogLoaded: false,
     assetCatalogError: "",
     assetPicker: {
@@ -52,7 +62,10 @@
       selectedPath: "",
       filter: "",
       mode: "bundled",
-      customUrl: ""
+      customUrl: "",
+      definition: {},
+      uploadFile: null,
+      uploadError: ""
     },
     token: 0,
     saving: false,
@@ -131,23 +144,31 @@
   function normalizeItemIconPath(path) {
     const value = text(path);
     if (!value) return "";
-    if (/^https?:\/\//i.test(value)) return value;
+    if (/^(https?:\/\/|blob:|data:image\/)/i.test(value)) return value;
     const normalized = value.replace(/\\/g, "/").replace(/^\/+/, "");
     const publicPath = normalized.replace(/^docs\/+/i, "");
-    const gameAssetMatch = publicPath.match(/(?:^|\/)assets\/games\/([^/?#]+)$/i);
-    if (gameAssetMatch) return `assets/games/${gameAssetMatch[1]}`;
+    const gameAssetMatch = publicPath.match(/(?:^|\/)assets\/games\/(.+)$/i);
+    if (gameAssetMatch) {
+      const cleanParts = gameAssetMatch[1].split(/[?#]/, 1)[0].split("/").filter((part) => part && part !== "." && part !== "..");
+      return cleanParts.length ? `assets/games/${cleanParts.join("/")}` : "";
+    }
     return publicPath;
   }
 
   function assetPath(path) {
     const value = normalizeItemIconPath(path);
     if (!value) return "";
-    return value.startsWith("/") || /^https?:\/\//i.test(value) ? value : `/${value.replace(/^\/+/, "")}`;
+    return value.startsWith("/") || /^(https?:\/\/|blob:|data:image\/)/i.test(value) ? value : `/${value.replace(/^\/+/, "")}`;
   }
 
   function isLikelyImageUrl(path) {
     const value = text(path);
     return /^https?:\/\//i.test(value) && IMAGE_EXTENSION_PATTERN.test(value);
+  }
+
+  function isSupportedAssetPath(path) {
+    const value = normalizeItemIconPath(path);
+    return IMAGE_EXTENSION_PATTERN.test(value);
   }
 
   function assetPreviewLabel(path) {
@@ -281,37 +302,96 @@
     return normalizeItemIconPath(item.path || item.url || item.icon_path || "");
   }
 
-  function normalizeAssetCatalog(items = []) {
-    return (Array.isArray(items) ? items : [])
+  function definitionComplete(item = {}) {
+    return Boolean(text(item.label) && text(item.category || item.type));
+  }
+
+  function normalizeAssetCatalog(items = [], fallbackDefinitions = []) {
+    const definitionByPath = new Map(
+      (Array.isArray(fallbackDefinitions) ? fallbackDefinitions : [])
+        .map((item) => [catalogAssetPath(item), item])
+        .filter(([path]) => path && isSupportedAssetPath(path))
+    );
+    const normalized = (Array.isArray(items) ? items : [])
       .map((item) => {
         const path = catalogAssetPath(item);
-        if (!path) return null;
+        if (!path || !isSupportedAssetPath(path)) return null;
+        const definition = definitionByPath.get(path) || {};
         const filename = text(item.filename || path.split("/").pop());
         const extension = text(item.extension || filename.split(".").pop()).toLowerCase();
         return {
+          ...item,
+          ...definition,
           path,
           filename,
           extension,
-          label: text(item.label || formatLabel(filename.replace(/\.[^.]+$/, ""))),
-          category: text(item.category || "game"),
-          size_bytes: Number(item.size_bytes || 0)
+          label: text(definition.label || item.label || formatLabel(filename.replace(/\.[^.]+$/, ""))),
+          category: text(definition.category || definition.type || item.category || item.type || ""),
+          tags: Array.isArray(definition.tags || item.tags) ? (definition.tags || item.tags) : [],
+          notes: text(definition.notes || item.notes || item.description || ""),
+          size_bytes: Number(item.size_bytes || definition.size_bytes || 0),
+          present_on_disk: item.present_on_disk !== false,
+          definition_complete: definitionComplete({ ...item, ...definition })
         };
       })
       .filter(Boolean);
+    for (const [path, definition] of definitionByPath.entries()) {
+      if (normalized.some((item) => item.path === path)) continue;
+      const filename = text(definition.filename || path.split("/").pop());
+      normalized.push({
+        ...definition,
+        path,
+        filename,
+        extension: text(definition.extension || filename.split(".").pop()).toLowerCase(),
+        label: text(definition.label || formatLabel(filename.replace(/\.[^.]+$/, ""))),
+        category: text(definition.category || definition.type || ""),
+        present_on_disk: false,
+        definition_complete: definitionComplete(definition)
+      });
+    }
+    return normalized.sort((a, b) => a.path.localeCompare(b.path));
   }
 
   async function loadAssetCatalog() {
     if (state.assetCatalogLoaded) return;
     state.assetCatalogLoaded = true;
     try {
-      const response = await fetch(GAME_ASSET_CATALOG, { cache: "no-store" });
-      if (!response.ok) throw new Error(`Asset catalog unavailable (${response.status})`);
-      const payload = await response.json();
-      state.assetCatalog = normalizeAssetCatalog(payload.items || payload.assets || []);
+      const payload = await requestJson(GAME_ASSETS);
+      const definitions = Array.isArray(payload.definitions) ? payload.definitions : [];
+      const files = Array.isArray(payload.files) ? payload.files : [];
+      state.assetFiles = normalizeAssetCatalog(files);
+      state.assetCatalog = normalizeAssetCatalog(payload.assets || files, definitions);
+      state.unresolvedAssets = normalizeAssetCatalog(payload.unresolved || state.assetCatalog.filter((item) => item.present_on_disk && !item.definition_complete));
+      state.assetWritable = Boolean(payload.writable);
+      state.supportedAssetExtensions = Array.isArray(payload.supported_extensions) && payload.supported_extensions.length
+        ? payload.supported_extensions
+        : state.supportedAssetExtensions;
+      state.assetWritableMessage = state.assetWritable ? "" : "Upload is unavailable because Runtime/Auth has no writable game asset root configured.";
       state.assetCatalogError = state.assetCatalog.length ? "" : "No bundled game assets were listed in the catalog.";
     } catch (err) {
-      state.assetCatalog = [];
-      state.assetCatalogError = err?.message || "Asset catalog unavailable.";
+      try {
+        const [filesResponse, catalogResponse] = await Promise.all([
+          fetch(GAME_ASSET_FILES, { cache: "no-store" }),
+          fetch(GAME_ASSET_CATALOG, { cache: "no-store" })
+        ]);
+        const filesPayload = filesResponse.ok ? await filesResponse.json() : {};
+        const catalogPayload = catalogResponse.ok ? await catalogResponse.json() : {};
+        const files = filesPayload.items || filesPayload.files || [];
+        const definitions = catalogPayload.items || catalogPayload.assets || [];
+        state.assetFiles = normalizeAssetCatalog(files);
+        state.assetCatalog = normalizeAssetCatalog(files.length ? files : definitions, definitions);
+        state.unresolvedAssets = state.assetCatalog.filter((item) => item.present_on_disk && !item.definition_complete);
+        state.assetWritable = false;
+        state.assetWritableMessage = "Runtime/Auth asset upload API is unavailable; using the static Dashboard manifest.";
+        state.assetCatalogError = state.assetCatalog.length ? "" : (err?.message || "Asset catalog unavailable.");
+      } catch (fallbackErr) {
+        state.assetCatalog = [];
+        state.assetFiles = [];
+        state.unresolvedAssets = [];
+        state.assetWritable = false;
+        state.assetWritableMessage = "Runtime/Auth asset upload API is unavailable.";
+        state.assetCatalogError = fallbackErr?.message || err?.message || "Asset catalog unavailable.";
+      }
     }
   }
 
@@ -354,6 +434,53 @@
     if (preview) preview.innerHTML = renderIconPreview(input.value);
   }
 
+  function assetDefinitionDraft(path = state.assetPicker.selectedPath) {
+    const normalizedPath = normalizeItemIconPath(path);
+    const existing = state.assetCatalog.find((item) => item.path === normalizedPath) || {};
+    const filename = text(existing.filename || normalizedPath.split("/").pop());
+    return {
+      path: normalizedPath,
+      label: text(state.assetPicker.definition?.label || existing.label || formatLabel(filename.replace(/\.[^.]+$/, ""))),
+      category: text(state.assetPicker.definition?.category || existing.category || "item"),
+      tags: text(state.assetPicker.definition?.tags || (Array.isArray(existing.tags) ? existing.tags.join(", ") : "")),
+      notes: text(state.assetPicker.definition?.notes || existing.notes || "")
+    };
+  }
+
+  function renderAssetDefinitionFields(prefix, draft = assetDefinitionDraft()) {
+    return `
+      <div class="ss-economy-asset-definition-fields">
+        <label>Friendly name<input id="${prefix}-label" data-asset-definition-field="label" value="${escapeHtml(draft.label)}" placeholder="Potion" /></label>
+        <label>Category / type<input id="${prefix}-category" data-asset-definition-field="category" value="${escapeHtml(draft.category)}" placeholder="consumable" /></label>
+        <label class="ss-economy-wide">Tags or notes<input id="${prefix}-tags" data-asset-definition-field="tags" value="${escapeHtml(draft.tags)}" placeholder="potion, health, event" /></label>
+        <label class="ss-economy-wide">Normalized asset path<input id="${prefix}-path" data-asset-definition-field="path" value="${escapeHtml(draft.path)}" placeholder="assets/games/potion.webp" /></label>
+        <label class="ss-economy-wide">Notes<textarea id="${prefix}-notes" data-asset-definition-field="notes" rows="3">${escapeHtml(draft.notes)}</textarea></label>
+      </div>
+    `;
+  }
+
+  function readAssetDefinitionDraft(prefix = "economy-asset-definition") {
+    return {
+      label: text($(`${prefix}-label`)?.value),
+      category: text($(`${prefix}-category`)?.value),
+      tags: text($(`${prefix}-tags`)?.value).split(",").map((tag) => text(tag)).filter(Boolean),
+      path: normalizeItemIconPath($(`${prefix}-path`)?.value || state.assetPicker.selectedPath),
+      notes: text($(`${prefix}-notes`)?.value)
+    };
+  }
+
+  function updateAssetStateFromPayload(payload = {}) {
+    const definitions = Array.isArray(payload.definitions) ? payload.definitions : [];
+    const files = Array.isArray(payload.files) ? payload.files : [];
+    if (Array.isArray(payload.assets)) state.assetCatalog = normalizeAssetCatalog(payload.assets, definitions);
+    if (files.length) state.assetFiles = normalizeAssetCatalog(files);
+    state.unresolvedAssets = Array.isArray(payload.unresolved)
+      ? normalizeAssetCatalog(payload.unresolved)
+      : state.assetCatalog.filter((item) => item.present_on_disk && !item.definition_complete);
+    if (typeof payload.writable === "boolean") state.assetWritable = payload.writable;
+    if (payload.path) state.assetPicker.selectedPath = normalizeItemIconPath(payload.path);
+  }
+
   function renderAssetPicker() {
     const modals = Array.from(document.querySelectorAll("#economy-asset-picker"));
     const existing = modals[0] || null;
@@ -367,10 +494,19 @@
     const query = text(state.assetPicker.filter).toLowerCase();
     const assets = state.assetCatalog.filter((item) => {
       if (!query) return true;
-      return `${item.filename} ${item.path} ${item.label} ${item.category}`.toLowerCase().includes(query);
+      return `${item.filename} ${item.path} ${item.label} ${item.category} ${item.extension}`.toLowerCase().includes(query);
     });
     const selectedAsset = state.assetCatalog.find((item) => item.path === selectedPath) || assets[0] || null;
-    const previewPath = state.assetPicker.mode === "custom" ? customUrl : selectedPath || selectedAsset?.path || "";
+    const definitionDraft = assetDefinitionDraft();
+    const previewPath = state.assetPicker.mode === "custom"
+      ? customUrl
+      : state.assetPicker.mode === "upload"
+        ? state.assetUploadPreviewUrl || selectedPath
+        : selectedPath || selectedAsset?.path || "";
+    const unresolved = state.unresolvedAssets.filter((item) => {
+      if (!query) return true;
+      return `${item.filename} ${item.path} ${item.extension}`.toLowerCase().includes(query);
+    });
     const modal = existing || document.createElement("div");
     modal.id = "economy-asset-picker";
     modal.className = "ss-economy-asset-modal";
@@ -387,7 +523,9 @@
           <button class="ss-icon-btn ss-economy-asset-close" type="button" aria-label="Close asset picker" data-asset-close>&times;</button>
         </header>
         <div class="ss-economy-asset-tabs" role="tablist" aria-label="Asset source">
-          <button class="ss-btn ${state.assetPicker.mode === "bundled" ? "" : "ss-btn-secondary"}" type="button" data-asset-mode="bundled">Bundled assets</button>
+          <button class="ss-btn ${state.assetPicker.mode === "bundled" ? "" : "ss-btn-secondary"}" type="button" data-asset-mode="bundled">Choose existing asset</button>
+          <button class="ss-btn ${state.assetPicker.mode === "define" ? "" : "ss-btn-secondary"}" type="button" data-asset-mode="define">Define/upload new asset</button>
+          <button class="ss-btn ${state.assetPicker.mode === "reconcile" ? "" : "ss-btn-secondary"}" type="button" data-asset-mode="reconcile">Reconcile existing files</button>
           <button class="ss-btn ${state.assetPicker.mode === "custom" ? "" : "ss-btn-secondary"}" type="button" data-asset-mode="custom">External URL</button>
         </div>
         ${
@@ -396,6 +534,33 @@
                 <label>External image URL<input id="economy-asset-custom-url" value="${escapeHtml(customUrl)}" placeholder="https://example.com/icon.webp" /></label>
                 <p class="muted">Use bundled assets from the browser when possible. External URLs can be pasted here when the image is hosted elsewhere and ends with a normal image extension.</p>
               </div>`
+            : state.assetPicker.mode === "define"
+              ? `<div class="ss-economy-asset-define">
+                  <div class="ss-alert ${state.assetWritable ? "" : "ss-alert-warning"}">${escapeHtml(state.assetWritable ? "Save a catalog definition for a bundled image, or choose a local file to upload through Runtime/Auth." : state.assetWritableMessage || "Upload is unavailable because no writable asset root is configured.")}</div>
+                  ${renderAssetDefinitionFields("economy-asset-definition", definitionDraft)}
+                  <label class="ss-economy-wide">Upload image file<input id="economy-asset-upload-file" type="file" accept="${state.supportedAssetExtensions.map((ext) => `.${ext}`).join(",")}" ${state.assetWritable ? "" : "disabled"} /></label>
+                  <button class="ss-btn ss-btn-secondary" type="button" data-asset-save-definition>Save definition</button>
+                  <button class="ss-btn" type="button" data-asset-upload ${state.assetWritable ? "" : "disabled"}>Upload and use asset</button>
+                </div>`
+              : state.assetPicker.mode === "reconcile"
+                ? `<label class="ss-economy-asset-search">Search unresolved files<input id="economy-asset-filter" value="${escapeHtml(state.assetPicker.filter)}" placeholder="potion, svg, crate..." /></label>
+                   <div class="ss-economy-asset-reconcile">
+                    ${
+                      unresolved.length
+                        ? unresolved.map((item) => `
+                            <article class="ss-economy-asset-reconcile-row">
+                              <img src="${escapeHtml(assetPath(item.path))}" alt="" loading="lazy" decoding="async" />
+                              <div>
+                                <strong>${escapeHtml(item.filename)}</strong>
+                                <span class="muted">${escapeHtml(item.extension.toUpperCase())} · ${escapeHtml(item.path)}</span>
+                                <span class="ss-economy-state ss-economy-state-reversal">Needs definition</span>
+                              </div>
+                              <button class="ss-btn ss-btn-secondary" type="button" data-asset-define-path="${escapeHtml(item.path)}">Define</button>
+                            </article>
+                          `).join("")
+                        : `<div class="ss-empty ss-empty-compact">No unresolved bundled image files.</div>`
+                    }
+                   </div>`
             : `<label class="ss-economy-asset-search">Search assets<input id="economy-asset-filter" value="${escapeHtml(state.assetPicker.filter)}" placeholder="coin, gem, crate..." /></label>
                <div class="ss-economy-asset-grid">
                 ${
@@ -404,7 +569,7 @@
                         <button class="ss-economy-asset-tile${item.path === selectedPath ? " is-selected" : ""}" type="button" data-asset-path="${escapeHtml(item.path)}">
                           <img src="${escapeHtml(assetPath(item.path))}" alt="" loading="lazy" decoding="async" />
                           <strong>${escapeHtml(item.label)}</strong>
-                          <span>${escapeHtml(item.path)}</span>
+                          <span>${escapeHtml(item.definition_complete ? item.path : `${item.path} · needs definition`)}</span>
                         </button>
                       `).join("")
                     : `<div class="ss-empty ss-empty-compact">${escapeHtml(state.assetCatalogError || "No matching assets.")}</div>`
@@ -868,6 +1033,80 @@
     state.inventoryEventPage = 1;
   }
 
+  async function saveAssetDefinitionFromPicker() {
+    const definition = readAssetDefinitionDraft("economy-asset-definition");
+    if (!definition.path || !definition.label || !definition.category) {
+      setStatus("Asset definition requires a path, friendly name, and category.", "error");
+      return false;
+    }
+    try {
+      const payload = await requestJson(GAME_ASSET_DEFINITIONS, {
+        method: "POST",
+        body: JSON.stringify({ definition })
+      });
+      updateAssetStateFromPayload(payload);
+      state.assetPicker.selectedPath = definition.path;
+      state.assetPicker.definition = {};
+      setStatus("Asset definition saved.", "success");
+      return true;
+    } catch (err) {
+      setStatus(err?.message || "Runtime/Auth could not save the asset definition.", "error");
+      return false;
+    }
+  }
+
+  function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(reader.error || new Error("Failed to read file."));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function uploadAssetFromPicker() {
+    const file = state.assetPicker.uploadFile;
+    if (!file) {
+      setStatus("Choose an image file before uploading.", "error");
+      return false;
+    }
+    const definition = readAssetDefinitionDraft("economy-asset-definition");
+    if (!definition.label || !definition.category) {
+      setStatus("Uploaded assets require a friendly name and category.", "error");
+      return false;
+    }
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      const payload = await requestJson(GAME_ASSET_UPLOAD, {
+        method: "POST",
+        body: JSON.stringify({
+          filename: file.name,
+          content_type: file.type,
+          base64_data: dataUrl,
+          definition,
+          overwrite: false
+        })
+      });
+      updateAssetStateFromPayload(payload);
+      const input = iconInputForTarget();
+      const value = normalizeItemIconPath(payload.path || payload.asset_definition?.path || definition.path);
+      if (input && value) {
+        input.value = value;
+        syncIconPreview(input);
+      }
+      state.assetPicker.mode = "bundled";
+      state.assetPicker.uploadFile = null;
+      state.assetPicker.definition = {};
+      if (state.assetUploadPreviewUrl) URL.revokeObjectURL(state.assetUploadPreviewUrl);
+      state.assetUploadPreviewUrl = "";
+      setStatus("Asset uploaded and selected.", "success");
+      return true;
+    } catch (err) {
+      setStatus(err?.message || "Runtime/Auth could not upload the asset.", "error");
+      return false;
+    }
+  }
+
   async function refresh(options = {}) {
     const token = ++state.token;
     setStatus("Loading economy controls...");
@@ -1135,7 +1374,10 @@
           selectedPath: current,
           filter: "",
           mode: /^https?:\/\//i.test(current) ? "custom" : "bundled",
-          customUrl: /^https?:\/\//i.test(current) ? current : ""
+          customUrl: /^https?:\/\//i.test(current) ? current : "",
+          definition: {},
+          uploadFile: null,
+          uploadError: ""
         };
         renderAssetPicker();
         return;
@@ -1147,14 +1389,43 @@
       }
       const modeButton = event.target.closest?.("[data-asset-mode]");
       if (modeButton) {
-        state.assetPicker.mode = modeButton.dataset.assetMode === "custom" ? "custom" : "bundled";
+        const mode = modeButton.dataset.assetMode;
+        state.assetPicker.mode = ["bundled", "define", "reconcile", "custom"].includes(mode) ? mode : "bundled";
+        state.assetPicker.definition = {};
+        renderAssetPicker();
+        return;
+      }
+      const defineButton = event.target.closest?.("[data-asset-define-path]");
+      if (defineButton) {
+        const path = normalizeItemIconPath(defineButton.dataset.assetDefinePath);
+        const asset = state.assetCatalog.find((item) => item.path === path) || {};
+        state.assetPicker.selectedPath = path;
+        state.assetPicker.definition = {
+          path,
+          label: text(asset.label || formatLabel((asset.filename || path.split("/").pop() || "").replace(/\.[^.]+$/, ""))),
+          category: text(asset.category || "item"),
+          tags: Array.isArray(asset.tags) ? asset.tags.join(", ") : "",
+          notes: text(asset.notes)
+        };
+        state.assetPicker.mode = "define";
         renderAssetPicker();
         return;
       }
       const assetTile = event.target.closest?.("[data-asset-path]");
       if (assetTile) {
         state.assetPicker.selectedPath = normalizeItemIconPath(assetTile.dataset.assetPath);
+        state.assetPicker.definition = {};
         renderAssetPicker();
+        return;
+      }
+      if (event.target.closest?.("[data-asset-save-definition]")) {
+        const saved = await saveAssetDefinitionFromPicker();
+        if (saved) renderAssetPicker();
+        return;
+      }
+      if (event.target.closest?.("[data-asset-upload]")) {
+        const uploaded = await uploadAssetFromPicker();
+        if (uploaded) renderAssetPicker();
         return;
       }
       if (event.target.closest?.("[data-asset-use]")) {
@@ -1308,6 +1579,30 @@
       if (event.target.matches?.("#economy-asset-custom-url")) {
         state.assetPicker.customUrl = event.target.value;
         state.assetPicker.selectedPath = normalizeItemIconPath(event.target.value);
+        renderAssetPicker();
+      }
+      if (event.target.matches?.("[data-asset-definition-field]")) {
+        state.assetPicker.definition = {
+          ...state.assetPicker.definition,
+          [event.target.dataset.assetDefinitionField]: event.target.value
+        };
+        if (event.target.dataset.assetDefinitionField === "path") {
+          state.assetPicker.selectedPath = normalizeItemIconPath(event.target.value);
+          const preview = document.querySelector(".ss-economy-asset-preview-frame");
+          if (preview) preview.innerHTML = renderIconPreview(state.assetPicker.selectedPath);
+        }
+      }
+      if (event.target.matches?.("#economy-asset-upload-file")) {
+        const file = event.target.files?.[0] || null;
+        state.assetPicker.uploadFile = file;
+        if (state.assetUploadPreviewUrl) URL.revokeObjectURL(state.assetUploadPreviewUrl);
+        state.assetUploadPreviewUrl = file ? URL.createObjectURL(file) : "";
+        state.assetPicker.definition = {
+          ...state.assetPicker.definition,
+          path: file ? `assets/games/${file.name}` : state.assetPicker.selectedPath,
+          label: state.assetPicker.definition?.label || (file ? formatLabel(file.name.replace(/\.[^.]+$/, "")) : ""),
+          category: state.assetPicker.definition?.category || "item"
+        };
         renderAssetPicker();
       }
     });

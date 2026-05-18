@@ -121,6 +121,7 @@ StreamSuites-Dashboard/
 │   ├── assets/
 │   │   ├── games/
 │   │   │   ├── asset-catalog.json
+│   │   │   ├── asset-files.json
 │   │   │   └── ...
 │   │   ├── js/
 │   │   │   └── ss-social-platforms.js
@@ -221,6 +222,7 @@ StreamSuites-Dashboard/
 │           └── donations/
 ├── scripts/
 │   ├── build-pages-artifact.ps1
+│   ├── generate-game-asset-manifest.mjs
 │   └── validate-pages-routing.ps1
 ├── schemas/
 │   ├── creators.schema.json

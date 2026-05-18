@@ -6094,6 +6094,13 @@ body.ss-col-resizing-active {
   grid-row: 3;
 }
 
+.ss-economy-asset-define,
+.ss-economy-asset-reconcile {
+  grid-column: 1 / 2;
+  grid-row: 4;
+  min-width: 0;
+}
+
 .ss-economy-asset-head,
 .ss-economy-asset-actions {
   display: flex;
@@ -6126,6 +6133,52 @@ body.ss-col-resizing-active {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
   gap: 9px;
+}
+
+.ss-economy-asset-definition-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ss-economy-asset-define {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.ss-economy-asset-reconcile {
+  max-height: 390px;
+  overflow: auto;
+  display: grid;
+  gap: 9px;
+}
+
+.ss-economy-asset-reconcile-row {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 9px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.ss-economy-asset-reconcile-row img {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+}
+
+.ss-economy-asset-reconcile-row div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ss-economy-asset-reconcile-row span {
+  overflow-wrap: anywhere;
 }
 
 .ss-economy-asset-tile {
@@ -6272,9 +6325,18 @@ body.ss-col-resizing-active {
   }
 
   .ss-economy-asset-grid,
-  .ss-economy-asset-preview {
+  .ss-economy-asset-preview,
+  .ss-economy-asset-define,
+  .ss-economy-asset-reconcile,
+  .ss-economy-asset-definition-fields,
+  .ss-economy-asset-reconcile-row {
     grid-column: 1 / -1;
     grid-row: auto;
+  }
+
+  .ss-economy-asset-definition-fields,
+  .ss-economy-asset-reconcile-row {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -10291,7 +10353,7 @@ button.public-btn:active::after {
 }
 
 .ss-overview-hero-body {
-  grid-template-columns: minmax(0, 1.8fr) minmax(320px, 0.92fr);
+  grid-template-columns: minmax(0, 1.8fr) minmax(300px, 0.82fr);
 }
 
 .ss-overview-hero-main,
@@ -10300,6 +10362,7 @@ button.public-btn:active::after {
 .ss-overview-feed-card {
   display: grid;
   gap: 16px;
+  min-width: 0;
 }
 
 .ss-overview-greeting {
@@ -10329,7 +10392,7 @@ button.public-btn:active::after {
 
 .ss-overview-summary-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
   gap: 14px;
 }
 
@@ -10357,13 +10420,16 @@ button.public-btn:active::after {
 .ss-overview-scaffold-card,
 .ss-overview-side-card {
   padding: 18px 20px;
+  min-width: 0;
 }
 
 .ss-overview-summary-card strong {
   font-family: "RechargeBd", sans-serif;
-  font-size: clamp(1.08rem, 1.55vw, 1.38rem);
+  font-size: clamp(0.98rem, 1.12vw, 1.2rem);
   letter-spacing: 0.02em;
   color: #f4f8ff;
+  overflow-wrap: anywhere;
+  line-height: 1.18;
 }
 
 .ss-overview-kicker {
@@ -10402,7 +10468,7 @@ button.public-btn:active::after {
 
 .ss-overview-meta-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   gap: 12px;
   align-items: start;
 }
@@ -10422,6 +10488,8 @@ button.public-btn:active::after {
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .ss-overview-posture-grid,
@@ -10458,7 +10526,7 @@ button.public-btn:active::after {
 
 .ss-overview-inline-metrics {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
   gap: 12px;
 }
 
@@ -10481,8 +10549,10 @@ button.public-btn:active::after {
 .ss-overview-inline-metric strong {
   margin: 0;
   font-family: "RechargeBd", sans-serif;
-  font-size: 1.08rem;
+  font-size: clamp(0.95rem, 1vw, 1.04rem);
   color: #f4f8ff;
+  overflow-wrap: anywhere;
+  line-height: 1.18;
 }
 
 .ss-overview-platform-grid {
@@ -10558,6 +10628,7 @@ button.public-btn:active::after {
 
 .ss-overview-feed-topline span {
   text-align: right;
+  overflow-wrap: anywhere;
 }
 
 .ss-overview-empty {
@@ -10566,6 +10637,16 @@ button.public-btn:active::after {
   border: 1px dashed rgba(255, 255, 255, 0.14);
   background: rgba(255, 255, 255, 0.03);
   color: var(--text-secondary);
+}
+
+@media (max-width: 1240px) {
+  .ss-overview-hero-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ss-overview-summary-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  }
 }
 
 @media (max-width: 1080px) {

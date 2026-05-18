@@ -119,17 +119,30 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /categoryPresets/);
   assert.match(js, /rarityPresets/);
   assert.match(js, /function presetOptions/);
+  assert.match(js, /GAME_ASSETS = "\/api\/admin\/economy\/assets\/games"/);
+  assert.match(js, /GAME_ASSET_DEFINITIONS = "\/api\/admin\/economy\/assets\/games\/definitions"/);
+  assert.match(js, /GAME_ASSET_UPLOAD = "\/api\/admin\/economy\/assets\/games\/upload"/);
+  assert.match(js, /GAME_ASSET_FILES = "\/assets\/games\/asset-files\.json"/);
   assert.match(js, /GAME_ASSET_CATALOG = "\/assets\/games\/asset-catalog\.json"/);
+  assert.match(js, /IMAGE_EXTENSION_PATTERN = \/\\\.\(bmp\|gif\|jpe\?g\|png\|svg\|webp\)/);
   assert.match(js, /function normalizeItemIconPath\(path\)/);
   assert.ok(js.includes('replace(/\\\\/g, "/")'));
   assert.ok(js.includes('replace(/^docs\\\\/i, "")') || js.includes('replace(/^docs\\/+'));
-  assert.ok(js.includes('assets\\/games\\/([^/?#]+)'));
+  assert.ok(js.includes('assets\\/games\\/(.+)'));
   assert.match(js, /function renderAssetPicker\(\)/);
   assert.match(js, /document\.querySelectorAll\("#economy-asset-picker"\)/);
   assert.match(js, /data-asset-mode="bundled"/);
+  assert.match(js, /data-asset-mode="define"/);
+  assert.match(js, /data-asset-mode="reconcile"/);
   assert.match(js, /data-asset-mode="custom"/);
+  assert.match(js, /data-asset-save-definition/);
+  assert.match(js, /data-asset-upload/);
+  assert.match(js, /data-asset-define-path/);
   assert.match(js, /data-asset-use/);
   assert.match(js, /isLikelyImageUrl/);
+  assert.match(js, /function saveAssetDefinitionFromPicker\(\)/);
+  assert.match(js, /function uploadAssetFromPicker\(\)/);
+  assert.match(js, /Runtime\/Auth asset upload API is unavailable/);
   assert.match(js, /item_code: text\(\$\(("#economy-item-create-code"|'economy-item-create-code')\)/);
   assert.match(js, /is_enabled: readField\("is_enabled"\) !== "false"/);
   assert.doesNotMatch(js, /localStorage/);
@@ -169,8 +182,22 @@ test("item definition save reads the visible editor reason and sends reason_text
 });
 
 test("game asset catalog manifest lists bundled dashboard image assets", () => {
+  const fileManifest = JSON.parse(read("docs/assets/games/asset-files.json"));
   const manifest = JSON.parse(read("docs/assets/games/asset-catalog.json"));
 
+  assert.equal(fileManifest.asset_root, "assets/games");
+  assert.ok(Array.isArray(fileManifest.items));
+  assert.ok(fileManifest.supported_extensions.includes("webp"));
+  assert.ok(fileManifest.supported_extensions.includes("gif"));
+  assert.ok(fileManifest.supported_extensions.includes("png"));
+  assert.ok(fileManifest.supported_extensions.includes("jpg"));
+  assert.ok(fileManifest.supported_extensions.includes("jpeg"));
+  assert.ok(fileManifest.supported_extensions.includes("bmp"));
+  assert.ok(fileManifest.supported_extensions.includes("svg"));
+  assert.ok(fileManifest.items.some((item) => item.path === "assets/games/sscoin.webp"));
+  assert.ok(fileManifest.items.some((item) => item.path === "assets/games/currencyunit.svg"));
+  assert.ok(fileManifest.items.every((item) => item.path.startsWith("assets/games/")));
+  assert.ok(fileManifest.items.every((item) => item.filename !== "asset-catalog.json" && item.filename !== "asset-files.json"));
   assert.equal(manifest.asset_root, "assets/games");
   assert.ok(Array.isArray(manifest.items));
   assert.ok(manifest.items.length >= 1);
