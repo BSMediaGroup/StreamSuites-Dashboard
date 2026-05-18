@@ -70,5 +70,7 @@ docs/shared/state/clips.json
 docs/shared/state/discord/runtime.json
 docs/shared/state/quotas.json
 docs/shared/state/runtime_snapshot.json
+# Large raw telemetry exports exceed static host asset limits.
+docs/runtime/exports/admin/telemetry/admin_activity.jsonl
 docs/Thumbs.db
 /.wrangler/tmp
