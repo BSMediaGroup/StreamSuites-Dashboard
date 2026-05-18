@@ -706,6 +706,7 @@
         debugPending: false,
         debugProbePending: false,
         debugError: "",
+        debugNotice: "",
         debugPayload: null
       };
     }
@@ -959,6 +960,7 @@
         </div>
         ${ui.debugPending ? '<div class="muted">Loading debug payload...</div>' : ""}
         ${ui.debugError ? `<div class="ss-alert ss-alert-danger">${escapeHtml(ui.debugError)}</div>` : ""}
+        ${ui.debugNotice ? `<div class="muted">${escapeHtml(ui.debugNotice)}</div>` : ""}
         ${payload
           ? `
             <div class="ss-bot-debug-chip-row">
@@ -2183,8 +2185,8 @@
       }
       await refresh();
     } catch (err) {
-      const detail = err?.message ? String(err.message) : "Manual deploy failed.";
-      setManualError(detail);
+      const detail = normalizeDashboardError(err, "Manual deploy failed.");
+      if (detail) setManualError(detail);
     } finally {
       state.manualDeploy.pending = false;
       updateManualDeployUi();
@@ -2347,7 +2349,7 @@
           render(normalized);
         })
         .catch((err) => {
-          if (err?.name === "AbortError") return;
+          if (isAbortLikeError(err)) return { aborted: true };
           setRuntimeAvailable(false);
           state.creators = [];
           state.lastPayload = { bots: [], supportedPlatforms: [], generatedAt: null };
@@ -2386,17 +2388,20 @@
           }
           updateManualCreatorSuggestions();
           updateManualDeployUi();
-          const detail = err?.message ? ` (${err.message})` : "";
+          const normalized = normalizeDashboardError(err, "runtime API unreachable");
+          const detail = normalized ? ` (${normalized})` : "";
           setError(`Unable to load bot status from runtime API${detail}`);
+          return { aborted: false };
         })
         .finally(() => {
           state.refreshInFlight = null;
         });
-      await state.refreshInFlight;
+      return await state.refreshInFlight;
     } catch (err) {
-      if (err?.name !== "AbortError") {
+      if (!isAbortLikeError(err)) {
         throw err;
       }
+      return { aborted: true };
     }
   }
 
@@ -2652,7 +2657,8 @@
       }
       await refresh();
     } catch (err) {
-      ui.error = err?.message ? String(err.message) : `Manual ${action} failed.`;
+      const detail = normalizeDashboardError(err, `Manual ${action} failed.`);
+      if (detail) ui.error = detail;
     } finally {
       ui.pending = false;
       ui.pendingAction = "";
@@ -2684,8 +2690,14 @@
         throw new Error(payload?.message || payload?.error || `Debug request failed (HTTP ${response.status}).`);
       }
       ui.debugPayload = payload;
+      ui.debugNotice = "";
     } catch (err) {
-      ui.debugError = err?.message ? String(err.message) : "Debug request failed.";
+      if (isAbortLikeError(err) && ui.debugPayload) {
+        ui.debugError = "";
+        ui.debugNotice = "Background refresh cancelled; probe result preserved.";
+      } else if (!isAbortLikeError(err)) {
+        ui.debugError = normalizeDashboardError(err, "Debug request failed.");
+      }
     } finally {
       ui.debugPending = false;
       renderRowsAndCountersFromState();
@@ -2708,24 +2720,42 @@
   async function reloadBotsSafely() {
     try {
       if (typeof refresh === "function") {
-        await refresh();
-        return true;
+        const result = await refresh();
+        return { ok: !result?.aborted, aborted: Boolean(result?.aborted) };
       }
     } catch (err) {
+      if (isAbortLikeError(err)) {
+        return { ok: false, aborted: true };
+      }
       console.warn("Bot status reload failed after action", err);
-      return false;
+      return { ok: false, aborted: false };
     }
     try {
       renderRowsAndCountersFromState();
     } catch (err) {
       console.warn("Bot status fallback render failed after action", err);
     }
-    return false;
+    return { ok: false, aborted: false };
   }
 
-  function isAbortBoilerplate(err) {
-    const message = String(err?.message || "").toLowerCase();
-    return err?.name === "AbortError" || message.includes("signal is aborted") || message.includes("aborterror");
+  function isAbortLikeError(err) {
+    if (!err) return false;
+    const name = String(err.name || "").toLowerCase();
+    const message = String(err.message || err || "").toLowerCase();
+    return (
+      name === "aborterror" ||
+      message.includes("signal is aborted") ||
+      message.includes("signal is aborted without reason") ||
+      message.includes("the operation was aborted") ||
+      message.includes("aborterror") ||
+      (typeof DOMException !== "undefined" && err instanceof DOMException && name.includes("abort"))
+    );
+  }
+
+  function normalizeDashboardError(err, fallback = "Request failed.") {
+    if (isAbortLikeError(err)) return "";
+    const message = String(err?.message || err || "").trim();
+    return message || fallback;
   }
 
   async function runBotDebugProbe(creatorId, platform, sessionId = "", target = "") {
@@ -2734,6 +2764,7 @@
     ui.debugOpen = true;
     ui.debugProbePending = true;
     ui.debugError = "";
+    ui.debugNotice = "";
     renderRowsAndCountersFromState();
     const probeKey = `${normalizePlatformKey(platform)}:${creatorId}:${sessionId || ""}`;
     state.probeAbortControllers[probeKey]?.abort();
@@ -2761,18 +2792,31 @@
       }
       ui.debugPayload = payload;
       ui.debugError = "";
+      ui.debugNotice = "";
       ui.debugProbePending = false;
       renderRowsAndCountersFromState();
-      void reloadBotsSafely().catch((err) => {
-        if (isAbortBoilerplate(err) && ui.debugPayload) return;
+      void reloadBotsSafely().then((result) => {
+        if (result?.aborted && ui.debugPayload) {
+          ui.debugNotice = "Background refresh cancelled; probe result preserved.";
+          renderRowsAndCountersFromState();
+        }
+      }).catch((err) => {
+        if (isAbortLikeError(err) && ui.debugPayload) {
+          ui.debugNotice = "Background refresh cancelled; probe result preserved.";
+          renderRowsAndCountersFromState();
+          return;
+        }
         console.warn("Bot status reload failed after probe", err);
       });
     } catch (err) {
-      if (isAbortBoilerplate(err) && ui.debugPayload) {
+      if (isAbortLikeError(err) && ui.debugPayload) {
         ui.debugError = "";
+        ui.debugNotice = "Background refresh cancelled; probe result preserved.";
         return;
       }
-      ui.debugError = isAbortBoilerplate(err) ? "Debug probe was cancelled." : err?.message ? String(err.message) : "Debug probe failed.";
+      if (!isAbortLikeError(err)) {
+        ui.debugError = normalizeDashboardError(err, "Debug probe failed.");
+      }
     } finally {
       if (state.probeAbortControllers[probeKey] === controller) {
         delete state.probeAbortControllers[probeKey];

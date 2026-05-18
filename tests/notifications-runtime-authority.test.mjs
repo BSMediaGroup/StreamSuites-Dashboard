@@ -1051,8 +1051,11 @@ test("bots view exposes per-instance debug endpoint and correlation-aware errors
   assert.match(botsJs, /subscription_endpoint_path/);
   assert.match(botsJs, /runtimeControlLabel/);
   assert.match(botsJs, /diagnostic only/);
-  assert.match(botsJs, /ui\.debugPayload = payload;\s*ui\.debugError = "";\s*ui\.debugProbePending = false;\s*renderRowsAndCountersFromState\(\);\s*void reloadBotsSafely\(\)\.catch/s);
-  assert.match(botsJs, /isAbortBoilerplate\(err\) && ui\.debugPayload/);
+  assert.match(botsJs, /ui\.debugPayload = payload;\s*ui\.debugError = "";\s*ui\.debugNotice = "";\s*ui\.debugProbePending = false;\s*renderRowsAndCountersFromState\(\);\s*void reloadBotsSafely\(\)\.then/s);
+  assert.match(botsJs, /isAbortLikeError\(err\) && ui\.debugPayload/);
+  assert.match(botsJs, /Background refresh cancelled; probe result preserved\./);
+  assert.match(botsJs, /normalizeDashboardError/);
+  assert.doesNotMatch(botsJs, /Debug probe was cancelled\./);
   assert.match(botsJs, /probeAbortControllers/);
   assert.match(botsJs, /subscription_request_body_redacted/);
   assert.match(botsJs, /subscription_auth_mode/);
