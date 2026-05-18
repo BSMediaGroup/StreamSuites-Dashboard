@@ -27,7 +27,8 @@
   const IMAGE_EXTENSION_PATTERN = /\.(bmp|gif|jpe?g|png|svg|webp)(?:[?#].*)?$/i;
   const IDENTITY_PAGE_SIZE = 10;
   const EVENT_PAGE_SIZE = 8;
-  const ITEM_PAGE_SIZE = 6;
+  const DEFAULT_ITEM_PAGE_SIZE = 20;
+  const ITEM_PAGE_SIZE_OPTIONS = [5, 10, 20, 50, 100];
 
   const state = {
     identities: [],
@@ -46,6 +47,7 @@
     economyEventPage: 1,
     inventoryEventPage: 1,
     itemPage: 1,
+    itemPageSize: DEFAULT_ITEM_PAGE_SIZE,
     itemEditorCode: "",
     assetCatalog: [],
     assetFiles: [],
@@ -209,6 +211,27 @@
           <button class="ss-btn ss-btn-secondary" type="button" data-economy-page="${escapeHtml(kind)}" data-page="${pageInfo.page - 1}" ${pageInfo.page <= 1 ? "disabled" : ""}>Previous</button>
           <button class="ss-btn ss-btn-secondary" type="button" data-economy-page="${escapeHtml(kind)}" data-page="${pageInfo.page + 1}" ${pageInfo.page >= pageInfo.totalPages ? "disabled" : ""}>Next</button>
         </div>
+      </div>
+    `;
+  }
+
+  function itemPageSizeOptions() {
+    return ITEM_PAGE_SIZE_OPTIONS.map((size) => `<option value="${size}" ${state.itemPageSize === size ? "selected" : ""}>${size}</option>`).join("");
+  }
+
+  function renderItemDefinitionsToolbar(pageInfo) {
+    const first = pageInfo.totalItems ? ((pageInfo.page - 1) * state.itemPageSize) + 1 : 0;
+    const last = Math.min(pageInfo.totalItems, pageInfo.page * state.itemPageSize);
+    return `
+      <div class="ss-economy-item-list-toolbar">
+        <div>
+          <strong>Inventory item definitions</strong>
+          <span class="muted">Showing ${formatNumber(first)}-${formatNumber(last)} of ${formatNumber(pageInfo.totalItems)}</span>
+        </div>
+        <label class="ss-economy-item-page-size">
+          Rows per page
+          <select id="economy-item-page-size">${itemPageSizeOptions()}</select>
+        </label>
       </div>
     `;
   }
@@ -459,6 +482,11 @@
     `;
   }
 
+  function renderAssetSourceTab(mode, label) {
+    const active = state.assetPicker.mode === mode;
+    return `<button class="ss-economy-asset-tab${active ? " is-active" : ""}" type="button" role="tab" aria-selected="${active ? "true" : "false"}" data-asset-mode="${escapeHtml(mode)}">${escapeHtml(label)}</button>`;
+  }
+
   function readAssetDefinitionDraft(prefix = "economy-asset-definition") {
     return {
       label: text($(`${prefix}-label`)?.value),
@@ -503,6 +531,10 @@
       : state.assetPicker.mode === "upload"
         ? state.assetUploadPreviewUrl || selectedPath
         : selectedPath || selectedAsset?.path || "";
+    const useValue = state.assetPicker.mode === "custom"
+      ? normalizeItemIconPath(customUrl)
+      : normalizeItemIconPath(selectedPath);
+    const canUseAsset = Boolean(useValue) && (state.assetPicker.mode !== "custom" || isLikelyImageUrl(customUrl));
     const unresolved = state.unresolvedAssets.filter((item) => {
       if (!query) return true;
       return `${item.filename} ${item.path} ${item.extension}`.toLowerCase().includes(query);
@@ -518,15 +550,16 @@
         <header class="ss-economy-asset-head">
           <div>
             <span class="ss-subtitle">Item Icon</span>
-            <h3 id="economy-asset-picker-title">Choose asset</h3>
+            <h3 id="economy-asset-picker-title">Choose item asset</h3>
+            <p>Pick a bundled game image, define a missing catalog entry, upload through Runtime/Auth when available, or use an external image URL.</p>
           </div>
-          <button class="ss-icon-btn ss-economy-asset-close" type="button" aria-label="Close asset picker" data-asset-close>&times;</button>
+          <button class="ss-icon-btn ss-economy-asset-close" type="button" aria-label="Close asset selector" data-asset-close><span aria-hidden="true"></span></button>
         </header>
         <div class="ss-economy-asset-tabs" role="tablist" aria-label="Asset source">
-          <button class="ss-btn ${state.assetPicker.mode === "bundled" ? "" : "ss-btn-secondary"}" type="button" data-asset-mode="bundled">Choose existing asset</button>
-          <button class="ss-btn ${state.assetPicker.mode === "define" ? "" : "ss-btn-secondary"}" type="button" data-asset-mode="define">Define/upload new asset</button>
-          <button class="ss-btn ${state.assetPicker.mode === "reconcile" ? "" : "ss-btn-secondary"}" type="button" data-asset-mode="reconcile">Reconcile existing files</button>
-          <button class="ss-btn ${state.assetPicker.mode === "custom" ? "" : "ss-btn-secondary"}" type="button" data-asset-mode="custom">External URL</button>
+          ${renderAssetSourceTab("bundled", "Choose existing asset")}
+          ${renderAssetSourceTab("define", "Define/upload new asset")}
+          ${renderAssetSourceTab("reconcile", "Reconcile existing files")}
+          ${renderAssetSourceTab("custom", "External URL")}
         </div>
         ${
           state.assetPicker.mode === "custom"
@@ -549,7 +582,7 @@
                       unresolved.length
                         ? unresolved.map((item) => `
                             <article class="ss-economy-asset-reconcile-row">
-                              <img src="${escapeHtml(assetPath(item.path))}" alt="" loading="lazy" decoding="async" />
+                              <span class="ss-economy-asset-thumb"><img src="${escapeHtml(assetPath(item.path))}" alt="" loading="lazy" decoding="async" onerror="this.closest('.ss-economy-asset-thumb')?.classList.add('is-unavailable'); this.remove();" /></span>
                               <div>
                                 <strong>${escapeHtml(item.filename)}</strong>
                                 <span class="muted">${escapeHtml(item.extension.toUpperCase())} · ${escapeHtml(item.path)}</span>
@@ -567,7 +600,7 @@
                   assets.length
                     ? assets.map((item) => `
                         <button class="ss-economy-asset-tile${item.path === selectedPath ? " is-selected" : ""}" type="button" data-asset-path="${escapeHtml(item.path)}">
-                          <img src="${escapeHtml(assetPath(item.path))}" alt="" loading="lazy" decoding="async" />
+                          <span class="ss-economy-asset-thumb"><img src="${escapeHtml(assetPath(item.path))}" alt="" loading="lazy" decoding="async" onerror="this.closest('.ss-economy-asset-thumb')?.classList.add('is-unavailable'); this.remove();" /></span>
                           <strong>${escapeHtml(item.label)}</strong>
                           <span>${escapeHtml(item.definition_complete ? item.path : `${item.path} · needs definition`)}</span>
                         </button>
@@ -577,13 +610,13 @@
                </div>`
         }
         <aside class="ss-economy-asset-preview">
-          <strong>Preview</strong>
+          <strong>Selected preview</strong>
           <div class="ss-economy-asset-preview-frame">${renderIconPreview(previewPath)}</div>
           <code>${escapeHtml(normalizeItemIconPath(previewPath) || "No icon configured")}</code>
         </aside>
         <footer class="ss-economy-asset-actions">
           <button class="ss-btn ss-btn-secondary" type="button" data-asset-close>Cancel</button>
-          <button class="ss-btn" type="button" data-asset-use ${state.assetPicker.mode === "custom" && customUrl && !isLikelyImageUrl(customUrl) ? "disabled" : ""}>Use selected asset</button>
+          <button class="ss-btn" type="button" data-asset-use ${canUseAsset ? "" : "disabled"}>Use selected asset</button>
         </footer>
       </div>
     `;
@@ -865,9 +898,9 @@
   function renderItemDefinitions() {
     if (!el.itemDefinitions) return;
     el.itemCount.textContent = formatNumber(state.itemDefinitions.length);
-    const pageInfo = pageSlice(state.itemDefinitions, state.itemPage, ITEM_PAGE_SIZE);
+    const pageInfo = pageSlice(state.itemDefinitions, state.itemPage, state.itemPageSize);
     state.itemPage = pageInfo.page;
-    el.itemDefinitions.innerHTML = pageInfo.items
+    const itemsMarkup = pageInfo.items
       .map((item) => {
         const metadata = item.metadata && typeof item.metadata === "object" ? item.metadata : {};
         const notes = text(metadata.notes || metadata.admin_notes || metadata.description || "");
@@ -921,22 +954,44 @@
           </article>
         `;
       })
-      .join("") + renderPager("items", pageInfo, "Item page");
+      .join("");
+    el.itemDefinitions.innerHTML = `
+      ${renderItemDefinitionsToolbar(pageInfo)}
+      ${itemsMarkup || `<div class="ss-empty ss-empty-compact">No item definitions were returned.</div>`}
+      ${renderPager("items", pageInfo, "Item page")}
+    `;
   }
 
   function renderItemCreateForm() {
     if (!el.itemCreateForm) return;
     el.itemCreateForm.innerHTML = `
-      <div class="ss-economy-action-grid ss-economy-item-create-grid">
-        <label>Item code<input id="economy-item-create-code" type="text" placeholder="category.item_name" /></label>
-        <label>Label<input id="economy-item-create-label" type="text" placeholder="Display label" /></label>
-        <label>Category<select id="economy-item-create-category">${presetOptions(state.categoryPresets)}</select></label>
-        <label>Rarity<select id="economy-item-create-rarity">${presetOptions(state.rarityPresets)}</select></label>
-        <label>Enabled<select id="economy-item-create-enabled"><option value="true">Enabled</option><option value="false">Disabled</option></select></label>
-        ${renderIconPathControl({ create: true })}
-        <label class="ss-economy-wide">Metadata notes<textarea id="economy-item-create-notes" rows="3"></textarea></label>
-        <label class="ss-economy-wide">Reason<input id="economy-item-create-reason" type="text" placeholder="Required creation note" /></label>
-        <button id="economy-item-create-submit" class="ss-btn" type="button">Create item definition</button>
+      <div class="ss-economy-item-create-shell">
+        <header class="ss-economy-item-create-head">
+          <div>
+            <span class="ss-subtitle">Create definition</span>
+            <h3>New inventory item</h3>
+          </div>
+          <p class="muted">Definition metadata is saved through Runtime/Auth. Use a stable item code, then pick bundled art or paste a supported image path.</p>
+        </header>
+        <div class="ss-economy-action-grid ss-economy-item-create-grid">
+          <section class="ss-economy-item-create-card">
+            <label>Item code<input id="economy-item-create-code" type="text" placeholder="category.item_name" /></label>
+            <label>Label<input id="economy-item-create-label" type="text" placeholder="Display label" /></label>
+            <label>Category<select id="economy-item-create-category">${presetOptions(state.categoryPresets)}</select></label>
+            <label>Rarity<select id="economy-item-create-rarity">${presetOptions(state.rarityPresets)}</select></label>
+            <label>Enabled<select id="economy-item-create-enabled"><option value="true">Enabled</option><option value="false">Disabled</option></select></label>
+          </section>
+          <section class="ss-economy-item-create-card ss-economy-item-create-card--icon">
+            ${renderIconPathControl({ create: true })}
+          </section>
+          <section class="ss-economy-item-create-card ss-economy-item-create-card--notes">
+            <label class="ss-economy-wide">Metadata notes<textarea id="economy-item-create-notes" rows="3"></textarea></label>
+            <label class="ss-economy-wide">Reason<input id="economy-item-create-reason" type="text" placeholder="Required creation note" /></label>
+          </section>
+          <footer class="ss-economy-item-create-actions">
+            <button id="economy-item-create-submit" class="ss-btn" type="button">Create item definition</button>
+          </footer>
+        </div>
       </div>
     `;
   }
@@ -1609,6 +1664,12 @@
     document.addEventListener("change", (event) => {
       if (event.target.closest?.("#economy-exchange-actions")) {
         syncExchangePreview();
+      }
+      if (event.target.matches?.("#economy-item-page-size")) {
+        const nextSize = Number(event.target.value);
+        state.itemPageSize = ITEM_PAGE_SIZE_OPTIONS.includes(nextSize) ? nextSize : DEFAULT_ITEM_PAGE_SIZE;
+        state.itemPage = 1;
+        renderItemDefinitions();
       }
     });
     document.addEventListener("keydown", (event) => {
