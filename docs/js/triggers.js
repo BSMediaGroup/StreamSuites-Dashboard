@@ -3,12 +3,17 @@
 
   const state = {
     registry: { triggers: [], games: [], capabilities: [], assets: [], schemas: [], summary: null },
+    editor: null,
     filters: { module: "", status: "", platform: "", search: "" },
     customItems: [],
     customFilters: { creator: "", status: "", platform: "", search: "" },
     previewResult: null,
     abortController: null,
   };
+
+  const ADMIN_TRIGGER_EDITOR_ENDPOINT = "/api/admin/livechat/trigger-editor";
+  const ADMIN_TRIGGER_EDITOR_DRY_RUN_ENDPOINT = "/api/admin/livechat/trigger-editor/dry-run";
+  const ADMIN_TRIGGER_EDITOR_VALIDATE_ENDPOINT = "/api/admin/livechat/trigger-editor/validate";
 
   const el = {};
 
@@ -167,27 +172,36 @@
     el.empty?.classList.add("hidden");
     el.tableBody.innerHTML = items.map((item) => {
       const platforms = Array.isArray(item.eligible_platforms) ? item.eligible_platforms : [];
+      const validation = item.validation || {};
+      const errors = Array.isArray(validation.errors) ? validation.errors : [];
+      const warnings = Array.isArray(validation.warnings) ? validation.warnings : [];
+      const permission = item.permission || {};
       return `
         <tr>
           <td>
-            <strong>${escapeHtml(item.id)}</strong>
-            <div class="muted">${escapeHtml(`${item.prefix || ""}${item.trigger || ""}`)}</div>
+            <strong>${escapeHtml(item.command_text || item.id)}</strong>
+            <div class="muted">${escapeHtml(item.id || item.trigger_id || "-")}</div>
             <div class="muted">${escapeHtml(Array.isArray(item.aliases) && item.aliases.length ? `Aliases: ${item.aliases.join(", ")}` : "Aliases: none")}</div>
           </td>
-          <td>${escapeHtml(item.module || "-")}</td>
-          <td><span class="ss-badge ${item.status === "active" ? "ss-badge-success" : "ss-badge-warning"}">${escapeHtml(item.status || "planned")}</span></td>
+          <td>
+            <div>${escapeHtml(item.module || "-")}</div>
+            <div class="muted">${escapeHtml(item.source || "-")}${item.read_only ? " / read-only" : ""}</div>
+          </td>
+          <td>
+            <span class="ss-badge ${item.enabled && item.status === "active" ? "ss-badge-success" : "ss-badge-warning"}">${escapeHtml(item.status || "planned")}</span>
+            ${item.module_status ? `<div class="muted">${escapeHtml(item.module_status)}</div>` : ""}
+          </td>
           <td>${escapeHtml(item.type || "-")}</td>
           <td>${escapeHtml(platforms.map(humanizePlatform).join(", "))}</td>
           <td>
             <div>${escapeHtml(item.response_mode || "-")}</div>
-            <div class="muted">${escapeHtml(item.cooldown || "-")}</div>
+            <div class="muted">${escapeHtml(item.cooldown_seconds ? `${item.cooldown_seconds}s` : item.cooldown?.label || "-")}</div>
+            <div class="muted">${escapeHtml(item.response_preview_text || "")}</div>
           </td>
           <td>
-            <div>Actor: ${escapeHtml(item.actor_resolution || "-")}</div>
-            <div>Mention: ${escapeHtml(item.mention_behavior || "-")}</div>
-            <div>Identity: ${escapeHtml(item.identity_required || "-")}</div>
-            <div>Profile: ${escapeHtml(item.profile_binding || "-")}</div>
-            <div>Role gate: ${escapeHtml(item.role_gate_source || "-")}</div>
+            <div>Access: ${escapeHtml(permission.access || item.access || "everyone")}</div>
+            <div>Role gate: ${escapeHtml(permission.role_gate_source || item.role_gate_source || "-")}</div>
+            <div>Validation: ${escapeHtml(errors.length ? errors.map((err) => err.code || err).join(", ") : warnings.length ? warnings.map((warn) => warn.code || warn).join(", ") : "clear")}</div>
           </td>
         </tr>
       `;
@@ -196,15 +210,36 @@
 
   function renderGameRows() {
     if (!(el.games instanceof HTMLElement)) return;
-    const rows = state.registry.games.slice(0, 12).map((item) => `
+    const planned = state.editor?.planned_module_triggers || state.registry.games || [];
+    const rows = planned.slice(0, 18).map((item) => `
       <li>
-        <strong>${escapeHtml(item.id)}</strong>
-        <span> - ${escapeHtml(item.status || "planned")} - ${escapeHtml(item.trigger || "")}</span>
+        <strong>${escapeHtml(item.command_text || item.id)}</strong>
+        <span> - ${escapeHtml(item.module || "planned")} - ${escapeHtml(item.module_status || item.status || "unavailable")}</span>
       </li>
     `);
     el.games.innerHTML = rows.length
       ? rows.join("")
-      : "<li>No game registry rows were returned by runtime/Auth.</li>";
+      : "<li>No planned module rows were returned by runtime/Auth.</li>";
+  }
+
+  function renderEffectiveCommandList() {
+    if (!(el.effectiveList instanceof HTMLElement)) return;
+    const rows = Array.isArray(state.editor?.effective_triggers) ? state.editor.effective_triggers : [];
+    const platform = state.filters.platform || "kick";
+    const commands = rows
+      .filter((item) => {
+        const platforms = Array.isArray(item.eligible_platforms) ? item.eligible_platforms.map((value) => String(value).toLowerCase()) : [];
+        return !platform || platforms.includes(platform) || item.source === "planned";
+      })
+      .slice(0, 80);
+    el.effectiveList.innerHTML = commands.length
+      ? commands.map((item) => `
+        <div>
+          <strong>${escapeHtml(item.command_text || item.id)}</strong>
+          <span> - ${escapeHtml(item.source || "runtime")} - ${escapeHtml(item.enabled ? "enabled" : item.module_status || item.status || "disabled")}${item.read_only ? " - read-only" : ""}</span>
+        </div>
+      `).join("")
+      : "No effective commands were returned for this creator.";
   }
 
   function customRowSearchText(item) {
@@ -300,18 +335,21 @@
   function renderPreviewTriggerOptions() {
     if (!(el.previewTrigger instanceof HTMLSelectElement)) return;
     const selected = el.previewTrigger.value;
-    el.previewTrigger.innerHTML = `<option value="">Match simulated message</option>${state.customItems.map((item) => {
-      const id = item.id || item.custom_trigger_id || "";
-      return `<option value="${escapeHtml(id)}" data-creator-id="${escapeHtml(item.creator_id || item.creator_account_id || "")}">${escapeHtml(item.command_text || id)} - ${escapeHtml(item.owner_user_code || item.creator_id || "")}</option>`;
+    const rows = Array.isArray(state.editor?.effective_triggers) ? state.editor.effective_triggers : state.customItems;
+    el.previewTrigger.innerHTML = `<option value="">Match simulated message</option>${rows.map((item) => {
+      const id = item.id || item.custom_trigger_id || item.trigger_id || "";
+      const command = item.command_text || `${item.prefix || ""}${item.trigger || ""}`;
+      return `<option value="${escapeHtml(id)}" data-command="${escapeHtml(command)}" data-creator-id="${escapeHtml(item.creator_id || item.creator_account_id || state.editor?.creator?.account_id || "")}">${escapeHtml(command || id)} - ${escapeHtml(item.source || item.owner_user_code || "runtime")}</option>`;
     }).join("")}`;
-    if (selected && state.customItems.some((item) => String(item.id || item.custom_trigger_id || "") === selected)) {
+    if (selected && rows.some((item) => String(item.id || item.custom_trigger_id || item.trigger_id || "") === selected)) {
       el.previewTrigger.value = selected;
     }
   }
 
   function selectedPreviewTrigger() {
     const id = el.previewTrigger?.value || "";
-    return state.customItems.find((item) => String(item.id || item.custom_trigger_id || "") === id) || null;
+    const rows = Array.isArray(state.editor?.effective_triggers) ? state.editor.effective_triggers : state.customItems;
+    return rows.find((item) => String(item.id || item.custom_trigger_id || item.trigger_id || "") === id) || null;
   }
 
   function renderPreviewResult(payload) {
@@ -323,22 +361,25 @@
     const pages = Array.isArray(payload.pages) ? payload.pages : [];
     const warnings = Array.isArray(payload.validation_warnings) ? payload.validation_warnings : [];
     const variables = payload.variables_used && typeof payload.variables_used === "object" ? payload.variables_used : {};
+    const matched = payload.matched_trigger || {};
+    const diagnostics = payload.diagnostics || {};
     el.previewResult.innerHTML = `
       <div class="ss-grid ss-grid-3">
         <article class="ss-stat-card"><div class="muted">Dry run</div><strong>${escapeHtml(String(payload.dry_run))}</strong><span class="muted">posted: ${escapeHtml(String(payload.posted))}</span></article>
-        <article class="ss-stat-card"><div class="muted">Would post</div><strong>${escapeHtml(String(payload.would_post))}</strong><span class="muted">${escapeHtml(payload.blocked_reason || "not blocked")}</span></article>
-        <article class="ss-stat-card"><div class="muted">Match</div><strong>${escapeHtml(payload.trigger_id || "none")}</strong><span class="muted">${escapeHtml(payload.match_reason || "no_match")}</span></article>
+        <article class="ss-stat-card"><div class="muted">Would dispatch</div><strong>${escapeHtml(String(payload.action_summary?.would_dispatch || payload.would_post || false))}</strong><span class="muted">${escapeHtml(payload.no_match_reason || payload.blocked_reason || diagnostics.final_outcome || "not blocked")}</span></article>
+        <article class="ss-stat-card"><div class="muted">Match</div><strong>${escapeHtml(matched.command_text || payload.trigger_id || "none")}</strong><span class="muted">${escapeHtml(diagnostics.match_type || payload.match_reason || "no_match")}</span></article>
       </div>
       <table class="ss-table ss-table-compact" style="margin-top:16px;">
         <tbody>
-          <tr><th>Creator</th><td>${escapeHtml(payload.creator_id || selectedPreviewTrigger()?.creator_id || "-")}</td></tr>
-          <tr><th>Custom trigger ID</th><td>${escapeHtml(payload.custom_trigger_id || "-")}</td></tr>
-          <tr><th>Platform max chars</th><td>${escapeHtml(payload.platform || "-")} / ${escapeHtml(payload.platform_max_chars || "-")}</td></tr>
-          <tr><th>Response mode</th><td>${escapeHtml(payload.response_mode || "-")}</td></tr>
+          <tr><th>Creator</th><td>${escapeHtml(state.editor?.creator?.account_id || payload.creator_id || selectedPreviewTrigger()?.creator_id || "-")}</td></tr>
+          <tr><th>Trigger ID</th><td>${escapeHtml(matched.id || payload.custom_trigger_id || "-")}</td></tr>
+          <tr><th>Permission</th><td>${escapeHtml(JSON.stringify(payload.permission || {}))}</td></tr>
+          <tr><th>Cooldown</th><td>${escapeHtml(JSON.stringify(payload.cooldown || {}))}</td></tr>
+          <tr><th>Response mode</th><td>${escapeHtml(matched.response_mode || payload.response_mode || "-")}</td></tr>
           <tr><th>Variables used</th><td>${escapeHtml(JSON.stringify(variables))}</td></tr>
           <tr><th>Actor</th><td>${escapeHtml(JSON.stringify(payload.actor || {}))}</td></tr>
           <tr><th>Warnings</th><td>${escapeHtml(warnings.join(", ") || "none")}</td></tr>
-          <tr><th>Rendered text</th><td>${escapeHtml(payload.rendered_text || "")}</td></tr>
+          <tr><th>Rendered text</th><td>${escapeHtml(payload.generated_reply || payload.rendered_text || "")}</td></tr>
         </tbody>
       </table>
       <div style="margin-top:16px;">
@@ -350,12 +391,14 @@
 
   async function runPreview() {
     const selected = selectedPreviewTrigger();
-    const creatorId = selected?.creator_id || selected?.creator_account_id || "";
+    const creatorId = selected?.creator_id || selected?.creator_account_id || state.editor?.creator?.account_id || "";
+    const selectedCommand = selected?.command_text || "";
     const payload = {
       creator_id: creatorId,
-      custom_trigger_id: el.previewTrigger?.value || undefined,
+      trigger_id: selected?.id || selected?.trigger_id || undefined,
       platform: el.previewPlatform?.value || "rumble",
-      message: el.previewMessage?.value || "",
+      message: el.previewMessage?.value || selectedCommand || "",
+      sender_role: "viewer",
       actor: {
         display_name: el.previewDisplay?.value || "Preview Viewer",
         handle: el.previewHandle?.value || "previewviewer",
@@ -367,7 +410,20 @@
     if (!payload.creator_id && state.customItems.length) {
       payload.creator_id = state.customItems[0].creator_id || state.customItems[0].creator_account_id || "";
     }
-    state.previewResult = await requestJson("/api/admin/livechat/custom-triggers/preview", {
+    await requestJson(ADMIN_TRIGGER_EDITOR_VALIDATE_ENDPOINT, {
+      method: "POST",
+      body: JSON.stringify({
+        creator_id: creatorId,
+        source: selected?.source || "custom",
+        command_text: selectedCommand || payload.message,
+        aliases: selected?.aliases || [],
+        eligible_platforms: selected?.eligible_platforms || [payload.platform],
+        response_template: selected?.response_preview_text || "",
+        read_only: Boolean(selected?.read_only),
+      }),
+      headers: { "Content-Type": "application/json" },
+    });
+    state.previewResult = await requestJson(ADMIN_TRIGGER_EDITOR_DRY_RUN_ENDPOINT, {
       method: "POST",
       body: JSON.stringify(payload),
       headers: { "Content-Type": "application/json" },
@@ -381,6 +437,7 @@
     renderRows();
     renderGameRows();
     renderCustomRows();
+    renderEffectiveCommandList();
     if (el.runtimeState instanceof HTMLElement) {
       const pilled = state.registry.capabilities.find((item) => item.platform === "pilled");
       el.runtimeState.textContent = pilled?.enabled === false
@@ -393,24 +450,26 @@
     setBanner("");
     if (el.runtimeState instanceof HTMLElement) el.runtimeState.textContent = "Loading authoritative runtime registry...";
     const signal = state.abortController?.signal;
-    const [summary, triggers, games, capabilities, assets, schemas, customTriggers] = await Promise.all([
-      requestJson("/api/livechat/registry-summary", { signal }),
-      requestJson("/api/livechat/triggers", { signal }),
-      requestJson("/api/livechat/games", { signal }),
-      requestJson("/api/livechat/capabilities", { signal }),
-      requestJson("/api/livechat/game-assets", { signal }),
-      requestJson("/api/livechat/game-schemas", { signal }),
-      requestJson("/api/admin/livechat/custom-triggers", { signal }),
-    ]);
+    const editor = await requestJson(ADMIN_TRIGGER_EDITOR_ENDPOINT, { signal });
+    state.editor = editor;
     state.registry = {
-      summary,
-      triggers: Array.isArray(triggers.items) ? triggers.items : [],
-      games: Array.isArray(games.items) ? games.items : [],
-      capabilities: Array.isArray(capabilities.items) ? capabilities.items : [],
-      assets: Array.isArray(assets.items) ? assets.items : [],
-      schemas: Array.isArray(schemas.items) ? schemas.items : [],
+      summary: {
+        counts: {
+          trigger_count: Array.isArray(editor.effective_triggers) ? editor.effective_triggers.length : 0,
+          game_count: Array.isArray(editor.planned_module_triggers) ? editor.planned_module_triggers.filter((item) => String(item.module || "").toUpperCase() === "GAMES").length : 0,
+          asset_count: 0,
+        },
+        authority: editor.authority,
+        source: editor.source,
+        served_at: editor.generated_at,
+      },
+      triggers: Array.isArray(editor.effective_triggers) ? editor.effective_triggers : [],
+      games: Array.isArray(editor.planned_module_triggers) ? editor.planned_module_triggers : [],
+      capabilities: Array.isArray(editor.available_platforms) ? editor.available_platforms : [],
+      assets: [],
+      schemas: [],
     };
-    state.customItems = Array.isArray(customTriggers.items) ? customTriggers.items : [];
+    state.customItems = Array.isArray(editor.creator_custom_triggers) ? editor.creator_custom_triggers : [];
     renderAll();
   }
 
@@ -437,6 +496,7 @@
     el.banner = $("triggers-banner");
     el.runtimeState = $("triggers-runtime-state");
     el.summary = $("triggers-registry-summary");
+    el.effectiveList = $("triggers-effective-list");
     el.moduleFilter = $("triggers-module-filter");
     el.statusFilter = $("triggers-status-filter");
     el.platformFilter = $("triggers-platform-filter");
@@ -467,6 +527,7 @@
         state.filters.platform = el.platformFilter?.value || "";
         state.filters.search = el.search?.value || "";
         renderRows();
+        renderEffectiveCommandList();
       }, { signal });
     });
     [el.customCreatorFilter, el.customStatusFilter, el.customPlatformFilter, el.customSearch].forEach((control) => {
@@ -517,6 +578,7 @@
         state.abortController = null;
       }
       state.registry = { triggers: [], games: [], capabilities: [], assets: [], schemas: [], summary: null };
+      state.editor = null;
       state.customItems = [];
       state.previewResult = null;
     },

@@ -13,7 +13,7 @@
     <div class="ss-panel-header-main">
       <h2>Authoritative Runtime Registry</h2>
       <p class="muted" style="margin:6px 0 0;">
-        Hydrated from StreamSuites runtime/Auth livechat endpoints. This page is read-only and does not mutate trigger, game, transport, or creator configuration state.
+        Hydrated from the normalized StreamSuites runtime/Auth trigger editor contract. Definitions remain runtime-owned; Admin can inspect and use authority-backed custom trigger controls only where the contract allows it.
       </p>
     </div>
     <button id="btn-refresh-triggers" class="ss-btn ss-btn-secondary">Refresh from runtime/Auth</button>
@@ -27,16 +27,30 @@
 <section class="ss-panel">
   <header class="ss-panel-header">
     <div class="ss-panel-header-main">
+      <h2>Effective Command List</h2>
+      <p class="muted" style="margin:6px 0 0;">
+        Runtime/Auth merged view for the selected creator and platform. Built-in and system definitions are protected; planned modules are visible but unavailable.
+      </p>
+    </div>
+  </header>
+  <div class="ss-panel-body">
+    <div id="triggers-effective-list" class="ss-list muted">Loading effective command list...</div>
+  </div>
+</section>
+
+<section class="ss-panel">
+  <header class="ss-panel-header">
+    <div class="ss-panel-header-main">
       <h2>Custom Trigger Preview Diagnostics</h2>
       <p class="muted" style="margin:6px 0 0;">
-        Dry-run preview only. Runtime/Auth matches and renders the creator-owned config without sending live chat messages, invoking transport, or dispatching gameplay.
+        Dry-run preview only. Runtime/Auth matches the effective trigger list, validates the selected definition, and returns diagnostics without sending live chat messages, invoking transport, or dispatching gameplay.
       </p>
     </div>
   </header>
   <div class="ss-panel-body">
     <form id="triggers-preview-form" class="ss-form-row">
       <label>
-        <span>Custom trigger</span>
+        <span>Trigger</span>
         <select id="triggers-preview-trigger" class="ss-input">
           <option value="">Match simulated message</option>
         </select>
@@ -147,7 +161,7 @@
     <div class="ss-panel-header-main">
       <h2>Trigger Definitions</h2>
       <p class="muted" style="margin:6px 0 0;">
-        Registry rows expose command metadata, platform eligibility, response mode, cooldown, actor resolution, mention behavior, identity requirement, profile binding, and role gate source. They do not imply dispatch support.
+        Registry rows expose command metadata, platform eligibility, response mode, cooldown, permission requirements, validation state, response preview, and role gate source. They do not imply dispatch support.
       </p>
     </div>
   </header>
@@ -181,7 +195,7 @@
           <th>Type</th>
           <th>Platforms</th>
           <th>Response / Cooldown</th>
-          <th>Actor / Identity</th>
+          <th>Permission / Validation</th>
         </tr>
       </thead>
       <tbody id="triggers-table-body"></tbody>

@@ -2,6 +2,10 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Overhauled Admin trigger oversight to consume the normalized Runtime/Auth trigger editor contract instead of stitching together a local frontend schema. `docs/js/triggers.js` now hydrates from `/api/admin/livechat/trigger-editor`, renders effective built-in/system/custom/planned rows with read-only, source, module-status, permission, cooldown, validation, and safe response-preview metadata, and uses `/api/admin/livechat/trigger-editor/validate` plus `/api/admin/livechat/trigger-editor/dry-run` for preview diagnostics. Existing account-scoped custom trigger enable/delete authority remains on Runtime/Auth endpoints.
+- Updated `docs/views/triggers.html` with a compact effective command list panel and clearer Admin copy for protected built-in/system definitions, planned modules, and no-send dry-run behavior. Focused source tests now pin the editor endpoint, grouped/effective rendering, validation/dry-run wiring, staged module presentation, and continued absence of localStorage or runtime dispatch bypasses.
+- Human note: Admin trigger oversight should now show built-in/system/custom/planned commands in one runtime-authored editor view, preview `!bot`, and show `!clip` as future/module unavailable without implying clipping works.
+
 - Cleaned Admin Bots Kick webhook-mode debug rendering without redesigning the panel. `docs/js/bots.js` now labels optional runtime-control fallback as muted "Snapshot fallback active", treats `awaiting_first_webhook_event` as neutral pending instead of warning/error styling, and renders webhook health as official webhook mode, dispatch working, no-trigger-match, awaiting-first-event, or dispatch failed based on the Runtime/Auth debug payload. Copy Debug JSON and async Probe Now remain unchanged.
 - Human note: a working Kick webhook bot should no longer look blocked just because runtime control is unreachable or because the session is waiting for the first webhook event; after `!ping`, the drawer should say webhook trigger dispatch is working.
 
