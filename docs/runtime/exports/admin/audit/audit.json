@@ -1,12 +1,108 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-05-18T16:45:37.641108Z",
+  "exported_at": "2026-05-19T14:38:48.354440Z",
   "runtime": {
     "project": "StreamSuites™ Runtime",
     "version": "0.4.2-alpha",
-    "build": "2026.05.18+010"
+    "build": "2026.05.19+002"
   },
   "audit": [
+    {
+      "id": "998f8e37-1d06-4bb1-a1e2-5ed799dea9ba",
+      "ts": "2026-05-19T06:17:30Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "119c57c6-4abd-4752-a033-08ee2f5a4ffb",
+      "ts": "2026-05-19T06:17:29Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "c28917e5-b261-4eab-90b4-8753ea9a6a06",
+      "ts": "2026-05-19T06:17:29Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "7499199d-e752-41aa-86b3-147139c31d31",
+      "ts": "2026-05-18T16:51:38Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "173011d0-0df2-4a6d-974b-85a5d2981380",
+      "ts": "2026-05-18T16:51:37Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "432d9209-edb6-4b0d-8fd1-488632f77ab5",
+      "ts": "2026-05-18T16:51:37Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
     {
       "id": "b5467eed-6ba4-4df8-ac8c-23793cbf22fb",
       "ts": "2026-05-18T15:18:12Z",

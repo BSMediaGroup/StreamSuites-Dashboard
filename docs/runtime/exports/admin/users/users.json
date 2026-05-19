@@ -1,10 +1,10 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-05-18T16:45:37.214848Z",
+  "exported_at": "2026-05-19T14:38:47.929974Z",
   "runtime": {
     "project": "StreamSuites™ Runtime",
     "version": "0.4.2-alpha",
-    "build": "2026.05.18+010"
+    "build": "2026.05.19+002"
   },
   "users": [
     {
@@ -364,8 +364,8 @@
         }
       ],
       "created_at": "2026-03-28T18:35:44Z",
-      "last_login_at": "2026-05-18T15:18:11Z",
-      "updated_at": "2026-05-18T15:18:11Z"
+      "last_login_at": "2026-05-19T06:17:29Z",
+      "updated_at": "2026-05-19T06:17:30Z"
     },
     {
       "id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
@@ -454,8 +454,8 @@
         }
       ],
       "created_at": "2026-03-28T18:35:43Z",
-      "last_login_at": "2026-05-18T15:18:11Z",
-      "updated_at": "2026-05-18T15:18:11Z"
+      "last_login_at": "2026-05-19T06:17:29Z",
+      "updated_at": "2026-05-19T06:17:29Z"
     },
     {
       "id": "d61f5f01-a8e2-4f8c-8a7d-d6023652ae49",
@@ -534,7 +534,7 @@
       "providers": [],
       "created_at": "2026-03-27T14:51:44Z",
       "last_login_at": null,
-      "updated_at": "2026-05-18T15:18:12Z"
+      "updated_at": "2026-05-19T06:17:30Z"
     },
     {
       "id": "494098e5-1409-40ea-99a5-ec4a1b797da4",
@@ -639,12 +639,13 @@
         "findmehere_status_reason": "visible",
         "findmehere_profile_url": "https://findmehere.live/bsmediagroup",
         "findmehere_share_url": "https://findmehere.live/bsmediagroup",
-        "cover_image_url": "https://cdn.streamsuites.app/u/YR992ZS/cover/v2.webp",
-        "banner_image_url": "https://cdn.streamsuites.app/u/YR992ZS/cover/v2.webp",
+        "cover_image_url": "https://cdn.streamsuites.app/u/YR992ZS/cover/v4.webp",
+        "banner_image_url": "https://cdn.streamsuites.app/u/YR992ZS/cover/v4.webp",
         "background_image_url": "",
         "bio": "Administrator account for StreamSuites™ systems. For assistance, contact support@streamsuites.app. Main account: streamsuites.app/@DanielClancy",
         "social_links": {
           "discord": "https://discord.gg/rg7x363j5h",
+          "kick": "https://kick.com/streamsuites",
           "pilled": "https://pilled.net/streamsuites",
           "rumble": "https://rumble.com/streamsuites",
           "twitch": "https://twitch.tv/streamsuites",
@@ -671,8 +672,8 @@
       "public_surface_account_type": "creator_capable",
       "creator_capable": true,
       "viewer_only": false,
-      "cover_image_url": "https://cdn.streamsuites.app/u/YR992ZS/cover/v2.webp",
-      "banner_image_url": "https://cdn.streamsuites.app/u/YR992ZS/cover/v2.webp",
+      "cover_image_url": "https://cdn.streamsuites.app/u/YR992ZS/cover/v4.webp",
+      "banner_image_url": "https://cdn.streamsuites.app/u/YR992ZS/cover/v4.webp",
       "background_image_url": "",
       "user_code": "YR992ZS",
       "email": "admin@streamsuites.app",
@@ -711,8 +712,8 @@
         }
       ],
       "created_at": "2026-02-21T20:51:09Z",
-      "last_login_at": "2026-05-18T15:18:11Z",
-      "updated_at": "2026-05-18T15:18:11Z"
+      "last_login_at": "2026-05-19T06:17:29Z",
+      "updated_at": "2026-05-19T13:42:28Z"
     },
     {
       "id": "338edf81-9e24-4730-977a-c9972aecba4d",

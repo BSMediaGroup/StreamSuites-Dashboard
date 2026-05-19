@@ -1,7 +1,7 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-05-19T14:39:06.384552Z",
-  "server_generated_at": "2026-05-19T14:39:06.384552Z",
+  "generated_at": "2026-05-19T13:00:03.492699Z",
+  "server_generated_at": "2026-05-19T13:00:03.492699Z",
   "count": 4,
   "bots": [
     {
@@ -69,8 +69,8 @@
       "active_visible_reason": "auto_configured",
       "superseded_by": null,
       "configuration_state": "connected",
-      "last_heartbeat_at": "2026-05-19T14:38:49.499502Z",
-      "last_evaluated_at": "2026-05-19T14:38:49.499502Z",
+      "last_heartbeat_at": "2026-05-19T12:59:24.381937Z",
+      "last_evaluated_at": "2026-05-19T12:59:24.381937Z",
       "last_transition_at": null,
       "resolved_target": {
         "platform": "kick",
@@ -85,7 +85,7 @@
       "target_normalized": "danielclancy",
       "target_source": "manual_channel",
       "target_input": "danielclancy",
-      "target_last_changed_at": "1779198995",
+      "target_last_changed_at": "1779191880",
       "target_changed_by": "creator",
       "detection_attempted_at": null,
       "detection_status": null,
@@ -106,7 +106,7 @@
       "last_webhook_event_at": null,
       "last_chat_event_at": null,
       "uptime_seconds": 0,
-      "state_age_seconds": 16,
+      "state_age_seconds": 39,
       "is_stale": false,
       "stale_reason": null,
       "trace_available": true,
@@ -158,7 +158,7 @@
       "superseded_by": null,
       "configuration_state": "connected",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-05-19T14:38:36.203203Z",
+      "last_evaluated_at": "2026-05-19T12:59:40.855856Z",
       "last_transition_at": "2026-05-19T06:18:09.737382Z",
       "resolved_target": {
         "watch_url": null,
@@ -193,7 +193,7 @@
       "last_webhook_event_at": null,
       "last_chat_event_at": null,
       "uptime_seconds": 0,
-      "state_age_seconds": 30,
+      "state_age_seconds": 22,
       "is_stale": false,
       "stale_reason": null,
       "trace_available": false,
@@ -265,8 +265,8 @@
       "active_visible_reason": "auto_configured",
       "superseded_by": null,
       "configuration_state": "connected",
-      "last_heartbeat_at": "2026-05-19T14:38:49.499502Z",
-      "last_evaluated_at": "2026-05-19T14:38:49.499502Z",
+      "last_heartbeat_at": "2026-05-19T12:59:53.641745Z",
+      "last_evaluated_at": "2026-05-19T12:59:53.641745Z",
       "last_transition_at": null,
       "resolved_target": {
         "platform": "kick",
@@ -281,7 +281,7 @@
       "target_normalized": "streamsuites",
       "target_source": "manual_channel",
       "target_input": "streamsuites",
-      "target_last_changed_at": "1779198986",
+      "target_last_changed_at": "1779191872",
       "target_changed_by": "creator",
       "detection_attempted_at": null,
       "detection_status": null,
@@ -302,7 +302,7 @@
       "last_webhook_event_at": null,
       "last_chat_event_at": null,
       "uptime_seconds": 0,
-      "state_age_seconds": 16,
+      "state_age_seconds": 9,
       "is_stale": false,
       "stale_reason": null,
       "trace_available": true,
@@ -354,7 +354,7 @@
       "superseded_by": null,
       "configuration_state": "connected",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-05-19T14:38:36.203203Z",
+      "last_evaluated_at": "2026-05-19T12:59:40.855856Z",
       "last_transition_at": "2026-05-19T06:18:09.737382Z",
       "resolved_target": {
         "watch_url": null,
@@ -389,7 +389,7 @@
       "last_webhook_event_at": null,
       "last_chat_event_at": null,
       "uptime_seconds": 0,
-      "state_age_seconds": 30,
+      "state_age_seconds": 22,
       "is_stale": false,
       "stale_reason": null,
       "trace_available": false,
@@ -524,9 +524,9 @@
       },
       "hidden_placeholder_count": 0,
       "last_log": {
-        "timestamp": "2026-05-19T14:38:49.499502Z",
+        "timestamp": "2026-05-19T12:59:53.641745Z",
         "severity": "info",
-        "message": "[4TiOlvS] Kick webhook subscription is active; waiting for first webhook event."
+        "message": "[YR992ZS] Kick webhook subscription is active; waiting for first webhook event."
       }
     },
     {

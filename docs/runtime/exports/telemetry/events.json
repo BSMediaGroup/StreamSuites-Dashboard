@@ -1,29 +1,7 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-05-18T16:45:36.243256Z",
+  "generated_at": "2026-05-19T14:38:46.882989Z",
   "events": [
-    {
-      "timestamp": "2026-02-14T07:46:27Z",
-      "source": "auth",
-      "severity": "info",
-      "message": "Auth event: session_issued email=google user=user_code:7lPBEiA result=success",
-      "event_type": "session_issued",
-      "email_type": "google",
-      "user_identifier": "user_code:7lPBEiA",
-      "provider_message_id": null,
-      "result": "success"
-    },
-    {
-      "timestamp": "2026-02-14T07:50:47Z",
-      "source": "auth",
-      "severity": "info",
-      "message": "Auth event: token_invalidated user=user_code:7lPBEiA result=sent",
-      "event_type": "token_invalidated",
-      "email_type": null,
-      "user_identifier": "user_code:7lPBEiA",
-      "provider_message_id": null,
-      "result": "sent"
-    },
     {
       "timestamp": "2026-02-14T07:51:20Z",
       "source": "auth",
@@ -2192,7 +2170,29 @@
       "result": "success"
     },
     {
-      "timestamp": "2026-05-18T15:18:45.909190Z",
+      "timestamp": "2026-05-19T05:31:43Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=auth_debug_unlock result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "auth_debug_unlock",
+      "user_identifier": null,
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-05-19T05:32:14Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=auth_debug_unlock result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "auth_debug_unlock",
+      "user_identifier": null,
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-05-19T06:17:56.094014Z",
       "source": "system",
       "severity": "info",
       "message": "Runtime boot sequence started"
