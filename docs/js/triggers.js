@@ -18,6 +18,15 @@
   ];
 
   const CATEGORY_BY_KEY = Object.fromEntries(CATEGORY_DEFS.map((item) => [item.key, item]));
+  const PLATFORM_ICON_PATHS = Object.freeze({
+    kick: "/assets/icons/kick.svg",
+    rumble: "/assets/icons/rumble.svg",
+    youtube: "/assets/icons/youtube.svg",
+    twitch: "/assets/icons/twitch.svg",
+    pilled: "/assets/icons/pilled.svg",
+    discord: "/assets/icons/discord.svg",
+    streamsuites_unified: "/assets/icons/streamsuites.svg",
+  });
 
   const state = {
     editor: null,
@@ -210,6 +219,19 @@
     return normalized ? normalized.replace(/\b\w/g, (char) => char.toUpperCase()) : "Unknown";
   }
 
+  function normalizePlatformKey(platform) {
+    const normalized = String(platform || "").trim().toLowerCase();
+    if (normalized === "yt") return "youtube";
+    if (normalized === "streamsuite" || normalized === "streamsuites" || normalized === "streamsuite_unified") {
+      return "streamsuites_unified";
+    }
+    return normalized;
+  }
+
+  function platformIconPath(platform) {
+    return PLATFORM_ICON_PATHS[normalizePlatformKey(platform)] || "";
+  }
+
   function commandText(item) {
     return item.command_text || `${item.prefix || ""}${item.trigger || ""}` || item.id || item.trigger_id || "-";
   }
@@ -321,6 +343,19 @@
     return `<span class="ss-trigger-pill ${escapeHtml(className)}">${escapeHtml(label)}</span>`;
   }
 
+  function renderPlatformPill(platform) {
+    const iconPath = platformIconPath(platform);
+    const normalized = normalizePlatformKey(platform);
+    const label = humanizePlatform(normalized);
+    if (!iconPath) return renderMiniPill(label);
+    return `
+      <span class="ss-trigger-pill ss-trigger-pill-platform" data-trigger-platform="${escapeHtml(normalized)}">
+        <img class="ss-trigger-pill-icon" src="${escapeHtml(iconPath)}" alt="" aria-hidden="true" loading="lazy" decoding="async" />
+        <span>${escapeHtml(label)}</span>
+      </span>
+    `;
+  }
+
   function renderTriggerCard(item) {
     const platforms = platformList(item);
     const permission = item.permission || {};
@@ -350,7 +385,7 @@
         </div>
         <div class="ss-trigger-card-side">
           <div class="ss-trigger-chip-row">
-            ${platforms.length ? platforms.map((platform) => renderMiniPill(humanizePlatform(platform))).join("") : renderMiniPill("all platforms")}
+            ${platforms.length ? platforms.map((platform) => renderPlatformPill(platform)).join("") : renderMiniPill("all platforms")}
           </div>
           <dl>
             <div><dt>Access</dt><dd>${escapeHtml(permission.access || item.access || "everyone")}</dd></div>
@@ -512,7 +547,7 @@
               <span>Updated: ${escapeHtml(formatTimestamp(item.updated_at))}</span>
             </div>
             <p>${escapeHtml(item.response_template || item.response_preview_text || "Creator-owned runtime config.")}</p>
-            <div class="ss-trigger-chip-row">${platformList(item).map((platform) => renderMiniPill(humanizePlatform(platform))).join("")}</div>
+            <div class="ss-trigger-chip-row">${platformList(item).map((platform) => renderPlatformPill(platform)).join("")}</div>
           </div>
           <div class="ss-trigger-card-actions">
             ${canMutate ? `

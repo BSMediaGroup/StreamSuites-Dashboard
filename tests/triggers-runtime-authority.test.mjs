@@ -65,6 +65,15 @@ test("admin trigger oversight exposes grouped active and planned runtime metadat
   assert.match(triggersJs, /renderEffectiveCommandList/);
   assert.match(triggersJs, /renderValidationOutput/);
   assert.match(triggersJs, /renderGameRows/);
+  assert.match(triggersJs, /PLATFORM_ICON_PATHS/);
+  assert.match(triggersJs, /renderPlatformPill/);
+  assert.match(triggersJs, /\/assets\/icons\/kick\.svg/);
+  assert.match(triggersJs, /\/assets\/icons\/youtube\.svg/);
+  assert.match(triggersJs, /\/assets\/icons\/rumble\.svg/);
+  assert.match(triggersJs, /\/assets\/icons\/twitch\.svg/);
+  assert.match(triggersJs, /\/assets\/icons\/pilled\.svg/);
+  assert.match(triggersJs, /\/assets\/icons\/discord\.svg/);
+  assert.match(triggersJs, /aria-hidden="true"/);
   assert.match(triggersJs, /read_only/);
   assert.match(triggersJs, /Total effective triggers/);
   assert.match(triggersJs, /Active triggers/);
@@ -79,6 +88,10 @@ test("admin trigger oversight exposes grouped active and planned runtime metadat
   assert.match(componentsCss, /grid-template-columns:\s*minmax\(620px,\s*1fr\)\s*minmax\(430px,\s*0\.52fr\)/);
   assert.match(componentsCss, /\.ss-trigger-effective-main/);
   assert.match(componentsCss, /\.ss-trigger-summary-strip/);
+  assert.match(componentsCss, /\.ss-trigger-pill-platform/);
+  assert.match(componentsCss, /\.ss-trigger-pill-icon/);
+  assert.match(componentsCss, /width:\s*10px/);
+  assert.match(componentsCss, /height:\s*10px/);
   assert.doesNotMatch(triggersJs, /\/api\/admin\/runtime\/rumble-dispatch/);
 });
 
@@ -208,7 +221,7 @@ test("actual integrations triggers boot clears loading and keeps globals when cu
         status: "active",
         enabled: true,
         read_only: true,
-        eligible_platforms: ["kick"],
+        eligible_platforms: ["kick", "unknown_service"],
         response_preview_text: "StreamSuites bot online."
       },
       {
@@ -284,6 +297,11 @@ test("actual integrations triggers boot clears loading and keeps globals when cu
   assert.match(elements["triggers-library-groups"].innerHTML, /!bot/);
   assert.match(elements["triggers-library-groups"].innerHTML, /!xp/);
   assert.match(elements["triggers-library-groups"].innerHTML, /!clip/);
+  assert.match(elements["triggers-library-groups"].innerHTML, /ss-trigger-pill-icon/);
+  assert.match(elements["triggers-library-groups"].innerHTML, /src="\/assets\/icons\/kick\.svg"/);
+  assert.match(elements["triggers-library-groups"].innerHTML, /alt="" aria-hidden="true"/);
+  assert.match(elements["triggers-library-groups"].innerHTML, /Unknown_service/);
+  assert.doesNotMatch(elements["triggers-library-groups"].innerHTML, /data-trigger-platform="unknown_service"/);
   assert.match(elements["triggers-effective-list"].innerHTML, /!bot/);
   assert.match(elements["triggers-custom-state"].innerHTML, /Runtime\/Auth custom trigger configs are unavailable/);
   assert.match(elements["triggers-diagnostics"].innerHTML, /\/api\/admin\/livechat\/custom-triggers/);

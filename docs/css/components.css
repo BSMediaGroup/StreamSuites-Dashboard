@@ -570,6 +570,18 @@
   line-height: 1.2;
 }
 
+.ss-trigger-pill-platform {
+  gap: 4px;
+}
+
+.ss-trigger-pill-icon {
+  display: block;
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  object-fit: contain;
+}
+
 .ss-trigger-pill.is-active {
   border-color: rgba(81, 220, 148, 0.26);
   background: rgba(81, 220, 148, 0.09);

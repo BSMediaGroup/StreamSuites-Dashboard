@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Added SVG platform prefixes to Admin `/integrations/triggers` trigger platform chips without changing Runtime/Auth trigger authority. `docs/js/triggers.js` now maps known trigger platforms (Kick, Rumble, YouTube, Twitch, Pilled, Discord, and StreamSuites unified) to existing Dashboard SVG assets and falls back to the previous text-only pill for unknown platforms. `docs/css/components.css` constrains the decorative icons to 10px with a small inline-flex gap so the existing chip height and trigger card layout stay effectively unchanged.
+- Human note: Global Trigger Library and creator custom trigger platform chips should be easier to scan at a glance while staying the same compact size.
+
 - Tightened the Admin `/integrations/triggers` command center layout without changing Runtime/Auth authority. `docs/views/triggers.html` now uses a compact Runtime-backed trigger editor title/subtitle instead of landing-page hero copy, and `docs/css/components.css` reduces the hero footprint, normalizes filter input/select sizing, fixes select arrow spacing, rebalances the main library/effective grid, compacts grouped trigger cards, and polishes effective/custom/planned trigger rows. `docs/js/triggers.js` only adds compact module/source labeling inside Effective Command Set rows; all editor, validation, dry-run, and custom-trigger requests still use Runtime/Auth endpoints.
 - Human note: the Admin trigger page should read more like a dense control surface now: slimmer header, aligned filters, wider effective command panel, smaller status pills, clearer active XP/rank rows, and intentional staged/unavailable clips/FFmpeg presentation while preserving fail-open loading behavior.
 
