@@ -17,6 +17,7 @@ test("admin triggers route is runtime/Auth-backed and unload-safe", () => {
   assert.match(appJs, /registerView\("triggers"/);
   assert.match(appJs, /onUnload:\s*\(\)\s*=>\s*window\.TriggersView\?\.destroy\?\.\(\)/);
   assert.match(triggersJs, /ADMIN_TRIGGER_EDITOR_ENDPOINT = "\/api\/admin\/livechat\/trigger-editor"/);
+  assert.match(triggersJs, /ADMIN_CUSTOM_TRIGGERS_ENDPOINT = "\/api\/admin\/livechat\/custom-triggers"/);
   assert.match(triggersJs, /requestJson\(ADMIN_TRIGGER_EDITOR_ENDPOINT, \{ signal \}\)/);
   assert.match(triggersJs, /state\.abortController = new AbortController\(\)/);
   assert.match(triggersJs, /destroy\(\) \{/);
@@ -66,7 +67,14 @@ test("admin trigger oversight hydrates custom configs from runtime/Auth and muta
   const triggersHtml = read("docs/views/triggers.html");
 
   assert.match(triggersJs, /state\.customItems/);
+  assert.match(triggersJs, /state\.customError/);
+  assert.match(triggersJs, /state\.customLoading/);
   assert.match(triggersJs, /filteredCustomTriggers/);
+  assert.match(triggersJs, /loadCustomTriggers/);
+  assert.match(triggersJs, /Promise\.allSettled\(\[loadEditor\(\), loadCustomTriggers\(\)\]\)/);
+  assert.match(triggersJs, /Runtime\/Auth custom trigger configs are unavailable/);
+  assert.match(triggersJs, /data-custom-trigger-retry/);
+  assert.match(triggersJs, /Runtime\/Auth returned no creator-scoped custom trigger config rows/);
   assert.match(triggersJs, /ADMIN_TRIGGER_EDITOR_VALIDATE_ENDPOINT/);
   assert.match(triggersJs, /ADMIN_TRIGGER_EDITOR_DRY_RUN_ENDPOINT/);
   assert.match(triggersJs, /runPreview/);
@@ -87,6 +95,8 @@ test("admin trigger command center keeps dry-run and selected effective set runt
   const triggersHtml = read("docs/views/triggers.html");
 
   assert.match(triggersJs, /requestJson\(ADMIN_TRIGGER_EDITOR_ENDPOINT, \{ signal \}\)/);
+  assert.match(triggersJs, /renderAll\(\)/);
+  assert.match(triggersJs, /renderCustomRows\(\)/);
   assert.match(triggersJs, /requestJson\(ADMIN_TRIGGER_EDITOR_VALIDATE_ENDPOINT/);
   assert.match(triggersJs, /requestJson\(ADMIN_TRIGGER_EDITOR_DRY_RUN_ENDPOINT/);
   assert.match(triggersJs, /posted.*no-send/s);

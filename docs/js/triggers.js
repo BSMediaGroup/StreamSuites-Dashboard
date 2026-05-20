@@ -4,6 +4,7 @@
   const ADMIN_TRIGGER_EDITOR_ENDPOINT = "/api/admin/livechat/trigger-editor";
   const ADMIN_TRIGGER_EDITOR_DRY_RUN_ENDPOINT = "/api/admin/livechat/trigger-editor/dry-run";
   const ADMIN_TRIGGER_EDITOR_VALIDATE_ENDPOINT = "/api/admin/livechat/trigger-editor/validate";
+  const ADMIN_CUSTOM_TRIGGERS_ENDPOINT = "/api/admin/livechat/custom-triggers";
 
   const CATEGORY_DEFS = [
     { key: "core", title: "Active Built-in / Core Bot Commands", note: "Protected runtime seed commands that are available now." },
@@ -22,6 +23,8 @@
     editor: null,
     filters: { category: "", status: "", platform: "", creator: "", search: "" },
     customItems: [],
+    customError: "",
+    customLoading: false,
     customFilters: { creator: "", status: "", platform: "", search: "" },
     previewResult: null,
     abortController: null,
@@ -171,6 +174,10 @@
 
   function platformList(item) {
     return Array.isArray(item?.eligible_platforms) ? item.eligible_platforms : [];
+  }
+
+  function normalizeArray(value) {
+    return Array.isArray(value) ? value.filter((item) => item && typeof item === "object") : [];
   }
 
   function filteredGlobalRows() {
@@ -361,10 +368,24 @@
     if (!(el.customList instanceof HTMLElement)) return;
     const items = filteredCustomTriggers();
     if (el.customState instanceof HTMLElement) {
-      const creator = state.editor?.creator?.account_id || state.editor?.creator?.user_code || "selected creator";
-      el.customState.textContent = `Runtime/Auth returned ${state.customItems.length} creator-scoped custom trigger config rows for ${creator}.`;
+      const creator = state.editor?.creator?.account_id || state.editor?.creator?.user_code || state.filters.creator || "selected creator";
+      if (state.customLoading) {
+        el.customState.textContent = "Loading creator custom trigger configs from Runtime/Auth...";
+        el.customState.classList.remove("is-error");
+      } else if (state.customError) {
+        el.customState.innerHTML = `
+          <span>Runtime/Auth custom trigger configs are unavailable: ${escapeHtml(state.customError)}</span>
+          <button class="ss-btn ss-btn-secondary ss-btn-small" type="button" data-custom-trigger-retry>Retry</button>
+        `;
+        el.customState.classList.add("is-error");
+      } else {
+        el.customState.textContent = state.customItems.length
+          ? `Runtime/Auth returned ${state.customItems.length} creator-scoped custom trigger config rows for ${creator}.`
+          : `Runtime/Auth returned no creator-scoped custom trigger config rows for ${creator}.`;
+        el.customState.classList.remove("is-error");
+      }
     }
-    el.customEmpty?.classList.toggle("hidden", items.length > 0);
+    el.customEmpty?.classList.toggle("hidden", state.customLoading || Boolean(state.customError) || items.length > 0);
     el.customList.innerHTML = items.map((item) => {
       const creatorId = item.creator_id || item.creator_account_id || "";
       const id = item.id || item.custom_trigger_id || "";
@@ -562,7 +583,6 @@
     renderSummary();
     renderFilters();
     renderLibraryGroups();
-    renderCustomRows();
     renderEffectiveCommandList();
     renderValidationOutput();
     renderGameRows();
@@ -573,14 +593,44 @@
     }
   }
 
-  async function refreshAll() {
+  async function loadEditor() {
     setBanner("");
     if (el.runtimeState instanceof HTMLElement) el.runtimeState.textContent = "Loading authoritative trigger editor...";
     const signal = state.abortController?.signal;
     const editor = await requestJson(ADMIN_TRIGGER_EDITOR_ENDPOINT, { signal });
     state.editor = editor;
-    state.customItems = Array.isArray(editor.creator_custom_triggers) ? editor.creator_custom_triggers : [];
     renderAll();
+  }
+
+  async function loadCustomTriggers() {
+    state.customLoading = true;
+    state.customError = "";
+    renderCustomRows();
+    const query = new URLSearchParams();
+    const creator = state.customFilters.creator || state.filters.creator;
+    if (creator) query.set("creator", creator);
+    if (state.customFilters.status) query.set("status", state.customFilters.status);
+    if (state.customFilters.platform) query.set("platform", state.customFilters.platform);
+    if (state.customFilters.search) query.set("search", state.customFilters.search);
+    const path = query.toString() ? `${ADMIN_CUSTOM_TRIGGERS_ENDPOINT}?${query.toString()}` : ADMIN_CUSTOM_TRIGGERS_ENDPOINT;
+    try {
+      const payload = await requestJson(path, { signal: state.abortController?.signal });
+      state.customItems = normalizeArray(payload.items || payload.creator_custom_triggers);
+      state.customError = "";
+    } catch (err) {
+      state.customError = err?.message || "Unable to load creator-scoped custom trigger configs.";
+    } finally {
+      state.customLoading = false;
+      renderSummary();
+      renderCustomRows();
+      renderPreviewTriggerOptions();
+    }
+  }
+
+  async function refreshAll() {
+    const editorResult = await Promise.allSettled([loadEditor(), loadCustomTriggers()]);
+    const editorFailure = editorResult.find((result, index) => index === 0 && result.status === "rejected");
+    if (editorFailure) throw editorFailure.reason;
   }
 
   async function updateCustomTrigger(creatorId, triggerId, enabled) {
@@ -675,6 +725,9 @@
           deleteButton.getAttribute("data-creator-id") || "",
           deleteButton.getAttribute("data-custom-trigger-delete") || "",
         ).catch((err) => setBanner(err?.message || "Unable to delete custom trigger.", "danger"));
+      }
+      if (target.closest("[data-custom-trigger-retry]")) {
+        void loadCustomTriggers();
       }
     }, { signal });
     el.previewTrigger?.addEventListener("change", () => {
