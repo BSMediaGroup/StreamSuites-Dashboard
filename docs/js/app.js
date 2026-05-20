@@ -992,6 +992,15 @@ const SECTION_SHELL_CONFIG = Object.freeze({
       { id: "billing-codes-section", label: "Billing Codes" }
     ])
   }),
+  "public-identities": Object.freeze({
+    storageKey: "ss_public_identities_shell_tabs_collapsed",
+    toggleLabel: "public identities section tabs",
+    sections: Object.freeze([
+      { id: "public-identities-reconciliation-section", label: "Filters" },
+      { id: "public-identities-list-section", label: "Review Queue" },
+      { id: "public-identities-assignment-section", label: "Assignment" }
+    ])
+  }),
   economy: Object.freeze({
     storageKey: "ss_economy_shell_tabs_collapsed",
     toggleLabel: "economy section tabs",
@@ -1926,6 +1935,7 @@ const SIDEBAR_VIEW_ICON_MAP = Object.freeze({
   "creator-integrations": "/assets/icons/ui/automation.svg",
   "creator-stats": "/assets/icons/ui/statgraph.svg",
   accounts: "/assets/icons/ui/identity.svg",
+  "public-identities": "/assets/icons/ui/identity.svg",
   progression: "/assets/icons/ui/statgraph.svg",
   economy: "/assets/icons/economy.svg",
   tiers: "/assets/icons/ui/verifiedbadge.svg",
@@ -2758,6 +2768,11 @@ registerView("economy", {
   templatePath: "economy",
   onLoad: () => window.EconomyInventoryAdminView?.init?.(),
   onUnload: () => window.EconomyInventoryAdminView?.destroy?.()
+});
+registerView("public-identities", {
+  templatePath: "public-identities",
+  onLoad: () => window.PublicIdentitiesView?.init?.(),
+  onUnload: () => window.PublicIdentitiesView?.destroy?.()
 });
 registerView("api-usage", {
   templatePath: "api-usage",

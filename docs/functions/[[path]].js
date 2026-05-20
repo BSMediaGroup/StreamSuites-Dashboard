@@ -34,6 +34,8 @@ const EXACT_DASHBOARD_ROUTES = new Set([
   "/economy",
   "/economy-inventory",
   "/inventory",
+  "/public-identities",
+  "/accounts/public-identities",
   "/chat-replay",
   "/tiers",
   "/clips",

@@ -22,6 +22,7 @@
     approvals: { canonical: "/approvals", title: "Approvals" },
     progression: { canonical: "/progression", aliases: ["/xp", "/ranks"], title: "XP / Level Controls" },
     economy: { canonical: "/economy", aliases: ["/economy-inventory", "/inventory"], title: "Economy / Inventory Controls" },
+    "public-identities": { canonical: "/public-identities", aliases: ["/accounts/public-identities"], title: "Public Identities" },
     accounts: { canonical: "/users", aliases: ["/accounts"], title: "Accounts" },
     "user-detail": { canonical: "/users/:user_code", title: "User Detail" },
     creators: { canonical: "/profiles", aliases: ["/creators"], title: "Creators" },

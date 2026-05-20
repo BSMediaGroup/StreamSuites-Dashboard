@@ -23,9 +23,10 @@ Admin-facing StreamSuites surface deployed to Cloudflare Pages at `https://admin
 ```mermaid
 flowchart TD
     Admin["Admin operator"] --> Gate["Admin session gate<br/>docs/auth + admin-gate.js"]
-    Gate --> Shell["Dashboard shell and routes<br/>/overview /accounts /progression /economy /alerts /analytics /bots /settings /permissions /profiles/integrations"]
+    Gate --> Shell["Dashboard shell and routes<br/>/overview /accounts /public-identities /progression /economy /alerts /analytics /bots /settings /permissions /profiles/integrations"]
 
     Shell --> Accounts["Accounts and creators views"]
+    Shell --> PublicIdentities["Public identity reconciliation<br/>runtime-owned account assignment"]
     Shell --> Alerts["Alerts workspace<br/>rules, targets, preferences, history"]
     Shell --> Analytics["Analytics, activity, auth-events"]
     Shell --> Bots["Bots, jobs, runtime status"]
@@ -50,7 +51,8 @@ flowchart TD
 - The admin dashboard now includes a dedicated `/permissions` route under System for authoritative developer dashboard access policy inspection and editing, while keeping StreamSuites Auth API as the sole permission authority.
 - The `/approvals` workspace now also acts as the first admin intake surface for developer-console feedback submissions, beta applications, and authenticated developer reports while still consuming runtime-owned review data.
 - The `/approvals` workspace also now reviews runtime-owned public authority claim, assignment, issue, and removal requests through `GET/PATCH /api/admin/public/authority/requests*`, with operator wording that stays explicit about review-state changes versus downstream transfer or suppression effects.
-- Root and `docs/` rewrite manifests preserve deep links for routes such as `/overview`, `/accounts`, `/profiles`, `/analytics`, `/alerts`, `/notifications`, `/settings`, `/creator-stats`, `/integrations/...`, and other admin views, but the repo root is now the authoritative shell so deep links do not depend on a `/docs/index.html` compatibility hop.
+- The `/public-identities` workspace reviews unresolved, ambiguous, resolved, and all livechat/public identity records through Runtime/Auth reconciliation endpoints, then calls Runtime/Auth for explicit admin assignment or forced reassignment. Dashboard stores no identity authority locally.
+- Root and `docs/` rewrite manifests preserve deep links for routes such as `/overview`, `/accounts`, `/public-identities`, `/profiles`, `/analytics`, `/alerts`, `/notifications`, `/settings`, `/creator-stats`, `/integrations/...`, and other admin views, but the repo root is now the authoritative shell so deep links do not depend on a `/docs/index.html` compatibility hop.
 - Creator integrations now have a dedicated admin route at `/profiles/integrations`, backed by runtime/Auth-admin inspection endpoints for creator-capable posture, platform readiness, trigger foundation, and bot deploy eligibility.
 - Admin account investigation now also supports a dedicated `user_code` route at `/users/{user_code}` for exhaustive single-account inspection across identity, auth posture, creator readiness, integrations, and trigger footing.
 - The trigger oversight route at `/integrations/triggers` is now a runtime/Auth-backed admin surface for creator-scoped Rumble text trigger CRUD and controlled managed-send testing.
@@ -164,6 +166,7 @@ StreamSuites-Dashboard/
 │   │   ├── overview.js
 │   │   ├── permissions.js
 │   │   ├── progression.js
+│   │   ├── public-identities.js
 │   │   ├── settings.js
 │   │   ├── state.js
 │   │   ├── triggers.js
@@ -208,6 +211,7 @@ StreamSuites-Dashboard/
 │       ├── overview.html
 │       ├── permissions.html
 │       ├── progression.html
+│       ├── public-identities.html
 │       ├── settings.html
 │       ├── triggers.html
 │       ├── user-detail.html
@@ -239,6 +243,7 @@ StreamSuites-Dashboard/
 │   ├── public-authority-approvals.test.mjs
 │   ├── notifications-runtime-authority.test.mjs
 │   ├── progression-admin-controls.test.mjs
+│   ├── public-identities-admin-controls.test.mjs
 │   ├── rumble-challenge-session-posture.test.mjs
 │   └── triggers-runtime-authority.test.mjs
 ├── shared/
