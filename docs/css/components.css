@@ -255,6 +255,45 @@
   flex-wrap: wrap;
 }
 
+.ss-trigger-state.is-partial {
+  border-color: rgba(255, 199, 92, 0.34);
+  background: rgba(70, 52, 10, 0.42);
+  color: #ffdf96;
+}
+
+.ss-trigger-diagnostics {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 116, 116, 0.28);
+  border-radius: 8px;
+  background: rgba(76, 18, 24, 0.28);
+  color: #ffd2d2;
+  font-size: 12px;
+}
+
+.ss-trigger-diagnostics h2 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: #fff;
+}
+
+.ss-trigger-diagnostics ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.ss-trigger-diagnostics li + li {
+  margin-top: 6px;
+}
+
+.ss-trigger-diagnostics code {
+  color: #fff;
+}
+
+.ss-trigger-diagnostics .ss-btn {
+  margin-top: 10px;
+}
+
 .ss-trigger-summary-strip {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

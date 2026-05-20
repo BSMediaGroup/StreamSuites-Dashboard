@@ -25,6 +25,9 @@
     customItems: [],
     customError: "",
     customLoading: false,
+    editorError: "",
+    loadPhase: "booting view",
+    diagnostics: [],
     customFilters: { creator: "", status: "", platform: "", search: "" },
     previewResult: null,
     abortController: null,
@@ -60,8 +63,19 @@
     return base ? `${base}${normalized}` : normalized;
   }
 
+  function enrichRequestError(error, details = {}) {
+    const err = error instanceof Error ? error : new Error(String(error || "Request failed"));
+    Object.entries(details).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") err[key] = value;
+    });
+    return err;
+  }
+
   async function requestJson(path, options = {}) {
-    const response = await fetch(buildApiUrl(path), {
+    const endpoint = buildApiUrl(path);
+    let response = null;
+    try {
+      response = await fetch(endpoint, {
       cache: "no-store",
       credentials: "include",
       signal: options.signal,
@@ -70,7 +84,14 @@
         Accept: "application/json",
         ...(options.headers || {}),
       },
-    });
+      });
+    } catch (err) {
+      throw enrichRequestError(err, {
+        endpoint: path,
+        status: "network",
+        section: options.section || "runtime/auth",
+      });
+    }
     let payload = null;
     try {
       payload = await response.json();
@@ -78,9 +99,93 @@
       payload = null;
     }
     if (!response.ok || payload?.success === false) {
-      throw new Error(payload?.error || payload?.message || `Request failed (${response.status})`);
+      throw enrichRequestError(
+        new Error(payload?.error || payload?.message || `Request failed (${response.status})`),
+        {
+          endpoint: path,
+          status: response.status,
+          errorCode: payload?.error_code || payload?.code || payload?.error,
+          section: options.section || "runtime/auth",
+        },
+      );
     }
     return payload || {};
+  }
+
+  function normalizeEditorPayload(payload) {
+    const source =
+      payload?.trigger_editor ||
+      payload?.editor_contract ||
+      payload?.editor ||
+      payload?.contract ||
+      payload ||
+      {};
+    const editor = { ...source };
+    [
+      "built_in_triggers",
+      "system_triggers",
+      "creator_custom_triggers",
+      "planned_module_triggers",
+      "effective_triggers",
+      "validation_warnings",
+    ].forEach((key) => {
+      editor[key] = normalizeArray(editor[key]);
+    });
+    editor.available_platforms = Array.isArray(editor.available_platforms)
+      ? editor.available_platforms
+      : [];
+    return editor;
+  }
+
+  function setRuntimePhase(phase, tone = "") {
+    state.loadPhase = phase;
+    if (!(el.runtimeState instanceof HTMLElement)) return;
+    el.runtimeState.classList.toggle("is-error", tone === "error");
+    el.runtimeState.classList.toggle("is-partial", tone === "partial");
+    el.runtimeState.textContent = phase;
+  }
+
+  function clearDiagnostics() {
+    state.diagnostics = [];
+    renderDiagnostics();
+  }
+
+  function recordDiagnostic(section, endpoint, error, fallbackActive = true) {
+    state.diagnostics.push({
+      section,
+      endpoint: endpoint || error?.endpoint || "unknown",
+      status: error?.status || "unknown",
+      code: error?.errorCode || error?.code || "",
+      message: error?.message || "Runtime/Auth request failed.",
+      fallbackActive,
+    });
+    renderDiagnostics();
+  }
+
+  function renderDiagnostics() {
+    if (!(el.diagnostics instanceof HTMLElement)) return;
+    if (!state.diagnostics.length) {
+      el.diagnostics.classList.add("hidden");
+      el.diagnostics.innerHTML = "";
+      return;
+    }
+    el.diagnostics.classList.remove("hidden");
+    el.diagnostics.innerHTML = `
+      <h2>Trigger editor Runtime/Auth diagnostics</h2>
+      <ul>
+        ${state.diagnostics.map((entry) => `
+          <li>
+            <strong>${escapeHtml(entry.section)}</strong>
+            <span>endpoint <code>${escapeHtml(entry.endpoint)}</code></span>
+            <span>status ${escapeHtml(entry.status)}</span>
+            ${entry.code ? `<span>code ${escapeHtml(entry.code)}</span>` : ""}
+            <span>${escapeHtml(entry.message)}</span>
+            <span>${entry.fallbackActive ? "partial/fallback render active" : "no fallback active"}</span>
+          </li>
+        `).join("")}
+      </ul>
+      <button class="ss-btn ss-btn-secondary ss-btn-small" type="button" data-trigger-retry-runtime>Retry Runtime/Auth Load</button>
+    `;
   }
 
   function formatTimestamp(value) {
@@ -283,7 +388,10 @@
 
   function renderFilters() {
     const statuses = Array.from(new Set(allGlobalRows().map(normalizeStatus).filter(Boolean))).sort();
-    const platforms = Array.from(new Set(availablePlatforms().map((item) => item.platform).filter(Boolean))).sort();
+    const platforms = Array.from(new Set(availablePlatforms().map((item) => {
+      if (typeof item === "string") return item;
+      return item?.platform || item?.key || item?.id || "";
+    }).filter(Boolean))).sort();
     if (el.categoryFilter instanceof HTMLSelectElement) {
       const current = el.categoryFilter.value;
       el.categoryFilter.innerHTML = `<option value="">All categories</option>${CATEGORY_DEFS.map((item) => `<option value="${escapeHtml(item.key)}">${escapeHtml(item.title)}</option>`).join("")}`;
@@ -588,23 +696,41 @@
     renderGameRows();
     renderPreviewTriggerOptions();
     if (el.runtimeState instanceof HTMLElement) {
-      const served = formatTimestamp(state.editor?.generated_at);
-      el.runtimeState.textContent = `Hydrated from ${state.editor?.authority || "StreamSuites"} ${state.editor?.source || "runtime"} at ${served}.`;
+      if (!state.editor) {
+        setRuntimePhase(state.loadPhase || "booting view", "");
+      } else if (state.editorError) {
+        setRuntimePhase("partial failure: editor contract failed; rendered empty safe sections", "error");
+      } else if (state.customError) {
+        const served = formatTimestamp(state.editor?.generated_at);
+        setRuntimePhase(`partial failure: editor contract ready from ${state.editor?.authority || "StreamSuites"} ${state.editor?.source || "runtime"} at ${served}; creator scoped triggers failed`, "partial");
+      } else {
+        const served = formatTimestamp(state.editor?.generated_at);
+        setRuntimePhase(`ready: hydrated from ${state.editor?.authority || "StreamSuites"} ${state.editor?.source || "runtime"} at ${served}`, "");
+      }
     }
   }
 
   async function loadEditor() {
     setBanner("");
-    if (el.runtimeState instanceof HTMLElement) el.runtimeState.textContent = "Loading authoritative trigger editor...";
+    setRuntimePhase("loading editor contract");
     const signal = state.abortController?.signal;
-    const editor = await requestJson(ADMIN_TRIGGER_EDITOR_ENDPOINT, { signal });
-    state.editor = editor;
-    renderAll();
+    try {
+      const editor = await requestJson(ADMIN_TRIGGER_EDITOR_ENDPOINT, { signal, section: "editor contract" });
+      state.editor = normalizeEditorPayload(editor);
+      state.editorError = "";
+    } catch (err) {
+      state.editor = normalizeEditorPayload({});
+      state.editorError = err?.message || "Unable to load Runtime/Auth trigger editor contract.";
+      recordDiagnostic("editor contract", ADMIN_TRIGGER_EDITOR_ENDPOINT, err, true);
+    } finally {
+      renderAll();
+    }
   }
 
   async function loadCustomTriggers() {
     state.customLoading = true;
     state.customError = "";
+    setRuntimePhase("loading creator scoped triggers");
     renderCustomRows();
     const query = new URLSearchParams();
     const creator = state.customFilters.creator || state.filters.creator;
@@ -614,23 +740,28 @@
     if (state.customFilters.search) query.set("search", state.customFilters.search);
     const path = query.toString() ? `${ADMIN_CUSTOM_TRIGGERS_ENDPOINT}?${query.toString()}` : ADMIN_CUSTOM_TRIGGERS_ENDPOINT;
     try {
-      const payload = await requestJson(path, { signal: state.abortController?.signal });
+      const payload = await requestJson(path, { signal: state.abortController?.signal, section: "creator scoped triggers" });
       state.customItems = normalizeArray(payload.items || payload.creator_custom_triggers);
       state.customError = "";
     } catch (err) {
       state.customError = err?.message || "Unable to load creator-scoped custom trigger configs.";
+      recordDiagnostic("creator scoped triggers", path, err, true);
     } finally {
       state.customLoading = false;
       renderSummary();
       renderCustomRows();
       renderPreviewTriggerOptions();
+      renderAll();
     }
   }
 
   async function refreshAll() {
-    const editorResult = await Promise.allSettled([loadEditor(), loadCustomTriggers()]);
-    const editorFailure = editorResult.find((result, index) => index === 0 && result.status === "rejected");
-    if (editorFailure) throw editorFailure.reason;
+    clearDiagnostics();
+    setRuntimePhase("booting view");
+    await loadEditor();
+    setRuntimePhase("loading effective command set");
+    await loadCustomTriggers();
+    renderAll();
   }
 
   async function updateCustomTrigger(creatorId, triggerId, enabled) {
@@ -651,6 +782,7 @@
 
   function cacheElements() {
     el.banner = $("triggers-banner");
+    el.diagnostics = $("triggers-diagnostics");
     el.runtimeState = $("triggers-runtime-state");
     el.summary = $("triggers-registry-summary");
     el.effectiveList = $("triggers-effective-list");
@@ -687,6 +819,11 @@
     const signal = state.abortController.signal;
     cacheElements();
     $("btn-refresh-triggers")?.addEventListener("click", () => void refreshAll().catch((err) => setBanner(err?.message || "Unable to refresh registry.", "danger")), { signal });
+    el.diagnostics?.addEventListener("click", (event) => {
+      const target = event.target instanceof Element ? event.target : null;
+      if (!target?.closest("[data-trigger-retry-runtime]")) return;
+      void refreshAll().catch((err) => setBanner(err?.message || "Unable to refresh registry.", "danger"));
+    }, { signal });
     [el.categoryFilter, el.statusFilter, el.platformFilter, el.creatorFilter, el.search].forEach((control) => {
       control?.addEventListener("input", () => {
         state.filters.category = el.categoryFilter?.value || "";
@@ -743,11 +880,13 @@
       void runPreview().catch((err) => setBanner(err?.message || "Unable to run custom trigger preview.", "danger"));
     }, { signal });
     renderPreviewResult(null);
+    setRuntimePhase("booting view");
+    renderAll();
     try {
       await refreshAll();
     } catch (err) {
       setBanner(err?.message || "Unable to load runtime trigger editor.", "danger");
-      if (el.runtimeState instanceof HTMLElement) el.runtimeState.textContent = "Trigger editor hydration failed.";
+      setRuntimePhase("partial failure: trigger editor hydration failed", "error");
     }
   }
 
