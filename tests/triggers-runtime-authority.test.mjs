@@ -46,6 +46,7 @@ test("admin triggers route is runtime/Auth-backed and unload-safe", () => {
 test("admin trigger oversight exposes grouped active and planned runtime metadata", () => {
   const triggersJs = read("docs/js/triggers.js");
   const triggersHtml = read("docs/views/triggers.html");
+  const componentsCss = read("docs/css/components.css");
 
   assert.match(triggersJs, /CATEGORY_DEFS/);
   assert.match(triggersJs, /Active Built-in \/ Core Bot Commands/);
@@ -72,7 +73,12 @@ test("admin trigger oversight exposes grouped active and planned runtime metadat
   assert.match(triggersJs, /Validation warnings/);
   assert.match(triggersHtml, /triggers-category-filter/);
   assert.match(triggersHtml, /triggers-creator-filter/);
+  assert.match(triggersHtml, /Runtime-backed trigger editor/);
   assert.match(triggersHtml, /Validation \/ Warnings/);
+  assert.match(componentsCss, /\.ss-trigger-filter-panel select\.ss-input/);
+  assert.match(componentsCss, /grid-template-columns:\s*minmax\(620px,\s*1fr\)\s*minmax\(430px,\s*0\.52fr\)/);
+  assert.match(componentsCss, /\.ss-trigger-effective-main/);
+  assert.match(componentsCss, /\.ss-trigger-summary-strip/);
   assert.doesNotMatch(triggersJs, /\/api\/admin\/runtime\/rumble-dispatch/);
 });
 

@@ -545,7 +545,10 @@
       <div class="ss-trigger-effective-scroll">
         ${rows.slice(0, 80).map((item) => `
           <div class="ss-trigger-effective-row ${statusTone(item)}">
-            <strong>${escapeHtml(commandText(item))}</strong>
+            <div class="ss-trigger-effective-main">
+              <strong>${escapeHtml(commandText(item))}</strong>
+              <small>${escapeHtml(item.module || item.module_family || item.source || "runtime")}</small>
+            </div>
             <span>${escapeHtml(statusLabel(item))}</span>
           </div>
         `).join("") || `<p class="muted">No effective commands were returned for this creator/platform.</p>`}
