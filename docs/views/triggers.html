@@ -1,106 +1,163 @@
-<!-- StreamSuites - Livechat Trigger Registry (VIEW PARTIAL) -->
-<header class="ss-header">
+<!-- StreamSuites - Livechat Trigger Editor (VIEW PARTIAL) -->
+<header class="ss-header ss-trigger-editor-header">
   <div class="ss-header-left">
     <h1 class="ss-title">StreamSuites</h1>
-    <span class="ss-subtitle">Livechat Registry Oversight</span>
+    <span class="ss-subtitle">Trigger Command Center</span>
   </div>
+  <button id="btn-refresh-triggers" class="ss-btn ss-btn-secondary" type="button">Refresh runtime/Auth</button>
 </header>
 
 <div id="triggers-banner" class="ss-alert hidden"></div>
 
-<section class="ss-panel">
-  <header class="ss-panel-header">
-    <div class="ss-panel-header-main">
-      <h2>Authoritative Runtime Registry</h2>
-      <p class="muted" style="margin:6px 0 0;">
-        Hydrated from the normalized StreamSuites runtime/Auth trigger editor contract. Definitions remain runtime-owned; Admin can inspect and use authority-backed custom trigger controls only where the contract allows it.
+<main class="ss-trigger-editor" aria-label="Admin trigger management">
+  <section class="ss-trigger-hero ss-panel">
+    <div class="ss-trigger-hero-copy">
+      <span class="ss-trigger-kicker">Runtime/Auth editor contract</span>
+      <h2>Global commands, creator-scoped custom triggers, and planned modules in one authority-backed view.</h2>
+      <p>
+        Admin can inspect the effective command set and manage creator-owned custom rows only through Runtime/Auth. Built-in, XP/rank,
+        admin/system, economy, game, and clip module rows stay read-only unless the contract says otherwise.
       </p>
+      <div id="triggers-runtime-state" class="ss-trigger-state">Loading authoritative trigger editor...</div>
     </div>
-    <button id="btn-refresh-triggers" class="ss-btn ss-btn-secondary">Refresh from runtime/Auth</button>
-  </header>
-  <div class="ss-panel-body">
-    <div id="triggers-runtime-state" class="muted">Loading authoritative runtime registry...</div>
-    <div id="triggers-registry-summary" class="ss-grid ss-grid-3" style="margin-top:16px;"></div>
-  </div>
-</section>
+    <div id="triggers-registry-summary" class="ss-trigger-summary-strip" aria-label="Trigger summary"></div>
+  </section>
 
-<section class="ss-panel">
-  <header class="ss-panel-header">
-    <div class="ss-panel-header-main">
-      <h2>Effective Command List</h2>
-      <p class="muted" style="margin:6px 0 0;">
-        Runtime/Auth merged view for the selected creator and platform. Built-in and system definitions are protected; planned modules are visible but unavailable.
-      </p>
-    </div>
-  </header>
-  <div class="ss-panel-body">
-    <div id="triggers-effective-list" class="ss-list muted">Loading effective command list...</div>
-  </div>
-</section>
+  <section class="ss-trigger-filter-panel ss-panel" aria-label="Trigger filters">
+    <label class="ss-field">
+      <span class="muted">Platform</span>
+      <select id="triggers-platform-filter" class="ss-input"></select>
+    </label>
+    <label class="ss-field">
+      <span class="muted">Creator</span>
+      <input id="triggers-creator-filter" class="ss-input" type="search" placeholder="Selected creator, account, user code" />
+    </label>
+    <label class="ss-field">
+      <span class="muted">Source / category</span>
+      <select id="triggers-category-filter" class="ss-input"></select>
+    </label>
+    <label class="ss-field">
+      <span class="muted">Status</span>
+      <select id="triggers-status-filter" class="ss-input"></select>
+    </label>
+    <label class="ss-field ss-trigger-search-field">
+      <span class="muted">Search</span>
+      <input id="triggers-search" class="ss-input" type="search" placeholder="!bot, !xp, !clip, aliases, module" />
+    </label>
+  </section>
 
-<section class="ss-panel">
-  <header class="ss-panel-header">
-    <div class="ss-panel-header-main">
-      <h2>Custom Trigger Preview Diagnostics</h2>
-      <p class="muted" style="margin:6px 0 0;">
-        Dry-run preview only. Runtime/Auth matches the effective trigger list, validates the selected definition, and returns diagnostics without sending live chat messages, invoking transport, or dispatching gameplay.
-      </p>
-    </div>
-  </header>
-  <div class="ss-panel-body">
-    <form id="triggers-preview-form" class="ss-form-row">
-      <label>
-        <span>Trigger</span>
-        <select id="triggers-preview-trigger" class="ss-input">
-          <option value="">Match simulated message</option>
-        </select>
-      </label>
-      <label>
-        <span>Platform</span>
-        <select id="triggers-preview-platform" class="ss-input">
-          <option value="rumble">Rumble</option>
-          <option value="youtube">YouTube</option>
-          <option value="twitch">Twitch</option>
-          <option value="kick">Kick</option>
-          <option value="streamsuites_unified">StreamSuites Unified</option>
-          <option value="pilled">Pilled planned/disabled</option>
-        </select>
-      </label>
-      <label>
-        <span>Simulated message</span>
-        <input id="triggers-preview-message" class="ss-input" type="text" value="!hello" />
-      </label>
-      <label>
-        <span>Actor display</span>
-        <input id="triggers-preview-display" class="ss-input" type="text" value="Preview Viewer" />
-      </label>
-      <label>
-        <span>Actor handle</span>
-        <input id="triggers-preview-handle" class="ss-input" type="text" value="previewviewer" />
-      </label>
-      <label>
-        <span>Stream title</span>
-        <input id="triggers-preview-stream-title" class="ss-input" type="text" placeholder="Optional stream context" />
-      </label>
-      <button id="triggers-preview-submit" class="ss-btn ss-btn-primary" type="submit">Run dry-run preview</button>
-    </form>
-    <div id="triggers-preview-result" class="muted" style="margin-top:16px;">No preview run yet. Dry-run responses will show no-send flags, match metadata, variables, and split pages here.</div>
-  </div>
-</section>
+  <div class="ss-trigger-workspace">
+    <section class="ss-panel ss-trigger-library-panel">
+      <header class="ss-panel-header">
+        <div class="ss-panel-header-main">
+          <h2>Global Trigger Library</h2>
+          <p class="muted">
+            Grouped runtime definitions and planned module rows. Planned entries are roadmap visibility only and never imply dispatch.
+          </p>
+        </div>
+      </header>
+      <div class="ss-panel-body">
+        <div id="triggers-library-groups" class="ss-trigger-library-groups"></div>
+        <div id="triggers-empty" class="ss-empty hidden">No global trigger rows match the current filters.</div>
+      </div>
+    </section>
 
-<section class="ss-panel">
-  <header class="ss-panel-header">
-    <div class="ss-panel-header-main">
-      <h2>Creator-Owned Custom Triggers</h2>
-      <p class="muted" style="margin:6px 0 0;">
-        Hydrated from runtime/Auth custom trigger config endpoints. These rows are creator-owned config for future dispatch; they do not mutate the global seed registry and do not imply live execution.
-      </p>
-    </div>
-  </header>
-  <div class="ss-panel-body">
-    <div id="triggers-custom-state" class="muted">Loading creator custom trigger configs...</div>
-    <div class="ss-toolbar" style="margin-top:16px;">
-      <div class="ss-toolbar-left">
+    <aside class="ss-trigger-side-stack">
+      <section class="ss-panel ss-trigger-effective-panel">
+        <header class="ss-panel-header">
+          <div class="ss-panel-header-main">
+            <h2>Effective Command Set</h2>
+            <p class="muted">What will actually match for the selected creator/platform.</p>
+          </div>
+        </header>
+        <div class="ss-panel-body">
+          <div id="triggers-effective-list" class="ss-trigger-effective-list">Loading effective command set...</div>
+        </div>
+      </section>
+
+      <section class="ss-panel ss-trigger-preview-panel">
+        <header class="ss-panel-header">
+          <div class="ss-panel-header-main">
+            <h2>Preview / Dry Run</h2>
+            <p class="muted">Runtime-backed matching, validation, permissions, cooldown, and response preview. No live chat post is sent.</p>
+          </div>
+        </header>
+        <div class="ss-panel-body">
+          <form id="triggers-preview-form" class="ss-trigger-preview-form">
+            <label class="ss-field">
+              <span class="muted">Trigger</span>
+              <select id="triggers-preview-trigger" class="ss-input">
+                <option value="">Match simulated message</option>
+              </select>
+            </label>
+            <label class="ss-field">
+              <span class="muted">Platform</span>
+              <select id="triggers-preview-platform" class="ss-input">
+                <option value="kick">Kick</option>
+                <option value="rumble">Rumble</option>
+                <option value="youtube">YouTube</option>
+                <option value="twitch">Twitch</option>
+                <option value="streamsuites_unified">StreamSuites Unified</option>
+                <option value="pilled">Pilled planned/disabled</option>
+              </select>
+            </label>
+            <label class="ss-field">
+              <span class="muted">Message</span>
+              <input id="triggers-preview-message" class="ss-input" type="text" value="!bot" />
+            </label>
+            <label class="ss-field">
+              <span class="muted">Sender role</span>
+              <select id="triggers-preview-role" class="ss-input">
+                <option value="viewer">Viewer</option>
+                <option value="moderator">Moderator</option>
+                <option value="subscriber">Subscriber</option>
+                <option value="admin">Admin</option>
+              </select>
+            </label>
+            <label class="ss-field">
+              <span class="muted">Actor display</span>
+              <input id="triggers-preview-display" class="ss-input" type="text" value="Preview Viewer" />
+            </label>
+            <label class="ss-field">
+              <span class="muted">Actor handle</span>
+              <input id="triggers-preview-handle" class="ss-input" type="text" value="previewviewer" />
+            </label>
+            <label class="ss-field ss-trigger-preview-wide">
+              <span class="muted">Stream title</span>
+              <input id="triggers-preview-stream-title" class="ss-input" type="text" placeholder="Optional stream context" />
+            </label>
+            <button id="triggers-preview-submit" class="ss-btn ss-btn-primary" type="submit">Run dry-run preview</button>
+          </form>
+          <div id="triggers-preview-result" class="ss-trigger-preview-result">No preview run yet.</div>
+        </div>
+      </section>
+
+      <section class="ss-panel ss-trigger-validation-panel">
+        <header class="ss-panel-header">
+          <div class="ss-panel-header-main">
+            <h2>Validation / Warnings</h2>
+            <p class="muted">Runtime validation output from visible editor rows.</p>
+          </div>
+        </header>
+        <div class="ss-panel-body">
+          <div id="triggers-validation-output" class="ss-trigger-validation-output">Loading validation output...</div>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <section class="ss-panel ss-trigger-custom-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Creator Scoped Custom Triggers</h2>
+        <p class="muted">
+          Creator-owned runtime config records. Toggle/delete controls appear only for rows with account-scoped authority identifiers.
+        </p>
+      </div>
+    </header>
+    <div class="ss-panel-body">
+      <div id="triggers-custom-state" class="ss-trigger-state">Loading creator custom trigger configs...</div>
+      <div class="ss-trigger-custom-toolbar">
         <label class="ss-field">
           <span class="muted">Creator</span>
           <input id="triggers-custom-creator-filter" class="ss-input" type="search" placeholder="Account ID, user code" />
@@ -111,7 +168,7 @@
             <option value="">All statuses</option>
             <option value="active">Active</option>
             <option value="disabled">Disabled</option>
-            <option value="true">Enabled</option>
+            <option value="true">Enabled config</option>
             <option value="false">Disabled config</option>
           </select>
         </label>
@@ -126,100 +183,33 @@
             <option value="pilled">Pilled planned/disabled</option>
           </select>
         </label>
-        <label class="ss-field" style="min-width: 260px;">
+        <label class="ss-field ss-trigger-search-field">
           <span class="muted">Search</span>
           <input id="triggers-custom-search" class="ss-input" type="search" placeholder="ID, trigger, alias" />
         </label>
       </div>
+      <div id="triggers-custom-list" class="ss-trigger-custom-list"></div>
+      <div id="triggers-custom-empty" class="ss-empty hidden">No creator-owned custom triggers match the current filters.</div>
     </div>
-    <div class="ss-table-scroll">
-      <table class="ss-table">
-        <thead>
-          <tr>
-            <th>ID / Creator</th>
-            <th>Enabled / Status</th>
-            <th>Command / Aliases</th>
-            <th>Platforms</th>
-            <th>Response / Cooldown</th>
-            <th>Access</th>
-            <th>Created / Updated</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="triggers-custom-table-body"></tbody>
-      </table>
-    </div>
-    <div id="triggers-custom-empty" class="ss-empty hidden">No creator-owned custom triggers match the current filters.</div>
-    <p class="muted" style="margin-top:12px;">
-      Admin edits/deletes use runtime/Auth account-scoped trigger endpoints when available. Admin mutation later remains the status if an account row cannot be addressed through that authority path.
-    </p>
-  </div>
-</section>
+  </section>
 
-<section class="ss-panel">
-  <header class="ss-panel-header">
-    <div class="ss-panel-header-main">
-      <h2>Trigger Definitions</h2>
-      <p class="muted" style="margin:6px 0 0;">
-        Registry rows expose command metadata, platform eligibility, response mode, cooldown, permission requirements, validation state, response preview, and role gate source. They do not imply dispatch support.
-      </p>
-    </div>
-  </header>
-  <div class="ss-panel-body">
-    <div class="ss-toolbar">
-      <div class="ss-toolbar-left">
-        <label class="ss-field">
-          <span class="muted">Module</span>
-          <select id="triggers-module-filter" class="ss-input"></select>
-        </label>
-        <label class="ss-field">
-          <span class="muted">Status</span>
-          <select id="triggers-status-filter" class="ss-input"></select>
-        </label>
-        <label class="ss-field">
-          <span class="muted">Platform</span>
-          <select id="triggers-platform-filter" class="ss-input"></select>
-        </label>
-        <label class="ss-field" style="min-width: 260px;">
-          <span class="muted">Search</span>
-          <input id="triggers-search" class="ss-input" type="search" placeholder="ID, trigger, alias" />
-        </label>
+  <section class="ss-panel ss-trigger-planned-panel">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2>Planned Modules Roadmap</h2>
+        <p class="muted">
+          XP/rank is active where Runtime/Auth marks it active. Economy, inventory, games, clips, and FFmpeg rows stay staged/unavailable until their modules ship.
+        </p>
       </div>
+    </header>
+    <div class="ss-panel-body">
+      <div id="triggers-games-list" class="ss-trigger-roadmap-grid"></div>
     </div>
-    <table class="ss-table">
-      <thead>
-        <tr>
-          <th>ID / Trigger</th>
-          <th>Module</th>
-          <th>Status</th>
-          <th>Type</th>
-          <th>Platforms</th>
-          <th>Response / Cooldown</th>
-          <th>Permission / Validation</th>
-        </tr>
-      </thead>
-      <tbody id="triggers-table-body"></tbody>
-    </table>
-    <div id="triggers-empty" class="ss-empty hidden">No runtime registry rows match the current filters.</div>
-  </div>
-</section>
-
-<section class="ss-panel">
-  <header class="ss-panel-header">
-    <div class="ss-panel-header-main">
-      <h2>Games Registry Foundation</h2>
-      <p class="muted" style="margin:6px 0 0;">
-        Games rows, including Pilled-capable registry metadata, are planned/foundation definitions only. No playable game engine, persistence, or transport execution is implemented on this page.
-      </p>
-    </div>
-  </header>
-  <div class="ss-panel-body">
-    <ul id="triggers-games-list" class="ss-list muted"></ul>
-  </div>
-</section>
+  </section>
+</main>
 
 <footer class="ss-footer">
   <span class="muted">
-    Runtime/Auth is the authority. Global registry rows remain read-only; creator custom trigger configs are a separate runtime-owned management layer.
+    Runtime/Auth is the authority. Admin formats and filters the contract; it does not own trigger dispatch, registry state, or creator configuration.
   </span>
 </footer>

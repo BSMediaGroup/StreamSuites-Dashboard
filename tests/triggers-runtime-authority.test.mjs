@@ -20,29 +20,45 @@ test("admin triggers route is runtime/Auth-backed and unload-safe", () => {
   assert.match(triggersJs, /requestJson\(ADMIN_TRIGGER_EDITOR_ENDPOINT, \{ signal \}\)/);
   assert.match(triggersJs, /state\.abortController = new AbortController\(\)/);
   assert.match(triggersJs, /destroy\(\) \{/);
-  assert.match(triggersHtml, /Authoritative Runtime Registry/);
-  assert.match(triggersHtml, /Trigger Definitions/);
-  assert.match(triggersHtml, /normalized StreamSuites runtime\/Auth trigger editor contract/);
-  assert.match(triggersHtml, /Creator-Owned Custom Triggers/);
-  assert.match(triggersHtml, /Effective Command List/);
-  assert.match(triggersHtml, /No playable game engine, persistence, or transport execution is implemented/);
+  assert.match(triggersHtml, /Trigger Command Center/);
+  assert.match(triggersHtml, /Global Trigger Library/);
+  assert.match(triggersHtml, /Runtime\/Auth editor contract/);
+  assert.match(triggersHtml, /Creator Scoped Custom Triggers/);
+  assert.match(triggersHtml, /Effective Command Set/);
+  assert.match(triggersHtml, /Planned Modules Roadmap/);
 });
 
-test("admin trigger oversight exposes normalized read-only editor metadata", () => {
+test("admin trigger oversight exposes grouped active and planned runtime metadata", () => {
   const triggersJs = read("docs/js/triggers.js");
   const triggersHtml = read("docs/views/triggers.html");
 
+  assert.match(triggersJs, /CATEGORY_DEFS/);
+  assert.match(triggersJs, /Active Built-in \/ Core Bot Commands/);
+  assert.match(triggersJs, /Active XP \/ Rank Commands/);
+  assert.match(triggersJs, /System \/ Admin Commands/);
+  assert.match(triggersJs, /Planned Economy \/ Inventory Commands/);
+  assert.match(triggersJs, /Planned Game Commands/);
+  assert.match(triggersJs, /Planned Clips \/ FFmpeg Commands/);
+  assert.match(triggersJs, /categoryForTrigger/);
+  assert.match(triggersJs, /xp.*rank.*progression.*level/);
+  assert.match(triggersJs, /clip.*ffmpeg/);
   assert.match(triggersJs, /permission/);
   assert.match(triggersJs, /validation/);
   assert.match(triggersJs, /response_preview_text/);
-  assert.match(triggersJs, /role_gate_source/);
-  assert.match(triggersJs, /platformCapsSummary/);
-  assert.match(triggersJs, /renderEffectiveCommandList/);
-  assert.match(triggersJs, /read_only/);
   assert.match(triggersJs, /module_status/);
+  assert.match(triggersJs, /renderEffectiveCommandList/);
+  assert.match(triggersJs, /renderValidationOutput/);
+  assert.match(triggersJs, /renderGameRows/);
+  assert.match(triggersJs, /read_only/);
+  assert.match(triggersJs, /Total effective triggers/);
+  assert.match(triggersJs, /Active triggers/);
+  assert.match(triggersJs, /Custom triggers/);
+  assert.match(triggersJs, /Staged \/ planned/);
+  assert.match(triggersJs, /Validation warnings/);
+  assert.match(triggersHtml, /triggers-category-filter/);
+  assert.match(triggersHtml, /triggers-creator-filter/);
+  assert.match(triggersHtml, /Validation \/ Warnings/);
   assert.doesNotMatch(triggersJs, /\/api\/admin\/runtime\/rumble-dispatch/);
-  assert.match(triggersHtml, /Permission \/ Validation/);
-  assert.match(triggersHtml, /creator custom trigger configs are a separate runtime-owned management layer/);
 });
 
 test("admin trigger oversight hydrates custom configs from runtime/Auth and mutates only account-scoped custom rows", () => {
@@ -57,12 +73,30 @@ test("admin trigger oversight hydrates custom configs from runtime/Auth and muta
   assert.match(triggersJs, /\/api\/admin\/accounts\/\$\{encodeURIComponent\(creatorId\)\}\/creator-triggers\/\$\{encodeURIComponent\(triggerId\)\}/);
   assert.match(triggersJs, /data-custom-trigger-toggle/);
   assert.match(triggersJs, /data-custom-trigger-delete/);
-  assert.match(triggersHtml, /Admin edits\/deletes use runtime\/Auth account-scoped trigger endpoints/);
-  assert.match(triggersHtml, /Custom Trigger Preview Diagnostics/);
-  assert.match(triggersHtml, /Dry-run preview only/);
-  assert.match(triggersHtml, /validates the selected definition/);
+  assert.match(triggersHtml, /account-scoped authority identifiers/);
+  assert.match(triggersHtml, /Preview \/ Dry Run/);
+  assert.match(triggersHtml, /Runtime-backed matching, validation, permissions, cooldown, and response preview/);
   assert.match(triggersHtml, /triggers-preview-form/);
-  assert.match(triggersHtml, /future dispatch/);
+  assert.match(triggersHtml, /triggers-preview-role/);
   assert.doesNotMatch(triggersJs, /localStorage/);
   assert.doesNotMatch(triggersJs, /rumble-dispatch/);
+});
+
+test("admin trigger command center keeps dry-run and selected effective set runtime-backed", () => {
+  const triggersJs = read("docs/js/triggers.js");
+  const triggersHtml = read("docs/views/triggers.html");
+
+  assert.match(triggersJs, /requestJson\(ADMIN_TRIGGER_EDITOR_ENDPOINT, \{ signal \}\)/);
+  assert.match(triggersJs, /requestJson\(ADMIN_TRIGGER_EDITOR_VALIDATE_ENDPOINT/);
+  assert.match(triggersJs, /requestJson\(ADMIN_TRIGGER_EDITOR_DRY_RUN_ENDPOINT/);
+  assert.match(triggersJs, /posted.*no-send/s);
+  assert.match(triggersJs, /would dispatch/);
+  assert.match(triggersJs, /blocked \/ no match/);
+  assert.match(triggersJs, /No preview run yet\. Try !bot, !xp, or !clip/);
+  assert.match(triggersHtml, /Effective Command Set/);
+  assert.match(triggersHtml, /what will actually match/i);
+  assert.match(triggersHtml, /!bot/);
+  assert.match(triggersHtml, /Pilled planned\/disabled/);
+  assert.match(triggersHtml, /FFmpeg/);
+  assert.doesNotMatch(triggersJs, /dispatchEndpoint|livePost|transportSend/);
 });
