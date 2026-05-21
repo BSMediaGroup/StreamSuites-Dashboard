@@ -1,12 +1,558 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-05-19T14:38:48.354440Z",
+  "exported_at": "2026-05-21T11:42:42.044379Z",
   "runtime": {
     "project": "StreamSuites™ Runtime",
     "version": "0.4.2-alpha",
-    "build": "2026.05.19+002"
+    "build": "2026.05.21+004"
   },
   "audit": [
+    {
+      "id": "01b864ff-8b8a-4364-a59a-79d68cc50a1a",
+      "ts": "2026-05-21T07:55:18Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "alert_test_triggered",
+      "metadata": {
+        "event_type": "runtime_error_spike",
+        "force": false,
+        "history_ids": [
+          "6a99d25e-94ca-4343-93d1-a83b218369c5"
+        ],
+        "rule_id": null
+      }
+    },
+    {
+      "id": "81e2e39f-f76b-465e-9770-7d32fe792aeb",
+      "ts": "2026-05-21T07:37:09Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "admin_public_identity_reconciled",
+      "metadata": {
+        "chat_id": null,
+        "force": true,
+        "handle": "@StreamSuites",
+        "identity_code": "public-user021",
+        "identity_warning": null,
+        "ledger_update": {
+          "matched": 1,
+          "updated": 1
+        },
+        "participant_key": "kick|kick:creator:3c426a3d-2409-4409-a0bf-c26960081027:channel:streamsuites|user_id:91658364",
+        "platform": "kick",
+        "platform_user_id": "91658364",
+        "reconciliation_summary": {
+          "account_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+          "applied_rollup_count": 1,
+          "canonical_projection_changed": true,
+          "duplicate_rollup_count": 0,
+          "global_xp_delta_applied": 50,
+          "identity_code": "public-user021",
+          "rollups": [
+            {
+              "participant_key": "kick|kick:creator:3c426a3d-2409-4409-a0bf-c26960081027:channel:streamsuites|user_id:91658364",
+              "platform": "kick",
+              "reason": "rolled_up",
+              "rolled_up": true,
+              "scope_key": "kick:creator:3c426a3d-2409-4409-a0bf-c26960081027:channel:streamsuites",
+              "xp": 50
+            }
+          ],
+          "scoped_rows_affected": 1,
+          "skipped_rollup_count": 0
+        }
+      }
+    },
+    {
+      "id": "73523690-4117-4dcf-82d6-f101264e644f",
+      "ts": "2026-05-21T07:24:58Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "admin_public_identity_reconciled",
+      "metadata": {
+        "chat_id": null,
+        "force": true,
+        "handle": "StreamSuites",
+        "identity_code": "public-user020",
+        "identity_warning": null,
+        "ledger_update": {
+          "matched": 1,
+          "updated": 0
+        },
+        "participant_key": "kick|kick:creator:3c426a3d-2409-4409-a0bf-c26960081027:channel:streamsuites|user_id:91644603",
+        "platform": "kick",
+        "platform_user_id": "91644603",
+        "reconciliation_summary": {
+          "account_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+          "applied_rollup_count": 1,
+          "canonical_projection_changed": true,
+          "duplicate_rollup_count": 0,
+          "global_xp_delta_applied": 20,
+          "identity_code": "public-user020",
+          "rollups": [
+            {
+              "participant_key": "kick|kick:creator:3c426a3d-2409-4409-a0bf-c26960081027:channel:streamsuites|user_id:91644603",
+              "platform": "kick",
+              "reason": "rolled_up",
+              "rolled_up": true,
+              "scope_key": "kick:creator:3c426a3d-2409-4409-a0bf-c26960081027:channel:streamsuites",
+              "xp": 20
+            }
+          ],
+          "scoped_rows_affected": 1,
+          "skipped_rollup_count": 0
+        }
+      }
+    },
+    {
+      "id": "3860114b-d201-4696-bad2-103b08b8f463",
+      "ts": "2026-05-21T07:22:46Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "admin_public_identity_reconciled",
+      "metadata": {
+        "chat_id": null,
+        "force": true,
+        "handle": "DanielClancy",
+        "identity_code": "public-user022",
+        "identity_warning": null,
+        "ledger_update": {
+          "matched": 1,
+          "updated": 0
+        },
+        "participant_key": "kick|kick:creator:3c426a3d-2409-4409-a0bf-c26960081027:channel:streamsuites|user_id:1872330",
+        "platform": "kick",
+        "platform_user_id": "1872330",
+        "reconciliation_summary": {
+          "account_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+          "applied_rollup_count": 1,
+          "canonical_projection_changed": true,
+          "duplicate_rollup_count": 0,
+          "global_xp_delta_applied": 5,
+          "identity_code": "public-user022",
+          "rollups": [
+            {
+              "participant_key": "kick|kick:creator:3c426a3d-2409-4409-a0bf-c26960081027:channel:streamsuites|user_id:1872330",
+              "platform": "kick",
+              "reason": "rolled_up",
+              "rolled_up": true,
+              "scope_key": "kick:creator:3c426a3d-2409-4409-a0bf-c26960081027:channel:streamsuites",
+              "xp": 5
+            }
+          ],
+          "scoped_rows_affected": 1,
+          "skipped_rollup_count": 0
+        }
+      }
+    },
+    {
+      "id": "aa996608-52b1-4967-8f7a-0e5789d49901",
+      "ts": "2026-05-21T07:13:55Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "login_success",
+      "metadata": {
+        "ip": "194.113.66.80",
+        "provider": "email_password",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+      }
+    },
+    {
+      "id": "aa400f93-8eda-4c00-b4b0-fc5d24e5e8d1",
+      "ts": "2026-05-21T06:54:04Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "login_success",
+      "metadata": {
+        "ip": "194.113.66.80",
+        "provider": "email_password",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+      }
+    },
+    {
+      "id": "bfe07b3e-411e-41d9-8502-90462e1049ed",
+      "ts": "2026-05-21T06:50:12Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "61be01a8-559a-4b5e-82b8-fd0776cc23be",
+      "ts": "2026-05-21T06:50:12Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "97b0fe12-3dc9-4145-ba73-05b450c2e24b",
+      "ts": "2026-05-21T06:50:12Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "b8223d23-e685-45ec-b742-ea19fb4cafcc",
+      "ts": "2026-05-21T06:24:43Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "login_success",
+      "metadata": {
+        "ip": "194.113.66.80",
+        "provider": "email_password",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+      }
+    },
+    {
+      "id": "1c1d18f6-2e9c-4f28-b63c-f6faaafc6d37",
+      "ts": "2026-05-21T03:42:41Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "6a2f91f4-ed3b-425a-8689-197384192fc5",
+      "ts": "2026-05-21T03:42:41Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "84daa651-6d6c-4a9d-b122-1b8315d73b38",
+      "ts": "2026-05-21T03:42:40Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "b2d10e8a-c4c7-4998-9992-0060ed50963a",
+      "ts": "2026-05-21T01:45:11Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "6a4df6c5-a920-4a57-a964-14583f707c1f",
+      "ts": "2026-05-21T01:45:10Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "c0a995db-819d-42a4-bd63-2215c0ac578f",
+      "ts": "2026-05-21T01:45:10Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "f1b0f3aa-8979-43e0-a9dc-018bf9a01bdf",
+      "ts": "2026-05-20T15:59:01Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "admin_public_identity_reconciled",
+      "metadata": {
+        "chat_id": null,
+        "force": true,
+        "handle": "DanielClancy",
+        "identity_code": "public-user022",
+        "identity_warning": "account_already_linked_to_public_identity",
+        "ledger_update": {
+          "matched": 1,
+          "updated": 1
+        },
+        "participant_key": "kick|kick:creator:3c426a3d-2409-4409-a0bf-c26960081027:channel:streamsuites|user_id:1872330",
+        "platform": "kick",
+        "platform_user_id": "1872330"
+      }
+    },
+    {
+      "id": "18573591-8bef-4649-83a3-a925ce078281",
+      "ts": "2026-05-20T15:57:31Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "admin_public_identity_reconciled",
+      "metadata": {
+        "chat_id": null,
+        "force": false,
+        "handle": "StreamSuites",
+        "identity_code": "public-user020",
+        "identity_warning": "account_already_linked_to_public_identity",
+        "ledger_update": {
+          "matched": 1,
+          "updated": 1
+        },
+        "participant_key": "kick|kick:creator:3c426a3d-2409-4409-a0bf-c26960081027:channel:streamsuites|user_id:91644603",
+        "platform": "kick",
+        "platform_user_id": "91644603"
+      }
+    },
+    {
+      "id": "08bb1675-443a-458d-a8f4-07319b262082",
+      "ts": "2026-05-20T15:41:55Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "e16d0141-d956-4717-9041-7a4deedc47ef",
+      "ts": "2026-05-20T15:41:55Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "f692593d-cc3c-41a6-96b6-51b6f446f131",
+      "ts": "2026-05-20T15:41:54Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "e54c1c49-2ff4-4cdb-8346-f07bf196e5b1",
+      "ts": "2026-05-20T10:26:52Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "937b1b5c-fe95-4cb9-96a9-8543f600f0e5",
+      "ts": "2026-05-20T10:26:52Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "2c05c801-d67d-4be3-89dd-fd4e07ed6174",
+      "ts": "2026-05-20T10:26:52Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "d157ed74-3b50-4227-bd8b-ab7efa9461df",
+      "ts": "2026-05-20T03:40:36Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "login_success",
+      "metadata": {
+        "ip": "194.146.14.141",
+        "provider": "email_password",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+      }
+    },
+    {
+      "id": "d2b46f18-24b3-4b46-b852-c8d3208f9d5c",
+      "ts": "2026-05-19T14:44:25Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "6dea1a2f-b020-4181-ae76-23df8d07493d",
+      "ts": "2026-05-19T14:44:24Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "6b6a8125-693f-4465-bbb4-4894664919b0",
+      "ts": "2026-05-19T14:44:24Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
     {
       "id": "998f8e37-1d06-4bb1-a1e2-5ed799dea9ba",
       "ts": "2026-05-19T06:17:30Z",
