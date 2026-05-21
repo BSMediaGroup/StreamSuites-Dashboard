@@ -1,7 +1,7 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-05-21T11:42:44.825509Z",
-  "server_generated_at": "2026-05-21T11:42:44.825509Z",
+  "generated_at": "2026-05-21T13:42:21.900357Z",
+  "server_generated_at": "2026-05-21T13:42:21.900357Z",
   "count": 4,
   "bots": [
     {
@@ -69,8 +69,8 @@
       "active_visible_reason": "auto_configured",
       "superseded_by": null,
       "configuration_state": "connected",
-      "last_heartbeat_at": "2026-05-21T11:42:23.299150Z",
-      "last_evaluated_at": "2026-05-21T11:42:23.299150Z",
+      "last_heartbeat_at": "2026-05-21T13:42:00.485926Z",
+      "last_evaluated_at": "2026-05-21T13:42:00.485926Z",
       "last_transition_at": null,
       "resolved_target": {
         "platform": "kick",
@@ -85,7 +85,7 @@
       "target_normalized": "danielclancy",
       "target_source": "manual_channel",
       "target_input": "danielclancy",
-      "target_last_changed_at": "1779362998",
+      "target_last_changed_at": "1779370112",
       "target_changed_by": "creator",
       "detection_attempted_at": null,
       "detection_status": null,
@@ -158,8 +158,8 @@
       "superseded_by": null,
       "configuration_state": "connected",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-05-21T11:42:42.519250Z",
-      "last_transition_at": "2026-05-21T06:50:57.569939Z",
+      "last_evaluated_at": "2026-05-21T13:42:19.584380Z",
+      "last_transition_at": "2026-05-21T11:52:34.436814Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -186,7 +186,7 @@
       "state_source": "runtime_export",
       "confidence": "medium",
       "set_by": "kick_auto_deploy",
-      "set_at": "2026-05-21T06:50:57.569939Z",
+      "set_at": "2026-05-21T11:52:34.436814Z",
       "set_reason": "Rumble sample-parity browse/live request failed before a trustworthy offline result could be established.",
       "last_manual_deploy_at": null,
       "last_probe_at": null,
@@ -265,8 +265,8 @@
       "active_visible_reason": "auto_configured",
       "superseded_by": null,
       "configuration_state": "connected",
-      "last_heartbeat_at": "2026-05-21T11:42:23.299150Z",
-      "last_evaluated_at": "2026-05-21T11:42:23.299150Z",
+      "last_heartbeat_at": "2026-05-21T13:42:00.485926Z",
+      "last_evaluated_at": "2026-05-21T13:42:00.485926Z",
       "last_transition_at": null,
       "resolved_target": {
         "platform": "kick",
@@ -281,7 +281,7 @@
       "target_normalized": "streamsuites",
       "target_source": "manual_channel",
       "target_input": "streamsuites",
-      "target_last_changed_at": "1779363023",
+      "target_last_changed_at": "1779370136",
       "target_changed_by": "creator",
       "detection_attempted_at": null,
       "detection_status": null,
@@ -354,8 +354,8 @@
       "superseded_by": null,
       "configuration_state": "connected",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-05-21T11:42:42.519250Z",
-      "last_transition_at": "2026-05-21T06:50:57.569939Z",
+      "last_evaluated_at": "2026-05-21T13:42:19.584380Z",
+      "last_transition_at": "2026-05-21T11:52:34.436814Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -382,7 +382,7 @@
       "state_source": "runtime_export",
       "confidence": "medium",
       "set_by": "kick_auto_deploy",
-      "set_at": "2026-05-21T06:50:57.569939Z",
+      "set_at": "2026-05-21T11:52:34.436814Z",
       "set_reason": "Creator disabled Rumble bot auto-deploy.",
       "last_manual_deploy_at": null,
       "last_probe_at": null,
@@ -524,7 +524,7 @@
       },
       "hidden_placeholder_count": 0,
       "last_log": {
-        "timestamp": "2026-05-21T11:42:23.299150Z",
+        "timestamp": "2026-05-21T13:42:00.485926Z",
         "severity": "info",
         "message": "[4TiOlvS] Kick webhook subscription is active; waiting for first webhook event."
       }
@@ -626,7 +626,7 @@
       },
       "hidden_placeholder_count": 0,
       "last_log": {
-        "timestamp": "2026-05-21T06:50:57.569939Z",
+        "timestamp": "2026-05-21T11:52:34.436814Z",
         "severity": "warning",
         "message": "[4TiOlvS] Managed session state updated to blocked."
       }

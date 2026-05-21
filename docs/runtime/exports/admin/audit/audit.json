@@ -1,12 +1,198 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-05-21T11:42:42.044379Z",
+  "exported_at": "2026-05-21T13:42:19.012618Z",
   "runtime": {
     "project": "StreamSuites™ Runtime",
     "version": "0.4.2-alpha",
-    "build": "2026.05.21+004"
+    "build": "2026.05.21+006"
   },
   "audit": [
+    {
+      "id": "92646f14-6a14-4349-84b3-ed7b202c4ed3",
+      "ts": "2026-05-21T12:15:31Z",
+      "actor_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "actor_user_code": "JQ6MMUB",
+      "actor_role": "admin",
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "login_success",
+      "metadata": {
+        "ip": "194.113.66.80",
+        "provider": "email_password",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+      }
+    },
+    {
+      "id": "befda14b-1651-481d-9835-9c73f1eb5fb5",
+      "ts": "2026-05-21T12:05:01Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "75d556b3-dd22-40b6-9d3e-8a034af552d6",
+      "target_user_code": "84BPuNT",
+      "action": "tier_changed",
+      "metadata": {
+        "after": {
+          "account_type": "creator",
+          "badge_entitlements": {
+            "founder": {
+              "assigned_at": 1774669462,
+              "assigned_by": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+              "enabled": true,
+              "source": "reconcile_cutoff",
+              "updated_at": 1774669462,
+              "updated_by": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c"
+            }
+          },
+          "badge_preferences": {},
+          "badge_visibility_overrides": {},
+          "billing_intervention_count": 0,
+          "onboarding": "required",
+          "status": "active",
+          "tier": "gold"
+        },
+        "before": {
+          "account_type": "creator",
+          "badge_entitlements": {
+            "founder": {
+              "assigned_at": 1774669462,
+              "assigned_by": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+              "enabled": true,
+              "source": "reconcile_cutoff",
+              "updated_at": 1774669462,
+              "updated_by": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c"
+            }
+          },
+          "badge_preferences": {},
+          "badge_visibility_overrides": {},
+          "billing_intervention_count": 0,
+          "onboarding": "required",
+          "status": "active",
+          "tier": "core"
+        },
+        "previous_tier": "core",
+        "tier": "gold"
+      }
+    },
+    {
+      "id": "4da59538-0d84-4c43-a776-0463181e7624",
+      "ts": "2026-05-21T12:04:37Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "75d556b3-dd22-40b6-9d3e-8a034af552d6",
+      "target_user_code": "84BPuNT",
+      "action": "admin_public_profile_slug_changed",
+      "metadata": {
+        "after_public_profile": {
+          "background_image_url": "",
+          "bio": "",
+          "cover_image_url": "",
+          "custom_links_count": 0,
+          "findmehere_enabled": true,
+          "findmehere_theme_keys": [
+            "advanced",
+            "button_color",
+            "button_tone",
+            "font_preset",
+            "header_branding",
+            "image_visibility",
+            "layout_preset",
+            "page_accent_color"
+          ],
+          "is_anonymous": false,
+          "is_listed": true,
+          "public_slug": "octogoat",
+          "social_links_count": 0,
+          "streamsuites_profile_enabled": true
+        },
+        "after_public_slug": "octogoat",
+        "before_public_profile": {
+          "background_image_url": "",
+          "bio": "",
+          "cover_image_url": "",
+          "custom_links_count": 0,
+          "findmehere_enabled": true,
+          "findmehere_theme_keys": [
+            "advanced",
+            "button_color",
+            "button_tone",
+            "font_preset",
+            "header_branding",
+            "image_visibility",
+            "layout_preset",
+            "page_accent_color"
+          ],
+          "is_anonymous": false,
+          "is_listed": true,
+          "public_slug": "digitalcyanide",
+          "social_links_count": 0,
+          "streamsuites_profile_enabled": true
+        },
+        "before_public_slug": "digitalcyanide"
+      }
+    },
+    {
+      "id": "97c56eaa-c4f4-4a6f-93ce-e065302428ca",
+      "ts": "2026-05-21T12:02:17Z",
+      "actor_user_id": "75d556b3-dd22-40b6-9d3e-8a034af552d6",
+      "actor_user_code": "84BPuNT",
+      "actor_role": "creator",
+      "target_user_id": "75d556b3-dd22-40b6-9d3e-8a034af552d6",
+      "target_user_code": "84BPuNT",
+      "action": "login_success",
+      "metadata": {
+        "provider": "x"
+      }
+    },
+    {
+      "id": "079b0486-882d-492f-9db0-8a902ebda90b",
+      "ts": "2026-05-21T11:51:44Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "3d032309-bc49-47f7-bb7f-1994e3e8816e",
+      "ts": "2026-05-21T11:51:44Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "1ee9f41f-e136-4eb7-947b-e7173b271222",
+      "ts": "2026-05-21T11:51:44Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
     {
       "id": "01b864ff-8b8a-4364-a59a-79d68cc50a1a",
       "ts": "2026-05-21T07:55:18Z",

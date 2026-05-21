@@ -1,10 +1,10 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-05-21T11:42:41.581037Z",
+  "exported_at": "2026-05-21T13:42:18.624420Z",
   "runtime": {
     "project": "StreamSuites™ Runtime",
     "version": "0.4.2-alpha",
-    "build": "2026.05.21+004"
+    "build": "2026.05.21+006"
   },
   "users": [
     {
@@ -300,11 +300,19 @@
         "findmehere_status_reason": "visible",
         "findmehere_profile_url": "https://findmehere.live/automations",
         "findmehere_share_url": "https://findmehere.live/automations",
-        "cover_image_url": "",
-        "banner_image_url": "",
+        "cover_image_url": "https://cdn.streamsuites.app/u/JQ6MMUB/cover/v1.webp",
+        "banner_image_url": "https://cdn.streamsuites.app/u/JQ6MMUB/cover/v1.webp",
         "background_image_url": "",
-        "bio": "",
-        "social_links": {},
+        "bio": "Official fallback profile for StreamSuites chatbots, automation flows, and system-managed actions. This account supports platform testing, runtime operations, bot identity handling, and automated service activity across the StreamSuites ecosystem.",
+        "social_links": {
+          "kick": "https://kick.com/streamsuites",
+          "pilled": "https://pilled.net/streamsuites",
+          "rumble": "https://rumble.com/streamsuites",
+          "twitch": "https://twitch.tv/streamsuites",
+          "website": "https://streamsuites.app",
+          "x": "https://x.com/streamsuitesapp",
+          "youtube": "https://youtube.com/@streamsuites"
+        },
         "custom_links": [],
         "is_anonymous": false,
         "is_listed": true
@@ -324,14 +332,14 @@
       "public_surface_account_type": "creator_capable",
       "creator_capable": true,
       "viewer_only": false,
-      "cover_image_url": "",
-      "banner_image_url": "",
+      "cover_image_url": "https://cdn.streamsuites.app/u/JQ6MMUB/cover/v1.webp",
+      "banner_image_url": "https://cdn.streamsuites.app/u/JQ6MMUB/cover/v1.webp",
       "background_image_url": "",
       "user_code": "JQ6MMUB",
       "email": "automations@streamsuites.app",
       "email_verified": true,
       "display_name": "Automations",
-      "avatar_url": null,
+      "avatar_url": "https://cdn.streamsuites.app/u/JQ6MMUB/avatar/v1.webp",
       "role": "admin",
       "account_type": "ADMIN",
       "tier": "pro",
@@ -364,8 +372,8 @@
         }
       ],
       "created_at": "2026-03-28T18:35:44Z",
-      "last_login_at": "2026-05-21T06:50:12Z",
-      "updated_at": "2026-05-21T06:50:12Z"
+      "last_login_at": "2026-05-21T12:15:30Z",
+      "updated_at": "2026-05-21T13:40:40Z"
     },
     {
       "id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
@@ -454,8 +462,8 @@
         }
       ],
       "created_at": "2026-03-28T18:35:43Z",
-      "last_login_at": "2026-05-21T06:50:12Z",
-      "updated_at": "2026-05-21T06:50:12Z"
+      "last_login_at": "2026-05-21T11:51:44Z",
+      "updated_at": "2026-05-21T11:51:44Z"
     },
     {
       "id": "d61f5f01-a8e2-4f8c-8a7d-d6023652ae49",
@@ -534,7 +542,7 @@
       "providers": [],
       "created_at": "2026-03-27T14:51:44Z",
       "last_login_at": null,
-      "updated_at": "2026-05-21T06:50:13Z"
+      "updated_at": "2026-05-21T11:51:45Z"
     },
     {
       "id": "494098e5-1409-40ea-99a5-ec4a1b797da4",
@@ -712,8 +720,8 @@
         }
       ],
       "created_at": "2026-02-21T20:51:09Z",
-      "last_login_at": "2026-05-21T07:13:55Z",
-      "updated_at": "2026-05-21T07:13:55Z"
+      "last_login_at": "2026-05-21T11:51:43Z",
+      "updated_at": "2026-05-21T11:51:44Z"
     },
     {
       "id": "338edf81-9e24-4730-977a-c9972aecba4d",
@@ -798,11 +806,15 @@
     {
       "id": "75d556b3-dd22-40b6-9d3e-8a034af552d6",
       "internal_id": "75d556b3-dd22-40b6-9d3e-8a034af552d6",
-      "public_slug": "digitalcyanide",
-      "slug_aliases": [],
+      "public_slug": "octogoat",
+      "slug_aliases": [
+        "digitalcyanide"
+      ],
       "public_profile": {
-        "public_slug": "digitalcyanide",
-        "slug_aliases": [],
+        "public_slug": "octogoat",
+        "slug_aliases": [
+          "digitalcyanide"
+        ],
         "public_surface_account_type": "creator_capable",
         "creator_capable": true,
         "viewer_only": false,
@@ -810,25 +822,32 @@
         "streamsuites_profile_eligible": true,
         "streamsuites_profile_visible": true,
         "streamsuites_profile_status_reason": "visible",
-        "streamsuites_profile_url": "https://streamsuites.app/u/digitalcyanide",
-        "streamsuites_share_url": "https://streamsuites.app/u/digitalcyanide",
+        "streamsuites_profile_url": "https://streamsuites.app/u/octogoat",
+        "streamsuites_share_url": "https://streamsuites.app/u/octogoat",
         "findmehere_enabled": true,
         "findmehere_eligible": true,
         "findmehere_visible": true,
         "findmehere_status_reason": "visible",
-        "findmehere_profile_url": "https://findmehere.live/digitalcyanide",
-        "findmehere_share_url": "https://findmehere.live/digitalcyanide",
-        "cover_image_url": "",
-        "banner_image_url": "",
+        "findmehere_profile_url": "https://findmehere.live/octogoat",
+        "findmehere_share_url": "https://findmehere.live/octogoat",
+        "cover_image_url": "https://cdn.streamsuites.app/u/84BPuNT/cover/v1.webp",
+        "banner_image_url": "https://cdn.streamsuites.app/u/84BPuNT/cover/v1.webp",
         "background_image_url": "",
-        "bio": "",
-        "social_links": {},
+        "bio": "Like a regular goat, but OCTO™",
+        "social_links": {
+          "kick": "https://kick.com/danielclancy",
+          "pilled": "https://pilled.net/danielclancy",
+          "rumble": "https://rumble.com/danielclancy",
+          "website": "https://thirdrailify.com",
+          "x": "https://x.com/theoctogoat",
+          "youtube": "https://youtube.com/@danielclancy"
+        },
         "custom_links": [],
         "is_anonymous": false,
         "is_listed": true
       },
-      "streamsuites_profile_url": "https://streamsuites.app/u/digitalcyanide",
-      "streamsuites_share_url": "https://streamsuites.app/u/digitalcyanide",
+      "streamsuites_profile_url": "https://streamsuites.app/u/octogoat",
+      "streamsuites_share_url": "https://streamsuites.app/u/octogoat",
       "streamsuites_profile_enabled": true,
       "streamsuites_profile_eligible": true,
       "streamsuites_profile_visible": true,
@@ -836,24 +855,29 @@
       "findmehere_enabled": true,
       "findmehere_eligible": true,
       "findmehere_visible": true,
-      "findmehere_profile_url": "https://findmehere.live/digitalcyanide",
+      "findmehere_profile_url": "https://findmehere.live/octogoat",
       "findmehere_status_reason": "visible",
-      "findmehere_share_url": "https://findmehere.live/digitalcyanide",
+      "findmehere_share_url": "https://findmehere.live/octogoat",
       "public_surface_account_type": "creator_capable",
       "creator_capable": true,
       "viewer_only": false,
-      "cover_image_url": "",
-      "banner_image_url": "",
+      "cover_image_url": "https://cdn.streamsuites.app/u/84BPuNT/cover/v1.webp",
+      "banner_image_url": "https://cdn.streamsuites.app/u/84BPuNT/cover/v1.webp",
       "background_image_url": "",
       "user_code": "84BPuNT",
       "email": null,
       "email_verified": true,
-      "display_name": "Digital Cyanide",
-      "avatar_url": "https://pbs.twimg.com/profile_images/1898204671669637120/-KCJ_C3s_normal.jpg",
+      "display_name": "OCTOGOAT™",
+      "avatar_url": "https://cdn.streamsuites.app/u/84BPuNT/avatar/v1.webp",
       "role": "creator",
       "account_type": "CREATOR",
-      "tier": "core",
+      "tier": "gold",
       "badges": [
+        {
+          "kind": "tier",
+          "value": "gold",
+          "label": "GOLD"
+        },
         {
           "kind": "role",
           "value": "creator",
@@ -872,8 +896,8 @@
         }
       ],
       "created_at": "2026-02-09T07:31:53Z",
-      "last_login_at": "2026-02-09T12:29:33Z",
-      "updated_at": "2026-03-28T03:44:22Z"
+      "last_login_at": "2026-05-21T12:02:17Z",
+      "updated_at": "2026-05-21T12:12:12Z"
     },
     {
       "id": "3a190fb9-1804-4a8f-b0d4-03cbf03ef06c",
