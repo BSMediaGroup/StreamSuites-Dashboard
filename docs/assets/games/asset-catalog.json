@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "generated_at": "2026-05-18T11:25:47.389606Z",
+  "generated_at": "2026-05-19T21:43:42.876229Z",
   "asset_root": "assets/games",
-  "count": 55,
+  "count": 58,
   "items": [
     {
       "path": "assets/games/00-stone.webp",
@@ -227,6 +227,34 @@
       "label": "Bluediamond",
       "size_bytes": 128084,
       "category": "level",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/badge-rumble.webp",
+      "filename": "badge-rumble.webp",
+      "extension": "webp",
+      "label": "Rumble Ico,n 01",
+      "category": "item",
+      "tags": [
+        "logo",
+        "rumble"
+      ],
+      "notes": "",
+      "updated_at": "2026-05-19T21:42:47.039250Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/badge-rumble2.webp",
+      "filename": "badge-rumble2.webp",
+      "extension": "webp",
+      "label": "Rumble Badge 01",
+      "category": "item",
+      "tags": [
+        "logo",
+        "rumble"
+      ],
+      "notes": "",
+      "updated_at": "2026-05-19T21:43:42.858016Z",
       "definition_complete": true
     },
     {
@@ -496,6 +524,21 @@
       "label": "Ssgemred",
       "size_bytes": 89358,
       "category": "currency",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/sshield-gold.webp",
+      "filename": "sshield-gold.webp",
+      "extension": "webp",
+      "label": "Shield",
+      "category": "item",
+      "tags": [
+        "shield",
+        "gold",
+        "health"
+      ],
+      "notes": "Gold SS shield.",
+      "updated_at": "2026-05-19T21:31:41.796997Z",
       "definition_complete": true
     },
     {
