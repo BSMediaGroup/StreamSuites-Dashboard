@@ -1,73 +1,7 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-05-21T13:42:17.581594Z",
+  "generated_at": "2026-05-21T16:04:40.909485Z",
   "events": [
-    {
-      "timestamp": "2026-03-19T01:31:57Z",
-      "source": "auth",
-      "severity": "info",
-      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
-      "event_type": "session_issued",
-      "email_type": "github",
-      "user_identifier": "user_code:4TiOlvS",
-      "provider_message_id": null,
-      "result": "success"
-    },
-    {
-      "timestamp": "2026-03-19T01:38:02Z",
-      "source": "auth",
-      "severity": "info",
-      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
-      "event_type": "session_issued",
-      "email_type": "github",
-      "user_identifier": "user_code:4TiOlvS",
-      "provider_message_id": null,
-      "result": "success"
-    },
-    {
-      "timestamp": "2026-03-19T04:45:11Z",
-      "source": "auth",
-      "severity": "info",
-      "message": "Auth event: session_issued email=google user=user_code:7XaVoy7 result=success",
-      "event_type": "session_issued",
-      "email_type": "google",
-      "user_identifier": "user_code:7XaVoy7",
-      "provider_message_id": null,
-      "result": "success"
-    },
-    {
-      "timestamp": "2026-03-19T04:55:30Z",
-      "source": "auth",
-      "severity": "info",
-      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
-      "event_type": "session_issued",
-      "email_type": "github",
-      "user_identifier": "user_code:4TiOlvS",
-      "provider_message_id": null,
-      "result": "success"
-    },
-    {
-      "timestamp": "2026-03-19T07:25:03Z",
-      "source": "auth",
-      "severity": "info",
-      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
-      "event_type": "session_issued",
-      "email_type": "github",
-      "user_identifier": "user_code:4TiOlvS",
-      "provider_message_id": null,
-      "result": "success"
-    },
-    {
-      "timestamp": "2026-03-28T02:28:47Z",
-      "source": "auth",
-      "severity": "info",
-      "message": "Auth event: session_issued email=github user=user_code:4TiOlvS result=success",
-      "event_type": "session_issued",
-      "email_type": "github",
-      "user_identifier": "user_code:4TiOlvS",
-      "provider_message_id": null,
-      "result": "success"
-    },
     {
       "timestamp": "2026-04-02T20:10:41Z",
       "source": "auth",
@@ -2104,12 +2038,6 @@
       "result": "success"
     },
     {
-      "timestamp": "2026-05-21T11:52:13.153242Z",
-      "source": "system",
-      "severity": "info",
-      "message": "Runtime boot sequence started"
-    },
-    {
       "timestamp": "2026-05-21T12:01:37Z",
       "source": "auth",
       "severity": "info",
@@ -2194,6 +2122,78 @@
       "event_type": "session_issued",
       "email_type": "email",
       "user_identifier": "user_code:JQ6MMUB",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-05-21T14:01:27.076937Z",
+      "source": "system",
+      "severity": "info",
+      "message": "Runtime boot sequence started"
+    },
+    {
+      "timestamp": "2026-05-21T14:10:56Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:ad***@streamsuites.app result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:ad***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-05-21T14:10:58Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=email user=user_code:YR992ZS result=success",
+      "event_type": "session_issued",
+      "email_type": "email",
+      "user_identifier": "user_code:YR992ZS",
+      "provider_message_id": null,
+      "result": "success"
+    },
+    {
+      "timestamp": "2026-05-21T14:52:45Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:sy***@streamsuites.app result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:sy***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-05-21T14:52:46Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=security_alert user=email:sy***@streamsuites.app result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "security_alert",
+      "user_identifier": "email:sy***@streamsuites.app",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-05-21T14:53:01Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: security_alert email=password_login_new_session user=account_id:45385ed3-1b85-4deb-853f-2bf75fa6360c email:sy***@streamsuites.app result=sent message_id=342ae7c9-3864-4313-bb2e-763e83134ca2",
+      "event_type": "security_alert",
+      "email_type": "password_login_new_session",
+      "user_identifier": "account_id:45385ed3-1b85-4deb-853f-2bf75fa6360c email:sy***@streamsuites.app",
+      "provider_message_id": "342ae7c9-3864-4313-bb2e-763e83134ca2",
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-05-21T14:53:02Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=email user=user_code:Y55GHS6 result=success",
+      "event_type": "session_issued",
+      "email_type": "email",
+      "user_identifier": "user_code:Y55GHS6",
       "provider_message_id": null,
       "result": "success"
     }

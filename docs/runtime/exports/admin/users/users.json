@@ -1,10 +1,10 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-05-21T13:42:18.624420Z",
+  "exported_at": "2026-05-21T16:04:41.894309Z",
   "runtime": {
     "project": "StreamSuites™ Runtime",
     "version": "0.4.2-alpha",
-    "build": "2026.05.21+006"
+    "build": "2026.05.21+007"
   },
   "users": [
     {
@@ -372,8 +372,8 @@
         }
       ],
       "created_at": "2026-03-28T18:35:44Z",
-      "last_login_at": "2026-05-21T12:15:30Z",
-      "updated_at": "2026-05-21T13:40:40Z"
+      "last_login_at": "2026-05-21T14:01:01Z",
+      "updated_at": "2026-05-21T14:01:01Z"
     },
     {
       "id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
@@ -398,11 +398,20 @@
         "findmehere_status_reason": "visible",
         "findmehere_profile_url": "https://findmehere.live/system",
         "findmehere_share_url": "https://findmehere.live/system",
-        "cover_image_url": "",
-        "banner_image_url": "",
+        "cover_image_url": "https://cdn.streamsuites.app/u/Y55GHS6/cover/v1.webp",
+        "banner_image_url": "https://cdn.streamsuites.app/u/Y55GHS6/cover/v1.webp",
         "background_image_url": "",
-        "bio": "",
-        "social_links": {},
+        "bio": "System account - core StreamSuites operations profile used for fallback administration, platform maintenance, and system-managed service activity. This bootstrapped admin account helps support internal workflows, runtime stability, and trusted automation across the StreamSuites ecosystem.",
+        "social_links": {
+          "discord": "https://discord.gg/rg7x363j5h",
+          "kick": "https://kick.com/streamsuites",
+          "pilled": "https://pilled.net/streamsuites",
+          "rumble": "https://rumble.com/streamsuites",
+          "twitch": "https://twitch.tv/streamsuites",
+          "website": "https://brainstream.media/",
+          "x": "https://x.com/thebsmediagroup",
+          "youtube": "https://youtube.com/@danielclancy"
+        },
         "custom_links": [],
         "is_anonymous": false,
         "is_listed": true
@@ -422,14 +431,14 @@
       "public_surface_account_type": "creator_capable",
       "creator_capable": true,
       "viewer_only": false,
-      "cover_image_url": "",
-      "banner_image_url": "",
+      "cover_image_url": "https://cdn.streamsuites.app/u/Y55GHS6/cover/v1.webp",
+      "banner_image_url": "https://cdn.streamsuites.app/u/Y55GHS6/cover/v1.webp",
       "background_image_url": "",
       "user_code": "Y55GHS6",
       "email": "system@streamsuites.app",
       "email_verified": true,
       "display_name": "System",
-      "avatar_url": null,
+      "avatar_url": "https://cdn.streamsuites.app/u/Y55GHS6/avatar/v1.webp",
       "role": "admin",
       "account_type": "ADMIN",
       "tier": "pro",
@@ -462,8 +471,8 @@
         }
       ],
       "created_at": "2026-03-28T18:35:43Z",
-      "last_login_at": "2026-05-21T11:51:44Z",
-      "updated_at": "2026-05-21T11:51:44Z"
+      "last_login_at": "2026-05-21T14:52:45Z",
+      "updated_at": "2026-05-21T15:25:43Z"
     },
     {
       "id": "d61f5f01-a8e2-4f8c-8a7d-d6023652ae49",
@@ -542,7 +551,7 @@
       "providers": [],
       "created_at": "2026-03-27T14:51:44Z",
       "last_login_at": null,
-      "updated_at": "2026-05-21T11:51:45Z"
+      "updated_at": "2026-05-21T14:01:02Z"
     },
     {
       "id": "494098e5-1409-40ea-99a5-ec4a1b797da4",
@@ -720,8 +729,8 @@
         }
       ],
       "created_at": "2026-02-21T20:51:09Z",
-      "last_login_at": "2026-05-21T11:51:43Z",
-      "updated_at": "2026-05-21T11:51:44Z"
+      "last_login_at": "2026-05-21T14:10:57Z",
+      "updated_at": "2026-05-21T14:10:57Z"
     },
     {
       "id": "338edf81-9e24-4730-977a-c9972aecba4d",
@@ -897,7 +906,7 @@
       ],
       "created_at": "2026-02-09T07:31:53Z",
       "last_login_at": "2026-05-21T12:02:17Z",
-      "updated_at": "2026-05-21T12:12:12Z"
+      "updated_at": "2026-05-21T14:00:31Z"
     },
     {
       "id": "3a190fb9-1804-4a8f-b0d4-03cbf03ef06c",
