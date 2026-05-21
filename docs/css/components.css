@@ -3666,6 +3666,42 @@
   border-color: rgba(132, 149, 168, 0.28);
 }
 
+.ss-live-status-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.ss-live-status-table td {
+  vertical-align: top;
+}
+
+.ss-live-status-details {
+  margin-top: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.32);
+}
+
+.ss-live-status-details summary {
+  cursor: pointer;
+  padding: 10px 12px;
+  color: #cbd5e1;
+}
+
+.ss-live-status-raw {
+  margin: 0;
+  max-height: 280px;
+  overflow: auto;
+  padding: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+  color: #dbeafe;
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
 .ss-analytics-alerts-history-status {
   font-weight: 700;
   color: var(--text-primary);

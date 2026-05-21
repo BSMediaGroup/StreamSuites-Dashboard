@@ -26,6 +26,10 @@
     el.configBot = document.getElementById("yt-config-bot");
     el.configSource = document.getElementById("yt-config-source");
     el.replayFlags = document.getElementById("yt-replay-flags");
+    el.liveStatusBanner = document.getElementById("yt-live-status-banner");
+    el.liveStatusSummary = document.getElementById("yt-live-status-summary");
+    el.liveStatusRefresh = document.getElementById("yt-live-status-refresh");
+    el.liveStatusScan = document.getElementById("yt-live-status-scan");
 
     /* API quota bars */
     el.quotaDailyFill = document.querySelector(
@@ -50,6 +54,31 @@
   function setText(target, value) {
     if (!target) return;
     target.textContent = value;
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  async function hydrateLiveStatusScaffold() {
+    if (!el.liveStatusBanner) return;
+    try {
+      const payload = await window.StreamSuitesApi?.apiFetch?.("/api/admin/live-status/diagnostics?platform=youtube", {
+        forceRefresh: true,
+        timeoutMs: 6000
+      });
+      const provider = payload?.providers?.youtube || {};
+      setText(el.liveStatusBanner, provider.manual_scan_disabled_reason || "YouTube live fetching is scaffolded only.");
+      if (el.liveStatusSummary) {
+        el.liveStatusSummary.innerHTML = `
+          <span class="ss-chip ss-chip-warning">Not implemented</span>
+          <span class="ss-chip ss-chip-muted">${escapeHtml((provider.blockers || ["provider_scan_control_not_wired"]).join(", "))}</span>
+        `;
+      }
+    } catch (err) {
+      setText(el.liveStatusBanner, "Runtime/Auth diagnostics endpoint unavailable; YouTube controls remain disabled.");
+    }
+    if (el.liveStatusScan) el.liveStatusScan.disabled = true;
   }
 
   function formatTimestamp(value) {
@@ -425,16 +454,19 @@
 
   function init() {
     cacheElements();
+    setFoundationStatus();
+    el.liveStatusRefresh?.addEventListener("click", hydrateLiveStatusScaffold);
     if (!isRuntimeAvailable()) {
       renderRuntimeDisconnected();
+      hydrateLiveStatusScaffold();
       console.info("[Dashboard] Runtime unavailable. Polling disabled.");
       return;
     }
-    setFoundationStatus();
 
     setTimeout(() => {
       (async () => {
         await hydrateConfig();
+        await hydrateLiveStatusScaffold();
         hydrateRuntimePlaceholder();
         startRuntimePolling();
 

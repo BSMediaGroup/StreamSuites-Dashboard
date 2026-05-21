@@ -20,11 +20,40 @@
     el.configEnabled = document.getElementById("tw-config-enabled");
     el.configChannel = document.getElementById("tw-config-channel");
     el.configSource = document.getElementById("tw-config-source");
+    el.liveStatusBanner = document.getElementById("tw-live-status-banner");
+    el.liveStatusSummary = document.getElementById("tw-live-status-summary");
+    el.liveStatusRefresh = document.getElementById("tw-live-status-refresh");
+    el.liveStatusScan = document.getElementById("tw-live-status-scan");
   }
 
   function setText(target, value) {
     if (!target) return;
     target.textContent = value;
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  async function hydrateLiveStatusScaffold() {
+    if (!el.liveStatusBanner) return;
+    try {
+      const payload = await window.StreamSuitesApi?.apiFetch?.("/api/admin/live-status/diagnostics?platform=twitch", {
+        forceRefresh: true,
+        timeoutMs: 6000
+      });
+      const provider = payload?.providers?.twitch || {};
+      setText(el.liveStatusBanner, provider.manual_scan_disabled_reason || "Twitch live fetching is scaffolded only.");
+      if (el.liveStatusSummary) {
+        el.liveStatusSummary.innerHTML = `
+          <span class="ss-chip ss-chip-warning">Not implemented</span>
+          <span class="ss-chip ss-chip-muted">${escapeHtml((provider.blockers || ["provider_scan_control_not_wired"]).join(", "))}</span>
+        `;
+      }
+    } catch (err) {
+      setText(el.liveStatusBanner, "Runtime/Auth diagnostics endpoint unavailable; Twitch controls remain disabled.");
+    }
+    if (el.liveStatusScan) el.liveStatusScan.disabled = true;
   }
 
   function formatTimestamp(value) {
@@ -241,10 +270,12 @@
   function init() {
     cacheElements();
     setFoundationStatus();
+    el.liveStatusRefresh?.addEventListener("click", hydrateLiveStatusScaffold);
 
     setTimeout(() => {
       (async () => {
         await hydrateConfig();
+        await hydrateLiveStatusScaffold();
         hydrateRuntimePlaceholder();
         startRuntimePolling();
       })();

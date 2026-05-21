@@ -54,6 +54,7 @@ flowchart TD
 - The `/public-identities` workspace reviews unresolved, ambiguous, resolved, and all livechat/public identity records through Runtime/Auth reconciliation endpoints, then calls Runtime/Auth for explicit admin assignment or forced reassignment. Dashboard stores no identity authority locally.
 - Root and `docs/` rewrite manifests preserve deep links for routes such as `/overview`, `/accounts`, `/public-identities`, `/profiles`, `/analytics`, `/alerts`, `/notifications`, `/settings`, `/creator-stats`, `/integrations/...`, and other admin views, but the repo root is now the authoritative shell so deep links do not depend on a `/docs/index.html` compatibility hop.
 - Creator integrations now have a dedicated admin route at `/profiles/integrations`, backed by runtime/Auth-admin inspection endpoints for creator-capable posture, platform readiness, trigger foundation, and bot deploy eligibility.
+- The `/integrations/kick` page now includes Runtime/Auth live-status diagnostics from `GET /api/admin/live-status/diagnostics?platform=kick`, plus a TTL/backoff-respecting manual scan request to `POST /api/admin/live-status/scan`. `/integrations/youtube` and `/integrations/twitch` show disabled scaffold live-fetch panels until backend scan control is implemented.
 - Admin account investigation now also supports a dedicated `user_code` route at `/users/{user_code}` for exhaustive single-account inspection across identity, auth posture, creator readiness, integrations, and trigger footing.
 - The trigger oversight route at `/integrations/triggers` is now a runtime/Auth-backed admin surface for creator-scoped Rumble text trigger CRUD and controlled managed-send testing.
 - Admin account inspection now exposes authoritative public-profile state, including canonical slug, creator-capable vs viewer-only posture, StreamSuites and FindMeHere visibility or eligibility, slug aliases, canonical URLs, and reserved media fields including background image URL.
@@ -240,6 +241,7 @@ StreamSuites-Dashboard/
 │   ├── admin-auth-turnstile.test.mjs
 │   ├── economy-admin-controls.test.mjs
 │   ├── jobs-runtime-authority.test.mjs
+│   ├── live-status-diagnostics.test.mjs
 │   ├── public-authority-approvals.test.mjs
 │   ├── notifications-runtime-authority.test.mjs
 │   ├── progression-admin-controls.test.mjs

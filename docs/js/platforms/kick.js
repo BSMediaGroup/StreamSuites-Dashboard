@@ -21,6 +21,13 @@
     el.runtimeError = document.getElementById("kick-runtime-error");
     el.runtimeMessages = document.getElementById("kick-runtime-messages");
     el.runtimeTriggers = document.getElementById("kick-runtime-triggers");
+    el.liveStatusBanner = document.getElementById("kick-live-status-banner");
+    el.liveStatusSummary = document.getElementById("kick-live-status-summary");
+    el.liveStatusRows = document.getElementById("kick-live-status-rows");
+    el.liveStatusEmpty = document.getElementById("kick-live-status-empty");
+    el.liveStatusRaw = document.getElementById("kick-live-status-raw");
+    el.liveStatusRefresh = document.getElementById("kick-live-status-refresh");
+    el.liveStatusScan = document.getElementById("kick-live-status-scan");
 
     el.configEnabled = document.getElementById("kick-config-enabled");
     el.configChannel = document.getElementById("kick-config-channel");
@@ -31,6 +38,115 @@
   function setText(target, value) {
     if (!target) return;
     target.textContent = value;
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function liveStatusTone(status) {
+    const normalized = String(status || "").toLowerCase();
+    if (normalized === "live") return "ss-chip-success";
+    if (normalized === "error" || normalized === "rate_limited") return "ss-chip-danger";
+    if (normalized === "stale") return "ss-chip-warning";
+    return "ss-chip-muted";
+  }
+
+  async function fetchLiveStatusDiagnostics() {
+    return window.StreamSuitesApi?.apiFetch
+      ? window.StreamSuitesApi.apiFetch("/api/admin/live-status/diagnostics?platform=kick", { forceRefresh: true, timeoutMs: 6000 })
+      : null;
+  }
+
+  async function postKickLiveStatusScan() {
+    return window.StreamSuitesApi?.apiFetch
+      ? window.StreamSuitesApi.apiFetch("/api/admin/live-status/scan", {
+        method: "POST",
+        body: JSON.stringify({ platform: "kick" }),
+        headers: { "Content-Type": "application/json" },
+        forceRefresh: true,
+        timeoutMs: 6000
+      })
+      : null;
+  }
+
+  function renderKickDiagnostics(payload) {
+    const provider = payload?.providers?.kick || payload?.platforms?.kick || {};
+    const rows = Array.isArray(payload?.targets?.kick) ? payload.targets.kick : [];
+    if (el.liveStatusBanner) {
+      el.liveStatusBanner.classList.remove("ss-alert-danger", "ss-alert-success");
+      el.liveStatusBanner.classList.add(rows.length ? "ss-alert-success" : "ss-alert-warning");
+      setText(el.liveStatusBanner, rows.length ? "Runtime/Auth Kick live-status diagnostics loaded." : "Runtime/Auth returned no Kick live-status targets.");
+    }
+    if (el.liveStatusSummary) {
+      el.liveStatusSummary.innerHTML = `
+        <span class="ss-chip ss-chip-info">TTL ${escapeHtml(provider.cache_ttl_seconds || provider.cadence_seconds || "60")}s</span>
+        <span class="ss-chip ss-chip-muted">Targets ${escapeHtml(rows.length)}</span>
+        <span class="ss-chip ss-chip-muted">Last refresh ${escapeHtml(formatTimestamp(provider.last_refresh_completed_at))}</span>
+        ${provider.last_error ? `<span class="ss-chip ss-chip-danger">${escapeHtml(provider.last_error)}</span>` : ""}
+      `;
+    }
+    if (el.liveStatusRows) {
+      el.liveStatusRows.innerHTML = rows.map((row) => {
+        const current = row.current || {};
+        const ended = row.latest_ended_stream || {};
+        const currentText = row.is_live
+          ? `${current.title || "Live stream"}${current.viewer_count != null ? ` (${current.viewer_count})` : ""}`
+          : "Offline";
+        const recentText = row.recent_stream_count
+          ? `${row.recent_stream_count} recent${ended.title ? ` · ${ended.title}` : ""}`
+          : "0 recent";
+        return `
+          <tr>
+            <td><strong>${escapeHtml(row.display_name || row.user_code || row.account_id)}</strong><br><span class="muted">${escapeHtml(row.channel_slug || row.channel_id || "No channel")}</span></td>
+            <td><span class="ss-chip ${liveStatusTone(row.last_status)}">${escapeHtml(row.last_status || "unknown")}</span></td>
+            <td>${escapeHtml(currentText)}${current.source_url ? `<br><a href="${escapeHtml(current.source_url)}" target="_blank" rel="noreferrer">source</a>` : ""}</td>
+            <td>${escapeHtml(recentText)}</td>
+            <td><span class="muted">checked ${escapeHtml(formatTimestamp(row.last_checked_at))}</span><br><span class="muted">next ${escapeHtml(formatTimestamp(row.next_allowed_check_at))}</span></td>
+          </tr>
+        `;
+      }).join("");
+    }
+    el.liveStatusEmpty?.classList.toggle("hidden", rows.length > 0);
+    if (el.liveStatusRaw) el.liveStatusRaw.textContent = JSON.stringify(payload || {}, null, 2);
+    if (el.liveStatusScan) el.liveStatusScan.disabled = false;
+  }
+
+  async function hydrateLiveStatusDiagnostics() {
+    if (!el.liveStatusBanner) return;
+    setText(el.liveStatusBanner, "Loading Runtime/Auth live-status diagnostics...");
+    try {
+      const payload = await fetchLiveStatusDiagnostics();
+      if (!payload) throw new Error("Dashboard API helper unavailable");
+      renderKickDiagnostics(payload);
+    } catch (err) {
+      el.liveStatusBanner.classList.remove("ss-alert-success");
+      el.liveStatusBanner.classList.add("ss-alert-danger");
+      setText(el.liveStatusBanner, err?.message || "Live-status diagnostics endpoint unavailable.");
+      if (el.liveStatusScan) el.liveStatusScan.disabled = true;
+    }
+  }
+
+  async function runKickLiveStatusScan() {
+    if (!el.liveStatusScan) return;
+    el.liveStatusScan.disabled = true;
+    try {
+      const payload = await postKickLiveStatusScan();
+      const result = payload?.result || payload?.status || "skipped";
+      const suffix = payload?.next_allowed_check_at ? ` Next allowed ${formatTimestamp(payload.next_allowed_check_at)}.` : "";
+      setText(el.liveStatusBanner, `Kick scan ${result}.${suffix}`);
+      await hydrateLiveStatusDiagnostics();
+    } catch (err) {
+      el.liveStatusBanner.classList.add("ss-alert-danger");
+      setText(el.liveStatusBanner, err?.message || "Kick scan request failed.");
+    } finally {
+      el.liveStatusScan.disabled = false;
+    }
   }
 
   function formatTimestamp(value) {
@@ -279,6 +395,7 @@
     if (!scope) return;
 
     scope.querySelectorAll("input, select, textarea, button").forEach((node) => {
+      if (node.id === "kick-live-status-refresh" || node.id === "kick-live-status-scan") return;
       node.disabled = true;
       node.setAttribute("aria-disabled", "true");
     });
@@ -360,10 +477,13 @@
       modeListener = (event) => onModeChange(event.detail);
       window.addEventListener("streamsuites:modechange", modeListener);
     }
+    el.liveStatusRefresh?.addEventListener("click", hydrateLiveStatusDiagnostics);
+    el.liveStatusScan?.addEventListener("click", runKickLiveStatusScan);
 
     setTimeout(() => {
       (async () => {
         await hydrateConfig();
+        await hydrateLiveStatusDiagnostics();
         hydrateRuntimePlaceholder();
         startRuntimePolling();
       })();

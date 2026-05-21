@@ -134,6 +134,39 @@
     </div>
   </section>
 
+  <section class="ss-panel ss-live-status-panel" data-scope="admin">
+    <header class="ss-panel-header">
+      <h2>Live Fetching Diagnostics</h2>
+      <div class="ss-panel-header-actions">
+        <button id="kick-live-status-refresh" type="button" class="ss-btn ss-btn-secondary ss-btn-small">Refresh</button>
+        <button id="kick-live-status-scan" type="button" class="ss-btn ss-btn-primary ss-btn-small">Scan Kick</button>
+      </div>
+    </header>
+    <div class="ss-panel-body">
+      <div id="kick-live-status-banner" class="ss-alert ss-alert-warning">Loading Runtime/Auth live-status diagnostics...</div>
+      <div id="kick-live-status-summary" class="ss-live-status-summary"></div>
+      <div class="ss-table-wrap">
+        <table class="ss-table ss-table-compact ss-live-status-table">
+          <thead>
+            <tr>
+              <th>Creator / Channel</th>
+              <th>Status</th>
+              <th>Current</th>
+              <th>Recent</th>
+              <th>Rate Limit</th>
+            </tr>
+          </thead>
+          <tbody id="kick-live-status-rows"></tbody>
+        </table>
+      </div>
+      <div id="kick-live-status-empty" class="ss-empty-state hidden">No Kick live-status targets were returned by Runtime/Auth.</div>
+      <details class="ss-live-status-details">
+        <summary>Diagnostic payload</summary>
+        <pre id="kick-live-status-raw" class="ss-live-status-raw"></pre>
+      </details>
+    </div>
+  </section>
+
   <!-- ------------------------------------------------------- -->
   <!-- LOCAL CONFIGURATION VISIBILITY -->
   <!-- ------------------------------------------------------- -->
