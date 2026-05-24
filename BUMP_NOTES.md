@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Extended the Admin `/economy` item definition editor with compact public-safe metadata fields. Existing create/edit flows now include short public description, tooltip/public details, contextual public note, and public tooltip enablement fields, and save them through the existing Runtime/Auth `/api/admin/inventory/items` endpoints without changing item code generation, reason-code requirements, or Dashboard authority boundaries.
+- Human note: admins can now author the copy that Public wallet/inventory popovers display, while optional fields can stay blank and missing metadata remains safe on Public profiles.
+
 - Fixed the Admin `/economy` new inventory item form binding, item-code preview, asset picker selection, picker search focus, and denomination icon editor layout. The DOM helper now resolves both raw ids and `#id` strings so the visible item name/category/reason/icon fields are read consistently, the create payload still sends canonical `reason_text`, `Use selected asset` updates the correct picker target, search focus/selection is restored across asset-result re-renders, and denomination icon edit controls wrap/truncate without overlapping.
 - Human note: admins should be able to type an item name/category and see the generated code, choose an asset into the new item icon field, type continuously in asset search, submit with a visible reason, and edit denomination icons without cramped overlapping controls.
 

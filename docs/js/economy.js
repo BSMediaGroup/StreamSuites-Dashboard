@@ -238,7 +238,7 @@
   }
 
   function updateItemCreateFieldErrors(errors = state.itemCreateErrors) {
-    const fields = ["label", "item_name", "category", "item_code", "rarity", "reason_text", "reason"];
+    const fields = ["label", "item_name", "category", "item_code", "rarity", "short_description", "tooltip_description", "reason_text", "reason"];
     fields.forEach((field) => {
       const target = $(`economy-item-create-error-${field}`);
       if (target) target.textContent = fieldErrorText(errors, field);
@@ -1082,7 +1082,11 @@
     const itemsMarkup = pageInfo.items
       .map((item) => {
         const metadata = item.metadata && typeof item.metadata === "object" ? item.metadata : {};
-        const notes = text(metadata.notes || metadata.admin_notes || metadata.description || "");
+        const notes = text(metadata.notes || metadata.admin_notes || "");
+        const shortDescription = text(item.short_description || metadata.short_description || metadata.public_short_description || "");
+        const tooltipDescription = text(item.tooltip_description || item.long_description || metadata.tooltip_description || metadata.public_description || metadata.public_details || "");
+        const contextualPublicNote = text(item.contextual_public_note || metadata.contextual_public_note || metadata.public_note || "");
+        const publicTooltipEnabled = item.public_tooltip_enabled !== false && metadata.public_tooltip_enabled !== false;
         const systemType = text(metadata.system_asset_type || metadata.denomination_code || "");
         const assetChip = systemType
           ? (metadata.wallet_balance_unit ? "Currency unit" : "Denomination")
@@ -1098,7 +1102,7 @@
                 <span class="muted">item_code: ${escapeHtml(item.item_code)} · ${escapeHtml(item.category || "Uncategorized")} · ${escapeHtml(item.rarity || "No rarity")} · ${item.is_enabled === false ? "disabled" : "enabled"}</span>
                 <span class="ss-economy-item-chip">${escapeHtml(assetChip)}</span>
                 <span class="muted ss-economy-item-path">${escapeHtml(normalizedIcon || "No icon configured")}</span>
-                ${notes ? `<span class="muted ss-economy-item-notes">${escapeHtml(notes)}</span>` : ""}
+                ${shortDescription ? `<span class="muted ss-economy-item-notes">${escapeHtml(shortDescription)}</span>` : notes ? `<span class="muted ss-economy-item-notes">${escapeHtml(notes)}</span>` : ""}
               </div>
               <button class="ss-btn ss-btn-secondary ss-economy-item-edit" type="button" data-item-code="${escapeHtml(item.item_code)}">${isEditing ? "Close" : "Edit"}</button>
             </div>
@@ -1118,11 +1122,15 @@
                       <label>Category<select data-item-field="category">${itemCategoryOptions(item.category || "")}</select></label>
                       <label>Rarity<select data-item-field="rarity">${presetOptions(state.rarityPresets, item.rarity || "")}</select></label>
                       <label>Enabled<select data-item-field="is_enabled"><option value="true" ${item.is_enabled === false ? "" : "selected"}>Enabled</option><option value="false" ${item.is_enabled === false ? "selected" : ""}>Disabled</option></select></label>
+                      <label>Public tooltip<select data-item-field="public_tooltip_enabled"><option value="true" ${publicTooltipEnabled ? "selected" : ""}>Enabled</option><option value="false" ${publicTooltipEnabled ? "" : "selected"}>Disabled</option></select></label>
                     </section>
                     <section class="ss-economy-item-editor-card ss-economy-icon-card">
                       ${renderIconPathControl({ itemCode: item.item_code, value: normalizedIcon })}
                     </section>
                     <section class="ss-economy-item-editor-card">
+                      <label class="ss-economy-wide">Short public description<textarea data-item-field="short_description" rows="2">${escapeHtml(shortDescription)}</textarea></label>
+                      <label class="ss-economy-wide">Tooltip public details<textarea data-item-field="tooltip_description" rows="3">${escapeHtml(tooltipDescription)}</textarea></label>
+                      <label class="ss-economy-wide">Contextual public note<input data-item-field="contextual_public_note" value="${escapeHtml(contextualPublicNote)}" placeholder="Optional scope, source, or usage context" /></label>
                       <label class="ss-economy-wide">Metadata notes<textarea data-item-field="metadata_notes" rows="3">${escapeHtml(notes)}</textarea></label>
                       <label class="ss-economy-wide">Reason<input data-item-field="reason_text" placeholder="Required before save" /></label>
                       <button class="ss-btn ss-economy-item-save" type="button" data-item-code="${escapeHtml(item.item_code)}">Save metadata</button>
@@ -1158,6 +1166,7 @@
             <label>Category<select id="economy-item-create-category">${itemCategoryOptions()}</select><span id="economy-item-create-error-category" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "category"))}</span></label>
             <label>Rarity<select id="economy-item-create-rarity">${presetOptions(state.rarityPresets)}</select><span id="economy-item-create-error-rarity" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "rarity"))}</span></label>
             <label>Enabled<select id="economy-item-create-enabled"><option value="true">Enabled</option><option value="false">Disabled</option></select></label>
+            <label>Public tooltip<select id="economy-item-create-public-tooltip"><option value="true">Enabled</option><option value="false">Disabled</option></select></label>
           </section>
           <section class="ss-economy-item-create-card ss-economy-item-create-card--code">
             <span class="ss-subtitle">Generated item code</span>
@@ -1170,6 +1179,9 @@
             ${renderIconPathControl({ create: true })}
           </section>
           <section class="ss-economy-item-create-card ss-economy-item-create-card--notes">
+            <label class="ss-economy-wide">Short public description<textarea id="economy-item-create-short-description" rows="2"></textarea><span id="economy-item-create-error-short_description" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "short_description"))}</span></label>
+            <label class="ss-economy-wide">Tooltip public details<textarea id="economy-item-create-tooltip-description" rows="3"></textarea><span id="economy-item-create-error-tooltip_description" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "tooltip_description"))}</span></label>
+            <label class="ss-economy-wide">Contextual public note<input id="economy-item-create-contextual-note" type="text" placeholder="Optional public-safe context" /></label>
             <label class="ss-economy-wide">Metadata notes<textarea id="economy-item-create-notes" rows="3"></textarea></label>
             <label class="ss-economy-wide">Reason<input id="economy-item-create-reason" type="text" placeholder="Required creation note" /><span id="economy-item-create-error-reason_text" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "reason_text"))}</span></label>
           </section>
@@ -1545,8 +1557,16 @@
         icon_path: normalizeItemIconPath(readField("icon_path")),
         rarity: readField("rarity"),
         is_enabled: readField("is_enabled") !== "false",
+        public_tooltip_enabled: readField("public_tooltip_enabled") !== "false",
+        short_description: readField("short_description"),
+        tooltip_description: readField("tooltip_description"),
+        contextual_public_note: readField("contextual_public_note"),
         metadata: {
-          notes: readField("metadata_notes")
+          notes: readField("metadata_notes"),
+          public_tooltip_enabled: readField("public_tooltip_enabled") !== "false",
+          short_description: readField("short_description"),
+          tooltip_description: readField("tooltip_description"),
+          contextual_public_note: readField("contextual_public_note")
         },
         reason_text: reason
       })
@@ -1624,7 +1644,17 @@
             rarity: text($("#economy-item-create-rarity")?.value),
             icon_path: normalizeItemIconPath($("#economy-item-create-icon")?.value),
             is_enabled: text($("#economy-item-create-enabled")?.value) !== "false",
-            metadata: { notes: text($("#economy-item-create-notes")?.value) }
+            public_tooltip_enabled: text($("#economy-item-create-public-tooltip")?.value) !== "false",
+            short_description: text($("#economy-item-create-short-description")?.value),
+            tooltip_description: text($("#economy-item-create-tooltip-description")?.value),
+            contextual_public_note: text($("#economy-item-create-contextual-note")?.value),
+            metadata: {
+              notes: text($("#economy-item-create-notes")?.value),
+              public_tooltip_enabled: text($("#economy-item-create-public-tooltip")?.value) !== "false",
+              short_description: text($("#economy-item-create-short-description")?.value),
+              tooltip_description: text($("#economy-item-create-tooltip-description")?.value),
+              contextual_public_note: text($("#economy-item-create-contextual-note")?.value)
+            }
           },
           reason_text: reason
         })
