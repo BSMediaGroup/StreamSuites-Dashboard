@@ -6940,7 +6940,7 @@ body.ss-col-resizing-active {
 }
 
 .ss-economy-item-create-grid {
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.62fr) minmax(260px, 0.62fr);
+  grid-template-columns: minmax(0, 0.9fr) minmax(240px, 0.55fr) minmax(280px, 0.62fr) minmax(260px, 0.62fr);
   gap: 12px;
 }
 
@@ -6957,6 +6957,43 @@ body.ss-col-resizing-active {
 
 .ss-economy-item-create-card--icon {
   align-content: start;
+}
+
+.ss-economy-item-create-card--code {
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+}
+
+.ss-economy-item-create-card--code code {
+  display: block;
+  min-height: 40px;
+  padding: 10px;
+  border: 1px solid rgba(132, 184, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(2, 8, 18, 0.38);
+  color: #f7d982;
+  overflow-wrap: anywhere;
+}
+
+.ss-economy-item-code-status {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.ss-economy-item-code-status.is-ok {
+  color: #8ee6a8;
+}
+
+.ss-economy-item-code-status.is-error {
+  color: #ff9b9b;
+}
+
+.ss-field-error {
+  min-height: 14px;
+  color: #ff9b9b;
+  font-size: 11px;
+  line-height: 1.25;
 }
 
 .ss-economy-item-create-card--icon .ss-economy-icon-field {
@@ -7367,7 +7404,6 @@ body.ss-col-resizing-active {
 
 .ss-economy-asset-tile {
   display: grid;
-  grid-template-rows: auto auto minmax(34px, auto);
   gap: 8px;
   min-height: 178px;
   padding: 10px;
@@ -7376,18 +7412,30 @@ body.ss-col-resizing-active {
   background: rgba(255, 255, 255, 0.04);
   color: var(--text-primary);
   text-align: left;
+}
+
+.ss-economy-asset-tile-main {
+  display: grid;
+  grid-template-rows: auto auto minmax(34px, auto);
+  gap: 8px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
   cursor: pointer;
 }
 
 .ss-economy-asset-tile:hover,
-.ss-economy-asset-tile:focus-visible,
+.ss-economy-asset-tile:focus-within,
 .ss-economy-asset-tile.is-selected {
   border-color: rgba(255, 210, 110, 0.55);
   background: rgba(255, 210, 110, 0.08);
   outline: 0;
 }
 
-.ss-economy-asset-tile:focus-visible {
+.ss-economy-asset-tile:focus-within {
   box-shadow: 0 0 0 3px rgba(98, 168, 255, 0.24);
 }
 
@@ -7406,6 +7454,19 @@ body.ss-col-resizing-active {
   color: var(--text-secondary);
   font-size: 11px;
   line-height: 1.35;
+}
+
+.ss-economy-asset-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.ss-economy-asset-row-actions .ss-btn {
+  min-height: 30px;
+  padding: 6px 8px;
+  font-size: 11px;
 }
 
 .ss-economy-asset-preview {
