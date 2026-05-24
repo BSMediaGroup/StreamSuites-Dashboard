@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Added a compact Admin `/economy` denomination icon editor that stays on the existing Runtime/Auth economy endpoints and reuses the shared image asset selector/catalog picker. Denomination rows now show current previews, codes, values, linked item definitions, active state, selected image asset paths, inline validation errors, and a required reason before saving to `/api/admin/economy/denominations/{code}`.
+- Human note: admins can now update wallet denomination icons such as Diamonds, Blue Gems, Banknotes, and Coins from the Economy / Inventory editor without using a frontend-only icon map or deleting physical image files.
+
 - Overhauled the Admin `/economy` item and image asset definition editors while keeping Dashboard as a Runtime/Auth consumer. `docs/js/economy.js` now renders item category choices from the runtime item category payload, replaces freeform item-code entry with a live generated code preview from selected category + item name, includes the required audit reason as `reason_text`, blocks only true invalid/collision states, and keeps item metadata saves on the existing Runtime/Auth endpoints. The image asset picker now lists existing definition records with Edit/Define and `Remove definition listing` actions, sends PATCH/DELETE requests to Runtime/Auth with reasons, and explicitly labels removal as manifest/listing-only rather than physical file deletion.
 - Human note: admins should be able to create `Iron Ore` as a material item without hand-writing the item code or hitting a false reason-required loop, and can correct or remove wrong image asset listings from the same dark asset editor without Dashboard owning canonical asset state.
 

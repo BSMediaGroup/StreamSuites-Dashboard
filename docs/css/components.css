@@ -6803,7 +6803,7 @@ body.ss-col-resizing-active {
 
 .ss-economy-denomination-row {
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr) auto;
+  grid-template-columns: 38px minmax(0, 1fr) auto auto;
   gap: 10px;
   align-items: center;
   border: 1px solid var(--border-subtle);
@@ -6816,6 +6816,15 @@ body.ss-col-resizing-active {
   display: grid;
   gap: 4px;
   min-width: 0;
+}
+
+.ss-economy-denomination-row.is-editing {
+  grid-template-columns: 38px minmax(0, 1fr) auto auto;
+  align-items: start;
+}
+
+.ss-economy-denomination-editor {
+  grid-column: 1 / -1;
 }
 
 .ss-economy-item-chip {

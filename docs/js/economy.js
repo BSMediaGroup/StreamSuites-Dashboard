@@ -17,6 +17,7 @@
   const ITEM_DEFINITION = (itemCode) => `/api/admin/inventory/items/${encodeURIComponent(itemCode)}`;
   const ECONOMY_SETTINGS = "/api/admin/economy/settings";
   const ECONOMY_DENOMINATIONS = "/api/admin/economy/denominations";
+  const ECONOMY_DENOMINATION = (denominationCode) => `/api/admin/economy/denominations/${encodeURIComponent(denominationCode)}`;
   const PUBLIC_GAME_BACKUP = "/api/admin/public-game-authority/backup";
   const PUBLIC_GAME_RESET = "/api/admin/public-game-authority/reset";
   const GAME_ASSETS = "/api/admin/economy/assets/games";
@@ -51,6 +52,8 @@
     itemPage: 1,
     itemPageSize: DEFAULT_ITEM_PAGE_SIZE,
     itemEditorCode: "",
+    denominationEditorCode: "",
+    denominationErrors: {},
     assetCatalog: [],
     assetFiles: [],
     unresolvedAssets: [],
@@ -520,6 +523,11 @@
 
   function iconInputForTarget(target = state.assetPicker.target) {
     if (target === "create") return $("#economy-item-create-icon");
+    if (text(target).startsWith("denomination:")) {
+      const code = text(target).slice("denomination:".length);
+      const row = code ? document.querySelector(`.ss-economy-denomination-row[data-denomination-code="${CSS.escape(code)}"]`) : null;
+      return row?.querySelector('[data-denomination-field="icon_path"]') || null;
+    }
     const row = target ? document.querySelector(`.ss-economy-item-definition[data-item-code="${CSS.escape(target)}"]`) : null;
     return row?.querySelector('[data-item-field="icon_path"]') || null;
   }
@@ -542,6 +550,22 @@
     `;
   }
 
+  function renderDenominationIconPathControl(item = {}) {
+    const normalized = normalizeItemIconPath(item.icon_path || item.image_asset_key || "");
+    const target = `denomination:${item.denomination_code || ""}`;
+    const errors = state.denominationErrors[item.denomination_code] || {};
+    return `
+      <div class="ss-economy-icon-field ss-economy-wide">
+        <label>Image asset<input data-denomination-field="icon_path" value="${escapeHtml(normalized)}" placeholder="assets/games/ssdiamond.webp" /></label>
+        <button class="ss-btn ss-btn-secondary ss-economy-asset-browse" type="button" data-asset-target="${escapeHtml(target)}">Browse assets</button>
+        <div class="ss-economy-icon-preview" data-icon-preview="${escapeHtml(target)}">
+          ${renderIconPreview(normalized)}
+        </div>
+        <span class="ss-field-error">${escapeHtml(fieldErrorText(errors, "path") || fieldErrorText(errors, "icon_path"))}</span>
+      </div>
+    `;
+  }
+
   function renderIconPreview(path) {
     const normalized = normalizeItemIconPath(path);
     const fallback = assetPreviewLabel(normalized);
@@ -552,7 +576,12 @@
   }
 
   function syncIconPreview(input) {
-    const target = input?.id === "economy-item-create-icon" ? "create" : text(input?.closest(".ss-economy-item-definition")?.dataset?.itemCode);
+    const denominationCode = text(input?.closest(".ss-economy-denomination-row")?.dataset?.denominationCode);
+    const target = input?.id === "economy-item-create-icon"
+      ? "create"
+      : denominationCode
+        ? `denomination:${denominationCode}`
+        : text(input?.closest(".ss-economy-item-definition")?.dataset?.itemCode);
     const preview = document.querySelector(`[data-icon-preview="${CSS.escape(target)}"]`);
     if (preview) preview.innerHTML = renderIconPreview(input.value);
   }
@@ -911,17 +940,41 @@
     if (!el.denominationsList) return;
     const denominations = Array.isArray(state.denominations) ? state.denominations : [];
     el.denominationsList.innerHTML = denominations.length
-      ? denominations.map((item) => `
-          <article class="ss-economy-denomination-row">
+      ? denominations.map((item) => {
+        const isEditing = state.denominationEditorCode === item.denomination_code;
+        const errors = state.denominationErrors[item.denomination_code] || {};
+        const linkedItem = item.item_code ? itemDefinitionFor(item.item_code) : null;
+        const assetKey = normalizeItemIconPath(item.image_asset_key || item.icon_path || "");
+        return `
+          <article class="ss-economy-denomination-row${isEditing ? " is-editing" : ""}" data-denomination-code="${escapeHtml(item.denomination_code)}">
             ${renderItemIcon({ label: item.label, icon_path: item.icon_path })}
             <div class="ss-economy-denomination-main">
               <strong>${escapeHtml(item.label || item.denomination_code)}</strong>
               <span class="muted">${escapeHtml(item.denomination_code)} · ${formatNumber(item.value_in_credits || 0)} ${escapeHtml(currencyPluralLabel(item.value_in_credits || 0))}</span>
               <span class="muted">${item.always_show_in_balance ? "Always shown in balance" : "Shown only when nonzero"} · ${item.is_high_value_unit ? "High-value unit" : "Base unit"} · ${item.is_enabled ? "Enabled" : "Disabled"}</span>
+              <span class="muted ss-economy-item-path">${escapeHtml(assetKey || "No image asset configured")}</span>
+              ${linkedItem ? `<span class="ss-economy-item-chip">Linked item: ${escapeHtml(linkedItem.item_code)}</span>` : ""}
+              ${fieldErrorText(errors, "payload") ? `<span class="ss-field-error">${escapeHtml(fieldErrorText(errors, "payload"))}</span>` : ""}
             </div>
             <span class="ss-economy-state ${item.is_enabled ? "ss-economy-state-active" : "ss-economy-state-reversed"}">${escapeHtml(item.is_enabled ? "Enabled" : "Disabled")}</span>
+            <button class="ss-btn ss-btn-secondary ss-economy-denomination-edit" type="button" data-denomination-code="${escapeHtml(item.denomination_code)}">${isEditing ? "Close" : "Edit Icon"}</button>
+            ${
+              isEditing
+                ? `<div class="ss-economy-item-editor ss-economy-denomination-editor">
+                    <section class="ss-economy-item-editor-card ss-economy-icon-card">
+                      ${renderDenominationIconPathControl(item)}
+                    </section>
+                    <section class="ss-economy-item-editor-card">
+                      <label class="ss-economy-wide">Reason<input data-denomination-field="reason_text" placeholder="Required before save" /></label>
+                      <span class="ss-field-error">${escapeHtml(fieldErrorText(errors, "reason_text"))}</span>
+                      <button class="ss-btn ss-economy-denomination-save" type="button" data-denomination-code="${escapeHtml(item.denomination_code)}">Save icon</button>
+                    </section>
+                  </div>`
+                : ""
+            }
           </article>
-        `).join("")
+        `;
+      }).join("")
       : `<div class="ss-empty">No denomination definitions returned by runtime.</div>`;
   }
 
@@ -1488,6 +1541,45 @@
     setStatus("Item definition metadata saved.", "success");
   }
 
+  async function saveDenominationIcon(button) {
+    const row = button.closest(".ss-economy-denomination-row");
+    const denominationCode = text(row?.dataset?.denominationCode);
+    const readField = (field) => text(row?.querySelector(`[data-denomination-field="${field}"]`)?.value);
+    const reason = readField("reason_text");
+    if (!denominationCode || !reason) {
+      state.denominationErrors = {
+        ...state.denominationErrors,
+        [denominationCode]: { reason_text: "A reason is required." }
+      };
+      renderDenominations();
+      setStatus("Denomination icon changes require a reason.", "error");
+      return;
+    }
+    try {
+      const payload = await requestJson(ECONOMY_DENOMINATION(denominationCode), {
+        method: "PATCH",
+        body: JSON.stringify({
+          denomination: {
+            icon_path: normalizeItemIconPath(readField("icon_path"))
+          },
+          reason_text: reason
+        })
+      });
+      state.denominationErrors = { ...state.denominationErrors, [denominationCode]: {} };
+      await Promise.all([loadEconomyConfig(), loadItems(), loadDetail()]);
+      state.denominationEditorCode = "";
+      renderAll();
+      setStatus(`Denomination icon saved for ${payload.denomination?.label || denominationCode}.`, "success");
+    } catch (err) {
+      state.denominationErrors = {
+        ...state.denominationErrors,
+        [denominationCode]: fieldErrorMap(err)
+      };
+      renderDenominations();
+      setStatus(err?.message || "Denomination icon save failed.", "error");
+    }
+  }
+
   async function createItemDefinition() {
     const reason = text($("#economy-item-create-reason")?.value);
     const generated = generatedItemCodeState();
@@ -1818,6 +1910,20 @@
         } catch (err) {
           setStatus(err?.message || "Item definition save failed.", "error");
         }
+        return;
+      }
+      const denominationSaveButton = event.target.closest?.(".ss-economy-denomination-save");
+      if (denominationSaveButton) {
+        await saveDenominationIcon(denominationSaveButton);
+        return;
+      }
+      const denominationEditButton = event.target.closest?.(".ss-economy-denomination-edit");
+      if (denominationEditButton) {
+        const code = text(denominationEditButton.dataset.denominationCode);
+        state.denominationEditorCode = state.denominationEditorCode === code ? "" : code;
+        state.denominationErrors = { ...state.denominationErrors, [code]: {} };
+        renderDenominations();
+        return;
       }
       const itemEditButton = event.target.closest?.(".ss-economy-item-edit");
       if (itemEditButton) {
@@ -1830,7 +1936,7 @@
       if (event.target.closest?.("#economy-exchange-actions")) {
         syncExchangePreview();
       }
-      if (event.target.matches?.('[data-item-field="icon_path"], #economy-item-create-icon')) {
+      if (event.target.matches?.('[data-item-field="icon_path"], [data-denomination-field="icon_path"], #economy-item-create-icon')) {
         const normalized = normalizeItemIconPath(event.target.value);
         if (event.target.value !== normalized) event.target.value = normalized;
         syncIconPreview(event.target);

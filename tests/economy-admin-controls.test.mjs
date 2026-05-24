@@ -254,6 +254,13 @@ test("economy settings controls and denomination rendering are wired", () => {
   assert.match(js, /function renderDenominations\(\)/);
   assert.match(js, /always_show_in_balance \? "Always shown in balance" : "Shown only when nonzero"/);
   assert.match(js, /is_high_value_unit \? "High-value unit" : "Base unit"/);
+  assert.match(js, /ECONOMY_DENOMINATION = \(denominationCode\) => `\/api\/admin\/economy\/denominations\/\$\{encodeURIComponent\(denominationCode\)\}`/);
+  assert.match(js, /data-denomination-code="\$\{escapeHtml\(item\.denomination_code\)\}"/);
+  assert.match(js, /data-asset-target="\$\{escapeHtml\(target\)\}"/);
+  assert.match(js, /data-denomination-field="icon_path"/);
+  assert.match(js, /function saveDenominationIcon\(button\)/);
+  assert.match(js, /body: JSON\.stringify\(\{[\s\S]*denomination:\s*\{[\s\S]*icon_path: normalizeItemIconPath\(readField\("icon_path"\)\)[\s\S]*reason_text: reason[\s\S]*\}\)/);
+  assert.match(js, /fieldErrorMap\(err\)/);
 });
 
 test("economy collapsible sections default expanded", () => {
@@ -300,6 +307,8 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-credit-value--compact \.ss-economy-currency-symbol/);
   assert.match(css, /\.ss-economy-denomination-breakdown\s*\{/);
   assert.match(css, /\.ss-economy-denomination-chip img\s*\{[\s\S]*object-fit:\s*contain/);
+  assert.match(css, /\.ss-economy-denomination-row\.is-editing\s*\{/);
+  assert.match(css, /\.ss-economy-denomination-editor\s*\{[\s\S]*grid-column:\s*1 \/ -1/);
   assert.match(css, /\.ss-economy-item-chip\s*\{/);
   assert.match(css, /\.ss-economy-state-reversed,[\s\S]*\.ss-economy-state-reversal/);
   assert.match(css, /\.ss-economy-master-detail\s*\{[\s\S]*grid-template-columns:\s*minmax\(440px,\s*1\.35fr\) minmax\(320px,\s*0\.85fr\)/);
