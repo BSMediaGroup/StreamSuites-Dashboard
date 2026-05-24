@@ -6825,6 +6825,8 @@ body.ss-col-resizing-active {
 
 .ss-economy-denomination-editor {
   grid-column: 1 / -1;
+  grid-template-columns: minmax(280px, 1.1fr) minmax(240px, 0.7fr);
+  align-items: stretch;
 }
 
 .ss-economy-item-chip {
@@ -7116,6 +7118,7 @@ body.ss-col-resizing-active {
   grid-template-columns: minmax(0, 1fr) auto minmax(190px, 0.55fr);
   gap: 10px;
   align-items: end;
+  min-width: 0;
 }
 
 .ss-economy-icon-preview,
@@ -7142,8 +7145,29 @@ body.ss-col-resizing-active {
 
 .ss-economy-icon-preview span,
 .ss-economy-icon-preview-placeholder {
+  min-width: 0;
+  overflow: hidden;
   overflow-wrap: anywhere;
+  text-overflow: ellipsis;
   font-size: 11px;
+}
+
+.ss-economy-denomination-editor .ss-economy-icon-field {
+  grid-template-columns: minmax(220px, 1fr) auto;
+  align-items: stretch;
+}
+
+.ss-economy-denomination-editor .ss-economy-icon-preview {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.ss-economy-denomination-editor .ss-economy-item-editor-card {
+  min-width: 0;
+}
+
+.ss-economy-denomination-editor .ss-btn {
+  align-self: end;
 }
 
 .ss-economy-asset-modal {

@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Fixed the Admin `/economy` new inventory item form binding, item-code preview, asset picker selection, picker search focus, and denomination icon editor layout. The DOM helper now resolves both raw ids and `#id` strings so the visible item name/category/reason/icon fields are read consistently, the create payload still sends canonical `reason_text`, `Use selected asset` updates the correct picker target, search focus/selection is restored across asset-result re-renders, and denomination icon edit controls wrap/truncate without overlapping.
+- Human note: admins should be able to type an item name/category and see the generated code, choose an asset into the new item icon field, type continuously in asset search, submit with a visible reason, and edit denomination icons without cramped overlapping controls.
+
 - Fixed the Admin `/economy` asset browser tile regression from the image asset edit/delete controls. Existing asset cards now reserve a stable bottom action row for Edit/Define and `Remove listing`, keep image/name/path content inside the selectable tile body, constrain long paths and button text, and preserve listing-only deletion copy without overlapping thumbnails or adjacent rows.
 - Human note: the asset browser should no longer show Edit/Remove controls floating across the item art grid; controls stay compact and readable inside each asset card.
 

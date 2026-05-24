@@ -196,6 +196,7 @@ test("economy manual and reversal controls read visible reason fields", () => {
 test("item definition save reads the visible editor reason and sends reason_text", () => {
   const js = read("docs/js/economy.js");
 
+  assert.match(js, /function \$\(id\) \{[\s\S]*value\.startsWith\("#"\) \? value\.slice\(1\) : value/);
   assert.match(js, /const row = button\.closest\("\.ss-economy-item-definition"\);/);
   assert.match(js, /const readField = \(field\) => text\(row\?\.querySelector\(`\[data-item-field="\$\{field\}"\]`\)\?\.value\);/);
   assert.match(js, /const reason = readField\("reason_text"\);/);
@@ -206,9 +207,12 @@ test("item definition save reads the visible editor reason and sends reason_text
   assert.match(js, /id="economy-item-code-preview"/);
   assert.match(js, /id="economy-item-create-code" type="hidden" readonly/);
   assert.match(js, /id="economy-item-create-error-reason_text"/);
+  assert.match(js, /const fields = \["label", "item_name", "category", "item_code", "rarity", "reason_text", "reason"\]/);
+  assert.match(js, /fieldErrorText\(errors, "reason"\)/);
   assert.match(js, /ss-field-error/);
   assert.match(js, /#economy-item-create-label, #economy-item-create-category, #economy-item-create-reason/);
   assert.match(js, /icon_path: normalizeItemIconPath\(\$\(("#economy-item-create-icon"|'economy-item-create-icon')\)\?\.value\)/);
+  assert.match(js, /body: JSON\.stringify\(\{[\s\S]*item_code: generated\.itemCode[\s\S]*reason_text: reason[\s\S]*\}\)/);
   assert.ok(js.includes("ss-economy-asset-browse"));
   assert.match(js, /Browse assets/);
   assert.match(js, /ss-economy-item-create-shell/);
@@ -259,9 +263,20 @@ test("economy settings controls and denomination rendering are wired", () => {
   assert.match(js, /data-denomination-code="\$\{escapeHtml\(item\.denomination_code\)\}"/);
   assert.match(js, /data-asset-target="\$\{escapeHtml\(target\)\}"/);
   assert.match(js, /data-denomination-field="icon_path"/);
+  assert.match(js, /if \(input && value\) \{[\s\S]*input\.value = value;[\s\S]*syncIconPreview\(input\);/);
   assert.match(js, /function saveDenominationIcon\(button\)/);
   assert.match(js, /body: JSON\.stringify\(\{[\s\S]*denomination:\s*\{[\s\S]*icon_path: normalizeItemIconPath\(readField\("icon_path"\)\)[\s\S]*reason_text: reason[\s\S]*\}\)/);
   assert.match(js, /fieldErrorMap\(err\)/);
+});
+
+test("asset picker search restores focus across result rerenders", () => {
+  const js = read("docs/js/economy.js");
+
+  assert.match(js, /const activeElement = document\.activeElement;/);
+  assert.match(js, /const restoreFocusId = activeElement\?\.id === "economy-asset-filter"/);
+  assert.match(js, /target\?\.focus\?\.\(\);/);
+  assert.match(js, /target\.setSelectionRange\(restoreSelectionStart, restoreSelectionEnd\);/);
+  assert.match(js, /state\.assetPicker\.filter = event\.target\.value;[\s\S]*renderAssetPicker\(\);/);
 });
 
 test("economy collapsible sections default expanded", () => {
@@ -310,6 +325,8 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-denomination-chip img\s*\{[\s\S]*object-fit:\s*contain/);
   assert.match(css, /\.ss-economy-denomination-row\.is-editing\s*\{/);
   assert.match(css, /\.ss-economy-denomination-editor\s*\{[\s\S]*grid-column:\s*1 \/ -1/);
+  assert.match(css, /\.ss-economy-denomination-editor \.ss-economy-icon-field\s*\{[\s\S]*grid-template-columns:\s*minmax\(220px,\s*1fr\) auto/);
+  assert.match(css, /\.ss-economy-denomination-editor \.ss-economy-icon-preview\s*\{[\s\S]*grid-column:\s*1 \/ -1/);
   assert.match(css, /\.ss-economy-item-chip\s*\{/);
   assert.match(css, /\.ss-economy-state-reversed,[\s\S]*\.ss-economy-state-reversal/);
   assert.match(css, /\.ss-economy-master-detail\s*\{[\s\S]*grid-template-columns:\s*minmax\(440px,\s*1\.35fr\) minmax\(320px,\s*0\.85fr\)/);

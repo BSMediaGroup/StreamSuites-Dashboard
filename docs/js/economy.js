@@ -85,7 +85,8 @@
   const el = {};
 
   function $(id) {
-    return document.getElementById(id);
+    const value = String(id || "");
+    return document.getElementById(value.startsWith("#") ? value.slice(1) : value);
   }
 
   function text(value) {
@@ -237,13 +238,15 @@
   }
 
   function updateItemCreateFieldErrors(errors = state.itemCreateErrors) {
-    const fields = ["label", "item_name", "category", "item_code", "rarity", "reason_text"];
+    const fields = ["label", "item_name", "category", "item_code", "rarity", "reason_text", "reason"];
     fields.forEach((field) => {
       const target = $(`economy-item-create-error-${field}`);
       if (target) target.textContent = fieldErrorText(errors, field);
     });
     const labelTarget = $("economy-item-create-error-label");
     if (labelTarget && !labelTarget.textContent) labelTarget.textContent = fieldErrorText(errors, "item_name");
+    const reasonTarget = $("economy-item-create-error-reason_text");
+    if (reasonTarget && !reasonTarget.textContent) reasonTarget.textContent = fieldErrorText(errors, "reason");
   }
 
   function normalizeItemIconPath(path) {
@@ -674,6 +677,12 @@
       return `${item.filename} ${item.path} ${item.extension}`.toLowerCase().includes(query);
     });
     const modal = existing || document.createElement("div");
+    const activeElement = document.activeElement;
+    const restoreFocusId = activeElement?.id === "economy-asset-filter" || activeElement?.id === "economy-asset-custom-url"
+      ? activeElement.id
+      : "";
+    const restoreSelectionStart = typeof activeElement?.selectionStart === "number" ? activeElement.selectionStart : null;
+    const restoreSelectionEnd = typeof activeElement?.selectionEnd === "number" ? activeElement.selectionEnd : null;
     modal.id = "economy-asset-picker";
     modal.className = "ss-economy-asset-modal";
     modal.setAttribute("role", "dialog");
@@ -761,7 +770,13 @@
       </div>
     `;
     if (!existing) document.body.appendChild(modal);
-    setTimeout(() => ($("#economy-asset-filter") || $("#economy-asset-custom-url") || modal.querySelector("[data-asset-close]"))?.focus?.(), 0);
+    setTimeout(() => {
+      const target = restoreFocusId ? $(restoreFocusId) : ($("#economy-asset-filter") || $("#economy-asset-custom-url") || modal.querySelector("[data-asset-close]"));
+      target?.focus?.();
+      if (restoreFocusId && typeof target?.setSelectionRange === "function" && restoreSelectionStart !== null && restoreSelectionEnd !== null) {
+        target.setSelectionRange(restoreSelectionStart, restoreSelectionEnd);
+      }
+    }, 0);
   }
 
   function renderItemIcon(item = {}) {
