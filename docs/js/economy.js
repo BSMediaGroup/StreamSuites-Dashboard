@@ -741,7 +741,7 @@
                         </button>
                         <span class="ss-economy-asset-row-actions">
                           <button class="ss-btn ss-btn-secondary" type="button" data-asset-edit-definition="${escapeHtml(item.path)}">${item.definition_complete ? "Edit" : "Define"}</button>
-                          <button class="ss-btn ss-btn-danger" type="button" data-asset-remove-definition="${escapeHtml(item.path)}" ${item.definition_complete ? "" : "disabled"}>Remove definition listing</button>
+                          <button class="ss-btn ss-btn-danger" type="button" data-asset-remove-definition="${escapeHtml(item.path)}" title="Remove definition listing only. Physical files are not deleted." ${item.definition_complete ? "" : "disabled"}>Remove listing</button>
                         </span>
                         </article>
                       `).join("")

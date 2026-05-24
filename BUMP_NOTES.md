@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Fixed the Admin `/economy` asset browser tile regression from the image asset edit/delete controls. Existing asset cards now reserve a stable bottom action row for Edit/Define and `Remove listing`, keep image/name/path content inside the selectable tile body, constrain long paths and button text, and preserve listing-only deletion copy without overlapping thumbnails or adjacent rows.
+- Human note: the asset browser should no longer show Edit/Remove controls floating across the item art grid; controls stay compact and readable inside each asset card.
+
 - Added a compact Admin `/economy` denomination icon editor that stays on the existing Runtime/Auth economy endpoints and reuses the shared image asset selector/catalog picker. Denomination rows now show current previews, codes, values, linked item definitions, active state, selected image asset paths, inline validation errors, and a required reason before saving to `/api/admin/economy/denominations/{code}`.
 - Human note: admins can now update wallet denomination icons such as Diamonds, Blue Gems, Banknotes, and Coins from the Economy / Inventory editor without using a frontend-only icon map or deleting physical image files.
 

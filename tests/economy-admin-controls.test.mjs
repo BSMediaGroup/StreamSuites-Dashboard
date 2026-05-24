@@ -154,7 +154,8 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /data-asset-save-definition/);
   assert.match(js, /data-asset-edit-definition/);
   assert.match(js, /data-asset-remove-definition/);
-  assert.match(js, /Remove definition listing/);
+  assert.match(js, /Remove listing/);
+  assert.match(js, /Physical files are not deleted/);
   assert.match(js, /data-asset-upload/);
   assert.match(js, /data-asset-define-path/);
   assert.match(js, /data-asset-use/);
@@ -334,13 +335,15 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-asset-search,[\s\S]*\.ss-economy-asset-custom\s*\{[\s\S]*grid-row:\s*3/);
   assert.match(css, /\.ss-economy-asset-grid\s*\{[\s\S]*grid-column:\s*1 \/ 2/);
   assert.match(css, /\.ss-economy-asset-grid\s*\{[\s\S]*grid-row:\s*4/);
-  assert.match(css, /\.ss-economy-asset-grid\s*\{[\s\S]*grid-template-columns:\s*repeat\(auto-fill,\s*minmax\(168px,\s*1fr\)\)/);
+  assert.match(css, /\.ss-economy-asset-grid\s*\{[\s\S]*grid-template-columns:\s*repeat\(auto-fill,\s*minmax\(172px,\s*1fr\)\)/);
+  assert.match(css, /\.ss-economy-asset-grid\s*\{[\s\S]*grid-auto-rows:\s*minmax\(226px,\s*auto\)/);
   assert.match(css, /\.ss-economy-asset-preview\s*\{[\s\S]*grid-column:\s*2 \/ 3/);
   assert.match(css, /\.ss-economy-asset-preview\s*\{[\s\S]*position:\s*sticky/);
   assert.match(css, /\.ss-economy-asset-thumb\.is-unavailable::after\s*\{[\s\S]*Preview unavailable/);
   assert.match(css, /\.ss-economy-asset-tile\.is-selected/);
   assert.match(css, /\.ss-economy-asset-tile-main\s*\{/);
-  assert.match(css, /\.ss-economy-asset-row-actions\s*\{/);
+  assert.match(css, /\.ss-economy-asset-row-actions\s*\{[\s\S]*border-top:\s*1px solid/);
+  assert.match(css, /\.ss-economy-asset-row-actions \.ss-btn\s*\{[\s\S]*white-space:\s*nowrap/);
   assert.match(css, /\.ss-economy-icon-preview-placeholder/);
   assert.match(css, /\.ss-economy-exchange-grid\s*\{/);
   assert.match(css, /\.ss-admin-pager\s*\{/);
