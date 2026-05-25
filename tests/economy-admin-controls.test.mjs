@@ -173,6 +173,7 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /function uploadAssetFromPicker\(\)/);
   assert.match(js, /Runtime\/Auth asset upload API is unavailable/);
   assert.match(js, /item_code: generated\.itemCode/);
+  assert.match(js, /chat_alias: chatAlias/);
   assert.match(js, /reason_text: reason/);
   assert.match(js, /is_enabled: readField\("is_enabled"\) !== "false"/);
   assert.doesNotMatch(js, /localStorage/);
@@ -215,7 +216,7 @@ test("item definition save reads the visible editor reason and sends reason_text
   assert.match(js, /id="economy-item-code-preview"/);
   assert.match(js, /id="economy-item-create-code" type="hidden" readonly/);
   assert.match(js, /id="economy-item-create-error-reason_text"/);
-  assert.match(js, /const fields = \["label", "item_name", "category", "item_code", "rarity", "short_description", "tooltip_description", "reason_text", "reason"\]/);
+  assert.match(js, /const fields = \["label", "item_name", "category", "item_code", "rarity", "chat_alias", "short_description", "tooltip_description", "reason_text", "reason"\]/);
   assert.match(js, /fieldErrorText\(errors, "reason"\)/);
   assert.match(js, /ss-field-error/);
   assert.match(js, /#economy-item-create-label, #economy-item-create-category, #economy-item-create-reason/);
@@ -224,6 +225,12 @@ test("item definition save reads the visible editor reason and sends reason_text
   assert.match(js, /id="economy-item-create-tooltip-description"/);
   assert.match(js, /id="economy-item-create-contextual-note"/);
   assert.match(js, /id="economy-item-create-public-tooltip"/);
+  assert.match(js, /id="economy-item-create-chat-alias"/);
+  assert.match(js, /Chat alias/);
+  assert.match(js, /!buy lumber/);
+  assert.match(js, /data-item-field="chat_alias"/);
+  assert.match(js, /function normalizeChatAlias/);
+  assert.match(js, /function chatAliasLooksValid/);
   assert.match(js, /short_description: text\(\$\(("#economy-item-create-short-description"|'economy-item-create-short-description')\)\?\.value\)/);
   assert.match(js, /tooltip_description: text\(\$\(("#economy-item-create-tooltip-description"|'economy-item-create-tooltip-description')\)\?\.value\)/);
   assert.match(js, /body: JSON\.stringify\(\{[\s\S]*item_code: generated\.itemCode[\s\S]*reason_text: reason[\s\S]*\}\)/);

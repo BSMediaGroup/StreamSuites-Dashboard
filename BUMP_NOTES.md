@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Added a Runtime/Auth-backed `Chat alias` editor field to Admin `/economy` item definitions. The list shows existing aliases, create/update payloads preserve and send `chat_alias`, the client validates the no-spaces alias shape before save, and backend alias validation errors are surfaced through the existing field-error flow.
+- Human note: admins can assign short livechat purchase codes such as `lumber` without changing canonical item codes like `material.lumber`, and Dashboard remains only a consumer/editor of Runtime/Auth-owned item definitions.
+
 - Extended the Admin `/economy` item definition editor with compact public-safe metadata fields. Existing create/edit flows now include short public description, tooltip/public details, contextual public note, and public tooltip enablement fields, and save them through the existing Runtime/Auth `/api/admin/inventory/items` endpoints without changing item code generation, reason-code requirements, or Dashboard authority boundaries.
 - Human note: admins can now author the copy that Public wallet/inventory popovers display, while optional fields can stay blank and missing metadata remains safe on Public profiles.
 
