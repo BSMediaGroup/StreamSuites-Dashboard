@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "generated_at": "2026-05-19T21:43:42.876229Z",
+  "generated_at": "2026-05-25T06:53:40.030135Z",
   "asset_root": "assets/games",
-  "count": 58,
+  "count": 133,
   "items": [
     {
       "path": "assets/games/00-stone.webp",
@@ -230,6 +230,77 @@
       "definition_complete": true
     },
     {
+      "path": "assets/games/badge-kick.webp",
+      "filename": "badge-kick.webp",
+      "extension": "webp",
+      "label": "Badge Kick",
+      "category": "item",
+      "tags": [
+        "badge",
+        "kick",
+        "cosmetic"
+      ],
+      "notes": "badge, kick, cosmetic",
+      "updated_at": "2026-05-24T18:48:54.479086Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/badge-kick2.webp",
+      "filename": "badge-kick2.webp",
+      "extension": "webp",
+      "label": "Badge Kick2",
+      "category": "item",
+      "tags": [
+        "badge",
+        "kick"
+      ],
+      "notes": "badge, kick",
+      "updated_at": "2026-05-25T00:57:36.276448Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/badge-kick3.webp",
+      "filename": "badge-kick3.webp",
+      "extension": "webp",
+      "label": "Badge Kick3",
+      "category": "item",
+      "tags": [
+        "badge",
+        "kick"
+      ],
+      "notes": "badge, kick",
+      "updated_at": "2026-05-25T00:57:47.061562Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/badge-pilled.webp",
+      "filename": "badge-pilled.webp",
+      "extension": "webp",
+      "label": "Badge Pilled",
+      "category": "item",
+      "tags": [
+        "badge",
+        "pilled"
+      ],
+      "notes": "badge, pilled",
+      "updated_at": "2026-05-25T00:58:41.468084Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/badge-pilled2.webp",
+      "filename": "badge-pilled2.webp",
+      "extension": "webp",
+      "label": "Badge Pilled2",
+      "category": "item",
+      "tags": [
+        "badge",
+        "pilled"
+      ],
+      "notes": "badge, pilled",
+      "updated_at": "2026-05-25T00:58:54.081807Z",
+      "definition_complete": true
+    },
+    {
       "path": "assets/games/badge-rumble.webp",
       "filename": "badge-rumble.webp",
       "extension": "webp",
@@ -255,6 +326,77 @@
       ],
       "notes": "",
       "updated_at": "2026-05-19T21:43:42.858016Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/badge-rumble3.webp",
+      "filename": "badge-rumble3.webp",
+      "extension": "webp",
+      "label": "Badge Rumble3",
+      "category": "item",
+      "tags": [
+        "badge",
+        "rumble"
+      ],
+      "notes": "badge, rumble,",
+      "updated_at": "2026-05-25T00:56:54.610034Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/badge-ss-silver.webp",
+      "filename": "badge-ss-silver.webp",
+      "extension": "webp",
+      "label": "Badge Ss Silver",
+      "category": "item",
+      "tags": [
+        "Badge",
+        "silver",
+        "streamsuites"
+      ],
+      "notes": "Badge, silver, streamsuites",
+      "updated_at": "2026-05-23T20:55:48.697595Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/badge-twitch4.webp",
+      "filename": "badge-twitch4.webp",
+      "extension": "webp",
+      "label": "Badge Twitch4",
+      "category": "item",
+      "tags": [
+        "badge",
+        "twitch"
+      ],
+      "notes": "badge, twitch",
+      "updated_at": "2026-05-24T18:52:14.413762Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/badge-twitch5.webp",
+      "filename": "badge-twitch5.webp",
+      "extension": "webp",
+      "label": "Badge Twitch5",
+      "category": "item",
+      "tags": [
+        "badge",
+        "twitch"
+      ],
+      "notes": "badge, twitch",
+      "updated_at": "2026-05-24T18:52:57.096674Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/badge-youtube2.webp",
+      "filename": "badge-youtube2.webp",
+      "extension": "webp",
+      "label": "Badge Youtube2",
+      "category": "item",
+      "tags": [
+        "badge",
+        "youtube"
+      ],
+      "notes": "badge, youtube",
+      "updated_at": "2026-05-25T00:55:51.751080Z",
       "definition_complete": true
     },
     {
@@ -384,6 +526,575 @@
       "definition_complete": true
     },
     {
+      "path": "assets/games/dc-badge-x3.webp",
+      "filename": "dc-badge-x3.webp",
+      "extension": "webp",
+      "label": "Dc Badge X3",
+      "category": "item",
+      "tags": [
+        "Daniel Clancy",
+        "Admin",
+        "StreamSuites"
+      ],
+      "notes": "Daniel Clancy, Admin, StreamSuites",
+      "updated_at": "2026-05-24T11:20:04.029725Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/dc-sshield-gold.webp",
+      "filename": "dc-sshield-gold.webp",
+      "extension": "webp",
+      "label": "Dc Sshield Gold",
+      "category": "item",
+      "tags": [
+        "shield",
+        "armor",
+        "streamsuites",
+        "gold"
+      ],
+      "notes": "shield, armor, streamsuites, gold",
+      "updated_at": "2026-05-23T08:43:21.283929Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/dc-ssshield-gold.svg",
+      "filename": "dc-ssshield-gold.svg",
+      "extension": "svg",
+      "label": "Dc Ssshield Gold SVG",
+      "category": "item",
+      "tags": [
+        "shield",
+        "armor",
+        "streamsuites",
+        "gold",
+        "svg"
+      ],
+      "notes": "shield, armor, streamsuites, gold, svg",
+      "updated_at": "2026-05-23T08:44:11.694460Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/gem-ss-blue-1.webp",
+      "filename": "gem-ss-blue-1.webp",
+      "extension": "webp",
+      "label": "Gem Ss Blue 1",
+      "category": "item",
+      "tags": [
+        "gem",
+        "gemstone",
+        "blue"
+      ],
+      "notes": "gem, gemstone, blue",
+      "updated_at": "2026-05-23T21:06:47.138310Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/gem-ss-blue.webp",
+      "filename": "gem-ss-blue.webp",
+      "extension": "webp",
+      "label": "Gem Ss Blue",
+      "category": "item",
+      "tags": [
+        "gem",
+        "diamond",
+        "blue",
+        "treasure"
+      ],
+      "notes": "gem, diamond, blue, treasure",
+      "updated_at": "2026-05-23T20:48:07.516890Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-bait.webp",
+      "filename": "item-bait.webp",
+      "extension": "webp",
+      "label": "Item Bait",
+      "category": "item",
+      "tags": [
+        "fish",
+        "bait",
+        "fishing",
+        "hook"
+      ],
+      "notes": "fish, bait, fishing, hook",
+      "updated_at": "2026-05-23T08:39:05.524465Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-chest.webp",
+      "filename": "item-chest.webp",
+      "extension": "webp",
+      "label": "Item Chest",
+      "category": "item",
+      "tags": [
+        "chest",
+        "treasure",
+        "gold"
+      ],
+      "notes": "chest, treasure, gold,",
+      "updated_at": "2026-05-23T11:25:01.815241Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-coinflip.webp",
+      "filename": "item-coinflip.webp",
+      "extension": "webp",
+      "label": "Item Coinflip",
+      "category": "item",
+      "tags": [
+        "coin",
+        "flip",
+        "coinflip",
+        "chance"
+      ],
+      "notes": "coin, flip, coinflip, chance",
+      "updated_at": "2026-05-23T08:46:32.436805Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-contract-2.webp",
+      "filename": "item-contract-2.webp",
+      "extension": "webp",
+      "label": "Item Contract 2",
+      "category": "item",
+      "tags": [
+        "contract",
+        "agreement",
+        "signed",
+        "dual",
+        "covenant"
+      ],
+      "notes": "contract, agreement, signed, dual, covenant",
+      "updated_at": "2026-05-22T17:54:52.382885Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-crossbow.webp",
+      "filename": "item-crossbow.webp",
+      "extension": "webp",
+      "label": "Item Crossbow",
+      "category": "Equipment",
+      "tags": [
+        "crossbow",
+        "weapon",
+        "bow",
+        "arrow"
+      ],
+      "notes": "crossbow, weapon, bow, arrow",
+      "updated_at": "2026-05-22T17:59:34.945893Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-dice-gold.webp",
+      "filename": "item-dice-gold.webp",
+      "extension": "webp",
+      "label": "Item Dice Gold",
+      "category": "item",
+      "tags": [
+        "dice",
+        "roll",
+        "games",
+        "gamble",
+        "gold"
+      ],
+      "notes": "dice, roll, games, gamble, gold",
+      "updated_at": "2026-05-25T01:04:12.847775Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-dice-red.webp",
+      "filename": "item-dice-red.webp",
+      "extension": "webp",
+      "label": "Item Dice Red",
+      "category": "item",
+      "tags": [
+        "dice",
+        "roll",
+        "games",
+        "gamble",
+        "red"
+      ],
+      "notes": "dice, roll, games, gamble, red",
+      "updated_at": "2026-05-25T01:04:26.470265Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-dice-silver.webp",
+      "filename": "item-dice-silver.webp",
+      "extension": "webp",
+      "label": "Item Dice Silver",
+      "category": "item",
+      "tags": [
+        "dice",
+        "roll",
+        "games",
+        "gamble",
+        "silver"
+      ],
+      "notes": "dice, roll, games, gamble, silver",
+      "updated_at": "2026-05-25T01:04:40.283882Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-fish-large-1.webp",
+      "filename": "item-fish-large-1.webp",
+      "extension": "webp",
+      "label": "Item Fish Large 1",
+      "category": "item",
+      "tags": [
+        "fish",
+        "large",
+        "bass",
+        "fishing"
+      ],
+      "notes": "fish, large, bass, fishing",
+      "updated_at": "2026-05-23T08:37:41.930840Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-fish-shark-1.webp",
+      "filename": "item-fish-shark-1.webp",
+      "extension": "webp",
+      "label": "Item Fish Shark 1",
+      "category": "item",
+      "tags": [
+        "shark",
+        "fish",
+        "catch",
+        "large"
+      ],
+      "notes": "shark, fish, catch, large",
+      "updated_at": "2026-05-24T18:47:27.203647Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-gold-bullion.webp",
+      "filename": "item-gold-bullion.webp",
+      "extension": "webp",
+      "label": "Item Gold Bullion",
+      "category": "item",
+      "tags": [
+        "gold",
+        "bullion",
+        "treasure",
+        "value",
+        "money"
+      ],
+      "notes": "gold, bullion, treasure, value, money",
+      "updated_at": "2026-05-24T17:54:44.242458Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-gun-1.webp",
+      "filename": "item-gun-1.webp",
+      "extension": "webp",
+      "label": "Item Gun 1",
+      "category": "Equipment",
+      "tags": [
+        "gun",
+        "weapon",
+        "pistol",
+        "handgun"
+      ],
+      "notes": "gun, weapon, pistol, handgun",
+      "updated_at": "2026-05-22T18:00:06.373389Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-gun-2.webp",
+      "filename": "item-gun-2.webp",
+      "extension": "webp",
+      "label": "Item Gun 2",
+      "category": "item",
+      "tags": [
+        "gun",
+        "weapon",
+        "pistol",
+        "handgun"
+      ],
+      "notes": "gun, weapon, pistol, handgun",
+      "updated_at": "2026-05-22T17:58:26.210856Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-gun-gold.webp",
+      "filename": "item-gun-gold.webp",
+      "extension": "webp",
+      "label": "Item Gun Gold",
+      "category": "Gear",
+      "tags": [
+        "gun",
+        "gold",
+        "weapon",
+        "shoot",
+        "pistol"
+      ],
+      "notes": "gun, gold, weapon, shoot, pistol",
+      "updated_at": "2026-05-24T18:41:05.756536Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-gun-silver.webp",
+      "filename": "item-gun-silver.webp",
+      "extension": "webp",
+      "label": "Item Gun Silver",
+      "category": "item",
+      "tags": [
+        "gun",
+        "silver",
+        "weapon",
+        "shoot",
+        "pistol"
+      ],
+      "notes": "gun, silver, weapon, shoot, pistol",
+      "updated_at": "2026-05-24T18:43:24.509531Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-junk-1.webp",
+      "filename": "item-junk-1.webp",
+      "extension": "webp",
+      "label": "Item Junk 1",
+      "category": "item",
+      "tags": [
+        "junk",
+        "rubbish",
+        "rust",
+        "can",
+        "scrap"
+      ],
+      "notes": "junk, rubbish, rust, can, scrap",
+      "updated_at": "2026-05-23T11:22:28.837087Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-key-gold.webp",
+      "filename": "item-key-gold.webp",
+      "extension": "webp",
+      "label": "Item Key Gold",
+      "category": "item",
+      "tags": [
+        "key",
+        "treasure",
+        "gold"
+      ],
+      "notes": "key, treasure, gold",
+      "updated_at": "2026-05-24T11:21:00.358799Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-key-silver.webp",
+      "filename": "item-key-silver.webp",
+      "extension": "webp",
+      "label": "Item Key Silver",
+      "category": "item",
+      "tags": [
+        "key",
+        "treasure",
+        "silver"
+      ],
+      "notes": "key, treasure, silver",
+      "updated_at": "2026-05-24T11:20:35.673495Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-key.webp",
+      "filename": "item-key.webp",
+      "extension": "webp",
+      "label": "Item Key",
+      "category": "item",
+      "tags": [
+        "key",
+        "secret",
+        "unlock",
+        "gold"
+      ],
+      "notes": "key, secret, unlock, gold",
+      "updated_at": "2026-05-25T01:06:22.529868Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-pet-1.webp",
+      "filename": "item-pet-1.webp",
+      "extension": "webp",
+      "label": "Item Pet 1",
+      "category": "item",
+      "tags": [
+        "pet",
+        "dog",
+        "animal",
+        "companion"
+      ],
+      "notes": "pet, dog, animal, companion,",
+      "updated_at": "2026-05-23T08:38:26.947372Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-recipe.webp",
+      "filename": "item-recipe.webp",
+      "extension": "webp",
+      "label": "Item Recipe",
+      "category": "item",
+      "tags": [
+        "recipe. cooking"
+      ],
+      "notes": "recipe. cooking",
+      "updated_at": "2026-05-23T20:54:43.020202Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-rod.webp",
+      "filename": "item-rod.webp",
+      "extension": "webp",
+      "label": "Item Rod",
+      "category": "item",
+      "tags": [
+        "rod",
+        "fishing"
+      ],
+      "notes": "rod, fishing",
+      "updated_at": "2026-05-23T11:24:04.800044Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-silver-bullion.webp",
+      "filename": "item-silver-bullion.webp",
+      "extension": "webp",
+      "label": "Item Silver Bullion",
+      "category": "item",
+      "tags": [
+        "silver",
+        "bullion",
+        "treasure",
+        "value",
+        "money"
+      ],
+      "notes": "silver, bullion, treasure, value, money",
+      "updated_at": "2026-05-24T17:53:56.178298Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-slots-2.webp",
+      "filename": "item-slots-2.webp",
+      "extension": "webp",
+      "label": "Item Slots 2",
+      "category": "item",
+      "tags": [
+        "slots",
+        "casino",
+        "gamble"
+      ],
+      "notes": "slots, casino, gamble",
+      "updated_at": "2026-05-23T21:07:54.595265Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-slots.webp",
+      "filename": "item-slots.webp",
+      "extension": "webp",
+      "label": "Item Slots",
+      "category": "item",
+      "tags": [
+        "slots",
+        "gamble",
+        "gambling",
+        "casino",
+        "777",
+        "games",
+        "winner"
+      ],
+      "notes": "slots, gamble, gambling, casino, 777, games, winner",
+      "updated_at": "2026-05-22T17:56:31.441520Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-swordfish-2.webp",
+      "filename": "item-swordfish-2.webp",
+      "extension": "webp",
+      "label": "Item Swordfish 2",
+      "category": "item",
+      "tags": [
+        "fish",
+        "swordfish",
+        "catch",
+        "fishing",
+        "large"
+      ],
+      "notes": "fish, swordfish, catch, fishing, large",
+      "updated_at": "2026-05-24T18:36:54.655096Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-ticket-blue.webp",
+      "filename": "item-ticket-blue.webp",
+      "extension": "webp",
+      "label": "Item Ticket Blue",
+      "category": "item",
+      "tags": [
+        "ticket",
+        "blue"
+      ],
+      "notes": "ticket, blue",
+      "updated_at": "2026-05-25T01:09:48.311062Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-ticket-gold.webp",
+      "filename": "item-ticket-gold.webp",
+      "extension": "webp",
+      "label": "Item Ticket Gold",
+      "category": "item",
+      "tags": [
+        "ticket",
+        "gold"
+      ],
+      "notes": "ticket, gold",
+      "updated_at": "2026-05-25T01:09:01.929186Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-ticket-green.webp",
+      "filename": "item-ticket-green.webp",
+      "extension": "webp",
+      "label": "Item Ticket Green",
+      "category": "item",
+      "tags": [
+        "ticket",
+        "green"
+      ],
+      "notes": "ticket, green",
+      "updated_at": "2026-05-22T17:49:32.434068Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-ticket-purple.webp",
+      "filename": "item-ticket-purple.webp",
+      "extension": "webp",
+      "label": "Item Ticket Purple",
+      "category": "item",
+      "tags": [
+        "ticket",
+        "purple"
+      ],
+      "notes": "ticket, purple",
+      "updated_at": "2026-05-25T01:09:27.186722Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-ticket-red.webp",
+      "filename": "item-ticket-red.webp",
+      "extension": "webp",
+      "label": "Item Ticket Red",
+      "category": "item",
+      "tags": [
+        "ticket",
+        "red"
+      ],
+      "notes": "ticket, red",
+      "updated_at": "2026-05-25T01:10:10.445573Z",
+      "definition_complete": true
+    },
+    {
       "path": "assets/games/lb-first.webp",
       "filename": "lb-first.webp",
       "extension": "webp",
@@ -408,6 +1119,156 @@
       "label": "Lb Third",
       "size_bytes": 102312,
       "category": "leaderboard",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/material-brick.webp",
+      "filename": "material-brick.webp",
+      "extension": "webp",
+      "label": "Material Brick",
+      "category": "Resource",
+      "tags": [
+        "material",
+        "brick"
+      ],
+      "notes": "material, brick",
+      "updated_at": "2026-05-23T20:51:53.680871Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/material-concrete.webp",
+      "filename": "material-concrete.webp",
+      "extension": "webp",
+      "label": "Material Concrete",
+      "category": "Resource",
+      "tags": [
+        "material",
+        "concrete"
+      ],
+      "notes": "material, concrete",
+      "updated_at": "2026-05-23T20:53:01.558450Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/material-fabric.webp",
+      "filename": "material-fabric.webp",
+      "extension": "webp",
+      "label": "Material Fabric",
+      "category": "Resource",
+      "tags": [
+        "material",
+        "fabric"
+      ],
+      "notes": "material, fabric",
+      "updated_at": "2026-05-23T20:50:31.275576Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/material-lumber.webp",
+      "filename": "material-lumber.webp",
+      "extension": "webp",
+      "label": "Material Lumber",
+      "category": "Resource",
+      "tags": [
+        "material",
+        "lumber"
+      ],
+      "notes": "material, lumber",
+      "updated_at": "2026-05-23T20:52:13.921911Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/material-steel.webp",
+      "filename": "material-steel.webp",
+      "extension": "webp",
+      "label": "Material Steel",
+      "category": "Resource",
+      "tags": [
+        "material",
+        "steel"
+      ],
+      "notes": "material, steel",
+      "updated_at": "2026-05-23T20:53:26.263364Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/potion-blue.webp",
+      "filename": "potion-blue.webp",
+      "extension": "webp",
+      "label": "Potion Blue",
+      "category": "item",
+      "tags": [
+        "potion",
+        "blue",
+        "boost",
+        "health"
+      ],
+      "notes": "potion, blue, boost, health",
+      "updated_at": "2026-05-25T01:01:37.657276Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/potion-gold.webp",
+      "filename": "potion-gold.webp",
+      "extension": "webp",
+      "label": "Potion Gold",
+      "category": "item",
+      "tags": [
+        "potion",
+        "gold",
+        "boost",
+        "health"
+      ],
+      "notes": "potion, gold, boost, health",
+      "updated_at": "2026-05-25T01:01:22.049915Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/potion-green.webp",
+      "filename": "potion-green.webp",
+      "extension": "webp",
+      "label": "Potion Green",
+      "category": "item",
+      "tags": [
+        "potion",
+        "green",
+        "boost",
+        "health"
+      ],
+      "notes": "potion, green, boost, health",
+      "updated_at": "2026-05-25T01:01:08.653325Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/potion-pink.webp",
+      "filename": "potion-pink.webp",
+      "extension": "webp",
+      "label": "Potion Pink",
+      "category": "item",
+      "tags": [
+        "potion",
+        "pink",
+        "boost",
+        "health"
+      ],
+      "notes": "potion, pink, boost, health",
+      "updated_at": "2026-05-25T01:00:53.886213Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/potion-purple.webp",
+      "filename": "potion-purple.webp",
+      "extension": "webp",
+      "label": "Potion Purple",
+      "category": "item",
+      "tags": [
+        "potion",
+        "purple",
+        "boost",
+        "health"
+      ],
+      "notes": "potion, purple, boost, health",
+      "updated_at": "2026-05-25T01:02:00.727869Z",
       "definition_complete": true
     },
     {
@@ -443,6 +1304,55 @@
       "label": "Ssbanknote",
       "size_bytes": 20282,
       "category": "currency",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/ssbanknotes-3.webp",
+      "filename": "ssbanknotes-3.webp",
+      "extension": "webp",
+      "label": "Ssbanknotes 3",
+      "category": "currency",
+      "tags": [
+        "money",
+        "cash",
+        "bank",
+        "currency",
+        "stekel"
+      ],
+      "notes": "money, cash, bank, currency, stekel",
+      "updated_at": "2026-05-22T17:29:53.223144Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/sscoin-2.webp",
+      "filename": "sscoin-2.webp",
+      "extension": "webp",
+      "label": "Sscoin 2",
+      "category": "Currency",
+      "tags": [
+        "coin",
+        "currency",
+        "money",
+        "stekel"
+      ],
+      "notes": "coin, currency, money, stekel",
+      "updated_at": "2026-05-23T08:40:43.114380Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/sscoin-3.webp",
+      "filename": "sscoin-3.webp",
+      "extension": "webp",
+      "label": "Sscoin 3",
+      "category": "Currency",
+      "tags": [
+        "coin",
+        "currency",
+        "money",
+        "stekel"
+      ],
+      "notes": "coin, currency, money, stekel",
+      "updated_at": "2026-05-23T08:40:15.702371Z",
       "definition_complete": true
     },
     {
@@ -527,6 +1437,22 @@
       "definition_complete": true
     },
     {
+      "path": "assets/games/sshield-gold-2.webp",
+      "filename": "sshield-gold-2.webp",
+      "extension": "webp",
+      "label": "Sshield Gold 2",
+      "category": "item",
+      "tags": [
+        "shield",
+        "armor",
+        "streamsuites",
+        "gold"
+      ],
+      "notes": "shield, armor, streamsuites, gold",
+      "updated_at": "2026-05-23T08:44:27.588435Z",
+      "definition_complete": true
+    },
+    {
       "path": "assets/games/sshield-gold.webp",
       "filename": "sshield-gold.webp",
       "extension": "webp",
@@ -542,12 +1468,246 @@
       "definition_complete": true
     },
     {
+      "path": "assets/games/sshield-silver-2.webp",
+      "filename": "sshield-silver-2.webp",
+      "extension": "webp",
+      "label": "Sshield Silver 2",
+      "category": "item",
+      "tags": [
+        "shield",
+        "armor",
+        "streamsuites",
+        "silver"
+      ],
+      "notes": "shield, armor, streamsuites, silver",
+      "updated_at": "2026-05-23T08:44:45.387910Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/sshield-silver.webp",
+      "filename": "sshield-silver.webp",
+      "extension": "webp",
+      "label": "Sshield Silver",
+      "category": "item",
+      "tags": [
+        "shield",
+        "armor",
+        "streamsuites"
+      ],
+      "notes": "shield, armor, streamsuites",
+      "updated_at": "2026-05-23T08:42:49.120028Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/sstoken-boss.webp",
+      "filename": "sstoken-boss.webp",
+      "extension": "webp",
+      "label": "Sstoken Boss",
+      "category": "item",
+      "tags": [
+        "token",
+        "boss",
+        "challenge",
+        "eye",
+        "monster"
+      ],
+      "notes": "token, boss, challenge, eye, monster",
+      "updated_at": "2026-05-22T17:57:32.652919Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/sstoken-mystery.webp",
+      "filename": "sstoken-mystery.webp",
+      "extension": "webp",
+      "label": "Sstoken Mystery",
+      "category": "item",
+      "tags": [
+        "token",
+        "mystery",
+        "trivia",
+        "question"
+      ],
+      "notes": "token, mystery, trivia, question",
+      "updated_at": "2026-05-22T17:51:45.535325Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/sstoken-wheel.webp",
+      "filename": "sstoken-wheel.webp",
+      "extension": "webp",
+      "label": "Sstoken Wheel",
+      "category": "item",
+      "tags": [
+        "token",
+        "wheel"
+      ],
+      "notes": "token, wheel",
+      "updated_at": "2026-05-22T17:50:38.690649Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/sstoken.webp",
+      "filename": "sstoken.webp",
+      "extension": "webp",
+      "label": "Sstoken",
+      "category": "item",
+      "tags": [
+        "token",
+        "ss",
+        "streamsuites",
+        "admin"
+      ],
+      "notes": "token, ss, streamsuites, admin",
+      "updated_at": "2026-05-22T17:53:39.974228Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/x01-iron.webp",
+      "filename": "x01-iron.webp",
+      "extension": "webp",
+      "label": "X01 Iron",
+      "category": "Resource",
+      "tags": [
+        "iron",
+        "ore",
+        "rock",
+        "resource",
+        "material"
+      ],
+      "notes": "iron, ore, rock, resource, material",
+      "updated_at": "2026-05-25T06:53:40.020447Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/x07-gold.webp",
+      "filename": "x07-gold.webp",
+      "extension": "webp",
+      "label": "X07 Gold",
+      "category": "Resource",
+      "tags": [
+        "gold",
+        "bullion",
+        "treasure",
+        "money",
+        "value",
+        "currency"
+      ],
+      "notes": "gold, bullion, treasure, money, value, currency",
+      "updated_at": "2026-05-24T16:17:36.802232Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/xbadge-ss-gold.webp",
+      "filename": "xbadge-ss-gold.webp",
+      "extension": "webp",
+      "label": "Xbadge Ss Gold",
+      "category": "item",
+      "tags": [
+        "Badge",
+        "gold",
+        "streamsuites"
+      ],
+      "notes": "Badge, gold, streamsuites",
+      "updated_at": "2026-05-23T20:57:25.083757Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/xbadge-ss-green.webp",
+      "filename": "xbadge-ss-green.webp",
+      "extension": "webp",
+      "label": "Xbadge Ss Green",
+      "category": "item",
+      "tags": [
+        "Badge",
+        "green",
+        "streamsuites"
+      ],
+      "notes": "Badge, green, streamsuites",
+      "updated_at": "2026-05-23T21:04:21.009405Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/xbadge-ss-purple.webp",
+      "filename": "xbadge-ss-purple.webp",
+      "extension": "webp",
+      "label": "Xbadge Ss Purple",
+      "category": "item",
+      "tags": [
+        "Badge",
+        "purple",
+        "streamsuites"
+      ],
+      "notes": "Badge, purple, streamsuites",
+      "updated_at": "2026-05-23T21:03:55.174090Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/xbadge-ss-silver.webp",
+      "filename": "xbadge-ss-silver.webp",
+      "extension": "webp",
+      "label": "Xbadge Ss Silver",
+      "category": "item",
+      "tags": [
+        "Badge",
+        "silver",
+        "streamsuites"
+      ],
+      "notes": "Badge, silver, streamsuites",
+      "updated_at": "2026-05-23T20:56:27.600820Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/xgem-ss.webp",
+      "filename": "xgem-ss.webp",
+      "extension": "webp",
+      "label": "Xgem Ss",
+      "category": "item",
+      "tags": [
+        "diamond",
+        "white",
+        "gem",
+        "gemstone"
+      ],
+      "notes": "diamond, white, gem, gemstone",
+      "updated_at": "2026-05-23T21:10:51.381789Z",
+      "definition_complete": true
+    },
+    {
       "path": "assets/games/xpstar.webp",
       "filename": "xpstar.webp",
       "extension": "webp",
       "label": "Xpstar",
       "size_bytes": 96100,
       "category": "game",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/xsstoken-boss.webp",
+      "filename": "xsstoken-boss.webp",
+      "extension": "webp",
+      "label": "Xsstoken Boss",
+      "category": "item",
+      "tags": [
+        "token",
+        "boss",
+        "challenge"
+      ],
+      "notes": "token, boss, challenge",
+      "updated_at": "2026-05-23T21:08:46.627631Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/xsstoken.webp",
+      "filename": "xsstoken.webp",
+      "extension": "webp",
+      "label": "Xsstoken",
+      "category": "item",
+      "tags": [
+        "token",
+        "streamsuites"
+      ],
+      "notes": "token, streamsuites",
+      "updated_at": "2026-05-23T21:05:31.205420Z",
       "definition_complete": true
     }
   ]
