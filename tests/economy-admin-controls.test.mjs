@@ -44,6 +44,7 @@ test("economy view exposes required control sections and boundary copy", () => {
   assert.match(html, /Inventory Inspector/);
   assert.match(html, /Manual Inventory Actions/);
   assert.match(html, /Gem \/ Diamond Exchange/);
+  assert.match(html, /Market Governance/);
   assert.match(html, /Inventory Events/);
   assert.match(html, /Item Definitions/);
   assert.match(html, /Danger Zone/);
@@ -66,6 +67,8 @@ test("economy view exposes required control sections and boundary copy", () => {
   assert.match(html, /id="economy-inventory-events-section"/);
   assert.match(html, /id="economy-inventory-actions-section"/);
   assert.match(html, /id="economy-exchange-section"/);
+  assert.match(html, /id="economy-market-governance-section"/);
+  assert.match(html, /id="economy-market-governance"/);
   assert.match(html, /id="economy-item-definitions-section"/);
   assert.match(html, /id="economy-danger-zone-section"/);
   assert.doesNotMatch(html, /<div class="ss-economy-grid">/);
@@ -81,6 +84,8 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /INVENTORY_EVENT_CREATE = \(identityCode\) => `\/api\/admin\/inventory\/identities\/\$\{encodeURIComponent\(identityCode\)\}\/events`/);
   assert.match(js, /INVENTORY_EVENT_REVERSE = \(eventCode\) => `\/api\/admin\/inventory\/events\/\$\{encodeURIComponent\(eventCode\)\}\/reverse`/);
   assert.match(js, /ITEM_DEFINITIONS = "\/api\/admin\/inventory\/items"/);
+  assert.match(js, /MARKET_GOVERNANCE = "\/api\/admin\/economy\/market"/);
+  assert.match(js, /MARKET_GOVERNANCE_ITEM = \(itemCode\) => `\/api\/admin\/economy\/market\/items\/\$\{encodeURIComponent\(itemCode\)\}`/);
   assert.match(js, /ECONOMY_SETTINGS = "\/api\/admin\/economy\/settings"/);
   assert.match(js, /ECONOMY_DENOMINATIONS = "\/api\/admin\/economy\/denominations"/);
   assert.match(js, /PUBLIC_GAME_BACKUP = "\/api\/admin\/public-game-authority\/backup"/);
@@ -94,6 +99,7 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /Manual inventory actions require a reason/);
   assert.match(js, /Inventory reversal requires an event code and reason/);
   assert.match(js, /Item definition metadata changes require a reason/);
+  assert.match(js, /Market governance changes require a reason/);
   assert.match(js, /New item definitions require a reason/);
   assert.match(js, /Reset requires the exact confirmation phrase and a reason/);
   assert.match(js, /Economy settings changes require a reason/);
@@ -161,6 +167,12 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /data-asset-use/);
   assert.match(js, /const canUseAsset = Boolean\(useValue\)/);
   assert.match(js, /function renderItemDefinitionsToolbar\(pageInfo\)/);
+  assert.match(js, /function renderMarketGovernance\(\)/);
+  assert.match(js, /data-market-field="market_price_stekels"/);
+  assert.match(js, /data-market-field="exchange_value_stekels"/);
+  assert.match(js, /data-market-field="item_type"/);
+  assert.match(js, /data-market-save="\$\{escapeHtml\(item\.item_code\)\}"/);
+  assert.match(js, /body: JSON\.stringify\(\{ item, reason_text: reason \}\)/);
   assert.match(js, /id="economy-item-page-size"/);
   assert.match(js, /state\.itemPageSize = ITEM_PAGE_SIZE_OPTIONS\.includes\(nextSize\) \? nextSize : DEFAULT_ITEM_PAGE_SIZE/);
   assert.match(js, /state\.itemPage = 1/);
@@ -328,6 +340,7 @@ test("economy route uses the shared top-bar section anchor row", () => {
   assert.match(app, /\{ id: "economy-inventory-events-section", label: "Inventory Events" \}/);
   assert.match(app, /\{ id: "economy-inventory-actions-section", label: "Manual Inventory Actions" \}/);
   assert.match(app, /\{ id: "economy-exchange-section", label: "Gem \/ Diamond Exchange" \}/);
+  assert.match(app, /\{ id: "economy-market-governance-section", label: "Market Governance" \}/);
   assert.match(app, /\{ id: "economy-item-definitions-section", label: "Item Definitions" \}/);
   assert.match(app, /\{ id: "economy-danger-zone-section", label: "Danger Zone" \}/);
   assert.match(app, /data-accounts-shell-anchor="\$\{section\.id\}"/);
@@ -361,6 +374,8 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-item-list-toolbar\s*\{/);
   assert.match(css, /\.ss-economy-item-page-size select\s*\{[\s\S]*min-width:\s*82px/);
   assert.match(css, /\.ss-economy-item-editor\s*\{[\s\S]*grid-template-columns:\s*minmax\(210px,\s*0\.74fr\) minmax\(0,\s*1\.26fr\)/);
+  assert.match(css, /\.ss-economy-market-toolbar\s*\{/);
+  assert.match(css, /\.ss-economy-market-editor\s*\{[\s\S]*grid-template-columns:\s*repeat\(4,\s*minmax\(150px,\s*1fr\)\)/);
   assert.match(css, /\.ss-economy-icon-field\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto minmax\(190px,\s*0\.55fr\)/);
   assert.match(css, /\.ss-economy-asset-modal\s*\{/);
   assert.match(css, /\.ss-economy-asset-dialog\s*\{[\s\S]*width:\s*min\(1160px,\s*100%\)/);

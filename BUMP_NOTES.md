@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Added a compact Admin `/economy` Market Governance section to the existing Economy / Inventory workspace and top section anchor row. The section searches and filters runtime item definitions, shows sale/exchange/type/stock metadata, and edits one item at a time through Runtime/Auth `GET /api/admin/economy/market` and `PATCH /api/admin/economy/market/items/{item_code}`.
+- Human note: admins can manage item sale status, Stekel prices, exchange flags/values, item type/category, market labels, and stock metadata from Dashboard while Dashboard remains only a control surface over Runtime/Auth-owned item definitions.
+
 - Added a Runtime/Auth-backed `Chat alias` editor field to Admin `/economy` item definitions. The list shows existing aliases, create/update payloads preserve and send `chat_alias`, the client validates the no-spaces alias shape before save, and backend alias validation errors are surfaced through the existing field-error flow.
 - Human note: admins can assign short livechat purchase codes such as `lumber` without changing canonical item codes like `material.lumber`, and Dashboard remains only a consumer/editor of Runtime/Auth-owned item definitions.
 

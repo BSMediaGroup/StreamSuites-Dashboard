@@ -1015,6 +1015,7 @@ const SECTION_SHELL_CONFIG = Object.freeze({
       { id: "economy-inventory-events-section", label: "Inventory Events" },
       { id: "economy-inventory-actions-section", label: "Manual Inventory Actions" },
       { id: "economy-exchange-section", label: "Gem / Diamond Exchange" },
+      { id: "economy-market-governance-section", label: "Market Governance" },
       { id: "economy-item-definitions-section", label: "Item Definitions" },
       { id: "economy-danger-zone-section", label: "Danger Zone" }
     ])

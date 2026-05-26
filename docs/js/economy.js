@@ -15,6 +15,8 @@
   const INVENTORY_EVENT_REVERSE = (eventCode) => `/api/admin/inventory/events/${encodeURIComponent(eventCode)}/reverse`;
   const ITEM_DEFINITIONS = "/api/admin/inventory/items";
   const ITEM_DEFINITION = (itemCode) => `/api/admin/inventory/items/${encodeURIComponent(itemCode)}`;
+  const MARKET_GOVERNANCE = "/api/admin/economy/market";
+  const MARKET_GOVERNANCE_ITEM = (itemCode) => `/api/admin/economy/market/items/${encodeURIComponent(itemCode)}`;
   const ECONOMY_SETTINGS = "/api/admin/economy/settings";
   const ECONOMY_DENOMINATIONS = "/api/admin/economy/denominations";
   const ECONOMY_DENOMINATION = (denominationCode) => `/api/admin/economy/denominations/${encodeURIComponent(denominationCode)}`;
@@ -52,6 +54,14 @@
     itemPage: 1,
     itemPageSize: DEFAULT_ITEM_PAGE_SIZE,
     itemEditorCode: "",
+    marketItems: [],
+    marketEditorCode: "",
+    marketSearch: "",
+    marketFilters: {
+      purchasable: false,
+      exchangeable: false,
+      disabled: false
+    },
     denominationEditorCode: "",
     denominationErrors: {},
     assetCatalog: [],
@@ -428,6 +438,26 @@
   function itemIcon(item = {}) {
     const definition = item.definition || itemDefinitionFor(item.item_code) || {};
     return text(definition.icon_path || item.icon_path);
+  }
+
+  function marketEnabled(item = {}) {
+    return Boolean(item.market_enabled || item.purchasable || item.can_buy);
+  }
+
+  function exchangeEnabled(item = {}) {
+    return Boolean(item.exchange_enabled || item.exchangeable || item.can_exchange);
+  }
+
+  function marketItemType(item = {}) {
+    return text(item.item_type || item.type || item.category || "Uncategorized");
+  }
+
+  function marketPrice(item = {}) {
+    return Number(item.market_price_stekels ?? item.market_price_credits ?? 0) || 0;
+  }
+
+  function exchangeValue(item = {}) {
+    return Number(item.exchange_value_stekels ?? item.exchange_value_credits ?? 0) || 0;
   }
 
   function presetOptions(values = [], selected = "") {
@@ -1083,6 +1113,89 @@
     syncExchangePreview();
   }
 
+  function filteredMarketItems() {
+    const query = text(state.marketSearch).toLowerCase();
+    return (Array.isArray(state.marketItems) ? state.marketItems : []).filter((item) => {
+      const haystack = [
+        item.item_code,
+        item.label,
+        item.display_name,
+        item.market_label,
+        item.short_label,
+        item.category,
+        item.item_type,
+        item.type
+      ].map((value) => text(value).toLowerCase()).join(" ");
+      if (query && !haystack.includes(query)) return false;
+      if (state.marketFilters.purchasable && !marketEnabled(item)) return false;
+      if (state.marketFilters.exchangeable && !exchangeEnabled(item)) return false;
+      if (state.marketFilters.disabled && item.is_enabled !== false && marketEnabled(item)) return false;
+      return true;
+    });
+  }
+
+  function renderMarketGovernance() {
+    if (!el.marketGovernance) return;
+    const rows = filteredMarketItems();
+    const filterSummary = [
+      state.marketFilters.purchasable ? "on sale" : "",
+      state.marketFilters.exchangeable ? "exchangeable" : "",
+      state.marketFilters.disabled ? "disabled/off sale" : ""
+    ].filter(Boolean).join(", ");
+    el.marketGovernance.innerHTML = `
+      <div class="ss-economy-market-toolbar">
+        <label class="ss-economy-wide">Search items<input id="economy-market-search" type="search" value="${escapeHtml(state.marketSearch)}" placeholder="Item code, display name, or type" /></label>
+        <label><input id="economy-market-filter-purchasable" type="checkbox" ${state.marketFilters.purchasable ? "checked" : ""} /> On sale</label>
+        <label><input id="economy-market-filter-exchangeable" type="checkbox" ${state.marketFilters.exchangeable ? "checked" : ""} /> Exchangeable</label>
+        <label><input id="economy-market-filter-disabled" type="checkbox" ${state.marketFilters.disabled ? "checked" : ""} /> Disabled</label>
+        <span class="muted">${formatNumber(rows.length)} of ${formatNumber(state.marketItems.length)} items${filterSummary ? ` · ${escapeHtml(filterSummary)}` : ""}</span>
+      </div>
+      <div class="ss-economy-market-list">
+        ${rows.map((item) => {
+          const isEditing = state.marketEditorCode === item.item_code;
+          const icon = normalizeItemIconPath(item.icon_path || item.icon_url || "");
+          const type = marketItemType(item);
+          const stock = item.unlimited_stock ? "Unlimited" : item.stock !== null && item.stock !== undefined ? formatNumber(item.stock) : "Untracked";
+          return `
+            <article class="ss-economy-market-row${isEditing ? " is-editing" : ""}" data-market-item-code="${escapeHtml(item.item_code)}">
+              <div class="ss-economy-market-summary">
+                <span class="ss-economy-item-icon${icon ? "" : " is-unavailable"}">${icon ? `<img src="${escapeHtml(assetPath(icon))}" alt="" loading="lazy" decoding="async" />` : `<span class="ss-economy-item-icon-fallback">No icon</span>`}</span>
+                <div class="ss-economy-market-main">
+                  <strong>${escapeHtml(item.label || item.display_name || item.item_code)}</strong>
+                  <span class="muted">item_code: ${escapeHtml(item.item_code)} · ${escapeHtml(type)} · ${escapeHtml(item.category || "Uncategorized")}</span>
+                  <span class="muted">Sale: ${marketEnabled(item) ? `${formatNumber(marketPrice(item))} Stekels` : "off"} · Exchange: ${exchangeEnabled(item) ? `${formatNumber(exchangeValue(item))} Stekels` : "off"} · Stock: ${escapeHtml(stock)}</span>
+                </div>
+                <div class="ss-economy-market-flags">
+                  <span class="ss-economy-state ${marketEnabled(item) ? "ss-economy-state-active" : ""}">${marketEnabled(item) ? "On sale" : "Not sold"}</span>
+                  <span class="ss-economy-state ${exchangeEnabled(item) ? "ss-economy-state-active" : ""}">${exchangeEnabled(item) ? "Exchange" : "No exchange"}</span>
+                  <button class="ss-btn ss-btn-secondary" type="button" data-market-edit="${escapeHtml(item.item_code)}">${isEditing ? "Close" : "Edit"}</button>
+                </div>
+              </div>
+              ${isEditing ? `
+                <div class="ss-economy-market-editor">
+                  <label>Type/category<select data-market-field="item_type">${itemCategoryOptions(type)}</select></label>
+                  <label>Sale status<select data-market-field="market_enabled"><option value="true" ${marketEnabled(item) ? "selected" : ""}>Purchasable</option><option value="false" ${marketEnabled(item) ? "" : "selected"}>Off sale</option></select></label>
+                  <label>Sale price<input data-market-field="market_price_stekels" type="number" min="0" step="1" value="${escapeHtml(marketPrice(item))}" /></label>
+                  <label>Exchange status<select data-market-field="exchange_enabled"><option value="true" ${exchangeEnabled(item) ? "selected" : ""}>Exchangeable</option><option value="false" ${exchangeEnabled(item) ? "" : "selected"}>No exchange</option></select></label>
+                  <label>Exchange value<input data-market-field="exchange_value_stekels" type="number" min="0" step="1" value="${escapeHtml(exchangeValue(item))}" /></label>
+                  <label>Stock<input data-market-field="stock" type="number" min="0" step="1" value="${escapeHtml(item.stock ?? "")}" placeholder="blank for untracked" /></label>
+                  <label>Stock limit<input data-market-field="stock_limit" type="number" min="0" step="1" value="${escapeHtml(item.stock_limit ?? item.max_quantity ?? "")}" placeholder="optional per-purchase cap" /></label>
+                  <label>Availability<select data-market-field="unlimited_stock"><option value="true" ${item.unlimited_stock ? "selected" : ""}>Unlimited stock</option><option value="false" ${item.unlimited_stock ? "" : "selected"}>Track stock</option></select></label>
+                  <label>Market label<input data-market-field="market_label" value="${escapeHtml(item.market_label || item.short_label || item.label || "")}" /></label>
+                  <label>Short label<input data-market-field="short_label" value="${escapeHtml(item.short_label || item.market_label || "")}" /></label>
+                  <label class="ss-economy-wide">Reason<input data-market-field="reason_text" placeholder="Required before save" /></label>
+                  <div class="ss-economy-market-actions">
+                    <button class="ss-btn" type="button" data-market-save="${escapeHtml(item.item_code)}">Save market controls</button>
+                  </div>
+                </div>
+              ` : ""}
+            </article>
+          `;
+        }).join("") || `<div class="ss-empty ss-empty-compact">No market governance items match the current filters.</div>`}
+      </div>
+    `;
+  }
+
   function renderItemDefinitions() {
     if (!el.itemDefinitions) return;
     el.itemCount.textContent = formatNumber(state.itemDefinitions.length);
@@ -1256,6 +1369,7 @@
     renderInventory();
     renderEvents();
     renderActions();
+    renderMarketGovernance();
     renderItemDefinitions();
     renderItemCreateForm();
     renderDangerZone();
@@ -1269,8 +1383,9 @@
   }
 
   async function loadItems() {
-    const payload = await requestJson(ITEM_DEFINITIONS);
+    const payload = await requestJson(MARKET_GOVERNANCE);
     state.itemDefinitions = Array.isArray(payload.item_definitions) ? payload.item_definitions : [];
+    state.marketItems = Array.isArray(payload.item_definitions) ? payload.item_definitions : [];
     state.itemCategories = Array.isArray(payload.item_categories)
       ? payload.item_categories
       : Array.isArray(payload.category_options)
@@ -1594,6 +1709,40 @@
     await loadItems();
     renderAll();
     setStatus("Item definition metadata saved.", "success");
+  }
+
+  async function saveMarketGovernance(button) {
+    const row = button.closest(".ss-economy-market-row");
+    const itemCode = text(row?.dataset?.marketItemCode);
+    const readField = (field) => text(row?.querySelector(`[data-market-field="${field}"]`)?.value);
+    const reason = readField("reason_text");
+    if (!itemCode || !reason) {
+      setStatus("Market governance changes require a reason.", "error");
+      return;
+    }
+    const optionalNumber = (field) => {
+      const value = readField(field);
+      return value === "" ? null : Number(value);
+    };
+    const item = {
+      item_type: readField("item_type"),
+      market_enabled: readField("market_enabled") === "true",
+      market_price_stekels: optionalNumber("market_price_stekels"),
+      exchange_enabled: readField("exchange_enabled") === "true",
+      exchange_value_stekels: optionalNumber("exchange_value_stekels"),
+      stock: optionalNumber("stock"),
+      stock_limit: optionalNumber("stock_limit"),
+      unlimited_stock: readField("unlimited_stock") === "true",
+      market_label: readField("market_label"),
+      short_label: readField("short_label")
+    };
+    await requestJson(MARKET_GOVERNANCE_ITEM(itemCode), {
+      method: "PATCH",
+      body: JSON.stringify({ item, reason_text: reason })
+    });
+    await loadItems();
+    renderAll();
+    setStatus("Market governance saved.", "success");
   }
 
   async function saveDenominationIcon(button) {
@@ -1986,6 +2135,22 @@
         }
         return;
       }
+      const marketSaveButton = event.target.closest?.("[data-market-save]");
+      if (marketSaveButton) {
+        try {
+          await saveMarketGovernance(marketSaveButton);
+        } catch (err) {
+          setStatus(err?.message || "Market governance save failed.", "error");
+        }
+        return;
+      }
+      const marketEditButton = event.target.closest?.("[data-market-edit]");
+      if (marketEditButton) {
+        const code = text(marketEditButton.dataset.marketEdit);
+        state.marketEditorCode = state.marketEditorCode === code ? "" : code;
+        renderMarketGovernance();
+        return;
+      }
       const denominationSaveButton = event.target.closest?.(".ss-economy-denomination-save");
       if (denominationSaveButton) {
         await saveDenominationIcon(denominationSaveButton);
@@ -2053,6 +2218,17 @@
         };
         renderAssetPicker();
       }
+      if (event.target.matches?.("#economy-market-search")) {
+        const selectionStart = event.target.selectionStart;
+        const selectionEnd = event.target.selectionEnd;
+        state.marketSearch = event.target.value;
+        renderMarketGovernance();
+        const search = $("#economy-market-search");
+        if (search) {
+          search.focus();
+          search.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }
     });
     document.addEventListener("change", (event) => {
       if (event.target.closest?.("#economy-exchange-actions")) {
@@ -2066,6 +2242,14 @@
       }
       if (event.target.matches?.("#economy-item-create-category")) {
         syncGeneratedItemCodePreview();
+      }
+      if (event.target.matches?.("#economy-market-filter-purchasable, #economy-market-filter-exchangeable, #economy-market-filter-disabled")) {
+        state.marketFilters = {
+          purchasable: Boolean($("#economy-market-filter-purchasable")?.checked),
+          exchangeable: Boolean($("#economy-market-filter-exchangeable")?.checked),
+          disabled: Boolean($("#economy-market-filter-disabled")?.checked)
+        };
+        renderMarketGovernance();
       }
     });
     document.addEventListener("keydown", (event) => {
@@ -2092,6 +2276,7 @@
     el.inventoryActions = $("economy-inventory-actions");
     el.exchangeActions = $("economy-exchange-actions");
     el.inventoryEventsList = $("economy-inventory-events-list");
+    el.marketGovernance = $("economy-market-governance");
     el.itemDefinitions = $("economy-item-definitions");
     el.itemCreateForm = $("economy-item-create-form");
     el.dangerZone = $("economy-danger-zone");

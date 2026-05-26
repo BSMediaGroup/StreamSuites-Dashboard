@@ -6659,6 +6659,27 @@ body.ss-col-resizing-active {
   min-width: 0;
 }
 
+.ss-economy-market-toolbar {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) repeat(3, auto) minmax(160px, auto);
+  gap: 9px;
+  align-items: end;
+}
+
+.ss-economy-market-toolbar label:not(.ss-economy-wide) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.ss-economy-market-list {
+  display: grid;
+  gap: 9px;
+}
+
 .ss-economy-identity {
   width: 100%;
   border: 1px solid var(--border-subtle);
@@ -6882,7 +6903,8 @@ body.ss-col-resizing-active {
 
 .ss-economy-event,
 .ss-economy-item-row,
-.ss-economy-item-definition {
+.ss-economy-item-definition,
+.ss-economy-market-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
@@ -6897,6 +6919,48 @@ body.ss-col-resizing-active {
 .ss-economy-item-definition {
   grid-template-columns: 1fr;
   align-items: stretch;
+}
+
+.ss-economy-market-row {
+  grid-template-columns: 1fr;
+  align-items: stretch;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.025);
+  padding: 10px;
+}
+
+.ss-economy-market-summary {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.ss-economy-market-main,
+.ss-economy-market-flags {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.ss-economy-market-flags {
+  justify-items: end;
+}
+
+.ss-economy-market-editor {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.ss-economy-market-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .ss-economy-item-definition-summary {
@@ -7583,6 +7647,7 @@ body.ss-col-resizing-active {
 
 .ss-economy-item-definition label,
 .ss-economy-item-editor label,
+.ss-economy-market-editor label,
 .ss-economy-actions label {
   display: grid;
   gap: 5px;
@@ -7593,6 +7658,8 @@ body.ss-col-resizing-active {
 .ss-economy-item-definition input,
 .ss-economy-item-definition select,
 .ss-economy-item-definition textarea,
+.ss-economy-market-editor input,
+.ss-economy-market-editor select,
 .ss-economy-actions input,
 .ss-economy-actions select {
   width: 100%;
@@ -7649,6 +7716,9 @@ body.ss-col-resizing-active {
   .ss-economy-item-row,
   .ss-economy-item-definition,
   .ss-economy-item-definition-summary,
+  .ss-economy-market-toolbar,
+  .ss-economy-market-summary,
+  .ss-economy-market-editor,
   .ss-economy-item-create-grid,
   .ss-economy-item-create-card,
   .ss-economy-item-editor,
@@ -7663,7 +7733,8 @@ body.ss-col-resizing-active {
   }
 
   .ss-economy-identity-side,
-  .ss-economy-event-side {
+  .ss-economy-event-side,
+  .ss-economy-market-flags {
     justify-items: start;
   }
 
