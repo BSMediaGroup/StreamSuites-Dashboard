@@ -65,6 +65,11 @@ test("progression controller uses only runtime authority endpoints", () => {
   assert.match(js, /<span>\$\{escapeHtml\(level\.label\)\}<\/span>/);
   assert.doesNotMatch(js, /<span>Level \$\{escapeHtml\(level\.label\)\}<\/span>/);
   assert.match(js, /function renderXpValue/);
+  assert.match(js, /PUBLIC_IDENTITY_UNASSIGN = "\/api\/admin\/public-identities\/reconciliation\/unassign"/);
+  assert.match(js, /function renderPublicIdentityChips/);
+  assert.match(js, /data-public-identity-unassign-chip/);
+  assert.match(js, /Public identity unassign requires a reason\/note/);
+  assert.match(js, /body: JSON\.stringify\(\{ identity_code: identityCode, account_id: accountId, reason \}\)/);
   assert.match(js, /User code:/);
   assert.match(js, /level_color_hex/);
   assert.match(js, /level_icon_path/);

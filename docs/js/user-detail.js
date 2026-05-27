@@ -193,6 +193,55 @@
     return `<span class="${classes}">${escapeHtml(formatBadgeLabel(label))}</span>`;
   }
 
+  function normalizePublicIdentity(identity = {}) {
+    const code = coerceText(identity.identity_code || identity.public_identity_code);
+    if (!code) return null;
+    const primary = identity.primary === true || identity.is_primary === true || coerceText(identity.status).toLowerCase() === "primary";
+    return {
+      identity_code: code,
+      primary,
+      account_id: coerceText(identity.account_id),
+      account_user_code: coerceText(identity.account_user_code || identity.user_code),
+      removable_by_admin: identity.removable_by_admin === true && !primary,
+      assignment_source: coerceText(identity.assignment_source || identity.assignment_metadata?.assignment_source),
+      assigned_at: coerceText(identity.assigned_at),
+      source_platform: coerceText(identity.source_platform),
+      source_user_id: coerceText(identity.source_user_id),
+      source_display_name: coerceText(identity.source_display_name || identity.display_name),
+      source_channel_scope: coerceText(identity.source_channel_scope),
+    };
+  }
+
+  function accountPublicIdentityItems(account = {}) {
+    const raw = Array.isArray(account.public_identities) ? account.public_identities : [];
+    const items = raw.map(normalizePublicIdentity).filter(Boolean);
+    const primary = normalizePublicIdentity(account.primary_public_identity || {});
+    if (primary && !items.some((item) => item.identity_code === primary.identity_code)) {
+      items.unshift(primary);
+    }
+    return items;
+  }
+
+  function renderPublicIdentityChips(identities = [], account = {}) {
+    const accountLabel = coerceText(account.user_code || account.display_name || account.email || account.id, "account");
+    if (!identities.length) return `<span class="muted">No public IDs returned.</span>`;
+    return `<span class="ss-public-identity-chip-row">${identities.map((identity) => {
+      const title = [
+        identity.primary ? "Primary public identity" : "Assigned secondary public identity",
+        `Account: ${accountLabel}`,
+        identity.assignment_source ? `Source: ${identity.assignment_source}` : "",
+        identity.assigned_at ? `Assigned: ${identity.assigned_at}` : "",
+        identity.source_platform ? `Platform: ${identity.source_platform}` : "",
+        identity.source_user_id ? `Source user: ${identity.source_user_id}` : "",
+        identity.source_channel_scope ? `Scope: ${identity.source_channel_scope}` : "",
+      ].filter(Boolean).join(" · ");
+      if (identity.primary) {
+        return `<span class="ss-public-identity-chip is-primary" title="${escapeHtml(title)}"><span aria-hidden="true">Locked</span>${escapeHtml(identity.identity_code)}<em>Primary</em></span>`;
+      }
+      return `<button class="ss-public-identity-chip is-secondary" type="button" title="${escapeHtml(`${title} · Click to unassign`)}" data-public-identity-unassign-chip="${escapeHtml(identity.identity_code)}" data-public-identity-account-id="${escapeHtml(identity.account_id || account.id || "")}" data-public-identity-account-label="${escapeHtml(accountLabel)}">${escapeHtml(identity.identity_code)}<em>Unassign</em></button>`;
+    }).join("")}</span>`;
+  }
+
   function managedSessionForIntegration(item) {
     return item?.managed_session && typeof item.managed_session === "object"
       ? item.managed_session
@@ -603,12 +652,8 @@
     const previewHref = buildPublicProfileHref(account);
     const socialLinks = publicProfile?.social_links && typeof publicProfile.social_links === "object" ? publicProfile.social_links : {};
     const customLinks = Array.isArray(publicProfile?.custom_links) ? publicProfile.custom_links : [];
-    const publicIdentities = Array.isArray(account?.public_identities) ? account.public_identities : [];
-    const primaryIdentity = account?.primary_public_identity || publicIdentities.find((identity) => identity?.primary) || null;
-    const assignedIdentityCodes = publicIdentities
-      .filter((identity) => identity && !identity.primary)
-      .map((identity) => identity.identity_code || identity.public_identity_code)
-      .filter(Boolean);
+    const publicIdentities = accountPublicIdentityItems(account);
+    const identityChips = renderPublicIdentityChips(publicIdentities, account);
     const socialMarkup = buildCompactSocialMarkup(socialLinks);
     const customMarkup = customLinks.length
       ? customLinks.map((item) => `<span>${escapeHtml(item?.label || item?.url || "Link")}</span>`).join(" · ")
@@ -635,8 +680,7 @@
         ${renderKeyValueGrid([
           { label: "Role surface", value: escapeHtml(roleLabel || "Unknown") },
           { label: "Public slug", value: `<span class="accounts-system-text">${escapeHtml(coerceText(publicProfile?.public_slug, "—"))}</span>` },
-          { label: "Primary public identity", value: `<span class="accounts-system-text">${escapeHtml(primaryIdentity?.identity_code || primaryIdentity?.public_identity_code || "—")}</span>` },
-          { label: "Assigned public identities", value: `<span class="accounts-system-text">${escapeHtml(assignedIdentityCodes.join(", ") || "—")}</span>` },
+          { label: "Public identities", value: `<span class="accounts-system-text">${identityChips}</span>` },
           { label: "Slug aliases", value: `<span class="accounts-system-text">${escapeHtml((publicProfile?.slug_aliases || []).join(", ") || "—")}</span>` },
           { label: "Bio", value: escapeHtml(coerceText(publicProfile?.bio, "No public bio saved")) },
           { label: "Social links", value: socialMarkup || '<span class="muted">No social links saved.</span>' },
@@ -649,13 +693,10 @@
   function renderIdentity(account) {
     if (!el.identity) return;
     const publicProfile = account?.public_profile && typeof account.public_profile === "object" ? account.public_profile : {};
-    const publicIdentities = Array.isArray(account?.public_identities) ? account.public_identities : [];
-    const primaryIdentity = account?.primary_public_identity || publicIdentities.find((identity) => identity?.primary) || null;
-    const assignedIdentityCodes = publicIdentities
-      .filter((identity) => identity && !identity.primary)
-      .map((identity) => identity.identity_code || identity.public_identity_code)
-      .filter(Boolean);
+    const publicIdentities = accountPublicIdentityItems(account);
+    const identityChips = renderPublicIdentityChips(publicIdentities, account);
     el.identity.innerHTML = renderKeyValueGrid([
+      { label: "Public identities", value: `<span class="accounts-system-text">${identityChips}</span>` },
       { label: "Display name", value: escapeHtml(coerceText(account?.display_name, "-")) },
       { label: "Email", value: escapeHtml(coerceText(account?.email, "-")) },
       { label: "Internal account id", value: `<span class="accounts-system-text">${escapeHtml(coerceText(account?.id, "-"))}</span>` },
@@ -667,8 +708,6 @@
       { label: "Pending email", value: escapeHtml(coerceText(account?.pending_email, "—")) },
       { label: "Pending email expiry", value: escapeHtml(formatTimestamp(account?.email_change_expires_at)) },
       { label: "Public slug", value: `<span class="accounts-system-text">${escapeHtml(coerceText(publicProfile?.public_slug, "—"))}</span>` },
-      { label: "Primary public identity", value: `<span class="accounts-system-text">${escapeHtml(primaryIdentity?.identity_code || primaryIdentity?.public_identity_code || "—")}</span>` },
-      { label: "Assigned public identities", value: `<span class="accounts-system-text">${escapeHtml(assignedIdentityCodes.join(", ") || "—")}</span>` },
       { label: "Account status", value: renderBadge(account?.account_status || "unknown", badgeToneForStatus(account?.account_status)) }
     ]);
   }
@@ -1269,6 +1308,24 @@
     setBanner("");
   }
 
+  async function unassignPublicIdentityChip(button) {
+    const identityCode = coerceText(button?.getAttribute("data-public-identity-unassign-chip"));
+    const accountId = coerceText(button?.getAttribute("data-public-identity-account-id"));
+    const accountLabel = coerceText(button?.getAttribute("data-public-identity-account-label") || accountId, "this account");
+    if (!identityCode) return;
+    const reason = coerceText(window.prompt?.(`Unassign ${identityCode} from ${accountLabel}?\n\nHistorical ledger rows are not deleted.\n\nRequired reason/note:`) || "");
+    if (!reason) {
+      setBanner("Public identity unassign requires a reason/note.", "warning");
+      return;
+    }
+    await requestJson("/api/admin/public-identities/reconciliation/unassign", {
+      method: "POST",
+      body: JSON.stringify({ identity_code: identityCode, account_id: accountId, reason })
+    });
+    setBanner(`Unassigned ${identityCode}.`, "success");
+    await loadUserDetail(state.userCode);
+  }
+
   function renderEmpty(message) {
     const html = `<div class="muted">${escapeHtml(message || "No account payload loaded.")}</div>`;
     if (el.hero) el.hero.innerHTML = html;
@@ -1650,6 +1707,14 @@
   }
 
   function handleRootClick(event) {
+    const publicIdentityChip = event.target.closest("[data-public-identity-unassign-chip]");
+    if (publicIdentityChip instanceof HTMLButtonElement) {
+      event.preventDefault();
+      void unassignPublicIdentityChip(publicIdentityChip).catch((err) => {
+        setBanner(err?.message || "Unable to unassign public identity.");
+      });
+      return;
+    }
     const actionButton = event.target.closest("[data-user-detail-action]");
     if (actionButton instanceof HTMLButtonElement) {
       void handleAdminAction(actionButton.getAttribute("data-user-detail-action") || "", actionButton);

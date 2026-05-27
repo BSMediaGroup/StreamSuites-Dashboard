@@ -311,6 +311,60 @@
   color: #ff9a9a;
 }
 
+.ss-public-identity-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.ss-public-identity-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 22px;
+  max-width: 100%;
+  padding: 2px 7px;
+  border: 1px solid rgba(125, 211, 252, 0.34);
+  border-radius: 999px;
+  background: rgba(14, 165, 233, 0.14);
+  color: #dff7ff;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.ss-public-identity-chip span,
+.ss-public-identity-chip em {
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.ss-public-identity-chip.is-primary {
+  border-color: rgba(250, 204, 21, 0.34);
+  background: rgba(250, 204, 21, 0.12);
+  color: #fef3c7;
+  cursor: default;
+}
+
+button.ss-public-identity-chip {
+  cursor: pointer;
+}
+
+button.ss-public-identity-chip:hover,
+button.ss-public-identity-chip:focus-visible {
+  border-color: rgba(56, 189, 248, 0.8);
+  background: rgba(14, 165, 233, 0.24);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.18);
+}
+
 .ss-public-identities-assignment-grid {
   display: grid;
   grid-template-columns: minmax(320px, 1.2fr) minmax(280px, 0.8fr);

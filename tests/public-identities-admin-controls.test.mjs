@@ -70,6 +70,10 @@ test("public identities controller uses Runtime/Auth endpoints and conflict-awar
   assert.match(js, /participant_key:\s*record\.participant_key/);
   assert.match(js, /platform_user_id:\s*record\.platform_user_id \|\| record\.sender_user_id/);
   assert.match(js, /function unassignSelected/);
+  assert.match(js, /function identityChip/);
+  assert.match(js, /data-public-identities-unassign-chip/);
+  assert.match(js, /Required reason\/note/);
+  assert.match(js, /body: JSON\.stringify\(\{ identity_code: identityCode, account_id: accountId \|\| record\?\.account_id, reason \}\)/);
   assert.match(js, /function reviewSelected/);
   assert.match(js, /review_status:\s*reviewStatus/);
   assert.doesNotMatch(js, /localStorage/);
@@ -82,6 +86,8 @@ test("public identities styling is compact and responsive", () => {
   assert.match(css, /\.ss-public-identities-row-main\s*\{[\s\S]*grid-template-columns:/);
   assert.match(css, /\.ss-public-identities-assignment-grid\s*\{[\s\S]*grid-template-columns:/);
   assert.match(css, /\.ss-public-identities-chip\.is-warning/);
+  assert.match(css, /\.ss-public-identity-chip-row/);
+  assert.match(css, /button\.ss-public-identity-chip:hover/);
   assert.match(css, /\.ss-public-identities-account-results\s*\{[\s\S]*max-height:\s*260px/);
   assert.match(css, /@media \(max-width:\s*1100px\)[\s\S]*\.ss-public-identities-toolbar/);
 });

@@ -106,6 +106,7 @@ test("admin sidebar keeps the desktop rail tight and centers collapsed nav icons
 test("account management uses dedicated developer access controls instead of developer tier options", () => {
   const accountsJs = read("docs/js/accounts.js");
   const userDetailJs = read("docs/js/user-detail.js");
+  const css = read("docs/css/components.css");
 
   assert.doesNotMatch(accountsJs, /"DEVELOPER"\]/);
   assert.match(accountsJs, /Grant Developer/);
@@ -114,11 +115,20 @@ test("account management uses dedicated developer access controls instead of dev
   assert.match(accountsJs, /data-account-public-handle-save/);
   assert.match(accountsJs, /\/api\/admin\/accounts\/\$\{encodeURIComponent\(accountId\)\}\/public-profile-slug/);
   assert.match(accountsJs, /public_slug_taken/);
+  assert.match(accountsJs, /function renderPublicIdentityChips/);
+  assert.match(accountsJs, /data-public-identity-unassign-chip/);
+  assert.match(accountsJs, /Public identity unassign requires a reason\/note/);
+  assert.match(accountsJs, /\/api\/admin\/public-identities\/reconciliation\/unassign/);
 
   assert.doesNotMatch(userDetailJs, /<option value="DEVELOPER"/);
   assert.match(userDetailJs, /Grant Developer/);
   assert.match(userDetailJs, /Revoke Developer/);
   assert.match(userDetailJs, /developer-access/);
+  assert.match(userDetailJs, /function renderPublicIdentityChips/);
+  assert.match(userDetailJs, /data-public-identity-unassign-chip/);
+  assert.match(userDetailJs, /Required reason\/note/);
+  assert.match(userDetailJs, /\/api\/admin\/public-identities\/reconciliation\/unassign/);
+  assert.match(css, /\.ss-public-identity-chip\.is-primary/);
 });
 
 test("account badge governance drawer uses compact summary and modal editor", () => {

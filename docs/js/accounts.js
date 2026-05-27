@@ -284,6 +284,55 @@
     return `<span class="${classes}"${tierAttr}>${escapeHtml(formatBadgeLabel(value))}</span>`;
   }
 
+  function normalizePublicIdentity(identity = {}) {
+    const code = coerceText(identity.identity_code || identity.public_identity_code);
+    if (!code) return null;
+    const primary = identity.primary === true || identity.is_primary === true || coerceText(identity.status).toLowerCase() === "primary";
+    return {
+      identity_code: code,
+      primary,
+      account_id: normalizeAccountId(identity.account_id),
+      account_user_code: coerceText(identity.account_user_code || identity.user_code),
+      removable_by_admin: identity.removable_by_admin === true && !primary,
+      assignment_source: coerceText(identity.assignment_source || identity.assignment_metadata?.assignment_source),
+      assigned_at: coerceText(identity.assigned_at),
+      source_platform: coerceText(identity.source_platform),
+      source_user_id: coerceText(identity.source_user_id),
+      source_display_name: coerceText(identity.source_display_name || identity.display_name),
+      source_channel_scope: coerceText(identity.source_channel_scope),
+    };
+  }
+
+  function accountPublicIdentityItems(user = {}) {
+    const raw = Array.isArray(user.publicIdentities) ? user.publicIdentities : [];
+    const items = raw.map(normalizePublicIdentity).filter(Boolean);
+    const primary = normalizePublicIdentity(user.primaryPublicIdentity || {});
+    if (primary && !items.some((item) => item.identity_code === primary.identity_code)) {
+      items.unshift(primary);
+    }
+    return items;
+  }
+
+  function renderPublicIdentityChips(identities = [], user = {}) {
+    const accountLabel = coerceText(user.userCode || user.displayName || user.email || user.id, "account");
+    if (!identities.length) return `<span class="muted">No public IDs returned.</span>`;
+    return `<span class="ss-public-identity-chip-row">${identities.map((identity) => {
+      const title = [
+        identity.primary ? "Primary public identity" : "Assigned secondary public identity",
+        `Account: ${accountLabel}`,
+        identity.assignment_source ? `Source: ${identity.assignment_source}` : "",
+        identity.assigned_at ? `Assigned: ${identity.assigned_at}` : "",
+        identity.source_platform ? `Platform: ${identity.source_platform}` : "",
+        identity.source_user_id ? `Source user: ${identity.source_user_id}` : "",
+        identity.source_channel_scope ? `Scope: ${identity.source_channel_scope}` : "",
+      ].filter(Boolean).join(" · ");
+      if (identity.primary) {
+        return `<span class="ss-public-identity-chip is-primary" title="${escapeHtml(title)}"><span aria-hidden="true">Locked</span>${escapeHtml(identity.identity_code)}<em>Primary</em></span>`;
+      }
+      return `<button class="ss-public-identity-chip is-secondary" type="button" title="${escapeHtml(`${title} · Click to unassign`)}" data-public-identity-unassign-chip="${escapeHtml(identity.identity_code)}" data-public-identity-account-id="${escapeHtml(identity.account_id || user.id || "")}" data-public-identity-account-label="${escapeHtml(accountLabel)}">${escapeHtml(identity.identity_code)}<em>Unassign</em></button>`;
+    }).join("")}</span>`;
+  }
+
   function renderBadgeChoiceLabel(key, meta = "") {
     const iconPath = badgeIconPath(key);
     const label = renderBadgeKeyLabel(key);
@@ -1905,7 +1954,8 @@ function normalizeUser(raw = {}) {
   function renderDisplayNameValue(user) {
     const displayName = String(user?.displayName || "—").trim() || "—";
     const hoverAttrs = buildProfileHoverAttrs(user, { displayName });
-    return `<span class="accounts-cell-ellipsis accounts-hover-link" ${hoverAttrs} title="${escapeHtml(displayName)}">${escapeHtml(displayName)}</span>`;
+    const chips = renderPublicIdentityChips(accountPublicIdentityItems(user), user);
+    return `<span class="accounts-cell-ellipsis accounts-hover-link" ${hoverAttrs} title="${escapeHtml(displayName)}">${escapeHtml(displayName)}</span>${chips}`;
   }
 
   function renderUserCodeLink(user) {
@@ -2039,6 +2089,39 @@ function normalizeUser(raw = {}) {
       return;
     }
     window.location.hash = `#users/${encodeURIComponent(normalizedUserCode)}`;
+  }
+
+  async function unassignPublicIdentityChip(button) {
+    const identityCode = coerceText(button?.getAttribute("data-public-identity-unassign-chip"));
+    const accountId = normalizeAccountId(button?.getAttribute("data-public-identity-account-id"));
+    const accountLabel = coerceText(button?.getAttribute("data-public-identity-account-label") || accountId, "this account");
+    if (!identityCode) return;
+    const reason = coerceText(window.prompt?.(`Unassign ${identityCode} from ${accountLabel}?\n\nHistorical ledger rows are not deleted.\n\nRequired reason/note:`) || "");
+    if (!reason) {
+      setInlineError("Public identity unassign requires a reason/note.", {
+        tone: "warning",
+        key: "accounts-public-identity-unassign-reason",
+        title: "Reason required",
+        autoDismissMs: 5000
+      });
+      return;
+    }
+    const res = await fetchJson(buildApiUrl("/api/admin/public-identities/reconciliation/unassign"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ identity_code: identityCode, account_id: accountId, reason })
+    });
+    if (!res.ok) {
+      throw new Error((await readErrorMessage(res)) || "Unable to unassign public identity.");
+    }
+    setBanner(`Unassigned ${identityCode}.`, false, {
+      tone: "success",
+      key: "accounts-public-identity-unassigned",
+      title: "Public identity updated",
+      autoDismissMs: 5000
+    });
+    await loadUsers();
+    if (state.openDrawerId) openDrawer(state.openDrawerId, { force: true });
   }
 
   function openCreatorIntegrations(accountId, userCode) {
@@ -2381,13 +2464,12 @@ function normalizeUser(raw = {}) {
     const badgeIcons = renderBadgeIconStrip(user.badges);
     const socialLinks = user.socialLinks && typeof user.socialLinks === "object" ? user.socialLinks : {};
     const socialMarkup = buildCompactSocialMarkup(socialLinks);
-    const publicIdentities = Array.isArray(user.publicIdentities) ? user.publicIdentities : [];
-    const primaryIdentity = user.primaryPublicIdentity || publicIdentities.find((identity) => identity?.primary) || null;
-    const assignedIdentities = publicIdentities.filter((identity) => identity && !identity.primary);
+    const publicIdentities = accountPublicIdentityItems(user);
+    const identityChips = renderPublicIdentityChips(publicIdentities, user);
     const publicIdentityRows = publicIdentities.length
       ? publicIdentities.map((identity) => {
           const source = [identity.source_platform, identity.source_user_id || identity.source_display_name, identity.source_channel_scope].filter(Boolean).join(" · ");
-          return `<div><span class="label">${identity.primary ? "Primary public identity" : "Assigned public identity"}</span><span class="value accounts-system-text">${escapeHtml(identity.identity_code || identity.public_identity_code || "—")}${source ? ` · ${escapeHtml(source)}` : ""}</span></div>`;
+          return `<div><span class="label">${identity.primary ? "Primary public identity" : "Assigned public identity"}</span><span class="value accounts-system-text">${renderPublicIdentityChips([identity], user)}${source ? `<small>${escapeHtml(source)}</small>` : ""}</span></div>`;
         }).join("")
       : `<div><span class="label">Public identities</span><span class="value accounts-system-text">No identity contract returned</span></div>`;
     const avatarMarkup = user.avatarUrl
@@ -2482,12 +2564,7 @@ function normalizeUser(raw = {}) {
             <div><span class="label">User Code</span><span class="value accounts-system-text">${escapeHtml(
               user.userCode || "—"
             )}</span></div>
-            <div><span class="label">Primary Public ID</span><span class="value accounts-system-text">${escapeHtml(
-              primaryIdentity?.identity_code || primaryIdentity?.public_identity_code || "—"
-            )}</span></div>
-            <div><span class="label">Assigned Secondary IDs</span><span class="value accounts-system-text">${escapeHtml(
-              assignedIdentities.map((identity) => identity.identity_code || identity.public_identity_code).filter(Boolean).join(", ") || "—"
-            )}</span></div>
+            <div><span class="label">Public identities</span><span class="value accounts-system-text">${identityChips}</span></div>
             ${publicIdentityRows}
           </div>
         </section>
@@ -4108,6 +4185,20 @@ function normalizeUser(raw = {}) {
         openUserDetail(userCode);
         return;
       }
+      const publicIdentityChip = target.closest("[data-public-identity-unassign-chip]");
+      if (publicIdentityChip) {
+        event.preventDefault();
+        clearRowClickTimer();
+        void unassignPublicIdentityChip(publicIdentityChip).catch((err) => {
+          setInlineError(err?.message || "Unable to unassign public identity.", {
+            tone: "error",
+            key: "accounts-public-identity-unassign-failed",
+            title: "Unassign failed",
+            autoDismissMs: 6800
+          });
+        });
+        return;
+      }
       const integrationsButton = target.closest("[data-account-open-integrations]");
       if (integrationsButton) {
         event.preventDefault();
@@ -4217,6 +4308,20 @@ function normalizeUser(raw = {}) {
         event.preventDefault();
         const accountId = normalizeAccountId(statsButton.getAttribute("data-account-id"));
         openCreatorStats(accountId);
+        return;
+      }
+
+      const publicIdentityChip = target.closest("[data-public-identity-unassign-chip]");
+      if (publicIdentityChip) {
+        event.preventDefault();
+        void unassignPublicIdentityChip(publicIdentityChip).catch((err) => {
+          setInlineError(err?.message || "Unable to unassign public identity.", {
+            tone: "error",
+            key: "accounts-public-identity-unassign-failed",
+            title: "Unassign failed",
+            autoDismissMs: 6800
+          });
+        });
         return;
       }
 

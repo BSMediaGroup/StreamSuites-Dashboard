@@ -120,6 +120,11 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /data-economy-page/);
   assert.match(js, /ss-economy-item-editor/);
   assert.match(js, /renderDenominationBreakdown\(wallet\)/);
+  assert.match(js, /PUBLIC_IDENTITY_UNASSIGN = "\/api\/admin\/public-identities\/reconciliation\/unassign"/);
+  assert.match(js, /function renderPublicIdentityChips/);
+  assert.match(js, /data-public-identity-unassign-chip/);
+  assert.match(js, /Public identity unassign requires a reason\/note/);
+  assert.match(js, /body: JSON\.stringify\(\{ identity_code: identityCode, account_id: accountId, reason \}\)/);
   assert.match(js, /wallet\.balance_total_credits \?\? wallet\.balance_current/);
   assert.match(js, /wallet\.cash_balance_credits \?\? wallet\.balance_current/);
   assert.match(js, /wallet\.held_value_credits \?\? 0/);

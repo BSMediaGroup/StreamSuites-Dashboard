@@ -2,6 +2,10 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Upgraded assigned public identity visibility across Admin. `/economy`, `/progression`, `/users`, and `/users/{user_code}` now render primary and secondary assigned public IDs as compact chips beside the canonical account; primary chips are locked/non-removable, while secondary chips are actionable and submit a required reason/note to Runtime/Auth before refreshing the current view.
+- Polished `/public-identities` assignment review with clearer selected-identity/account chip context, account-level assigned-ID chip rows, obvious secondary unassign actions, and required unassign reasons. Assigned secondary IDs remain grouped under canonical account rows instead of being promoted as standalone people when Runtime/Auth provides canonical projections.
+- Human note: admins should no longer have to hunt through plain-text detail panels to see or remove IDs such as `public-user022`; the assignment state is visible as slim chips wherever the account appears.
+
 - Hardened Admin public identity reconciliation and assigned-identity display. `/public-identities` now has Review queue, Unresolved, Ambiguous, Assigned/Resolved, Ignored, and All filters; assignment, explicit reassignment, secondary unassignment, ignored/reopen review actions, diagnostics, account search, and notes all call Runtime/Auth endpoints. `/economy`, `/progression`, `/users`, and `/users/{user_code}` now surface primary/assigned public identity references while relying on backend canonical list projections.
 - Human note: admins can reconcile, ignore, reopen, assign, reassign, and safely unassign secondary public identities from one compact console, while assigned identities no longer need to appear as separate account rows when Runtime/Auth returns canonical account records.
 

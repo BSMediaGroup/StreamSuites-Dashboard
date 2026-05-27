@@ -7,6 +7,7 @@
 
   const IDENTITIES = "/api/admin/economy/identities";
   const ECONOMY_DETAIL = (identityCode) => `/api/admin/economy/identities/${encodeURIComponent(identityCode)}`;
+  const PUBLIC_IDENTITY_UNASSIGN = "/api/admin/public-identities/reconciliation/unassign";
   const ECONOMY_EVENTS = (identityCode) => `/api/admin/economy/identities/${encodeURIComponent(identityCode)}/events`;
   const ECONOMY_EXCHANGE = (identityCode) => `/api/admin/economy/identities/${encodeURIComponent(identityCode)}/exchange`;
   const ECONOMY_EVENT_REVERSE = (eventCode) => `/api/admin/economy/events/${encodeURIComponent(eventCode)}/reverse`;
@@ -375,6 +376,57 @@
 
   function identityFallbackCode(identity = {}, wallet = {}) {
     return text(identity.public_identity_code || identity.fallback_public_identity_code || identity.identity_code || wallet.public_identity_code || wallet.identity_code);
+  }
+
+  function publicIdentityChipItems(identity = {}, wallet = {}) {
+    const sourceCodes = Array.isArray(wallet.source_identity_codes) ? wallet.source_identity_codes : [];
+    const primaryCode = text(identity.identity_code || wallet.identity_code || wallet.public_identity_code);
+    const codes = Array.from(new Set([primaryCode, ...sourceCodes.map((code) => text(code))].filter(Boolean)));
+    return codes.map((code) => ({
+      identity_code: code,
+      primary: code === primaryCode,
+      removable_by_admin: code !== primaryCode,
+      account_id: text(identity.account_id || wallet.account_id),
+      account_user_code: text(identity.account_user_code || wallet.account_user_code || identity.user_code || wallet.user_code),
+      assignment_source: code === primaryCode ? "primary" : "assigned secondary",
+    }));
+  }
+
+  function renderPublicIdentityChips(identities = [], accountLabel = "") {
+    if (!identities.length) return `<span class="muted">No public IDs returned.</span>`;
+    return `<span class="ss-public-identity-chip-row">${identities.map((identity) => {
+      const code = text(identity.identity_code || identity.public_identity_code);
+      const primary = identity.primary === true || identity.is_primary === true;
+      const title = [
+        primary ? "Primary public identity" : "Assigned secondary public identity",
+        accountLabel ? `Account: ${accountLabel}` : "",
+        identity.assignment_source ? `Source: ${identity.assignment_source}` : "",
+        identity.assigned_at ? `Assigned: ${identity.assigned_at}` : "",
+      ].filter(Boolean).join(" · ");
+      if (primary) {
+        return `<span class="ss-public-identity-chip is-primary" title="${escapeHtml(title)}"><span aria-hidden="true">Locked</span>${escapeHtml(code)}<em>Primary</em></span>`;
+      }
+      return `<button class="ss-public-identity-chip is-secondary" type="button" title="${escapeHtml(`${title} · Click to unassign`)}" data-public-identity-unassign-chip="${escapeHtml(code)}" data-public-identity-account-id="${escapeHtml(identity.account_id || "")}" data-public-identity-account-label="${escapeHtml(accountLabel)}">${escapeHtml(code)}<em>Unassign</em></button>`;
+    }).join("")}</span>`;
+  }
+
+  async function unassignPublicIdentityChip(button) {
+    const identityCode = text(button?.dataset?.publicIdentityUnassignChip);
+    const accountId = text(button?.dataset?.publicIdentityAccountId);
+    const accountLabel = text(button?.dataset?.publicIdentityAccountLabel || accountId);
+    if (!identityCode) return;
+    const reason = text(window.prompt?.(`Unassign ${identityCode} from ${accountLabel || "this account"}?\n\nHistorical ledger rows are not deleted.\n\nRequired reason/note:`) || "");
+    if (!reason) {
+      setStatus("Public identity unassign requires a reason/note.", "error");
+      return;
+    }
+    setStatus(`Unassigning ${identityCode} through Runtime/Auth...`);
+    await requestJson(PUBLIC_IDENTITY_UNASSIGN, {
+      method: "POST",
+      body: JSON.stringify({ identity_code: identityCode, account_id: accountId, reason }),
+    });
+    setStatus(`Unassigned ${identityCode}.`, "success");
+    await refresh();
   }
 
   function identityAvatar(identity = {}) {
@@ -890,21 +942,22 @@
         const userCode = identityUserCode(identity, wallet);
         const fallbackCode = identityFallbackCode(identity, wallet);
         const sourceCodes = Array.isArray(entry.source_identity_codes || wallet.source_identity_codes) ? (entry.source_identity_codes || wallet.source_identity_codes) : [];
+        const chips = renderPublicIdentityChips(publicIdentityChipItems(identity, { ...wallet, source_identity_codes: sourceCodes }), userCode || displayName);
         const selected = state.selectedIdentityCode === identityCode;
         return `
-          <button class="ss-economy-identity${selected ? " is-selected" : ""}" type="button" data-identity-code="${escapeHtml(identityCode)}">
+          <article class="ss-economy-identity${selected ? " is-selected" : ""}" role="button" tabindex="0" data-identity-code="${escapeHtml(identityCode)}">
             ${renderAvatar(identity, wallet)}
             <span class="ss-economy-identity-main">
               <strong>${escapeHtml(displayName)}</strong>
               <span>User code: ${escapeHtml(userCode || "Unclaimed")}</span>
               <span>Public identity: ${escapeHtml(fallbackCode || identityCode)}</span>
-              ${sourceCodes.length > 1 ? `<span>Assigned public IDs: ${escapeHtml(sourceCodes.join(", "))}</span>` : ""}
+              ${chips}
             </span>
             <span class="ss-economy-identity-side">
               ${renderCreditValue(wallet.balance_total_credits ?? wallet.balance_current ?? 0, { compact: true })}
               <span>${formatNumber(entry.inventory_item_count || 0)} items</span>
             </span>
-          </button>
+          </article>
         `;
       })
       .join("") + renderPager("identities", pageInfo, "Identity page");
@@ -916,6 +969,7 @@
     const wallet = detail.wallet || null;
     const identity = detail.identity || {};
     const sourceCodes = Array.isArray(wallet?.source_identity_codes) ? wallet.source_identity_codes : [];
+    const chips = renderPublicIdentityChips(publicIdentityChipItems(identity, { ...wallet, source_identity_codes: sourceCodes }), identityUserCode(identity, wallet) || identity.display_name || wallet.display_name);
     if (!wallet) {
       el.walletInspector.className = "ss-economy-inspector ss-empty";
       el.walletInspector.textContent = "Select an identity to inspect wallet state.";
@@ -928,7 +982,7 @@
         <div>
           <strong>${escapeHtml(identity.display_name || wallet.display_name || identityUserCode(identity, wallet))}</strong>
           <span class="muted">Public identity: ${escapeHtml(identityFallbackCode(identity, wallet))}</span>
-          ${sourceCodes.length > 1 ? `<span class="muted">Assigned public IDs: ${escapeHtml(sourceCodes.join(", "))}</span>` : ""}
+          ${chips}
         </div>
       </div>
       <div class="ss-economy-kpis">
@@ -2021,6 +2075,13 @@
         }
         state.assetPicker.open = false;
         renderAssetPicker();
+        return;
+      }
+      const publicIdentityChip = event.target.closest?.("[data-public-identity-unassign-chip]");
+      if (publicIdentityChip) {
+        event.preventDefault();
+        event.stopPropagation();
+        await unassignPublicIdentityChip(publicIdentityChip);
         return;
       }
       const identityButton = event.target.closest?.(".ss-economy-identity");

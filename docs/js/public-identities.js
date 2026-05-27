@@ -114,6 +114,52 @@
     return text(account.display_name || account.public_slug || account.user_code || account.email || account.account_id);
   }
 
+  function recordIsPrimary(record = {}) {
+    return record.primary === true || record.is_primary === true || record.identity_kind === "primary" || (!text(record.platform) && text(record.identity_code));
+  }
+
+  function accountIdentityRecords(account = {}) {
+    const accountId = text(account.account_id || account.id || account.uuid);
+    if (!accountId) return [];
+    return state.items
+      .filter((item) => text(item.account_id || item.current_account?.account_id) === accountId && text(item.identity_code))
+      .map((item) => ({
+        identity_code: text(item.identity_code),
+        primary: recordIsPrimary(item),
+        account_id: accountId,
+        assignment_source: text(item.assignment_source || item.source || item.identity_kind),
+        assigned_at: text(item.assigned_at || item.resolved_at),
+        platform: text(item.platform),
+        source_user_id: text(item.sender_user_id || item.platform_user_id),
+        scope_key: text(item.scope_key),
+      }));
+  }
+
+  function identityChip(identity = {}, account = {}) {
+    const code = text(identity.identity_code || identity.public_identity_code);
+    if (!code) return "";
+    const primary = identity.primary === true || identity.is_primary === true;
+    const label = accountLabel(account) || text(identity.account_user_code || identity.account_id);
+    const title = [
+      primary ? "Primary public identity" : "Assigned secondary public identity",
+      label ? `Account: ${label}` : "",
+      identity.assignment_source ? `Source: ${identity.assignment_source}` : "",
+      identity.assigned_at ? `Assigned: ${identity.assigned_at}` : "",
+      identity.platform ? `Platform: ${identity.platform}` : "",
+      identity.source_user_id ? `Source user: ${identity.source_user_id}` : "",
+      identity.scope_key ? `Scope: ${identity.scope_key}` : "",
+    ].filter(Boolean).join(" · ");
+    if (primary) {
+      return `<span class="ss-public-identity-chip is-primary" title="${escapeHtml(title)}"><span aria-hidden="true">Locked</span>${escapeHtml(code)}<em>Primary</em></span>`;
+    }
+    return `<button class="ss-public-identity-chip is-secondary" type="button" title="${escapeHtml(`${title} · Click to unassign`)}" data-public-identities-unassign-chip="${escapeHtml(code)}" data-public-identities-account-id="${escapeHtml(identity.account_id || account.account_id || "")}">${escapeHtml(code)}<em>Unassign</em></button>`;
+  }
+
+  function identityChipRow(identities = [], account = {}) {
+    const chips = identities.map((identity) => identityChip(identity, account)).filter(Boolean).join("");
+    return chips ? `<span class="ss-public-identity-chip-row">${chips}</span>` : `<span class="muted">No assigned public IDs returned.</span>`;
+  }
+
   function renderDiagnostics(record = {}) {
     const resolver = record.resolver || {};
     const candidates = Array.isArray(resolver.candidates) ? resolver.candidates : [];
@@ -156,6 +202,16 @@
       .map((record) => {
         const key = recordKey(record);
         const account = record.current_account || {};
+        const rowChip = record.identity_code ? identityChip({
+          identity_code: record.identity_code,
+          primary: recordIsPrimary(record),
+          account_id: record.account_id,
+          assignment_source: record.source || record.identity_kind,
+          assigned_at: record.resolved_at,
+          platform: record.platform,
+          source_user_id: record.sender_user_id || record.platform_user_id,
+          scope_key: record.scope_key,
+        }, account) : "";
         const selected = key === state.selectedKey;
         return `
           <article class="ss-public-identities-row${selected ? " is-selected" : ""}" data-public-identity-key="${escapeHtml(key)}">
@@ -174,6 +230,7 @@
             </button>
             <div class="ss-public-identities-row-details">
               <span>${escapeHtml(record.identity_code || "-")}</span>
+              <span>${rowChip}</span>
               <span>${escapeHtml(record.sender_user_id || record.platform_user_id || "-")}</span>
               <span>${escapeHtml(record.scope_key || "-")}</span>
             </div>
@@ -216,6 +273,17 @@
     }
     const account = record.current_account || {};
     const isResolved = record.status === "resolved" || Boolean(record.account_id);
+    const selectedIdentity = record.identity_code ? {
+      identity_code: record.identity_code,
+      primary: recordIsPrimary(record),
+      account_id: record.account_id,
+      assignment_source: record.source || record.identity_kind,
+      assigned_at: record.resolved_at,
+      platform: record.platform,
+      source_user_id: record.sender_user_id || record.platform_user_id,
+      scope_key: record.scope_key,
+    } : null;
+    const accountChips = identityChipRow(accountIdentityRecords(account), account);
     el.assignment.className = "ss-public-identities-assignment";
     el.assignment.innerHTML = `
       <div class="ss-public-identities-assignment-grid">
@@ -223,9 +291,11 @@
           <h3>${escapeHtml(record.display_name || record.sender_username || record.identity_code || "Identity")}</h3>
           <div class="ss-meta-row">
             <div><strong>Identity:</strong> ${escapeHtml(record.identity_code || "-")}</div>
+            <div><strong>Selected chip:</strong> ${selectedIdentity ? identityChip(selectedIdentity, account) : "-"}</div>
             <div><strong>Platform user:</strong> ${escapeHtml(record.sender_user_id || record.platform_user_id || "-")}</div>
             <div><strong>Scope:</strong> ${escapeHtml(record.scope_key || "-")}</div>
             <div><strong>Current account:</strong> ${escapeHtml(accountLabel(account) || "Unassigned")}</div>
+            <div><strong>Account public IDs:</strong> ${accountChips}</div>
             <div><strong>Review:</strong> ${escapeHtml(formatLabel(record.review_status || record.status || "review"))}</div>
             <div><strong>Note:</strong> ${escapeHtml(record.resolution_note || record.ignored_reason || "-")}</div>
           </div>
@@ -347,7 +417,11 @@
   async function unassignSelected() {
     const record = selectedRecord();
     if (!record || !record.identity_code) return;
-    if (!window.confirm(`Unassign ${record.identity_code} from the current account? Historical ledger rows are retained.`)) return;
+    const reason = text(window.prompt?.(`Unassign ${record.identity_code} from ${accountLabel(record.current_account || {}) || "the current account"}?\n\nHistorical ledger rows are retained and the identity record is not deleted.\n\nRequired reason/note:`) || "");
+    if (!reason) {
+      setStatus("Unassign requires a reason/note.", "warning");
+      return;
+    }
     setStatus("Submitting unassignment...");
     try {
       await requestJson(UNASSIGN, {
@@ -355,7 +429,7 @@
         body: JSON.stringify({
           identity_code: record.identity_code,
           account_id: record.account_id,
-          reason: text($("public-identities-assignment-note")?.value) || "admin reconciliation unassign"
+          reason
         })
       });
       setStatus("Secondary identity unassigned in Runtime/Auth.", "success");
@@ -426,6 +500,27 @@
       }
       if (event.target.closest("#public-identities-unassign")) {
         unassignSelected();
+        return;
+      }
+      const chipUnassign = event.target.closest("[data-public-identities-unassign-chip]");
+      if (chipUnassign) {
+        const identityCode = chipUnassign.getAttribute("data-public-identities-unassign-chip") || "";
+        const accountId = chipUnassign.getAttribute("data-public-identities-account-id") || "";
+        const record = state.items.find((item) => text(item.identity_code) === identityCode) || selectedRecord();
+        const reason = text(window.prompt?.(`Unassign ${identityCode} from ${accountLabel(record?.current_account || {}) || accountId || "the current account"}?\n\nHistorical ledger rows are retained and the identity record is not deleted.\n\nRequired reason/note:`) || "");
+        if (!reason) {
+          setStatus("Unassign requires a reason/note.", "warning");
+          return;
+        }
+        requestJson(UNASSIGN, {
+          method: "POST",
+          body: JSON.stringify({ identity_code: identityCode, account_id: accountId || record?.account_id, reason })
+        })
+          .then(() => {
+            setStatus("Secondary identity unassigned in Runtime/Auth.", "success");
+            return loadRecords();
+          })
+          .catch((err) => setStatus(err.message || "Unassignment failed.", "error"));
         return;
       }
       if (event.target.closest("#public-identities-ignore")) {

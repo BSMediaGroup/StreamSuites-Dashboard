@@ -9,6 +9,7 @@
   const CONFIG_RULES = "/api/admin/progression/rules";
   const IDENTITIES = "/api/admin/progression/identities";
   const IDENTITY_DETAIL = (identityCode) => `/api/admin/progression/identities/${encodeURIComponent(identityCode)}`;
+  const PUBLIC_IDENTITY_UNASSIGN = "/api/admin/public-identities/reconciliation/unassign";
   const IDENTITY_EVENTS = (identityCode) => `/api/admin/progression/identities/${encodeURIComponent(identityCode)}/events`;
   const EVENT_REVERSE = (eventCode) => `/api/admin/progression/events/${encodeURIComponent(eventCode)}/reverse`;
   const LEADERBOARD = (identityCode) => `/api/admin/progression/identities/${encodeURIComponent(identityCode)}/leaderboard`;
@@ -151,6 +152,57 @@
 
   function identityFallbackCode(identity = {}, summary = {}) {
     return text(identity.public_identity_code || identity.fallback_public_identity_code || identity.identity_code || summary.public_identity_code || summary.identity_code);
+  }
+
+  function publicIdentityChipItems(identity = {}, summary = {}) {
+    const sourceCodes = Array.isArray(summary.source_identity_codes) ? summary.source_identity_codes : [];
+    const primaryCode = text(identity.identity_code || summary.identity_code || summary.public_identity_code);
+    const codes = Array.from(new Set([primaryCode, ...sourceCodes.map((code) => text(code))].filter(Boolean)));
+    return codes.map((code) => ({
+      identity_code: code,
+      primary: code === primaryCode,
+      removable_by_admin: code !== primaryCode,
+      account_id: text(identity.account_id || summary.account_id),
+      account_user_code: text(identity.account_user_code || summary.account_user_code || identity.user_code || summary.user_code),
+      assignment_source: code === primaryCode ? "primary" : "assigned secondary",
+    }));
+  }
+
+  function renderPublicIdentityChips(identities = [], accountLabel = "") {
+    if (!identities.length) return `<span class="muted">No public IDs returned.</span>`;
+    return `<span class="ss-public-identity-chip-row">${identities.map((identity) => {
+      const code = text(identity.identity_code || identity.public_identity_code);
+      const primary = identity.primary === true || identity.is_primary === true;
+      const title = [
+        primary ? "Primary public identity" : "Assigned secondary public identity",
+        accountLabel ? `Account: ${accountLabel}` : "",
+        identity.assignment_source ? `Source: ${identity.assignment_source}` : "",
+        identity.assigned_at ? `Assigned: ${identity.assigned_at}` : "",
+      ].filter(Boolean).join(" · ");
+      if (primary) {
+        return `<span class="ss-public-identity-chip is-primary" title="${escapeHtml(title)}"><span aria-hidden="true">Locked</span>${escapeHtml(code)}<em>Primary</em></span>`;
+      }
+      return `<button class="ss-public-identity-chip is-secondary" type="button" title="${escapeHtml(`${title} · Click to unassign`)}" data-public-identity-unassign-chip="${escapeHtml(code)}" data-public-identity-account-id="${escapeHtml(identity.account_id || "")}" data-public-identity-account-label="${escapeHtml(accountLabel)}">${escapeHtml(code)}<em>Unassign</em></button>`;
+    }).join("")}</span>`;
+  }
+
+  async function unassignPublicIdentityChip(button) {
+    const identityCode = text(button?.dataset?.publicIdentityUnassignChip);
+    const accountId = text(button?.dataset?.publicIdentityAccountId);
+    const accountLabel = text(button?.dataset?.publicIdentityAccountLabel || accountId);
+    if (!identityCode) return;
+    const reason = text(window.prompt?.(`Unassign ${identityCode} from ${accountLabel || "this account"}?\n\nHistorical ledger rows are not deleted.\n\nRequired reason/note:`) || "");
+    if (!reason) {
+      setStatus("Public identity unassign requires a reason/note.", "error");
+      return;
+    }
+    setStatus(`Unassigning ${identityCode} through Runtime/Auth...`);
+    await requestJson(PUBLIC_IDENTITY_UNASSIGN, {
+      method: "POST",
+      body: JSON.stringify({ identity_code: identityCode, account_id: accountId, reason }),
+    });
+    setStatus(`Unassigned ${identityCode}.`, "success");
+    await refresh();
   }
 
   function identityAvatar(identity = {}, summary = {}) {
@@ -367,22 +419,23 @@
         const displayCode = identityUserCode(identity, summary);
         const fallbackCode = identityFallbackCode(identity, summary);
         const sourceCodes = Array.isArray(summary.source_identity_codes) ? summary.source_identity_codes : [];
+        const chips = renderPublicIdentityChips(publicIdentityChipItems(identity, summary), displayCode || identity.display_name || summary.display_name);
         const diagnostic = displayCode && fallbackCode && displayCode !== fallbackCode ? `Public identity: ${fallbackCode}` : fallbackCode;
         const selected = code && code === state.selectedIdentityCode;
         return `
-          <button class="ss-progression-identity${selected ? " is-selected" : ""}" type="button" data-identity-code="${escapeHtml(code)}">
+          <article class="ss-progression-identity${selected ? " is-selected" : ""}" role="button" tabindex="0" data-identity-code="${escapeHtml(code)}">
             ${renderIdentityAvatar(identity, summary)}
             <span>
               <strong>${escapeHtml(identity.display_name || summary.display_name || identity.source_display_name || displayCode)}</strong>
               <small>User code: ${escapeHtml(displayCode || "Not linked")}</small>
               ${diagnostic && diagnostic !== displayCode ? `<small>${escapeHtml(diagnostic)}</small>` : ""}
-              ${sourceCodes.length > 1 ? `<small>Assigned public IDs: ${escapeHtml(sourceCodes.join(", "))}</small>` : ""}
+              ${chips}
             </span>
             <span>
               <strong>${renderXpValue(summary.xp_total, { compact: true })}</strong>
               ${renderLevelChip(summary, { compact: true })}
             </span>
-          </button>
+          </article>
         `;
       })
       .join("") + renderPager("identities", pageInfo, "Identity page");
@@ -423,13 +476,14 @@
     const displayCode = identityUserCode(identity, summary);
     const fallbackCode = identityFallbackCode(identity, summary);
     const sourceCodes = Array.isArray(summary.source_identity_codes) ? summary.source_identity_codes : [];
+    const chips = renderPublicIdentityChips(publicIdentityChipItems(identity, summary), displayCode || identity.display_name || summary.display_name);
     el.inspector.classList.remove("ss-empty");
     el.inspector.innerHTML = `
       <div class="ss-progression-summary">
         <div><span class="muted">User code</span><strong>${escapeHtml(displayCode || fallbackCode)}</strong></div>
         <div><span class="muted">Display name</span><strong>${escapeHtml(identity.display_name || summary.display_name || identity.source_display_name || displayCode || fallbackCode)}</strong></div>
         <div><span class="muted">Public identity</span><strong>${escapeHtml(fallbackCode || "Not available")}</strong></div>
-        <div><span class="muted">Assigned public IDs</span><strong>${escapeHtml(sourceCodes.length ? sourceCodes.join(", ") : fallbackCode || "None")}</strong></div>
+        <div><span class="muted">Public identities</span><strong>${chips}</strong></div>
         <div><span class="muted">XP total</span><strong>${renderXpValue(summary.xp_total)}</strong></div>
         <div><span class="muted">Current level</span><strong>${renderLevelChip(summary)}</strong></div>
         <div><span class="muted">Leaderboard</span><strong>${summary.is_leaderboard_visible ? "Visible" : "Suppressed"}</strong></div>
@@ -699,6 +753,13 @@
       updateSaveState();
     });
     el.identitiesList?.addEventListener("click", (event) => {
+      const chip = event.target.closest("[data-public-identity-unassign-chip]");
+      if (chip) {
+        event.preventDefault();
+        event.stopPropagation();
+        unassignPublicIdentityChip(chip).catch((err) => setStatus(err.message, "error"));
+        return;
+      }
       const button = event.target.closest("[data-identity-code]");
       if (button) loadIdentity(button.dataset.identityCode);
     });
@@ -713,6 +774,12 @@
       }
     });
     document.addEventListener("click", (event) => {
+      const chip = event.target.closest("[data-public-identity-unassign-chip]");
+      if (chip) {
+        event.preventDefault();
+        unassignPublicIdentityChip(chip).catch((err) => setStatus(err.message, "error"));
+        return;
+      }
       const collapseButton = event.target.closest("[data-collapse-target]");
       if (collapseButton) {
         const key = collapseButton.dataset.collapseTarget;
