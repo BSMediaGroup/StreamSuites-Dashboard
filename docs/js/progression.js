@@ -366,6 +366,7 @@
         const code = identity.identity_code || summary.identity_code || "";
         const displayCode = identityUserCode(identity, summary);
         const fallbackCode = identityFallbackCode(identity, summary);
+        const sourceCodes = Array.isArray(summary.source_identity_codes) ? summary.source_identity_codes : [];
         const diagnostic = displayCode && fallbackCode && displayCode !== fallbackCode ? `Public identity: ${fallbackCode}` : fallbackCode;
         const selected = code && code === state.selectedIdentityCode;
         return `
@@ -375,6 +376,7 @@
               <strong>${escapeHtml(identity.display_name || summary.display_name || identity.source_display_name || displayCode)}</strong>
               <small>User code: ${escapeHtml(displayCode || "Not linked")}</small>
               ${diagnostic && diagnostic !== displayCode ? `<small>${escapeHtml(diagnostic)}</small>` : ""}
+              ${sourceCodes.length > 1 ? `<small>Assigned public IDs: ${escapeHtml(sourceCodes.join(", "))}</small>` : ""}
             </span>
             <span>
               <strong>${renderXpValue(summary.xp_total, { compact: true })}</strong>
@@ -420,12 +422,14 @@
     const identity = state.detail?.identity || {};
     const displayCode = identityUserCode(identity, summary);
     const fallbackCode = identityFallbackCode(identity, summary);
+    const sourceCodes = Array.isArray(summary.source_identity_codes) ? summary.source_identity_codes : [];
     el.inspector.classList.remove("ss-empty");
     el.inspector.innerHTML = `
       <div class="ss-progression-summary">
         <div><span class="muted">User code</span><strong>${escapeHtml(displayCode || fallbackCode)}</strong></div>
         <div><span class="muted">Display name</span><strong>${escapeHtml(identity.display_name || summary.display_name || identity.source_display_name || displayCode || fallbackCode)}</strong></div>
         <div><span class="muted">Public identity</span><strong>${escapeHtml(fallbackCode || "Not available")}</strong></div>
+        <div><span class="muted">Assigned public IDs</span><strong>${escapeHtml(sourceCodes.length ? sourceCodes.join(", ") : fallbackCode || "None")}</strong></div>
         <div><span class="muted">XP total</span><strong>${renderXpValue(summary.xp_total)}</strong></div>
         <div><span class="muted">Current level</span><strong>${renderLevelChip(summary)}</strong></div>
         <div><span class="muted">Leaderboard</span><strong>${summary.is_leaderboard_visible ? "Visible" : "Suppressed"}</strong></div>

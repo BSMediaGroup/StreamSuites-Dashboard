@@ -20,9 +20,11 @@
     <div class="ss-panel-body">
       <div class="ss-public-identities-toolbar" role="search">
         <div class="ss-public-identities-tabs" role="tablist" aria-label="Identity status">
-          <button class="ss-public-identities-tab is-active" type="button" data-public-identities-status="unresolved">Unresolved</button>
+          <button class="ss-public-identities-tab is-active" type="button" data-public-identities-status="review">Review queue</button>
+          <button class="ss-public-identities-tab" type="button" data-public-identities-status="unresolved">Unresolved</button>
           <button class="ss-public-identities-tab" type="button" data-public-identities-status="ambiguous">Ambiguous</button>
-          <button class="ss-public-identities-tab" type="button" data-public-identities-status="resolved">Resolved</button>
+          <button class="ss-public-identities-tab" type="button" data-public-identities-status="resolved">Assigned/Resolved</button>
+          <button class="ss-public-identities-tab" type="button" data-public-identities-status="ignored">Ignored</button>
           <button class="ss-public-identities-tab" type="button" data-public-identities-status="all">All</button>
         </div>
         <label class="ss-form-row">
@@ -82,5 +84,5 @@
 </main>
 
 <footer class="ss-footer">
-  <span class="muted">Unassign/remove is intentionally not exposed until Runtime/Auth has a safe unlink contract.</span>
+  <span class="muted">Assignment, unassignment, and ignored-state changes are Runtime/Auth mutations. Historical ledger rows are not deleted.</span>
 </footer>

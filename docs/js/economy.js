@@ -889,6 +889,7 @@
         const displayName = text(identity.display_name || wallet.display_name || identityUserCode(identity, wallet) || identityCode);
         const userCode = identityUserCode(identity, wallet);
         const fallbackCode = identityFallbackCode(identity, wallet);
+        const sourceCodes = Array.isArray(entry.source_identity_codes || wallet.source_identity_codes) ? (entry.source_identity_codes || wallet.source_identity_codes) : [];
         const selected = state.selectedIdentityCode === identityCode;
         return `
           <button class="ss-economy-identity${selected ? " is-selected" : ""}" type="button" data-identity-code="${escapeHtml(identityCode)}">
@@ -897,6 +898,7 @@
               <strong>${escapeHtml(displayName)}</strong>
               <span>User code: ${escapeHtml(userCode || "Unclaimed")}</span>
               <span>Public identity: ${escapeHtml(fallbackCode || identityCode)}</span>
+              ${sourceCodes.length > 1 ? `<span>Assigned public IDs: ${escapeHtml(sourceCodes.join(", "))}</span>` : ""}
             </span>
             <span class="ss-economy-identity-side">
               ${renderCreditValue(wallet.balance_total_credits ?? wallet.balance_current ?? 0, { compact: true })}
@@ -913,6 +915,7 @@
     const detail = state.detail || {};
     const wallet = detail.wallet || null;
     const identity = detail.identity || {};
+    const sourceCodes = Array.isArray(wallet?.source_identity_codes) ? wallet.source_identity_codes : [];
     if (!wallet) {
       el.walletInspector.className = "ss-economy-inspector ss-empty";
       el.walletInspector.textContent = "Select an identity to inspect wallet state.";
@@ -925,6 +928,7 @@
         <div>
           <strong>${escapeHtml(identity.display_name || wallet.display_name || identityUserCode(identity, wallet))}</strong>
           <span class="muted">Public identity: ${escapeHtml(identityFallbackCode(identity, wallet))}</span>
+          ${sourceCodes.length > 1 ? `<span class="muted">Assigned public IDs: ${escapeHtml(sourceCodes.join(", "))}</span>` : ""}
         </div>
       </div>
       <div class="ss-economy-kpis">

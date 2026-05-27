@@ -783,6 +783,17 @@ function normalizeUser(raw = {}) {
       slugAliases: Array.isArray(raw.slug_aliases || publicProfile.slug_aliases)
         ? (raw.slug_aliases || publicProfile.slug_aliases).map((item) => coerceText(item)).filter(Boolean)
         : [],
+      publicIdentities: Array.isArray(raw.public_identities)
+        ? raw.public_identities
+        : Array.isArray(raw.publicIdentities)
+        ? raw.publicIdentities
+        : [],
+      primaryPublicIdentity: raw.primary_public_identity || raw.primaryPublicIdentity || null,
+      assignedPublicIdentities: Array.isArray(raw.assigned_public_identities)
+        ? raw.assigned_public_identities
+        : Array.isArray(raw.assignedPublicIdentities)
+        ? raw.assignedPublicIdentities
+        : [],
       accountType,
       accessClass: normalizeAccountType(raw.access_class || raw.accessClass || raw.role || raw.account_role || accountType),
       role: raw.access_class || raw.accessClass || raw.role || raw.account_role || accountType || "—",
@@ -2370,6 +2381,15 @@ function normalizeUser(raw = {}) {
     const badgeIcons = renderBadgeIconStrip(user.badges);
     const socialLinks = user.socialLinks && typeof user.socialLinks === "object" ? user.socialLinks : {};
     const socialMarkup = buildCompactSocialMarkup(socialLinks);
+    const publicIdentities = Array.isArray(user.publicIdentities) ? user.publicIdentities : [];
+    const primaryIdentity = user.primaryPublicIdentity || publicIdentities.find((identity) => identity?.primary) || null;
+    const assignedIdentities = publicIdentities.filter((identity) => identity && !identity.primary);
+    const publicIdentityRows = publicIdentities.length
+      ? publicIdentities.map((identity) => {
+          const source = [identity.source_platform, identity.source_user_id || identity.source_display_name, identity.source_channel_scope].filter(Boolean).join(" · ");
+          return `<div><span class="label">${identity.primary ? "Primary public identity" : "Assigned public identity"}</span><span class="value accounts-system-text">${escapeHtml(identity.identity_code || identity.public_identity_code || "—")}${source ? ` · ${escapeHtml(source)}` : ""}</span></div>`;
+        }).join("")
+      : `<div><span class="label">Public identities</span><span class="value accounts-system-text">No identity contract returned</span></div>`;
     const avatarMarkup = user.avatarUrl
       ? `<img src="${escapeHtml(user.avatarUrl)}" alt="${escapeHtml(title)} avatar" loading="lazy" decoding="async" />`
       : `<span>${escapeHtml(resolveAvatarInitials(user))}</span>`;
@@ -2462,6 +2482,13 @@ function normalizeUser(raw = {}) {
             <div><span class="label">User Code</span><span class="value accounts-system-text">${escapeHtml(
               user.userCode || "—"
             )}</span></div>
+            <div><span class="label">Primary Public ID</span><span class="value accounts-system-text">${escapeHtml(
+              primaryIdentity?.identity_code || primaryIdentity?.public_identity_code || "—"
+            )}</span></div>
+            <div><span class="label">Assigned Secondary IDs</span><span class="value accounts-system-text">${escapeHtml(
+              assignedIdentities.map((identity) => identity.identity_code || identity.public_identity_code).filter(Boolean).join(", ") || "—"
+            )}</span></div>
+            ${publicIdentityRows}
           </div>
         </section>
         <section class="accounts-details-group">

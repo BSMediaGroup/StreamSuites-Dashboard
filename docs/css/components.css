@@ -390,6 +390,13 @@
   font-size: 13px;
 }
 
+.ss-public-identities-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
 .ss-public-identities-error {
   color: #ff9a9a;
 }

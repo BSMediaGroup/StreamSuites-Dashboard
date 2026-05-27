@@ -7,10 +7,12 @@
 
   const RECONCILIATION = "/api/admin/public-identities/reconciliation";
   const ASSIGN = "/api/admin/public-identities/reconciliation/assign";
+  const UNASSIGN = "/api/admin/public-identities/reconciliation/unassign";
+  const REVIEW = "/api/admin/public-identities/reconciliation/review";
   const ACCOUNT_SEARCH = "/api/admin/accounts/search";
 
   const state = {
-    status: "unresolved",
+    status: "review",
     platform: "",
     scopeKey: "",
     query: "",
@@ -163,7 +165,7 @@
                 <span class="muted">${escapeHtml(record.sender_username ? `@${record.sender_username}` : record.identity_code || key)}</span>
               </span>
               <span class="ss-public-identities-meta">
-                ${chip(record.status, record.status === "ambiguous" ? "warning" : record.status === "resolved" ? "success" : "danger")}
+                ${chip(record.status, record.status === "ambiguous" || record.status === "ignored" ? "warning" : record.status === "resolved" ? "success" : "danger")}
                 ${chip(record.platform || "unknown")}
                 ${chip(record.identity_kind || "unassigned")}
               </span>
@@ -224,6 +226,8 @@
             <div><strong>Platform user:</strong> ${escapeHtml(record.sender_user_id || record.platform_user_id || "-")}</div>
             <div><strong>Scope:</strong> ${escapeHtml(record.scope_key || "-")}</div>
             <div><strong>Current account:</strong> ${escapeHtml(accountLabel(account) || "Unassigned")}</div>
+            <div><strong>Review:</strong> ${escapeHtml(formatLabel(record.review_status || record.status || "review"))}</div>
+            <div><strong>Note:</strong> ${escapeHtml(record.resolution_note || record.ignored_reason || "-")}</div>
           </div>
           ${renderDiagnostics(record)}
         </div>
@@ -243,6 +247,10 @@
             <span>${isResolved ? "Reassign this identity. Future matching changes; historical ledger rows are not deleted." : "Allow conflict-aware reassignment if Runtime/Auth reports an existing link."}</span>
           </label>
           <button id="public-identities-assign" class="ss-btn" type="button" ${state.selectedAccount ? "" : "disabled"}>${isResolved ? "Reassign identity" : "Assign identity"}</button>
+          <div class="ss-public-identities-action-row">
+            ${isResolved && record.identity_kind !== "primary" ? `<button id="public-identities-unassign" class="ss-btn ss-btn-secondary" type="button">Unassign secondary</button>` : ""}
+            ${record.status === "ignored" ? `<button id="public-identities-unignore" class="ss-btn ss-btn-secondary" type="button">Reopen review</button>` : `<button id="public-identities-ignore" class="ss-btn ss-btn-secondary" type="button">Mark ignored</button>`}
+          </div>
         </div>
       </div>
     `;
@@ -336,6 +344,49 @@
     }
   }
 
+  async function unassignSelected() {
+    const record = selectedRecord();
+    if (!record || !record.identity_code) return;
+    if (!window.confirm(`Unassign ${record.identity_code} from the current account? Historical ledger rows are retained.`)) return;
+    setStatus("Submitting unassignment...");
+    try {
+      await requestJson(UNASSIGN, {
+        method: "POST",
+        body: JSON.stringify({
+          identity_code: record.identity_code,
+          account_id: record.account_id,
+          reason: text($("public-identities-assignment-note")?.value) || "admin reconciliation unassign"
+        })
+      });
+      setStatus("Secondary identity unassigned in Runtime/Auth.", "success");
+      await loadRecords();
+    } catch (err) {
+      setStatus(err.message || "Unassignment failed.", "error");
+    }
+  }
+
+  async function reviewSelected(reviewStatus) {
+    const record = selectedRecord();
+    if (!record || !record.identity_code) return;
+    const note = text($("public-identities-assignment-note")?.value);
+    setStatus("Updating review status...");
+    try {
+      await requestJson(REVIEW, {
+        method: "POST",
+        body: JSON.stringify({
+          identity_code: record.identity_code,
+          review_status: reviewStatus,
+          reason: note || reviewStatus,
+          note
+        })
+      });
+      setStatus("Review status saved in Runtime/Auth.", "success");
+      await loadRecords();
+    } catch (err) {
+      setStatus(err.message || "Review update failed.", "error");
+    }
+  }
+
   function bindEvents() {
     if (state.bound) return;
     state.bound = true;
@@ -371,6 +422,18 @@
       }
       if (event.target.closest("#public-identities-assign")) {
         assignSelected();
+        return;
+      }
+      if (event.target.closest("#public-identities-unassign")) {
+        unassignSelected();
+        return;
+      }
+      if (event.target.closest("#public-identities-ignore")) {
+        reviewSelected("ignored");
+        return;
+      }
+      if (event.target.closest("#public-identities-unignore")) {
+        reviewSelected("review");
       }
     });
   }

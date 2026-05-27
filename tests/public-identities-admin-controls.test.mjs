@@ -35,9 +35,11 @@ test("public identities view exposes filters, states, diagnostics, and assignmen
   const html = read("docs/views/public-identities.html");
 
   assert.match(html, /Runtime\/Auth is authoritative/);
+  assert.match(html, /data-public-identities-status="review"/);
   assert.match(html, /data-public-identities-status="unresolved"/);
   assert.match(html, /data-public-identities-status="ambiguous"/);
   assert.match(html, /data-public-identities-status="resolved"/);
+  assert.match(html, /data-public-identities-status="ignored"/);
   assert.match(html, /id="public-identities-platform"/);
   assert.match(html, /id="public-identities-scope"/);
   assert.match(html, /id="public-identities-query"/);
@@ -45,7 +47,7 @@ test("public identities view exposes filters, states, diagnostics, and assignmen
   assert.match(html, /id="public-identities-empty"/);
   assert.match(html, /id="public-identities-error"/);
   assert.match(html, /id="public-identities-assignment"/);
-  assert.match(html, /Unassign\/remove is intentionally not exposed/);
+  assert.match(html, /Historical ledger rows are not deleted/);
 });
 
 test("public identities controller uses Runtime/Auth endpoints and conflict-aware assignment", () => {
@@ -53,6 +55,8 @@ test("public identities controller uses Runtime/Auth endpoints and conflict-awar
 
   assert.match(js, /RECONCILIATION = "\/api\/admin\/public-identities\/reconciliation"/);
   assert.match(js, /ASSIGN = "\/api\/admin\/public-identities\/reconciliation\/assign"/);
+  assert.match(js, /UNASSIGN = "\/api\/admin\/public-identities\/reconciliation\/unassign"/);
+  assert.match(js, /REVIEW = "\/api\/admin\/public-identities\/reconciliation\/review"/);
   assert.match(js, /ACCOUNT_SEARCH = "\/api\/admin\/accounts\/search"/);
   assert.match(js, /params\.set\("status",\s*state\.status\)/);
   assert.match(js, /function renderDiagnostics/);
@@ -65,6 +69,9 @@ test("public identities controller uses Runtime/Auth endpoints and conflict-awar
   assert.match(js, /assignment_note:\s*note/);
   assert.match(js, /participant_key:\s*record\.participant_key/);
   assert.match(js, /platform_user_id:\s*record\.platform_user_id \|\| record\.sender_user_id/);
+  assert.match(js, /function unassignSelected/);
+  assert.match(js, /function reviewSelected/);
+  assert.match(js, /review_status:\s*reviewStatus/);
   assert.doesNotMatch(js, /localStorage/);
 });
 

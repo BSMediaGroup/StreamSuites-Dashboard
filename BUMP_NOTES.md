@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Hardened Admin public identity reconciliation and assigned-identity display. `/public-identities` now has Review queue, Unresolved, Ambiguous, Assigned/Resolved, Ignored, and All filters; assignment, explicit reassignment, secondary unassignment, ignored/reopen review actions, diagnostics, account search, and notes all call Runtime/Auth endpoints. `/economy`, `/progression`, `/users`, and `/users/{user_code}` now surface primary/assigned public identity references while relying on backend canonical list projections.
+- Human note: admins can reconcile, ignore, reopen, assign, reassign, and safely unassign secondary public identities from one compact console, while assigned identities no longer need to appear as separate account rows when Runtime/Auth returns canonical account records.
+
 - Added a compact Admin `/economy` Market Governance section to the existing Economy / Inventory workspace and top section anchor row. The section searches and filters runtime item definitions, shows sale/exchange/type/stock metadata, and edits one item at a time through Runtime/Auth `GET /api/admin/economy/market` and `PATCH /api/admin/economy/market/items/{item_code}`.
 - Human note: admins can manage item sale status, Stekel prices, exchange flags/values, item type/category, market labels, and stock metadata from Dashboard while Dashboard remains only a control surface over Runtime/Auth-owned item definitions.
 
