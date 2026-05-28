@@ -2,6 +2,9 @@
 
 ## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
 
+- Fixed Admin `/economy` mount regression from the public identity chip pass. The wallet inspector now exits before building chip metadata when no wallet/detail payload is selected, and the shared economy/progression identity helpers tolerate null identity or summary objects returned by empty/static preview states.
+- Human note: the Economy / Inventory page should load again instead of stopping on a JavaScript view-load error before inventory controls render.
+
 - Upgraded assigned public identity visibility across Admin. `/economy`, `/progression`, `/users`, and `/users/{user_code}` now render primary and secondary assigned public IDs as compact chips beside the canonical account; primary chips are locked/non-removable, while secondary chips are actionable and submit a required reason/note to Runtime/Auth before refreshing the current view.
 - Polished `/public-identities` assignment review with clearer selected-identity/account chip context, account-level assigned-ID chip rows, obvious secondary unassign actions, and required unassign reasons. Assigned secondary IDs remain grouped under canonical account rows instead of being promoted as standalone people when Runtime/Auth provides canonical projections.
 - Human note: admins should no longer have to hunt through plain-text detail panels to see or remove IDs such as `public-user022`; the assignment state is visible as slim chips wherever the account appears.

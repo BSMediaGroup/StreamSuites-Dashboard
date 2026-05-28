@@ -139,6 +139,8 @@
   }
 
   function identityUserCode(identity = {}, summary = {}) {
+    identity = identity || {};
+    summary = summary || {};
     return text(
       identity.user_code ||
         identity.canonical_user_code ||
@@ -151,10 +153,14 @@
   }
 
   function identityFallbackCode(identity = {}, summary = {}) {
+    identity = identity || {};
+    summary = summary || {};
     return text(identity.public_identity_code || identity.fallback_public_identity_code || identity.identity_code || summary.public_identity_code || summary.identity_code);
   }
 
   function publicIdentityChipItems(identity = {}, summary = {}) {
+    identity = identity || {};
+    summary = summary || {};
     const sourceCodes = Array.isArray(summary.source_identity_codes) ? summary.source_identity_codes : [];
     const primaryCode = text(identity.identity_code || summary.identity_code || summary.public_identity_code);
     const codes = Array.from(new Set([primaryCode, ...sourceCodes.map((code) => text(code))].filter(Boolean)));

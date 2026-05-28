@@ -363,6 +363,8 @@
   }
 
   function identityUserCode(identity = {}, wallet = {}) {
+    identity = identity || {};
+    wallet = wallet || {};
     return text(
       identity.user_code ||
         identity.canonical_user_code ||
@@ -375,10 +377,14 @@
   }
 
   function identityFallbackCode(identity = {}, wallet = {}) {
+    identity = identity || {};
+    wallet = wallet || {};
     return text(identity.public_identity_code || identity.fallback_public_identity_code || identity.identity_code || wallet.public_identity_code || wallet.identity_code);
   }
 
   function publicIdentityChipItems(identity = {}, wallet = {}) {
+    identity = identity || {};
+    wallet = wallet || {};
     const sourceCodes = Array.isArray(wallet.source_identity_codes) ? wallet.source_identity_codes : [];
     const primaryCode = text(identity.identity_code || wallet.identity_code || wallet.public_identity_code);
     const codes = Array.from(new Set([primaryCode, ...sourceCodes.map((code) => text(code))].filter(Boolean)));
@@ -968,13 +974,13 @@
     const detail = state.detail || {};
     const wallet = detail.wallet || null;
     const identity = detail.identity || {};
-    const sourceCodes = Array.isArray(wallet?.source_identity_codes) ? wallet.source_identity_codes : [];
-    const chips = renderPublicIdentityChips(publicIdentityChipItems(identity, { ...wallet, source_identity_codes: sourceCodes }), identityUserCode(identity, wallet) || identity.display_name || wallet.display_name);
     if (!wallet) {
       el.walletInspector.className = "ss-economy-inspector ss-empty";
       el.walletInspector.textContent = "Select an identity to inspect wallet state.";
       return;
     }
+    const sourceCodes = Array.isArray(wallet.source_identity_codes) ? wallet.source_identity_codes : [];
+    const chips = renderPublicIdentityChips(publicIdentityChipItems(identity, { ...wallet, source_identity_codes: sourceCodes }), identityUserCode(identity, wallet) || identity.display_name || wallet.display_name);
     el.walletInspector.className = "ss-economy-inspector";
     el.walletInspector.innerHTML = `
       <div class="ss-economy-wallet-head">
