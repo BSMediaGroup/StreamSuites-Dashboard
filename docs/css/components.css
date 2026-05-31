@@ -361,14 +361,16 @@
   margin: 0 1px;
 }
 
-/* Yellow-tinted icons for primary (yellow) chips - matches the yellow text labels */
+/* Exact color match for primary yellow chips */
 .ss-public-identity-chip.is-primary .chip-icon {
-  filter: brightness(0) saturate(100%) invert(82%) sepia(45%) saturate(650%) hue-rotate(2deg) brightness(1.15);
+  filter: brightness(0) saturate(100%) invert(100%) sepia(35%) saturate(500%) hue-rotate(8deg) brightness(1.35);
+  /* Targets approximately #FEF3C7 */
 }
 
-/* Cool blue-gray tint for secondary chips - matches the blue-green muted text */
+/* Exact color match for secondary chips */
 .ss-public-identity-chip .chip-icon {
-  filter: brightness(0) saturate(100%) invert(90%) sepia(8%) saturate(280%) hue-rotate(195deg) brightness(1.08);
+  filter: brightness(0) saturate(100%) invert(100%) sepia(12%) saturate(400%) hue-rotate(195deg) brightness(1.32);
+  /* Targets approximately #DFF7FF */
 }
 
 .ss-public-identity-chip .unassign-icon {
