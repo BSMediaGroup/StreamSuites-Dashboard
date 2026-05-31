@@ -354,19 +354,17 @@
 }
 
 .ss-public-identity-chip .chip-icon {
-  width: 11px;
-  height: 11px;
+  width: 12px;
+  height: 12px;
   flex-shrink: 0;
   vertical-align: middle;
   margin: 0 1px;
+  /* Tint black SVGs to match the previous muted label color */
+  filter: brightness(0) saturate(100%) invert(88%) sepia(6%) saturate(180%) hue-rotate(200deg) brightness(1.08);
 }
 
 .ss-public-identity-chip .unassign-icon {
-  transition: opacity 0.1s ease;
-}
-
-.ss-public-identity-chip.is-secondary:hover .unassign-icon {
-  /* Hover state handled via JS src swap for reliability */
+  transition: filter 0.1s ease;
 }
 
 button.ss-public-identity-chip {
