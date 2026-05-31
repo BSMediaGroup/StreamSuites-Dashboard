@@ -184,7 +184,6 @@
         data-creator-open-account="${userCode}"
         data-account-id="${accountId}"
         data-orphaned="${orphaned ? "1" : "0"}"
-        data-ss-profile-hover-trigger="true"
         data-ss-user-code="${userCode}"
         data-ss-user-id="${accountId}"
         data-ss-display-name="${displayName}"
@@ -232,7 +231,6 @@
     return `
       <span
         class="accounts-cell-ellipsis accounts-hover-link"
-        data-ss-profile-hover-trigger="true"
         data-ss-user-code="${escapeHtml(creator.user_code)}"
         data-ss-user-id="${escapeHtml(creator.account_id || "")}"
         data-ss-display-name="${displayName}"
@@ -299,7 +297,7 @@
         <td>${renderDisplayNameCell(creator)}</td>
         <td>${renderStatus(creator.status)}</td>
         <td>${escapeHtml(creator.account_email || (creator.orphaned ? "—" : "-"))}</td>
-        <td>${creator.account_id ? `<span class="accounts-cell-ellipsis accounts-hover-link" data-ss-profile-hover-trigger="true" data-ss-user-code="${escapeHtml(creator.user_code)}" data-ss-user-id="${escapeHtml(creator.account_id)}" data-ss-display-name="${escapeHtml(creator.display_name || creator.user_code)}" data-ss-role="CREATOR" data-ss-avatar-url="${escapeHtml(creator.avatar_url || "")}" data-ss-cover-url="${escapeHtml(creator.cover_image_url || "")}" data-ss-bio="${escapeHtml(creator.bio || "")}" data-ss-tier="core" data-ss-badges="${escapeHtml(JSON.stringify(Array.isArray(creator.badges) ? creator.badges : []))}" data-ss-social-links="${escapeHtml(JSON.stringify(creator.social_links || {}))}" data-ss-profile-href="${escapeHtml(`https://streamsuites.app/u/${encodeURIComponent(creator.public_slug || creator.user_code || "")}`)}" title="${escapeHtml(creator.account_id)}"><code>${escapeHtml(creator.account_id)}</code></span>` : "—"}</td>
+        <td>${creator.account_id ? `<span class="accounts-cell-ellipsis accounts-hover-link" data-ss-user-code="${escapeHtml(creator.user_code)}" data-ss-user-id="${escapeHtml(creator.account_id)}" data-ss-display-name="${escapeHtml(creator.display_name || creator.user_code)}" data-ss-role="CREATOR" data-ss-avatar-url="${escapeHtml(creator.avatar_url || "")}" data-ss-cover-url="${escapeHtml(creator.cover_image_url || "")}" data-ss-bio="${escapeHtml(creator.bio || "")}" data-ss-tier="core" data-ss-badges="${escapeHtml(JSON.stringify(Array.isArray(creator.badges) ? creator.badges : []))}" data-ss-social-links="${escapeHtml(JSON.stringify(creator.social_links || {}))}" data-ss-profile-href="${escapeHtml(`https://streamsuites.app/u/${encodeURIComponent(creator.public_slug || creator.user_code || "")}`)}" title="${escapeHtml(creator.account_id)}"><code>${escapeHtml(creator.account_id)}</code></span>` : "—"}</td>
         <td>${escapeHtml(formatTimestamp(creator.activated_at))}</td>
         <td>${escapeHtml(formatTimestamp(creator.created_at))}</td>
         <td class="align-right">

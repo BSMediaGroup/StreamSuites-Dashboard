@@ -1938,8 +1938,7 @@ function normalizeUser(raw = {}) {
     if (!accountId || accountId === "—") {
       return renderTextValue(accountId || "—");
     }
-    const hoverAttrs = buildProfileHoverAttrs(user, { userId: accountId });
-    return `<span class="accounts-cell-ellipsis accounts-hover-link accounts-table-system-value" ${hoverAttrs} title="${escapeHtml(accountId)}">${escapeHtml(accountId)}</span>`;
+    return `<span class="accounts-cell-ellipsis accounts-hover-link accounts-table-system-value" title="${escapeHtml(accountId)}">${escapeHtml(accountId)}</span>`;
   }
 
   function renderAvatarValue(user) {
@@ -1953,9 +1952,8 @@ function normalizeUser(raw = {}) {
 
   function renderDisplayNameValue(user) {
     const displayName = String(user?.displayName || "—").trim() || "—";
-    const hoverAttrs = buildProfileHoverAttrs(user, { displayName });
     const chips = renderPublicIdentityChips(accountPublicIdentityItems(user), user);
-    return `<span class="accounts-cell-ellipsis accounts-hover-link" ${hoverAttrs} title="${escapeHtml(displayName)}">${escapeHtml(displayName)}</span>${chips}`;
+    return `<span class="accounts-cell-ellipsis accounts-hover-link" title="${escapeHtml(displayName)}">${escapeHtml(displayName)}</span>${chips}`;
   }
 
   function renderUserCodeLink(user) {
@@ -1968,8 +1966,8 @@ function normalizeUser(raw = {}) {
         type="button"
         class="ss-link-btn accounts-hover-button accounts-table-system-link"
         data-account-open-creator="${escapeHtml(userCode)}"
-        ${buildProfileHoverAttrs(user, { userCode })}
-      >
+        >
+
         <code class="accounts-table-system-value">${escapeHtml(userCode)}</code>
       </button>
     `;

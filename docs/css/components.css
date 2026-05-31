@@ -369,6 +369,11 @@
   flex-shrink: 0;
 }
 
+/* Make the Locked + Primary icons sit closer together as a pair */
+.ss-public-identity-chip.is-primary .chip-icon + .chip-icon {
+  margin-left: -2px;
+}
+
 .ss-public-identity-chip .unassign-icon {
   transition: filter 0.1s ease;
 }
