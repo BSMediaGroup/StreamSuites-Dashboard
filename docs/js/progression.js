@@ -188,7 +188,7 @@
         identity.assigned_at ? `Assigned: ${identity.assigned_at}` : "",
       ].filter(Boolean).join(" · ");
       if (primary) {
-        return `<span class="ss-public-identity-chip is-primary" title="${escapeHtml(title)}"><span class="chip-icon" style="background-color:#FEF3C7;-webkit-mask-image:url('/assets/icons/ui/padlockclosed.svg');mask-image:url('/assets/icons/ui/padlockclosed.svg');"></span>${escapeHtml(code)}<span class="chip-icon" style="background-color:#FEF3C7;-webkit-mask-image:url('/assets/icons/ui/star.svg');mask-image:url('/assets/icons/ui/star.svg');"></span></span>`;
+        return `<span class="ss-public-identity-chip is-primary" title="${escapeHtml(title)}"><span class="chip-icon" style="background-color:#FEF3C7;-webkit-mask-image:url('/assets/icons/ui/padlockclosed.svg');mask-image:url('/assets/icons/ui/padlockclosed.svg');"></span><span class="chip-icon" style="background-color:#FEF3C7;-webkit-mask-image:url('/assets/icons/ui/star.svg');mask-image:url('/assets/icons/ui/star.svg');"></span>${escapeHtml(code)}</span>`;
       }
       return `<button class="ss-public-identity-chip is-secondary" type="button" title="${escapeHtml(`${title} · Click to unassign`)}" data-public-identity-unassign-chip="${escapeHtml(code)}" data-public-identity-account-id="${escapeHtml(identity.account_id || "")}" data-public-identity-account-label="${escapeHtml(accountLabel)}">${escapeHtml(code)}<span class="chip-icon unassign-icon" style="background-color:#DFF7FF;-webkit-mask-image:url('/assets/icons/ui/backspace.svg');mask-image:url('/assets/icons/ui/backspace.svg');"></span></button>`;
     }).join("")}</span>`;
