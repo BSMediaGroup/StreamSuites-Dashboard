@@ -6888,6 +6888,62 @@ body.ss-col-resizing-active {
   flex-basis: 28px;
 }
 
+.ss-economy-wallet-money {
+  display: inline-grid;
+  grid-template-columns: 1fr;
+  gap: 2px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ss-economy-wallet-money-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  max-width: 100%;
+  color: var(--text-primary);
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.ss-economy-kpis .ss-economy-wallet-money-main,
+.ss-economy-kpis .ss-economy-wallet-money-main span {
+  display: inline-flex;
+  margin-bottom: 0;
+  color: var(--text-primary);
+  font-size: inherit;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.ss-economy-wallet-money-main .ss-economy-currency-symbol {
+  width: 18px;
+  height: 18px;
+  flex-basis: 18px;
+}
+
+.ss-economy-wallet-money--prominent .ss-economy-wallet-money-main {
+  font-size: 18px;
+}
+
+.ss-economy-wallet-money--prominent .ss-economy-currency-symbol {
+  width: 22px;
+  height: 22px;
+  flex-basis: 22px;
+}
+
+.ss-economy-wallet-money small {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.2;
+  text-transform: none;
+  white-space: nowrap;
+}
+
 .ss-economy-denomination-breakdown {
   display: flex;
   align-items: center;
@@ -6953,6 +7009,19 @@ body.ss-col-resizing-active {
   letter-spacing: 0.05em;
 }
 
+.ss-economy-item-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.ss-economy-item-chip-archived {
+  border-color: rgba(190, 198, 212, 0.42);
+  background: rgba(148, 163, 184, 0.16);
+  color: rgba(226, 232, 240, 0.86);
+}
+
 .ss-economy-wallet-head {
   display: flex;
   gap: 10px;
@@ -7011,6 +7080,28 @@ body.ss-col-resizing-active {
 .ss-economy-item-definition {
   grid-template-columns: 1fr;
   align-items: stretch;
+}
+
+.ss-economy-item-definition.is-archived {
+  border-color: rgba(148, 163, 184, 0.28);
+  background:
+    linear-gradient(135deg, rgba(148, 163, 184, 0.1), rgba(15, 23, 42, 0.04)),
+    rgba(255, 255, 255, 0.018);
+  opacity: 0.74;
+}
+
+.ss-economy-item-definition.is-archived .ss-economy-item-icon {
+  filter: grayscale(1);
+  opacity: 0.58;
+}
+
+.ss-economy-item-definition.is-archived .ss-economy-item-definition-main strong {
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.ss-economy-item-definition.is-archived .ss-economy-item-path,
+.ss-economy-item-definition.is-archived .ss-economy-item-notes {
+  color: rgba(148, 163, 184, 0.78);
 }
 
 .ss-economy-market-row {

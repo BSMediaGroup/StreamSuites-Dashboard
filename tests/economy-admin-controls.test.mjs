@@ -137,6 +137,10 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /wallet\.balance_total_credits \?\? wallet\.balance_current/);
   assert.match(js, /wallet\.cash_balance_credits \?\? wallet\.balance_current/);
   assert.match(js, /wallet\.held_value_credits \?\? 0/);
+  assert.match(js, /function formatCompactNumber\(value\)/);
+  assert.match(js, /function renderWalletMoneyValue\(value, options = \{\}\)/);
+  assert.match(js, /compact\.toFixed\(1\)\.replace\(/);
+  assert.match(js, /ss-economy-wallet-money-main/);
   assert.match(js, /category: readField\("category"\)/);
   assert.match(js, /categoryPresets/);
   assert.match(js, /itemCategories/);
@@ -190,6 +194,11 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /data-market-field="item_type"/);
   assert.match(js, /data-market-save="\$\{escapeHtml\(item\.item_code\)\}"/);
   assert.match(js, /body: JSON\.stringify\(\{ item, reason_text: reason \}\)/);
+  assert.match(js, /const isArchived = item\.is_enabled === false/);
+  assert.match(js, /isArchived \? " is-archived" : ""/);
+  assert.match(js, /isArchived \? "archived \/ disabled" : "enabled"/);
+  assert.match(js, /ss-economy-item-chip-archived/);
+  assert.match(js, /isArchived \? "Archived" : "Archive"/);
   assert.match(js, /id="economy-item-page-size"/);
   assert.match(js, /state\.itemPageSize = ITEM_PAGE_SIZE_OPTIONS\.includes\(nextSize\) \? nextSize : DEFAULT_ITEM_PAGE_SIZE/);
   assert.match(js, /state\.itemPage = 1/);
@@ -386,6 +395,10 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-avatar img,[\s\S]*\.ss-economy-item-icon img\s*\{[\s\S]*object-fit:\s*cover/);
   assert.match(css, /\.ss-economy-currency-symbol\s*\{[\s\S]*mask:\s*var\(--economy-currency-symbol\) center \/ contain no-repeat/);
   assert.match(css, /\.ss-economy-credit-value--compact \.ss-economy-currency-symbol/);
+  assert.match(css, /\.ss-economy-wallet-money\s*\{/);
+  assert.match(css, /\.ss-economy-wallet-money-main\s*\{[\s\S]*white-space:\s*nowrap/);
+  assert.match(css, /\.ss-economy-kpis \.ss-economy-wallet-money-main,\s*\.ss-economy-kpis \.ss-economy-wallet-money-main span\s*\{[\s\S]*display:\s*inline-flex/);
+  assert.match(css, /\.ss-economy-wallet-money small\s*\{[\s\S]*text-transform:\s*none/);
   assert.match(css, /\.ss-economy-denomination-breakdown\s*\{/);
   assert.match(css, /\.ss-economy-denomination-chip img\s*\{[\s\S]*object-fit:\s*contain/);
   assert.match(css, /\.ss-economy-denomination-row\.is-editing\s*\{/);
@@ -393,6 +406,10 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-denomination-editor \.ss-economy-icon-field\s*\{[\s\S]*grid-template-columns:\s*minmax\(220px,\s*1fr\) auto/);
   assert.match(css, /\.ss-economy-denomination-editor \.ss-economy-icon-preview\s*\{[\s\S]*grid-column:\s*1 \/ -1/);
   assert.match(css, /\.ss-economy-item-chip\s*\{/);
+  assert.match(css, /\.ss-economy-item-chip-row\s*\{/);
+  assert.match(css, /\.ss-economy-item-chip-archived\s*\{[\s\S]*background:\s*rgba\(148,\s*163,\s*184,\s*0\.16\)/);
+  assert.match(css, /\.ss-economy-item-definition\.is-archived\s*\{[\s\S]*opacity:\s*0\.74/);
+  assert.match(css, /\.ss-economy-item-definition\.is-archived \.ss-economy-item-icon\s*\{[\s\S]*filter:\s*grayscale\(1\)/);
   assert.match(css, /\.ss-economy-state-reversed,[\s\S]*\.ss-economy-state-reversal/);
   assert.match(css, /\.ss-economy-master-detail\s*\{[\s\S]*grid-template-columns:\s*minmax\(440px,\s*1\.35fr\) minmax\(320px,\s*0\.85fr\)/);
   assert.match(css, /\.ss-economy-item-definition-summary\s*\{[\s\S]*grid-template-columns:\s*38px minmax\(0,\s*1fr\) auto/);

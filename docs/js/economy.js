@@ -174,6 +174,23 @@
     return Number.isFinite(number) ? number.toLocaleString() : "0";
   }
 
+  function formatCompactNumber(value) {
+    const number = Number(value || 0);
+    if (!Number.isFinite(number)) return "0";
+    const sign = number < 0 ? "-" : "";
+    const absolute = Math.abs(number);
+    const units = [
+      { suffix: "T", value: 1_000_000_000_000 },
+      { suffix: "B", value: 1_000_000_000 },
+      { suffix: "M", value: 1_000_000 },
+      { suffix: "K", value: 1_000 },
+    ];
+    const unit = units.find((item) => absolute >= item.value);
+    if (!unit) return formatNumber(number);
+    const compact = absolute / unit.value;
+    return `${sign}${compact.toFixed(1).replace(/\.0$/, "")}${unit.suffix}`;
+  }
+
   function formatLabel(value) {
     return text(value).replace(/[_-]+/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
   }
@@ -458,6 +475,20 @@
       <span class="ss-economy-credit-value${options.compact ? " ss-economy-credit-value--compact" : ""}${options.prominent ? " ss-economy-credit-value--prominent" : ""}">
         ${renderCurrencySymbol(options)}
         <span>${formatNumber(value)} ${escapeHtml(currencyPluralLabel(value))}</span>
+      </span>
+    `;
+  }
+
+  function renderWalletMoneyValue(value, options = {}) {
+    const number = Number(value || 0);
+    const exact = formatNumber(number);
+    return `
+      <span class="ss-economy-wallet-money${options.prominent ? " ss-economy-wallet-money--prominent" : ""}">
+        <span class="ss-economy-wallet-money-main">
+          ${renderCurrencySymbol(options)}
+          <span>${escapeHtml(formatCompactNumber(number))}</span>
+        </span>
+        <small>(${escapeHtml(exact)})</small>
       </span>
     `;
   }
@@ -992,9 +1023,9 @@
         </div>
       </div>
       <div class="ss-economy-kpis">
-        <div><span>Total balance</span><strong>${renderCreditValue(wallet.balance_total_credits ?? wallet.balance_current ?? 0, { prominent: true })}</strong></div>
-        <div><span>Cash balance</span><strong>${renderCreditValue(wallet.cash_balance_credits ?? wallet.balance_current ?? 0)}</strong></div>
-        <div><span>Held item value</span><strong>${renderCreditValue(wallet.held_value_credits ?? 0)}</strong></div>
+        <div><span>Total balance</span><strong>${renderWalletMoneyValue(wallet.balance_total_credits ?? wallet.balance_current ?? 0, { prominent: true })}</strong></div>
+        <div><span>Cash balance</span><strong>${renderWalletMoneyValue(wallet.cash_balance_credits ?? wallet.balance_current ?? 0)}</strong></div>
+        <div><span>Held item value</span><strong>${renderWalletMoneyValue(wallet.held_value_credits ?? 0)}</strong></div>
         <div><span>Earned lifetime</span><strong>${formatNumber(wallet.earned_lifetime || 0)}</strong></div>
         <div><span>Spent lifetime</span><strong>${formatNumber(wallet.spent_lifetime || 0)}</strong></div>
         <div><span>Adjusted total</span><strong>${formatNumber(wallet.adjusted_total || 0)}</strong></div>
@@ -1283,22 +1314,26 @@
           ? (metadata.wallet_balance_unit ? "Currency unit" : "Denomination")
           : "Inventory item";
         const isEditing = state.itemEditorCode === item.item_code;
+        const isArchived = item.is_enabled === false;
         const normalizedIcon = normalizeItemIconPath(item.icon_path || "");
         return `
-          <article class="ss-economy-item-definition${isEditing ? " is-editing" : ""}" data-item-code="${escapeHtml(item.item_code)}">
+          <article class="ss-economy-item-definition${isEditing ? " is-editing" : ""}${isArchived ? " is-archived" : ""}" data-item-code="${escapeHtml(item.item_code)}">
             <div class="ss-economy-item-definition-summary">
               ${renderItemIcon(item)}
               <div class="ss-economy-item-definition-main">
                 <strong>${escapeHtml(item.label || item.item_code)}</strong>
-                <span class="muted">item_code: ${escapeHtml(item.item_code)} · ${escapeHtml(item.category || "Uncategorized")} · ${escapeHtml(item.rarity || "No rarity")} · ${item.is_enabled === false ? "disabled" : "enabled"}</span>
+                <span class="muted">item_code: ${escapeHtml(item.item_code)} · ${escapeHtml(item.category || "Uncategorized")} · ${escapeHtml(item.rarity || "No rarity")} · ${isArchived ? "archived / disabled" : "enabled"}</span>
                 ${chatAlias ? `<span class="muted">Chat alias: ${escapeHtml(chatAlias)}</span>` : ""}
-                <span class="ss-economy-item-chip">${escapeHtml(assetChip)}</span>
+                <span class="ss-economy-item-chip-row">
+                  <span class="ss-economy-item-chip">${escapeHtml(assetChip)}</span>
+                  ${isArchived ? `<span class="ss-economy-item-chip ss-economy-item-chip-archived">Archived / Disabled</span>` : ""}
+                </span>
                 <span class="muted ss-economy-item-path">${escapeHtml(normalizedIcon || "No icon configured")}</span>
                 ${shortDescription ? `<span class="muted ss-economy-item-notes">${escapeHtml(shortDescription)}</span>` : notes ? `<span class="muted ss-economy-item-notes">${escapeHtml(notes)}</span>` : ""}
               </div>
               <div class="ss-inline-actions">
                 <button class="ss-btn ss-btn-secondary ss-economy-item-edit" type="button" data-item-code="${escapeHtml(item.item_code)}">${isEditing ? "Close" : "Edit"}</button>
-                <button class="ss-btn ss-btn-danger ss-economy-item-delete" type="button" data-item-code="${escapeHtml(item.item_code)}">Archive</button>
+                <button class="ss-btn ss-btn-danger ss-economy-item-delete" type="button" data-item-code="${escapeHtml(item.item_code)}" ${isArchived ? `disabled title="This item definition is already archived / disabled."` : ""}>${isArchived ? "Archived" : "Archive"}</button>
               </div>
             </div>
             ${
