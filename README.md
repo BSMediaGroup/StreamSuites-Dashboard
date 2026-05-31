@@ -4,7 +4,7 @@ Admin-facing StreamSuites surface deployed to Cloudflare Pages at `https://admin
 
 ## Release State
 
-- README state prepared for `v0.4.2-alpha`.
+- README state prepared for `v0.5.0-alpha`.
 - The active admin web surface is Cloudflare Pages hosted.
 - The repo-root admin shell now acts as the canonical Pages entry point, matching the working Creator/Public single-root routing model, while shared assets and published exports still live under `docs/`.
 - The deploy workflow now builds a root-style publish artifact into `dist/` instead of shipping the raw `docs/` tree directly, so the published shell, fallback files, and asset paths all resolve from the same root.
@@ -98,7 +98,7 @@ StreamSuites-Dashboard/
 ├── README.md
 ├── changelog/
 │   ├── changelog.runtime.json
-│   └── v0.4.2-alpha.md
+│   └── v0.5.0-CHANGELOG.md
 ├── dev-notes/
 │   ├── compatibility.md
 │   ├── decisions.md

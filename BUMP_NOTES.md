@@ -1,6 +1,25 @@
 # Bump Notes
 
-## CURRENT VER= 0.4.2-alpha / PENDING VER= 0.4.3-alpha
+## RELEASED / PACKAGED: 0.4.2-alpha
+
+Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.5.0-alpha` section below.
+
+## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
+
+## Release Prep — v0.5.0-alpha
+
+- BUMP_NOTES.md updated with `RELEASED / PACKAGED: 0.4.2-alpha` section per runtime conventions.
+- Comprehensive v0.5.0-CHANGELOG.md created covering the economy command center, identity reconciliation, and trigger/bot improvements.
+- Local `runtime/version.py` and export mirrors aligned to 0.5.0-alpha.
+- Master platform changelog added to the runtime repo root.
+
+### Files / Areas Touched
+
+- `BUMP_NOTES.md`
+- `changelog/v0.5.0-CHANGELOG.md` (new)
+- `README.md`
+- `runtime/version.py`
+- `docs/runtime/exports/version.json` and related snapshots
 
 - Fixed Admin `/economy` mount regression from the public identity chip pass. The wallet inspector now exits before building chip metadata when no wallet/detail payload is selected, and the shared economy/progression identity helpers tolerate null identity or summary objects returned by empty/static preview states.
 - Human note: the Economy / Inventory page should load again instead of stopping on a JavaScript view-load error before inventory controls render.
