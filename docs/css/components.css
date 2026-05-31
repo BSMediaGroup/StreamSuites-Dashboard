@@ -353,6 +353,22 @@
   cursor: default;
 }
 
+.ss-public-identity-chip .chip-icon {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+  vertical-align: middle;
+  margin: 0 1px;
+}
+
+.ss-public-identity-chip .unassign-icon {
+  transition: opacity 0.1s ease;
+}
+
+.ss-public-identity-chip.is-secondary:hover .unassign-icon {
+  /* Hover state handled via JS src swap for reliability */
+}
+
 button.ss-public-identity-chip {
   cursor: pointer;
 }
