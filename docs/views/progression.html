@@ -63,16 +63,18 @@
         <div class="ss-panel-header-main">
           <h2>XP Rules</h2>
           <p class="muted" style="margin:6px 0 0;">
-            Tune existing rule amounts and supported caps without inventing new game systems.
+            Tune Runtime/Auth-owned XP actions. The chat message cooldown controls how often a viewer can earn XP from livechat messages.
           </p>
         </div>
         <div class="ss-panel-header-actions">
           <span id="progression-rules-status" class="muted">No pending changes</span>
           <button class="ss-btn ss-btn-secondary ss-admin-collapse-toggle" type="button" data-collapse-target="progression-rules" aria-expanded="false">Expand</button>
+          <button id="progression-rules-reset" class="ss-btn ss-btn-secondary" type="button">Reset defaults</button>
           <button id="progression-rules-save" class="ss-btn" type="button" disabled>Save rules</button>
         </div>
       </header>
       <div class="ss-panel-body ss-admin-collapsible-body" id="progression-rules-panel">
+        <div id="progression-rules-errors" class="ss-empty hidden"></div>
         <div id="progression-rules-list" class="ss-progression-list"></div>
       </div>
   </section>

@@ -10,7 +10,7 @@
 </header>
 
 <main class="ss-main ss-economy-admin">
-  <section class="ss-panel" id="economy-overview-section">
+  <section class="ss-panel ss-admin-collapsible" id="economy-overview-section" data-collapsible-section="economy-overview">
     <header class="ss-panel-header">
       <div class="ss-panel-header-main">
         <h2>Economy Overview / Identity Search</h2>
@@ -20,10 +20,11 @@
       </div>
       <div class="ss-panel-header-actions">
         <span id="economy-status" class="muted">Loading economy controls...</span>
+        <button class="ss-btn ss-btn-secondary ss-admin-collapse-toggle" type="button" data-collapse-target="economy-overview" aria-expanded="true">Collapse</button>
         <button id="economy-refresh" class="ss-btn ss-btn-secondary" type="button">Refresh</button>
       </div>
     </header>
-    <div class="ss-panel-body">
+    <div class="ss-panel-body ss-admin-collapsible-body" id="economy-overview-panel">
       <div class="ss-economy-search-row">
         <div class="ss-form-row">
           <label for="economy-search-input">Identity, account, user code, or display name</label>
@@ -39,7 +40,7 @@
     </div>
   </section>
 
-  <section class="ss-panel ss-admin-control-section" id="economy-settings-section">
+  <section class="ss-panel ss-admin-control-section ss-admin-collapsible" id="economy-settings-section" data-collapsible-section="economy-settings">
       <header class="ss-panel-header">
         <div class="ss-panel-header-main">
           <h2>Economy Settings</h2>
@@ -47,15 +48,18 @@
             Currency labels and the currency unit symbol path are runtime-owned global economy settings.
           </p>
         </div>
+        <div class="ss-panel-header-actions">
+          <button class="ss-btn ss-btn-secondary ss-admin-collapse-toggle" type="button" data-collapse-target="economy-settings" aria-expanded="true">Collapse</button>
+        </div>
       </header>
-      <div class="ss-panel-body">
+      <div class="ss-panel-body ss-admin-collapsible-body" id="economy-settings-panel">
         <div id="economy-settings-form" class="ss-economy-actions ss-empty">
           Loading economy settings.
         </div>
       </div>
   </section>
 
-  <section class="ss-panel ss-admin-control-section" id="economy-denominations-section">
+  <section class="ss-panel ss-admin-control-section ss-admin-collapsible" id="economy-denominations-section" data-collapsible-section="economy-denominations">
       <header class="ss-panel-header">
         <div class="ss-panel-header-main">
           <h2>Denominations</h2>
@@ -63,13 +67,16 @@
             Cash balances stay stored in the wallet. Coins and banknotes derive from that cash value; held gems and diamonds add value only from actual inventory quantities.
           </p>
         </div>
+        <div class="ss-panel-header-actions">
+          <button class="ss-btn ss-btn-secondary ss-admin-collapse-toggle" type="button" data-collapse-target="economy-denominations" aria-expanded="true">Collapse</button>
+        </div>
       </header>
-      <div class="ss-panel-body">
+      <div class="ss-panel-body ss-admin-collapsible-body" id="economy-denominations-panel">
         <div id="economy-denominations-list" class="ss-economy-list"></div>
       </div>
   </section>
 
-  <section class="ss-panel ss-admin-control-section ss-economy-identity-workspace" id="economy-identity-search-section">
+  <section class="ss-panel ss-admin-control-section ss-admin-collapsible ss-economy-identity-workspace" id="economy-identity-search-section" data-collapsible-section="economy-identity-search">
       <header class="ss-panel-header">
         <div class="ss-panel-header-main">
           <h2>Identity Search</h2>
@@ -77,8 +84,11 @@
             Claimed identities show account context first. Public identity codes remain fallback diagnostics.
           </p>
         </div>
+        <div class="ss-panel-header-actions">
+          <button class="ss-btn ss-btn-secondary ss-admin-collapse-toggle" type="button" data-collapse-target="economy-identity-search" aria-expanded="true">Collapse</button>
+        </div>
       </header>
-      <div class="ss-panel-body">
+      <div class="ss-panel-body ss-admin-collapsible-body" id="economy-identity-search-panel">
         <div class="ss-economy-master-detail">
           <div class="ss-economy-master-pane">
             <div id="economy-identities-list" class="ss-economy-list"></div>
@@ -133,7 +143,7 @@
       </div>
   </section>
 
-  <section class="ss-panel ss-admin-control-section" id="economy-inventory-section">
+  <section class="ss-panel ss-admin-control-section ss-admin-collapsible" id="economy-inventory-section" data-collapsible-section="economy-inventory">
       <header class="ss-panel-header">
         <div class="ss-panel-header-main">
           <h2>Inventory Inspector</h2>
@@ -141,8 +151,11 @@
             Current inventory rows show only positive quantities from the identity-owned summary.
           </p>
         </div>
+        <div class="ss-panel-header-actions">
+          <button class="ss-btn ss-btn-secondary ss-admin-collapse-toggle" type="button" data-collapse-target="economy-inventory" aria-expanded="true">Collapse</button>
+        </div>
       </header>
-      <div class="ss-panel-body">
+      <div class="ss-panel-body ss-admin-collapsible-body" id="economy-inventory-panel">
         <div id="economy-inventory-list" class="ss-economy-list"></div>
       </div>
   </section>
@@ -202,7 +215,7 @@
       </div>
   </section>
 
-  <section class="ss-panel ss-admin-control-section" id="economy-market-governance-section">
+  <section class="ss-panel ss-admin-control-section ss-admin-collapsible" id="economy-market-governance-section" data-collapsible-section="economy-market-governance">
       <header class="ss-panel-header">
         <div class="ss-panel-header-main">
           <h2>Market Governance</h2>
@@ -210,15 +223,18 @@
             Sale status, Stekel prices, exchange values, type/category, and stock metadata are saved through Runtime/Auth item definitions.
           </p>
         </div>
+        <div class="ss-panel-header-actions">
+          <button class="ss-btn ss-btn-secondary ss-admin-collapse-toggle" type="button" data-collapse-target="economy-market-governance" aria-expanded="true">Collapse</button>
+        </div>
       </header>
-      <div class="ss-panel-body">
+      <div class="ss-panel-body ss-admin-collapsible-body" id="economy-market-governance-panel">
         <div id="economy-market-governance" class="ss-economy-actions ss-empty">
           Loading market governance controls.
         </div>
       </div>
   </section>
 
-  <section class="ss-panel ss-admin-control-section" id="economy-item-definitions-section">
+  <section class="ss-panel ss-admin-control-section ss-admin-collapsible" id="economy-item-definitions-section" data-collapsible-section="economy-item-definitions">
       <header class="ss-panel-header">
         <div class="ss-panel-header-main">
           <h2>Item Definitions</h2>
@@ -226,14 +242,17 @@
             Metadata tuning is limited to definition labels, categories, icons, rarity, enabled state, and metadata notes.
           </p>
         </div>
+        <div class="ss-panel-header-actions">
+          <button class="ss-btn ss-btn-secondary ss-admin-collapse-toggle" type="button" data-collapse-target="economy-item-definitions" aria-expanded="true">Collapse</button>
+        </div>
       </header>
-      <div class="ss-panel-body">
+      <div class="ss-panel-body ss-admin-collapsible-body" id="economy-item-definitions-panel">
         <div id="economy-item-create-form" class="ss-economy-actions"></div>
         <div id="economy-item-definitions" class="ss-economy-list"></div>
       </div>
   </section>
 
-  <section class="ss-panel ss-admin-control-section" id="economy-danger-zone-section">
+  <section class="ss-panel ss-admin-control-section ss-admin-collapsible" id="economy-danger-zone-section" data-collapsible-section="economy-danger-zone">
       <header class="ss-panel-header">
         <div class="ss-panel-header-main">
           <h2>Danger Zone</h2>
@@ -241,8 +260,11 @@
             Export before reset. Reset operations create append-only correction events and do not alter account/profile identity records.
           </p>
         </div>
+        <div class="ss-panel-header-actions">
+          <button class="ss-btn ss-btn-secondary ss-admin-collapse-toggle" type="button" data-collapse-target="economy-danger-zone" aria-expanded="true">Collapse</button>
+        </div>
       </header>
-      <div class="ss-panel-body">
+      <div class="ss-panel-body ss-admin-collapsible-body" id="economy-danger-zone-panel">
         <div id="economy-danger-zone" class="ss-economy-actions"></div>
       </div>
   </section>

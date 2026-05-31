@@ -1292,7 +1292,10 @@
                 <span class="muted ss-economy-item-path">${escapeHtml(normalizedIcon || "No icon configured")}</span>
                 ${shortDescription ? `<span class="muted ss-economy-item-notes">${escapeHtml(shortDescription)}</span>` : notes ? `<span class="muted ss-economy-item-notes">${escapeHtml(notes)}</span>` : ""}
               </div>
-              <button class="ss-btn ss-btn-secondary ss-economy-item-edit" type="button" data-item-code="${escapeHtml(item.item_code)}">${isEditing ? "Close" : "Edit"}</button>
+              <div class="ss-inline-actions">
+                <button class="ss-btn ss-btn-secondary ss-economy-item-edit" type="button" data-item-code="${escapeHtml(item.item_code)}">${isEditing ? "Close" : "Edit"}</button>
+                <button class="ss-btn ss-btn-danger ss-economy-item-delete" type="button" data-item-code="${escapeHtml(item.item_code)}">Archive</button>
+              </div>
             </div>
             ${
               isEditing
@@ -1775,6 +1778,26 @@
     setStatus("Item definition metadata saved.", "success");
   }
 
+  async function deleteItemDefinition(button) {
+    const itemCode = text(button?.dataset?.itemCode || button?.closest(".ss-economy-item-definition")?.dataset?.itemCode);
+    if (!itemCode) return;
+    const reason = text(window.prompt?.(`Archive item definition ${itemCode}?\n\nHistorical inventory rows are preserved, but this item will be disabled and no longer purchasable by chat alias.\n\nRequired reason/note:`) || "");
+    if (!reason) {
+      setStatus("Item definition archive requires a reason.", "error");
+      return;
+    }
+    if (!window.confirm?.(`Archive ${itemCode}? This disables the definition and removes it from new purchase flows.`)) return;
+    await requestJson(ITEM_DEFINITION(itemCode), {
+      method: "DELETE",
+      body: JSON.stringify({ reason_text: reason })
+    });
+    state.itemDefinitions = state.itemDefinitions.filter((item) => text(item.item_code) !== itemCode);
+    if (state.itemEditorCode === itemCode) state.itemEditorCode = "";
+    await loadItems();
+    renderAll();
+    setStatus("Item definition archived. Historical inventory rows were preserved.", "success");
+  }
+
   async function saveMarketGovernance(button) {
     const row = button.closest(".ss-economy-market-row");
     const itemCode = text(row?.dataset?.marketItemCode);
@@ -2203,6 +2226,15 @@
           await saveItemDefinition(itemSaveButton);
         } catch (err) {
           setStatus(err?.message || "Item definition save failed.", "error");
+        }
+        return;
+      }
+      const itemDeleteButton = event.target.closest?.(".ss-economy-item-delete");
+      if (itemDeleteButton) {
+        try {
+          await deleteItemDefinition(itemDeleteButton);
+        } catch (err) {
+          setStatus(err?.message || "Item definition archive failed.", "error");
         }
         return;
       }

@@ -10210,7 +10210,12 @@ body.ss-col-resizing-active {
 }
 
 .ss-progression-rule-row {
-  grid-template-columns: minmax(220px, 1.1fr) auto repeat(3, minmax(130px, 0.55fr));
+  grid-template-columns: minmax(220px, 1.1fr) auto repeat(4, minmax(130px, 0.55fr));
+}
+
+.ss-progression-rule-row--primary {
+  border-color: rgba(79, 209, 197, 0.45);
+  background: rgba(79, 209, 197, 0.07);
 }
 
 .ss-progression-row strong,

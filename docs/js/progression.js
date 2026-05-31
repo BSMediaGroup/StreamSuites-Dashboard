@@ -6,7 +6,9 @@
   "use strict";
 
   const CONFIG_RANKS = "/api/admin/progression/ranks";
-  const CONFIG_RULES = "/api/admin/progression/rules";
+  const CONFIG_RULES = "/api/admin/progression/xp-rules";
+  const CONFIG_RULES_VALIDATE = "/api/admin/progression/xp-rules/validate";
+  const CONFIG_RULES_RESET = "/api/admin/progression/xp-rules/reset-defaults";
   const IDENTITIES = "/api/admin/progression/identities";
   const IDENTITY_DETAIL = (identityCode) => `/api/admin/progression/identities/${encodeURIComponent(identityCode)}`;
   const PUBLIC_IDENTITY_UNASSIGN = "/api/admin/public-identities/reconciliation/unassign";
@@ -277,6 +279,23 @@
     return JSON.stringify(state.rules) !== JSON.stringify(state.originalRules);
   }
 
+  function validateRules() {
+    const seen = new Set();
+    for (const rule of state.rules) {
+      const action = text(rule.action_key || rule.rule_code);
+      if (!action) return "Every XP rule needs an action key.";
+      if (seen.has(action)) return "XP rule action keys must be unique.";
+      seen.add(action);
+      const amount = Number(rule.xp_delta ?? 0);
+      const cooldown = rule.cooldown_seconds === null || rule.cooldown_seconds === "" ? 0 : Number(rule.cooldown_seconds);
+      const dailyCap = rule.daily_cap === null || rule.daily_cap === "" ? 0 : Number(rule.daily_cap);
+      if (!Number.isInteger(amount) || amount < 0) return "XP amounts must be non-negative whole numbers.";
+      if (!Number.isInteger(cooldown) || cooldown < 0) return "Cooldown seconds must be non-negative whole numbers.";
+      if (!Number.isInteger(dailyCap) || dailyCap < 0) return "Caps must be non-negative whole numbers.";
+    }
+    return "";
+  }
+
   function validateRanks() {
     let previous = -1;
     for (const rank of state.ranks) {
@@ -308,10 +327,11 @@
       el.ranksSave.disabled = Boolean(rankError) || !rankDirty() || state.saving;
     }
     if (el.rulesStatus) {
-      el.rulesStatus.textContent = rulesDirty() ? "Unsaved rule changes" : "No pending changes";
+      const ruleError = validateRules();
+      el.rulesStatus.textContent = ruleError || (rulesDirty() ? "Unsaved rule changes" : "No pending changes");
     }
     if (el.rulesSave) {
-      el.rulesSave.disabled = !rulesDirty() || state.saving;
+      el.rulesSave.disabled = Boolean(validateRules()) || !rulesDirty() || state.saving;
     }
   }
 
@@ -373,18 +393,21 @@
       .map(
         (rule, pageIndex) => {
           const index = (pageInfo.page - 1) * RULE_PAGE_SIZE + pageIndex;
+          const actionKey = rule.action_key || rule.rule_code || "";
+          const isChatMessage = actionKey === "chat_message" || rule.source_action === "chat_message";
           return `
-          <article class="ss-progression-row ss-progression-rule-row">
+          <article class="ss-progression-row ss-progression-rule-row${isChatMessage ? " ss-progression-rule-row--primary" : ""}">
             <div>
-              <strong>${escapeHtml(rule.rule_code)}</strong>
-              <span class="muted">${escapeHtml(rule.source_domain)} / ${escapeHtml(rule.source_action || "default")}</span>
+              <strong>${escapeHtml(rule.display_label || formatLabel(actionKey))}</strong>
+              <span class="muted">${escapeHtml(actionKey)} · ${escapeHtml(rule.source_domain)} / ${escapeHtml(rule.source_action || "default")} · applies to ${escapeHtml(rule.applies_to || "global")}</span>
+              ${isChatMessage ? `<small class="muted">Effective chat message award: ${formatNumber(rule.xp_delta)} XP every ${formatNumber(rule.cooldown_seconds ?? 0)} seconds.</small>` : ""}
             </div>
             <label class="ss-progression-toggle">
               <input type="checkbox" data-rule-index="${index}" data-rule-field="enabled" ${rule.enabled ? "checked" : ""} />
               Enabled
             </label>
             <div class="ss-form-row">
-              <label>XP delta</label>
+              <label>XP amount</label>
               <input data-rule-index="${index}" data-rule-field="xp_delta" type="number" step="1" value="${escapeHtml(rule.xp_delta)}" />
             </div>
             <div class="ss-form-row">
@@ -394,6 +417,14 @@
             <div class="ss-form-row">
               <label>Daily cap</label>
               <input data-rule-index="${index}" data-rule-field="daily_cap" type="number" min="0" step="1" value="${escapeHtml(rule.daily_cap ?? "")}" />
+            </div>
+            <div class="ss-form-row">
+              <label>Applies to</label>
+              <select data-rule-index="${index}" data-rule-field="applies_to">
+                <option value="global" ${(rule.applies_to || "global") === "global" ? "selected" : ""}>Global</option>
+                <option value="scoped" ${(rule.applies_to || "") === "scoped" ? "selected" : ""}>Scoped</option>
+                <option value="both" ${(rule.applies_to || "") === "both" ? "selected" : ""}>Both</option>
+              </select>
             </div>
             <div class="ss-form-row ss-progression-wide">
               <label>Reason text</label>
@@ -545,11 +576,15 @@
   }
 
   async function loadConfig() {
-    const payload = await requestJson(CONFIG_RANKS);
+    const [payload, rulesPayload] = await Promise.all([
+      requestJson(CONFIG_RANKS),
+      requestJson(CONFIG_RULES)
+    ]);
     state.ranks = clone(payload.level_definitions || payload.rank_definitions || []);
     state.originalRanks = clone(state.ranks);
-    state.rules = clone(payload.rules || []);
+    state.rules = clone(rulesPayload.rules || payload.rules || []);
     state.originalRules = clone(state.rules);
+    if (el.rulesErrors) el.rulesErrors.classList.add("hidden");
     if (el.scope) el.scope.textContent = payload.scope || "global";
     if (el.rankCount) el.rankCount.textContent = formatNumber(state.ranks.length);
     if (el.ruleCount) el.ruleCount.textContent = formatNumber(state.rules.length);
@@ -635,19 +670,57 @@
   }
 
   async function saveRules() {
+    const error = validateRules();
+    if (error) {
+      setStatus(error, "warning");
+      return;
+    }
     state.saving = true;
     updateSaveState();
     try {
+      const validation = await requestJson(CONFIG_RULES_VALIDATE, {
+        method: "POST",
+        body: JSON.stringify({ rules: state.rules })
+      });
+      if (validation.validation_errors?.length) {
+        const message = validation.validation_errors.map((item) => item.error || item.message).filter(Boolean).join("; ");
+        if (el.rulesErrors) {
+          el.rulesErrors.textContent = message || "Runtime/Auth rejected the XP rules.";
+          el.rulesErrors.classList.remove("hidden");
+        }
+        setStatus(message || "Runtime/Auth rejected the XP rules.", "error");
+        return;
+      }
       const payload = await requestJson(CONFIG_RULES, {
-        method: "PATCH",
+        method: "PUT",
         body: JSON.stringify({ rules: state.rules })
       });
       state.rules = clone(payload.rules || []);
       state.originalRules = clone(state.rules);
+      if (el.rulesErrors) el.rulesErrors.classList.add("hidden");
       renderRules();
       setStatus("XP rules saved.", "success");
     } catch (err) {
       setStatus(err.message || "Rule save failed.", "error");
+    } finally {
+      state.saving = false;
+      updateSaveState();
+    }
+  }
+
+  async function resetRules() {
+    if (!window.confirm?.("Reset XP rules to Runtime/Auth defaults? Unsaved rule edits will be discarded.")) return;
+    state.saving = true;
+    updateSaveState();
+    try {
+      const payload = await requestJson(CONFIG_RULES_RESET, { method: "POST", body: JSON.stringify({}) });
+      state.rules = clone(payload.rules || []);
+      state.originalRules = clone(state.rules);
+      if (el.rulesErrors) el.rulesErrors.classList.add("hidden");
+      renderRules();
+      setStatus("XP rules reset to Runtime/Auth defaults.", "success");
+    } catch (err) {
+      setStatus(err.message || "Rule reset failed.", "error");
     } finally {
       state.saving = false;
       updateSaveState();
@@ -723,6 +796,7 @@
     });
     el.ranksSave?.addEventListener("click", saveRanks);
     el.rulesSave?.addEventListener("click", saveRules);
+    el.rulesReset?.addEventListener("click", resetRules);
     el.ranksList?.addEventListener("input", (event) => {
       const target = event.target;
       const index = Number(target?.dataset?.rankIndex);
@@ -833,6 +907,8 @@
     el.ranksList = $("progression-ranks-list");
     el.rulesStatus = $("progression-rules-status");
     el.rulesSave = $("progression-rules-save");
+    el.rulesReset = $("progression-rules-reset");
+    el.rulesErrors = $("progression-rules-errors");
     el.rulesList = $("progression-rules-list");
     el.identitiesList = $("progression-identities-list");
     el.identitiesEmpty = $("progression-identities-empty");
@@ -849,6 +925,7 @@
     },
     destroy() {
       state.token += 1;
+      state.bound = false;
     }
   };
 })();

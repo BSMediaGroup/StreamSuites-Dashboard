@@ -57,6 +57,14 @@ test("economy view exposes required control sections and boundary copy", () => {
   assert.match(html, /data-collapse-target="economy-ledger"/);
   assert.match(html, /data-collapse-target="economy-actions"/);
   assert.match(html, /data-collapse-target="inventory-actions"/);
+  assert.match(html, /data-collapse-target="economy-overview"/);
+  assert.match(html, /data-collapse-target="economy-settings"/);
+  assert.match(html, /data-collapse-target="economy-denominations"/);
+  assert.match(html, /data-collapse-target="economy-identity-search"/);
+  assert.match(html, /data-collapse-target="economy-inventory"/);
+  assert.match(html, /data-collapse-target="economy-market-governance"/);
+  assert.match(html, /data-collapse-target="economy-item-definitions"/);
+  assert.match(html, /data-collapse-target="economy-danger-zone"/);
   assert.match(html, /id="economy-identity-search-section"/);
   assert.match(html, /id="economy-settings-section"/);
   assert.match(html, /id="economy-denominations-section"/);
@@ -84,6 +92,7 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /INVENTORY_EVENT_CREATE = \(identityCode\) => `\/api\/admin\/inventory\/identities\/\$\{encodeURIComponent\(identityCode\)\}\/events`/);
   assert.match(js, /INVENTORY_EVENT_REVERSE = \(eventCode\) => `\/api\/admin\/inventory\/events\/\$\{encodeURIComponent\(eventCode\)\}\/reverse`/);
   assert.match(js, /ITEM_DEFINITIONS = "\/api\/admin\/inventory\/items"/);
+  assert.match(js, /ITEM_DEFINITION = \(itemCode\) => `\/api\/admin\/inventory\/items\/\$\{encodeURIComponent\(itemCode\)\}`/);
   assert.match(js, /MARKET_GOVERNANCE = "\/api\/admin\/economy\/market"/);
   assert.match(js, /MARKET_GOVERNANCE_ITEM = \(itemCode\) => `\/api\/admin\/economy\/market\/items\/\$\{encodeURIComponent\(itemCode\)\}`/);
   assert.match(js, /ECONOMY_SETTINGS = "\/api\/admin\/economy\/settings"/);
@@ -251,6 +260,11 @@ test("item definition save reads the visible editor reason and sends reason_text
   assert.match(js, /short_description: text\(\$\(("#economy-item-create-short-description"|'economy-item-create-short-description')\)\?\.value\)/);
   assert.match(js, /tooltip_description: text\(\$\(("#economy-item-create-tooltip-description"|'economy-item-create-tooltip-description')\)\?\.value\)/);
   assert.match(js, /body: JSON\.stringify\(\{[\s\S]*item_code: generated\.itemCode[\s\S]*reason_text: reason[\s\S]*\}\)/);
+  assert.match(js, /function deleteItemDefinition\(button\)/);
+  assert.match(js, /method: "DELETE"/);
+  assert.match(js, /Item definition archive requires a reason/);
+  assert.match(js, /Historical inventory rows are preserved/);
+  assert.match(js, /no longer purchasable by chat alias/);
   assert.ok(js.includes("ss-economy-asset-browse"));
   assert.match(js, /Browse assets/);
   assert.match(js, /ss-economy-item-create-shell/);
@@ -320,13 +334,22 @@ test("asset picker search restores focus across result rerenders", () => {
 test("economy collapsible sections default expanded", () => {
   const html = read("docs/views/economy.html");
 
+  assert.match(html, /data-collapse-target="economy-overview" aria-expanded="true">Collapse/);
+  assert.match(html, /data-collapse-target="economy-settings" aria-expanded="true">Collapse/);
+  assert.match(html, /data-collapse-target="economy-denominations" aria-expanded="true">Collapse/);
+  assert.match(html, /data-collapse-target="economy-identity-search" aria-expanded="true">Collapse/);
   assert.match(html, /data-collapse-target="economy-ledger" aria-expanded="true">Collapse/);
   assert.match(html, /data-collapse-target="economy-actions" aria-expanded="true">Collapse/);
+  assert.match(html, /data-collapse-target="economy-inventory" aria-expanded="true">Collapse/);
   assert.match(html, /data-collapse-target="inventory-actions" aria-expanded="true">Collapse/);
+  assert.match(html, /data-collapse-target="economy-exchange" aria-expanded="true">Collapse/);
   assert.match(html, /data-collapse-target="inventory-events" aria-expanded="true">Collapse/);
+  assert.match(html, /data-collapse-target="economy-market-governance" aria-expanded="true">Collapse/);
+  assert.match(html, /data-collapse-target="economy-item-definitions" aria-expanded="true">Collapse/);
+  assert.match(html, /data-collapse-target="economy-danger-zone" aria-expanded="true">Collapse/);
   assert.match(html, /ss-admin-collapse-toggle/);
   assert.match(html, /ss-admin-collapsible-body/);
-  assert.doesNotMatch(html, /data-collapse-target="(?:economy-ledger|economy-actions|inventory-actions|inventory-events)" aria-expanded="false"/);
+  assert.doesNotMatch(html, /data-collapse-target="(?:economy-overview|economy-settings|economy-denominations|economy-identity-search|economy-ledger|economy-actions|economy-inventory|inventory-actions|economy-exchange|inventory-events|economy-market-governance|economy-item-definitions|economy-danger-zone)" aria-expanded="false"/);
 });
 
 test("economy route uses the shared top-bar section anchor row", () => {

@@ -6,6 +6,11 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Fixed and overhauled Admin `/progression` XP Rules. The collapsible XP Rules panel now remounts reliably, highlights `chat_message`, edits enabled state, XP amount, cooldown seconds, caps, applies-to metadata, validates through Runtime/Auth, saves to `/api/admin/progression/xp-rules`, and can reset defaults.
+- Added Admin `/economy` inventory definition archive controls. Item definition rows now expose an explicit Archive action with reason + confirmation prompts, call Runtime/Auth `DELETE /api/admin/inventory/items/{item_code}`, and refresh from authority after success while warning that historical inventory rows are preserved.
+- Made every major Admin `/economy` section collapsible with consistent Dashboard controls, including overview, settings, denominations, identity search, inventory, market governance, item definitions, and danger zone in addition to the existing ledger/action/event sections.
+- Human note: Admins can expand XP Rules, lower chat XP cooldowns through the backend contract, clean up duplicate item definitions safely, and collapse any major Economy / Inventory section to keep the page workable.
+
 ## Release Prep — v0.5.0-alpha
 
 - BUMP_NOTES.md updated with `RELEASED / PACKAGED: 0.4.2-alpha` section per runtime conventions.

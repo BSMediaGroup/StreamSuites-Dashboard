@@ -51,7 +51,10 @@ test("progression controller uses only runtime authority endpoints", () => {
   const js = read("docs/js/progression.js");
 
   assert.match(js, /CONFIG_RANKS = "\/api\/admin\/progression\/ranks"/);
-  assert.match(js, /CONFIG_RULES = "\/api\/admin\/progression\/rules"/);
+  assert.match(js, /CONFIG_RULES = "\/api\/admin\/progression\/xp-rules"/);
+  assert.match(js, /CONFIG_RULES_VALIDATE = "\/api\/admin\/progression\/xp-rules\/validate"/);
+  assert.match(js, /CONFIG_RULES_RESET = "\/api\/admin\/progression\/xp-rules\/reset-defaults"/);
+  assert.match(js, /requestJson\(CONFIG_RULES\)/);
   assert.match(js, /IDENTITIES = "\/api\/admin\/progression\/identities"/);
   assert.match(js, /IDENTITY_EVENTS = \(identityCode\) => `\/api\/admin\/progression\/identities\/\$\{encodeURIComponent\(identityCode\)\}\/events`/);
   assert.match(js, /EVENT_REVERSE = \(eventCode\) => `\/api\/admin\/progression\/events\/\$\{encodeURIComponent\(eventCode\)\}\/reverse`/);
@@ -88,6 +91,13 @@ test("progression controller uses only runtime authority endpoints", () => {
   assert.match(js, /EVENT_PAGE_SIZE = 8/);
   assert.match(js, /data-progress-page/);
   assert.match(js, /data-collapse-target/);
+  assert.match(js, /function validateRules/);
+  assert.match(js, /XP amounts must be non-negative whole numbers/);
+  assert.match(js, /Cooldown seconds must be non-negative whole numbers/);
+  assert.match(js, /method: "PUT"/);
+  assert.match(js, /function resetRules/);
+  assert.match(js, /chat_message/);
+  assert.match(js, /Effective chat message award/);
   assert.doesNotMatch(js, /localStorage/);
   assert.doesNotMatch(js, /creator-scoped leaderboard/i);
 });
