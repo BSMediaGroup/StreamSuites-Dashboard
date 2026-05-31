@@ -396,8 +396,9 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-currency-symbol\s*\{[\s\S]*mask:\s*var\(--economy-currency-symbol\) center \/ contain no-repeat/);
   assert.match(css, /\.ss-economy-credit-value--compact \.ss-economy-currency-symbol/);
   assert.match(css, /\.ss-economy-wallet-money\s*\{/);
-  assert.match(css, /\.ss-economy-wallet-money-main\s*\{[\s\S]*white-space:\s*nowrap/);
-  assert.match(css, /\.ss-economy-kpis \.ss-economy-wallet-money-main,\s*\.ss-economy-kpis \.ss-economy-wallet-money-main span\s*\{[\s\S]*display:\s*inline-flex/);
+  assert.match(css, /\.ss-economy-wallet-money-main\s*\{[\s\S]*font-size:\s*18px[\s\S]*white-space:\s*nowrap/);
+  assert.match(css, /\.ss-economy-wallet-money-main \.ss-economy-currency-symbol\s*\{[\s\S]*width:\s*22px[\s\S]*height:\s*22px/);
+  assert.match(css, /\.ss-economy-kpis \.ss-economy-wallet-money-main,\s*\.ss-economy-kpis \.ss-economy-wallet-money-main span\s*\{[\s\S]*display:\s*inline-flex[\s\S]*font-size:\s*18px/);
   assert.match(css, /\.ss-economy-wallet-money small\s*\{[\s\S]*text-transform:\s*none/);
   assert.match(css, /\.ss-economy-denomination-breakdown\s*\{/);
   assert.match(css, /\.ss-economy-denomination-chip img\s*\{[\s\S]*object-fit:\s*contain/);

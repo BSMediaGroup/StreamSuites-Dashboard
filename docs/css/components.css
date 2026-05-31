@@ -6903,6 +6903,7 @@ body.ss-col-resizing-active {
   min-width: 0;
   max-width: 100%;
   color: var(--text-primary);
+  font-size: 18px;
   line-height: 1.1;
   white-space: nowrap;
 }
@@ -6912,15 +6913,15 @@ body.ss-col-resizing-active {
   display: inline-flex;
   margin-bottom: 0;
   color: var(--text-primary);
-  font-size: inherit;
+  font-size: 18px;
   letter-spacing: 0;
   text-transform: none;
 }
 
 .ss-economy-wallet-money-main .ss-economy-currency-symbol {
-  width: 18px;
-  height: 18px;
-  flex-basis: 18px;
+  width: 22px;
+  height: 22px;
+  flex-basis: 22px;
 }
 
 .ss-economy-wallet-money--prominent .ss-economy-wallet-money-main {

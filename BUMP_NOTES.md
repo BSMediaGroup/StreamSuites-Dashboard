@@ -12,6 +12,9 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 - Fixed Admin `/economy` Wallet Inspector balance KPI formatting. Stekel totals now render as an inline symbol plus compact K/M/B/T amount, with the exact full value directly beneath in smaller muted text.
 - Human note: large wallet balances should read like normal money amounts at a glance while still showing the exact audit value.
 
+- Normalized Admin `/economy` Wallet Inspector money KPI sizing. Total balance, cash balance, and held item value now use the same value font size and Stekel symbol size.
+- Human note: cash and held-value amounts should no longer look smaller than the overall balance.
+
 - Fixed Admin `/economy` Item Definitions disabled-row visibility. Archived/disabled item definitions now render with a greyed row treatment, desaturated icon, explicit `Archived / Disabled` chip, archived metadata wording, and an already-archived action state.
 - Human note: disabled items such as duplicate pets should be visually obvious in the list instead of looking identical to active definitions.
 
