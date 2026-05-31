@@ -182,6 +182,9 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /const canUseAsset = Boolean\(useValue\)/);
   assert.match(js, /function renderItemDefinitionsToolbar\(pageInfo\)/);
   assert.match(js, /function renderMarketGovernance\(\)/);
+  assert.match(js, /ss-economy-market-filter-row/);
+  assert.match(js, /ss-economy-market-filter-group/);
+  assert.match(js, /ss-economy-market-count/);
   assert.match(js, /data-market-field="market_price_stekels"/);
   assert.match(js, /data-market-field="exchange_value_stekels"/);
   assert.match(js, /data-market-field="item_type"/);
@@ -403,6 +406,10 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-item-page-size select\s*\{[\s\S]*min-width:\s*82px/);
   assert.match(css, /\.ss-economy-item-editor\s*\{[\s\S]*grid-template-columns:\s*minmax\(210px,\s*0\.74fr\) minmax\(0,\s*1\.26fr\)/);
   assert.match(css, /\.ss-economy-market-toolbar\s*\{/);
+  assert.match(css, /\.ss-economy-market-filter-row\s*\{[\s\S]*justify-content:\s*space-between/);
+  assert.match(css, /\.ss-economy-market-filter-group\s*\{[\s\S]*flex-wrap:\s*wrap/);
+  assert.match(css, /\.ss-economy-market-filter input\[type="checkbox"\]\s*\{[\s\S]*margin:\s*0/);
+  assert.match(css, /\.ss-economy-market-count\s*\{[\s\S]*text-align:\s*right/);
   assert.match(css, /\.ss-economy-market-editor\s*\{[\s\S]*grid-template-columns:\s*repeat\(4,\s*minmax\(150px,\s*1fr\)\)/);
   assert.match(css, /\.ss-economy-icon-field\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto minmax\(190px,\s*0\.55fr\)/);
   assert.match(css, /\.ss-economy-asset-modal\s*\{/);

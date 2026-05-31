@@ -1209,10 +1209,14 @@
     el.marketGovernance.innerHTML = `
       <div class="ss-economy-market-toolbar">
         <label class="ss-economy-wide">Search items<input id="economy-market-search" type="search" value="${escapeHtml(state.marketSearch)}" placeholder="Item code, display name, or type" /></label>
-        <label><input id="economy-market-filter-purchasable" type="checkbox" ${state.marketFilters.purchasable ? "checked" : ""} /> On sale</label>
-        <label><input id="economy-market-filter-exchangeable" type="checkbox" ${state.marketFilters.exchangeable ? "checked" : ""} /> Exchangeable</label>
-        <label><input id="economy-market-filter-disabled" type="checkbox" ${state.marketFilters.disabled ? "checked" : ""} /> Disabled</label>
-        <span class="muted">${formatNumber(rows.length)} of ${formatNumber(state.marketItems.length)} items${filterSummary ? ` · ${escapeHtml(filterSummary)}` : ""}</span>
+        <div class="ss-economy-market-filter-row">
+          <div class="ss-economy-market-filter-group" aria-label="Market filters">
+            <label class="ss-economy-market-filter"><input id="economy-market-filter-purchasable" type="checkbox" ${state.marketFilters.purchasable ? "checked" : ""} /> <span>On sale</span></label>
+            <label class="ss-economy-market-filter"><input id="economy-market-filter-exchangeable" type="checkbox" ${state.marketFilters.exchangeable ? "checked" : ""} /> <span>Exchangeable</span></label>
+            <label class="ss-economy-market-filter"><input id="economy-market-filter-disabled" type="checkbox" ${state.marketFilters.disabled ? "checked" : ""} /> <span>Disabled</span></label>
+          </div>
+          <span class="muted ss-economy-market-count">${formatNumber(rows.length)} of ${formatNumber(state.marketItems.length)} items${filterSummary ? ` · ${escapeHtml(filterSummary)}` : ""}</span>
+        </div>
       </div>
       <div class="ss-economy-market-list">
         ${rows.map((item) => {

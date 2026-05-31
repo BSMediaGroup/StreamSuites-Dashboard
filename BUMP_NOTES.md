@@ -6,6 +6,9 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Tightened the Admin `/economy` Market Governance toolbar layout. Search now owns the first row, while On sale / Exchangeable / Disabled filters and the item count sit in a dedicated aligned filter row with consistent checkbox sizing and responsive wrapping.
+- Human note: the Market Governance checkbox strip should no longer float awkwardly in the middle of the section or misalign against the item count.
+
 - Fixed and overhauled Admin `/progression` XP Rules. The collapsible XP Rules panel now remounts reliably, highlights `chat_message`, edits enabled state, XP amount, cooldown seconds, caps, applies-to metadata, validates through Runtime/Auth, saves to `/api/admin/progression/xp-rules`, and can reset defaults.
 - Added Admin `/economy` inventory definition archive controls. Item definition rows now expose an explicit Archive action with reason + confirmation prompts, call Runtime/Auth `DELETE /api/admin/inventory/items/{item_code}`, and refresh from authority after success while warning that historical inventory rows are preserved.
 - Made every major Admin `/economy` section collapsible with consistent Dashboard controls, including overview, settings, denominations, identity search, inventory, market governance, item definitions, and danger zone in addition to the existing ledger/action/event sections.

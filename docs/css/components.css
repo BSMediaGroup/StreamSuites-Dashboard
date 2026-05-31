@@ -6722,17 +6722,48 @@ body.ss-col-resizing-active {
 
 .ss-economy-market-toolbar {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) repeat(3, auto) minmax(160px, auto);
-  gap: 9px;
-  align-items: end;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  align-items: stretch;
 }
 
-.ss-economy-market-toolbar label:not(.ss-economy-wide) {
+.ss-economy-market-filter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 34px;
+}
+
+.ss-economy-market-filter-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  min-width: 0;
+}
+
+.ss-economy-market-filter {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-height: 34px;
+  gap: 7px;
+  min-height: 28px;
   color: var(--text-secondary);
+  font-size: 0.78rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.ss-economy-market-filter input[type="checkbox"] {
+  margin: 0;
+  inline-size: 13px;
+  block-size: 13px;
+  flex: 0 0 auto;
+}
+
+.ss-economy-market-count {
+  flex: 0 0 auto;
+  text-align: right;
   white-space: nowrap;
 }
 
@@ -7797,6 +7828,16 @@ body.ss-col-resizing-active {
   .ss-economy-event-side,
   .ss-economy-market-flags {
     justify-items: start;
+  }
+
+  .ss-economy-market-filter-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ss-economy-market-count {
+    text-align: left;
+    white-space: normal;
   }
 
   .ss-admin-pager {
