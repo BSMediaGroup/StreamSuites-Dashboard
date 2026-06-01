@@ -1,7 +1,7 @@
 <!-- ========================================================= -->
 <!-- StreamSuites — Twitch Platform (VIEW PARTIAL) -->
 <!-- NOTE:
-     - Read-only scaffold
+     - Runtime/Auth-owned bot operator controls
      - Uses existing dashboard styles only
      - Populated by docs/js/platforms/twitch.js
    ========================================================= -->
@@ -17,7 +17,7 @@
 
   <div class="ss-header-right">
     <span id="tw-foundation-status" class="status-indicator idle">
-      ● Twitch integration: Foundation
+      ● Twitch integration: EventSub / API
     </span>
   </div>
 </header>
@@ -88,6 +88,39 @@
     </div>
   </section>
 
+  <section class="ss-panel" data-scope="admin">
+    <header class="ss-panel-header">
+      <h2>Bot Authorization</h2>
+      <div class="ss-panel-header-actions">
+        <a id="tw-auth-bot" class="ss-btn ss-btn-secondary ss-btn-small" href="https://api.streamsuites.app/auth/twitch/start?purpose=bot&surface=admin&return_to=https%3A%2F%2Fadmin.streamsuites.app%2Fintegrations%2Ftwitch">Authorize Bot</a>
+        <a id="tw-auth-broadcaster" class="ss-btn ss-btn-secondary ss-btn-small" href="https://api.streamsuites.app/auth/twitch/start?purpose=broadcaster&surface=admin&return_to=https%3A%2F%2Fadmin.streamsuites.app%2Fintegrations%2Ftwitch">Authorize Broadcaster</a>
+      </div>
+    </header>
+    <div class="ss-panel-body">
+      <div id="tw-auth-banner" class="ss-alert ss-alert-warning">Waiting for Runtime/Auth Twitch authorization diagnostics.</div>
+      <table class="ss-table ss-table-compact">
+        <tbody>
+          <tr>
+            <td>Client / Config</td>
+            <td id="tw-auth-config" class="align-right muted">not reported</td>
+          </tr>
+          <tr>
+            <td>Bot Authorization</td>
+            <td id="tw-auth-bot-status" class="align-right muted">not reported</td>
+          </tr>
+          <tr>
+            <td>Broadcaster Authorization</td>
+            <td id="tw-auth-broadcaster-status" class="align-right muted">not reported</td>
+          </tr>
+          <tr>
+            <td>Missing Scopes</td>
+            <td id="tw-auth-scopes" class="align-right muted">not reported</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
 </main>
 
 
@@ -101,7 +134,7 @@
 
     <div class="ss-panel-body">
       <div id="tw-runtime-banner" class="ss-alert ss-alert-warning">
-        Read-only preview. Hydrates from runtime snapshots when present; no live controls.
+        Hydrates from Runtime/Auth bot status when present; runtime remains authoritative.
       </div>
 
       <table class="ss-table ss-table-compact">
@@ -214,6 +247,6 @@
 <!-- ========================================================= -->
 <footer class="ss-footer">
   <span class="muted">
-    Twitch foundation is scaffolded only — no live bot control.
+    Twitch bot control is Runtime/Auth-owned. Secrets are never rendered in Dashboard.
   </span>
 </footer>

@@ -24,6 +24,13 @@
     el.liveStatusSummary = document.getElementById("tw-live-status-summary");
     el.liveStatusRefresh = document.getElementById("tw-live-status-refresh");
     el.liveStatusScan = document.getElementById("tw-live-status-scan");
+    el.authBot = document.getElementById("tw-auth-bot");
+    el.authBroadcaster = document.getElementById("tw-auth-broadcaster");
+    el.authBanner = document.getElementById("tw-auth-banner");
+    el.authConfig = document.getElementById("tw-auth-config");
+    el.authBotStatus = document.getElementById("tw-auth-bot-status");
+    el.authBroadcasterStatus = document.getElementById("tw-auth-broadcaster-status");
+    el.authScopes = document.getElementById("tw-auth-scopes");
   }
 
   function setText(target, value) {
@@ -43,17 +50,69 @@
         timeoutMs: 6000
       });
       const provider = payload?.providers?.twitch || {};
-      setText(el.liveStatusBanner, provider.manual_scan_disabled_reason || "Twitch live fetching is scaffolded only.");
+      setText(el.liveStatusBanner, provider.manual_scan_disabled_reason || provider.last_error || "Twitch live fetching diagnostics loaded.");
       if (el.liveStatusSummary) {
         el.liveStatusSummary.innerHTML = `
-          <span class="ss-chip ss-chip-warning">Not implemented</span>
-          <span class="ss-chip ss-chip-muted">${escapeHtml((provider.blockers || ["provider_scan_control_not_wired"]).join(", "))}</span>
+          <span class="ss-chip ${provider.implemented ? "ss-chip-success" : "ss-chip-warning"}">${escapeHtml(provider.implemented ? "Runtime wired" : "Partial")}</span>
+          <span class="ss-chip ss-chip-muted">${escapeHtml((provider.blockers || provider.last_error || ["No blockers reported"]).join ? (provider.blockers || ["No blockers reported"]).join(", ") : String(provider.last_error || "No blockers reported"))}</span>
         `;
       }
     } catch (err) {
       setText(el.liveStatusBanner, "Runtime/Auth diagnostics endpoint unavailable; Twitch controls remain disabled.");
     }
-    if (el.liveStatusScan) el.liveStatusScan.disabled = true;
+    if (el.liveStatusScan) el.liveStatusScan.disabled = false;
+  }
+
+  function updateAuthLinks() {
+    const base = window.StreamSuitesApi?.getApiBase?.() || "https://api.streamsuites.app";
+    const returnTo = encodeURIComponent(`${window.location.origin}/integrations/twitch`);
+    if (el.authBot) {
+      el.authBot.href = `${base}/auth/twitch/start?purpose=bot&surface=admin&return_to=${returnTo}`;
+    }
+    if (el.authBroadcaster) {
+      el.authBroadcaster.href = `${base}/auth/twitch/start?purpose=broadcaster&surface=admin&return_to=${returnTo}`;
+    }
+  }
+
+  function findTwitchPlatform(payload) {
+    const rows = Array.isArray(payload?.platforms) ? payload.platforms : [];
+    return rows.find((row) => String(row?.platform || "").toLowerCase() === PLATFORM) || null;
+  }
+
+  function findTwitchBot(payload) {
+    const rows = Array.isArray(payload?.bots) ? payload.bots : [];
+    return rows.find((row) => String(row?.platform || "").toLowerCase() === PLATFORM) || null;
+  }
+
+  function renderBotStatus(payload) {
+    const platform = findTwitchPlatform(payload);
+    const bot = findTwitchBot(payload);
+    const caps = payload?.platform_capabilities?.twitch || {};
+    const details = platform?.details || {};
+    const readiness = bot?.credential_readiness || bot?.credentialReadiness || {};
+    const missingBotScopes = readiness?.missing_bot_scopes || readiness?.missingBotScopes || [];
+    const missingBroadcasterScopes = readiness?.missing_broadcaster_scopes || readiness?.missingBroadcasterScopes || [];
+    setText(el.authConfig, caps.available === false ? "not configured" : "configured / partially configured");
+    setText(el.authBotStatus, bot?.dispatch_ready ? "authorized" : bot?.status || platform?.status || "not authorized");
+    setText(
+      el.authBroadcasterStatus,
+      bot?.subscription_status === "subscribed" || bot?.subscription_status === "pending"
+        ? bot.subscription_status
+        : details.subscription_status || "not reported"
+    );
+    const missing = [...missingBotScopes, ...missingBroadcasterScopes].filter(Boolean);
+    setText(el.authScopes, missing.length ? missing.join(", ") : "none reported");
+    if (el.authBanner) {
+      el.authBanner.classList.remove("ss-alert-danger", "ss-alert-success", "ss-alert-warning");
+      const ready = bot?.dispatch_ready || bot?.subscription_status === "subscribed";
+      el.authBanner.classList.add(ready ? "ss-alert-success" : "ss-alert-warning");
+      setText(
+        el.authBanner,
+        ready
+          ? "Twitch EventSub/API posture is available from Runtime/Auth."
+          : (bot?.status_reason || platform?.error || "Authorize bot and broadcaster scopes before deploying Twitch chat.")
+      );
+    }
   }
 
   function formatTimestamp(value) {
@@ -232,6 +291,17 @@
       return;
     }
 
+    let botPayload = null;
+    try {
+      botPayload = await window.StreamSuitesApi?.apiFetch?.("/api/admin/bots/status", {
+        forceRefresh: true,
+        timeoutMs: 6000
+      });
+      renderBotStatus(botPayload);
+    } catch (err) {
+      setText(el.authBanner, "Runtime/Auth bot status API unavailable.");
+    }
+
     const snapshot = await window.StreamSuitesState?.loadRuntimeSnapshot?.({
       forceReload: true
     });
@@ -264,13 +334,28 @@
     if (!el.foundationStatus) return;
     el.foundationStatus.classList.remove("idle");
     el.foundationStatus.classList.add("active");
-    el.foundationStatus.textContent = "● Twitch integration: Foundation";
+    el.foundationStatus.textContent = "● Twitch integration: EventSub / API";
   }
 
   function init() {
     cacheElements();
     setFoundationStatus();
+    updateAuthLinks();
     el.liveStatusRefresh?.addEventListener("click", hydrateLiveStatusScaffold);
+    el.liveStatusScan?.addEventListener("click", async () => {
+      try {
+        await window.StreamSuitesApi?.apiFetch?.("/api/admin/live-status/scan", {
+          method: "POST",
+          body: JSON.stringify({ platform: "twitch" }),
+          headers: { "Content-Type": "application/json" },
+          forceRefresh: true,
+          timeoutMs: 10000
+        });
+        await hydrateLiveStatusScaffold();
+      } catch (err) {
+        setText(el.liveStatusBanner, "Twitch scan request failed or is not available from Runtime/Auth.");
+      }
+    });
 
     setTimeout(() => {
       (async () => {
