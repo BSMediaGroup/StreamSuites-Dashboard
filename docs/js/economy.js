@@ -18,6 +18,9 @@
   const ITEM_DEFINITION = (itemCode) => `/api/admin/inventory/items/${encodeURIComponent(itemCode)}`;
   const MARKET_GOVERNANCE = "/api/admin/economy/market";
   const MARKET_GOVERNANCE_ITEM = (itemCode) => `/api/admin/economy/market/items/${encodeURIComponent(itemCode)}`;
+  const CATEGORY_LABEL_OVERRIDES = {
+    combat_vehicle: "Combat Vehicles"
+  };
   const PARTICIPATION_EXCLUSIONS = "/api/admin/exclusions";
   const PARTICIPATION_EXCLUSIONS_SUMMARY = "/api/admin/exclusions/summary";
   const PARTICIPATION_EXCLUSION_TARGET_SEARCH = "/api/admin/exclusions/targets/search";
@@ -261,7 +264,19 @@
       })
       .join("");
     if (!selectedValue || categories.some((category) => text(category.code || category.label) === selectedValue || text(category.label) === selectedValue)) return options;
-    return `${options}<option value="${escapeHtml(selectedValue)}" selected>${escapeHtml(formatLabel(selectedValue))}</option>`;
+    return `${options}<option value="${escapeHtml(selectedValue)}" selected>${escapeHtml(CATEGORY_LABEL_OVERRIDES[selectedValue] || formatLabel(selectedValue))}</option>`;
+  }
+
+  function categoryDisplayLabel(value = "", fallback = "") {
+    const raw = text(value || fallback);
+    if (!raw) return "Uncategorized";
+    const normalized = slugCode(raw);
+    const option = (state.itemCategories || []).find((category) => {
+      const code = slugCode(category.code || category.id || category.label);
+      const label = slugCode(category.label || category.code || "");
+      return normalized && (normalized === code || normalized === label);
+    });
+    return text(option?.label) || CATEGORY_LABEL_OVERRIDES[normalized] || formatLabel(raw);
   }
 
   function selectedItemCategory() {
@@ -559,7 +574,7 @@
 
   function itemCategory(item = {}) {
     const definition = item.definition || itemDefinitionFor(item.item_code) || {};
-    return text(definition.category || item.category || "Uncategorized");
+    return categoryDisplayLabel(definition.category_label || definition.category || item.category_label || item.category || "Uncategorized");
   }
 
   function itemIcon(item = {}) {
@@ -577,6 +592,10 @@
 
   function marketItemType(item = {}) {
     return text(item.item_type || item.type || item.category || "Uncategorized");
+  }
+
+  function marketItemTypeLabel(item = {}) {
+    return categoryDisplayLabel(item.item_type_label || item.type_label || item.category_label || item.item_type || item.type || item.category || "Uncategorized");
   }
 
   function marketPrice(item = {}) {
@@ -1529,6 +1548,8 @@
           const isEditing = state.marketEditorCode === item.item_code;
           const icon = normalizeItemIconPath(item.icon_path || item.icon_url || "");
           const type = marketItemType(item);
+          const typeLabel = marketItemTypeLabel(item);
+          const categoryLabel = categoryDisplayLabel(item.category_label || item.category || type);
           const stock = item.unlimited_stock ? "Unlimited" : item.stock !== null && item.stock !== undefined ? formatNumber(item.stock) : "Untracked";
           return `
             <article class="ss-economy-market-row${isEditing ? " is-editing" : ""}" data-market-item-code="${escapeHtml(item.item_code)}">
@@ -1536,7 +1557,7 @@
                 <span class="ss-economy-item-icon${icon ? "" : " is-unavailable"}">${icon ? `<img src="${escapeHtml(assetPath(icon))}" alt="" loading="lazy" decoding="async" />` : `<span class="ss-economy-item-icon-fallback">No icon</span>`}</span>
                 <div class="ss-economy-market-main">
                   <strong>${escapeHtml(item.label || item.display_name || item.item_code)}</strong>
-                  <span class="muted">item_code: ${escapeHtml(item.item_code)} · ${escapeHtml(type)} · ${escapeHtml(item.category || "Uncategorized")}</span>
+                  <span class="muted">item_code: ${escapeHtml(item.item_code)} · ${escapeHtml(typeLabel)} · ${escapeHtml(categoryLabel)}</span>
                   <span class="muted">Sale: ${marketEnabled(item) ? `${formatNumber(marketPrice(item))} Stekels` : "off"} · Exchange: ${exchangeEnabled(item) ? `${formatNumber(exchangeValue(item))} Stekels` : "off"} · Stock: ${escapeHtml(stock)}</span>
                 </div>
                 <div class="ss-economy-market-flags">
@@ -1591,13 +1612,14 @@
         const isEditing = state.itemEditorCode === item.item_code;
         const isArchived = item.is_enabled === false;
         const normalizedIcon = normalizeItemIconPath(item.icon_path || "");
+        const categoryLabel = categoryDisplayLabel(item.category_label || item.category || "Uncategorized");
         return `
           <article class="ss-economy-item-definition${isEditing ? " is-editing" : ""}${isArchived ? " is-archived" : ""}" data-item-code="${escapeHtml(item.item_code)}">
             <div class="ss-economy-item-definition-summary">
               ${renderItemIcon(item)}
               <div class="ss-economy-item-definition-main">
                 <strong>${escapeHtml(item.label || item.item_code)}</strong>
-                <span class="muted">item_code: ${escapeHtml(item.item_code)} · ${escapeHtml(item.category || "Uncategorized")} · ${escapeHtml(item.rarity || "No rarity")} · ${isArchived ? "archived / disabled" : "enabled"}</span>
+                <span class="muted">item_code: ${escapeHtml(item.item_code)} · ${escapeHtml(categoryLabel)} · ${escapeHtml(item.rarity || "No rarity")} · ${isArchived ? "archived / disabled" : "enabled"}</span>
                 ${chatAlias ? `<span class="muted">Chat alias: ${escapeHtml(chatAlias)}</span>` : ""}
                 <span class="ss-economy-item-chip-row">
                   <span class="ss-economy-item-chip">${escapeHtml(assetChip)}</span>

@@ -6,6 +6,11 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Admin item definition and Market Governance category controls now support the Runtime/Auth `combat_vehicle` category and display it as `Combat Vehicles`.
+- Category display/save behavior continues to use Runtime/Auth category metadata while preserving raw category codes in save payloads.
+- Item definition editor surfaces the improved human-facing catalog copy returned by Runtime/Auth without adding a Dashboard-owned category system.
+- Human note: admins can put aircraft, tanks, drones, and helicopters into Combat Vehicles without mixing them into the Weapons bucket.
+
 - Completed the Admin `/integrations/twitch` follow-through for the Runtime/Auth Twitch EventSub/API rollout. The Twitch partial now has one valid main content root, exposes active Runtime/Auth live scan controls, and keeps separate bot and broadcaster authorization links pointing at `/auth/twitch/start` with purpose-specific query parameters. Focused Dashboard tests now distinguish YouTube's remaining scaffold from Twitch's active Runtime/Auth-backed control surface.
 - Human note: Admin can now see Twitch authorization and runtime posture from the existing Dashboard page without treating Dashboard as a token/state authority. Secrets remain backend-owned and are not rendered in the page.
 

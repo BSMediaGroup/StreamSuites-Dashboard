@@ -267,6 +267,9 @@ test("item definition save reads the visible editor reason and sends reason_text
   assert.match(js, /const reason = readField\("reason_text"\);/);
   assert.match(js, /reason_text: reason/);
   assert.match(js, /Category<select data-item-field="category">\$\{itemCategoryOptions\(item\.category \|\| ""\)\}<\/select>/);
+  assert.match(js, /combat_vehicle: "Combat Vehicles"/);
+  assert.match(js, /function categoryDisplayLabel\(value = "", fallback = ""\)/);
+  assert.match(js, /marketItemTypeLabel\(item\)/);
   assert.match(js, /Rarity<select data-item-field="rarity">/);
   assert.match(js, /Public tooltip<select data-item-field="public_tooltip_enabled">/);
   assert.match(js, /Short public description<textarea data-item-field="short_description"/);
