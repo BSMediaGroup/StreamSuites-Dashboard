@@ -45,6 +45,7 @@ test("economy view exposes required control sections and boundary copy", () => {
   assert.match(html, /Manual Inventory Actions/);
   assert.match(html, /Gem \/ Diamond Exchange/);
   assert.match(html, /Market Governance/);
+  assert.match(html, /Participation Exclusions/);
   assert.match(html, /Inventory Events/);
   assert.match(html, /Item Definitions/);
   assert.match(html, /Danger Zone/);
@@ -61,11 +62,14 @@ test("economy view exposes required control sections and boundary copy", () => {
   assert.match(html, /data-collapse-target="economy-settings"/);
   assert.match(html, /data-collapse-target="economy-denominations"/);
   assert.match(html, /data-collapse-target="economy-identity-search"/);
+  assert.match(html, /data-collapse-target="economy-participation-exclusions"/);
   assert.match(html, /data-collapse-target="economy-inventory"/);
   assert.match(html, /data-collapse-target="economy-market-governance"/);
   assert.match(html, /data-collapse-target="economy-item-definitions"/);
   assert.match(html, /data-collapse-target="economy-danger-zone"/);
   assert.match(html, /id="economy-identity-search-section"/);
+  assert.match(html, /id="economy-participation-exclusions-section"/);
+  assert.match(html, /id="economy-participation-exclusions"/);
   assert.match(html, /id="economy-settings-section"/);
   assert.match(html, /id="economy-denominations-section"/);
   assert.match(html, /id="economy-wallet-section"/);
@@ -95,6 +99,19 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /ITEM_DEFINITION = \(itemCode\) => `\/api\/admin\/inventory\/items\/\$\{encodeURIComponent\(itemCode\)\}`/);
   assert.match(js, /MARKET_GOVERNANCE = "\/api\/admin\/economy\/market"/);
   assert.match(js, /MARKET_GOVERNANCE_ITEM = \(itemCode\) => `\/api\/admin\/economy\/market\/items\/\$\{encodeURIComponent\(itemCode\)\}`/);
+  assert.match(js, /PARTICIPATION_EXCLUSIONS = "\/api\/admin\/exclusions"/);
+  assert.match(js, /PARTICIPATION_EXCLUSIONS_SUMMARY = "\/api\/admin\/exclusions\/summary"/);
+  assert.match(js, /PARTICIPATION_EXCLUSION_TARGET = \(targetType, targetId\) => `\/api\/admin\/exclusions\/\$\{encodeURIComponent\(targetType\)\}\/\$\{encodeURIComponent\(targetId\)\}`/);
+  assert.match(js, /EXCLUSION_SCOPE_DEFS = Object\.freeze/);
+  assert.match(js, /"all_bot_replies", "Block all bot replies"/);
+  assert.match(js, /"xp_progression", "Block XP \/ progression"/);
+  assert.match(js, /"wallet_economy", "Block wallet \/ economy"/);
+  assert.match(js, /"market_exchange", "Block market \/ exchange"/);
+  assert.match(js, /async function saveParticipationExclusion/);
+  assert.match(js, /method: "PATCH"/);
+  assert.match(js, /async function clearParticipationExclusion/);
+  assert.match(js, /method: "DELETE"/);
+  assert.match(js, /loadParticipationExclusionSummary/);
   assert.match(js, /ECONOMY_SETTINGS = "\/api\/admin\/economy\/settings"/);
   assert.match(js, /ECONOMY_DENOMINATIONS = "\/api\/admin\/economy\/denominations"/);
   assert.match(js, /PUBLIC_GAME_BACKUP = "\/api\/admin\/public-game-authority\/backup"/);
@@ -350,6 +367,7 @@ test("economy collapsible sections default expanded", () => {
   assert.match(html, /data-collapse-target="economy-settings" aria-expanded="true">Collapse/);
   assert.match(html, /data-collapse-target="economy-denominations" aria-expanded="true">Collapse/);
   assert.match(html, /data-collapse-target="economy-identity-search" aria-expanded="true">Collapse/);
+  assert.match(html, /data-collapse-target="economy-participation-exclusions" aria-expanded="true">Collapse/);
   assert.match(html, /data-collapse-target="economy-ledger" aria-expanded="true">Collapse/);
   assert.match(html, /data-collapse-target="economy-actions" aria-expanded="true">Collapse/);
   assert.match(html, /data-collapse-target="economy-inventory" aria-expanded="true">Collapse/);
@@ -361,7 +379,7 @@ test("economy collapsible sections default expanded", () => {
   assert.match(html, /data-collapse-target="economy-danger-zone" aria-expanded="true">Collapse/);
   assert.match(html, /ss-admin-collapse-toggle/);
   assert.match(html, /ss-admin-collapsible-body/);
-  assert.doesNotMatch(html, /data-collapse-target="(?:economy-overview|economy-settings|economy-denominations|economy-identity-search|economy-ledger|economy-actions|economy-inventory|inventory-actions|economy-exchange|inventory-events|economy-market-governance|economy-item-definitions|economy-danger-zone)" aria-expanded="false"/);
+  assert.doesNotMatch(html, /data-collapse-target="(?:economy-overview|economy-settings|economy-denominations|economy-identity-search|economy-participation-exclusions|economy-ledger|economy-actions|economy-inventory|inventory-actions|economy-exchange|inventory-events|economy-market-governance|economy-item-definitions|economy-danger-zone)" aria-expanded="false"/);
 });
 
 test("economy route uses the shared top-bar section anchor row", () => {
@@ -373,6 +391,7 @@ test("economy route uses the shared top-bar section anchor row", () => {
   assert.match(app, /\{ id: "economy-settings-section", label: "Economy Settings" \}/);
   assert.match(app, /\{ id: "economy-denominations-section", label: "Denominations" \}/);
   assert.match(app, /\{ id: "economy-identity-search-section", label: "Identity Search" \}/);
+  assert.match(app, /\{ id: "economy-participation-exclusions-section", label: "Participation Exclusions" \}/);
   assert.match(app, /\{ id: "economy-wallet-section", label: "Wallet" \}/);
   assert.match(app, /\{ id: "economy-ledger-section", label: "Economy Ledger" \}/);
   assert.match(app, /\{ id: "economy-actions-section", label: "Manual Economy Actions" \}/);

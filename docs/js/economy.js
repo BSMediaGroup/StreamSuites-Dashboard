@@ -18,6 +18,9 @@
   const ITEM_DEFINITION = (itemCode) => `/api/admin/inventory/items/${encodeURIComponent(itemCode)}`;
   const MARKET_GOVERNANCE = "/api/admin/economy/market";
   const MARKET_GOVERNANCE_ITEM = (itemCode) => `/api/admin/economy/market/items/${encodeURIComponent(itemCode)}`;
+  const PARTICIPATION_EXCLUSIONS = "/api/admin/exclusions";
+  const PARTICIPATION_EXCLUSIONS_SUMMARY = "/api/admin/exclusions/summary";
+  const PARTICIPATION_EXCLUSION_TARGET = (targetType, targetId) => `/api/admin/exclusions/${encodeURIComponent(targetType)}/${encodeURIComponent(targetId)}`;
   const ECONOMY_SETTINGS = "/api/admin/economy/settings";
   const ECONOMY_DENOMINATIONS = "/api/admin/economy/denominations";
   const ECONOMY_DENOMINATION = (denominationCode) => `/api/admin/economy/denominations/${encodeURIComponent(denominationCode)}`;
@@ -34,6 +37,21 @@
   const EVENT_PAGE_SIZE = 8;
   const DEFAULT_ITEM_PAGE_SIZE = 20;
   const ITEM_PAGE_SIZE_OPTIONS = [5, 10, 20, 50, 100];
+  const EXCLUSION_SCOPE_DEFS = Object.freeze([
+    ["all_bot_replies", "Block all bot replies"],
+    ["all_counters", "Block all counters"],
+    ["xp_progression", "Block XP / progression"],
+    ["wallet_economy", "Block wallet / economy"],
+    ["market_exchange", "Block market / exchange"],
+    ["clips", "Block clips"],
+    ["clipping", "Block clipping"],
+    ["polls", "Block polls"],
+    ["wheels", "Block wheels"],
+    ["tallies", "Block tallies"],
+    ["games", "Block games"],
+    ["leaderboards", "Block leaderboards"],
+    ["livechat", "Block livechat module"]
+  ]);
 
   const state = {
     identities: [],
@@ -62,6 +80,18 @@
       purchasable: false,
       exchangeable: false,
       disabled: false
+    },
+    participationExclusions: {
+      policies: [],
+      allowedScopes: EXCLUSION_SCOPE_DEFS.map(([scope]) => scope),
+      targetType: "public_identity",
+      targetId: "",
+      current: null,
+      effective: null,
+      reason: "",
+      loading: false,
+      saving: false,
+      error: ""
     },
     denominationEditorCode: "",
     denominationErrors: {},
@@ -1035,6 +1065,108 @@
     `;
   }
 
+  function exclusionTargetLabel(policy = {}) {
+    const type = text(policy.target_type || policy.targetType);
+    const id = text(policy.target_id || policy.targetId);
+    return `${type === "account" ? "Account" : "Public identity"}: ${id || "not selected"}`;
+  }
+
+  function exclusionScopeSet(source) {
+    const scopes = Array.isArray(source?.scopes) ? source.scopes : [];
+    return new Set(scopes.map(text).filter(Boolean));
+  }
+
+  function renderExclusionScopeToggles(activeScopes) {
+    const active = activeScopes instanceof Set ? activeScopes : new Set();
+    return EXCLUSION_SCOPE_DEFS.map(([scope, label]) => `
+      <label class="ss-checkbox-wrapper ss-economy-exclusion-toggle">
+        <input class="ss-checkbox" type="checkbox" data-exclusion-scope="${escapeHtml(scope)}" ${active.has(scope) ? "checked" : ""} />
+        <span class="ss-checkbox-text">${escapeHtml(label)}</span>
+      </label>
+    `).join("");
+  }
+
+  function renderExclusionPolicySummary(label, policy) {
+    if (!policy) {
+      return `
+        <article class="ss-economy-event">
+          <div class="ss-economy-event-main">
+            <strong>${escapeHtml(label)}</strong>
+            <span class="muted">No direct policy saved.</span>
+          </div>
+        </article>
+      `;
+    }
+    const scopes = Array.isArray(policy.scopes) ? policy.scopes : [];
+    return `
+      <article class="ss-economy-event">
+        <div class="ss-economy-event-main">
+          <strong>${escapeHtml(label)}</strong>
+          <span>${escapeHtml(exclusionTargetLabel(policy))}</span>
+          <span class="muted">${policy.enabled ? "Active" : "Disabled"} · ${scopes.length ? scopes.map(formatLabel).join(", ") : "No scopes"}</span>
+          <span>${escapeHtml(policy.reason || "No admin note")}</span>
+        </div>
+      </article>
+    `;
+  }
+
+  function renderParticipationExclusions() {
+    if (!el.participationExclusions) return;
+    const stateSlice = state.participationExclusions;
+    const effective = stateSlice.effective || {};
+    const direct = stateSlice.current || {};
+    const activeScopes = exclusionScopeSet(direct.policy || direct);
+    const effectiveScopes = exclusionScopeSet(effective);
+    const targetType = text(stateSlice.targetType || "public_identity");
+    const targetId = text(stateSlice.targetId || (state.selectedIdentityCode && targetType === "public_identity" ? state.selectedIdentityCode : ""));
+    const policy = direct.policy || (direct.target_id ? direct : null);
+    const inherited = effective.inherited_from_account ? "Inherited account policy applies to this public identity." : "No inherited account policy reported.";
+    const policies = Array.isArray(stateSlice.policies) ? stateSlice.policies : [];
+    el.participationExclusions.className = "ss-economy-actions";
+    el.participationExclusions.innerHTML = `
+      <div class="ss-economy-action-grid ss-economy-exclusion-grid">
+        <label>Target type
+          <select id="economy-exclusion-target-type">
+            <option value="public_identity" ${targetType === "public_identity" ? "selected" : ""}>Public identity</option>
+            <option value="account" ${targetType === "account" ? "selected" : ""}>Account</option>
+          </select>
+        </label>
+        <label>Target ID
+          <input id="economy-exclusion-target-id" value="${escapeHtml(targetId)}" placeholder="${targetType === "account" ? "Account UUID" : "Public identity code"}" />
+        </label>
+        <button class="ss-btn ss-btn-secondary" type="button" id="economy-exclusion-use-selected" ${state.selectedIdentityCode ? "" : "disabled"}>Use selected identity</button>
+        <button class="ss-btn ss-btn-secondary" type="button" id="economy-exclusion-load">Load policy</button>
+        <label class="ss-economy-wide">Admin note
+          <input id="economy-exclusion-reason" value="${escapeHtml(stateSlice.reason || policy?.reason || "")}" placeholder="Reason or admin note" />
+        </label>
+        <div class="ss-economy-wide ss-economy-exclusion-toggles">
+          ${renderExclusionScopeToggles(activeScopes)}
+        </div>
+        <div class="ss-economy-wide ss-economy-action-row">
+          <button class="ss-btn" type="button" id="economy-exclusion-save" ${targetId && !stateSlice.saving ? "" : "disabled"}>Save exclusions</button>
+          <button class="ss-btn ss-btn-danger" type="button" id="economy-exclusion-clear" ${targetId && !stateSlice.saving ? "" : "disabled"}>Clear policy</button>
+          <span class="muted">${escapeHtml(stateSlice.error || (stateSlice.loading ? "Loading policy..." : ""))}</span>
+        </div>
+      </div>
+      <div class="ss-economy-list ss-economy-event-list">
+        ${renderExclusionPolicySummary("Direct policy", policy)}
+        ${renderExclusionPolicySummary("Inherited account policy", effective.account_policy)}
+        <article class="ss-economy-event">
+          <div class="ss-economy-event-main">
+            <strong>Effective summary</strong>
+            <span>${effectiveScopes.size ? Array.from(effectiveScopes).map(formatLabel).join(", ") : "No effective blocks"}</span>
+            <span class="muted">${escapeHtml(inherited)}</span>
+          </div>
+        </article>
+      </div>
+      <div class="ss-economy-list ss-economy-event-list">
+        ${policies.length
+          ? policies.slice(0, 6).map((item) => renderExclusionPolicySummary("Recent policy", item)).join("")
+          : `<div class="ss-empty ss-empty-compact">No participation exclusion policies returned yet.</div>`}
+      </div>
+    `;
+  }
+
   function renderInventory() {
     const detail = state.detail || {};
     const inventory = Array.isArray(detail.inventory) ? detail.inventory : [];
@@ -1472,6 +1604,7 @@
     renderDenominations();
     renderIdentities();
     renderWallet();
+    renderParticipationExclusions();
     renderInventory();
     renderEvents();
     renderActions();
@@ -1499,6 +1632,47 @@
         : [];
     state.categoryPresets = Array.isArray(payload.category_presets) ? payload.category_presets : [];
     state.rarityPresets = Array.isArray(payload.rarity_presets) ? payload.rarity_presets : [];
+  }
+
+  async function loadParticipationExclusions() {
+    const payload = await requestJson(PARTICIPATION_EXCLUSIONS);
+    state.participationExclusions.policies = Array.isArray(payload.policies) ? payload.policies : [];
+    state.participationExclusions.allowedScopes = Array.isArray(payload.allowed_scopes)
+      ? payload.allowed_scopes
+      : EXCLUSION_SCOPE_DEFS.map(([scope]) => scope);
+  }
+
+  async function loadParticipationExclusionSummary() {
+    const targetType = text($("#economy-exclusion-target-type")?.value || state.participationExclusions.targetType || "public_identity");
+    const targetId = text($("#economy-exclusion-target-id")?.value || state.participationExclusions.targetId);
+    state.participationExclusions.targetType = targetType;
+    state.participationExclusions.targetId = targetId;
+    state.participationExclusions.error = "";
+    if (!targetType || !targetId) {
+      state.participationExclusions.current = null;
+      state.participationExclusions.effective = null;
+      renderParticipationExclusions();
+      return;
+    }
+    state.participationExclusions.loading = true;
+    renderParticipationExclusions();
+    try {
+      const payload = await requestJson(`${PARTICIPATION_EXCLUSIONS_SUMMARY}?target_type=${encodeURIComponent(targetType)}&target_id=${encodeURIComponent(targetId)}`);
+      state.participationExclusions.current = payload.effective?.identity_policy || payload.effective?.account_policy || null;
+      if (payload.target?.target_type === targetType) {
+        state.participationExclusions.current = targetType === "account"
+          ? payload.effective?.account_policy
+          : payload.effective?.identity_policy;
+      }
+      state.participationExclusions.effective = payload.effective || null;
+      state.participationExclusions.allowedScopes = Array.isArray(payload.allowed_scopes) ? payload.allowed_scopes : state.participationExclusions.allowedScopes;
+      state.participationExclusions.reason = state.participationExclusions.current?.reason || "";
+    } catch (err) {
+      state.participationExclusions.error = err?.message || "Unable to load exclusion policy.";
+    } finally {
+      state.participationExclusions.loading = false;
+      renderParticipationExclusions();
+    }
   }
 
   async function loadEconomyConfig() {
@@ -1630,11 +1804,76 @@
     }
   }
 
+  function selectedExclusionScopes() {
+    return Array.from(document.querySelectorAll("[data-exclusion-scope]:checked"))
+      .map((input) => text(input.dataset.exclusionScope))
+      .filter(Boolean);
+  }
+
+  async function saveParticipationExclusion() {
+    const targetType = text($("#economy-exclusion-target-type")?.value || state.participationExclusions.targetType);
+    const targetId = text($("#economy-exclusion-target-id")?.value || state.participationExclusions.targetId);
+    const reason = text($("#economy-exclusion-reason")?.value || state.participationExclusions.reason);
+    const scopes = selectedExclusionScopes();
+    if (!targetType || !targetId) {
+      setStatus("Choose an account or public identity target before saving exclusions.", "error");
+      return;
+    }
+    state.participationExclusions.saving = true;
+    state.participationExclusions.error = "";
+    try {
+      const payload = await requestJson(PARTICIPATION_EXCLUSION_TARGET(targetType, targetId), {
+        method: "PATCH",
+        body: JSON.stringify({ enabled: true, scopes, reason })
+      });
+      state.participationExclusions.targetType = targetType;
+      state.participationExclusions.targetId = targetId;
+      state.participationExclusions.current = payload.policy || null;
+      state.participationExclusions.effective = payload.effective || null;
+      state.participationExclusions.reason = payload.policy?.reason || reason;
+      await loadParticipationExclusions();
+      renderParticipationExclusions();
+      setStatus("Participation exclusion policy saved.", "success");
+    } catch (err) {
+      state.participationExclusions.error = err?.message || "Exclusion save failed.";
+      renderParticipationExclusions();
+      setStatus(state.participationExclusions.error, "error");
+    } finally {
+      state.participationExclusions.saving = false;
+    }
+  }
+
+  async function clearParticipationExclusion() {
+    const targetType = text($("#economy-exclusion-target-type")?.value || state.participationExclusions.targetType);
+    const targetId = text($("#economy-exclusion-target-id")?.value || state.participationExclusions.targetId);
+    if (!targetType || !targetId) {
+      setStatus("Choose an account or public identity target before clearing exclusions.", "error");
+      return;
+    }
+    state.participationExclusions.saving = true;
+    state.participationExclusions.error = "";
+    try {
+      const payload = await requestJson(PARTICIPATION_EXCLUSION_TARGET(targetType, targetId), { method: "DELETE" });
+      state.participationExclusions.current = payload.policy || null;
+      state.participationExclusions.effective = payload.effective || null;
+      state.participationExclusions.reason = "";
+      await loadParticipationExclusions();
+      renderParticipationExclusions();
+      setStatus("Participation exclusion policy cleared.", "success");
+    } catch (err) {
+      state.participationExclusions.error = err?.message || "Exclusion clear failed.";
+      renderParticipationExclusions();
+      setStatus(state.participationExclusions.error, "error");
+    } finally {
+      state.participationExclusions.saving = false;
+    }
+  }
+
   async function refresh(options = {}) {
     const token = ++state.token;
     setStatus("Loading economy controls...");
     try {
-      await Promise.all([loadEconomyConfig(), loadItems(), loadIdentities(), loadAssetCatalog()]);
+      await Promise.all([loadEconomyConfig(), loadItems(), loadIdentities(), loadAssetCatalog(), loadParticipationExclusions()]);
       if (state.selectedIdentityCode) {
         await loadDetail(state.selectedIdentityCode);
       }
@@ -2235,6 +2474,24 @@
         }
         return;
       }
+      if (event.target.closest?.("#economy-exclusion-use-selected")) {
+        state.participationExclusions.targetType = "public_identity";
+        state.participationExclusions.targetId = state.selectedIdentityCode || "";
+        await loadParticipationExclusionSummary();
+        return;
+      }
+      if (event.target.closest?.("#economy-exclusion-load")) {
+        await loadParticipationExclusionSummary();
+        return;
+      }
+      if (event.target.closest?.("#economy-exclusion-save")) {
+        await saveParticipationExclusion();
+        return;
+      }
+      if (event.target.closest?.("#economy-exclusion-clear")) {
+        await clearParticipationExclusion();
+        return;
+      }
       if (event.target.closest?.("#economy-item-create-submit")) {
         try {
           await createItemDefinition();
@@ -2371,6 +2628,10 @@
           search.setSelectionRange(selectionStart, selectionEnd);
         }
       }
+      if (event.target.matches?.("#economy-exclusion-target-id, #economy-exclusion-reason")) {
+        state.participationExclusions.targetId = text($("#economy-exclusion-target-id")?.value);
+        state.participationExclusions.reason = text($("#economy-exclusion-reason")?.value);
+      }
     });
     document.addEventListener("change", (event) => {
       if (event.target.closest?.("#economy-exchange-actions")) {
@@ -2392,6 +2653,12 @@
           disabled: Boolean($("#economy-market-filter-disabled")?.checked)
         };
         renderMarketGovernance();
+      }
+      if (event.target.matches?.("#economy-exclusion-target-type")) {
+        state.participationExclusions.targetType = text(event.target.value || "public_identity");
+        state.participationExclusions.current = null;
+        state.participationExclusions.effective = null;
+        renderParticipationExclusions();
       }
     });
     document.addEventListener("keydown", (event) => {
@@ -2419,6 +2686,7 @@
     el.exchangeActions = $("economy-exchange-actions");
     el.inventoryEventsList = $("economy-inventory-events-list");
     el.marketGovernance = $("economy-market-governance");
+    el.participationExclusions = $("economy-participation-exclusions");
     el.itemDefinitions = $("economy-item-definitions");
     el.itemCreateForm = $("economy-item-create-form");
     el.dangerZone = $("economy-danger-zone");

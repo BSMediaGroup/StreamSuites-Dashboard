@@ -6,6 +6,10 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Added Admin Dashboard controls for account/public identity participation exclusions inside `/economy`. Admins can load a target, view direct and inherited effective policy state, toggle all-bot, all-counter, XP/progression, wallet/economy, market/exchange, livechat, and module-specific blocks, save through Runtime/Auth, and clear policies through Runtime/Auth.
+- Dashboard calls the new Runtime/Auth `/api/admin/exclusions` endpoints only and keeps exclusion persistence/authority out of local Dashboard state.
+- Human note: the Economy / Inventory workspace now has a compact `Participation Exclusions` section for bot reply and accumulation governance without turning Dashboard into a policy authority.
+
 - Tightened the Admin `/economy` Market Governance toolbar layout. Search now owns the first row, while On sale / Exchangeable / Disabled filters and the item count sit in a dedicated aligned filter row with consistent checkbox sizing and responsive wrapping.
 - Human note: the Market Governance checkbox strip should no longer float awkwardly in the middle of the section or misalign against the item count.
 
