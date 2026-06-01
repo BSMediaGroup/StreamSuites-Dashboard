@@ -1935,7 +1935,7 @@ const SIDEBAR_VIEW_ICON_MAP = Object.freeze({
   creators: "/assets/icons/ui/profile.svg",
   "creator-integrations": "/assets/icons/ui/automation.svg",
   "creator-stats": "/assets/icons/ui/statgraph.svg",
-  accounts: "/assets/icons/ui/identity.svg",
+  accounts: "/assets/icons/ui/identity-filled.svg",
   "public-identities": "/assets/icons/ui/groupcircle.svg",
   progression: "/assets/icons/ui/statgraph.svg",
   economy: "/assets/icons/economy.svg",
