@@ -1,7 +1,7 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-06-01T10:03:52.169825Z",
-  "server_generated_at": "2026-06-01T10:03:52.169825Z",
+  "generated_at": "2026-06-01T12:25:59.654741Z",
+  "server_generated_at": "2026-06-01T12:25:59.654741Z",
   "count": 5,
   "bots": [
     {
@@ -69,8 +69,8 @@
       "active_visible_reason": "auto_configured",
       "superseded_by": null,
       "configuration_state": "connected",
-      "last_heartbeat_at": "2026-05-31T08:43:59.587569Z",
-      "last_evaluated_at": "2026-05-31T08:43:59.587569Z",
+      "last_heartbeat_at": "2026-06-01T12:25:35.314445Z",
+      "last_evaluated_at": "2026-06-01T12:25:35.314445Z",
       "last_transition_at": null,
       "resolved_target": {
         "platform": "kick",
@@ -85,7 +85,7 @@
       "target_normalized": "danielclancy",
       "target_source": "manual_channel",
       "target_input": "danielclancy",
-      "target_last_changed_at": "1780213793",
+      "target_last_changed_at": "1780316152",
       "target_changed_by": "creator",
       "detection_attempted_at": null,
       "detection_status": null,
@@ -106,9 +106,9 @@
       "last_webhook_event_at": null,
       "last_chat_event_at": null,
       "uptime_seconds": 0,
-      "state_age_seconds": 91192,
-      "is_stale": true,
-      "stale_reason": "state_age_exceeds_threshold",
+      "state_age_seconds": 24,
+      "is_stale": false,
+      "stale_reason": null,
       "trace_available": true,
       "debug_trace_source": "persisted",
       "runtime_control_available": true
@@ -158,8 +158,8 @@
       "superseded_by": null,
       "configuration_state": "connected",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-05-31T08:44:18.269225Z",
-      "last_transition_at": "2026-05-31T03:52:24.880252Z",
+      "last_evaluated_at": "2026-06-01T12:25:55.390956Z",
+      "last_transition_at": "2026-06-01T10:17:30.397546Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -186,16 +186,16 @@
       "state_source": "runtime_export",
       "confidence": "medium",
       "set_by": "kick_auto_deploy",
-      "set_at": "2026-05-31T03:52:24.880252Z",
+      "set_at": "2026-06-01T10:17:30.397546Z",
       "set_reason": "Rumble sample-parity browse/live request failed before a trustworthy offline result could be established.",
       "last_manual_deploy_at": null,
       "last_probe_at": null,
       "last_webhook_event_at": null,
       "last_chat_event_at": null,
       "uptime_seconds": 0,
-      "state_age_seconds": 91173,
-      "is_stale": true,
-      "stale_reason": "state_age_exceeds_threshold",
+      "state_age_seconds": 4,
+      "is_stale": false,
+      "stale_reason": null,
       "trace_available": false,
       "debug_trace_source": "reconstructed",
       "runtime_control_available": true
@@ -265,8 +265,8 @@
       "active_visible_reason": "auto_configured",
       "superseded_by": null,
       "configuration_state": "connected",
-      "last_heartbeat_at": "2026-05-31T08:43:59.587569Z",
-      "last_evaluated_at": "2026-05-31T08:43:59.587569Z",
+      "last_heartbeat_at": "2026-06-01T12:25:35.314445Z",
+      "last_evaluated_at": "2026-06-01T12:25:35.314445Z",
       "last_transition_at": null,
       "resolved_target": {
         "platform": "kick",
@@ -281,7 +281,7 @@
       "target_normalized": "streamsuites",
       "target_source": "manual_channel",
       "target_input": "streamsuites",
-      "target_last_changed_at": "1780213785",
+      "target_last_changed_at": "1780316176",
       "target_changed_by": "creator",
       "detection_attempted_at": null,
       "detection_status": null,
@@ -302,11 +302,11 @@
       "last_webhook_event_at": null,
       "last_chat_event_at": null,
       "uptime_seconds": 0,
-      "state_age_seconds": 91192,
-      "is_stale": true,
-      "stale_reason": "state_age_exceeds_threshold",
-      "trace_available": false,
-      "debug_trace_source": "reconstructed",
+      "state_age_seconds": 24,
+      "is_stale": false,
+      "stale_reason": null,
+      "trace_available": true,
+      "debug_trace_source": "persisted",
       "runtime_control_available": true
     },
     {
@@ -391,11 +391,11 @@
       "last_webhook_event_at": "2026-06-01T09:28:28.739421Z",
       "last_chat_event_at": "2026-06-01T09:28:28.739421Z",
       "uptime_seconds": 0,
-      "state_age_seconds": 2123,
+      "state_age_seconds": 10650,
       "is_stale": true,
       "stale_reason": "state_age_exceeds_threshold",
-      "trace_available": true,
-      "debug_trace_source": "persisted",
+      "trace_available": false,
+      "debug_trace_source": "reconstructed",
       "runtime_control_available": true
     },
     {
@@ -443,8 +443,8 @@
       "superseded_by": null,
       "configuration_state": "connected",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-05-31T08:44:18.269225Z",
-      "last_transition_at": "2026-05-31T03:52:24.880252Z",
+      "last_evaluated_at": "2026-06-01T12:25:55.390956Z",
+      "last_transition_at": "2026-06-01T10:17:30.397546Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -471,16 +471,16 @@
       "state_source": "runtime_export",
       "confidence": "medium",
       "set_by": "kick_auto_deploy",
-      "set_at": "2026-05-31T03:52:24.880252Z",
+      "set_at": "2026-06-01T10:17:30.397546Z",
       "set_reason": "Creator disabled Rumble bot auto-deploy.",
       "last_manual_deploy_at": null,
       "last_probe_at": null,
       "last_webhook_event_at": null,
       "last_chat_event_at": null,
       "uptime_seconds": 0,
-      "state_age_seconds": 91173,
-      "is_stale": true,
-      "stale_reason": "state_age_exceeds_threshold",
+      "state_age_seconds": 4,
+      "is_stale": false,
+      "stale_reason": null,
       "trace_available": false,
       "debug_trace_source": "reconstructed",
       "runtime_control_available": true
@@ -612,7 +612,11 @@
         "hidden_placeholder_count": 0
       },
       "hidden_placeholder_count": 0,
-      "last_log": null
+      "last_log": {
+        "timestamp": "2026-06-01T12:25:35.314445Z",
+        "severity": "info",
+        "message": "[4TiOlvS] Kick webhook subscription is active; waiting for first webhook event."
+      }
     },
     {
       "platform": "pilled",
@@ -710,16 +714,20 @@
         "hidden_placeholder_count": 0
       },
       "hidden_placeholder_count": 0,
-      "last_log": null
+      "last_log": {
+        "timestamp": "2026-06-01T10:17:30.397546Z",
+        "severity": "warning",
+        "message": "[4TiOlvS] Managed session state updated to blocked."
+      }
     },
     {
       "platform": "twitch",
       "label": "Twitch",
-      "available": false,
+      "available": true,
       "implemented": true,
-      "runtime_ready": false,
-      "status": "not_configured",
-      "global_status": "not_configured",
+      "runtime_ready": true,
+      "status": "ready",
+      "global_status": "ready",
       "session_status": "inactive",
       "session_blocking_code": null,
       "session_blocking_codes": [],
@@ -727,15 +735,13 @@
       "session_waiting_codes": [],
       "paused": false,
       "paused_reason": null,
-      "error": "Missing runtime prerequisites: TWITCH_OAUTH_TOKEN_DANIEL.",
+      "error": null,
       "staged": false,
       "disabled_reason": "",
       "required_env_keys": [
         "TWITCH_OAUTH_TOKEN_DANIEL"
       ],
-      "missing_env_keys": [
-        "TWITCH_OAUTH_TOKEN_DANIEL"
-      ],
+      "missing_env_keys": [],
       "details": {
         "bot_count": 0,
         "bot_online_count": 0,
@@ -745,7 +751,7 @@
         "bot_blocked_count": 0,
         "manual_override_count": 0,
         "implemented": true,
-        "runtime_ready": false,
+        "runtime_ready": true,
         "global_state": "active",
         "global_enabled": true,
         "session_status": "inactive",
@@ -758,9 +764,7 @@
         "required_env_keys": [
           "TWITCH_OAUTH_TOKEN_DANIEL"
         ],
-        "missing_env_keys": [
-          "TWITCH_OAUTH_TOKEN_DANIEL"
-        ],
+        "missing_env_keys": [],
         "hidden_placeholder_count": 0
       },
       "hidden_placeholder_count": 0,
@@ -769,11 +773,11 @@
     {
       "platform": "youtube",
       "label": "YouTube",
-      "available": false,
+      "available": true,
       "implemented": true,
-      "runtime_ready": false,
-      "status": "not_configured",
-      "global_status": "not_configured",
+      "runtime_ready": true,
+      "status": "ready",
+      "global_status": "ready",
       "session_status": "inactive",
       "session_blocking_code": null,
       "session_blocking_codes": [],
@@ -781,15 +785,13 @@
       "session_waiting_codes": [],
       "paused": false,
       "paused_reason": null,
-      "error": "Missing runtime prerequisites: YOUTUBE_API_KEY_DANIEL.",
+      "error": null,
       "staged": false,
       "disabled_reason": "",
       "required_env_keys": [
         "YOUTUBE_API_KEY_DANIEL"
       ],
-      "missing_env_keys": [
-        "YOUTUBE_API_KEY_DANIEL"
-      ],
+      "missing_env_keys": [],
       "details": {
         "bot_count": 0,
         "bot_online_count": 0,
@@ -799,7 +801,7 @@
         "bot_blocked_count": 0,
         "manual_override_count": 0,
         "implemented": true,
-        "runtime_ready": false,
+        "runtime_ready": true,
         "global_state": "active",
         "global_enabled": true,
         "session_status": "inactive",
@@ -812,9 +814,7 @@
         "required_env_keys": [
           "YOUTUBE_API_KEY_DANIEL"
         ],
-        "missing_env_keys": [
-          "YOUTUBE_API_KEY_DANIEL"
-        ],
+        "missing_env_keys": [],
         "hidden_placeholder_count": 0
       },
       "hidden_placeholder_count": 0,
