@@ -22,17 +22,25 @@ test("Kick platform page renders Runtime/Auth live-status diagnostics controls",
   assert.match(script, /recent_stream_count/);
 });
 
-test("YouTube and Twitch platform pages show scaffolded disabled live-fetch controls", () => {
+test("YouTube platform page shows scaffolded disabled live-fetch controls", () => {
   const youtubeView = read("docs/views/platforms/youtube.html");
   const youtubeScript = read("docs/js/platforms/youtube.js");
+  assert.match(youtubeView, /id="yt-live-status-scan"[\s\S]*disabled/);
+  assert.match(youtubeScript, /platform=youtube/);
+  assert.match(youtubeScript, /Not implemented/);
+});
+
+test("Twitch platform page exposes Runtime/Auth authorization and scan controls", () => {
   const twitchView = read("docs/views/platforms/twitch.html");
   const twitchScript = read("docs/js/platforms/twitch.js");
-  assert.match(youtubeView, /id="yt-live-status-scan"[\s\S]*disabled/);
-  assert.match(twitchView, /id="tw-live-status-scan"[\s\S]*disabled/);
-  assert.match(youtubeScript, /platform=youtube/);
-  assert.match(twitchScript, /platform=twitch/);
-  assert.match(youtubeScript, /Not implemented/);
-  assert.match(twitchScript, /Not implemented/);
+  assert.match(twitchView, /id="tw-live-status-scan"/);
+  assert.doesNotMatch(twitchView, /id="tw-live-status-scan"[\s\S]*disabled/);
+  assert.match(twitchView, /id="tw-auth-bot"/);
+  assert.match(twitchView, /id="tw-auth-broadcaster"/);
+  assert.match(twitchScript, /\/auth\/twitch\/start\?purpose=bot/);
+  assert.match(twitchScript, /\/auth\/twitch\/start\?purpose=broadcaster/);
+  assert.match(twitchScript, /\/api\/admin\/bots\/status/);
+  assert.match(twitchScript, /JSON\.stringify\(\{ platform: "twitch" \}\)/);
 });
 
 test("Rumble diagnostics view remains present and script load order keeps platform scripts", () => {

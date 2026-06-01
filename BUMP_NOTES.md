@@ -6,6 +6,9 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Completed the Admin `/integrations/twitch` follow-through for the Runtime/Auth Twitch EventSub/API rollout. The Twitch partial now has one valid main content root, exposes active Runtime/Auth live scan controls, and keeps separate bot and broadcaster authorization links pointing at `/auth/twitch/start` with purpose-specific query parameters. Focused Dashboard tests now distinguish YouTube's remaining scaffold from Twitch's active Runtime/Auth-backed control surface.
+- Human note: Admin can now see Twitch authorization and runtime posture from the existing Dashboard page without treating Dashboard as a token/state authority. Secrets remain backend-owned and are not rendered in the page.
+
 - Upgraded Participation Exclusions from black card-like checkbox controls to explicit switch toggles with visible active/inactive state while preserving the existing Runtime/Auth save/clear payload contract.
 - Added autocomplete target search for accounts and public identities through Runtime/Auth `GET /api/admin/exclusions/targets/search`, covering public IDs, user codes, UUIDs, usernames, display names, and slugs.
 - Added selected-target detail panels showing linked accounts, public IDs, usernames, avatars, admin-safe identifiers, direct policies, inherited policies, and effective block context.
