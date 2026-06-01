@@ -2163,7 +2163,7 @@
             type="text"
             autocomplete="off"
             placeholder="${escapeHtml(schema.targetPlaceholder)}"
-            required
+            ${key === "twitch" ? "" : "required"}
           />
           <div class="muted ss-bots-manual-field-help">${escapeHtml(schema.targetHelp)}</div>
           ${
@@ -2197,7 +2197,7 @@
     const values = manualFormValues();
     renderManualPlatformFieldset(values.platform);
     const refreshed = manualFormValues();
-    const requiresTarget = refreshed.schema?.deployEnabled === true;
+    const requiresTarget = refreshed.schema?.deployEnabled === true && refreshed.platform !== "twitch";
     const blockedReason = getManualDeployBlockedReason(refreshed.platform, refreshed.creatorId);
     const hasRequiredFields = Boolean(
       refreshed.creatorId &&
@@ -2283,7 +2283,7 @@
       return;
     }
 
-    if (!values.targetIdentifier) {
+    if (!values.targetIdentifier && values.platform !== "twitch") {
       setManualError(getManualRequiredTargetMessage(values.schema));
       updateManualDeployUi();
       return;

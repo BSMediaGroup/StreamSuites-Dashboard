@@ -89,10 +89,18 @@
     const bot = findTwitchBot(payload);
     const caps = payload?.platform_capabilities?.twitch || {};
     const details = platform?.details || {};
+    const breakdown = details.readiness_breakdown || {};
+    const creatorChannels = Array.isArray(details.creator_twitch_channels) ? details.creator_twitch_channels : [];
     const readiness = bot?.credential_readiness || bot?.credentialReadiness || {};
     const missingBotScopes = readiness?.missing_bot_scopes || readiness?.missingBotScopes || [];
     const missingBroadcasterScopes = readiness?.missing_broadcaster_scopes || readiness?.missingBroadcasterScopes || [];
-    setText(el.authConfig, caps.available === false ? "not configured" : "configured / partially configured");
+    setText(
+      el.authConfig,
+      [
+        breakdown.global_bot_token_configured ? "global bot token configured" : "global bot token missing",
+        breakdown.creator_twitch_channel_attached ? `${breakdown.attached_creator_count || creatorChannels.length} creator channel attached` : "no creator channel attached",
+      ].join(" / ")
+    );
     setText(el.authBotStatus, bot?.dispatch_ready ? "authorized" : bot?.status || platform?.status || "not authorized");
     setText(
       el.authBroadcasterStatus,
@@ -108,10 +116,20 @@
       el.authBanner.classList.add(ready ? "ss-alert-success" : "ss-alert-warning");
       setText(
         el.authBanner,
-        ready
+        ready || breakdown.creator_twitch_channel_attached
           ? "Twitch EventSub/API posture is available from Runtime/Auth."
-          : (bot?.status_reason || platform?.error || "Authorize bot and broadcaster scopes before deploying Twitch chat.")
+          : (bot?.status_reason || platform?.error || "Attach a Twitch channel in Creator Dashboard /integrations/twitch before deploying Twitch chat.")
       );
+    }
+    if (el.authBroadcasterStatus && creatorChannels.length) {
+      const channel = creatorChannels[0] || {};
+      setText(
+        el.authBroadcasterStatus,
+        channel.broadcaster_login || channel.broadcaster_user_id || "creator channel attached"
+      );
+    }
+    if (el.authScopes && Array.isArray(breakdown.missing_reasons) && breakdown.missing_reasons.length) {
+      setText(el.authScopes, breakdown.missing_reasons.join("; "));
     }
   }
 

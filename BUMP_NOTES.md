@@ -6,6 +6,10 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Added Admin Twitch readiness follow-through for creator-attached broadcaster channels. The Twitch platform status now displays Runtime/Auth readiness breakdown, creator channel counts, attached broadcaster login/user ID, and missing reasons without rendering secrets.
+- Adjusted the manual bot deploy form so Twitch can use the attached creator channel when the target field is left blank, while non-Twitch platforms keep the existing required target behavior.
+- Human note: admins can deploy or diagnose Twitch bots against the creator-attached channel instead of needing to paste a target every time, and missing configuration now points back to the Creator Twitch attachment flow.
+
 - Admin item definition and Market Governance category controls now support the Runtime/Auth `combat_vehicle` category and display it as `Combat Vehicles`.
 - Category display/save behavior continues to use Runtime/Auth category metadata while preserving raw category codes in save payloads.
 - Item definition editor surfaces the improved human-facing catalog copy returned by Runtime/Auth without adding a Dashboard-owned category system.
