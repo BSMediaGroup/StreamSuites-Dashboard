@@ -1087,10 +1087,19 @@
   function renderExclusionScopeToggles(activeScopes) {
     const active = activeScopes instanceof Set ? activeScopes : new Set();
     return EXCLUSION_SCOPE_DEFS.map(([scope, label]) => `
-      <label class="ss-economy-exclusion-switch ${active.has(scope) ? "is-active" : ""}">
-        <input type="checkbox" data-exclusion-scope="${escapeHtml(scope)}" ${active.has(scope) ? "checked" : ""} />
-        <span class="ss-economy-exclusion-switch-track" aria-hidden="true"></span>
-        <span class="ss-economy-exclusion-switch-text">
+      <label class="ss-economy-exclusion-toggle-row">
+        <span class="switch-button" aria-label="${escapeHtml(label)} toggle">
+          <span class="switch-scale">
+            <span class="switch-outer">
+              <input type="checkbox" data-exclusion-scope="${escapeHtml(scope)}" ${active.has(scope) ? "checked" : ""} />
+              <span class="ss-switch-inner">
+                <span class="ss-switch-toggle"></span>
+                <span class="ss-switch-indicator"></span>
+              </span>
+            </span>
+          </span>
+        </span>
+        <span class="ss-economy-exclusion-toggle-text">
           <strong>${escapeHtml(label)}</strong>
           <small>${active.has(scope) ? "Active block" : "Inactive"}</small>
         </span>
@@ -1791,13 +1800,16 @@
     stateSlice.searchLoading = true;
     renderParticipationExclusions();
     try {
-      const payload = await requestJson(`${PARTICIPATION_EXCLUSION_TARGET_SEARCH}?q=${encodeURIComponent(normalizedQuery)}&target_type=any&limit=12`);
+      const payload = await requestJson(`${PARTICIPATION_EXCLUSION_TARGET_SEARCH}?q=${encodeURIComponent(normalizedQuery)}&target_type=any&limit=12`, { timeoutMs: 15000 });
       if (token !== stateSlice.searchToken) return;
       stateSlice.searchResults = Array.isArray(payload.items) ? payload.items : [];
       stateSlice.allowedScopes = Array.isArray(payload.allowed_scopes) ? payload.allowed_scopes : stateSlice.allowedScopes;
     } catch (err) {
       if (token !== stateSlice.searchToken) return;
-      stateSlice.searchError = err?.message || "Target search failed.";
+      const message = text(err?.message);
+      stateSlice.searchError = /abort/i.test(message)
+        ? "Target search timed out before Runtime/Auth responded. Manual target ID still works; try a more exact public ID, user code, account UUID, or slug."
+        : message || "Target search failed.";
       stateSlice.searchResults = [];
     } finally {
       if (token === stateSlice.searchToken) {

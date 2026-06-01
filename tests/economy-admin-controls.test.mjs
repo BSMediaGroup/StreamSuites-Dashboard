@@ -113,10 +113,12 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /async function clearParticipationExclusion/);
   assert.match(js, /method: "DELETE"/);
   assert.match(js, /async function searchParticipationExclusionTargets/);
+  assert.match(js, /PARTICIPATION_EXCLUSION_TARGET_SEARCH\}\?q=\$\{encodeURIComponent\(normalizedQuery\)\}.*timeoutMs: 15000/s);
   assert.match(js, /scheduleParticipationExclusionTargetSearch/);
   assert.match(js, /data-exclusion-target-index/);
   assert.match(js, /selectedTarget = payload\.target/);
-  assert.match(js, /ss-economy-exclusion-switch/);
+  assert.match(js, /class="switch-button" aria-label="\$\{escapeHtml\(label\)\} toggle"/);
+  assert.match(js, /ss-switch-inner/);
   assert.doesNotMatch(js, /class="ss-checkbox-wrapper ss-economy-exclusion-toggle"/);
   assert.match(js, /loadParticipationExclusionSummary/);
   assert.match(js, /ECONOMY_SETTINGS = "\/api\/admin\/economy\/settings"/);
@@ -432,8 +434,8 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-denomination-editor\s*\{[\s\S]*grid-column:\s*1 \/ -1/);
   assert.match(css, /\.ss-economy-denomination-editor \.ss-economy-icon-field\s*\{[\s\S]*grid-template-columns:\s*minmax\(220px,\s*1fr\) auto/);
   assert.match(css, /\.ss-economy-denomination-editor \.ss-economy-icon-preview\s*\{[\s\S]*grid-column:\s*1 \/ -1/);
-  assert.match(css, /\.ss-economy-exclusion-switch\s*\{/);
-  assert.match(css, /\.ss-economy-exclusion-switch-track::after/);
+  assert.match(css, /\.ss-economy-exclusion-toggle-row\s*\{/);
+  assert.match(css, /\.ss-economy-exclusion-toggle-row \.switch-button\s*\{/);
   assert.match(css, /\.ss-economy-exclusion-results\s*\{/);
   assert.match(css, /\.ss-economy-exclusion-context\s*\{/);
   assert.match(css, /\.ss-economy-exclusion-facts\s*\{/);

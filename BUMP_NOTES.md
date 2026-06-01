@@ -10,6 +10,8 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 - Added autocomplete target search for accounts and public identities through Runtime/Auth `GET /api/admin/exclusions/targets/search`, covering public IDs, user codes, UUIDs, usernames, display names, and slugs.
 - Added selected-target detail panels showing linked accounts, public IDs, usernames, avatars, admin-safe identifiers, direct policies, inherited policies, and effective block context.
 - Save and clear actions now operate from explicit selected-target/manual target state, refresh policy context after mutation, and continue to call Runtime/Auth admin endpoints only.
+- Increased the participation exclusion autocomplete timeout and replaced raw abort text with an admin-readable timeout message while Runtime/Auth resolves exact targets faster.
+- Aligned Participation Exclusions scope controls with the shared Dashboard `.switch-button` toggle component instead of the temporary economy-only switch skin.
 
 - Added Admin Dashboard controls for account/public identity participation exclusions inside `/economy`. Admins can load a target, view direct and inherited effective policy state, toggle all-bot, all-counter, XP/progression, wallet/economy, market/exchange, livechat, and module-specific blocks, save through Runtime/Auth, and clear policies through Runtime/Auth.
 - Dashboard calls the new Runtime/Auth `/api/admin/exclusions` endpoints only and keeps exclusion persistence/authority out of local Dashboard state.
