@@ -101,6 +101,7 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /MARKET_GOVERNANCE_ITEM = \(itemCode\) => `\/api\/admin\/economy\/market\/items\/\$\{encodeURIComponent\(itemCode\)\}`/);
   assert.match(js, /PARTICIPATION_EXCLUSIONS = "\/api\/admin\/exclusions"/);
   assert.match(js, /PARTICIPATION_EXCLUSIONS_SUMMARY = "\/api\/admin\/exclusions\/summary"/);
+  assert.match(js, /PARTICIPATION_EXCLUSION_TARGET_SEARCH = "\/api\/admin\/exclusions\/targets\/search"/);
   assert.match(js, /PARTICIPATION_EXCLUSION_TARGET = \(targetType, targetId\) => `\/api\/admin\/exclusions\/\$\{encodeURIComponent\(targetType\)\}\/\$\{encodeURIComponent\(targetId\)\}`/);
   assert.match(js, /EXCLUSION_SCOPE_DEFS = Object\.freeze/);
   assert.match(js, /"all_bot_replies", "Block all bot replies"/);
@@ -111,6 +112,12 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /method: "PATCH"/);
   assert.match(js, /async function clearParticipationExclusion/);
   assert.match(js, /method: "DELETE"/);
+  assert.match(js, /async function searchParticipationExclusionTargets/);
+  assert.match(js, /scheduleParticipationExclusionTargetSearch/);
+  assert.match(js, /data-exclusion-target-index/);
+  assert.match(js, /selectedTarget = payload\.target/);
+  assert.match(js, /ss-economy-exclusion-switch/);
+  assert.doesNotMatch(js, /class="ss-checkbox-wrapper ss-economy-exclusion-toggle"/);
   assert.match(js, /loadParticipationExclusionSummary/);
   assert.match(js, /ECONOMY_SETTINGS = "\/api\/admin\/economy\/settings"/);
   assert.match(js, /ECONOMY_DENOMINATIONS = "\/api\/admin\/economy\/denominations"/);
@@ -425,6 +432,11 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-denomination-editor\s*\{[\s\S]*grid-column:\s*1 \/ -1/);
   assert.match(css, /\.ss-economy-denomination-editor \.ss-economy-icon-field\s*\{[\s\S]*grid-template-columns:\s*minmax\(220px,\s*1fr\) auto/);
   assert.match(css, /\.ss-economy-denomination-editor \.ss-economy-icon-preview\s*\{[\s\S]*grid-column:\s*1 \/ -1/);
+  assert.match(css, /\.ss-economy-exclusion-switch\s*\{/);
+  assert.match(css, /\.ss-economy-exclusion-switch-track::after/);
+  assert.match(css, /\.ss-economy-exclusion-results\s*\{/);
+  assert.match(css, /\.ss-economy-exclusion-context\s*\{/);
+  assert.match(css, /\.ss-economy-exclusion-facts\s*\{/);
   assert.match(css, /\.ss-economy-item-chip\s*\{/);
   assert.match(css, /\.ss-economy-item-chip-row\s*\{/);
   assert.match(css, /\.ss-economy-item-chip-archived\s*\{[\s\S]*background:\s*rgba\(148,\s*163,\s*184,\s*0\.16\)/);

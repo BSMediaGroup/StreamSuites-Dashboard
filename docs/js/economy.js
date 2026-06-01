@@ -20,6 +20,7 @@
   const MARKET_GOVERNANCE_ITEM = (itemCode) => `/api/admin/economy/market/items/${encodeURIComponent(itemCode)}`;
   const PARTICIPATION_EXCLUSIONS = "/api/admin/exclusions";
   const PARTICIPATION_EXCLUSIONS_SUMMARY = "/api/admin/exclusions/summary";
+  const PARTICIPATION_EXCLUSION_TARGET_SEARCH = "/api/admin/exclusions/targets/search";
   const PARTICIPATION_EXCLUSION_TARGET = (targetType, targetId) => `/api/admin/exclusions/${encodeURIComponent(targetType)}/${encodeURIComponent(targetId)}`;
   const ECONOMY_SETTINGS = "/api/admin/economy/settings";
   const ECONOMY_DENOMINATIONS = "/api/admin/economy/denominations";
@@ -86,6 +87,13 @@
       allowedScopes: EXCLUSION_SCOPE_DEFS.map(([scope]) => scope),
       targetType: "public_identity",
       targetId: "",
+      searchQuery: "",
+      searchResults: [],
+      searchLoading: false,
+      searchError: "",
+      searchTimer: null,
+      searchToken: 0,
+      selectedTarget: null,
       current: null,
       effective: null,
       reason: "",
@@ -1079,11 +1087,129 @@
   function renderExclusionScopeToggles(activeScopes) {
     const active = activeScopes instanceof Set ? activeScopes : new Set();
     return EXCLUSION_SCOPE_DEFS.map(([scope, label]) => `
-      <label class="ss-checkbox-wrapper ss-economy-exclusion-toggle">
-        <input class="ss-checkbox" type="checkbox" data-exclusion-scope="${escapeHtml(scope)}" ${active.has(scope) ? "checked" : ""} />
-        <span class="ss-checkbox-text">${escapeHtml(label)}</span>
+      <label class="ss-economy-exclusion-switch ${active.has(scope) ? "is-active" : ""}">
+        <input type="checkbox" data-exclusion-scope="${escapeHtml(scope)}" ${active.has(scope) ? "checked" : ""} />
+        <span class="ss-economy-exclusion-switch-track" aria-hidden="true"></span>
+        <span class="ss-economy-exclusion-switch-text">
+          <strong>${escapeHtml(label)}</strong>
+          <small>${active.has(scope) ? "Active block" : "Inactive"}</small>
+        </span>
       </label>
     `).join("");
+  }
+
+  function exclusionTargetChips(items, keys) {
+    const source = Array.isArray(items) ? items : [];
+    const values = source
+      .map((item) => {
+        const data = item && typeof item === "object" ? item : {};
+        return keys.map((key) => text(data[key])).find(Boolean);
+      })
+      .filter(Boolean);
+    return values.length
+      ? values.slice(0, 5).map((value) => `<span class="ss-chip">${escapeHtml(value)}</span>`).join("")
+      : `<span class="muted">None reported</span>`;
+  }
+
+  function exclusionPolicySummaryText(policy) {
+    if (!policy) return "No direct policy saved";
+    const scopes = Array.isArray(policy.scopes) ? policy.scopes : [];
+    return `${policy.enabled ? "Active" : "Disabled"} · ${scopes.length ? scopes.map(formatLabel).join(", ") : "No scopes"}`;
+  }
+
+  function renderExclusionTargetAvatar(target) {
+    const name = text(target?.display_name || target?.username || target?.label || target?.target_id || "?");
+    const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "?";
+    return target?.avatar_url
+      ? `<span class="ss-economy-exclusion-avatar"><img src="${escapeHtml(target.avatar_url)}" alt="" loading="lazy" /></span>`
+      : `<span class="ss-economy-exclusion-avatar" aria-hidden="true">${escapeHtml(initials)}</span>`;
+  }
+
+  function renderExclusionTargetResult(candidate, index) {
+    const publicIds = Array.isArray(candidate.attached_public_identities) ? candidate.attached_public_identities : [];
+    const accounts = Array.isArray(candidate.attached_accounts) ? candidate.attached_accounts : [];
+    const attached = candidate.target_type === "account"
+      ? `${publicIds.length} public ID${publicIds.length === 1 ? "" : "s"}`
+      : accounts.length ? `Attached to ${accounts[0]?.display_name || accounts[0]?.user_code || accounts[0]?.account_id}` : "No attached account";
+    return `
+      <button class="ss-economy-exclusion-result" type="button" data-exclusion-target-index="${index}">
+        ${renderExclusionTargetAvatar(candidate)}
+        <span class="ss-economy-exclusion-result-main">
+          <strong>${escapeHtml(candidate.display_name || candidate.label || candidate.username || candidate.target_id)}</strong>
+          <small>${escapeHtml(candidate.public_identity_code || candidate.user_code || candidate.account_uuid || candidate.target_id)}</small>
+          <small>${escapeHtml(attached)}</small>
+        </span>
+        <span class="ss-chip">${escapeHtml(candidate.target_type === "account" ? "Account" : "Public ID")}</span>
+      </button>
+    `;
+  }
+
+  function renderExclusionSearchResults(stateSlice) {
+    const results = Array.isArray(stateSlice.searchResults) ? stateSlice.searchResults : [];
+    if (stateSlice.searchLoading) {
+      return `<div class="ss-economy-exclusion-results"><div class="ss-empty ss-empty-compact">Searching Runtime/Auth targets...</div></div>`;
+    }
+    if (stateSlice.searchError) {
+      return `<div class="ss-economy-exclusion-results"><div class="ss-empty ss-empty-compact">${escapeHtml(stateSlice.searchError)}</div></div>`;
+    }
+    if (!text(stateSlice.searchQuery) || text(stateSlice.searchQuery).length < 2) return "";
+    return `
+      <div class="ss-economy-exclusion-results">
+        ${results.length
+          ? results.map((candidate, index) => renderExclusionTargetResult(candidate, index)).join("")
+          : `<div class="ss-empty ss-empty-compact">No matching accounts or public identities found.</div>`}
+      </div>
+    `;
+  }
+
+  function renderSelectedExclusionTarget(target, effective) {
+    if (!target) {
+      return `<div class="ss-empty ss-empty-compact">Select a Runtime/Auth target to inspect direct and inherited exclusion context.</div>`;
+    }
+    const direct = target.direct_policy || null;
+    const effectiveScopes = exclusionScopeSet(target.effective || effective || {});
+    return `
+      <article class="ss-economy-exclusion-context">
+        <div class="ss-economy-exclusion-context-head">
+          ${renderExclusionTargetAvatar(target)}
+          <div>
+            <strong>${escapeHtml(target.display_name || target.label || target.username || target.target_id)}</strong>
+            <span class="muted">${escapeHtml(target.target_type === "account" ? "Account target" : "Public identity target")}</span>
+          </div>
+          <span class="ss-chip">${escapeHtml(target.target_type === "account" ? "Account" : "Public ID")}</span>
+        </div>
+        <div class="ss-economy-exclusion-facts">
+          <div><span>Target ID</span><strong>${escapeHtml(target.target_id || "Not selected")}</strong></div>
+          <div><span>Account UUID</span><strong>${escapeHtml(target.account_uuid || "None")}</strong></div>
+          <div><span>Admin identifier</span><strong>${escapeHtml(target.account_email || target.safe_admin_identifier || "None")}</strong></div>
+          <div><span>User code</span><strong>${escapeHtml(target.user_code || target.username || "None")}</strong></div>
+          <div><span>Public ID</span><strong>${escapeHtml(target.public_identity_code || "None")}</strong></div>
+          <div><span>Public slug</span><strong>${escapeHtml(target.public_slug || "None")}</strong></div>
+        </div>
+        <div class="ss-economy-exclusion-linkage">
+          <div>
+            <strong>Attached accounts</strong>
+            <div class="ss-chip-row">${exclusionTargetChips(target.attached_accounts, ["display_name", "user_code", "account_id"])}</div>
+          </div>
+          <div>
+            <strong>Attached public IDs</strong>
+            <div class="ss-chip-row">${exclusionTargetChips(target.attached_public_identities, ["public_identity_code", "identity_code", "user_code"])}</div>
+          </div>
+        </div>
+        <div class="ss-economy-exclusion-policy-line">
+          <span>Direct policy</span>
+          <strong>${escapeHtml(exclusionPolicySummaryText(direct))}</strong>
+        </div>
+        <div class="ss-economy-exclusion-policy-line">
+          <span>Effective blocks</span>
+          <strong>${effectiveScopes.size ? Array.from(effectiveScopes).map(formatLabel).join(", ") : "No effective blocks"}</strong>
+        </div>
+        <div class="ss-economy-exclusion-policy-line">
+          <span>Last updated / note</span>
+          <strong>${escapeHtml(direct?.updated_at || direct?.updated_by || direct?.reason || "None supplied")}</strong>
+        </div>
+      </article>
+    `;
   }
 
   function renderExclusionPolicySummary(label, policy) {
@@ -1114,7 +1240,8 @@
     if (!el.participationExclusions) return;
     const stateSlice = state.participationExclusions;
     const effective = stateSlice.effective || {};
-    const direct = stateSlice.current || {};
+    const selectedTarget = stateSlice.selectedTarget || null;
+    const direct = stateSlice.current || selectedTarget?.direct_policy || {};
     const activeScopes = exclusionScopeSet(direct.policy || direct);
     const effectiveScopes = exclusionScopeSet(effective);
     const targetType = text(stateSlice.targetType || "public_identity");
@@ -1125,6 +1252,10 @@
     el.participationExclusions.className = "ss-economy-actions";
     el.participationExclusions.innerHTML = `
       <div class="ss-economy-action-grid ss-economy-exclusion-grid">
+        <label class="ss-economy-wide">Target search
+          <input id="economy-exclusion-target-search" value="${escapeHtml(stateSlice.searchQuery || "")}" placeholder="Search public ID, user code, UUID, username, display name, or slug" autocomplete="off" />
+          ${renderExclusionSearchResults(stateSlice)}
+        </label>
         <label>Target type
           <select id="economy-exclusion-target-type">
             <option value="public_identity" ${targetType === "public_identity" ? "selected" : ""}>Public identity</option>
@@ -1147,6 +1278,9 @@
           <button class="ss-btn ss-btn-danger" type="button" id="economy-exclusion-clear" ${targetId && !stateSlice.saving ? "" : "disabled"}>Clear policy</button>
           <span class="muted">${escapeHtml(stateSlice.error || (stateSlice.loading ? "Loading policy..." : ""))}</span>
         </div>
+      </div>
+      <div class="ss-economy-list">
+        ${renderSelectedExclusionTarget(selectedTarget, effective)}
       </div>
       <div class="ss-economy-list ss-economy-event-list">
         ${renderExclusionPolicySummary("Direct policy", policy)}
@@ -1642,6 +1776,61 @@
       : EXCLUSION_SCOPE_DEFS.map(([scope]) => scope);
   }
 
+  async function searchParticipationExclusionTargets(query) {
+    const stateSlice = state.participationExclusions;
+    const normalizedQuery = text(query);
+    const token = ++stateSlice.searchToken;
+    stateSlice.searchQuery = normalizedQuery;
+    stateSlice.searchError = "";
+    if (normalizedQuery.length < 2) {
+      stateSlice.searchResults = [];
+      stateSlice.searchLoading = false;
+      renderParticipationExclusions();
+      return;
+    }
+    stateSlice.searchLoading = true;
+    renderParticipationExclusions();
+    try {
+      const payload = await requestJson(`${PARTICIPATION_EXCLUSION_TARGET_SEARCH}?q=${encodeURIComponent(normalizedQuery)}&target_type=any&limit=12`);
+      if (token !== stateSlice.searchToken) return;
+      stateSlice.searchResults = Array.isArray(payload.items) ? payload.items : [];
+      stateSlice.allowedScopes = Array.isArray(payload.allowed_scopes) ? payload.allowed_scopes : stateSlice.allowedScopes;
+    } catch (err) {
+      if (token !== stateSlice.searchToken) return;
+      stateSlice.searchError = err?.message || "Target search failed.";
+      stateSlice.searchResults = [];
+    } finally {
+      if (token === stateSlice.searchToken) {
+        stateSlice.searchLoading = false;
+        renderParticipationExclusions();
+      }
+    }
+  }
+
+  function scheduleParticipationExclusionTargetSearch(query) {
+    const stateSlice = state.participationExclusions;
+    stateSlice.searchQuery = text(query);
+    if (stateSlice.searchTimer) window.clearTimeout(stateSlice.searchTimer);
+    stateSlice.searchTimer = window.setTimeout(() => {
+      stateSlice.searchTimer = null;
+      searchParticipationExclusionTargets(stateSlice.searchQuery);
+    }, 250);
+  }
+
+  async function selectParticipationExclusionTarget(candidate) {
+    if (!candidate) return;
+    state.participationExclusions.selectedTarget = candidate;
+    state.participationExclusions.targetType = text(candidate.target_type || "public_identity");
+    state.participationExclusions.targetId = text(candidate.target_id);
+    state.participationExclusions.searchQuery = text(candidate.label || candidate.display_name || candidate.username || candidate.target_id);
+    state.participationExclusions.searchResults = [];
+    state.participationExclusions.current = candidate.direct_policy || null;
+    state.participationExclusions.effective = candidate.effective || null;
+    state.participationExclusions.reason = candidate.direct_policy?.reason || "";
+    renderParticipationExclusions();
+    await loadParticipationExclusionSummary();
+  }
+
   async function loadParticipationExclusionSummary() {
     const targetType = text($("#economy-exclusion-target-type")?.value || state.participationExclusions.targetType || "public_identity");
     const targetId = text($("#economy-exclusion-target-id")?.value || state.participationExclusions.targetId);
@@ -1651,6 +1840,7 @@
     if (!targetType || !targetId) {
       state.participationExclusions.current = null;
       state.participationExclusions.effective = null;
+      state.participationExclusions.selectedTarget = null;
       renderParticipationExclusions();
       return;
     }
@@ -1664,6 +1854,7 @@
           ? payload.effective?.account_policy
           : payload.effective?.identity_policy;
       }
+      state.participationExclusions.selectedTarget = payload.target || state.participationExclusions.selectedTarget;
       state.participationExclusions.effective = payload.effective || null;
       state.participationExclusions.allowedScopes = Array.isArray(payload.allowed_scopes) ? payload.allowed_scopes : state.participationExclusions.allowedScopes;
       state.participationExclusions.reason = state.participationExclusions.current?.reason || "";
@@ -1828,6 +2019,7 @@
       });
       state.participationExclusions.targetType = targetType;
       state.participationExclusions.targetId = targetId;
+      state.participationExclusions.selectedTarget = payload.target || state.participationExclusions.selectedTarget;
       state.participationExclusions.current = payload.policy || null;
       state.participationExclusions.effective = payload.effective || null;
       state.participationExclusions.reason = payload.policy?.reason || reason;
@@ -1854,6 +2046,7 @@
     state.participationExclusions.error = "";
     try {
       const payload = await requestJson(PARTICIPATION_EXCLUSION_TARGET(targetType, targetId), { method: "DELETE" });
+      state.participationExclusions.selectedTarget = payload.target || state.participationExclusions.selectedTarget;
       state.participationExclusions.current = payload.policy || null;
       state.participationExclusions.effective = payload.effective || null;
       state.participationExclusions.reason = "";
@@ -2474,9 +2667,17 @@
         }
         return;
       }
+      const exclusionTargetResult = event.target.closest?.("[data-exclusion-target-index]");
+      if (exclusionTargetResult) {
+        const index = Number(exclusionTargetResult.dataset.exclusionTargetIndex);
+        const candidate = state.participationExclusions.searchResults[index];
+        await selectParticipationExclusionTarget(candidate);
+        return;
+      }
       if (event.target.closest?.("#economy-exclusion-use-selected")) {
         state.participationExclusions.targetType = "public_identity";
         state.participationExclusions.targetId = state.selectedIdentityCode || "";
+        state.participationExclusions.selectedTarget = null;
         await loadParticipationExclusionSummary();
         return;
       }
@@ -2628,9 +2829,17 @@
           search.setSelectionRange(selectionStart, selectionEnd);
         }
       }
+      if (event.target.matches?.("#economy-exclusion-target-search")) {
+        scheduleParticipationExclusionTargetSearch(event.target.value);
+      }
       if (event.target.matches?.("#economy-exclusion-target-id, #economy-exclusion-reason")) {
         state.participationExclusions.targetId = text($("#economy-exclusion-target-id")?.value);
         state.participationExclusions.reason = text($("#economy-exclusion-reason")?.value);
+        if (event.target.matches?.("#economy-exclusion-target-id")) {
+          state.participationExclusions.selectedTarget = null;
+          state.participationExclusions.current = null;
+          state.participationExclusions.effective = null;
+        }
       }
     });
     document.addEventListener("change", (event) => {
@@ -2658,6 +2867,7 @@
         state.participationExclusions.targetType = text(event.target.value || "public_identity");
         state.participationExclusions.current = null;
         state.participationExclusions.effective = null;
+        state.participationExclusions.selectedTarget = null;
         renderParticipationExclusions();
       }
     });

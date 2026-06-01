@@ -6,6 +6,11 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Upgraded Participation Exclusions from black card-like checkbox controls to explicit switch toggles with visible active/inactive state while preserving the existing Runtime/Auth save/clear payload contract.
+- Added autocomplete target search for accounts and public identities through Runtime/Auth `GET /api/admin/exclusions/targets/search`, covering public IDs, user codes, UUIDs, usernames, display names, and slugs.
+- Added selected-target detail panels showing linked accounts, public IDs, usernames, avatars, admin-safe identifiers, direct policies, inherited policies, and effective block context.
+- Save and clear actions now operate from explicit selected-target/manual target state, refresh policy context after mutation, and continue to call Runtime/Auth admin endpoints only.
+
 - Added Admin Dashboard controls for account/public identity participation exclusions inside `/economy`. Admins can load a target, view direct and inherited effective policy state, toggle all-bot, all-counter, XP/progression, wallet/economy, market/exchange, livechat, and module-specific blocks, save through Runtime/Auth, and clear policies through Runtime/Auth.
 - Dashboard calls the new Runtime/Auth `/api/admin/exclusions` endpoints only and keeps exclusion persistence/authority out of local Dashboard state.
 - Human note: the Economy / Inventory workspace now has a compact `Participation Exclusions` section for bot reply and accumulation governance without turning Dashboard into a policy authority.
