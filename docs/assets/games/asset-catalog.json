@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "generated_at": "2026-05-25T06:53:40.030135Z",
+  "generated_at": "2026-06-01T11:49:38.354089Z",
   "asset_root": "assets/games",
-  "count": 133,
+  "count": 146,
   "items": [
     {
       "path": "assets/games/00-stone.webp",
@@ -605,6 +605,20 @@
       "definition_complete": true
     },
     {
+      "path": "assets/games/item-ah64-apache.webp",
+      "filename": "item-ah64-apache.webp",
+      "extension": "webp",
+      "label": "Item Ah64 Apache",
+      "category": "Weapon",
+      "tags": [
+        "apache",
+        "helicopter"
+      ],
+      "notes": "apache, helicopter,",
+      "updated_at": "2026-06-01T11:39:39.329507Z",
+      "definition_complete": true
+    },
+    {
       "path": "assets/games/item-bait.webp",
       "filename": "item-bait.webp",
       "extension": "webp",
@@ -618,6 +632,20 @@
       ],
       "notes": "fish, bait, fishing, hook",
       "updated_at": "2026-05-23T08:39:05.524465Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-battle-axe.webp",
+      "filename": "item-battle-axe.webp",
+      "extension": "webp",
+      "label": "Item Battle Axe",
+      "category": "Weapon",
+      "tags": [
+        "axe",
+        "battle"
+      ],
+      "notes": "axe, battle",
+      "updated_at": "2026-05-31T19:59:05.927044Z",
       "definition_complete": true
     },
     {
@@ -685,6 +713,19 @@
       "definition_complete": true
     },
     {
+      "path": "assets/games/item-crossbow2.webp",
+      "filename": "item-crossbow2.webp",
+      "extension": "webp",
+      "label": "Item Crossbow2",
+      "category": "Weapon",
+      "tags": [
+        "crossbow"
+      ],
+      "notes": "crossbow",
+      "updated_at": "2026-06-01T11:33:34.872265Z",
+      "definition_complete": true
+    },
+    {
       "path": "assets/games/item-dice-gold.webp",
       "filename": "item-dice-gold.webp",
       "extension": "webp",
@@ -736,6 +777,20 @@
       "definition_complete": true
     },
     {
+      "path": "assets/games/item-fgm148-javelin-rocket-launcher-3.webp",
+      "filename": "item-fgm148-javelin-rocket-launcher-3.webp",
+      "extension": "webp",
+      "label": "Item Fgm148 Javelin Rocket Launcher 3",
+      "category": "Weapon",
+      "tags": [
+        "rocket launcher",
+        "javelin"
+      ],
+      "notes": "rocket launcher, javelin,",
+      "updated_at": "2026-06-01T11:42:31.337092Z",
+      "definition_complete": true
+    },
+    {
       "path": "assets/games/item-fish-large-1.webp",
       "filename": "item-fish-large-1.webp",
       "extension": "webp",
@@ -765,6 +820,22 @@
       ],
       "notes": "shark, fish, catch, large",
       "updated_at": "2026-05-24T18:47:27.203647Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-flamethrower.webp",
+      "filename": "item-flamethrower.webp",
+      "extension": "webp",
+      "label": "Item Flamethrower",
+      "category": "Weapon",
+      "tags": [
+        "flame",
+        "flamethrower",
+        "thrower",
+        "weapon"
+      ],
+      "notes": "flame, flamethrower, thrower, weapon",
+      "updated_at": "2026-05-31T18:30:44.701607Z",
       "definition_complete": true
     },
     {
@@ -1008,6 +1079,36 @@
       "definition_complete": true
     },
     {
+      "path": "assets/games/item-steel-rod.webp",
+      "filename": "item-steel-rod.webp",
+      "extension": "webp",
+      "label": "Item Steel Rod",
+      "category": "Equipment",
+      "tags": [
+        "rod",
+        "fishing",
+        "steel",
+        "heavy duty"
+      ],
+      "notes": "rod, fishing, steel, heavy duty,",
+      "updated_at": "2026-06-01T11:31:06.912924Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-sword.webp",
+      "filename": "item-sword.webp",
+      "extension": "webp",
+      "label": "Item Sword",
+      "category": "Weapon",
+      "tags": [
+        "sword",
+        "weapon"
+      ],
+      "notes": "sword, weapon",
+      "updated_at": "2026-06-01T11:35:29.316942Z",
+      "definition_complete": true
+    },
+    {
       "path": "assets/games/item-swordfish-2.webp",
       "filename": "item-swordfish-2.webp",
       "extension": "webp",
@@ -1022,6 +1123,20 @@
       ],
       "notes": "fish, swordfish, catch, fishing, large",
       "updated_at": "2026-05-24T18:36:54.655096Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-tactical-knife2.webp",
+      "filename": "item-tactical-knife2.webp",
+      "extension": "webp",
+      "label": "Item Tactical Knife2",
+      "category": "Weapon",
+      "tags": [
+        "knife",
+        "tactical"
+      ],
+      "notes": "knife, tactical",
+      "updated_at": "2026-05-31T18:28:54.364809Z",
       "definition_complete": true
     },
     {
@@ -1150,6 +1265,20 @@
       "definition_complete": true
     },
     {
+      "path": "assets/games/material-concrete2.webp",
+      "filename": "material-concrete2.webp",
+      "extension": "webp",
+      "label": "Material Concrete2",
+      "category": "Material",
+      "tags": [
+        "concrete",
+        "material"
+      ],
+      "notes": "concrete, material",
+      "updated_at": "2026-06-01T11:45:15.079175Z",
+      "definition_complete": true
+    },
+    {
       "path": "assets/games/material-fabric.webp",
       "filename": "material-fabric.webp",
       "extension": "webp",
@@ -1192,6 +1321,36 @@
       "definition_complete": true
     },
     {
+      "path": "assets/games/material-steel3.webp",
+      "filename": "material-steel3.webp",
+      "extension": "webp",
+      "label": "Material Steel3",
+      "category": "Material",
+      "tags": [
+        "material",
+        "steel"
+      ],
+      "notes": "material, steel",
+      "updated_at": "2026-06-01T11:46:58.976197Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/potion-blue-2.webp",
+      "filename": "potion-blue-2.webp",
+      "extension": "webp",
+      "label": "Potion Blue 2",
+      "category": "Consumable",
+      "tags": [
+        "potion",
+        "blue",
+        "boost",
+        "health"
+      ],
+      "notes": "potion, blue, boost, health",
+      "updated_at": "2026-06-01T11:49:38.337576Z",
+      "definition_complete": true
+    },
+    {
       "path": "assets/games/potion-blue.webp",
       "filename": "potion-blue.webp",
       "extension": "webp",
@@ -1221,6 +1380,22 @@
       ],
       "notes": "potion, gold, boost, health",
       "updated_at": "2026-05-25T01:01:22.049915Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/potion-green-2.webp",
+      "filename": "potion-green-2.webp",
+      "extension": "webp",
+      "label": "Potion Green 2",
+      "category": "Consumable",
+      "tags": [
+        "potion",
+        "green",
+        "boost",
+        "health"
+      ],
+      "notes": "potion, green, boost, health",
+      "updated_at": "2026-06-01T11:48:47.742249Z",
       "definition_complete": true
     },
     {
@@ -1269,6 +1444,20 @@
       ],
       "notes": "potion, purple, boost, health",
       "updated_at": "2026-05-25T01:02:00.727869Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/potion-red-2.webp",
+      "filename": "potion-red-2.webp",
+      "extension": "webp",
+      "label": "Potion Red 2",
+      "category": "Consumable",
+      "tags": [
+        "potion",
+        "red"
+      ],
+      "notes": "potion, red",
+      "updated_at": "2026-06-01T10:49:21.557841Z",
       "definition_complete": true
     },
     {
