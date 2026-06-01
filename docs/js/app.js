@@ -1936,7 +1936,7 @@ const SIDEBAR_VIEW_ICON_MAP = Object.freeze({
   "creator-integrations": "/assets/icons/ui/automation.svg",
   "creator-stats": "/assets/icons/ui/statgraph.svg",
   accounts: "/assets/icons/ui/identity.svg",
-  "public-identities": "/assets/icons/ui/identity.svg",
+  "public-identities": "/assets/icons/ui/groupcircle.svg",
   progression: "/assets/icons/ui/statgraph.svg",
   economy: "/assets/icons/economy.svg",
   tiers: "/assets/icons/ui/verifiedbadge.svg",
