@@ -46,6 +46,7 @@
   const EVENT_PAGE_SIZE = 8;
   const DEFAULT_ITEM_PAGE_SIZE = 20;
   const ITEM_PAGE_SIZE_OPTIONS = [5, 10, 20, 50, 100];
+  const ITEM_CREATE_EDITOR_CODE = "__create_item_definition__";
   const EXCLUSION_SCOPE_DEFS = Object.freeze([
     ["all_bot_replies", "Block all bot replies"],
     ["all_counters", "Block all counters"],
@@ -796,7 +797,10 @@
       const row = code ? document.querySelector(`.ss-economy-denomination-row[data-denomination-code="${CSS.escape(code)}"]`) : null;
       return row?.querySelector('[data-denomination-field="icon_path"]') || null;
     }
-    const row = target ? document.querySelector(`.ss-economy-item-definition[data-item-code="${CSS.escape(target)}"]`) : null;
+    const row = target
+      ? document.querySelector(`.ss-economy-item-editor-modal .ss-economy-item-definition[data-item-code="${CSS.escape(target)}"]`) ||
+        document.querySelector(`.ss-economy-item-definition[data-item-code="${CSS.escape(target)}"]`)
+      : null;
     return row?.querySelector('[data-item-field="icon_path"]') || null;
   }
 
@@ -1681,6 +1685,142 @@
     `;
   }
 
+  function itemDefinitionViewModel(item = {}) {
+    const metadata = item.metadata && typeof item.metadata === "object" ? item.metadata : {};
+    const notes = text(metadata.notes || metadata.admin_notes || "");
+    const shortDescription = text(item.short_description || metadata.short_description || metadata.public_short_description || "");
+    const tooltipDescription = text(item.tooltip_description || item.long_description || metadata.tooltip_description || metadata.public_description || metadata.public_details || "");
+    const contextualPublicNote = text(item.contextual_public_note || metadata.contextual_public_note || metadata.public_note || "");
+    const chatAlias = text(item.chat_alias || metadata.chat_alias || "");
+    const publicTooltipEnabled = item.public_tooltip_enabled !== false && metadata.public_tooltip_enabled !== false;
+    const systemType = text(metadata.system_asset_type || metadata.denomination_code || "");
+    return {
+      metadata,
+      notes,
+      shortDescription,
+      tooltipDescription,
+      contextualPublicNote,
+      chatAlias,
+      publicTooltipEnabled,
+      assetChip: systemType ? (metadata.wallet_balance_unit ? "Currency unit" : "Denomination") : "Inventory item",
+      isArchived: item.is_enabled === false,
+      normalizedIcon: normalizeItemIconPath(item.icon_path || ""),
+      categoryLabel: categoryDisplayLabel(item.category_label || item.category || "Uncategorized"),
+      codePrefix: categoryCodePrefix(item.category || ""),
+      codeSuffix: itemCodeSuffix(item.item_code)
+    };
+  }
+
+  function renderItemDefinitionModal() {
+    if (!state.itemEditorCode) return "";
+    if (state.itemEditorCode === ITEM_CREATE_EDITOR_CODE) {
+      return `
+        <div class="ss-economy-item-editor-modal" role="dialog" aria-modal="true" aria-labelledby="economy-item-editor-title" data-item-modal>
+          <div class="ss-economy-item-editor-dialog ss-economy-item-definition" data-item-code="">
+            <header class="ss-economy-item-editor-head">
+              <div>
+                <span class="ss-subtitle">Create definition</span>
+                <h3 id="economy-item-editor-title">New inventory item</h3>
+                <p class="muted">Definition metadata is saved through Runtime/Auth. Use a stable generated item code, then pick bundled art or paste a supported image path.</p>
+              </div>
+              <button class="ss-economy-item-modal-close" type="button" aria-label="Close item definition editor" data-item-modal-close><span aria-hidden="true"></span></button>
+            </header>
+            <div class="ss-economy-item-editor-body ss-economy-action-grid ss-economy-item-create-grid">
+              <section class="ss-economy-item-create-card">
+                <h4>Identity</h4>
+                <label>Item name<input id="economy-item-create-label" type="text" placeholder="Iron Ore" /><span id="economy-item-create-error-label" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "label") || fieldErrorText(state.itemCreateErrors, "item_name"))}</span></label>
+                <label>Category<select id="economy-item-create-category">${itemCategoryOptions()}</select><span id="economy-item-create-error-category" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "category"))}</span></label>
+                <label>Rarity<select id="economy-item-create-rarity">${presetOptions(state.rarityPresets)}</select><span id="economy-item-create-error-rarity" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "rarity"))}</span></label>
+                <label>Enabled<select id="economy-item-create-enabled"><option value="true">Enabled</option><option value="false">Disabled</option></select></label>
+                <label>Public tooltip<select id="economy-item-create-public-tooltip"><option value="true">Enabled</option><option value="false">Disabled</option></select></label>
+                <label>Chat alias<input id="economy-item-create-chat-alias" type="text" placeholder="lumber" /><span class="muted">Short unique code users can type in livechat, e.g. <code>!buy lumber</code></span><span id="economy-item-create-error-chat_alias" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "chat_alias"))}</span></label>
+              </section>
+              <section class="ss-economy-item-create-card ss-economy-item-create-card--code">
+                <h4>Item code</h4>
+                <span class="ss-subtitle">Generated item code</span>
+                <code id="economy-item-code-preview">Select a category and enter an item name.</code>
+                <input id="economy-item-create-code" type="hidden" readonly />
+                <span id="economy-item-create-error-item_code" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "item_code"))}</span>
+                <p id="economy-item-code-status" class="muted ss-economy-item-code-status">Runtime/Auth validates the generated code before saving.</p>
+              </section>
+              <section class="ss-economy-item-create-card ss-economy-item-create-card--icon">
+                <h4>Icon</h4>
+                ${renderIconPathControl({ create: true })}
+              </section>
+              <section class="ss-economy-item-create-card ss-economy-item-create-card--notes">
+                <h4>Public copy and notes</h4>
+                <label class="ss-economy-wide">Short public description<textarea id="economy-item-create-short-description" rows="3"></textarea><span id="economy-item-create-error-short_description" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "short_description"))}</span></label>
+                <label class="ss-economy-wide">Tooltip public details<textarea id="economy-item-create-tooltip-description" rows="5"></textarea><span id="economy-item-create-error-tooltip_description" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "tooltip_description"))}</span></label>
+                <label class="ss-economy-wide">Contextual public note<input id="economy-item-create-contextual-note" type="text" placeholder="Optional public-safe context" /></label>
+                <label class="ss-economy-wide">Metadata notes<textarea id="economy-item-create-notes" rows="4"></textarea></label>
+                <label class="ss-economy-wide">Reason<input id="economy-item-create-reason" type="text" placeholder="Required creation note" /><span id="economy-item-create-error-reason_text" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "reason_text"))}</span></label>
+              </section>
+            </div>
+            <footer class="ss-economy-item-editor-foot">
+              <button class="ss-btn ss-btn-secondary" type="button" data-item-modal-close>Cancel</button>
+              <button id="economy-item-create-submit" class="ss-btn" type="button">Create item definition</button>
+            </footer>
+          </div>
+        </div>
+      `;
+    }
+
+    const item = state.itemDefinitions.find((candidate) => text(candidate.item_code) === state.itemEditorCode);
+    if (!item) return "";
+    const model = itemDefinitionViewModel(item);
+    return `
+      <div class="ss-economy-item-editor-modal" role="dialog" aria-modal="true" aria-labelledby="economy-item-editor-title" data-item-modal>
+        <div class="ss-economy-item-editor-dialog ss-economy-item-definition${model.isArchived ? " is-archived" : ""}" data-item-code="${escapeHtml(item.item_code)}">
+          <header class="ss-economy-item-editor-head">
+            <div class="ss-economy-item-editor-title">
+              ${renderItemIcon(item)}
+              <div>
+                <span class="ss-subtitle">Edit item definition</span>
+                <h3 id="economy-item-editor-title">${escapeHtml(item.label || item.item_code)}</h3>
+                <code>${escapeHtml(item.item_code)}</code>
+              </div>
+            </div>
+            <button class="ss-economy-item-modal-close" type="button" aria-label="Close item definition editor" data-item-modal-close><span aria-hidden="true"></span></button>
+          </header>
+          <div class="ss-economy-item-editor-body ss-economy-item-editor">
+            <section class="ss-economy-item-editor-card">
+              <h4>Identity</h4>
+              <label>Label<input data-item-field="label" value="${escapeHtml(item.label || "")}" /></label>
+              <label>Category<select data-item-field="category">${itemCategoryOptions(item.category || "")}</select></label>
+              <label>Rarity<select data-item-field="rarity">${presetOptions(state.rarityPresets, item.rarity || "")}</select></label>
+              <label>Enabled<select data-item-field="is_enabled"><option value="true" ${item.is_enabled === false ? "" : "selected"}>Enabled</option><option value="false" ${item.is_enabled === false ? "selected" : ""}>Disabled</option></select></label>
+              <label>Public tooltip<select data-item-field="public_tooltip_enabled"><option value="true" ${model.publicTooltipEnabled ? "selected" : ""}>Enabled</option><option value="false" ${model.publicTooltipEnabled ? "" : "selected"}>Disabled</option></select></label>
+              <label>Chat alias<input data-item-field="chat_alias" value="${escapeHtml(model.chatAlias)}" placeholder="lumber" /><span class="muted">Short unique code users can type in livechat, e.g. <code>!buy lumber</code></span></label>
+            </section>
+            <section class="ss-economy-item-editor-card ss-economy-item-editor-card--code">
+              <h4>Item code</h4>
+              <label>Item code prefix<span class="ss-economy-code-prefix" data-item-code-prefix>${escapeHtml(model.codePrefix || "category")}</span></label>
+              <label>Item code suffix<input data-item-field="item_code_suffix" value="${escapeHtml(model.codeSuffix)}" autocomplete="off" /></label>
+              <div class="ss-economy-wide ss-economy-code-preview"><span>Generated full code preview</span><code data-item-code-preview>${escapeHtml(item.item_code)}</code><p class="muted ss-economy-item-code-status" data-item-code-status>Current item code remains unchanged.</p></div>
+            </section>
+            <section class="ss-economy-item-editor-card ss-economy-icon-card">
+              <h4>Icon</h4>
+              ${renderIconPathControl({ itemCode: item.item_code, value: model.normalizedIcon })}
+            </section>
+            <section class="ss-economy-item-editor-card ss-economy-item-editor-card--copy">
+              <h4>Public copy and notes</h4>
+              <label class="ss-economy-wide">Short public description<textarea data-item-field="short_description" rows="3">${escapeHtml(model.shortDescription)}</textarea></label>
+              <label class="ss-economy-wide">Tooltip public details<textarea data-item-field="tooltip_description" rows="5">${escapeHtml(model.tooltipDescription)}</textarea></label>
+              <label class="ss-economy-wide">Contextual public note<input data-item-field="contextual_public_note" value="${escapeHtml(model.contextualPublicNote)}" placeholder="Optional scope, source, or usage context" /></label>
+              <label class="ss-economy-wide">Metadata notes<textarea data-item-field="metadata_notes" rows="4">${escapeHtml(model.notes)}</textarea></label>
+              <label class="ss-economy-wide">Reason<input data-item-field="reason_text" placeholder="Required before save" /></label>
+            </section>
+          </div>
+          <footer class="ss-economy-item-editor-foot">
+            <button class="ss-btn ss-btn-secondary" type="button" data-item-modal-close>Cancel</button>
+            <button class="ss-btn ss-btn-danger ss-economy-item-delete" type="button" data-item-code="${escapeHtml(item.item_code)}" ${model.isArchived ? `disabled title="This item definition is already archived / disabled."` : ""}>${model.isArchived ? "Archived" : "Archive"}</button>
+            <button class="ss-btn ss-economy-item-save" type="button" data-item-code="${escapeHtml(item.item_code)}">Save metadata</button>
+          </footer>
+        </div>
+      </div>
+    `;
+  }
+
   function renderItemDefinitions() {
     if (!el.itemDefinitions) return;
     el.itemCount.textContent = formatNumber(state.itemDefinitions.length);
@@ -1689,79 +1829,28 @@
     state.itemPage = pageInfo.page;
     const itemsMarkup = pageInfo.items
       .map((item) => {
-        const metadata = item.metadata && typeof item.metadata === "object" ? item.metadata : {};
-        const notes = text(metadata.notes || metadata.admin_notes || "");
-        const shortDescription = text(item.short_description || metadata.short_description || metadata.public_short_description || "");
-        const tooltipDescription = text(item.tooltip_description || item.long_description || metadata.tooltip_description || metadata.public_description || metadata.public_details || "");
-        const contextualPublicNote = text(item.contextual_public_note || metadata.contextual_public_note || metadata.public_note || "");
-        const chatAlias = text(item.chat_alias || metadata.chat_alias || "");
-        const publicTooltipEnabled = item.public_tooltip_enabled !== false && metadata.public_tooltip_enabled !== false;
-        const systemType = text(metadata.system_asset_type || metadata.denomination_code || "");
-        const assetChip = systemType
-          ? (metadata.wallet_balance_unit ? "Currency unit" : "Denomination")
-          : "Inventory item";
+        const model = itemDefinitionViewModel(item);
         const isEditing = state.itemEditorCode === item.item_code;
-        const isArchived = item.is_enabled === false;
-        const normalizedIcon = normalizeItemIconPath(item.icon_path || "");
-        const categoryLabel = categoryDisplayLabel(item.category_label || item.category || "Uncategorized");
-        const codePrefix = categoryCodePrefix(item.category || "");
-        const codeSuffix = itemCodeSuffix(item.item_code);
         return `
-          <article class="ss-economy-item-definition${isEditing ? " is-editing" : ""}${isArchived ? " is-archived" : ""}${state.itemViewMode === "cards" ? " ss-economy-browser-card" : ""}" data-item-code="${escapeHtml(item.item_code)}">
+          <article class="ss-economy-item-definition${isEditing ? " is-editing" : ""}${model.isArchived ? " is-archived" : ""}${state.itemViewMode === "cards" ? " ss-economy-browser-card" : ""}" data-item-code="${escapeHtml(item.item_code)}">
             <div class="ss-economy-item-definition-summary">
               ${renderItemIcon(item)}
               <div class="ss-economy-item-definition-main">
                 <strong>${escapeHtml(item.label || item.item_code)}</strong>
-                <span class="muted">item_code: ${escapeHtml(item.item_code)} · ${escapeHtml(categoryLabel)} · ${escapeHtml(item.rarity || "No rarity")} · ${isArchived ? "archived / disabled" : "enabled"}</span>
-                ${chatAlias ? `<span class="muted">Chat alias: ${escapeHtml(chatAlias)}</span>` : ""}
+                <span class="muted">item_code: ${escapeHtml(item.item_code)} · ${escapeHtml(model.categoryLabel)} · ${escapeHtml(item.rarity || "No rarity")} · ${model.isArchived ? "archived / disabled" : "enabled"}</span>
+                ${model.chatAlias ? `<span class="muted">Chat alias: ${escapeHtml(model.chatAlias)}</span>` : ""}
                 <span class="ss-economy-item-chip-row">
-                  <span class="ss-economy-item-chip">${escapeHtml(assetChip)}</span>
-                  ${isArchived ? `<span class="ss-economy-item-chip ss-economy-item-chip-archived">Archived / Disabled</span>` : ""}
+                  <span class="ss-economy-item-chip">${escapeHtml(model.assetChip)}</span>
+                  ${model.isArchived ? `<span class="ss-economy-item-chip ss-economy-item-chip-archived">Archived / Disabled</span>` : ""}
                 </span>
-                <span class="muted ss-economy-item-path">${escapeHtml(normalizedIcon || "No icon configured")}</span>
-                ${shortDescription ? `<span class="muted ss-economy-item-notes">${escapeHtml(shortDescription)}</span>` : notes ? `<span class="muted ss-economy-item-notes">${escapeHtml(notes)}</span>` : ""}
+                <span class="muted ss-economy-item-path">${escapeHtml(model.normalizedIcon || "No icon configured")}</span>
+                ${model.shortDescription ? `<span class="muted ss-economy-item-notes">${escapeHtml(model.shortDescription)}</span>` : model.notes ? `<span class="muted ss-economy-item-notes">${escapeHtml(model.notes)}</span>` : ""}
               </div>
               <div class="ss-inline-actions">
-                <button class="ss-btn ss-btn-secondary ss-economy-item-edit" type="button" data-item-code="${escapeHtml(item.item_code)}">${isEditing ? "Close" : "Edit"}</button>
-                <button class="ss-btn ss-btn-danger ss-economy-item-delete" type="button" data-item-code="${escapeHtml(item.item_code)}" ${isArchived ? `disabled title="This item definition is already archived / disabled."` : ""}>${isArchived ? "Archived" : "Archive"}</button>
+                <button class="ss-btn ss-btn-secondary ss-economy-item-edit" type="button" data-item-code="${escapeHtml(item.item_code)}">${isEditing ? "Editing" : "Edit"}</button>
+                <button class="ss-btn ss-btn-danger ss-economy-item-delete" type="button" data-item-code="${escapeHtml(item.item_code)}" ${model.isArchived ? `disabled title="This item definition is already archived / disabled."` : ""}>${model.isArchived ? "Archived" : "Archive"}</button>
               </div>
             </div>
-            ${
-              isEditing
-                ? `<div class="ss-economy-item-editor">
-                    <section class="ss-economy-item-editor-card ss-economy-item-editor-card--title">
-                      ${renderItemIcon(item)}
-                      <div>
-                        <span class="muted">Editing item definition</span>
-                        <strong>${escapeHtml(item.label || item.item_code)}</strong>
-                        <code>${escapeHtml(item.item_code)}</code>
-                      </div>
-                    </section>
-                    <section class="ss-economy-item-editor-card">
-                      <label>Label<input data-item-field="label" value="${escapeHtml(item.label || "")}" /></label>
-                      <label>Category<select data-item-field="category">${itemCategoryOptions(item.category || "")}</select></label>
-                      <label>Item code prefix<span class="ss-economy-code-prefix" data-item-code-prefix>${escapeHtml(codePrefix || "category")}</span></label>
-                      <label>Item code suffix<input data-item-field="item_code_suffix" value="${escapeHtml(codeSuffix)}" autocomplete="off" /></label>
-                      <div class="ss-economy-wide ss-economy-code-preview"><span>Generated full code preview</span><code data-item-code-preview>${escapeHtml(item.item_code)}</code><p class="muted ss-economy-item-code-status" data-item-code-status>Current item code remains unchanged.</p></div>
-                      <label>Rarity<select data-item-field="rarity">${presetOptions(state.rarityPresets, item.rarity || "")}</select></label>
-                      <label>Enabled<select data-item-field="is_enabled"><option value="true" ${item.is_enabled === false ? "" : "selected"}>Enabled</option><option value="false" ${item.is_enabled === false ? "selected" : ""}>Disabled</option></select></label>
-                      <label>Public tooltip<select data-item-field="public_tooltip_enabled"><option value="true" ${publicTooltipEnabled ? "selected" : ""}>Enabled</option><option value="false" ${publicTooltipEnabled ? "" : "selected"}>Disabled</option></select></label>
-                      <label>Chat alias<input data-item-field="chat_alias" value="${escapeHtml(chatAlias)}" placeholder="lumber" /><span class="muted">Short unique code users can type in livechat, e.g. <code>!buy lumber</code></span></label>
-                    </section>
-                    <section class="ss-economy-item-editor-card ss-economy-icon-card">
-                      ${renderIconPathControl({ itemCode: item.item_code, value: normalizedIcon })}
-                    </section>
-                    <section class="ss-economy-item-editor-card">
-                      <label class="ss-economy-wide">Short public description<textarea data-item-field="short_description" rows="2">${escapeHtml(shortDescription)}</textarea></label>
-                      <label class="ss-economy-wide">Tooltip public details<textarea data-item-field="tooltip_description" rows="3">${escapeHtml(tooltipDescription)}</textarea></label>
-                      <label class="ss-economy-wide">Contextual public note<input data-item-field="contextual_public_note" value="${escapeHtml(contextualPublicNote)}" placeholder="Optional scope, source, or usage context" /></label>
-                      <label class="ss-economy-wide">Metadata notes<textarea data-item-field="metadata_notes" rows="3">${escapeHtml(notes)}</textarea></label>
-                      <label class="ss-economy-wide">Reason<input data-item-field="reason_text" placeholder="Required before save" /></label>
-                      <button class="ss-btn ss-economy-item-save" type="button" data-item-code="${escapeHtml(item.item_code)}">Save metadata</button>
-                    </section>
-                  </div>`
-                : ""
-            }
           </article>
         `;
       })
@@ -1772,8 +1861,14 @@
         ${itemsMarkup || `<div class="ss-empty ss-empty-compact">No item definitions match the current search.</div>`}
       </div>
       ${renderPager("items", pageInfo, "Item page")}
+      ${renderItemDefinitionModal()}
     `;
-    document.querySelectorAll(".ss-economy-item-definition.is-editing").forEach((row) => syncItemEditorCodePreview(row));
+    document.body?.classList?.toggle("ss-economy-modal-open", Boolean(state.itemEditorCode));
+    document.querySelectorAll(".ss-economy-item-editor-modal .ss-economy-item-definition").forEach((row) => syncItemEditorCodePreview(row));
+    if (state.itemEditorCode === ITEM_CREATE_EDITOR_CODE) {
+      syncGeneratedItemCodePreview();
+      updateItemCreateFieldErrors();
+    }
   }
 
   function renderItemCreateForm() {
@@ -1785,42 +1880,11 @@
             <span class="ss-subtitle">Create definition</span>
             <h3>New inventory item</h3>
           </div>
-          <p class="muted">Definition metadata is saved through Runtime/Auth. Use a stable item code, then pick bundled art or paste a supported image path.</p>
+          <button class="ss-btn" type="button" id="economy-item-create-open">Create item definition</button>
         </header>
-        <div class="ss-economy-action-grid ss-economy-item-create-grid">
-          <section class="ss-economy-item-create-card">
-            <label>Item name<input id="economy-item-create-label" type="text" placeholder="Iron Ore" /><span id="economy-item-create-error-label" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "label") || fieldErrorText(state.itemCreateErrors, "item_name"))}</span></label>
-            <label>Category<select id="economy-item-create-category">${itemCategoryOptions()}</select><span id="economy-item-create-error-category" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "category"))}</span></label>
-            <label>Rarity<select id="economy-item-create-rarity">${presetOptions(state.rarityPresets)}</select><span id="economy-item-create-error-rarity" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "rarity"))}</span></label>
-            <label>Enabled<select id="economy-item-create-enabled"><option value="true">Enabled</option><option value="false">Disabled</option></select></label>
-            <label>Public tooltip<select id="economy-item-create-public-tooltip"><option value="true">Enabled</option><option value="false">Disabled</option></select></label>
-            <label>Chat alias<input id="economy-item-create-chat-alias" type="text" placeholder="lumber" /><span class="muted">Short unique code users can type in livechat, e.g. <code>!buy lumber</code></span><span id="economy-item-create-error-chat_alias" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "chat_alias"))}</span></label>
-          </section>
-          <section class="ss-economy-item-create-card ss-economy-item-create-card--code">
-            <span class="ss-subtitle">Generated item code</span>
-            <code id="economy-item-code-preview">Select a category and enter an item name.</code>
-            <input id="economy-item-create-code" type="hidden" readonly />
-            <span id="economy-item-create-error-item_code" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "item_code"))}</span>
-            <p id="economy-item-code-status" class="muted ss-economy-item-code-status">Runtime/Auth validates the generated code before saving.</p>
-          </section>
-          <section class="ss-economy-item-create-card ss-economy-item-create-card--icon">
-            ${renderIconPathControl({ create: true })}
-          </section>
-          <section class="ss-economy-item-create-card ss-economy-item-create-card--notes">
-            <label class="ss-economy-wide">Short public description<textarea id="economy-item-create-short-description" rows="2"></textarea><span id="economy-item-create-error-short_description" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "short_description"))}</span></label>
-            <label class="ss-economy-wide">Tooltip public details<textarea id="economy-item-create-tooltip-description" rows="3"></textarea><span id="economy-item-create-error-tooltip_description" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "tooltip_description"))}</span></label>
-            <label class="ss-economy-wide">Contextual public note<input id="economy-item-create-contextual-note" type="text" placeholder="Optional public-safe context" /></label>
-            <label class="ss-economy-wide">Metadata notes<textarea id="economy-item-create-notes" rows="3"></textarea></label>
-            <label class="ss-economy-wide">Reason<input id="economy-item-create-reason" type="text" placeholder="Required creation note" /><span id="economy-item-create-error-reason_text" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "reason_text"))}</span></label>
-          </section>
-          <footer class="ss-economy-item-create-actions">
-            <button id="economy-item-create-submit" class="ss-btn" type="button">Create item definition</button>
-          </footer>
-        </div>
+        <p class="muted">Create uses the same large item definition editor as card and list edits, with Runtime/Auth-owned validation and save behavior.</p>
       </div>
     `;
-    syncGeneratedItemCodePreview();
-    updateItemCreateFieldErrors();
   }
 
   function renderDangerZone() {
@@ -2388,6 +2452,7 @@
       })
     });
     await loadItems();
+    state.itemEditorCode = "";
     renderAll();
     setStatus(nextItemCode && nextItemCode !== itemCode ? "Item metadata saved. Existing item-code rename is blocked until Runtime/Auth can safely migrate references." : "Item definition metadata saved.", "success");
   }
@@ -2545,6 +2610,7 @@
     }
     state.itemCreateErrors = {};
     await loadItems();
+    state.itemEditorCode = "";
     renderAll();
     setStatus("Item definition created.", "success");
   }
@@ -2847,6 +2913,18 @@
         }
         return;
       }
+      if (event.target.closest?.("#economy-item-create-open")) {
+        state.itemCreateErrors = {};
+        state.itemEditorCode = ITEM_CREATE_EDITOR_CODE;
+        renderItemDefinitions();
+        return;
+      }
+      if (event.target.closest?.("[data-item-modal-close]")) {
+        state.itemEditorCode = "";
+        state.itemCreateErrors = {};
+        renderItemDefinitions();
+        return;
+      }
       if (event.target.closest?.("#economy-backup-export")) {
         try {
           await exportBackup();
@@ -2927,7 +3005,7 @@
       const itemEditButton = event.target.closest?.(".ss-economy-item-edit");
       if (itemEditButton) {
         const code = text(itemEditButton.dataset.itemCode);
-        state.itemEditorCode = state.itemEditorCode === code ? "" : code;
+        state.itemEditorCode = code;
         renderItemDefinitions();
       }
     });
@@ -3060,6 +3138,13 @@
       if (event.key === "Escape" && state.assetPicker.open) {
         state.assetPicker.open = false;
         renderAssetPicker();
+        return;
+      }
+      if (event.key === "Escape" && state.itemEditorCode) {
+        state.itemEditorCode = "";
+        state.itemCreateErrors = {};
+        renderItemDefinitions();
+        return;
       }
     });
   }
@@ -3100,6 +3185,7 @@
     },
     destroy() {
       state.token += 1;
+      document.body?.classList?.remove("ss-economy-modal-open");
     }
   };
 })();

@@ -6,6 +6,13 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Fixed Inventory and Market Governance browser card/list layouts so thumbnails and text no longer overlap.
+- Improved responsive card grids to use fewer, wider, cleaner cards with contained larger thumbnails and safer long-code/path wrapping.
+- Polished independent search, view toggle, pagination, and page-size controls for the Economy / Inventory admin browsers.
+- Replaced cramped inline item definition editing with a larger lightbox modal editor used by both card and list Edit actions, with create also opening the same modal surface.
+- Improved item definition editor spacing, item-code preview layout, image preview, public copy fields, and internal modal scrolling while preserving Runtime/Auth create/edit/archive endpoints.
+- Human note: admins should be able to browse item definitions and market governance without thumbnail/text collisions, then create or edit item definitions in a roomy modal instead of a squashed row editor.
+
 - Corrected stale Dashboard runtime mirror and static validation fallback payloads that still reported `0.4.2-alpha`; current local mirrors now align to runtime `0.5.0-alpha` without making Dashboard a version authority.
 - Human note: Admin version display and route-validation stubs should now show the platform as `v0.5.0-alpha` when runtime export data is unavailable.
 
