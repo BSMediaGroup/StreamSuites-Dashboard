@@ -1,12 +1,1295 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-06-01T12:25:54.715001Z",
+  "exported_at": "2026-06-02T11:56:14.055952Z",
   "runtime": {
     "project": "StreamSuites™ Runtime",
     "version": "0.5.0-alpha",
-    "build": "2026.06.01+004"
+    "build": "2026.06.02+005"
   },
   "audit": [
+    {
+      "id": "7170fef1-c576-4791-bb00-6f03c07d406d",
+      "ts": "2026-06-02T11:38:09Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "combat_vehicle.battle_tank",
+        "new": {
+          "category": "combat_vehicle",
+          "chat_alias": "tank",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 498000,
+          "is_enabled": true,
+          "item_type": "combat_vehicle",
+          "market_enabled": true,
+          "market_label": "Battle Tank",
+          "market_price_stekels": 520000,
+          "short_label": "Battle Tank",
+          "stock": 500,
+          "stock_limit": 10,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "combat_vehicle",
+          "chat_alias": "tank",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 533000,
+          "is_enabled": true,
+          "item_type": "combat_vehicle",
+          "market_enabled": true,
+          "market_label": "Battle Tank",
+          "market_price_stekels": 520000,
+          "short_label": "Battle Tank",
+          "stock": 500,
+          "stock_limit": 10,
+          "unlimited_stock": false
+        },
+        "reason_text": "DC"
+      }
+    },
+    {
+      "id": "922d8f55-ebca-4468-a818-30ca84754265",
+      "ts": "2026-06-02T11:37:28Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "game.gold_dice",
+        "new": {
+          "category": "game",
+          "chat_alias": "gold-dice",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 6475,
+          "is_enabled": true,
+          "item_type": "game",
+          "market_enabled": true,
+          "market_label": "Gold Dice",
+          "market_price_stekels": 6475,
+          "short_label": "Gold Dice",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "game",
+          "chat_alias": "gold-dice",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "game",
+          "market_enabled": false,
+          "market_label": "Gold Dice",
+          "market_price_stekels": null,
+          "short_label": "Gold Dice",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "DC"
+      }
+    },
+    {
+      "id": "8389ca1d-af2f-49c4-964d-38d2bbbfbe03",
+      "ts": "2026-06-02T11:36:18Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "consumable.boost.*",
+        "new": {
+          "category": "consumable",
+          "chat_alias": "potion-boost",
+          "exchange_enabled": false,
+          "exchange_value_stekels": 0,
+          "is_enabled": true,
+          "item_type": "consumable",
+          "market_enabled": true,
+          "market_label": "Potion",
+          "market_price_stekels": 8840,
+          "short_label": "Potion",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "consumable",
+          "chat_alias": "potion-boost",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "Consumable",
+          "market_enabled": false,
+          "market_label": "Potion",
+          "market_price_stekels": null,
+          "short_label": "Potion",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "DC"
+      }
+    },
+    {
+      "id": "d13adf28-acdf-45ac-a69c-8219b26f6d19",
+      "ts": "2026-06-02T11:35:32Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "armor.tactical_vest",
+        "new": {
+          "category": "armor",
+          "chat_alias": "vest",
+          "exchange_enabled": false,
+          "exchange_value_stekels": 0,
+          "is_enabled": true,
+          "item_type": "armor",
+          "market_enabled": true,
+          "market_label": "Tactical Vest",
+          "market_price_stekels": 1285,
+          "short_label": "Tactical Vest",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "armor",
+          "chat_alias": "vest",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "armor",
+          "market_enabled": false,
+          "market_label": "Tactical Vest",
+          "market_price_stekels": null,
+          "short_label": "Tactical Vest",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "DC"
+      }
+    },
+    {
+      "id": "86c7584f-d394-408e-86be-e7b158f36ba0",
+      "ts": "2026-06-02T11:32:36Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "material.concrete",
+        "new": {
+          "category": "material",
+          "chat_alias": "concrete",
+          "exchange_enabled": false,
+          "exchange_value_stekels": 0,
+          "is_enabled": true,
+          "item_type": "material",
+          "market_enabled": true,
+          "market_label": "Concrete",
+          "market_price_stekels": 65,
+          "short_label": "Concrete",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "material",
+          "chat_alias": "concrete",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "material",
+          "market_enabled": false,
+          "market_label": "Concrete",
+          "market_price_stekels": null,
+          "short_label": "Concrete",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "DC"
+      }
+    },
+    {
+      "id": "6bd81c8f-01c8-4f0f-b53b-fd767a1d86cb",
+      "ts": "2026-06-02T11:28:22Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "material.silver",
+        "new": {
+          "category": "material",
+          "chat_alias": "silver",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 1986,
+          "is_enabled": true,
+          "item_type": "material",
+          "market_enabled": false,
+          "market_label": "Silver",
+          "market_price_stekels": 0,
+          "short_label": "Silver",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "material",
+          "chat_alias": "silver",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "material",
+          "market_enabled": false,
+          "market_label": "Silver",
+          "market_price_stekels": null,
+          "short_label": "Silver",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "DC"
+      }
+    },
+    {
+      "id": "efb77904-abf6-439a-94ae-0f8ec5488c4d",
+      "ts": "2026-06-02T11:27:41Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "material.gold",
+        "new": {
+          "category": "material",
+          "chat_alias": "gold",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 4460,
+          "is_enabled": true,
+          "item_type": "material",
+          "market_enabled": false,
+          "market_label": "Gold",
+          "market_price_stekels": 0,
+          "short_label": "Gold",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "material",
+          "chat_alias": "gold",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "material",
+          "market_enabled": false,
+          "market_label": "Gold",
+          "market_price_stekels": null,
+          "short_label": "Gold",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "DC"
+      }
+    },
+    {
+      "id": "58d1cdee-cd59-4723-82af-b8bf0f91ebad",
+      "ts": "2026-06-02T11:27:13Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "material.stone",
+        "new": {
+          "category": "material",
+          "chat_alias": "stone",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 25,
+          "is_enabled": true,
+          "item_type": "material",
+          "market_enabled": true,
+          "market_label": "Stone",
+          "market_price_stekels": 25,
+          "short_label": "Stone",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "material",
+          "chat_alias": "stone",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "material",
+          "market_enabled": false,
+          "market_label": "Stone",
+          "market_price_stekels": null,
+          "short_label": "Stone",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "DC"
+      }
+    },
+    {
+      "id": "4ebeab17-78ee-4859-af6f-92ad313dd9d3",
+      "ts": "2026-06-02T11:26:37Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "material.titanium",
+        "new": {
+          "category": "material",
+          "chat_alias": "titanium",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 1150,
+          "is_enabled": true,
+          "item_type": "material",
+          "market_enabled": true,
+          "market_label": "Titanium",
+          "market_price_stekels": 1150,
+          "short_label": "Titanium",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "material",
+          "chat_alias": "titanium",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 1150,
+          "is_enabled": true,
+          "item_type": "material",
+          "market_enabled": false,
+          "market_label": "Titanium",
+          "market_price_stekels": 0,
+          "short_label": "Titanium",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "DC"
+      }
+    },
+    {
+      "id": "108c8514-aee7-4d69-b8eb-980df8a4ac43",
+      "ts": "2026-06-02T11:26:06Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "material.steel",
+        "new": {
+          "category": "material",
+          "chat_alias": "steel",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 320,
+          "is_enabled": true,
+          "item_type": "material",
+          "market_enabled": true,
+          "market_label": "Steel",
+          "market_price_stekels": 320,
+          "short_label": "Steel",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "material",
+          "chat_alias": "steel",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 320,
+          "is_enabled": true,
+          "item_type": "material",
+          "market_enabled": false,
+          "market_label": "Steel",
+          "market_price_stekels": 0,
+          "short_label": "Steel",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "DC"
+      }
+    },
+    {
+      "id": "0c88e50c-728a-4833-affa-ebfe1680823d",
+      "ts": "2026-06-02T11:25:34Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "material.iron_ore",
+        "new": {
+          "category": "material",
+          "chat_alias": "iron-ore",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 110,
+          "is_enabled": true,
+          "item_type": "material",
+          "market_enabled": false,
+          "market_label": "Iron Ore",
+          "market_price_stekels": 0,
+          "short_label": "Iron Ore",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "material",
+          "chat_alias": "iron-ore",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "material",
+          "market_enabled": false,
+          "market_label": "Iron Ore",
+          "market_price_stekels": null,
+          "short_label": "Iron Ore",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "DC"
+      }
+    },
+    {
+      "id": "4455822e-e12a-4ac8-bcbd-6bc352b5ab89",
+      "ts": "2026-06-02T11:25:06Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "material.steel",
+        "new": {
+          "category": "material",
+          "chat_alias": "steel",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 320,
+          "is_enabled": true,
+          "item_type": "material",
+          "market_enabled": false,
+          "market_label": "Steel",
+          "market_price_stekels": 0,
+          "short_label": "Steel",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "material",
+          "chat_alias": "steel",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "material",
+          "market_enabled": false,
+          "market_label": "Steel",
+          "market_price_stekels": null,
+          "short_label": "Steel",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "dc"
+      }
+    },
+    {
+      "id": "06dfc37c-98d8-45b3-80b1-73b1804f8b87",
+      "ts": "2026-06-02T11:19:18Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "material.bronze",
+        "new": {
+          "category": "material",
+          "chat_alias": "bronze",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 750,
+          "is_enabled": true,
+          "item_type": "material",
+          "market_enabled": false,
+          "market_label": "Bronze",
+          "market_price_stekels": 0,
+          "short_label": "Bronze",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "material",
+          "chat_alias": "bronze",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "material",
+          "market_enabled": false,
+          "market_label": "Bronze",
+          "market_price_stekels": null,
+          "short_label": "Bronze",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "DC"
+      }
+    },
+    {
+      "id": "17fe71a8-8800-4779-a052-563cba0ea4f8",
+      "ts": "2026-06-02T11:18:52Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "material.titanium",
+        "new": {
+          "category": "material",
+          "chat_alias": "titanium",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 1150,
+          "is_enabled": true,
+          "item_type": "material",
+          "market_enabled": false,
+          "market_label": "Titanium",
+          "market_price_stekels": 0,
+          "short_label": "Titanium",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "material",
+          "chat_alias": "titanium",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "material",
+          "market_enabled": false,
+          "market_label": "Titanium",
+          "market_price_stekels": null,
+          "short_label": "Titanium",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "DC"
+      }
+    },
+    {
+      "id": "7020131f-b42f-4fb6-9ab5-5d3be4533a48",
+      "ts": "2026-06-02T11:17:53Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "material.platinum",
+        "new": {
+          "category": "material",
+          "chat_alias": "platinum",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 6200,
+          "is_enabled": true,
+          "item_type": "material",
+          "market_enabled": false,
+          "market_label": "Platinum",
+          "market_price_stekels": 0,
+          "short_label": "Platinum",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "material",
+          "chat_alias": "platinum",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "material",
+          "market_enabled": false,
+          "market_label": "Platinum",
+          "market_price_stekels": null,
+          "short_label": "Platinum",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "DC"
+      }
+    },
+    {
+      "id": "a0a0a459-dee2-4851-bf9c-985fdb4a5d47",
+      "ts": "2026-06-02T11:16:47Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "currency.silver_bullion",
+        "new": {
+          "category": "Currency",
+          "chat_alias": "silver-bullion",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 2500,
+          "is_enabled": true,
+          "item_type": "currency",
+          "market_enabled": false,
+          "market_label": "Silver Bullion",
+          "market_price_stekels": 0,
+          "short_label": "Silver Bullion",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "Currency",
+          "chat_alias": "silver-bullion",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "Currency",
+          "market_enabled": false,
+          "market_label": "Silver Bullion",
+          "market_price_stekels": null,
+          "short_label": "Silver Bullion",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "dc"
+      }
+    },
+    {
+      "id": "4e94efa5-de03-4bfc-90db-25b8cbf76217",
+      "ts": "2026-06-02T11:16:32Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "currency.gold_bullion",
+        "new": {
+          "category": "Currency",
+          "chat_alias": "gold-bullion",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 5000,
+          "is_enabled": true,
+          "item_type": "currency",
+          "market_enabled": false,
+          "market_label": "Gold Bullion",
+          "market_price_stekels": 0,
+          "short_label": "Gold Bullion",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "Currency",
+          "chat_alias": "gold-bullion",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "Currency",
+          "market_enabled": false,
+          "market_label": "Gold Bullion",
+          "market_price_stekels": null,
+          "short_label": "Gold Bullion",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "dc"
+      }
+    },
+    {
+      "id": "655c3ad3-2c8e-4906-8731-ee4238303406",
+      "ts": "2026-06-02T10:55:28Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "cdacfa94-3989-411c-ab81-052d044ac57a",
+      "ts": "2026-06-02T10:55:28Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "7efe95e1-879c-4af8-a190-488d46e7f7a4",
+      "ts": "2026-06-02T10:55:27Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "b2b20d85-5b37-4186-b1e7-f5dd982db11d",
+      "ts": "2026-06-02T08:01:02Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "12a96988-b3b6-4155-9aa3-38f80a7ae453",
+      "ts": "2026-06-02T08:01:02Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "71662ac1-83be-4c3f-a5c6-6ca466b8da5f",
+      "ts": "2026-06-02T08:01:01Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "d437fdff-6668-4c23-86f4-8fdcb9be2210",
+      "ts": "2026-06-02T04:47:17Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "discord"
+      }
+    },
+    {
+      "id": "1a32febb-cc9d-44c9-a417-2a632af69015",
+      "ts": "2026-06-02T04:26:24Z",
+      "actor_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "actor_user_code": "Y55GHS6",
+      "actor_role": "admin",
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "combat_vehicle.battle_tank",
+        "new": {
+          "category": "combat_vehicle",
+          "chat_alias": "tank",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 533000,
+          "is_enabled": true,
+          "item_type": "combat_vehicle",
+          "market_enabled": true,
+          "market_label": "Battle Tank",
+          "market_price_stekels": 520000,
+          "short_label": "Battle Tank",
+          "stock": 500,
+          "stock_limit": 10,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "combat_vehicle",
+          "chat_alias": "tank",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 485000,
+          "is_enabled": true,
+          "item_type": "combat_vehicle",
+          "market_enabled": true,
+          "market_label": "Battle Tank",
+          "market_price_stekels": 520000,
+          "short_label": "Battle Tank",
+          "stock": 500,
+          "stock_limit": 10,
+          "unlimited_stock": false
+        },
+        "reason_text": "DC"
+      }
+    },
+    {
+      "id": "1ebc0cd6-99d7-45b4-86be-f0c75302188e",
+      "ts": "2026-06-02T04:25:53Z",
+      "actor_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "actor_user_code": "Y55GHS6",
+      "actor_role": "admin",
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "combat_vehicle.battle_tank",
+        "new": {
+          "category": "combat_vehicle",
+          "chat_alias": "tank",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 485000,
+          "is_enabled": true,
+          "item_type": "combat_vehicle",
+          "market_enabled": true,
+          "market_label": "Battle Tank",
+          "market_price_stekels": 520000,
+          "short_label": "Battle Tank",
+          "stock": 500,
+          "stock_limit": 10,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "combat_vehicle",
+          "chat_alias": "tank",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "combat_vehicle",
+          "market_enabled": false,
+          "market_label": "Battle Tank",
+          "market_price_stekels": null,
+          "short_label": "Battle Tank",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "DC"
+      }
+    },
+    {
+      "id": "3f357c20-8304-4641-b2af-2cd91a34edb1",
+      "ts": "2026-06-02T04:21:01Z",
+      "actor_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "actor_user_code": "Y55GHS6",
+      "actor_role": "admin",
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "tool_equipment.mq_9_reaper",
+        "new": {
+          "category": "combat_vehicle",
+          "chat_alias": "drone",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 589000,
+          "is_enabled": true,
+          "item_type": "combat_vehicle",
+          "market_enabled": true,
+          "market_label": "MQ-9 Reaper",
+          "market_price_stekels": 642000,
+          "short_label": "MQ-9 Reaper",
+          "stock": 200,
+          "stock_limit": 5,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "combat_vehicle",
+          "chat_alias": "drone",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 589000,
+          "is_enabled": true,
+          "item_type": "combat_vehicle",
+          "market_enabled": true,
+          "market_label": "MQ-9 Reaper",
+          "market_price_stekels": 642000,
+          "short_label": "MQ-9 Reaper",
+          "stock": 200,
+          "stock_limit": 5,
+          "unlimited_stock": false
+        },
+        "reason_text": "DC"
+      }
+    },
+    {
+      "id": "1f67c5e6-149a-4e84-8785-868e24fce6aa",
+      "ts": "2026-06-02T04:20:52Z",
+      "actor_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "actor_user_code": "Y55GHS6",
+      "actor_role": "admin",
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "tool_equipment.mq_9_reaper",
+        "new": {
+          "category": "combat_vehicle",
+          "chat_alias": "drone",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 589000,
+          "is_enabled": true,
+          "item_type": "combat_vehicle",
+          "market_enabled": true,
+          "market_label": "MQ-9 Reaper",
+          "market_price_stekels": 642000,
+          "short_label": "MQ-9 Reaper",
+          "stock": 200,
+          "stock_limit": 5,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "combat_vehicle",
+          "chat_alias": "drone",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "combat_vehicle",
+          "market_enabled": false,
+          "market_label": "MQ-9 Reaper",
+          "market_price_stekels": null,
+          "short_label": "MQ-9 Reaper",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "DC"
+      }
+    },
+    {
+      "id": "b07d770f-0b60-499b-a82f-afb540a2ec9e",
+      "ts": "2026-06-02T04:20:13Z",
+      "actor_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "actor_user_code": "Y55GHS6",
+      "actor_role": "admin",
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "weapon.ah_64_apache_helicopter",
+        "new": {
+          "category": "combat_vehicle",
+          "chat_alias": "helicopter",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 712000,
+          "is_enabled": true,
+          "item_type": "combat_vehicle",
+          "market_enabled": true,
+          "market_label": "AH-64 Apache",
+          "market_price_stekels": 789000,
+          "short_label": "Apache",
+          "stock": 100,
+          "stock_limit": 2,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "combat_vehicle",
+          "chat_alias": "helicopter",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "combat_vehicle",
+          "market_enabled": false,
+          "market_label": "AH-64 Apache",
+          "market_price_stekels": null,
+          "short_label": "Apache",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "DC"
+      }
+    },
+    {
+      "id": "5b1ac981-04ec-4073-8dd6-217f3090d243",
+      "ts": "2026-06-02T04:16:46Z",
+      "actor_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "actor_user_code": "Y55GHS6",
+      "actor_role": "admin",
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "achievement.b_2_spirit_bomber",
+        "new": {
+          "category": "combat_vehicle",
+          "chat_alias": "b2",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 795000,
+          "is_enabled": true,
+          "item_type": "combat_vehicle",
+          "market_enabled": true,
+          "market_label": "B-2 Spirit Bomber",
+          "market_price_stekels": 850000,
+          "short_label": "B-2 Spirit",
+          "stock": 75,
+          "stock_limit": 1,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "combat_vehicle",
+          "chat_alias": "b2",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "combat_vehicle",
+          "market_enabled": false,
+          "market_label": "B-2 Spirit Bomber",
+          "market_price_stekels": null,
+          "short_label": "B-2 Spirit",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "DC"
+      }
+    },
+    {
+      "id": "0aefb70b-3b24-4bb0-baf7-0538201aee8f",
+      "ts": "2026-06-02T01:54:11Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "fallback_login"
+      }
+    },
+    {
+      "id": "21d7a708-8b74-49c2-a6fa-cb822ca074fa",
+      "ts": "2026-06-02T01:54:11Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "role_changed",
+      "metadata": {
+        "key": "system",
+        "source": "fallback_login"
+      }
+    },
+    {
+      "id": "2438346e-cfd4-41e7-8737-3bba632ce80c",
+      "ts": "2026-06-02T01:54:11Z",
+      "actor_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "actor_user_code": "Y55GHS6",
+      "actor_role": "admin",
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "login_success",
+      "metadata": {
+        "provider": "fallback"
+      }
+    },
+    {
+      "id": "0ee97e00-a6a4-4a7d-aeec-a0109e2c863b",
+      "ts": "2026-06-02T01:53:46Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "5c4c84bd-7f46-44b6-85ee-96d343802b63",
+      "ts": "2026-06-02T01:48:22Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "login_success",
+      "metadata": {
+        "ip": "91.196.220.11",
+        "provider": "email_password",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+      }
+    },
+    {
+      "id": "6bc3c69d-af43-4853-883c-4c6809446e89",
+      "ts": "2026-06-02T01:28:31Z",
+      "actor_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "actor_user_code": "Y55GHS6",
+      "actor_role": "admin",
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "login_success",
+      "metadata": {
+        "provider": "fallback"
+      }
+    },
+    {
+      "id": "9825b0a8-2b8b-443e-bc15-3fe5bce26b49",
+      "ts": "2026-06-02T01:28:30Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "fallback_login"
+      }
+    },
+    {
+      "id": "60ceb8b9-1ad1-4077-8f75-990a8112b634",
+      "ts": "2026-06-02T01:28:30Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "role_changed",
+      "metadata": {
+        "key": "system",
+        "source": "fallback_login"
+      }
+    },
+    {
+      "id": "29f648c4-0992-4e55-86bf-e9c363c35f0e",
+      "ts": "2026-06-02T01:27:50Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "c3f65e8a-bb84-4739-a881-1f8be70450de",
+      "ts": "2026-06-02T01:27:50Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "27798271-36c0-4ec9-b323-0aa3d1fe5bb9",
+      "ts": "2026-06-02T01:27:50Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
     {
       "id": "895c99d9-a3b7-4c6b-9660-20bd4de01aee",
       "ts": "2026-06-01T10:40:41Z",
