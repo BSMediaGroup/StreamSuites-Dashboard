@@ -6,6 +6,15 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Replaced Market Governance inline/drawer editing with a dedicated modal editor for card and list edits, preserving the existing Runtime/Auth market governance save endpoint and payload.
+- Expanded the Item Definition Icon & Assets tab so asset browsing uses the full modal width with the asset grid as the main panel and selected preview as the wide-screen side panel.
+- Polished Item Definitions and Market Governance browser headers, control bars, search, view toggles, page size controls, and pagination spacing.
+- Aligned Economy / Inventory checkbox styling with the Admin Users shared checkbox treatment for Market Governance filters while retaining switch-button treatment for exclusion policy scopes.
+- Enlarged Denomination thumbnails and Identity Search / Wallet Inspector avatars with fixed boxes to avoid text/control overlap.
+- Rebuilt Participation Exclusions into a governance surface with target search, selected-target context, existing-policy visibility/filtering, grouped policy toggles, summary cards, and load/edit actions backed by Runtime/Auth.
+- Normalized Dashboard category display/options to avoid duplicate category entries, including suppressing legacy `weapon` when canonical `weapons` is present.
+- Human note: Admin Economy / Inventory should now edit market controls in a modal, browse assets without a squeezed left column, and manage exclusion policies without overlapping controls or duplicate Weapons options.
+
 - Rebuilt the Item Definition editor as a unified sectioned modal shared by create and edit flows, with Details, Icon & Assets, Public Copy, and Admin Notes states.
 - Replaced the nested/embedded asset browser treatment for item definitions with an internal Icon & Assets section that reuses the existing browse, define/upload, reconcile, and external URL flows without a second modal shell or close control.
 - Added draft-backed editor state so asset selection, public copy, admin notes, and save/create actions work across modal section switches without changing Runtime/Auth API contracts.

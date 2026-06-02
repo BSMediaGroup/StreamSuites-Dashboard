@@ -6715,11 +6715,35 @@ body.ss-col-resizing-active {
 
 .ss-economy-exclusion-toggles {
   display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.ss-economy-exclusion-toggle-row {
+.ss-economy-exclusion-toggle-group {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ss-economy-exclusion-toggle-group legend {
+  padding: 0 5px;
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.ss-economy-exclusion-switch-grid {
+  display: grid;
+  gap: 9px;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.ss-economy-exclusion-switch {
   display: grid;
   grid-template-columns: 58px minmax(0, 1fr);
   gap: 12px;
@@ -6732,7 +6756,7 @@ body.ss-col-resizing-active {
   overflow: hidden;
 }
 
-.ss-economy-exclusion-toggle-row .switch-button {
+.ss-economy-exclusion-switch .switch-button {
   justify-content: flex-start;
   width: 58px;
   min-width: 58px;
@@ -6740,7 +6764,7 @@ body.ss-col-resizing-active {
   overflow: visible;
 }
 
-.ss-economy-exclusion-toggle-row .switch-scale {
+.ss-economy-exclusion-switch .switch-scale {
   width: 115px;
   transform-origin: center left;
 }
@@ -6899,6 +6923,90 @@ body.ss-col-resizing-active {
   gap: 6px;
 }
 
+.ss-economy-exclusion-governance {
+  gap: 14px;
+}
+
+.ss-economy-exclusion-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.86fr) minmax(0, 1.14fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.ss-economy-exclusion-target-panel,
+.ss-economy-exclusion-existing,
+.ss-economy-exclusion-editor,
+.ss-economy-exclusion-summary-grid {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(132, 184, 255, 0.16);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ss-economy-exclusion-editor,
+.ss-economy-exclusion-summary-grid {
+  grid-column: 1 / -1;
+}
+
+.ss-economy-exclusion-target-fields {
+  display: grid;
+  grid-template-columns: minmax(140px, 0.42fr) minmax(180px, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.ss-economy-exclusion-policy-list {
+  display: grid;
+  gap: 10px;
+  max-height: 430px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.ss-economy-exclusion-policy-card {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 9px;
+  background: rgba(11, 18, 32, 0.46);
+}
+
+.ss-economy-exclusion-policy-card p {
+  margin: 0;
+}
+
+.ss-economy-exclusion-policy-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ss-economy-exclusion-policy-meta span {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  border: 1px solid rgba(132, 184, 255, 0.14);
+  border-radius: 999px;
+  padding: 3px 8px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.ss-economy-exclusion-actions {
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ss-economy-exclusion-summary-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .ss-economy-exchange-grid {
   grid-template-columns: minmax(180px, 1.1fr) minmax(100px, 0.5fr) minmax(140px, 0.6fr);
 }
@@ -6946,6 +7054,25 @@ body.ss-col-resizing-active {
   background: rgba(255, 255, 255, 0.035);
 }
 
+.ss-economy-browser-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-width: 0;
+}
+
+.ss-economy-browser-header > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.ss-economy-browser-header label {
+  min-width: min(100%, 280px);
+}
+
 .ss-economy-market-filter-row {
   display: flex;
   align-items: center;
@@ -6963,9 +7090,8 @@ body.ss-col-resizing-active {
 }
 
 .ss-economy-market-filter {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
+  --ss-checkbox-size: 13px;
+  --ss-checkbox-check-size: 9px;
   min-height: 28px;
   color: var(--text-secondary);
   font-size: 0.78rem;
@@ -6973,11 +7099,9 @@ body.ss-col-resizing-active {
   white-space: nowrap;
 }
 
-.ss-economy-market-filter input[type="checkbox"] {
-  margin: 0;
-  inline-size: 13px;
-  block-size: 13px;
-  flex: 0 0 auto;
+.ss-economy-market-filter .ss-checkbox-text {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
 }
 
 .ss-economy-market-count {
@@ -7088,8 +7212,8 @@ body.ss-col-resizing-active {
   background: rgba(255, 255, 255, 0.025);
   color: var(--text-primary);
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr) auto;
-  gap: 10px;
+  grid-template-columns: 76px minmax(0, 1fr) auto;
+  gap: 12px;
   align-items: center;
   padding: 10px;
   text-align: left;
@@ -7118,6 +7242,14 @@ body.ss-col-resizing-active {
   font-size: 13px;
   font-weight: 700;
   overflow: hidden;
+}
+
+.ss-economy-avatar {
+  width: 68px;
+  height: 68px;
+  flex: 0 0 68px;
+  border-radius: 12px;
+  font-size: 20px;
 }
 
 .ss-economy-avatar img,
@@ -7265,25 +7397,25 @@ body.ss-col-resizing-active {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 30px;
+  min-height: 60px;
   border: 1px solid var(--border-subtle);
   border-radius: 999px;
-  padding: 4px 9px;
+  padding: 5px 12px 5px 7px;
   background: rgba(255, 255, 255, 0.035);
   color: var(--text-primary);
   font-size: 12px;
 }
 
 .ss-economy-denomination-chip img {
-  width: 20px;
-  height: 20px;
+  width: 50px;
+  height: 50px;
   object-fit: contain;
 }
 
 .ss-economy-denomination-row {
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr) auto auto;
-  gap: 10px;
+  grid-template-columns: 96px minmax(0, 1fr) auto auto;
+  gap: 14px;
   align-items: center;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
@@ -7298,8 +7430,14 @@ body.ss-col-resizing-active {
 }
 
 .ss-economy-denomination-row.is-editing {
-  grid-template-columns: 38px minmax(0, 1fr) auto auto;
+  grid-template-columns: 96px minmax(0, 1fr) auto auto;
   align-items: start;
+}
+
+.ss-economy-denomination-row > .ss-economy-item-icon {
+  width: 86px;
+  height: 86px;
+  flex-basis: 86px;
 }
 
 .ss-economy-denomination-editor {
@@ -7334,7 +7472,7 @@ body.ss-col-resizing-active {
 
 .ss-economy-wallet-head {
   display: flex;
-  gap: 10px;
+  gap: 14px;
   align-items: center;
 }
 
@@ -7455,6 +7593,53 @@ body.ss-col-resizing-active {
   grid-column: 1 / -1;
   display: flex;
   justify-content: flex-end;
+}
+
+.ss-economy-market-modal {
+  z-index: 1003;
+}
+
+.ss-economy-market-dialog {
+  width: min(1180px, 100%);
+}
+
+.ss-economy-market-editor-modal-body {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  min-width: 0;
+}
+
+.ss-economy-market-context-card {
+  grid-row: span 2;
+}
+
+.ss-economy-market-context-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.ss-economy-market-context-grid div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid rgba(132, 184, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.ss-economy-market-context-grid span {
+  color: var(--text-secondary);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ss-economy-market-context-grid strong {
+  overflow-wrap: anywhere;
+  color: var(--text-primary);
 }
 
 .ss-economy-item-definition-summary {
@@ -7993,7 +8178,7 @@ body.ss-col-resizing-active {
 .ss-economy-asset-dialog--integrated {
   width: 100%;
   max-height: none;
-  grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+  grid-template-columns: minmax(0, 1.75fr) minmax(300px, 0.58fr);
   grid-template-rows: auto auto minmax(0, 1fr) auto;
   gap: 14px;
   padding: 0;
@@ -8004,18 +8189,22 @@ body.ss-col-resizing-active {
 }
 
 .ss-economy-asset-dialog--integrated .ss-economy-asset-grid {
-  max-height: 430px;
+  max-height: min(58vh, 560px);
+  grid-template-columns: repeat(auto-fill, minmax(188px, 1fr));
 }
 
 .ss-economy-asset-dialog--integrated .ss-economy-asset-preview {
   top: 12px;
 }
 
-.ss-economy-asset-dialog--integrated .ss-economy-asset-tabs,
-.ss-economy-asset-dialog--integrated .ss-economy-asset-search,
-.ss-economy-asset-dialog--integrated .ss-economy-asset-custom,
 .ss-economy-asset-dialog--integrated .ss-economy-asset-actions {
   grid-column: 1 / -1;
+}
+
+.ss-economy-asset-dialog--integrated .ss-economy-asset-tabs,
+.ss-economy-asset-dialog--integrated .ss-economy-asset-search,
+.ss-economy-asset-dialog--integrated .ss-economy-asset-custom {
+  grid-column: 1 / 2;
 }
 
 .ss-economy-asset-head,
@@ -8457,6 +8646,8 @@ body.ss-col-resizing-active {
 @media (max-width: 1120px) {
   .ss-economy-grid,
   .ss-economy-master-detail,
+  .ss-economy-exclusion-layout,
+  .ss-economy-market-editor-modal-body,
   .ss-economy-search-row {
     grid-template-columns: 1fr;
   }
@@ -8483,6 +8674,11 @@ body.ss-col-resizing-active {
   .ss-economy-market-toolbar,
   .ss-economy-market-summary,
   .ss-economy-market-editor,
+  .ss-economy-market-editor-modal-body,
+  .ss-economy-exclusion-layout,
+  .ss-economy-exclusion-target-fields,
+  .ss-economy-exclusion-toggles,
+  .ss-economy-exclusion-summary-grid,
   .ss-economy-item-create-grid,
   .ss-economy-item-create-card,
   .ss-economy-item-editor-card,
@@ -8502,6 +8698,11 @@ body.ss-col-resizing-active {
   .ss-economy-event-side,
   .ss-economy-market-flags {
     justify-items: start;
+  }
+
+  .ss-economy-exclusion-editor,
+  .ss-economy-exclusion-summary-grid {
+    grid-column: auto;
   }
 
   .ss-economy-market-filter-row {

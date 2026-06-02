@@ -98,6 +98,7 @@
     },
     participationExclusions: {
       policies: [],
+      policySearch: "",
       allowedScopes: EXCLUSION_SCOPE_DEFS.map(([scope]) => scope),
       targetType: "public_identity",
       targetId: "",
@@ -268,7 +269,20 @@
           default_item_code_prefix: slugCode(label)
         }));
     const selectedValue = text(selected);
-    const options = categories
+    const normalizedCategories = [];
+    const seenLabels = new Set();
+    categories.forEach((category) => {
+      const value = text(category.code || category.id || category.label);
+      const label = text(category.label || category.code || value);
+      const normalizedLabel = slugCode(CATEGORY_LABEL_OVERRIDES[slugCode(value)] || label);
+      const normalizedValue = slugCode(value);
+      const key = normalizedLabel || normalizedValue;
+      if (!value || !key || seenLabels.has(key)) return;
+      if (normalizedValue === "weapon" && categories.some((candidate) => slugCode(candidate.code || candidate.id || candidate.label) === "weapons")) return;
+      seenLabels.add(key);
+      normalizedCategories.push(category);
+    });
+    const options = normalizedCategories
       .map((category) => {
         const value = text(category.code || category.id || category.label);
         const label = text(category.label || category.code || value);
@@ -276,7 +290,7 @@
         return `<option value="${escapeHtml(value)}" ${value === selectedValue || label === selectedValue ? "selected" : ""} title="${escapeHtml(description)}">${escapeHtml(label)}</option>`;
       })
       .join("");
-    if (!selectedValue || categories.some((category) => text(category.code || category.label) === selectedValue || text(category.label) === selectedValue)) return options;
+    if (!selectedValue || normalizedCategories.some((category) => text(category.code || category.label) === selectedValue || text(category.label) === selectedValue)) return options;
     return `${options}<option value="${escapeHtml(selectedValue)}" selected>${escapeHtml(CATEGORY_LABEL_OVERRIDES[selectedValue] || formatLabel(selectedValue))}</option>`;
   }
 
@@ -478,7 +492,7 @@
     const first = pageInfo.totalItems ? ((pageInfo.page - 1) * state.itemPageSize) + 1 : 0;
     const last = Math.min(pageInfo.totalItems, pageInfo.page * state.itemPageSize);
     return `
-      <div class="ss-economy-item-list-toolbar">
+      <div class="ss-economy-item-list-toolbar ss-economy-browser-header">
         <div>
           <strong>Inventory item definitions</strong>
           <span class="muted">Showing ${formatNumber(first)}-${formatNumber(last)} of ${formatNumber(pageInfo.totalItems)}</span>
@@ -1226,10 +1240,9 @@
     return new Set(scopes.map(text).filter(Boolean));
   }
 
-  function renderExclusionScopeToggles(activeScopes) {
-    const active = activeScopes instanceof Set ? activeScopes : new Set();
-    return EXCLUSION_SCOPE_DEFS.map(([scope, label]) => `
-      <label class="ss-economy-exclusion-toggle-row">
+  function renderExclusionSwitch(scope, label, active) {
+    return `
+      <label class="ss-economy-exclusion-switch">
         <span class="switch-button" aria-label="${escapeHtml(label)} toggle">
           <span class="switch-scale">
             <span class="switch-outer">
@@ -1242,10 +1255,29 @@
           </span>
         </span>
         <span class="ss-economy-exclusion-toggle-text">
-          <strong>${escapeHtml(label)}</strong>
-          <small>${active.has(scope) ? "Active block" : "Inactive"}</small>
+          <strong>${escapeHtml(label.replace(/^Block\s+/i, ""))}</strong>
+          <small>${active.has(scope) ? "Active block" : "Allowed"}</small>
         </span>
       </label>
+    `;
+  }
+
+  function renderExclusionScopeToggles(activeScopes) {
+    const active = activeScopes instanceof Set ? activeScopes : new Set();
+    const groups = [
+      ["Bot Replies", ["all_bot_replies", "livechat"]],
+      ["Counters & Progression", ["all_counters", "xp_progression", "tallies", "leaderboards"]],
+      ["Economy & Market", ["wallet_economy", "market_exchange", "games"]],
+      ["Modules", ["clips", "clipping", "polls", "wheels"]]
+    ];
+    const labels = new Map(EXCLUSION_SCOPE_DEFS);
+    return groups.map(([group, scopes]) => `
+      <fieldset class="ss-economy-exclusion-toggle-group">
+        <legend>${escapeHtml(group)}</legend>
+        <div class="ss-economy-exclusion-switch-grid">
+          ${scopes.filter((scope) => labels.has(scope)).map((scope) => renderExclusionSwitch(scope, labels.get(scope), active)).join("")}
+        </div>
+      </fieldset>
     `).join("");
   }
 
@@ -1387,6 +1419,64 @@
     `;
   }
 
+  function policyDisplayName(policy = {}) {
+    return text(policy.display_name || policy.label || policy.user_code || policy.public_identity_code || policy.account_uuid || policy.target_id || policy.targetId);
+  }
+
+  function renderExistingExclusionPolicies(stateSlice) {
+    const query = text(stateSlice.policySearch).toLowerCase();
+    const policies = (Array.isArray(stateSlice.policies) ? stateSlice.policies : []).filter((policy) => {
+      if (!query) return true;
+      return [
+        policy.target_type,
+        policy.target_id,
+        policy.display_name,
+        policy.label,
+        policy.user_code,
+        policy.public_identity_code,
+        policy.account_uuid,
+        policy.reason,
+        ...(Array.isArray(policy.scopes) ? policy.scopes : [])
+      ].map(text).join(" ").toLowerCase().includes(query);
+    });
+    return `
+      <section class="ss-economy-exclusion-existing">
+        <div class="ss-economy-browser-header">
+          <div>
+            <strong>Existing blocking policies</strong>
+            <span class="muted">${formatNumber(policies.length)} visible of ${formatNumber((stateSlice.policies || []).length)} returned</span>
+          </div>
+          <label>Filter policies<input id="economy-exclusion-policy-search" value="${escapeHtml(stateSlice.policySearch || "")}" placeholder="Target, user code, scope, note" /></label>
+        </div>
+        <div class="ss-economy-exclusion-policy-list">
+          ${policies.length ? policies.map((policy, index) => {
+            const scopes = Array.isArray(policy.scopes) ? policy.scopes : [];
+            const displayName = policyDisplayName(policy);
+            return `
+              <article class="ss-economy-exclusion-policy-card">
+                <div class="ss-economy-exclusion-context-head">
+                  ${renderExclusionTargetAvatar(policy)}
+                  <div>
+                    <strong>${escapeHtml(displayName || exclusionTargetLabel(policy))}</strong>
+                    <span class="muted">${escapeHtml(policy.target_id || policy.targetId || "No target ID")}</span>
+                  </div>
+                  <span class="ss-chip">${escapeHtml(text(policy.target_type) === "account" ? "Account" : "Public ID")}</span>
+                </div>
+                <div class="ss-economy-exclusion-policy-meta">
+                  <span>${escapeHtml(scopes.length ? scopes.map(formatLabel).join(", ") : "No scopes")}</span>
+                  <span>${escapeHtml(policy.inherited ? "Inherited" : "Direct")}</span>
+                  <span>${escapeHtml(policy.updated_at || policy.updated_by || "No timestamp")}</span>
+                </div>
+                <p class="muted">${escapeHtml(policy.reason || "No admin note")}</p>
+                <button class="ss-btn ss-btn-secondary" type="button" data-exclusion-policy-target-type="${escapeHtml(policy.target_type || policy.targetType || "public_identity")}" data-exclusion-policy-target-id="${escapeHtml(policy.target_id || policy.targetId || "")}">Load policy</button>
+              </article>
+            `;
+          }).join("") : `<div class="ss-empty ss-empty-compact">No existing participation exclusion policies match this filter.</div>`}
+        </div>
+      </section>
+    `;
+  }
+
   function renderParticipationExclusions() {
     if (!el.participationExclusions) return;
     const stateSlice = state.participationExclusions;
@@ -1400,54 +1490,67 @@
     const policy = direct.policy || (direct.target_id ? direct : null);
     const inherited = effective.inherited_from_account ? "Inherited account policy applies to this public identity." : "No inherited account policy reported.";
     const policies = Array.isArray(stateSlice.policies) ? stateSlice.policies : [];
-    el.participationExclusions.className = "ss-economy-actions";
+    el.participationExclusions.className = "ss-economy-actions ss-economy-exclusion-governance";
     el.participationExclusions.innerHTML = `
-      <div class="ss-economy-action-grid ss-economy-exclusion-grid">
-        <label class="ss-economy-wide">Target search
-          <input id="economy-exclusion-target-search" value="${escapeHtml(stateSlice.searchQuery || "")}" placeholder="Search public ID, user code, UUID, username, display name, or slug" autocomplete="off" />
-          ${renderExclusionSearchResults(stateSlice)}
-        </label>
-        <label>Target type
-          <select id="economy-exclusion-target-type">
-            <option value="public_identity" ${targetType === "public_identity" ? "selected" : ""}>Public identity</option>
-            <option value="account" ${targetType === "account" ? "selected" : ""}>Account</option>
-          </select>
-        </label>
-        <label>Target ID
-          <input id="economy-exclusion-target-id" value="${escapeHtml(targetId)}" placeholder="${targetType === "account" ? "Account UUID" : "Public identity code"}" />
-        </label>
-        <button class="ss-btn ss-btn-secondary" type="button" id="economy-exclusion-use-selected" ${state.selectedIdentityCode ? "" : "disabled"}>Use selected identity</button>
-        <button class="ss-btn ss-btn-secondary" type="button" id="economy-exclusion-load">Load policy</button>
-        <label class="ss-economy-wide">Admin note
-          <input id="economy-exclusion-reason" value="${escapeHtml(stateSlice.reason || policy?.reason || "")}" placeholder="Reason or admin note" />
-        </label>
-        <div class="ss-economy-wide ss-economy-exclusion-toggles">
-          ${renderExclusionScopeToggles(activeScopes)}
-        </div>
-        <div class="ss-economy-wide ss-economy-action-row">
-          <button class="ss-btn" type="button" id="economy-exclusion-save" ${targetId && !stateSlice.saving ? "" : "disabled"}>Save exclusions</button>
-          <button class="ss-btn ss-btn-danger" type="button" id="economy-exclusion-clear" ${targetId && !stateSlice.saving ? "" : "disabled"}>Clear policy</button>
-          <span class="muted">${escapeHtml(stateSlice.error || (stateSlice.loading ? "Loading policy..." : ""))}</span>
-        </div>
-      </div>
-      <div class="ss-economy-list">
-        ${renderSelectedExclusionTarget(selectedTarget, effective)}
-      </div>
-      <div class="ss-economy-list ss-economy-event-list">
-        ${renderExclusionPolicySummary("Direct policy", policy)}
-        ${renderExclusionPolicySummary("Inherited account policy", effective.account_policy)}
-        <article class="ss-economy-event">
-          <div class="ss-economy-event-main">
-            <strong>Effective summary</strong>
-            <span>${effectiveScopes.size ? Array.from(effectiveScopes).map(formatLabel).join(", ") : "No effective blocks"}</span>
-            <span class="muted">${escapeHtml(inherited)}</span>
+      <div class="ss-economy-exclusion-layout">
+        <section class="ss-economy-exclusion-target-panel">
+          <div class="ss-economy-browser-header">
+            <div>
+              <strong>Target</strong>
+              <span class="muted">Search Runtime/Auth accounts and public identities</span>
+            </div>
+            <button class="ss-btn ss-btn-secondary" type="button" id="economy-exclusion-use-selected" ${state.selectedIdentityCode ? "" : "disabled"}>Use selected identity</button>
           </div>
-        </article>
-      </div>
-      <div class="ss-economy-list ss-economy-event-list">
-        ${policies.length
-          ? policies.slice(0, 6).map((item) => renderExclusionPolicySummary("Recent policy", item)).join("")
-          : `<div class="ss-empty ss-empty-compact">No participation exclusion policies returned yet.</div>`}
+          <label>Target search
+            <input id="economy-exclusion-target-search" value="${escapeHtml(stateSlice.searchQuery || "")}" placeholder="Search public ID, user code, UUID, username, display name, or slug" autocomplete="off" />
+            ${renderExclusionSearchResults(stateSlice)}
+          </label>
+          <div class="ss-economy-exclusion-target-fields">
+            <label>Target type
+              <select id="economy-exclusion-target-type">
+                <option value="public_identity" ${targetType === "public_identity" ? "selected" : ""}>Public identity</option>
+                <option value="account" ${targetType === "account" ? "selected" : ""}>Account</option>
+              </select>
+            </label>
+            <label>Target ID
+              <input id="economy-exclusion-target-id" value="${escapeHtml(targetId)}" placeholder="${targetType === "account" ? "Account UUID" : "Public identity code"}" />
+            </label>
+            <button class="ss-btn ss-btn-secondary" type="button" id="economy-exclusion-load">Load policy</button>
+          </div>
+          ${renderSelectedExclusionTarget(selectedTarget, effective)}
+        </section>
+        ${renderExistingExclusionPolicies(stateSlice)}
+        <section class="ss-economy-exclusion-editor">
+          <div class="ss-economy-browser-header">
+            <div>
+              <strong>Policy editor</strong>
+              <span class="muted">${escapeHtml(inherited)}</span>
+            </div>
+            <span class="ss-chip">${effectiveScopes.size ? `${formatNumber(effectiveScopes.size)} active` : "No active blocks"}</span>
+          </div>
+          <div class="ss-economy-exclusion-toggles">
+            ${renderExclusionScopeToggles(activeScopes)}
+          </div>
+          <label>Admin note
+            <input id="economy-exclusion-reason" value="${escapeHtml(stateSlice.reason || policy?.reason || "")}" placeholder="Reason or admin note" />
+          </label>
+          <div class="ss-economy-action-row ss-economy-exclusion-actions">
+            <button class="ss-btn" type="button" id="economy-exclusion-save" ${targetId && !stateSlice.saving ? "" : "disabled"}>Save exclusions</button>
+            <button class="ss-btn ss-btn-danger" type="button" id="economy-exclusion-clear" ${targetId && !stateSlice.saving ? "" : "disabled"}>Clear policy</button>
+            <span class="muted">${escapeHtml(stateSlice.error || (stateSlice.loading ? "Loading policy..." : ""))}</span>
+          </div>
+        </section>
+        <section class="ss-economy-exclusion-summary-grid">
+          ${renderExclusionPolicySummary("Direct policy", policy)}
+          ${renderExclusionPolicySummary("Inherited account policy", effective.account_policy)}
+          <article class="ss-economy-event">
+            <div class="ss-economy-event-main">
+              <strong>Effective summary</strong>
+              <span>${effectiveScopes.size ? Array.from(effectiveScopes).map(formatLabel).join(", ") : "No effective blocks"}</span>
+              <span class="muted">${escapeHtml(inherited)}</span>
+            </div>
+          </article>
+        </section>
       </div>
     `;
   }
@@ -1646,6 +1749,84 @@
     });
   }
 
+  function renderMarketGovernanceModal() {
+    const item = state.marketEditorCode
+      ? state.marketItems.find((candidate) => text(candidate.item_code) === state.marketEditorCode)
+      : null;
+    if (!item) return "";
+    const icon = normalizeItemIconPath(item.icon_path || item.icon_url || "");
+    const type = marketItemType(item);
+    const typeLabel = marketItemTypeLabel(item);
+    const categoryLabel = categoryDisplayLabel(item.category_label || item.category || type);
+    const stock = item.unlimited_stock ? "Unlimited" : item.stock !== null && item.stock !== undefined ? formatNumber(item.stock) : "Untracked";
+    const description = text(item.short_description || item.tooltip_description || item.description || item.metadata?.short_description || item.metadata?.tooltip_description || "");
+    return `
+      <div class="ss-economy-item-editor-modal ss-economy-market-modal" role="dialog" aria-modal="true" aria-labelledby="economy-market-editor-title" data-market-modal>
+        <div class="ss-economy-item-editor-dialog ss-economy-market-dialog ss-economy-market-row" data-market-item-code="${escapeHtml(item.item_code)}">
+          <header class="ss-economy-item-editor-head">
+            <div class="ss-economy-item-editor-title">
+              <span class="ss-economy-item-icon${icon ? "" : " is-unavailable"}">${icon ? `<img src="${escapeHtml(assetPath(icon))}" alt="" loading="lazy" decoding="async" />` : `<span class="ss-economy-item-icon-fallback">No icon</span>`}</span>
+              <div>
+                <span class="ss-subtitle">Market Governance</span>
+                <h3 id="economy-market-editor-title">${escapeHtml(item.label || item.display_name || item.item_code)}</h3>
+                <code>${escapeHtml(item.item_code)}</code>
+                <span class="ss-economy-item-editor-chip-row">
+                  ${renderEditorChip("Category", categoryLabel)}
+                  ${renderEditorChip("Type", typeLabel)}
+                  ${renderEditorChip("Sale", marketEnabled(item) ? "On sale" : "Off sale")}
+                  ${renderEditorChip("Exchange", exchangeEnabled(item) ? "Exchangeable" : "No exchange")}
+                  ${renderEditorChip("Stock", stock)}
+                </span>
+              </div>
+            </div>
+            <button class="ss-economy-item-modal-close" type="button" aria-label="Close market governance editor" data-market-modal-close><span aria-hidden="true"></span></button>
+          </header>
+          <div class="ss-economy-item-editor-body">
+            <div class="ss-economy-market-editor-modal-body">
+              <section class="ss-economy-item-editor-card">
+                <h4>Market Sale Controls</h4>
+                <label>Sale status<select data-market-field="market_enabled"><option value="true" ${marketEnabled(item) ? "selected" : ""}>On sale</option><option value="false" ${marketEnabled(item) ? "" : "selected"}>Off sale</option></select></label>
+                <label>Sale price<input data-market-field="market_price_stekels" type="number" min="0" step="1" value="${escapeHtml(marketPrice(item))}" /></label>
+                <label>Market label<input data-market-field="market_label" value="${escapeHtml(item.market_label || item.short_label || item.label || "")}" /></label>
+                <label>Short label<input data-market-field="short_label" value="${escapeHtml(item.short_label || item.market_label || "")}" /></label>
+              </section>
+              <section class="ss-economy-item-editor-card">
+                <h4>Exchange Controls</h4>
+                <label>Exchange status<select data-market-field="exchange_enabled"><option value="true" ${exchangeEnabled(item) ? "selected" : ""}>Exchangeable</option><option value="false" ${exchangeEnabled(item) ? "" : "selected"}>No exchange</option></select></label>
+                <label>Exchange value<input data-market-field="exchange_value_stekels" type="number" min="0" step="1" value="${escapeHtml(exchangeValue(item))}" /></label>
+              </section>
+              <section class="ss-economy-item-editor-card">
+                <h4>Stock / Availability</h4>
+                <label>Availability<select data-market-field="unlimited_stock"><option value="true" ${item.unlimited_stock ? "selected" : ""}>Unlimited stock</option><option value="false" ${item.unlimited_stock ? "" : "selected"}>Track stock</option></select></label>
+                <label>Stock<input data-market-field="stock" type="number" min="0" step="1" value="${escapeHtml(item.stock ?? "")}" placeholder="blank for untracked" /></label>
+                <label>Stock limit<input data-market-field="stock_limit" type="number" min="0" step="1" value="${escapeHtml(item.stock_limit ?? item.max_quantity ?? "")}" placeholder="optional per-purchase cap" /></label>
+              </section>
+              <section class="ss-economy-item-editor-card ss-economy-market-context-card">
+                <h4>Item Context</h4>
+                <div class="ss-economy-market-context-grid">
+                  <div><span>Category</span><strong>${escapeHtml(categoryLabel)}</strong></div>
+                  <div><span>Rarity</span><strong>${escapeHtml(item.rarity || "No rarity")}</strong></div>
+                  <div><span>Icon path</span><strong>${escapeHtml(icon || "No icon configured")}</strong></div>
+                </div>
+                <div class="ss-economy-icon-preview">${renderIconPreview(icon)}</div>
+                <p class="muted">${escapeHtml(description || "No public item description is currently returned for this definition.")}</p>
+                <label>Type/category<select data-market-field="item_type">${itemCategoryOptions(type)}</select></label>
+              </section>
+              <section class="ss-economy-item-editor-card ss-economy-item-editor-card--wide">
+                <h4>Admin Reason / Save Note</h4>
+                <label class="ss-economy-wide">Reason<input data-market-field="reason_text" placeholder="Required before save" /></label>
+              </section>
+            </div>
+          </div>
+          <footer class="ss-economy-item-editor-foot">
+            <button class="ss-btn ss-btn-secondary" type="button" data-market-modal-close>Cancel</button>
+            <button class="ss-btn" type="button" data-market-save="${escapeHtml(item.item_code)}">Save market controls</button>
+          </footer>
+        </div>
+      </div>
+    `;
+  }
+
   function renderMarketGovernance() {
     if (!el.marketGovernance) return;
     const rows = filteredMarketItems();
@@ -1661,9 +1842,9 @@
         <label class="ss-economy-wide">Search items<input id="economy-market-search" type="search" value="${escapeHtml(state.marketSearch)}" placeholder="Item code, display name, or type" /></label>
         <div class="ss-economy-market-filter-row">
           <div class="ss-economy-market-filter-group" aria-label="Market filters">
-            <label class="ss-economy-market-filter"><input id="economy-market-filter-purchasable" type="checkbox" ${state.marketFilters.purchasable ? "checked" : ""} /> <span>On sale</span></label>
-            <label class="ss-economy-market-filter"><input id="economy-market-filter-exchangeable" type="checkbox" ${state.marketFilters.exchangeable ? "checked" : ""} /> <span>Exchangeable</span></label>
-            <label class="ss-economy-market-filter"><input id="economy-market-filter-disabled" type="checkbox" ${state.marketFilters.disabled ? "checked" : ""} /> <span>Disabled</span></label>
+            <label class="ss-economy-market-filter ss-checkbox-wrapper"><input id="economy-market-filter-purchasable" type="checkbox" ${state.marketFilters.purchasable ? "checked" : ""} /><div class="ss-checkbox"></div><span class="ss-checkbox-text">On sale</span></label>
+            <label class="ss-economy-market-filter ss-checkbox-wrapper"><input id="economy-market-filter-exchangeable" type="checkbox" ${state.marketFilters.exchangeable ? "checked" : ""} /><div class="ss-checkbox"></div><span class="ss-checkbox-text">Exchangeable</span></label>
+            <label class="ss-economy-market-filter ss-checkbox-wrapper"><input id="economy-market-filter-disabled" type="checkbox" ${state.marketFilters.disabled ? "checked" : ""} /><div class="ss-checkbox"></div><span class="ss-checkbox-text">Disabled</span></label>
           </div>
           <span class="muted ss-economy-market-count">${formatNumber(rows.length)} of ${formatNumber(state.marketItems.length)} items${filterSummary ? ` · ${escapeHtml(filterSummary)}` : ""}</span>
         </div>
@@ -1677,14 +1858,13 @@
       </div>
       <div class="ss-economy-market-list ${state.marketViewMode === "cards" ? "ss-economy-card-grid" : "ss-economy-list-view"}">
         ${pageInfo.items.map((item) => {
-          const isEditing = state.marketEditorCode === item.item_code;
           const icon = normalizeItemIconPath(item.icon_path || item.icon_url || "");
           const type = marketItemType(item);
           const typeLabel = marketItemTypeLabel(item);
           const categoryLabel = categoryDisplayLabel(item.category_label || item.category || type);
           const stock = item.unlimited_stock ? "Unlimited" : item.stock !== null && item.stock !== undefined ? formatNumber(item.stock) : "Untracked";
           return `
-            <article class="ss-economy-market-row${isEditing ? " is-editing" : ""}${state.marketViewMode === "cards" ? " ss-economy-browser-card" : ""}" data-market-item-code="${escapeHtml(item.item_code)}">
+            <article class="ss-economy-market-row${state.marketViewMode === "cards" ? " ss-economy-browser-card" : ""}" data-market-item-code="${escapeHtml(item.item_code)}">
               <div class="ss-economy-market-summary">
                 <span class="ss-economy-item-icon${icon ? "" : " is-unavailable"}">${icon ? `<img src="${escapeHtml(assetPath(icon))}" alt="" loading="lazy" decoding="async" />` : `<span class="ss-economy-item-icon-fallback">No icon</span>`}</span>
                 <div class="ss-economy-market-main">
@@ -1695,33 +1875,17 @@
                 <div class="ss-economy-market-flags">
                   <span class="ss-economy-state ${marketEnabled(item) ? "ss-economy-state-active" : ""}">${marketEnabled(item) ? "On sale" : "Not sold"}</span>
                   <span class="ss-economy-state ${exchangeEnabled(item) ? "ss-economy-state-active" : ""}">${exchangeEnabled(item) ? "Exchange" : "No exchange"}</span>
-                  <button class="ss-btn ss-btn-secondary" type="button" data-market-edit="${escapeHtml(item.item_code)}">${isEditing ? "Close" : "Edit"}</button>
+                  <button class="ss-btn ss-btn-secondary" type="button" data-market-edit="${escapeHtml(item.item_code)}">Edit</button>
                 </div>
               </div>
-              ${isEditing ? `
-                <div class="ss-economy-market-editor">
-                  <label>Type/category<select data-market-field="item_type">${itemCategoryOptions(type)}</select></label>
-                  <label>Sale status<select data-market-field="market_enabled"><option value="true" ${marketEnabled(item) ? "selected" : ""}>Purchasable</option><option value="false" ${marketEnabled(item) ? "" : "selected"}>Off sale</option></select></label>
-                  <label>Sale price<input data-market-field="market_price_stekels" type="number" min="0" step="1" value="${escapeHtml(marketPrice(item))}" /></label>
-                  <label>Exchange status<select data-market-field="exchange_enabled"><option value="true" ${exchangeEnabled(item) ? "selected" : ""}>Exchangeable</option><option value="false" ${exchangeEnabled(item) ? "" : "selected"}>No exchange</option></select></label>
-                  <label>Exchange value<input data-market-field="exchange_value_stekels" type="number" min="0" step="1" value="${escapeHtml(exchangeValue(item))}" /></label>
-                  <label>Stock<input data-market-field="stock" type="number" min="0" step="1" value="${escapeHtml(item.stock ?? "")}" placeholder="blank for untracked" /></label>
-                  <label>Stock limit<input data-market-field="stock_limit" type="number" min="0" step="1" value="${escapeHtml(item.stock_limit ?? item.max_quantity ?? "")}" placeholder="optional per-purchase cap" /></label>
-                  <label>Availability<select data-market-field="unlimited_stock"><option value="true" ${item.unlimited_stock ? "selected" : ""}>Unlimited stock</option><option value="false" ${item.unlimited_stock ? "" : "selected"}>Track stock</option></select></label>
-                  <label>Market label<input data-market-field="market_label" value="${escapeHtml(item.market_label || item.short_label || item.label || "")}" /></label>
-                  <label>Short label<input data-market-field="short_label" value="${escapeHtml(item.short_label || item.market_label || "")}" /></label>
-                  <label class="ss-economy-wide">Reason<input data-market-field="reason_text" placeholder="Required before save" /></label>
-                  <div class="ss-economy-market-actions">
-                    <button class="ss-btn" type="button" data-market-save="${escapeHtml(item.item_code)}">Save market controls</button>
-                  </div>
-                </div>
-              ` : ""}
             </article>
           `;
         }).join("") || `<div class="ss-empty ss-empty-compact">No market governance items match the current filters.</div>`}
       </div>
       ${renderPager("market", pageInfo, "Market page")}
+      ${renderMarketGovernanceModal()}
     `;
+    document.body?.classList?.toggle("ss-economy-modal-open", Boolean(state.itemEditorCode || state.marketEditorCode));
   }
 
   function itemDefinitionViewModel(item = {}) {
@@ -2706,6 +2870,7 @@
       body: JSON.stringify({ item, reason_text: reason })
     });
     await loadItems();
+    state.marketEditorCode = "";
     renderAll();
     setStatus("Market governance saved.", "success");
   }
@@ -3115,6 +3280,14 @@
         await selectParticipationExclusionTarget(candidate);
         return;
       }
+      const exclusionPolicyButton = event.target.closest?.("[data-exclusion-policy-target-id]");
+      if (exclusionPolicyButton) {
+        state.participationExclusions.targetType = text(exclusionPolicyButton.dataset.exclusionPolicyTargetType || "public_identity");
+        state.participationExclusions.targetId = text(exclusionPolicyButton.dataset.exclusionPolicyTargetId);
+        state.participationExclusions.selectedTarget = null;
+        await loadParticipationExclusionSummary();
+        return;
+      }
       if (event.target.closest?.("#economy-exclusion-use-selected")) {
         state.participationExclusions.targetType = "public_identity";
         state.participationExclusions.targetId = state.selectedIdentityCode || "";
@@ -3197,15 +3370,21 @@
       if (marketSaveButton) {
         try {
           await saveMarketGovernance(marketSaveButton);
+          state.marketEditorCode = "";
         } catch (err) {
           setStatus(err?.message || "Market governance save failed.", "error");
         }
         return;
       }
+      if (event.target.closest?.("[data-market-modal-close]")) {
+        state.marketEditorCode = "";
+        renderMarketGovernance();
+        return;
+      }
       const marketEditButton = event.target.closest?.("[data-market-edit]");
       if (marketEditButton) {
         const code = text(marketEditButton.dataset.marketEdit);
-        state.marketEditorCode = state.marketEditorCode === code ? "" : code;
+        state.marketEditorCode = code;
         renderMarketGovernance();
         return;
       }
@@ -3322,6 +3501,10 @@
       if (event.target.matches?.("#economy-exclusion-target-search")) {
         scheduleParticipationExclusionTargetSearch(event.target.value);
       }
+      if (event.target.matches?.("#economy-exclusion-policy-search")) {
+        state.participationExclusions.policySearch = event.target.value;
+        renderParticipationExclusions();
+      }
       if (event.target.matches?.("#economy-exclusion-target-id, #economy-exclusion-reason")) {
         state.participationExclusions.targetId = text($("#economy-exclusion-target-id")?.value);
         state.participationExclusions.reason = text($("#economy-exclusion-reason")?.value);
@@ -3380,6 +3563,11 @@
         state.itemEditorCode = "";
         state.itemCreateErrors = {};
         renderItemDefinitions();
+        return;
+      }
+      if (event.key === "Escape" && state.marketEditorCode) {
+        state.marketEditorCode = "";
+        renderMarketGovernance();
         return;
       }
     });
