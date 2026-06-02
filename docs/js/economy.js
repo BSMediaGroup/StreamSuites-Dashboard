@@ -117,6 +117,8 @@
     },
     denominationEditorCode: "",
     denominationErrors: {},
+    itemEditorSection: "details",
+    itemEditorDrafts: {},
     assetCatalog: [],
     assetFiles: [],
     unresolvedAssets: [],
@@ -892,50 +894,26 @@
     return `<button class="ss-economy-asset-tab${active ? " is-active" : ""}" type="button" role="tab" aria-selected="${active ? "true" : "false"}" data-asset-mode="${escapeHtml(mode)}">${escapeHtml(label)}</button>`;
   }
 
+  function itemEditorKey() {
+    return state.itemEditorCode === ITEM_CREATE_EDITOR_CODE ? ITEM_CREATE_EDITOR_CODE : text(state.itemEditorCode);
+  }
+
+  function isItemAssetTarget(target = state.assetPicker.target) {
+    const normalized = text(target);
+    return Boolean(normalized && !normalized.startsWith("denomination:") && (normalized === "create" || normalized === state.itemEditorCode));
+  }
+
+  function usesUnifiedItemAssetSection() {
+    return Boolean(state.itemEditorCode && isItemAssetTarget());
+  }
+
   function shouldEmbedAssetPicker() {
     const target = text(state.assetPicker.target);
     if (!state.itemEditorCode || !target || target.startsWith("denomination:")) return false;
     return target === "create" || target === state.itemEditorCode;
   }
 
-  function readAssetDefinitionDraft(prefix = "economy-asset-definition") {
-    return {
-      label: text($(`${prefix}-label`)?.value),
-      category: text($(`${prefix}-category`)?.value),
-      tags: text($(`${prefix}-tags`)?.value).split(",").map((tag) => text(tag)).filter(Boolean),
-      path: normalizeItemIconPath($(`${prefix}-path`)?.value || state.assetPicker.selectedPath),
-      notes: text($(`${prefix}-notes`)?.value),
-      reason_text: text($(`${prefix}-reason`)?.value)
-    };
-  }
-
-  function updateAssetStateFromPayload(payload = {}) {
-    const definitions = Array.isArray(payload.definitions) ? payload.definitions : [];
-    const files = Array.isArray(payload.files) ? payload.files : [];
-    if (Array.isArray(payload.assets)) state.assetCatalog = normalizeAssetCatalog(payload.assets, definitions);
-    if (files.length) state.assetFiles = normalizeAssetCatalog(files);
-    state.unresolvedAssets = Array.isArray(payload.unresolved)
-      ? normalizeAssetCatalog(payload.unresolved)
-      : state.assetCatalog.filter((item) => item.present_on_disk && !item.definition_complete);
-    if (typeof payload.writable === "boolean") state.assetWritable = payload.writable;
-    if (payload.path) state.assetPicker.selectedPath = normalizeItemIconPath(payload.path);
-  }
-
-  function renderAssetPicker() {
-    const modals = Array.from(document.querySelectorAll("#economy-asset-picker"));
-    const existing = modals[0] || null;
-    modals.slice(1).forEach((modal) => modal.remove());
-    if (!state.assetPicker.open) {
-      existing?.remove();
-      return;
-    }
-    const embedded = shouldEmbedAssetPicker();
-    const embeddedHost = embedded ? document.querySelector(".ss-economy-item-editor-dialog") : null;
-    if (embedded && !embeddedHost) {
-      state.assetPicker.open = false;
-      existing?.remove();
-      return;
-    }
+  function renderAssetPickerSurface({ integrated = false } = {}) {
     const selectedPath = normalizeItemIconPath(state.assetPicker.selectedPath || currentIconInputValue());
     const customUrl = text(state.assetPicker.customUrl || (/^https?:\/\//i.test(selectedPath) ? selectedPath : ""));
     const query = text(state.assetPicker.filter).toLowerCase();
@@ -958,32 +936,18 @@
       if (!query) return true;
       return `${item.filename} ${item.path} ${item.extension}`.toLowerCase().includes(query);
     });
-    const modal = existing || document.createElement("div");
-    const activeElement = document.activeElement;
-    const restoreFocusId = activeElement?.id === "economy-asset-filter" || activeElement?.id === "economy-asset-custom-url"
-      ? activeElement.id
-      : "";
-    const restoreSelectionStart = typeof activeElement?.selectionStart === "number" ? activeElement.selectionStart : null;
-    const restoreSelectionEnd = typeof activeElement?.selectionEnd === "number" ? activeElement.selectionEnd : null;
-    modal.id = "economy-asset-picker";
-    modal.className = `ss-economy-asset-modal${embedded ? " is-embedded" : ""}`;
-    modal.setAttribute("role", embedded ? "region" : "dialog");
-    if (embedded) {
-      modal.removeAttribute("aria-modal");
-    } else {
-      modal.setAttribute("aria-modal", "true");
-    }
-    modal.setAttribute("aria-labelledby", "economy-asset-picker-title");
-    modal.innerHTML = `
-      <div class="ss-economy-asset-dialog">
-        <header class="ss-economy-asset-head">
-          <div>
-            <span class="ss-subtitle">Icon & Assets</span>
-            <h3 id="economy-asset-picker-title">${embedded ? "Asset browser" : "Choose item asset"}</h3>
-            <p>Pick a bundled game image, define a missing catalog entry, upload through Runtime/Auth when available, or use an external image URL.</p>
-          </div>
-          <button class="ss-icon-btn ss-economy-asset-close" type="button" aria-label="${embedded ? "Back to editor" : "Close asset selector"}" data-asset-close><span aria-hidden="true"></span></button>
-        </header>
+    return `
+      <div class="ss-economy-asset-dialog${integrated ? " ss-economy-asset-dialog--integrated" : ""}">
+        ${integrated ? "" : `
+          <header class="ss-economy-asset-head">
+            <div>
+              <span class="ss-subtitle">Icon & Assets</span>
+              <h3 id="economy-asset-picker-title">Choose item asset</h3>
+              <p>Pick a bundled game image, define a missing catalog entry, upload through Runtime/Auth when available, or use an external image URL.</p>
+            </div>
+            <button class="ss-icon-btn ss-economy-asset-close" type="button" aria-label="Close asset selector" data-asset-close><span aria-hidden="true"></span></button>
+          </header>
+        `}
         <div class="ss-economy-asset-tabs" role="tablist" aria-label="Asset source">
           ${renderAssetSourceTab("bundled", "Choose existing asset")}
           ${renderAssetSourceTab("define", "Define/upload new asset")}
@@ -1050,22 +1014,68 @@
           <code>${escapeHtml(normalizeItemIconPath(previewPath) || "No icon configured")}</code>
         </aside>
         <footer class="ss-economy-asset-actions">
-          <button class="ss-btn ss-btn-secondary" type="button" data-asset-close>${embedded ? "Back to editor" : "Cancel"}</button>
+          ${integrated ? `<button class="ss-btn ss-btn-secondary" type="button" data-item-editor-section="details">Return to Details</button>` : `<button class="ss-btn ss-btn-secondary" type="button" data-asset-close>Cancel</button>`}
           <button class="ss-btn" type="button" data-asset-use ${canUseAsset ? "" : "disabled"}>Use selected asset</button>
         </footer>
       </div>
     `;
+  }
+
+  function readAssetDefinitionDraft(prefix = "economy-asset-definition") {
+    return {
+      label: text($(`${prefix}-label`)?.value),
+      category: text($(`${prefix}-category`)?.value),
+      tags: text($(`${prefix}-tags`)?.value).split(",").map((tag) => text(tag)).filter(Boolean),
+      path: normalizeItemIconPath($(`${prefix}-path`)?.value || state.assetPicker.selectedPath),
+      notes: text($(`${prefix}-notes`)?.value),
+      reason_text: text($(`${prefix}-reason`)?.value)
+    };
+  }
+
+  function updateAssetStateFromPayload(payload = {}) {
+    const definitions = Array.isArray(payload.definitions) ? payload.definitions : [];
+    const files = Array.isArray(payload.files) ? payload.files : [];
+    if (Array.isArray(payload.assets)) state.assetCatalog = normalizeAssetCatalog(payload.assets, definitions);
+    if (files.length) state.assetFiles = normalizeAssetCatalog(files);
+    state.unresolvedAssets = Array.isArray(payload.unresolved)
+      ? normalizeAssetCatalog(payload.unresolved)
+      : state.assetCatalog.filter((item) => item.present_on_disk && !item.definition_complete);
+    if (typeof payload.writable === "boolean") state.assetWritable = payload.writable;
+    if (payload.path) state.assetPicker.selectedPath = normalizeItemIconPath(payload.path);
+  }
+
+  function refreshAssetPickerView() {
+    if (usesUnifiedItemAssetSection()) {
+      renderItemDefinitions();
+    } else {
+      renderAssetPicker();
+    }
+  }
+
+  function renderAssetPicker() {
+    const modals = Array.from(document.querySelectorAll("#economy-asset-picker"));
+    const existing = modals[0] || null;
+    modals.slice(1).forEach((modal) => modal.remove());
+    if (!state.assetPicker.open || usesUnifiedItemAssetSection()) {
+      existing?.remove();
+      return;
+    }
+    const modal = existing || document.createElement("div");
+    const activeElement = document.activeElement;
+    const restoreFocusId = activeElement?.id === "economy-asset-filter" || activeElement?.id === "economy-asset-custom-url"
+      ? activeElement.id
+      : "";
+    const restoreSelectionStart = typeof activeElement?.selectionStart === "number" ? activeElement.selectionStart : null;
+    const restoreSelectionEnd = typeof activeElement?.selectionEnd === "number" ? activeElement.selectionEnd : null;
+    modal.id = "economy-asset-picker";
+    modal.className = "ss-economy-asset-modal";
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    modal.setAttribute("aria-labelledby", "economy-asset-picker-title");
+    modal.innerHTML = renderAssetPickerSurface();
     if (!existing) {
-      if (embedded && embeddedHost) {
-        const footer = embeddedHost.querySelector(".ss-economy-item-editor-foot");
-        embeddedHost.insertBefore(modal, footer || null);
-      } else {
-        document.body.appendChild(modal);
-      }
-    } else if (embedded && existing.parentElement !== embeddedHost && embeddedHost) {
-      const footer = embeddedHost.querySelector(".ss-economy-item-editor-foot");
-      embeddedHost.insertBefore(existing, footer || null);
-    } else if (!embedded && existing.parentElement !== document.body) {
+      document.body.appendChild(modal);
+    } else if (existing.parentElement !== document.body) {
       document.body.appendChild(existing);
     }
     setTimeout(() => {
@@ -1740,110 +1750,265 @@
     };
   }
 
+  function captureItemEditorDraft() {
+    const row = document.querySelector(".ss-economy-item-editor-modal .ss-economy-item-definition");
+    if (!row || !state.itemEditorCode) return;
+    const key = itemEditorKey();
+    const read = (selector) => text(row.querySelector(selector)?.value);
+    if (state.itemEditorCode === ITEM_CREATE_EDITOR_CODE) {
+      state.itemEditorDrafts[key] = {
+        label: read("#economy-item-create-label"),
+        category: read("#economy-item-create-category"),
+        rarity: read("#economy-item-create-rarity"),
+        is_enabled: read("#economy-item-create-enabled") || "true",
+        public_tooltip_enabled: read("#economy-item-create-public-tooltip") || "true",
+        chat_alias: read("#economy-item-create-chat-alias"),
+        icon_path: read("#economy-item-create-icon"),
+        short_description: read("#economy-item-create-short-description"),
+        tooltip_description: read("#economy-item-create-tooltip-description"),
+        contextual_public_note: read("#economy-item-create-contextual-note"),
+        metadata_notes: read("#economy-item-create-notes"),
+        reason_text: read("#economy-item-create-reason")
+      };
+      return;
+    }
+    state.itemEditorDrafts[key] = {
+      label: read('[data-item-field="label"]'),
+      category: read('[data-item-field="category"]'),
+      rarity: read('[data-item-field="rarity"]'),
+      is_enabled: read('[data-item-field="is_enabled"]') || "true",
+      public_tooltip_enabled: read('[data-item-field="public_tooltip_enabled"]') || "true",
+      chat_alias: read('[data-item-field="chat_alias"]'),
+      item_code_suffix: read('[data-item-field="item_code_suffix"]'),
+      icon_path: read('[data-item-field="icon_path"]'),
+      short_description: read('[data-item-field="short_description"]'),
+      tooltip_description: read('[data-item-field="tooltip_description"]'),
+      contextual_public_note: read('[data-item-field="contextual_public_note"]'),
+      metadata_notes: read('[data-item-field="metadata_notes"]'),
+      reason_text: read('[data-item-field="reason_text"]')
+    };
+  }
+
+  function createItemEditorDraft() {
+    return {
+      label: "",
+      category: "",
+      rarity: "",
+      is_enabled: "true",
+      public_tooltip_enabled: "true",
+      chat_alias: "",
+      icon_path: "",
+      short_description: "",
+      tooltip_description: "",
+      contextual_public_note: "",
+      metadata_notes: "",
+      reason_text: "",
+      ...(state.itemEditorDrafts[ITEM_CREATE_EDITOR_CODE] || {})
+    };
+  }
+
+  function editItemEditorDraft(item = {}, model = itemDefinitionViewModel(item)) {
+    return {
+      label: text(item.label),
+      category: text(item.category),
+      rarity: text(item.rarity),
+      is_enabled: item.is_enabled === false ? "false" : "true",
+      public_tooltip_enabled: model.publicTooltipEnabled ? "true" : "false",
+      chat_alias: model.chatAlias,
+      item_code_suffix: model.codeSuffix,
+      icon_path: model.normalizedIcon,
+      short_description: model.shortDescription,
+      tooltip_description: model.tooltipDescription,
+      contextual_public_note: model.contextualPublicNote,
+      metadata_notes: model.notes,
+      reason_text: "",
+      ...(state.itemEditorDrafts[text(item.item_code)] || {})
+    };
+  }
+
+  function renderItemEditorNav() {
+    const sections = [
+      ["details", "Details"],
+      ["assets", "Icon & Assets"],
+      ["copy", "Public Copy"],
+      ["admin", "Admin Notes"]
+    ];
+    return `
+      <nav class="ss-economy-item-editor-nav" aria-label="Item definition editor sections">
+        ${sections.map(([section, label]) => {
+          const active = state.itemEditorSection === section;
+          return `<button class="ss-economy-item-editor-tab${active ? " is-active" : ""}" type="button" data-item-editor-section="${escapeHtml(section)}" aria-pressed="${active ? "true" : "false"}">${escapeHtml(label)}</button>`;
+        }).join("")}
+      </nav>
+    `;
+  }
+
+  function renderEditorChip(label, value) {
+    if (!text(value)) return "";
+    return `<span class="ss-economy-item-editor-chip"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></span>`;
+  }
+
+  function renderUnifiedItemEditorFields({ create = false, item = {}, model = {}, draft = {} } = {}) {
+    if (create) {
+      return {
+        details: `
+          <section class="ss-economy-item-editor-card ss-economy-item-editor-card--identity">
+            <h4>Identity</h4>
+            <label>Item name<input id="economy-item-create-label" type="text" value="${escapeHtml(draft.label)}" placeholder="Iron Ore" /><span id="economy-item-create-error-label" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "label") || fieldErrorText(state.itemCreateErrors, "item_name"))}</span></label>
+            <label>Category<select id="economy-item-create-category">${itemCategoryOptions(draft.category)}</select><span id="economy-item-create-error-category" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "category"))}</span></label>
+            <label>Rarity<select id="economy-item-create-rarity">${presetOptions(state.rarityPresets, draft.rarity)}</select><span id="economy-item-create-error-rarity" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "rarity"))}</span></label>
+            <label>Enabled<select id="economy-item-create-enabled"><option value="true" ${draft.is_enabled === "false" ? "" : "selected"}>Enabled</option><option value="false" ${draft.is_enabled === "false" ? "selected" : ""}>Disabled</option></select></label>
+            <label>Public tooltip<select id="economy-item-create-public-tooltip"><option value="true" ${draft.public_tooltip_enabled === "false" ? "" : "selected"}>Enabled</option><option value="false" ${draft.public_tooltip_enabled === "false" ? "selected" : ""}>Disabled</option></select></label>
+            <label>Chat alias<input id="economy-item-create-chat-alias" type="text" value="${escapeHtml(draft.chat_alias)}" placeholder="lumber" /><span class="muted">Short unique code users can type in livechat, e.g. <code>!buy lumber</code></span><span id="economy-item-create-error-chat_alias" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "chat_alias"))}</span></label>
+          </section>
+          <section class="ss-economy-item-editor-card ss-economy-item-editor-card--code">
+            <h4>Item Code</h4>
+            <label>Category-derived prefix<span class="ss-economy-code-prefix" id="economy-item-create-prefix">${escapeHtml(categoryCodePrefix(draft.category) || "category")}</span></label>
+            <label>Editable suffix<input id="economy-item-create-label-mirror" value="${escapeHtml(draft.label)}" readonly /></label>
+            <div class="ss-economy-wide ss-economy-code-preview"><span>Generated full code preview</span><code id="economy-item-code-preview">Select a category and enter an item name.</code><p id="economy-item-code-status" class="muted ss-economy-item-code-status">Runtime/Auth validates the generated code before saving.</p></div>
+            <input id="economy-item-create-code" type="hidden" readonly />
+            <span id="economy-item-create-error-item_code" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "item_code"))}</span>
+          </section>
+          <section class="ss-economy-item-editor-card ss-economy-icon-card">
+            <h4>Icon Summary</h4>
+            ${renderIconPathControl({ create: true, value: draft.icon_path })}
+          </section>
+        `,
+        copy: `
+          <section class="ss-economy-item-editor-card ss-economy-item-editor-card--copy ss-economy-item-editor-card--wide">
+            <h4>Public Copy</h4>
+            <label class="ss-economy-wide">Short public description<textarea id="economy-item-create-short-description" rows="5">${escapeHtml(draft.short_description)}</textarea><span id="economy-item-create-error-short_description" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "short_description"))}</span></label>
+            <label class="ss-economy-wide">Tooltip public details<textarea id="economy-item-create-tooltip-description" rows="8">${escapeHtml(draft.tooltip_description)}</textarea><span id="economy-item-create-error-tooltip_description" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "tooltip_description"))}</span></label>
+            <label class="ss-economy-wide">Contextual public note<textarea id="economy-item-create-contextual-note" rows="4" placeholder="Optional public-safe context">${escapeHtml(draft.contextual_public_note)}</textarea></label>
+            <p class="muted ss-economy-wide">Public fields are saved with the item definition metadata returned by Runtime/Auth and shown by consumer surfaces when available.</p>
+          </section>
+        `,
+        admin: `
+          <section class="ss-economy-item-editor-card ss-economy-item-editor-card--admin ss-economy-item-editor-card--wide">
+            <h4>Admin Notes</h4>
+            <label class="ss-economy-wide">Metadata notes<textarea id="economy-item-create-notes" rows="6">${escapeHtml(draft.metadata_notes)}</textarea></label>
+            <label class="ss-economy-wide">Reason<input id="economy-item-create-reason" type="text" value="${escapeHtml(draft.reason_text)}" placeholder="Required creation note" /><span id="economy-item-create-error-reason_text" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "reason_text"))}</span></label>
+          </section>
+        `
+      };
+    }
+    return {
+      details: `
+        <section class="ss-economy-item-editor-card ss-economy-item-editor-card--identity">
+          <h4>Identity</h4>
+          <label>Item name<input data-item-field="label" value="${escapeHtml(draft.label)}" /></label>
+          <label>Category<select data-item-field="category">${itemCategoryOptions(draft.category)}</select></label>
+          <label>Rarity<select data-item-field="rarity">${presetOptions(state.rarityPresets, draft.rarity)}</select></label>
+          <label>Enabled<select data-item-field="is_enabled"><option value="true" ${draft.is_enabled === "false" ? "" : "selected"}>Enabled</option><option value="false" ${draft.is_enabled === "false" ? "selected" : ""}>Disabled</option></select></label>
+          <label>Public tooltip<select data-item-field="public_tooltip_enabled"><option value="true" ${draft.public_tooltip_enabled === "false" ? "" : "selected"}>Enabled</option><option value="false" ${draft.public_tooltip_enabled === "false" ? "selected" : ""}>Disabled</option></select></label>
+          <label>Chat alias<input data-item-field="chat_alias" value="${escapeHtml(draft.chat_alias)}" placeholder="lumber" /><span class="muted">Short unique code users can type in livechat, e.g. <code>!buy lumber</code></span></label>
+        </section>
+        <section class="ss-economy-item-editor-card ss-economy-item-editor-card--code">
+          <h4>Item Code</h4>
+          <label>Category-derived prefix<span class="ss-economy-code-prefix" data-item-code-prefix>${escapeHtml(categoryCodePrefix(draft.category) || model.codePrefix || "category")}</span></label>
+          <label>Editable suffix<input data-item-field="item_code_suffix" value="${escapeHtml(draft.item_code_suffix)}" autocomplete="off" /></label>
+          <div class="ss-economy-wide ss-economy-code-preview"><span>Generated full code preview</span><code data-item-code-preview>${escapeHtml(item.item_code)}</code><p class="muted ss-economy-item-code-status" data-item-code-status>Current item code remains unchanged.</p></div>
+          <p class="muted ss-economy-wide">Existing item-code renames remain blocked until Runtime/Auth can safely migrate references.</p>
+        </section>
+        <section class="ss-economy-item-editor-card ss-economy-icon-card">
+          <h4>Icon Summary</h4>
+          ${renderIconPathControl({ itemCode: item.item_code, value: draft.icon_path })}
+        </section>
+      `,
+      copy: `
+        <section class="ss-economy-item-editor-card ss-economy-item-editor-card--copy ss-economy-item-editor-card--wide">
+          <h4>Public Copy</h4>
+          <label class="ss-economy-wide">Short public description<textarea data-item-field="short_description" rows="5">${escapeHtml(draft.short_description)}</textarea></label>
+          <label class="ss-economy-wide">Tooltip public details<textarea data-item-field="tooltip_description" rows="8">${escapeHtml(draft.tooltip_description)}</textarea></label>
+          <label class="ss-economy-wide">Contextual public note<textarea data-item-field="contextual_public_note" rows="4" placeholder="Optional scope, source, or usage context">${escapeHtml(draft.contextual_public_note)}</textarea></label>
+          <p class="muted ss-economy-wide">Public copy is passed through the existing item definition save payload without Dashboard-owned fallback text.</p>
+        </section>
+      `,
+      admin: `
+        <section class="ss-economy-item-editor-card ss-economy-item-editor-card--admin ss-economy-item-editor-card--wide">
+          <h4>Admin Notes</h4>
+          <label class="ss-economy-wide">Metadata notes<textarea data-item-field="metadata_notes" rows="6">${escapeHtml(draft.metadata_notes)}</textarea></label>
+          <label class="ss-economy-wide">Reason / save note<input data-item-field="reason_text" value="${escapeHtml(draft.reason_text)}" placeholder="Required before save" /></label>
+          <div class="ss-alert ss-alert-warning ss-economy-wide">Archive keeps historical inventory rows and disables future purchase flows for this definition.</div>
+        </section>
+      `
+    };
+  }
+
+  function renderUnifiedItemEditorBody({ create = false, item = {}, model = {}, draft = {} } = {}) {
+    const fields = renderUnifiedItemEditorFields({ create, item, model, draft });
+    const active = ["details", "assets", "copy", "admin"].includes(state.itemEditorSection) ? state.itemEditorSection : "details";
+    if (active === "assets") {
+      if (!state.assetPicker.open || !isItemAssetTarget()) {
+        const target = create ? "create" : text(item.item_code);
+        state.assetPicker = {
+          open: true,
+          target,
+          selectedPath: normalizeItemIconPath(draft.icon_path),
+          filter: state.assetPicker.filter || "",
+          mode: /^https?:\/\//i.test(draft.icon_path) ? "custom" : state.assetPicker.mode || "bundled",
+          customUrl: /^https?:\/\//i.test(draft.icon_path) ? draft.icon_path : state.assetPicker.customUrl || "",
+          definition: state.assetPicker.definition || {},
+          editingPath: state.assetPicker.editingPath || "",
+          errors: state.assetPicker.errors || {},
+          uploadFile: state.assetPicker.uploadFile || null,
+          uploadError: state.assetPicker.uploadError || ""
+        };
+      }
+      return `<section class="ss-economy-item-editor-section ss-economy-item-editor-section--assets">${renderAssetPickerSurface({ integrated: true })}</section>`;
+    }
+    const content = active === "copy" ? fields.copy : active === "admin" ? fields.admin : fields.details;
+    return `<section class="ss-economy-item-editor-section ss-economy-item-editor-section--${escapeHtml(active)}">${content}</section>`;
+  }
+
   function renderItemDefinitionModal() {
     if (!state.itemEditorCode) return "";
-    if (state.itemEditorCode === ITEM_CREATE_EDITOR_CODE) {
-      return `
-        <div class="ss-economy-item-editor-modal" role="dialog" aria-modal="true" aria-labelledby="economy-item-editor-title" data-item-modal>
-          <div class="ss-economy-item-editor-dialog ss-economy-item-definition" data-item-code="">
-            <header class="ss-economy-item-editor-head">
-              <div>
-                <span class="ss-subtitle">Create definition</span>
-                <h3 id="economy-item-editor-title">New inventory item</h3>
-                <p class="muted">Definition metadata is saved through Runtime/Auth. Use a stable generated item code, then pick bundled art or paste a supported image path.</p>
-              </div>
-              <button class="ss-economy-item-modal-close" type="button" aria-label="Close item definition editor" data-item-modal-close><span aria-hidden="true"></span></button>
-            </header>
-            <div class="ss-economy-item-editor-body ss-economy-action-grid ss-economy-item-create-grid">
-              <section class="ss-economy-item-create-card">
-                <h4>Identity</h4>
-                <label>Item name<input id="economy-item-create-label" type="text" placeholder="Iron Ore" /><span id="economy-item-create-error-label" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "label") || fieldErrorText(state.itemCreateErrors, "item_name"))}</span></label>
-                <label>Category<select id="economy-item-create-category">${itemCategoryOptions()}</select><span id="economy-item-create-error-category" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "category"))}</span></label>
-                <label>Rarity<select id="economy-item-create-rarity">${presetOptions(state.rarityPresets)}</select><span id="economy-item-create-error-rarity" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "rarity"))}</span></label>
-                <label>Enabled<select id="economy-item-create-enabled"><option value="true">Enabled</option><option value="false">Disabled</option></select></label>
-                <label>Public tooltip<select id="economy-item-create-public-tooltip"><option value="true">Enabled</option><option value="false">Disabled</option></select></label>
-                <label>Chat alias<input id="economy-item-create-chat-alias" type="text" placeholder="lumber" /><span class="muted">Short unique code users can type in livechat, e.g. <code>!buy lumber</code></span><span id="economy-item-create-error-chat_alias" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "chat_alias"))}</span></label>
-              </section>
-              <section class="ss-economy-item-create-card ss-economy-item-create-card--code">
-                <h4>Item code</h4>
-                <span class="ss-subtitle">Generated item code</span>
-                <code id="economy-item-code-preview">Select a category and enter an item name.</code>
-                <input id="economy-item-create-code" type="hidden" readonly />
-                <span id="economy-item-create-error-item_code" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "item_code"))}</span>
-                <p id="economy-item-code-status" class="muted ss-economy-item-code-status">Runtime/Auth validates the generated code before saving.</p>
-              </section>
-              <section class="ss-economy-item-create-card ss-economy-item-create-card--icon">
-                <h4>Icon</h4>
-                ${renderIconPathControl({ create: true })}
-              </section>
-              <section class="ss-economy-item-create-card ss-economy-item-create-card--notes">
-                <h4>Public copy and notes</h4>
-                <label class="ss-economy-wide">Short public description<textarea id="economy-item-create-short-description" rows="3"></textarea><span id="economy-item-create-error-short_description" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "short_description"))}</span></label>
-                <label class="ss-economy-wide">Tooltip public details<textarea id="economy-item-create-tooltip-description" rows="5"></textarea><span id="economy-item-create-error-tooltip_description" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "tooltip_description"))}</span></label>
-                <label class="ss-economy-wide">Contextual public note<input id="economy-item-create-contextual-note" type="text" placeholder="Optional public-safe context" /></label>
-                <label class="ss-economy-wide">Metadata notes<textarea id="economy-item-create-notes" rows="4"></textarea></label>
-                <label class="ss-economy-wide">Reason<input id="economy-item-create-reason" type="text" placeholder="Required creation note" /><span id="economy-item-create-error-reason_text" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "reason_text"))}</span></label>
-              </section>
-            </div>
-            <footer class="ss-economy-item-editor-foot">
-              <button class="ss-btn ss-btn-secondary" type="button" data-item-modal-close>Cancel</button>
-              <button id="economy-item-create-submit" class="ss-btn" type="button">Create item definition</button>
-            </footer>
-          </div>
-        </div>
-      `;
-    }
-
-    const item = state.itemDefinitions.find((candidate) => text(candidate.item_code) === state.itemEditorCode);
-    if (!item) return "";
-    const model = itemDefinitionViewModel(item);
+    const create = state.itemEditorCode === ITEM_CREATE_EDITOR_CODE;
+    const item = create ? {} : state.itemDefinitions.find((candidate) => text(candidate.item_code) === state.itemEditorCode);
+    if (!create && !item) return "";
+    const model = create ? {
+      isArchived: false,
+      normalizedIcon: normalizeItemIconPath(createItemEditorDraft().icon_path),
+      categoryLabel: "Uncategorized",
+      codePrefix: "",
+      codeSuffix: "",
+      chatAlias: "",
+      publicTooltipEnabled: true
+    } : itemDefinitionViewModel(item);
+    const draft = create ? createItemEditorDraft() : editItemEditorDraft(item, model);
+    const title = create ? (draft.label || "New inventory item") : (draft.label || item.item_code);
+    const code = create ? generatedItemCode(draft.category, draft.label).itemCode : item.item_code;
+    const iconItem = create
+      ? { label: title, icon_path: draft.icon_path, item_code: code }
+      : { ...item, label: draft.label, icon_path: draft.icon_path };
+    const chipMarkup = [
+      renderEditorChip("Category", create ? categoryDisplayLabel(draft.category || "Uncategorized") : categoryDisplayLabel(draft.category || model.categoryLabel)),
+      renderEditorChip("Rarity", draft.rarity || "No rarity"),
+      renderEditorChip("Status", draft.is_enabled === "false" ? "Disabled" : "Enabled")
+    ].join("");
     return `
       <div class="ss-economy-item-editor-modal" role="dialog" aria-modal="true" aria-labelledby="economy-item-editor-title" data-item-modal>
-        <div class="ss-economy-item-editor-dialog ss-economy-item-definition${model.isArchived ? " is-archived" : ""}" data-item-code="${escapeHtml(item.item_code)}">
+        <div class="ss-economy-item-editor-dialog ss-economy-item-definition${model.isArchived ? " is-archived" : ""}" data-item-code="${escapeHtml(create ? "" : item.item_code)}" data-item-editor-kind="${create ? "create" : "edit"}">
           <header class="ss-economy-item-editor-head">
             <div class="ss-economy-item-editor-title">
-              ${renderItemIcon(item)}
+              ${renderItemIcon(iconItem)}
               <div>
-                <span class="ss-subtitle">Edit item definition</span>
-                <h3 id="economy-item-editor-title">${escapeHtml(item.label || item.item_code)}</h3>
-                <code>${escapeHtml(item.item_code)}</code>
+                <span class="ss-subtitle">${create ? "Create definition" : "Edit item definition"}</span>
+                <h3 id="economy-item-editor-title">${escapeHtml(title)}</h3>
+                <code>${escapeHtml(code || "Generated after category and name are entered")}</code>
+                <span class="ss-economy-item-editor-chip-row">${chipMarkup}</span>
               </div>
             </div>
             <button class="ss-economy-item-modal-close" type="button" aria-label="Close item definition editor" data-item-modal-close><span aria-hidden="true"></span></button>
           </header>
-          <div class="ss-economy-item-editor-body ss-economy-item-editor">
-            <section class="ss-economy-item-editor-card">
-              <h4>Identity</h4>
-              <label>Label<input data-item-field="label" value="${escapeHtml(item.label || "")}" /></label>
-              <label>Category<select data-item-field="category">${itemCategoryOptions(item.category || "")}</select></label>
-              <label>Rarity<select data-item-field="rarity">${presetOptions(state.rarityPresets, item.rarity || "")}</select></label>
-              <label>Enabled<select data-item-field="is_enabled"><option value="true" ${item.is_enabled === false ? "" : "selected"}>Enabled</option><option value="false" ${item.is_enabled === false ? "selected" : ""}>Disabled</option></select></label>
-              <label>Public tooltip<select data-item-field="public_tooltip_enabled"><option value="true" ${model.publicTooltipEnabled ? "selected" : ""}>Enabled</option><option value="false" ${model.publicTooltipEnabled ? "" : "selected"}>Disabled</option></select></label>
-              <label>Chat alias<input data-item-field="chat_alias" value="${escapeHtml(model.chatAlias)}" placeholder="lumber" /><span class="muted">Short unique code users can type in livechat, e.g. <code>!buy lumber</code></span></label>
-            </section>
-            <section class="ss-economy-item-editor-card ss-economy-item-editor-card--code">
-              <h4>Item code</h4>
-              <label>Item code prefix<span class="ss-economy-code-prefix" data-item-code-prefix>${escapeHtml(model.codePrefix || "category")}</span></label>
-              <label>Item code suffix<input data-item-field="item_code_suffix" value="${escapeHtml(model.codeSuffix)}" autocomplete="off" /></label>
-              <div class="ss-economy-wide ss-economy-code-preview"><span>Generated full code preview</span><code data-item-code-preview>${escapeHtml(item.item_code)}</code><p class="muted ss-economy-item-code-status" data-item-code-status>Current item code remains unchanged.</p></div>
-            </section>
-            <section class="ss-economy-item-editor-card ss-economy-icon-card">
-              <h4>Icon</h4>
-              ${renderIconPathControl({ itemCode: item.item_code, value: model.normalizedIcon })}
-            </section>
-            <section class="ss-economy-item-editor-card ss-economy-item-editor-card--copy">
-              <h4>Public copy and notes</h4>
-              <label class="ss-economy-wide">Short public description<textarea data-item-field="short_description" rows="3">${escapeHtml(model.shortDescription)}</textarea></label>
-              <label class="ss-economy-wide">Tooltip public details<textarea data-item-field="tooltip_description" rows="5">${escapeHtml(model.tooltipDescription)}</textarea></label>
-              <label class="ss-economy-wide">Contextual public note<input data-item-field="contextual_public_note" value="${escapeHtml(model.contextualPublicNote)}" placeholder="Optional scope, source, or usage context" /></label>
-              <label class="ss-economy-wide">Metadata notes<textarea data-item-field="metadata_notes" rows="4">${escapeHtml(model.notes)}</textarea></label>
-              <label class="ss-economy-wide">Reason<input data-item-field="reason_text" placeholder="Required before save" /></label>
-            </section>
+          ${renderItemEditorNav()}
+          <div class="ss-economy-item-editor-body">
+            ${renderUnifiedItemEditorBody({ create, item, model, draft })}
           </div>
           <footer class="ss-economy-item-editor-foot">
             <button class="ss-btn ss-btn-secondary" type="button" data-item-modal-close>Cancel</button>
-            <button class="ss-btn ss-btn-danger ss-economy-item-delete" type="button" data-item-code="${escapeHtml(item.item_code)}" ${model.isArchived ? `disabled title="This item definition is already archived / disabled."` : ""}>${model.isArchived ? "Archived" : "Archive"}</button>
-            <button class="ss-btn ss-economy-item-save" type="button" data-item-code="${escapeHtml(item.item_code)}">Save metadata</button>
+            ${create ? "" : `<button class="ss-btn ss-btn-danger ss-economy-item-delete" type="button" data-item-code="${escapeHtml(item.item_code)}" ${model.isArchived ? `disabled title="This item definition is already archived / disabled."` : ""}>${model.isArchived ? "Archived" : "Archive"}</button>`}
+            ${create ? `<button id="economy-item-create-submit" class="ss-btn" type="button">Create item definition</button>` : `<button class="ss-btn ss-economy-item-save" type="button" data-item-code="${escapeHtml(item.item_code)}">Save metadata</button>`}
           </footer>
         </div>
       </div>
@@ -1852,6 +2017,7 @@
 
   function renderItemDefinitions() {
     if (!el.itemDefinitions) return;
+    captureItemEditorDraft();
     el.itemCount.textContent = formatNumber(state.itemDefinitions.length);
     const filteredItems = filteredItemDefinitions();
     const pageInfo = pageSlice(filteredItems, state.itemPage, state.itemPageSize);
@@ -2433,9 +2599,12 @@
   }
 
   async function saveItemDefinition(button) {
+    captureItemEditorDraft();
     const row = button.closest(".ss-economy-item-definition");
     const itemCode = text(row?.dataset?.itemCode);
-    const readField = (field) => text(row?.querySelector(`[data-item-field="${field}"]`)?.value);
+    const item = state.itemDefinitions.find((candidate) => text(candidate.item_code) === itemCode) || {};
+    const draft = editItemEditorDraft(item, itemDefinitionViewModel(item));
+    const readField = (field) => text(row?.querySelector(`[data-item-field="${field}"]`)?.value || draft[field]);
     const reason = readField("reason_text");
     if (!itemCode || !reason) {
       setStatus("Item definition metadata changes require a reason.", "error");
@@ -2482,6 +2651,7 @@
     });
     await loadItems();
     state.itemEditorCode = "";
+    delete state.itemEditorDrafts[itemCode];
     renderAll();
     setStatus(nextItemCode && nextItemCode !== itemCode ? "Item metadata saved. Existing item-code rename is blocked until Runtime/Auth can safely migrate references." : "Item definition metadata saved.", "success");
   }
@@ -2580,8 +2750,10 @@
   }
 
   async function createItemDefinition() {
-    const reason = text($("#economy-item-create-reason")?.value);
-    const generated = generatedItemCodeState();
+    captureItemEditorDraft();
+    const draft = createItemEditorDraft();
+    const reason = text($("#economy-item-create-reason")?.value || draft.reason_text);
+    const generated = generatedItemCode(draft.category, draft.label);
     if (!reason) {
       state.itemCreateErrors = { reason_text: "A reason is required." };
       updateItemCreateFieldErrors();
@@ -2594,7 +2766,7 @@
       setStatus(generated.collision ? "Generated item code already exists. Choose a different item name." : "Choose a category and item name before creating an item definition.", "error");
       return;
     }
-    const chatAlias = normalizeChatAlias($("#economy-item-create-chat-alias")?.value);
+    const chatAlias = normalizeChatAlias($("#economy-item-create-chat-alias")?.value || draft.chat_alias);
     if (!chatAliasLooksValid(chatAlias)) {
       state.itemCreateErrors = { chat_alias: "Use lowercase letters, numbers, hyphens, or underscores with no spaces." };
       updateItemCreateFieldErrors();
@@ -2612,21 +2784,21 @@
             item_name: generated.label,
             label: generated.label,
             category: generated.category,
-            rarity: text($("#economy-item-create-rarity")?.value),
-            icon_path: normalizeItemIconPath($("#economy-item-create-icon")?.value),
-            is_enabled: text($("#economy-item-create-enabled")?.value) !== "false",
-            public_tooltip_enabled: text($("#economy-item-create-public-tooltip")?.value) !== "false",
+            rarity: text($("#economy-item-create-rarity")?.value || draft.rarity),
+            icon_path: normalizeItemIconPath($("#economy-item-create-icon")?.value || draft.icon_path),
+            is_enabled: text($("#economy-item-create-enabled")?.value || draft.is_enabled) !== "false",
+            public_tooltip_enabled: text($("#economy-item-create-public-tooltip")?.value || draft.public_tooltip_enabled) !== "false",
             chat_alias: chatAlias,
-            short_description: text($("#economy-item-create-short-description")?.value),
-            tooltip_description: text($("#economy-item-create-tooltip-description")?.value),
-            contextual_public_note: text($("#economy-item-create-contextual-note")?.value),
+            short_description: text($("#economy-item-create-short-description")?.value || draft.short_description),
+            tooltip_description: text($("#economy-item-create-tooltip-description")?.value || draft.tooltip_description),
+            contextual_public_note: text($("#economy-item-create-contextual-note")?.value || draft.contextual_public_note),
             metadata: {
-              notes: text($("#economy-item-create-notes")?.value),
+              notes: text($("#economy-item-create-notes")?.value || draft.metadata_notes),
               chat_alias: chatAlias,
-              public_tooltip_enabled: text($("#economy-item-create-public-tooltip")?.value) !== "false",
-              short_description: text($("#economy-item-create-short-description")?.value),
-              tooltip_description: text($("#economy-item-create-tooltip-description")?.value),
-              contextual_public_note: text($("#economy-item-create-contextual-note")?.value)
+              public_tooltip_enabled: text($("#economy-item-create-public-tooltip")?.value || draft.public_tooltip_enabled) !== "false",
+              short_description: text($("#economy-item-create-short-description")?.value || draft.short_description),
+              tooltip_description: text($("#economy-item-create-tooltip-description")?.value || draft.tooltip_description),
+              contextual_public_note: text($("#economy-item-create-contextual-note")?.value || draft.contextual_public_note)
             }
           },
           reason_text: reason
@@ -2640,6 +2812,7 @@
     state.itemCreateErrors = {};
     await loadItems();
     state.itemEditorCode = "";
+    state.itemEditorDrafts[ITEM_CREATE_EDITOR_CODE] = {};
     renderAll();
     setStatus("Item definition created.", "success");
   }
@@ -2704,6 +2877,7 @@
     document.addEventListener("click", async (event) => {
       const browseButton = event.target.closest?.(".ss-economy-asset-browse");
       if (browseButton) {
+        captureItemEditorDraft();
         await loadAssetCatalog();
         const target = text(browseButton.dataset.assetTarget);
         const current = currentIconInputValue(target);
@@ -2720,12 +2894,26 @@
           uploadFile: null,
           uploadError: ""
         };
-        renderAssetPicker();
+        if (isItemAssetTarget(target)) {
+          state.itemEditorSection = "assets";
+          renderItemDefinitions();
+        } else {
+          renderAssetPicker();
+        }
+        return;
+      }
+      const itemEditorSectionButton = event.target.closest?.("[data-item-editor-section]");
+      if (itemEditorSectionButton) {
+        captureItemEditorDraft();
+        const section = text(itemEditorSectionButton.dataset.itemEditorSection);
+        state.itemEditorSection = ["details", "assets", "copy", "admin"].includes(section) ? section : "details";
+        if (state.itemEditorSection === "assets") await loadAssetCatalog();
+        renderItemDefinitions();
         return;
       }
       if (event.target.closest?.("[data-asset-close]")) {
         state.assetPicker.open = false;
-        renderAssetPicker();
+        refreshAssetPickerView();
         return;
       }
       const modeButton = event.target.closest?.("[data-asset-mode]");
@@ -2735,7 +2923,7 @@
         state.assetPicker.definition = {};
         state.assetPicker.editingPath = "";
         state.assetPicker.errors = {};
-        renderAssetPicker();
+        refreshAssetPickerView();
         return;
       }
       const defineButton = event.target.closest?.("[data-asset-define-path]");
@@ -2754,7 +2942,7 @@
         state.assetPicker.editingPath = "";
         state.assetPicker.errors = {};
         state.assetPicker.mode = "define";
-        renderAssetPicker();
+        refreshAssetPickerView();
         return;
       }
       const editAssetButton = event.target.closest?.("[data-asset-edit-definition]");
@@ -2773,14 +2961,14 @@
         };
         state.assetPicker.errors = {};
         state.assetPicker.mode = "define";
-        renderAssetPicker();
+        refreshAssetPickerView();
         return;
       }
       const removeAssetButton = event.target.closest?.("[data-asset-remove-definition]");
       if (removeAssetButton) {
         if (window.confirm?.("Remove this image asset definition listing? The physical image file will not be deleted.") === false) return;
         const removed = await removeAssetDefinitionListing(removeAssetButton.dataset.assetRemoveDefinition);
-        if (removed) renderAssetPicker();
+        if (removed) refreshAssetPickerView();
         return;
       }
       const assetTile = event.target.closest?.("[data-asset-path]");
@@ -2789,17 +2977,17 @@
         state.assetPicker.definition = {};
         state.assetPicker.editingPath = "";
         state.assetPicker.errors = {};
-        renderAssetPicker();
+        refreshAssetPickerView();
         return;
       }
       if (event.target.closest?.("[data-asset-save-definition]")) {
         const saved = await saveAssetDefinitionFromPicker();
-        if (saved) renderAssetPicker();
+        if (saved) refreshAssetPickerView();
         return;
       }
       if (event.target.closest?.("[data-asset-upload]")) {
         const uploaded = await uploadAssetFromPicker();
-        if (uploaded) renderAssetPicker();
+        if (uploaded) refreshAssetPickerView();
         return;
       }
       if (event.target.closest?.("[data-asset-use]")) {
@@ -2810,9 +2998,21 @@
         if (input && value) {
           input.value = value;
           syncIconPreview(input);
+          captureItemEditorDraft();
+        } else if (usesUnifiedItemAssetSection() && value) {
+          const key = itemEditorKey();
+          state.itemEditorDrafts[key] = {
+            ...(state.itemEditorDrafts[key] || {}),
+            icon_path: value
+          };
         }
-        state.assetPicker.open = false;
-        renderAssetPicker();
+        if (usesUnifiedItemAssetSection()) {
+          state.itemEditorSection = "details";
+          renderItemDefinitions();
+        } else {
+          state.assetPicker.open = false;
+          renderAssetPicker();
+        }
         return;
       }
       const publicIdentityChip = event.target.closest?.("[data-public-identity-unassign-chip]");
@@ -2944,6 +3144,9 @@
       }
       if (event.target.closest?.("#economy-item-create-open")) {
         state.itemCreateErrors = {};
+        state.itemEditorSection = "details";
+        state.itemEditorDrafts[ITEM_CREATE_EDITOR_CODE] = {};
+        state.assetPicker.open = false;
         state.itemEditorCode = ITEM_CREATE_EDITOR_CODE;
         renderItemDefinitions();
         return;
@@ -2951,6 +3154,8 @@
       if (event.target.closest?.("[data-item-modal-close]")) {
         state.itemEditorCode = "";
         state.itemCreateErrors = {};
+        state.itemEditorSection = "details";
+        state.assetPicker.open = false;
         renderItemDefinitions();
         return;
       }
@@ -3034,6 +3239,8 @@
       const itemEditButton = event.target.closest?.(".ss-economy-item-edit");
       if (itemEditButton) {
         const code = text(itemEditButton.dataset.itemCode);
+        state.itemEditorSection = "details";
+        state.assetPicker.open = false;
         state.itemEditorCode = code;
         renderItemDefinitions();
       }
@@ -3069,12 +3276,12 @@
       }
       if (event.target.matches?.("#economy-asset-filter")) {
         state.assetPicker.filter = event.target.value;
-        renderAssetPicker();
+        refreshAssetPickerView();
       }
       if (event.target.matches?.("#economy-asset-custom-url")) {
         state.assetPicker.customUrl = event.target.value;
         state.assetPicker.selectedPath = normalizeItemIconPath(event.target.value);
-        renderAssetPicker();
+        refreshAssetPickerView();
       }
       if (event.target.matches?.("[data-asset-definition-field]")) {
         state.assetPicker.definition = {
@@ -3098,7 +3305,7 @@
           label: state.assetPicker.definition?.label || (file ? formatLabel(file.name.replace(/\.[^.]+$/, "")) : ""),
           category: state.assetPicker.definition?.category || "item"
         };
-        renderAssetPicker();
+        refreshAssetPickerView();
       }
       if (event.target.matches?.("#economy-market-search")) {
         const selectionStart = event.target.selectionStart;
@@ -3166,7 +3373,7 @@
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && state.assetPicker.open) {
         state.assetPicker.open = false;
-        renderAssetPicker();
+        refreshAssetPickerView();
         return;
       }
       if (event.key === "Escape" && state.itemEditorCode) {

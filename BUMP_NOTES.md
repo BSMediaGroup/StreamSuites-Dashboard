@@ -6,6 +6,13 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Rebuilt the Item Definition editor as a unified sectioned modal shared by create and edit flows, with Details, Icon & Assets, Public Copy, and Admin Notes states.
+- Replaced the nested/embedded asset browser treatment for item definitions with an internal Icon & Assets section that reuses the existing browse, define/upload, reconcile, and external URL flows without a second modal shell or close control.
+- Added draft-backed editor state so asset selection, public copy, admin notes, and save/create actions work across modal section switches without changing Runtime/Auth API contracts.
+- Refined the unified modal spacing, item-code layout, icon preview behavior, public copy textareas, admin/archive notes, and footer actions.
+- Kept standalone asset picker behavior available for denomination icon editing while removing item-definition dependence on the old embedded lightbox-style asset picker.
+- Human note: admins should now get one polished Item Definition modal for creating or editing items, with asset browsing as part of the editor instead of a modal inside a modal.
+
 - Unified the Item Definition editor and asset browser into one modal experience.
 - Removed the modal-inside-modal asset browser behavior for item create/edit flows; the bundled asset browser now opens as an embedded Icon & Assets section inside the active editor modal.
 - Reworked the item editor modal into a larger, better-spaced responsive layout with a maximum three-column desktop editor grid.

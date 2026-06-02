@@ -7678,41 +7678,32 @@ body.ss-col-resizing-active {
   min-width: 82px;
 }
 
-.ss-economy-item-editor {
-  display: grid;
-  grid-template-columns: minmax(320px, 1fr) minmax(290px, 0.86fr) minmax(360px, 1.08fr);
-  gap: 14px;
-  min-width: 0;
-}
-
 .ss-economy-item-editor-card {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
-  padding: 10px;
-  border: 1px solid rgba(132, 184, 255, 0.16);
+  padding: 14px;
+  border: 1px solid rgba(132, 184, 255, 0.15);
   border-radius: 8px;
-  background: rgba(11, 18, 32, 0.42);
+  background: rgba(11, 18, 32, 0.36);
 }
 
-.ss-economy-item-editor-card--title,
+.ss-economy-item-editor-card--code,
 .ss-economy-icon-card {
   grid-template-columns: minmax(0, 1fr);
   align-content: start;
 }
 
-.ss-economy-item-editor-card--title {
-  grid-row: span 2;
+.ss-economy-item-editor-card--wide {
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 1fr);
 }
 
-.ss-economy-item-editor-card--title > div {
-  display: grid;
-  gap: 5px;
-  min-width: 0;
+.ss-economy-item-editor-card--identity {
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
 }
 
-.ss-economy-item-editor-card--title code,
 .ss-economy-asset-preview code {
   max-width: 100%;
   overflow-wrap: anywhere;
@@ -7798,10 +7789,10 @@ body.ss-col-resizing-active {
 }
 
 .ss-economy-item-editor-dialog {
-  width: min(1440px, 100%);
+  width: min(1320px, 100%);
   max-height: calc(100vh - 44px);
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   padding: 0;
   overflow: hidden;
   border: 1px solid rgba(132, 184, 255, 0.28);
@@ -7830,25 +7821,110 @@ body.ss-col-resizing-active {
 
 .ss-economy-item-editor-body {
   overflow: auto;
-  padding: 16px 18px;
+  padding: 18px;
 }
 
 .ss-economy-item-editor-title {
   display: grid;
-  grid-template-columns: 76px minmax(0, 1fr);
-  gap: 12px;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 14px;
   align-items: center;
   min-width: 0;
+}
+
+.ss-economy-item-editor-title .ss-economy-item-icon {
+  width: 88px;
+  height: 88px;
 }
 
 .ss-economy-item-editor-title h3 {
   margin: 2px 0;
   color: var(--text-primary);
+  font-size: 22px;
+  line-height: 1.15;
 }
 
 .ss-economy-item-editor-title code {
+  display: block;
   color: var(--text-secondary);
   overflow-wrap: anywhere;
+}
+
+.ss-economy-item-editor-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.ss-economy-item-editor-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  padding: 4px 8px;
+  border: 1px solid rgba(132, 184, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.ss-economy-item-editor-chip strong {
+  color: var(--text-primary);
+}
+
+.ss-economy-item-editor-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 18px;
+  border-bottom: 1px solid rgba(132, 184, 255, 0.13);
+  background: rgba(2, 8, 18, 0.2);
+}
+
+.ss-economy-item-editor-tab {
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ss-economy-item-editor-tab:hover,
+.ss-economy-item-editor-tab:focus-visible {
+  border-color: rgba(132, 184, 255, 0.32);
+  background: rgba(132, 184, 255, 0.1);
+  color: var(--text-primary);
+  outline: 0;
+}
+
+.ss-economy-item-editor-tab.is-active {
+  border-color: rgba(255, 210, 110, 0.48);
+  background: rgba(255, 210, 110, 0.14);
+  color: var(--text-primary);
+}
+
+.ss-economy-item-editor-section {
+  display: grid;
+  grid-template-columns: minmax(290px, 1fr) minmax(280px, 0.8fr) minmax(300px, 0.85fr);
+  gap: 14px;
+  min-width: 0;
+}
+
+.ss-economy-item-editor-section--copy,
+.ss-economy-item-editor-section--admin {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.ss-economy-item-editor-section--copy textarea,
+.ss-economy-item-editor-section--admin textarea {
+  min-height: 120px;
 }
 
 .ss-economy-item-modal-close {
@@ -7897,16 +7973,6 @@ body.ss-col-resizing-active {
   backdrop-filter: blur(16px);
 }
 
-.ss-economy-asset-modal.is-embedded {
-  position: static;
-  inset: auto;
-  z-index: auto;
-  display: block;
-  padding: 0 18px 18px;
-  background: transparent;
-  backdrop-filter: none;
-}
-
 .ss-economy-asset-dialog {
   width: min(1160px, 100%);
   max-height: min(820px, calc(100vh - 32px));
@@ -7924,20 +7990,32 @@ body.ss-col-resizing-active {
   padding: 18px;
 }
 
-.ss-economy-asset-modal.is-embedded .ss-economy-asset-dialog {
+.ss-economy-asset-dialog--integrated {
   width: 100%;
   max-height: none;
-  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
-  border-radius: 10px;
+  grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: 14px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   box-shadow: none;
 }
 
-.ss-economy-asset-modal.is-embedded .ss-economy-asset-grid {
+.ss-economy-asset-dialog--integrated .ss-economy-asset-grid {
   max-height: 430px;
 }
 
-.ss-economy-asset-modal.is-embedded .ss-economy-asset-preview {
+.ss-economy-asset-dialog--integrated .ss-economy-asset-preview {
   top: 12px;
+}
+
+.ss-economy-asset-dialog--integrated .ss-economy-asset-tabs,
+.ss-economy-asset-dialog--integrated .ss-economy-asset-search,
+.ss-economy-asset-dialog--integrated .ss-economy-asset-custom,
+.ss-economy-asset-dialog--integrated .ss-economy-asset-actions {
+  grid-column: 1 / -1;
 }
 
 .ss-economy-asset-head,
@@ -8386,6 +8464,14 @@ body.ss-col-resizing-active {
   .ss-economy-asset-dialog {
     grid-template-columns: minmax(0, 1fr) minmax(250px, 0.42fr);
   }
+
+  .ss-economy-item-editor-section {
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 0.72fr);
+  }
+
+  .ss-economy-icon-card {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 720px) {
@@ -8399,8 +8485,9 @@ body.ss-col-resizing-active {
   .ss-economy-market-editor,
   .ss-economy-item-create-grid,
   .ss-economy-item-create-card,
-  .ss-economy-item-editor,
   .ss-economy-item-editor-card,
+  .ss-economy-item-editor-card--identity,
+  .ss-economy-item-editor-section,
   .ss-economy-item-editor-title,
   .ss-economy-icon-field,
   .ss-economy-asset-dialog,
