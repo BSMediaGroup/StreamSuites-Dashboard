@@ -7009,6 +7009,25 @@ body.ss-col-resizing-active {
   justify-content: space-between;
 }
 
+.ss-economy-view-toggle {
+  flex-wrap: nowrap;
+  gap: 0;
+  padding: 3px;
+  border: 1px solid rgba(132, 184, 255, 0.18);
+  border-radius: 10px;
+  background: rgba(2, 8, 18, 0.28);
+}
+
+.ss-economy-view-toggle .ss-btn {
+  min-height: 32px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.ss-economy-view-toggle .ss-btn + .ss-btn {
+  margin-left: 3px;
+}
+
 .ss-economy-view-toggle .ss-btn.is-active {
   border-color: rgba(255, 210, 110, 0.5);
   background: rgba(255, 210, 110, 0.12);
@@ -7017,7 +7036,7 @@ body.ss-col-resizing-active {
 
 .ss-economy-card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 390px), 1fr));
   gap: 14px;
   align-items: stretch;
 }
@@ -7523,8 +7542,8 @@ body.ss-col-resizing-active {
 }
 
 .ss-economy-item-create-grid {
-  grid-template-columns: minmax(260px, 0.92fr) minmax(250px, 0.62fr) minmax(280px, 0.72fr) minmax(320px, 0.9fr);
-  gap: 12px;
+  grid-template-columns: minmax(300px, 1fr) minmax(280px, 0.82fr) minmax(360px, 1.12fr);
+  gap: 14px;
 }
 
 .ss-economy-item-create-card {
@@ -7606,6 +7625,7 @@ body.ss-col-resizing-active {
 }
 
 .ss-economy-item-create-card--notes {
+  grid-column: span 2;
   align-content: start;
 }
 
@@ -7625,6 +7645,7 @@ body.ss-col-resizing-active {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  flex-wrap: wrap;
   padding: 10px 12px;
   border: 1px solid rgba(132, 184, 255, 0.16);
   border-radius: 10px;
@@ -7632,9 +7653,16 @@ body.ss-col-resizing-active {
 }
 
 .ss-economy-item-list-toolbar > div {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 3px;
   min-width: 0;
+}
+
+.ss-economy-item-list-toolbar > label.ss-economy-wide,
+.ss-economy-market-toolbar > label.ss-economy-wide {
+  flex: 1 1 360px;
+  min-width: min(100%, 280px);
 }
 
 .ss-economy-item-page-size {
@@ -7652,8 +7680,8 @@ body.ss-col-resizing-active {
 
 .ss-economy-item-editor {
   display: grid;
-  grid-template-columns: minmax(280px, 0.75fr) minmax(250px, 0.6fr) minmax(280px, 0.75fr) minmax(330px, 1fr);
-  gap: 12px;
+  grid-template-columns: minmax(320px, 1fr) minmax(290px, 0.86fr) minmax(360px, 1.08fr);
+  gap: 14px;
   min-width: 0;
 }
 
@@ -7670,7 +7698,7 @@ body.ss-col-resizing-active {
 
 .ss-economy-item-editor-card--title,
 .ss-economy-icon-card {
-  grid-template-columns: 42px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   align-content: start;
 }
 
@@ -7694,10 +7722,14 @@ body.ss-col-resizing-active {
 
 .ss-economy-icon-field {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(190px, 0.55fr);
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
   align-items: end;
   min-width: 0;
+}
+
+.ss-economy-icon-field .ss-economy-icon-preview {
+  grid-column: 1 / -1;
 }
 
 .ss-economy-icon-preview,
@@ -7766,7 +7798,7 @@ body.ss-col-resizing-active {
 }
 
 .ss-economy-item-editor-dialog {
-  width: min(1320px, 100%);
+  width: min(1440px, 100%);
   max-height: calc(100vh - 44px);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
@@ -7865,6 +7897,16 @@ body.ss-col-resizing-active {
   backdrop-filter: blur(16px);
 }
 
+.ss-economy-asset-modal.is-embedded {
+  position: static;
+  inset: auto;
+  z-index: auto;
+  display: block;
+  padding: 0 18px 18px;
+  background: transparent;
+  backdrop-filter: none;
+}
+
 .ss-economy-asset-dialog {
   width: min(1160px, 100%);
   max-height: min(820px, calc(100vh - 32px));
@@ -7880,6 +7922,22 @@ body.ss-col-resizing-active {
     rgba(9, 15, 27, 0.98);
   box-shadow: 0 30px 90px rgba(0, 0, 0, 0.56), 0 0 0 1px rgba(255, 255, 255, 0.035) inset;
   padding: 18px;
+}
+
+.ss-economy-asset-modal.is-embedded .ss-economy-asset-dialog {
+  width: 100%;
+  max-height: none;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+.ss-economy-asset-modal.is-embedded .ss-economy-asset-grid {
+  max-height: 430px;
+}
+
+.ss-economy-asset-modal.is-embedded .ss-economy-asset-preview {
+  top: 12px;
 }
 
 .ss-economy-asset-head,

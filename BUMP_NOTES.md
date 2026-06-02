@@ -6,6 +6,14 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Unified the Item Definition editor and asset browser into one modal experience.
+- Removed the modal-inside-modal asset browser behavior for item create/edit flows; the bundled asset browser now opens as an embedded Icon & Assets section inside the active editor modal.
+- Reworked the item editor modal into a larger, better-spaced responsive layout with a maximum three-column desktop editor grid.
+- Fixed Item Code, Icon, and Public Copy spacing so code preview, icon path/preview, and expanded textareas no longer collide or squeeze into unusable columns.
+- Fixed Card Grid/List toggle controls so Inventory Item Definitions and Market Governance render them side by side as compact segmented controls.
+- Further polished Inventory and Market Governance browser controls, card grids, thumbnails, long-path wrapping, and pagination spacing.
+- Human note: admins should be able to create/edit item definitions, browse/select bundled assets, and switch Inventory/Market browser views without nested lightboxes, overlapping panels, or vertically stacked desktop toggles.
+
 - Updated Admin Twitch runtime status copy to frame EventSub bots as Runtime/Auth auto-managed and Manual Deploy as an override/debug action.
 - Twitch platform status now displays attached creator count, auto-managed eligible count, running EventSub bot count, blocked/error count, and manual override availability from the backend contract.
 - Human note: Admin should no longer imply Twitch normally requires Manual Deploy, and Twitch rows/cards should distinguish attached/eligible/running/blocked state from global platform readiness.

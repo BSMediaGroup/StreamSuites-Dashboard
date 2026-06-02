@@ -892,6 +892,12 @@
     return `<button class="ss-economy-asset-tab${active ? " is-active" : ""}" type="button" role="tab" aria-selected="${active ? "true" : "false"}" data-asset-mode="${escapeHtml(mode)}">${escapeHtml(label)}</button>`;
   }
 
+  function shouldEmbedAssetPicker() {
+    const target = text(state.assetPicker.target);
+    if (!state.itemEditorCode || !target || target.startsWith("denomination:")) return false;
+    return target === "create" || target === state.itemEditorCode;
+  }
+
   function readAssetDefinitionDraft(prefix = "economy-asset-definition") {
     return {
       label: text($(`${prefix}-label`)?.value),
@@ -920,6 +926,13 @@
     const existing = modals[0] || null;
     modals.slice(1).forEach((modal) => modal.remove());
     if (!state.assetPicker.open) {
+      existing?.remove();
+      return;
+    }
+    const embedded = shouldEmbedAssetPicker();
+    const embeddedHost = embedded ? document.querySelector(".ss-economy-item-editor-dialog") : null;
+    if (embedded && !embeddedHost) {
+      state.assetPicker.open = false;
       existing?.remove();
       return;
     }
@@ -953,19 +966,23 @@
     const restoreSelectionStart = typeof activeElement?.selectionStart === "number" ? activeElement.selectionStart : null;
     const restoreSelectionEnd = typeof activeElement?.selectionEnd === "number" ? activeElement.selectionEnd : null;
     modal.id = "economy-asset-picker";
-    modal.className = "ss-economy-asset-modal";
-    modal.setAttribute("role", "dialog");
-    modal.setAttribute("aria-modal", "true");
+    modal.className = `ss-economy-asset-modal${embedded ? " is-embedded" : ""}`;
+    modal.setAttribute("role", embedded ? "region" : "dialog");
+    if (embedded) {
+      modal.removeAttribute("aria-modal");
+    } else {
+      modal.setAttribute("aria-modal", "true");
+    }
     modal.setAttribute("aria-labelledby", "economy-asset-picker-title");
     modal.innerHTML = `
       <div class="ss-economy-asset-dialog">
         <header class="ss-economy-asset-head">
           <div>
-            <span class="ss-subtitle">Item Icon</span>
-            <h3 id="economy-asset-picker-title">Choose item asset</h3>
+            <span class="ss-subtitle">Icon & Assets</span>
+            <h3 id="economy-asset-picker-title">${embedded ? "Asset browser" : "Choose item asset"}</h3>
             <p>Pick a bundled game image, define a missing catalog entry, upload through Runtime/Auth when available, or use an external image URL.</p>
           </div>
-          <button class="ss-icon-btn ss-economy-asset-close" type="button" aria-label="Close asset selector" data-asset-close><span aria-hidden="true"></span></button>
+          <button class="ss-icon-btn ss-economy-asset-close" type="button" aria-label="${embedded ? "Back to editor" : "Close asset selector"}" data-asset-close><span aria-hidden="true"></span></button>
         </header>
         <div class="ss-economy-asset-tabs" role="tablist" aria-label="Asset source">
           ${renderAssetSourceTab("bundled", "Choose existing asset")}
@@ -1033,12 +1050,24 @@
           <code>${escapeHtml(normalizeItemIconPath(previewPath) || "No icon configured")}</code>
         </aside>
         <footer class="ss-economy-asset-actions">
-          <button class="ss-btn ss-btn-secondary" type="button" data-asset-close>Cancel</button>
+          <button class="ss-btn ss-btn-secondary" type="button" data-asset-close>${embedded ? "Back to editor" : "Cancel"}</button>
           <button class="ss-btn" type="button" data-asset-use ${canUseAsset ? "" : "disabled"}>Use selected asset</button>
         </footer>
       </div>
     `;
-    if (!existing) document.body.appendChild(modal);
+    if (!existing) {
+      if (embedded && embeddedHost) {
+        const footer = embeddedHost.querySelector(".ss-economy-item-editor-foot");
+        embeddedHost.insertBefore(modal, footer || null);
+      } else {
+        document.body.appendChild(modal);
+      }
+    } else if (embedded && existing.parentElement !== embeddedHost && embeddedHost) {
+      const footer = embeddedHost.querySelector(".ss-economy-item-editor-foot");
+      embeddedHost.insertBefore(existing, footer || null);
+    } else if (!embedded && existing.parentElement !== document.body) {
+      document.body.appendChild(existing);
+    }
     setTimeout(() => {
       const target = restoreFocusId ? $(restoreFocusId) : ($("#economy-asset-filter") || $("#economy-asset-custom-url") || modal.querySelector("[data-asset-close]"));
       target?.focus?.();
