@@ -99,6 +99,10 @@
       [
         breakdown.global_bot_token_configured ? "global bot token configured" : "global bot token missing",
         breakdown.creator_twitch_channel_attached ? `${breakdown.attached_creator_count || creatorChannels.length} creator channel attached` : "no creator channel attached",
+        `${breakdown.auto_managed_eligible_count || 0} auto-managed eligible`,
+        `${breakdown.running_eventsub_bot_count || 0} EventSub running`,
+        `${breakdown.blocked_error_count || 0} blocked/error`,
+        breakdown.manual_override_available ? "manual override available" : "manual override unavailable",
       ].join(" / ")
     );
     setText(el.authBotStatus, bot?.dispatch_ready ? "authorized" : bot?.status || platform?.status || "not authorized");
@@ -117,7 +121,7 @@
       setText(
         el.authBanner,
         ready || breakdown.creator_twitch_channel_attached
-          ? "Twitch EventSub/API posture is available from Runtime/Auth."
+          ? "Twitch EventSub/API posture is auto-managed by Runtime/Auth; Manual Deploy is an override/debug action."
           : (bot?.status_reason || platform?.error || "Attach a Twitch channel in Creator Dashboard /integrations/twitch before deploying Twitch chat.")
       );
     }

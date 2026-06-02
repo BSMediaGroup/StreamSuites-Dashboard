@@ -6,6 +6,10 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Updated Admin Twitch runtime status copy to frame EventSub bots as Runtime/Auth auto-managed and Manual Deploy as an override/debug action.
+- Twitch platform status now displays attached creator count, auto-managed eligible count, running EventSub bot count, blocked/error count, and manual override availability from the backend contract.
+- Human note: Admin should no longer imply Twitch normally requires Manual Deploy, and Twitch rows/cards should distinguish attached/eligible/running/blocked state from global platform readiness.
+
 - Fixed Inventory and Market Governance browser card/list layouts so thumbnails and text no longer overlap.
 - Improved responsive card grids to use fewer, wider, cleaner cards with contained larger thumbnails and safer long-code/path wrapping.
 - Polished independent search, view toggle, pagination, and page-size controls for the Economy / Inventory admin browsers.
