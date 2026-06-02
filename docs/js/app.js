@@ -1007,12 +1007,10 @@ const SECTION_SHELL_CONFIG = Object.freeze({
     sections: Object.freeze([
       { id: "economy-settings-section", label: "Economy Settings" },
       { id: "economy-denominations-section", label: "Denominations" },
-      { id: "economy-identity-search-section", label: "Identity Search" },
+      { id: "economy-identity-search-section", label: "Wallet & Inventory" },
       { id: "economy-participation-exclusions-section", label: "Participation Exclusions" },
-      { id: "economy-wallet-section", label: "Wallet" },
       { id: "economy-ledger-section", label: "Economy Ledger" },
       { id: "economy-actions-section", label: "Manual Economy Actions" },
-      { id: "economy-inventory-section", label: "Inventory" },
       { id: "economy-inventory-events-section", label: "Inventory Events" },
       { id: "economy-inventory-actions-section", label: "Manual Inventory Actions" },
       { id: "economy-exchange-section", label: "Gem / Diamond Exchange" },

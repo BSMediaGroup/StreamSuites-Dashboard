@@ -6,6 +6,15 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Replaced broken Participation Exclusions controls with a dedicated policy editor modal and existing-policy browser.
+- Fixed policy controls so labels and switches no longer overlap by removing the scaled switch-card treatment and using stable switch/tile rows.
+- Added stepped create/edit flow to the Item Definition modal with preserved draft state.
+- Fixed item creation button enablement and validation flow by using the generated item code state instead of treating the string generator as an object.
+- Fixed existing item Public Copy hydration across additional Runtime/Auth public-copy and admin-note key variants.
+- Expanded Icon & Assets tab and preserved the existing stable asset search focus/update path.
+- Improved Market Governance modal spacing with Admin Reason / Save Note in the main editor layout.
+- Combined Wallet and Inventory inspectors into one upgraded inspector section with identity search pagination, wallet summary, and inventory gallery/list views.
+
 - Reworked Participation Exclusions switch sizing and governance layout hardening so policy labels and toggles keep separate grid columns without overlap.
 - Fixed Inventory Item Definition modal draft persistence across Details, Icon & Assets, Public Copy, and Admin Notes by preserving unmounted tab fields while switching sections.
 - Fixed existing item edit hydration so Public Copy fields read stored description/details/note variants returned either top-level or in metadata.

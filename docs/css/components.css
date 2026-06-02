@@ -6745,7 +6745,7 @@ body.ss-col-resizing-active {
 
 .ss-economy-exclusion-switch {
   display: grid;
-  grid-template-columns: 68px minmax(0, 1fr);
+  grid-template-columns: 58px minmax(0, 1fr);
   gap: 12px;
   align-items: center;
   min-height: 56px;
@@ -6758,15 +6758,15 @@ body.ss-col-resizing-active {
 
 .ss-economy-exclusion-switch .switch-button {
   justify-content: flex-start;
-  width: 64px;
-  min-width: 64px;
-  height: 28px;
-  overflow: visible;
+  width: 58px;
+  min-width: 58px;
+  height: 32px;
+  overflow: hidden;
 }
 
 .ss-economy-exclusion-switch .switch-scale {
-  width: 115px;
-  transform: scale(0.55);
+  width: 58px;
+  transform: none;
   transform-origin: center left;
 }
 
@@ -6937,7 +6937,7 @@ body.ss-col-resizing-active {
 
 .ss-economy-exclusion-target-panel,
 .ss-economy-exclusion-existing,
-.ss-economy-exclusion-editor,
+.ss-economy-exclusion-selected-panel,
 .ss-economy-exclusion-summary-grid {
   display: grid;
   gap: 12px;
@@ -6948,9 +6948,116 @@ body.ss-col-resizing-active {
   background: rgba(255, 255, 255, 0.03);
 }
 
-.ss-economy-exclusion-editor,
+.ss-economy-exclusion-selected-panel,
 .ss-economy-exclusion-summary-grid {
   grid-column: 1 / -1;
+}
+
+.ss-economy-policy-modal {
+  z-index: 1004;
+}
+
+.ss-economy-policy-dialog {
+  width: min(1240px, 100%);
+}
+
+.ss-economy-policy-modal-body {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.ss-economy-policy-modal-body > .ss-economy-exclusion-summary-grid {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.ss-economy-policy-modal .ss-economy-exclusion-toggles {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ss-economy-combined-inspector {
+  display: grid;
+  gap: 10px;
+}
+
+.ss-economy-combined-inspector .ss-economy-inspector {
+  display: grid;
+  gap: 12px;
+}
+
+.ss-economy-identity-selector-head,
+.ss-economy-selected-identity-summary,
+.ss-economy-inspector-panel {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 10px;
+}
+
+.ss-economy-identity-selector-head {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+}
+
+.ss-economy-identity-selector-head label {
+  min-width: 150px;
+}
+
+.ss-economy-selected-identity-summary {
+  grid-template-columns: 136px minmax(0, 1fr);
+  align-items: center;
+}
+
+.ss-economy-selected-identity-summary .ss-economy-avatar {
+  width: 136px;
+  height: 136px;
+  border-radius: 16px;
+  font-size: 34px;
+}
+
+.ss-economy-inventory-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 12px;
+}
+
+.ss-economy-inventory-list-view {
+  display: grid;
+  gap: 8px;
+}
+
+.ss-economy-inventory-card {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 10px;
+  min-width: 0;
+  align-items: start;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 9px;
+  background: rgba(9, 14, 26, 0.45);
+  padding: 10px;
+}
+
+.ss-economy-inventory-card .ss-economy-item-icon {
+  width: 88px;
+  height: 88px;
+}
+
+.ss-economy-inventory-card-main {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.ss-economy-inventory-card-main strong,
+.ss-economy-inventory-card-main span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .ss-economy-exclusion-target-fields {
@@ -8620,6 +8727,7 @@ body.ss-col-resizing-active {
 .ss-economy-item-definition label,
 .ss-economy-item-editor label,
 .ss-economy-market-editor label,
+.ss-economy-policy-modal label,
 .ss-economy-actions label {
   display: grid;
   gap: 5px;
@@ -8632,6 +8740,8 @@ body.ss-col-resizing-active {
 .ss-economy-item-definition textarea,
 .ss-economy-market-editor input,
 .ss-economy-market-editor select,
+.ss-economy-policy-modal input,
+.ss-economy-policy-modal select,
 .ss-economy-actions input,
 .ss-economy-actions select {
   width: 100%;
@@ -8675,6 +8785,7 @@ body.ss-col-resizing-active {
   .ss-economy-master-detail,
   .ss-economy-exclusion-layout,
   .ss-economy-market-editor-modal-body,
+  .ss-economy-policy-modal .ss-economy-exclusion-toggles,
   .ss-economy-search-row {
     grid-template-columns: 1fr;
   }
@@ -8715,6 +8826,9 @@ body.ss-col-resizing-active {
   .ss-economy-exclusion-target-fields,
   .ss-economy-exclusion-toggles,
   .ss-economy-exclusion-summary-grid,
+  .ss-economy-selected-identity-summary,
+  .ss-economy-identity-selector-head,
+  .ss-economy-inventory-card,
   .ss-economy-item-create-grid,
   .ss-economy-item-create-card,
   .ss-economy-item-editor-card,
@@ -8736,7 +8850,12 @@ body.ss-col-resizing-active {
     justify-items: start;
   }
 
-  .ss-economy-exclusion-editor,
+  .ss-economy-selected-identity-summary .ss-economy-avatar {
+    width: 104px;
+    height: 104px;
+  }
+
+  .ss-economy-exclusion-selected-panel,
   .ss-economy-exclusion-summary-grid {
     grid-column: auto;
   }

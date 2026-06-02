@@ -79,9 +79,9 @@
   <section class="ss-panel ss-admin-control-section ss-admin-collapsible ss-economy-identity-workspace" id="economy-identity-search-section" data-collapsible-section="economy-identity-search">
       <header class="ss-panel-header">
         <div class="ss-panel-header-main">
-          <h2>Identity Search</h2>
+          <h2>Wallet &amp; Inventory Inspector</h2>
           <p class="muted" style="margin:6px 0 0;">
-            Claimed identities show account context first. Public identity codes remain fallback diagnostics.
+            Search identities, inspect wallet state, and review current inventory from Runtime/Auth summaries.
           </p>
         </div>
         <div class="ss-panel-header-actions">
@@ -94,13 +94,13 @@
             <div id="economy-identities-list" class="ss-economy-list"></div>
             <div id="economy-identities-empty" class="ss-empty hidden">No public economy identities match the current search.</div>
           </div>
-          <div class="ss-economy-detail-pane" id="economy-wallet-section">
-            <h3>Wallet Inspector</h3>
+          <div class="ss-economy-detail-pane ss-economy-combined-inspector" id="economy-wallet-inventory-section">
+            <h3>WALLET &amp; INVENTORY INSPECTOR</h3>
             <p class="muted" style="margin:0 0 10px;">
-              Wallet totals are read from the authoritative summary updated by event application.
+              Wallet totals and held items are read from the authoritative identity summary.
             </p>
             <div id="economy-wallet-inspector" class="ss-economy-inspector ss-empty">
-              Select an identity to inspect wallet state.
+              Select an identity to inspect wallet and inventory state.
             </div>
           </div>
         </div>
@@ -159,23 +159,6 @@
         <div id="economy-actions" class="ss-economy-actions ss-empty">
           Select an identity to apply manual economy controls.
         </div>
-      </div>
-  </section>
-
-  <section class="ss-panel ss-admin-control-section ss-admin-collapsible" id="economy-inventory-section" data-collapsible-section="economy-inventory">
-      <header class="ss-panel-header">
-        <div class="ss-panel-header-main">
-          <h2>Inventory Inspector</h2>
-          <p class="muted" style="margin:6px 0 0;">
-            Current inventory rows show only positive quantities from the identity-owned summary.
-          </p>
-        </div>
-        <div class="ss-panel-header-actions">
-          <button class="ss-btn ss-btn-secondary ss-admin-collapse-toggle" type="button" data-collapse-target="economy-inventory" aria-expanded="true">Collapse</button>
-        </div>
-      </header>
-      <div class="ss-panel-body ss-admin-collapsible-body" id="economy-inventory-panel">
-        <div id="economy-inventory-list" class="ss-economy-list"></div>
       </div>
   </section>
 

@@ -43,6 +43,7 @@
   const GAME_ASSET_CATALOG = "/assets/games/asset-catalog.json";
   const IMAGE_EXTENSION_PATTERN = /\.(bmp|gif|jpe?g|png|svg|webp)(?:[?#].*)?$/i;
   const IDENTITY_PAGE_SIZE = 10;
+  const IDENTITY_PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
   const EVENT_PAGE_SIZE = 8;
   const DEFAULT_ITEM_PAGE_SIZE = 20;
   const ITEM_PAGE_SIZE_OPTIONS = [5, 10, 20, 50, 100];
@@ -78,6 +79,9 @@
     },
     denominations: [],
     identityPage: 1,
+    identityPageSize: IDENTITY_PAGE_SIZE,
+    inventorySearch: "",
+    inventoryViewMode: "cards",
     economyEventPage: 1,
     inventoryEventPage: 1,
     itemPage: 1,
@@ -114,6 +118,7 @@
       reason: "",
       loading: false,
       saving: false,
+      policyModalOpen: false,
       error: ""
     },
     denominationEditorCode: "",
@@ -368,6 +373,23 @@
     return { label, category, itemCode, collision };
   }
 
+  function generatedItemCodeDraftState(draft = createItemEditorDraft()) {
+    const label = text(draft.label);
+    const category = text(draft.category);
+    const itemCode = generatedItemCode(category, label);
+    const collision = itemCode && state.itemDefinitions.some((item) => text(item.item_code) === itemCode);
+    return { label, category, itemCode, collision };
+  }
+
+  function itemEditorSteps() {
+    return ["details", "assets", "copy", "admin"];
+  }
+
+  function itemEditorStepIndex() {
+    const steps = itemEditorSteps();
+    return Math.max(0, steps.indexOf(state.itemEditorSection));
+  }
+
   function normalizeChatAlias(value) {
     return text(value).toLowerCase();
   }
@@ -381,7 +403,13 @@
     const input = $("#economy-item-create-code");
     const preview = $("#economy-item-code-preview");
     const status = $("#economy-item-code-status");
-    const { label, category, itemCode, collision } = generatedItemCodeState();
+    const draft = createItemEditorDraft();
+    const mountedState = generatedItemCodeState();
+    const draftState = generatedItemCodeDraftState(draft);
+    const label = mountedState.label || draftState.label;
+    const category = mountedState.category || draftState.category;
+    const itemCode = mountedState.itemCode || draftState.itemCode;
+    const collision = Boolean(mountedState.collision || draftState.collision);
     if (input) input.value = itemCode;
     if (preview) preview.textContent = itemCode || "Select a category and enter an item name.";
     if (status) {
@@ -393,7 +421,7 @@
       status.className = `muted ss-economy-item-code-status${collision ? " is-error" : itemCode ? " is-ok" : ""}`;
     }
     const button = $("#economy-item-create-submit");
-    if (button) button.disabled = state.saving || !itemCode || collision || !text($("#economy-item-create-reason")?.value);
+    if (button) button.disabled = state.saving || !itemCode || collision || !text($("#economy-item-create-reason")?.value || draft.reason_text);
   }
 
   function updateItemCreateFieldErrors(errors = state.itemCreateErrors) {
@@ -486,6 +514,10 @@
 
   function marketPageSizeOptions() {
     return ITEM_PAGE_SIZE_OPTIONS.map((size) => `<option value="${size}" ${state.marketPageSize === size ? "selected" : ""}>${size}</option>`).join("");
+  }
+
+  function identityPageSizeOptions() {
+    return IDENTITY_PAGE_SIZE_OPTIONS.map((size) => `<option value="${size}" ${state.identityPageSize === size ? "selected" : ""}>${size}</option>`).join("");
   }
 
   function renderItemDefinitionsToolbar(pageInfo) {
@@ -1209,9 +1241,19 @@
     if (!el.identitiesList) return;
     el.identityCount.textContent = formatNumber(state.identities.length);
     el.identitiesEmpty?.classList.toggle("hidden", state.identities.length > 0);
-    const pageInfo = pageSlice(state.identities, state.identityPage, IDENTITY_PAGE_SIZE);
+    const pageInfo = pageSlice(state.identities, state.identityPage, state.identityPageSize);
     state.identityPage = pageInfo.page;
-    el.identitiesList.innerHTML = pageInfo.items
+    const first = pageInfo.totalItems ? ((pageInfo.page - 1) * state.identityPageSize) + 1 : 0;
+    const last = Math.min(pageInfo.totalItems, pageInfo.page * state.identityPageSize);
+    el.identitiesList.innerHTML = `
+      <div class="ss-economy-identity-selector-head">
+        <div>
+          <strong>Identity selector</strong>
+          <span class="muted">Showing ${formatNumber(first)}-${formatNumber(last)} of ${formatNumber(pageInfo.totalItems)}</span>
+        </div>
+        <label>Result page size<select id="economy-identity-page-size">${identityPageSizeOptions()}</select></label>
+      </div>
+    ` + pageInfo.items
       .map((entry) => {
         const identity = entry.identity || {};
         const wallet = entry.wallet || {};
@@ -1241,6 +1283,48 @@
       .join("") + renderPager("identities", pageInfo, "Identity page");
   }
 
+  function selectedIdentityDisplay(detail = state.detail || {}) {
+    const identity = detail.identity || {};
+    const wallet = detail.wallet || {};
+    return text(identity.display_name || wallet.display_name || identityUserCode(identity, wallet) || identityFallbackCode(identity, wallet) || state.selectedIdentityCode || "Selected identity");
+  }
+
+  function renderCombinedInventoryItems(inventory = []) {
+    const query = text(state.inventorySearch).toLowerCase();
+    const filtered = inventory.filter((item) => {
+      if (!query) return true;
+      const definition = item.definition || itemDefinitionFor(item.item_code) || {};
+      return [
+        item.item_code,
+        item.label,
+        definition.label,
+        definition.category,
+        definition.category_label,
+        definition.rarity
+      ].map((value) => text(value).toLowerCase()).join(" ").includes(query);
+    });
+    if (!filtered.length) return `<div class="ss-empty ss-empty-compact">No held inventory rows match this filter.</div>`;
+    const cards = filtered.map((item) => {
+      const definition = item.definition || itemDefinitionFor(item.item_code) || {};
+      const iconSource = { ...definition, ...item, icon_path: itemIcon(item) };
+      return `
+        <article class="ss-economy-inventory-card">
+          ${renderItemIcon(iconSource)}
+          <div class="ss-economy-inventory-card-main">
+            <strong>${escapeHtml(itemLabel(item))}</strong>
+            <span class="muted">${escapeHtml(item.item_code || "No item code")}</span>
+            <span class="ss-economy-item-chip-row">
+              <span class="ss-economy-item-chip">Qty ${formatNumber(item.quantity || 0)}</span>
+              <span class="ss-economy-item-chip">${escapeHtml(itemCategory(item))}</span>
+              ${definition.rarity || item.rarity ? `<span class="ss-economy-item-chip">${escapeHtml(definition.rarity || item.rarity)}</span>` : ""}
+            </span>
+          </div>
+        </article>
+      `;
+    }).join("");
+    return `<div class="${state.inventoryViewMode === "list" ? "ss-economy-inventory-list-view" : "ss-economy-inventory-gallery"}">${cards}</div>`;
+  }
+
   function renderWallet() {
     if (!el.walletInspector) return;
     const detail = state.detail || {};
@@ -1248,31 +1332,57 @@
     const identity = detail.identity || {};
     if (!wallet) {
       el.walletInspector.className = "ss-economy-inspector ss-empty";
-      el.walletInspector.textContent = "Select an identity to inspect wallet state.";
+      el.walletInspector.textContent = "Select an identity to inspect wallet and inventory state.";
       return;
     }
     const sourceCodes = Array.isArray(wallet.source_identity_codes) ? wallet.source_identity_codes : [];
     const chips = renderPublicIdentityChips(publicIdentityChipItems(identity, { ...wallet, source_identity_codes: sourceCodes }), identityUserCode(identity, wallet) || identity.display_name || wallet.display_name);
+    const inventory = Array.isArray(detail.inventory) ? detail.inventory : [];
     el.walletInspector.className = "ss-economy-inspector";
     el.walletInspector.innerHTML = `
-      <div class="ss-economy-wallet-head">
+      <section class="ss-economy-selected-identity-summary">
         ${renderAvatar(identity, wallet)}
         <div>
-          <strong>${escapeHtml(identity.display_name || wallet.display_name || identityUserCode(identity, wallet))}</strong>
+          <strong>${escapeHtml(selectedIdentityDisplay(detail))}</strong>
+          <span class="muted">User code: ${escapeHtml(identityUserCode(identity, wallet) || "Unclaimed")}</span>
           <span class="muted">Public identity: ${escapeHtml(identityFallbackCode(identity, wallet))}</span>
+          <span class="muted">Account UUID: ${escapeHtml(identity.account_uuid || identity.account_id || wallet.account_uuid || wallet.account_id || "None returned")}</span>
           ${chips}
         </div>
-      </div>
-      <div class="ss-economy-kpis">
-        <div><span>Total balance</span><strong>${renderWalletMoneyValue(wallet.balance_total_credits ?? wallet.balance_current ?? 0, { prominent: true })}</strong></div>
-        <div><span>Cash balance</span><strong>${renderWalletMoneyValue(wallet.cash_balance_credits ?? wallet.balance_current ?? 0)}</strong></div>
-        <div><span>Held item value</span><strong>${renderWalletMoneyValue(wallet.held_value_credits ?? 0)}</strong></div>
-        <div><span>Earned lifetime</span><strong>${formatNumber(wallet.earned_lifetime || 0)}</strong></div>
-        <div><span>Spent lifetime</span><strong>${formatNumber(wallet.spent_lifetime || 0)}</strong></div>
-        <div><span>Adjusted total</span><strong>${formatNumber(wallet.adjusted_total || 0)}</strong></div>
-        <div><span>Last event</span><strong>${escapeHtml(wallet.last_event_at || "No events")}</strong></div>
-      </div>
-      ${renderDenominationBreakdown(wallet)}
+      </section>
+      <section class="ss-economy-inspector-panel ss-economy-wallet-panel">
+        <div class="ss-economy-browser-header">
+          <div>
+            <strong>Wallet</strong>
+            <span class="muted">Runtime/Auth wallet summary</span>
+          </div>
+          <a class="ss-btn ss-btn-secondary" href="#economy-ledger-section">Ledger</a>
+        </div>
+        <div class="ss-economy-kpis">
+          <div><span>Total balance</span><strong>${renderWalletMoneyValue(wallet.balance_total_credits ?? wallet.balance_current ?? 0, { prominent: true })}</strong></div>
+          <div><span>Cash balance</span><strong>${renderWalletMoneyValue(wallet.cash_balance_credits ?? wallet.balance_current ?? 0)}</strong></div>
+          <div><span>Held item value</span><strong>${renderWalletMoneyValue(wallet.held_value_credits ?? 0)}</strong></div>
+          <div><span>Earned lifetime</span><strong>${formatNumber(wallet.earned_lifetime || 0)}</strong></div>
+          <div><span>Spent lifetime</span><strong>${formatNumber(wallet.spent_lifetime || 0)}</strong></div>
+          <div><span>Adjusted total</span><strong>${formatNumber(wallet.adjusted_total || 0)}</strong></div>
+          <div><span>Last event</span><strong>${escapeHtml(wallet.last_event_at || "No events")}</strong></div>
+        </div>
+        ${renderDenominationBreakdown(wallet)}
+      </section>
+      <section class="ss-economy-inspector-panel ss-economy-inventory-panel">
+        <div class="ss-economy-browser-header">
+          <div>
+            <strong>Inventory</strong>
+            <span class="muted">${formatNumber(inventory.length)} positive-quantity held rows</span>
+          </div>
+          <div class="ss-economy-view-toggle" aria-label="Inventory inspector view">
+            <button class="ss-btn ss-btn-secondary ${state.inventoryViewMode === "cards" ? "is-active" : ""}" type="button" data-inspector-inventory-view="cards" aria-pressed="${state.inventoryViewMode === "cards"}">Gallery</button>
+            <button class="ss-btn ss-btn-secondary ${state.inventoryViewMode === "list" ? "is-active" : ""}" type="button" data-inspector-inventory-view="list" aria-pressed="${state.inventoryViewMode === "list"}">List</button>
+          </div>
+        </div>
+        <label class="ss-economy-wide">Held item search<input id="economy-inspector-inventory-search" type="search" value="${escapeHtml(state.inventorySearch)}" placeholder="Item code, name, category, rarity" /></label>
+        ${renderCombinedInventoryItems(inventory)}
+      </section>
     `;
   }
 
@@ -1515,12 +1625,71 @@
                   <span>${escapeHtml(policy.updated_at || policy.updated_by || "No timestamp")}</span>
                 </div>
                 <p class="muted">${escapeHtml(policy.reason || "No admin note")}</p>
-                <button class="ss-btn ss-btn-secondary" type="button" data-exclusion-policy-target-type="${escapeHtml(policy.target_type || policy.targetType || "public_identity")}" data-exclusion-policy-target-id="${escapeHtml(policy.target_id || policy.targetId || "")}">Load policy</button>
+                <button class="ss-btn ss-btn-secondary" type="button" data-exclusion-policy-target-type="${escapeHtml(policy.target_type || policy.targetType || "public_identity")}" data-exclusion-policy-target-id="${escapeHtml(policy.target_id || policy.targetId || "")}">Load/Edit</button>
               </article>
             `;
           }).join("") : `<div class="ss-empty ss-empty-compact">No existing participation exclusion policies match this filter.</div>`}
         </div>
       </section>
+    `;
+  }
+
+  function renderParticipationPolicyModal(stateSlice, selectedTarget, effective, policy, activeScopes) {
+    if (!stateSlice.policyModalOpen) return "";
+    const targetType = text(stateSlice.targetType || "public_identity");
+    const targetId = text(stateSlice.targetId || "");
+    const effectiveScopes = exclusionScopeSet(effective);
+    const inherited = effective.inherited_from_account ? "Inherited account policy applies to this public identity." : "No inherited account policy reported.";
+    const target = selectedTarget || { target_type: targetType, target_id: targetId };
+    return `
+      <div class="ss-economy-item-editor-modal ss-economy-policy-modal" role="dialog" aria-modal="true" aria-labelledby="economy-policy-modal-title" data-policy-modal>
+        <div class="ss-economy-item-editor-dialog ss-economy-policy-dialog">
+          <header class="ss-economy-item-editor-head">
+            <div class="ss-economy-item-editor-title">
+              ${renderExclusionTargetAvatar(target)}
+              <div>
+                <span class="ss-subtitle">Participation Policy</span>
+                <h3 id="economy-policy-modal-title">${escapeHtml(selectedTarget?.display_name || selectedTarget?.label || selectedTarget?.username || targetId || "Selected target")}</h3>
+                <code>${escapeHtml(targetType === "account" ? "Account" : "Public identity")}: ${escapeHtml(targetId || "No target selected")}</code>
+                <span class="ss-economy-item-editor-chip-row">
+                  ${renderEditorChip("Direct", exclusionPolicySummaryText(policy))}
+                  ${renderEditorChip("Effective", effectiveScopes.size ? `${formatNumber(effectiveScopes.size)} active` : "No active blocks")}
+                </span>
+              </div>
+            </div>
+            <button class="ss-economy-item-modal-close" type="button" aria-label="Close participation policy editor" data-policy-modal-close><span aria-hidden="true"></span></button>
+          </header>
+          <div class="ss-economy-item-editor-body">
+            <div class="ss-economy-policy-modal-body">
+              <section class="ss-economy-exclusion-summary-grid">
+                ${renderExclusionPolicySummary("Direct policy", policy)}
+                ${renderExclusionPolicySummary("Inherited account policy", effective.account_policy)}
+                <article class="ss-economy-event">
+                  <div class="ss-economy-event-main">
+                    <strong>Effective summary</strong>
+                    <span>${effectiveScopes.size ? Array.from(effectiveScopes).map(formatLabel).join(", ") : "No effective blocks"}</span>
+                    <span class="muted">${escapeHtml(inherited)}</span>
+                  </div>
+                </article>
+              </section>
+              <input id="economy-exclusion-target-type" type="hidden" value="${escapeHtml(targetType)}" />
+              <input id="economy-exclusion-target-id" type="hidden" value="${escapeHtml(targetId)}" />
+              <div class="ss-economy-exclusion-toggles">
+                ${renderExclusionScopeToggles(activeScopes)}
+              </div>
+              <label class="ss-economy-wide">Admin note
+                <input id="economy-exclusion-reason" value="${escapeHtml(stateSlice.reason || policy?.reason || "")}" placeholder="Reason or admin note" />
+              </label>
+              <span class="muted">${escapeHtml(stateSlice.error || (stateSlice.loading ? "Loading policy..." : ""))}</span>
+            </div>
+          </div>
+          <footer class="ss-economy-item-editor-foot">
+            <button class="ss-btn ss-btn-secondary" type="button" data-policy-modal-close>Cancel</button>
+            <button class="ss-btn ss-btn-danger" type="button" id="economy-exclusion-clear" ${targetId && !stateSlice.saving ? "" : "disabled"}>Clear policy</button>
+            <button class="ss-btn" type="button" id="economy-exclusion-save" ${targetId && !stateSlice.saving ? "" : "disabled"}>Save policy</button>
+          </footer>
+        </div>
+      </div>
     `;
   }
 
@@ -1554,71 +1723,43 @@
           </label>
           <div class="ss-economy-exclusion-target-fields">
             <label>Target type
-              <select id="economy-exclusion-target-type">
+              <select id="economy-exclusion-target-type-main">
                 <option value="public_identity" ${targetType === "public_identity" ? "selected" : ""}>Public identity</option>
                 <option value="account" ${targetType === "account" ? "selected" : ""}>Account</option>
               </select>
             </label>
             <label>Target ID
-              <input id="economy-exclusion-target-id" value="${escapeHtml(targetId)}" placeholder="${targetType === "account" ? "Account UUID" : "Public identity code"}" />
+              <input id="economy-exclusion-target-id-main" value="${escapeHtml(targetId)}" placeholder="${targetType === "account" ? "Account UUID" : "Public identity code"}" />
             </label>
             <button class="ss-btn ss-btn-secondary" type="button" id="economy-exclusion-load">Load policy</button>
           </div>
           ${renderSelectedExclusionTarget(selectedTarget, effective)}
         </section>
         ${renderExistingExclusionPolicies(stateSlice)}
-        <section class="ss-economy-exclusion-editor">
+        <section class="ss-economy-exclusion-selected-panel">
           <div class="ss-economy-browser-header">
             <div>
-              <strong>Policy editor</strong>
+              <strong>Selected target policy</strong>
               <span class="muted">${escapeHtml(inherited)}</span>
             </div>
             <span class="ss-chip">${effectiveScopes.size ? `${formatNumber(effectiveScopes.size)} active` : "No active blocks"}</span>
           </div>
-          <div class="ss-economy-exclusion-toggles">
-            ${renderExclusionScopeToggles(activeScopes)}
+          <p class="muted">Use the dedicated policy editor modal to change blocking scopes. The main page remains a target finder and policy browser.</p>
+          <div class="ss-economy-exclusion-policy-line">
+            <span>Direct policy</span>
+            <strong>${escapeHtml(exclusionPolicySummaryText(policy))}</strong>
           </div>
-          <label>Admin note
-            <input id="economy-exclusion-reason" value="${escapeHtml(stateSlice.reason || policy?.reason || "")}" placeholder="Reason or admin note" />
-          </label>
-          <div class="ss-economy-action-row ss-economy-exclusion-actions">
-            <button class="ss-btn" type="button" id="economy-exclusion-save" ${targetId && !stateSlice.saving ? "" : "disabled"}>Save exclusions</button>
-            <button class="ss-btn ss-btn-danger" type="button" id="economy-exclusion-clear" ${targetId && !stateSlice.saving ? "" : "disabled"}>Clear policy</button>
-            <span class="muted">${escapeHtml(stateSlice.error || (stateSlice.loading ? "Loading policy..." : ""))}</span>
-          </div>
-        </section>
-        <section class="ss-economy-exclusion-summary-grid">
-          ${renderExclusionPolicySummary("Direct policy", policy)}
-          ${renderExclusionPolicySummary("Inherited account policy", effective.account_policy)}
-          <article class="ss-economy-event">
-            <div class="ss-economy-event-main">
-              <strong>Effective summary</strong>
-              <span>${effectiveScopes.size ? Array.from(effectiveScopes).map(formatLabel).join(", ") : "No effective blocks"}</span>
-              <span class="muted">${escapeHtml(inherited)}</span>
-            </div>
-          </article>
+          <button class="ss-btn" type="button" id="economy-exclusion-edit-policy" ${targetId ? "" : "disabled"}>Edit policy</button>
         </section>
       </div>
+      ${renderParticipationPolicyModal(stateSlice, selectedTarget, effective, policy, activeScopes)}
     `;
+    document.body?.classList?.toggle("ss-economy-modal-open", Boolean(state.itemEditorCode || state.marketEditorCode || stateSlice.policyModalOpen));
   }
 
   function renderInventory() {
-    const detail = state.detail || {};
-    const inventory = Array.isArray(detail.inventory) ? detail.inventory : [];
-    el.inventoryList.innerHTML = inventory.length
-      ? inventory
-          .map((item) => `
-            <article class="ss-economy-item-row">
-              ${renderItemIcon(item)}
-              <div>
-                <strong>${escapeHtml(itemLabel(item))}</strong>
-                <span class="muted">${escapeHtml(item.item_code)} · ${escapeHtml(itemCategory(item))}</span>
-              </div>
-              <strong>${formatNumber(item.quantity || 0)}</strong>
-            </article>
-          `)
-          .join("")
-      : `<div class="ss-empty">No positive-quantity inventory rows for this identity.</div>`;
+    if (!el.inventoryList) return;
+    el.inventoryList.innerHTML = "";
   }
 
   function renderEvents() {
@@ -1932,37 +2073,55 @@
       ${renderPager("market", pageInfo, "Market page")}
       ${renderMarketGovernanceModal()}
     `;
-    document.body?.classList?.toggle("ss-economy-modal-open", Boolean(state.itemEditorCode || state.marketEditorCode));
+    document.body?.classList?.toggle("ss-economy-modal-open", Boolean(state.itemEditorCode || state.marketEditorCode || state.participationExclusions.policyModalOpen));
   }
 
   function itemDefinitionViewModel(item = {}) {
     const metadata = item.metadata && typeof item.metadata === "object" ? item.metadata : {};
-    const notes = text(item.metadata_notes || item.admin_notes || metadata.notes || metadata.admin_notes || metadata.note || "");
+    const publicCopy = item.public_copy && typeof item.public_copy === "object" ? item.public_copy : {};
+    const metadataPublicCopy = metadata.public_copy && typeof metadata.public_copy === "object" ? metadata.public_copy : {};
+    const notes = text(item.metadata_notes || item.admin_notes || item.admin_note || item.save_note || item.reason_text || metadata.notes || metadata.admin_notes || metadata.admin_note || metadata.note || metadata.save_note || "");
     const shortDescription = text(
       item.short_description ||
+      item.short_public_description ||
       item.public_short_description ||
       item.description ||
+      publicCopy.short_description ||
+      publicCopy.short_public_description ||
       metadata.short_description ||
+      metadata.short_public_description ||
       metadata.public_short_description ||
       metadata.description ||
+      metadataPublicCopy.short_description ||
+      metadataPublicCopy.short_public_description ||
       ""
     );
     const tooltipDescription = text(
       item.tooltip_description ||
+      item.tooltip_public_description ||
       item.tooltip_public_details ||
       item.public_details ||
       item.details ||
       item.long_description ||
       item.public_description ||
+      publicCopy.tooltip_description ||
+      publicCopy.tooltip_public_description ||
+      publicCopy.tooltip_public_details ||
+      publicCopy.public_details ||
       metadata.tooltip_description ||
+      metadata.tooltip_public_description ||
       metadata.tooltip_public_details ||
       metadata.public_details ||
       metadata.details ||
       metadata.public_description ||
       metadata.long_description ||
+      metadataPublicCopy.tooltip_description ||
+      metadataPublicCopy.tooltip_public_description ||
+      metadataPublicCopy.tooltip_public_details ||
+      metadataPublicCopy.public_details ||
       ""
     );
-    const contextualPublicNote = text(item.contextual_public_note || item.public_note || metadata.contextual_public_note || metadata.public_note || metadata.context_note || "");
+    const contextualPublicNote = text(item.contextual_public_note || item.contextual_note || item.public_note || publicCopy.contextual_public_note || publicCopy.contextual_note || publicCopy.public_note || metadata.contextual_public_note || metadata.contextual_note || metadata.public_note || metadata.context_note || metadataPublicCopy.contextual_public_note || metadataPublicCopy.contextual_note || metadataPublicCopy.public_note || "");
     const chatAlias = text(item.chat_alias || metadata.chat_alias || "");
     const publicTooltipEnabled = item.public_tooltip_enabled !== false && metadata.public_tooltip_enabled !== false;
     const systemType = text(metadata.system_asset_type || metadata.denomination_code || "");
@@ -2221,6 +2380,11 @@
       publicTooltipEnabled: true
     } : itemDefinitionViewModel(item);
     const draft = create ? createItemEditorDraft() : editItemEditorDraft(item, model);
+    const steps = itemEditorSteps();
+    const stepIndex = itemEditorStepIndex();
+    const finalStep = stepIndex >= steps.length - 1;
+    const createCodeState = create ? generatedItemCodeDraftState(draft) : null;
+    const createReady = createCodeState ? Boolean(createCodeState.itemCode && !createCodeState.collision && text(draft.reason_text)) : false;
     const title = create ? (draft.label || "New inventory item") : (draft.label || item.item_code);
     const code = create ? generatedItemCode(draft.category, draft.label).itemCode : item.item_code;
     const iconItem = create
@@ -2252,8 +2416,10 @@
           </div>
           <footer class="ss-economy-item-editor-foot">
             <button class="ss-btn ss-btn-secondary" type="button" data-item-modal-close>Cancel</button>
+            ${stepIndex > 0 ? `<button class="ss-btn ss-btn-secondary" type="button" data-item-editor-step="previous">Previous</button>` : ""}
+            ${!finalStep ? `<button class="ss-btn" type="button" data-item-editor-step="next">Next</button>` : ""}
             ${create ? "" : `<button class="ss-btn ss-btn-danger ss-economy-item-delete" type="button" data-item-code="${escapeHtml(item.item_code)}" ${model.isArchived ? `disabled title="This item definition is already archived / disabled."` : ""}>${model.isArchived ? "Archived" : "Archive"}</button>`}
-            ${create ? `<button id="economy-item-create-submit" class="ss-btn" type="button">Create item definition</button>` : `<button class="ss-btn ss-economy-item-save" type="button" data-item-code="${escapeHtml(item.item_code)}">Save metadata</button>`}
+            ${finalStep ? (create ? `<button id="economy-item-create-submit" class="ss-btn" type="button" ${createReady ? "" : "disabled"}>Create item definition</button>` : `<button class="ss-btn ss-economy-item-save" type="button" data-item-code="${escapeHtml(item.item_code)}">Save metadata</button>`) : ""}
           </footer>
         </div>
       </div>
@@ -2469,8 +2635,8 @@
   }
 
   async function loadParticipationExclusionSummary() {
-    const targetType = text($("#economy-exclusion-target-type")?.value || state.participationExclusions.targetType || "public_identity");
-    const targetId = text($("#economy-exclusion-target-id")?.value || state.participationExclusions.targetId);
+    const targetType = text($("#economy-exclusion-target-type-main")?.value || $("#economy-exclusion-target-type")?.value || state.participationExclusions.targetType || "public_identity");
+    const targetId = text($("#economy-exclusion-target-id-main")?.value || $("#economy-exclusion-target-id")?.value || state.participationExclusions.targetId);
     state.participationExclusions.targetType = targetType;
     state.participationExclusions.targetId = targetId;
     state.participationExclusions.error = "";
@@ -2639,8 +2805,8 @@
   }
 
   async function saveParticipationExclusion() {
-    const targetType = text($("#economy-exclusion-target-type")?.value || state.participationExclusions.targetType);
-    const targetId = text($("#economy-exclusion-target-id")?.value || state.participationExclusions.targetId);
+    const targetType = text($("#economy-exclusion-target-type")?.value || $("#economy-exclusion-target-type-main")?.value || state.participationExclusions.targetType);
+    const targetId = text($("#economy-exclusion-target-id")?.value || $("#economy-exclusion-target-id-main")?.value || state.participationExclusions.targetId);
     const reason = text($("#economy-exclusion-reason")?.value || state.participationExclusions.reason);
     const scopes = selectedExclusionScopes();
     if (!targetType || !targetId) {
@@ -2673,8 +2839,8 @@
   }
 
   async function clearParticipationExclusion() {
-    const targetType = text($("#economy-exclusion-target-type")?.value || state.participationExclusions.targetType);
-    const targetId = text($("#economy-exclusion-target-id")?.value || state.participationExclusions.targetId);
+    const targetType = text($("#economy-exclusion-target-type")?.value || $("#economy-exclusion-target-type-main")?.value || state.participationExclusions.targetType);
+    const targetId = text($("#economy-exclusion-target-id")?.value || $("#economy-exclusion-target-id-main")?.value || state.participationExclusions.targetId);
     if (!targetType || !targetId) {
       setStatus("Choose an account or public identity target before clearing exclusions.", "error");
       return;
@@ -2999,7 +3165,7 @@
     captureItemEditorDraft();
     const draft = createItemEditorDraft();
     const reason = text($("#economy-item-create-reason")?.value || draft.reason_text);
-    const generated = generatedItemCode(draft.category, draft.label);
+    const generated = generatedItemCodeDraftState(draft);
     if (!reason) {
       state.itemCreateErrors = { reason_text: "A reason is required." };
       updateItemCreateFieldErrors();
@@ -3268,6 +3434,12 @@
         await unassignPublicIdentityChip(publicIdentityChip);
         return;
       }
+      if (event.target.closest?.("a, button, input, select, textarea")) {
+        const interactiveIdentity = event.target.closest?.(".ss-economy-identity");
+        if (interactiveIdentity && !event.target.closest?.("[data-public-identity-unassign-chip]")) {
+          return;
+        }
+      }
       const identityButton = event.target.closest?.(".ss-economy-identity");
       if (identityButton) {
         state.selectedIdentityCode = text(identityButton.dataset.identityCode);
@@ -3367,6 +3539,8 @@
         state.participationExclusions.targetId = text(exclusionPolicyButton.dataset.exclusionPolicyTargetId);
         state.participationExclusions.selectedTarget = null;
         await loadParticipationExclusionSummary();
+        state.participationExclusions.policyModalOpen = true;
+        renderParticipationExclusions();
         return;
       }
       if (event.target.closest?.("#economy-exclusion-use-selected")) {
@@ -3378,6 +3552,16 @@
       }
       if (event.target.closest?.("#economy-exclusion-load")) {
         await loadParticipationExclusionSummary();
+        return;
+      }
+      if (event.target.closest?.("#economy-exclusion-edit-policy")) {
+        state.participationExclusions.policyModalOpen = true;
+        renderParticipationExclusions();
+        return;
+      }
+      if (event.target.closest?.("[data-policy-modal-close]")) {
+        state.participationExclusions.policyModalOpen = false;
+        renderParticipationExclusions();
         return;
       }
       if (event.target.closest?.("#economy-exclusion-save")) {
@@ -3410,6 +3594,16 @@
         state.itemCreateErrors = {};
         state.itemEditorSection = "details";
         state.assetPicker.open = false;
+        renderItemDefinitions();
+        return;
+      }
+      const itemStepButton = event.target.closest?.("[data-item-editor-step]");
+      if (itemStepButton) {
+        captureItemEditorDraft();
+        const steps = itemEditorSteps();
+        const currentIndex = itemEditorStepIndex();
+        const direction = itemStepButton.dataset.itemEditorStep === "previous" ? -1 : 1;
+        state.itemEditorSection = steps[Math.min(Math.max(currentIndex + direction, 0), steps.length - 1)];
         renderItemDefinitions();
         return;
       }
@@ -3483,6 +3677,12 @@
         renderMarketGovernance();
         return;
       }
+      const inspectorInventoryViewButton = event.target.closest?.("[data-inspector-inventory-view]");
+      if (inspectorInventoryViewButton) {
+        state.inventoryViewMode = inspectorInventoryViewButton.dataset.inspectorInventoryView === "list" ? "list" : "cards";
+        renderWallet();
+        return;
+      }
       const denominationSaveButton = event.target.closest?.(".ss-economy-denomination-save");
       if (denominationSaveButton) {
         await saveDenominationIcon(denominationSaveButton);
@@ -3503,6 +3703,7 @@
         state.assetPicker.open = false;
         state.itemEditorCode = code;
         renderItemDefinitions();
+        return;
       }
     });
     document.addEventListener("input", (event) => {
@@ -3530,6 +3731,17 @@
         state.itemPage = 1;
         renderItemDefinitions();
         const search = $("#economy-item-search");
+        if (search) {
+          search.focus();
+          search.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }
+      if (event.target.matches?.("#economy-inspector-inventory-search")) {
+        const selectionStart = event.target.selectionStart;
+        const selectionEnd = event.target.selectionEnd;
+        state.inventorySearch = event.target.value;
+        renderWallet();
+        const search = $("#economy-inspector-inventory-search");
         if (search) {
           search.focus();
           search.setSelectionRange(selectionStart, selectionEnd);
@@ -3590,10 +3802,10 @@
         state.participationExclusions.policySearch = event.target.value;
         renderParticipationExclusions();
       }
-      if (event.target.matches?.("#economy-exclusion-target-id, #economy-exclusion-reason")) {
-        state.participationExclusions.targetId = text($("#economy-exclusion-target-id")?.value);
+      if (event.target.matches?.("#economy-exclusion-target-id-main, #economy-exclusion-target-id, #economy-exclusion-reason")) {
+        state.participationExclusions.targetId = text($("#economy-exclusion-target-id-main")?.value || $("#economy-exclusion-target-id")?.value);
         state.participationExclusions.reason = text($("#economy-exclusion-reason")?.value);
-        if (event.target.matches?.("#economy-exclusion-target-id")) {
+        if (event.target.matches?.("#economy-exclusion-target-id-main, #economy-exclusion-target-id")) {
           state.participationExclusions.selectedTarget = null;
           state.participationExclusions.current = null;
           state.participationExclusions.effective = null;
@@ -3616,6 +3828,12 @@
         state.marketPage = 1;
         renderMarketGovernance();
       }
+      if (event.target.matches?.("#economy-identity-page-size")) {
+        const nextSize = Number(event.target.value);
+        state.identityPageSize = IDENTITY_PAGE_SIZE_OPTIONS.includes(nextSize) ? nextSize : IDENTITY_PAGE_SIZE;
+        state.identityPage = 1;
+        renderIdentities();
+      }
       if (event.target.matches?.('[data-item-field="category"]')) {
         syncItemEditorCodePreview(event.target.closest(".ss-economy-item-definition"));
       }
@@ -3630,7 +3848,7 @@
         };
         renderMarketGovernance();
       }
-      if (event.target.matches?.("#economy-exclusion-target-type")) {
+      if (event.target.matches?.("#economy-exclusion-target-type-main, #economy-exclusion-target-type")) {
         state.participationExclusions.targetType = text(event.target.value || "public_identity");
         state.participationExclusions.current = null;
         state.participationExclusions.effective = null;
@@ -3648,6 +3866,11 @@
         state.itemEditorCode = "";
         state.itemCreateErrors = {};
         renderItemDefinitions();
+        return;
+      }
+      if (event.key === "Escape" && state.participationExclusions.policyModalOpen) {
+        state.participationExclusions.policyModalOpen = false;
+        renderParticipationExclusions();
         return;
       }
       if (event.key === "Escape" && state.marketEditorCode) {
