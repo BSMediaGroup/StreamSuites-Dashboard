@@ -19,7 +19,12 @@
   const MARKET_GOVERNANCE = "/api/admin/economy/market";
   const MARKET_GOVERNANCE_ITEM = (itemCode) => `/api/admin/economy/market/items/${encodeURIComponent(itemCode)}`;
   const CATEGORY_LABEL_OVERRIDES = {
-    combat_vehicle: "Combat Vehicles"
+    armor: "Armor",
+    combat_vehicle: "Combat Vehicles",
+    fish_treasure: "Fish & Treasures",
+    platform_badge: "Platform Badges",
+    weapon: "Weapons",
+    weapons: "Weapons"
   };
   const PARTICIPATION_EXCLUSIONS = "/api/admin/exclusions";
   const PARTICIPATION_EXCLUSIONS_SUMMARY = "/api/admin/exclusions/summary";
@@ -76,10 +81,15 @@
     inventoryEventPage: 1,
     itemPage: 1,
     itemPageSize: DEFAULT_ITEM_PAGE_SIZE,
+    itemSearch: "",
+    itemViewMode: "cards",
     itemEditorCode: "",
     marketItems: [],
     marketEditorCode: "",
     marketSearch: "",
+    marketViewMode: "cards",
+    marketPage: 1,
+    marketPageSize: DEFAULT_ITEM_PAGE_SIZE,
     marketFilters: {
       purchasable: false,
       exchangeable: false,
@@ -291,6 +301,48 @@
     return prefix && nameSlug ? `${prefix}.${nameSlug}` : "";
   }
 
+  function categoryCodePrefix(categoryValue = "") {
+    const category = (state.itemCategories || []).find((item) => text(item.code || item.label) === text(categoryValue) || text(item.label) === text(categoryValue)) || {};
+    return slugCode(category.default_item_code_prefix || category.code || category.label || categoryValue);
+  }
+
+  function itemCodeSuffix(itemCode = "") {
+    const raw = text(itemCode);
+    return raw.includes(".") ? raw.split(".").slice(1).join(".") : raw;
+  }
+
+  function generatedEditorItemCode(row) {
+    const category = text(row?.querySelector('[data-item-field="category"]')?.value);
+    const suffix = slugCode(row?.querySelector('[data-item-field="item_code_suffix"]')?.value);
+    const prefix = categoryCodePrefix(category);
+    return prefix && suffix ? `${prefix}.${suffix}` : "";
+  }
+
+  function syncItemEditorCodePreview(row) {
+    if (!row) return;
+    const category = text(row.querySelector('[data-item-field="category"]')?.value);
+    const prefix = categoryCodePrefix(category);
+    const suffixInput = row.querySelector('[data-item-field="item_code_suffix"]');
+    const prefixNode = row.querySelector("[data-item-code-prefix]");
+    const previewNode = row.querySelector("[data-item-code-preview]");
+    const statusNode = row.querySelector("[data-item-code-status]");
+    const suffix = slugCode(suffixInput?.value);
+    if (suffixInput && suffixInput.value !== suffix) suffixInput.value = suffix;
+    const nextCode = prefix && suffix ? `${prefix}.${suffix}` : "";
+    const currentCode = text(row.dataset.itemCode);
+    const duplicate = nextCode && nextCode !== currentCode && state.itemDefinitions.some((item) => text(item.item_code) === nextCode);
+    if (prefixNode) prefixNode.textContent = prefix || "category";
+    if (previewNode) previewNode.textContent = nextCode || "Choose a category and suffix.";
+    if (statusNode) {
+      statusNode.textContent = duplicate
+        ? "Duplicate item code. Choose another suffix before saving."
+        : nextCode && nextCode !== currentCode
+          ? "Preview only: existing item-code renames are blocked until Runtime/Auth can migrate references."
+          : "Current item code remains unchanged.";
+      statusNode.className = `muted ss-economy-item-code-status${duplicate ? " is-error" : nextCode ? " is-ok" : ""}`;
+    }
+  }
+
   function generatedItemCodeState() {
     const label = text($("#economy-item-create-label")?.value);
     const category = text($("#economy-item-create-category")?.value);
@@ -415,6 +467,10 @@
     return ITEM_PAGE_SIZE_OPTIONS.map((size) => `<option value="${size}" ${state.itemPageSize === size ? "selected" : ""}>${size}</option>`).join("");
   }
 
+  function marketPageSizeOptions() {
+    return ITEM_PAGE_SIZE_OPTIONS.map((size) => `<option value="${size}" ${state.marketPageSize === size ? "selected" : ""}>${size}</option>`).join("");
+  }
+
   function renderItemDefinitionsToolbar(pageInfo) {
     const first = pageInfo.totalItems ? ((pageInfo.page - 1) * state.itemPageSize) + 1 : 0;
     const last = Math.min(pageInfo.totalItems, pageInfo.page * state.itemPageSize);
@@ -424,12 +480,36 @@
           <strong>Inventory item definitions</strong>
           <span class="muted">Showing ${formatNumber(first)}-${formatNumber(last)} of ${formatNumber(pageInfo.totalItems)}</span>
         </div>
+        <label class="ss-economy-wide">
+          Search inventory
+          <input id="economy-item-search" type="search" value="${escapeHtml(state.itemSearch)}" placeholder="Item code, name, category, rarity" />
+        </label>
+        <div class="ss-economy-view-toggle" aria-label="Inventory browser view">
+          <button class="ss-btn ss-btn-secondary ${state.itemViewMode === "cards" ? "is-active" : ""}" type="button" data-item-view="cards" aria-pressed="${state.itemViewMode === "cards"}">Card Grid</button>
+          <button class="ss-btn ss-btn-secondary ${state.itemViewMode === "list" ? "is-active" : ""}" type="button" data-item-view="list" aria-pressed="${state.itemViewMode === "list"}">List</button>
+        </div>
         <label class="ss-economy-item-page-size">
-          Rows per page
+          Items per page
           <select id="economy-item-page-size">${itemPageSizeOptions()}</select>
         </label>
       </div>
     `;
+  }
+
+  function filteredItemDefinitions() {
+    const query = text(state.itemSearch).toLowerCase();
+    return (Array.isArray(state.itemDefinitions) ? state.itemDefinitions : []).filter((item) => {
+      const haystack = [
+        item.item_code,
+        item.label,
+        item.category,
+        item.category_label,
+        item.rarity,
+        item.short_description,
+        item.tooltip_description
+      ].map((value) => text(value).toLowerCase()).join(" ");
+      return !query || haystack.includes(query);
+    });
   }
 
   function identityUserCode(identity = {}, wallet = {}) {
@@ -1526,6 +1606,8 @@
   function renderMarketGovernance() {
     if (!el.marketGovernance) return;
     const rows = filteredMarketItems();
+    const pageInfo = pageSlice(rows, state.marketPage, state.marketPageSize);
+    state.marketPage = pageInfo.page;
     const filterSummary = [
       state.marketFilters.purchasable ? "on sale" : "",
       state.marketFilters.exchangeable ? "exchangeable" : "",
@@ -1542,9 +1624,16 @@
           </div>
           <span class="muted ss-economy-market-count">${formatNumber(rows.length)} of ${formatNumber(state.marketItems.length)} items${filterSummary ? ` · ${escapeHtml(filterSummary)}` : ""}</span>
         </div>
+        <div class="ss-economy-browser-controls">
+          <div class="ss-economy-view-toggle" aria-label="Market Governance browser view">
+            <button class="ss-btn ss-btn-secondary ${state.marketViewMode === "cards" ? "is-active" : ""}" type="button" data-market-view="cards" aria-pressed="${state.marketViewMode === "cards"}">Card Grid</button>
+            <button class="ss-btn ss-btn-secondary ${state.marketViewMode === "list" ? "is-active" : ""}" type="button" data-market-view="list" aria-pressed="${state.marketViewMode === "list"}">List</button>
+          </div>
+          <label class="ss-economy-item-page-size">Items per page<select id="economy-market-page-size">${marketPageSizeOptions()}</select></label>
+        </div>
       </div>
-      <div class="ss-economy-market-list">
-        ${rows.map((item) => {
+      <div class="ss-economy-market-list ${state.marketViewMode === "cards" ? "ss-economy-card-grid" : "ss-economy-list-view"}">
+        ${pageInfo.items.map((item) => {
           const isEditing = state.marketEditorCode === item.item_code;
           const icon = normalizeItemIconPath(item.icon_path || item.icon_url || "");
           const type = marketItemType(item);
@@ -1552,7 +1641,7 @@
           const categoryLabel = categoryDisplayLabel(item.category_label || item.category || type);
           const stock = item.unlimited_stock ? "Unlimited" : item.stock !== null && item.stock !== undefined ? formatNumber(item.stock) : "Untracked";
           return `
-            <article class="ss-economy-market-row${isEditing ? " is-editing" : ""}" data-market-item-code="${escapeHtml(item.item_code)}">
+            <article class="ss-economy-market-row${isEditing ? " is-editing" : ""}${state.marketViewMode === "cards" ? " ss-economy-browser-card" : ""}" data-market-item-code="${escapeHtml(item.item_code)}">
               <div class="ss-economy-market-summary">
                 <span class="ss-economy-item-icon${icon ? "" : " is-unavailable"}">${icon ? `<img src="${escapeHtml(assetPath(icon))}" alt="" loading="lazy" decoding="async" />` : `<span class="ss-economy-item-icon-fallback">No icon</span>`}</span>
                 <div class="ss-economy-market-main">
@@ -1588,13 +1677,15 @@
           `;
         }).join("") || `<div class="ss-empty ss-empty-compact">No market governance items match the current filters.</div>`}
       </div>
+      ${renderPager("market", pageInfo, "Market page")}
     `;
   }
 
   function renderItemDefinitions() {
     if (!el.itemDefinitions) return;
     el.itemCount.textContent = formatNumber(state.itemDefinitions.length);
-    const pageInfo = pageSlice(state.itemDefinitions, state.itemPage, state.itemPageSize);
+    const filteredItems = filteredItemDefinitions();
+    const pageInfo = pageSlice(filteredItems, state.itemPage, state.itemPageSize);
     state.itemPage = pageInfo.page;
     const itemsMarkup = pageInfo.items
       .map((item) => {
@@ -1613,8 +1704,10 @@
         const isArchived = item.is_enabled === false;
         const normalizedIcon = normalizeItemIconPath(item.icon_path || "");
         const categoryLabel = categoryDisplayLabel(item.category_label || item.category || "Uncategorized");
+        const codePrefix = categoryCodePrefix(item.category || "");
+        const codeSuffix = itemCodeSuffix(item.item_code);
         return `
-          <article class="ss-economy-item-definition${isEditing ? " is-editing" : ""}${isArchived ? " is-archived" : ""}" data-item-code="${escapeHtml(item.item_code)}">
+          <article class="ss-economy-item-definition${isEditing ? " is-editing" : ""}${isArchived ? " is-archived" : ""}${state.itemViewMode === "cards" ? " ss-economy-browser-card" : ""}" data-item-code="${escapeHtml(item.item_code)}">
             <div class="ss-economy-item-definition-summary">
               ${renderItemIcon(item)}
               <div class="ss-economy-item-definition-main">
@@ -1647,6 +1740,9 @@
                     <section class="ss-economy-item-editor-card">
                       <label>Label<input data-item-field="label" value="${escapeHtml(item.label || "")}" /></label>
                       <label>Category<select data-item-field="category">${itemCategoryOptions(item.category || "")}</select></label>
+                      <label>Item code prefix<span class="ss-economy-code-prefix" data-item-code-prefix>${escapeHtml(codePrefix || "category")}</span></label>
+                      <label>Item code suffix<input data-item-field="item_code_suffix" value="${escapeHtml(codeSuffix)}" autocomplete="off" /></label>
+                      <div class="ss-economy-wide ss-economy-code-preview"><span>Generated full code preview</span><code data-item-code-preview>${escapeHtml(item.item_code)}</code><p class="muted ss-economy-item-code-status" data-item-code-status>Current item code remains unchanged.</p></div>
                       <label>Rarity<select data-item-field="rarity">${presetOptions(state.rarityPresets, item.rarity || "")}</select></label>
                       <label>Enabled<select data-item-field="is_enabled"><option value="true" ${item.is_enabled === false ? "" : "selected"}>Enabled</option><option value="false" ${item.is_enabled === false ? "selected" : ""}>Disabled</option></select></label>
                       <label>Public tooltip<select data-item-field="public_tooltip_enabled"><option value="true" ${publicTooltipEnabled ? "selected" : ""}>Enabled</option><option value="false" ${publicTooltipEnabled ? "" : "selected"}>Disabled</option></select></label>
@@ -1672,9 +1768,12 @@
       .join("");
     el.itemDefinitions.innerHTML = `
       ${renderItemDefinitionsToolbar(pageInfo)}
-      ${itemsMarkup || `<div class="ss-empty ss-empty-compact">No item definitions were returned.</div>`}
+      <div class="${state.itemViewMode === "cards" ? "ss-economy-card-grid" : "ss-economy-list-view"}">
+        ${itemsMarkup || `<div class="ss-empty ss-empty-compact">No item definitions match the current search.</div>`}
+      </div>
       ${renderPager("items", pageInfo, "Item page")}
     `;
+    document.querySelectorAll(".ss-economy-item-definition.is-editing").forEach((row) => syncItemEditorCodePreview(row));
   }
 
   function renderItemCreateForm() {
@@ -2249,6 +2348,16 @@
       setStatus("Item definition metadata changes require a reason.", "error");
       return;
     }
+    const nextItemCode = generatedEditorItemCode(row);
+    const duplicateItemCode = nextItemCode && nextItemCode !== itemCode && state.itemDefinitions.some((item) => text(item.item_code) === nextItemCode);
+    if (duplicateItemCode) {
+      setStatus("Duplicate item code. Choose another suffix before saving.", "error");
+      return;
+    }
+    if (row?.querySelector('[data-item-field="item_code_suffix"]') && !slugCode(readField("item_code_suffix"))) {
+      setStatus("Item code suffix is required and must use safe characters.", "error");
+      return;
+    }
     const chatAlias = normalizeChatAlias(readField("chat_alias"));
     if (!chatAliasLooksValid(chatAlias)) {
       setStatus("Chat alias must use letters, numbers, hyphens, or underscores with no spaces.", "error");
@@ -2280,7 +2389,7 @@
     });
     await loadItems();
     renderAll();
-    setStatus("Item definition metadata saved.", "success");
+    setStatus(nextItemCode && nextItemCode !== itemCode ? "Item metadata saved. Existing item-code rename is blocked until Runtime/Auth can safely migrate references." : "Item definition metadata saved.", "success");
   }
 
   async function deleteItemDefinition(button) {
@@ -2648,6 +2757,9 @@
         } else if (kind === "items") {
           state.itemPage = nextPage;
           renderItemDefinitions();
+        } else if (kind === "market") {
+          state.marketPage = nextPage;
+          renderMarketGovernance();
         }
         return;
       }
@@ -2785,6 +2897,20 @@
         renderMarketGovernance();
         return;
       }
+      const itemViewButton = event.target.closest?.("[data-item-view]");
+      if (itemViewButton) {
+        state.itemViewMode = itemViewButton.dataset.itemView === "list" ? "list" : "cards";
+        state.itemPage = 1;
+        renderItemDefinitions();
+        return;
+      }
+      const marketViewButton = event.target.closest?.("[data-market-view]");
+      if (marketViewButton) {
+        state.marketViewMode = marketViewButton.dataset.marketView === "list" ? "list" : "cards";
+        state.marketPage = 1;
+        renderMarketGovernance();
+        return;
+      }
       const denominationSaveButton = event.target.closest?.(".ss-economy-denomination-save");
       if (denominationSaveButton) {
         await saveDenominationIcon(denominationSaveButton);
@@ -2818,6 +2944,21 @@
         state.itemCreateErrors = {};
         updateItemCreateFieldErrors({});
         syncGeneratedItemCodePreview();
+      }
+      if (event.target.matches?.("#economy-item-search")) {
+        const selectionStart = event.target.selectionStart;
+        const selectionEnd = event.target.selectionEnd;
+        state.itemSearch = event.target.value;
+        state.itemPage = 1;
+        renderItemDefinitions();
+        const search = $("#economy-item-search");
+        if (search) {
+          search.focus();
+          search.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }
+      if (event.target.matches?.('[data-item-field="category"], [data-item-field="item_code_suffix"]')) {
+        syncItemEditorCodePreview(event.target.closest(".ss-economy-item-definition"));
       }
       if (event.target.matches?.("#economy-asset-filter")) {
         state.assetPicker.filter = event.target.value;
@@ -2856,6 +2997,7 @@
         const selectionStart = event.target.selectionStart;
         const selectionEnd = event.target.selectionEnd;
         state.marketSearch = event.target.value;
+        state.marketPage = 1;
         renderMarketGovernance();
         const search = $("#economy-market-search");
         if (search) {
@@ -2885,6 +3027,15 @@
         state.itemPageSize = ITEM_PAGE_SIZE_OPTIONS.includes(nextSize) ? nextSize : DEFAULT_ITEM_PAGE_SIZE;
         state.itemPage = 1;
         renderItemDefinitions();
+      }
+      if (event.target.matches?.("#economy-market-page-size")) {
+        const nextSize = Number(event.target.value);
+        state.marketPageSize = ITEM_PAGE_SIZE_OPTIONS.includes(nextSize) ? nextSize : DEFAULT_ITEM_PAGE_SIZE;
+        state.marketPage = 1;
+        renderMarketGovernance();
+      }
+      if (event.target.matches?.('[data-item-field="category"]')) {
+        syncItemEditorCodePreview(event.target.closest(".ss-economy-item-definition"));
       }
       if (event.target.matches?.("#economy-item-create-category")) {
         syncGeneratedItemCodePreview();

@@ -6987,6 +6987,73 @@ body.ss-col-resizing-active {
   gap: 9px;
 }
 
+.ss-economy-browser-controls,
+.ss-economy-view-toggle,
+.ss-economy-item-list-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ss-economy-item-list-toolbar {
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.ss-economy-view-toggle .ss-btn.is-active {
+  border-color: rgba(255, 210, 110, 0.5);
+  background: rgba(255, 210, 110, 0.12);
+  color: var(--text-primary);
+}
+
+.ss-economy-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+
+.ss-economy-list-view {
+  display: grid;
+  gap: 9px;
+}
+
+.ss-economy-browser-card {
+  min-height: 100%;
+}
+
+.ss-economy-item-definition.ss-economy-browser-card .ss-economy-item-definition-summary,
+.ss-economy-market-row.ss-economy-browser-card .ss-economy-market-summary {
+  align-items: start;
+}
+
+.ss-economy-item-definition .ss-economy-item-icon,
+.ss-economy-market-row .ss-economy-item-icon {
+  width: 68px;
+  height: 68px;
+  flex: 0 0 68px;
+}
+
+.ss-economy-code-prefix,
+.ss-economy-code-preview code {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 6px 9px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text-primary);
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+}
+
+.ss-economy-code-preview {
+  display: grid;
+  gap: 5px;
+}
+
 .ss-economy-identity {
   width: 100%;
   border: 1px solid var(--border-subtle);

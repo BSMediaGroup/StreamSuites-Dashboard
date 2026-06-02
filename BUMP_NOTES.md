@@ -6,6 +6,11 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Admin item definition editor now supports Runtime/Auth Armor, Platform Badges, and Fish & Treasures categories while preserving Combat Vehicles, Weapons, and existing category metadata from the authority payload.
+- Item code editing now displays a category-derived locked prefix plus editable suffix and a full generated item-code preview. Existing item-code renames are surfaced as blocked until Runtime/Auth can safely migrate references; duplicate/invalid suffixes show clear client-side errors before save.
+- Inventory and Market Governance browsers now support independent search, Card Grid/List toggles, larger thumbnails, and independent pagination with 5, 10, 20, 50, and 100 item page sizes defaulting to 20.
+- Editor textareas continue to show full polished Runtime/Auth public descriptions and tooltip/details text without Dashboard-owned fallback copy.
+
 - Manual Bot Deploy rows now keep creator-attached Twitch channels visible as Twitch platform chips even before a Twitch bot instance is deployed, using the Runtime/Auth attachment row instead of hiding Twitch when live bot count is zero.
 - Row-level Twitch deploy prompts now default to the attached broadcaster channel when Runtime/Auth provides it, and still allow blank submission so the backend can auto-resolve the target from creator attachment data.
 - Human note: admins should see Twitch alongside Kick/Rumble for attached creators, distinguish attached/not-deployed from live bot count, and deploy without retyping the Twitch channel when Runtime/Auth can resolve it.
