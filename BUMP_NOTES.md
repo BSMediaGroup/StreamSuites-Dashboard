@@ -6,6 +6,9 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Corrected stale Dashboard runtime mirror and static validation fallback payloads that still reported `0.4.2-alpha`; current local mirrors now align to runtime `0.5.0-alpha` without making Dashboard a version authority.
+- Human note: Admin version display and route-validation stubs should now show the platform as `v0.5.0-alpha` when runtime export data is unavailable.
+
 - Admin item definition editor now supports Runtime/Auth Armor, Platform Badges, and Fish & Treasures categories while preserving Combat Vehicles, Weapons, and existing category metadata from the authority payload.
 - Item code editing now displays a category-derived locked prefix plus editable suffix and a full generated item-code preview. Existing item-code renames are surfaced as blocked until Runtime/Auth can safely migrate references; duplicate/invalid suffixes show clear client-side errors before save.
 - Inventory and Market Governance browsers now support independent search, Card Grid/List toggles, larger thumbnails, and independent pagination with 5, 10, 20, 50, and 100 item page sizes defaulting to 20.
