@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "generated_at": "2026-06-01T22:53:56.956206Z",
+  "generated_at": "2026-06-02T10:03:42.652985Z",
   "asset_root": "assets/games",
-  "count": 153,
+  "count": 154,
   "items": [
     {
       "path": "assets/games/00-stone.webp",
@@ -660,6 +660,19 @@
       ],
       "notes": "bomb, weapon",
       "updated_at": "2026-06-01T13:14:25.141619Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-briefcase.webp",
+      "filename": "item-briefcase.webp",
+      "extension": "webp",
+      "label": "Item Briefcase",
+      "category": "item",
+      "tags": [
+        "Briefcase"
+      ],
+      "notes": "Briefcase",
+      "updated_at": "2026-06-02T10:03:42.642905Z",
       "definition_complete": true
     },
     {
