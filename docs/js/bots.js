@@ -2685,7 +2685,14 @@
     let targetIdentifier = null;
     if (action === "attach") {
       const currentTarget = String(bot?.active_target || "").trim();
-      const promptDefault = currentTarget && currentTarget !== "-" ? currentTarget : "";
+      const resolvedTarget = bot?.resolved_target && typeof bot.resolved_target === "object" ? bot.resolved_target : {};
+      const resolvedChannel = String(
+        resolvedTarget.channel_handle ||
+          resolvedTarget.broadcaster_login ||
+          bot?.target_normalized ||
+          ""
+      ).trim();
+      const promptDefault = currentTarget && currentTarget !== "-" ? currentTarget : resolvedChannel;
       const promptTargetLabel = String(
         deploySchema.targetLabel || "target identifier"
       ).trim();
@@ -2695,7 +2702,7 @@
       );
       if (prompted === null) return;
       const trimmed = String(prompted || "").trim();
-      if (!trimmed) {
+      if (!trimmed && platform.toLowerCase() !== "twitch") {
         ui.error = getManualRequiredTargetMessage(deploySchema);
         renderRowsAndCountersFromState();
         return;

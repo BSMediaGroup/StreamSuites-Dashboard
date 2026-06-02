@@ -6,6 +6,10 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Manual Bot Deploy rows now keep creator-attached Twitch channels visible as Twitch platform chips even before a Twitch bot instance is deployed, using the Runtime/Auth attachment row instead of hiding Twitch when live bot count is zero.
+- Row-level Twitch deploy prompts now default to the attached broadcaster channel when Runtime/Auth provides it, and still allow blank submission so the backend can auto-resolve the target from creator attachment data.
+- Human note: admins should see Twitch alongside Kick/Rumble for attached creators, distinguish attached/not-deployed from live bot count, and deploy without retyping the Twitch channel when Runtime/Auth can resolve it.
+
 - Added Admin Twitch readiness follow-through for creator-attached broadcaster channels. The Twitch platform status now displays Runtime/Auth readiness breakdown, creator channel counts, attached broadcaster login/user ID, and missing reasons without rendering secrets.
 - Adjusted the manual bot deploy form so Twitch can use the attached creator channel when the target field is left blank, while non-Twitch platforms keep the existing required target behavior.
 - Human note: admins can deploy or diagnose Twitch bots against the creator-attached channel instead of needing to paste a target every time, and missing configuration now points back to the Creator Twitch attachment flow.
