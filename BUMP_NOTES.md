@@ -6,6 +6,13 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Reworked Participation Exclusions switch sizing and governance layout hardening so policy labels and toggles keep separate grid columns without overlap.
+- Fixed Inventory Item Definition modal draft persistence across Details, Icon & Assets, Public Copy, and Admin Notes by preserving unmounted tab fields while switching sections.
+- Fixed existing item edit hydration so Public Copy fields read stored description/details/note variants returned either top-level or in metadata.
+- Expanded the integrated Icon & Assets tab to keep top asset controls full-width, keep the asset grid plus selected preview in the usable modal area, and update asset search results without remounting the search input.
+- Improved Market Governance modal spacing by placing Admin Reason / Save Note in the main editor grid beside sale/exchange/stock controls and item context.
+- Added focused tests and browser/MCP verification notes for the corrected modal/governance behavior.
+
 - Replaced Market Governance inline/drawer editing with a dedicated modal editor for card and list edits, preserving the existing Runtime/Auth market governance save endpoint and payload.
 - Expanded the Item Definition Icon & Assets tab so asset browsing uses the full modal width with the asset grid as the main panel and selected preview as the wide-screen side panel.
 - Polished Item Definitions and Market Governance browser headers, control bars, search, view toggles, page size controls, and pagination spacing.

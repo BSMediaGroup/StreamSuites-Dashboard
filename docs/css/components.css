@@ -6745,7 +6745,7 @@ body.ss-col-resizing-active {
 
 .ss-economy-exclusion-switch {
   display: grid;
-  grid-template-columns: 58px minmax(0, 1fr);
+  grid-template-columns: 68px minmax(0, 1fr);
   gap: 12px;
   align-items: center;
   min-height: 56px;
@@ -6753,19 +6753,20 @@ body.ss-col-resizing-active {
   border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.025);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .ss-economy-exclusion-switch .switch-button {
   justify-content: flex-start;
-  width: 58px;
-  min-width: 58px;
+  width: 64px;
+  min-width: 64px;
   height: 28px;
   overflow: visible;
 }
 
 .ss-economy-exclusion-switch .switch-scale {
   width: 115px;
+  transform: scale(0.55);
   transform-origin: center left;
 }
 
@@ -7605,13 +7606,34 @@ body.ss-col-resizing-active {
 
 .ss-economy-market-editor-modal-body {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(300px, 0.9fr);
+  grid-template-areas:
+    "sale exchange context"
+    "stock reason context";
+  grid-auto-flow: dense;
   gap: 14px;
   min-width: 0;
 }
 
+.ss-economy-market-editor-modal-body > section:nth-child(1) {
+  grid-area: sale;
+}
+
+.ss-economy-market-editor-modal-body > section:nth-child(2) {
+  grid-area: exchange;
+}
+
+.ss-economy-market-editor-modal-body > section:nth-child(3) {
+  grid-area: stock;
+}
+
 .ss-economy-market-context-card {
-  grid-row: span 2;
+  grid-area: context;
+}
+
+.ss-economy-market-reason-card {
+  grid-area: reason;
+  align-content: start;
 }
 
 .ss-economy-market-context-grid {
@@ -8103,7 +8125,8 @@ body.ss-col-resizing-active {
 }
 
 .ss-economy-item-editor-section--copy,
-.ss-economy-item-editor-section--admin {
+.ss-economy-item-editor-section--admin,
+.ss-economy-item-editor-section--assets {
   grid-template-columns: minmax(0, 1fr);
 }
 
@@ -8178,7 +8201,7 @@ body.ss-col-resizing-active {
 .ss-economy-asset-dialog--integrated {
   width: 100%;
   max-height: none;
-  grid-template-columns: minmax(0, 1.75fr) minmax(300px, 0.58fr);
+  grid-template-columns: minmax(0, 1.7fr) minmax(320px, 0.62fr);
   grid-template-rows: auto auto minmax(0, 1fr) auto;
   gap: 14px;
   padding: 0;
@@ -8204,7 +8227,11 @@ body.ss-col-resizing-active {
 .ss-economy-asset-dialog--integrated .ss-economy-asset-tabs,
 .ss-economy-asset-dialog--integrated .ss-economy-asset-search,
 .ss-economy-asset-dialog--integrated .ss-economy-asset-custom {
-  grid-column: 1 / 2;
+  grid-column: 1 / -1;
+}
+
+.ss-economy-asset-dialog--integrated .ss-economy-asset-search input {
+  max-width: none;
 }
 
 .ss-economy-asset-head,
@@ -8650,6 +8677,15 @@ body.ss-col-resizing-active {
   .ss-economy-market-editor-modal-body,
   .ss-economy-search-row {
     grid-template-columns: 1fr;
+  }
+
+  .ss-economy-market-editor-modal-body {
+    grid-template-areas:
+      "sale"
+      "exchange"
+      "stock"
+      "reason"
+      "context";
   }
 
   .ss-economy-asset-dialog {

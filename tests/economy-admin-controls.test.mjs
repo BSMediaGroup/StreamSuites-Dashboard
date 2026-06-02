@@ -201,6 +201,11 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /state\.itemEditorSection = "assets"/);
   assert.match(js, /renderAssetPickerSurface\(\{ integrated: true \}\)/);
   assert.match(js, /ss-economy-asset-dialog--integrated/);
+  assert.match(js, /function renderBundledAssetGrid\(assets, selectedPath\)/);
+  assert.match(js, /function renderAssetPreviewAside\(previewPath\)/);
+  assert.match(js, /function refreshIntegratedAssetFilterResults\(\)/);
+  assert.match(js, /data-asset-results/);
+  assert.match(js, /data-asset-preview/);
   assert.match(js, /modal\.className = "ss-economy-asset-modal"/);
   assert.match(js, /modal\.setAttribute\("role", "dialog"\)/);
   assert.match(js, /function renderAssetSourceTab\(mode, label\)/);
@@ -235,6 +240,7 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /function renderMarketGovernanceModal\(\)/);
   assert.match(js, /ss-economy-market-modal/);
   assert.match(js, /ss-economy-market-editor-modal-body/);
+  assert.match(js, /ss-economy-market-reason-card/);
   assert.match(js, /data-market-modal-close/);
   assert.match(js, /Market Sale Controls/);
   assert.match(js, /Exchange Controls/);
@@ -309,6 +315,12 @@ test("item definition save reads the visible editor reason and sends reason_text
   assert.match(js, /captureItemEditorDraft\(\);/);
   assert.match(js, /const draft = editItemEditorDraft\(item, itemDefinitionViewModel\(item\)\);/);
   assert.match(js, /const readField = \(field\) => text\(row\?\.querySelector\(`\[data-item-field="\$\{field\}"\]`\)\?\.value \|\| draft\[field\]\);/);
+  assert.match(js, /const existing = state\.itemEditorDrafts\[key\] \|\| \{\};/);
+  assert.match(js, /function editItemEditorDraft\(item = \{\}, model = itemDefinitionViewModel\(item\)\)/);
+  assert.match(js, /const readMounted = \(selector\) => \{/);
+  assert.match(js, /const mergeMounted = \(selectors\) => \{/);
+  assert.match(js, /Object\.entries\(selectors\)\.forEach/);
+  assert.match(js, /if \(value !== undefined\) next\[field\] = value;/);
   assert.match(js, /const reason = readField\("reason_text"\);/);
   assert.match(js, /reason_text: reason/);
   assert.match(js, /Category<select data-item-field="category">\$\{itemCategoryOptions\(draft\.category\)\}<\/select>/);
@@ -321,7 +333,13 @@ test("item definition save reads the visible editor reason and sends reason_text
   assert.match(js, /id="economy-item-create-open"/);
   assert.match(js, /state\.itemEditorCode = ITEM_CREATE_EDITOR_CODE/);
   assert.match(js, /state\.itemEditorCode = code;/);
-  assert.match(js, /document\.body\?\.classList\?\.toggle\("ss-economy-modal-open", Boolean\(state\.itemEditorCode\)\)/);
+  assert.match(js, /document\.body\?\.classList\?\.toggle\("ss-economy-modal-open", Boolean\(state\.itemEditorCode \|\| state\.marketEditorCode\)\)/);
+  assert.match(js, /item\.public_short_description/);
+  assert.match(js, /item\.description/);
+  assert.match(js, /item\.tooltip_public_details/);
+  assert.match(js, /item\.public_details/);
+  assert.match(js, /item\.details/);
+  assert.match(js, /metadata\.details/);
   assert.match(js, /combat_vehicle: "Combat Vehicles"/);
   assert.match(js, /armor: "Armor"/);
   assert.match(js, /platform_badge: "Platform Badges"/);
@@ -436,7 +454,10 @@ test("asset picker search restores focus across result rerenders", () => {
   assert.match(js, /const restoreFocusId = activeElement\?\.id === "economy-asset-filter"/);
   assert.match(js, /target\?\.focus\?\.\(\);/);
   assert.match(js, /target\.setSelectionRange\(restoreSelectionStart, restoreSelectionEnd\);/);
-  assert.match(js, /state\.assetPicker\.filter = event\.target\.value;[\s\S]*refreshAssetPickerView\(\);/);
+  assert.match(js, /state\.assetPicker\.filter = event\.target\.value;[\s\S]*if \(!refreshIntegratedAssetFilterResults\(\)\) refreshAssetPickerView\(\);/);
+  assert.match(js, /const results = container\?\.querySelector\("\[data-asset-results\]"\);/);
+  assert.match(js, /results\.outerHTML = renderBundledAssetGrid\(assets, selectedPath\);/);
+  assert.match(js, /preview\.outerHTML = renderAssetPreviewAside\(previewPath\);/);
 });
 
 test("economy collapsible sections default expanded", () => {
@@ -509,7 +530,10 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-denomination-editor \.ss-economy-icon-preview\s*\{[\s\S]*grid-column:\s*1 \/ -1/);
   assert.match(css, /\.ss-economy-exclusion-toggle-group\s*\{/);
   assert.match(css, /\.ss-economy-exclusion-switch\s*\{/);
+  assert.match(css, /\.ss-economy-exclusion-switch\s*\{[\s\S]*grid-template-columns:\s*68px minmax\(0,\s*1fr\)/);
+  assert.match(css, /\.ss-economy-exclusion-switch\s*\{[\s\S]*overflow:\s*visible/);
   assert.match(css, /\.ss-economy-exclusion-switch \.switch-button\s*\{/);
+  assert.match(css, /\.ss-economy-exclusion-switch \.switch-scale\s*\{[\s\S]*transform:\s*scale\(0\.55\)/);
   assert.match(css, /\.ss-economy-exclusion-existing\s*,/);
   assert.match(css, /\.ss-economy-exclusion-policy-card\s*\{/);
   assert.match(css, /\.ss-economy-exclusion-results\s*\{/);
@@ -548,14 +572,21 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-market-filter \.ss-checkbox-text\s*\{[\s\S]*font-size:\s*0\.78rem/);
   assert.match(css, /\.ss-economy-market-count\s*\{[\s\S]*text-align:\s*right/);
   assert.match(css, /\.ss-economy-market-editor\s*\{[\s\S]*grid-template-columns:\s*repeat\(4,\s*minmax\(150px,\s*1fr\)\)/);
-  assert.match(css, /\.ss-economy-market-editor-modal-body\s*\{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(css, /\.ss-economy-market-editor-modal-body\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\) minmax\(0,\s*1fr\) minmax\(300px,\s*0\.9fr\)/);
+  assert.match(css, /\.ss-economy-market-editor-modal-body\s*\{[\s\S]*grid-template-areas:\s*"sale exchange context"[\s\S]*"stock reason context"/);
+  assert.match(css, /\.ss-economy-market-editor-modal-body\s*\{[\s\S]*grid-auto-flow:\s*dense/);
+  assert.match(css, /\.ss-economy-market-reason-card\s*\{[\s\S]*grid-area:\s*reason/);
+  assert.match(css, /\.ss-economy-market-context-card\s*\{[\s\S]*grid-area:\s*context/);
   assert.match(css, /\.ss-economy-market-dialog\s*\{[\s\S]*width:\s*min\(1180px,\s*100%\)/);
   assert.match(css, /\.ss-economy-icon-field\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto/);
   assert.match(css, /\.ss-economy-icon-field \.ss-economy-icon-preview\s*\{[\s\S]*grid-column:\s*1 \/ -1/);
   assert.match(css, /\.ss-economy-asset-modal\s*\{/);
   assert.doesNotMatch(css, /\.ss-economy-asset-modal\.is-embedded/);
   assert.match(css, /\.ss-economy-asset-dialog--integrated\s*\{[\s\S]*width:\s*100%/);
-  assert.match(css, /\.ss-economy-asset-dialog--integrated\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1\.75fr\) minmax\(300px,\s*0\.58fr\)/);
+  assert.match(css, /\.ss-economy-asset-dialog--integrated\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1\.7fr\) minmax\(320px,\s*0\.62fr\)/);
+  assert.match(css, /\.ss-economy-item-editor-section--copy,\s*\.ss-economy-item-editor-section--admin,\s*\.ss-economy-item-editor-section--assets\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+  assert.match(css, /\.ss-economy-asset-dialog--integrated \.ss-economy-asset-tabs,[\s\S]*\.ss-economy-asset-dialog--integrated \.ss-economy-asset-search,[\s\S]*\.ss-economy-asset-dialog--integrated \.ss-economy-asset-custom\s*\{[\s\S]*grid-column:\s*1 \/ -1/);
+  assert.match(css, /\.ss-economy-asset-dialog--integrated \.ss-economy-asset-search input\s*\{[\s\S]*max-width:\s*none/);
   assert.match(css, /\.ss-economy-asset-dialog\s*\{[\s\S]*width:\s*min\(1160px,\s*100%\)/);
   assert.match(css, /\.ss-economy-asset-head\s*\{[\s\S]*grid-row:\s*1/);
   assert.match(css, /\.ss-economy-asset-close span\s*\{[\s\S]*-webkit-mask-image:\s*url\("\/assets\/icons\/ui\/cross\.svg"\)/);

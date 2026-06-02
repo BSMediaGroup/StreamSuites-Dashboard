@@ -908,6 +908,62 @@
     return `<button class="ss-economy-asset-tab${active ? " is-active" : ""}" type="button" role="tab" aria-selected="${active ? "true" : "false"}" data-asset-mode="${escapeHtml(mode)}">${escapeHtml(label)}</button>`;
   }
 
+  function renderBundledAssetGrid(assets, selectedPath) {
+    return `
+      <div class="ss-economy-asset-grid" data-asset-results>
+       ${
+         assets.length
+           ? assets.map((item) => `
+               <article class="ss-economy-asset-tile${item.path === selectedPath ? " is-selected" : ""}">
+               <button class="ss-economy-asset-tile-main" type="button" data-asset-path="${escapeHtml(item.path)}">
+                 <span class="ss-economy-asset-thumb"><img src="${escapeHtml(assetPath(item.path))}" alt="" loading="lazy" decoding="async" onerror="this.closest('.ss-economy-asset-thumb')?.classList.add('is-unavailable'); this.remove();" /></span>
+                 <strong>${escapeHtml(item.label)}</strong>
+                 <span>${escapeHtml(item.definition_complete ? item.path : `${item.path} · needs definition`)}</span>
+               </button>
+               <span class="ss-economy-asset-row-actions">
+                 <button class="ss-btn ss-btn-secondary" type="button" data-asset-edit-definition="${escapeHtml(item.path)}">${item.definition_complete ? "Edit" : "Define"}</button>
+                 <button class="ss-btn ss-btn-danger" type="button" data-asset-remove-definition="${escapeHtml(item.path)}" title="Remove definition listing only. Physical files are not deleted." ${item.definition_complete ? "" : "disabled"}>Remove listing</button>
+               </span>
+               </article>
+             `).join("")
+           : `<div class="ss-empty ss-empty-compact">${escapeHtml(state.assetCatalogError || "No matching assets.")}</div>`
+       }
+      </div>
+    `;
+  }
+
+  function renderUnresolvedAssetList(unresolved) {
+    return `
+      <div class="ss-economy-asset-reconcile" data-asset-results>
+       ${
+         unresolved.length
+           ? unresolved.map((item) => `
+               <article class="ss-economy-asset-reconcile-row">
+                 <span class="ss-economy-asset-thumb"><img src="${escapeHtml(assetPath(item.path))}" alt="" loading="lazy" decoding="async" onerror="this.closest('.ss-economy-asset-thumb')?.classList.add('is-unavailable'); this.remove();" /></span>
+                 <div>
+                   <strong>${escapeHtml(item.filename)}</strong>
+                   <span class="muted">${escapeHtml(item.extension.toUpperCase())} · ${escapeHtml(item.path)}</span>
+                   <span class="ss-economy-state ss-economy-state-reversal">Needs definition</span>
+                 </div>
+                 <button class="ss-btn ss-btn-secondary" type="button" data-asset-define-path="${escapeHtml(item.path)}">Define</button>
+               </article>
+             `).join("")
+           : `<div class="ss-empty ss-empty-compact">No unresolved bundled image files.</div>`
+       }
+      </div>
+    `;
+  }
+
+  function renderAssetPreviewAside(previewPath) {
+    return `
+      <aside class="ss-economy-asset-preview" data-asset-preview>
+        <strong>Selected preview</strong>
+        <div class="ss-economy-asset-preview-frame">${renderIconPreview(previewPath)}</div>
+        <code>${escapeHtml(normalizeItemIconPath(previewPath) || "No icon configured")}</code>
+      </aside>
+    `;
+  }
+
   function itemEditorKey() {
     return state.itemEditorCode === ITEM_CREATE_EDITOR_CODE ? ITEM_CREATE_EDITOR_CODE : text(state.itemEditorCode);
   }
@@ -984,49 +1040,11 @@
                 </div>`
               : state.assetPicker.mode === "reconcile"
                 ? `<label class="ss-economy-asset-search">Search unresolved files<input id="economy-asset-filter" value="${escapeHtml(state.assetPicker.filter)}" placeholder="potion, svg, crate..." /></label>
-                   <div class="ss-economy-asset-reconcile">
-                    ${
-                      unresolved.length
-                        ? unresolved.map((item) => `
-                            <article class="ss-economy-asset-reconcile-row">
-                              <span class="ss-economy-asset-thumb"><img src="${escapeHtml(assetPath(item.path))}" alt="" loading="lazy" decoding="async" onerror="this.closest('.ss-economy-asset-thumb')?.classList.add('is-unavailable'); this.remove();" /></span>
-                              <div>
-                                <strong>${escapeHtml(item.filename)}</strong>
-                                <span class="muted">${escapeHtml(item.extension.toUpperCase())} · ${escapeHtml(item.path)}</span>
-                                <span class="ss-economy-state ss-economy-state-reversal">Needs definition</span>
-                              </div>
-                              <button class="ss-btn ss-btn-secondary" type="button" data-asset-define-path="${escapeHtml(item.path)}">Define</button>
-                            </article>
-                          `).join("")
-                        : `<div class="ss-empty ss-empty-compact">No unresolved bundled image files.</div>`
-                    }
-                   </div>`
+                   ${renderUnresolvedAssetList(unresolved)}`
             : `<label class="ss-economy-asset-search">Search assets<input id="economy-asset-filter" value="${escapeHtml(state.assetPicker.filter)}" placeholder="coin, gem, crate..." /></label>
-               <div class="ss-economy-asset-grid">
-                ${
-                  assets.length
-                    ? assets.map((item) => `
-                        <article class="ss-economy-asset-tile${item.path === selectedPath ? " is-selected" : ""}">
-                        <button class="ss-economy-asset-tile-main" type="button" data-asset-path="${escapeHtml(item.path)}">
-                          <span class="ss-economy-asset-thumb"><img src="${escapeHtml(assetPath(item.path))}" alt="" loading="lazy" decoding="async" onerror="this.closest('.ss-economy-asset-thumb')?.classList.add('is-unavailable'); this.remove();" /></span>
-                          <strong>${escapeHtml(item.label)}</strong>
-                          <span>${escapeHtml(item.definition_complete ? item.path : `${item.path} · needs definition`)}</span>
-                        </button>
-                        <span class="ss-economy-asset-row-actions">
-                          <button class="ss-btn ss-btn-secondary" type="button" data-asset-edit-definition="${escapeHtml(item.path)}">${item.definition_complete ? "Edit" : "Define"}</button>
-                          <button class="ss-btn ss-btn-danger" type="button" data-asset-remove-definition="${escapeHtml(item.path)}" title="Remove definition listing only. Physical files are not deleted." ${item.definition_complete ? "" : "disabled"}>Remove listing</button>
-                        </span>
-                        </article>
-                      `).join("")
-                    : `<div class="ss-empty ss-empty-compact">${escapeHtml(state.assetCatalogError || "No matching assets.")}</div>`
-                }
-               </div>`
+               ${renderBundledAssetGrid(assets, selectedPath)}`
         }
-        <aside class="ss-economy-asset-preview">
-          <strong>Selected preview</strong>
-          <div class="ss-economy-asset-preview-frame">${renderIconPreview(previewPath)}</div>
-          <code>${escapeHtml(normalizeItemIconPath(previewPath) || "No icon configured")}</code>
-        </aside>
+        ${renderAssetPreviewAside(previewPath)}
         <footer class="ss-economy-asset-actions">
           ${integrated ? `<button class="ss-btn ss-btn-secondary" type="button" data-item-editor-section="details">Return to Details</button>` : `<button class="ss-btn ss-btn-secondary" type="button" data-asset-close>Cancel</button>`}
           <button class="ss-btn" type="button" data-asset-use ${canUseAsset ? "" : "disabled"}>Use selected asset</button>
@@ -1064,6 +1082,35 @@
     } else {
       renderAssetPicker();
     }
+  }
+
+  function refreshIntegratedAssetFilterResults() {
+    if (!usesUnifiedItemAssetSection()) return false;
+    const container = document.querySelector(".ss-economy-asset-dialog--integrated");
+    const results = container?.querySelector("[data-asset-results]");
+    const preview = container?.querySelector("[data-asset-preview]");
+    if (!container || !results || !preview) return false;
+    const query = text(state.assetPicker.filter).toLowerCase();
+    const selectedPath = normalizeItemIconPath(state.assetPicker.selectedPath || currentIconInputValue());
+    if (state.assetPicker.mode === "reconcile") {
+      const unresolved = state.unresolvedAssets.filter((item) => {
+        if (!query) return true;
+        return `${item.filename} ${item.path} ${item.extension}`.toLowerCase().includes(query);
+      });
+      results.outerHTML = renderUnresolvedAssetList(unresolved);
+    } else if (state.assetPicker.mode === "bundled") {
+      const assets = state.assetCatalog.filter((item) => {
+        if (!query) return true;
+        return `${item.filename} ${item.path} ${item.label} ${item.category} ${item.extension}`.toLowerCase().includes(query);
+      });
+      results.outerHTML = renderBundledAssetGrid(assets, selectedPath);
+    } else {
+      return false;
+    }
+    const selectedAsset = state.assetCatalog.find((item) => item.path === selectedPath) || null;
+    const previewPath = selectedPath || selectedAsset?.path || "";
+    preview.outerHTML = renderAssetPreviewAside(previewPath);
+    return true;
   }
 
   function renderAssetPicker() {
@@ -1801,6 +1848,10 @@
                 <label>Stock<input data-market-field="stock" type="number" min="0" step="1" value="${escapeHtml(item.stock ?? "")}" placeholder="blank for untracked" /></label>
                 <label>Stock limit<input data-market-field="stock_limit" type="number" min="0" step="1" value="${escapeHtml(item.stock_limit ?? item.max_quantity ?? "")}" placeholder="optional per-purchase cap" /></label>
               </section>
+              <section class="ss-economy-item-editor-card ss-economy-market-reason-card">
+                <h4>Admin Reason / Save Note</h4>
+                <label class="ss-economy-wide">Reason<input data-market-field="reason_text" placeholder="Required before save" /></label>
+              </section>
               <section class="ss-economy-item-editor-card ss-economy-market-context-card">
                 <h4>Item Context</h4>
                 <div class="ss-economy-market-context-grid">
@@ -1811,10 +1862,6 @@
                 <div class="ss-economy-icon-preview">${renderIconPreview(icon)}</div>
                 <p class="muted">${escapeHtml(description || "No public item description is currently returned for this definition.")}</p>
                 <label>Type/category<select data-market-field="item_type">${itemCategoryOptions(type)}</select></label>
-              </section>
-              <section class="ss-economy-item-editor-card ss-economy-item-editor-card--wide">
-                <h4>Admin Reason / Save Note</h4>
-                <label class="ss-economy-wide">Reason<input data-market-field="reason_text" placeholder="Required before save" /></label>
               </section>
             </div>
           </div>
@@ -1890,10 +1937,32 @@
 
   function itemDefinitionViewModel(item = {}) {
     const metadata = item.metadata && typeof item.metadata === "object" ? item.metadata : {};
-    const notes = text(metadata.notes || metadata.admin_notes || "");
-    const shortDescription = text(item.short_description || metadata.short_description || metadata.public_short_description || "");
-    const tooltipDescription = text(item.tooltip_description || item.long_description || metadata.tooltip_description || metadata.public_description || metadata.public_details || "");
-    const contextualPublicNote = text(item.contextual_public_note || metadata.contextual_public_note || metadata.public_note || "");
+    const notes = text(item.metadata_notes || item.admin_notes || metadata.notes || metadata.admin_notes || metadata.note || "");
+    const shortDescription = text(
+      item.short_description ||
+      item.public_short_description ||
+      item.description ||
+      metadata.short_description ||
+      metadata.public_short_description ||
+      metadata.description ||
+      ""
+    );
+    const tooltipDescription = text(
+      item.tooltip_description ||
+      item.tooltip_public_details ||
+      item.public_details ||
+      item.details ||
+      item.long_description ||
+      item.public_description ||
+      metadata.tooltip_description ||
+      metadata.tooltip_public_details ||
+      metadata.public_details ||
+      metadata.details ||
+      metadata.public_description ||
+      metadata.long_description ||
+      ""
+    );
+    const contextualPublicNote = text(item.contextual_public_note || item.public_note || metadata.contextual_public_note || metadata.public_note || metadata.context_note || "");
     const chatAlias = text(item.chat_alias || metadata.chat_alias || "");
     const publicTooltipEnabled = item.public_tooltip_enabled !== false && metadata.public_tooltip_enabled !== false;
     const systemType = text(metadata.system_asset_type || metadata.denomination_code || "");
@@ -1918,39 +1987,51 @@
     const row = document.querySelector(".ss-economy-item-editor-modal .ss-economy-item-definition");
     if (!row || !state.itemEditorCode) return;
     const key = itemEditorKey();
-    const read = (selector) => text(row.querySelector(selector)?.value);
+    const existing = state.itemEditorDrafts[key] || {};
+    const readMounted = (selector) => {
+      const field = row.querySelector(selector);
+      return field ? text(field.value) : undefined;
+    };
+    const mergeMounted = (selectors) => {
+      const next = { ...existing };
+      Object.entries(selectors).forEach(([field, selector]) => {
+        const value = readMounted(selector);
+        if (value !== undefined) next[field] = value;
+      });
+      return next;
+    };
     if (state.itemEditorCode === ITEM_CREATE_EDITOR_CODE) {
-      state.itemEditorDrafts[key] = {
-        label: read("#economy-item-create-label"),
-        category: read("#economy-item-create-category"),
-        rarity: read("#economy-item-create-rarity"),
-        is_enabled: read("#economy-item-create-enabled") || "true",
-        public_tooltip_enabled: read("#economy-item-create-public-tooltip") || "true",
-        chat_alias: read("#economy-item-create-chat-alias"),
-        icon_path: read("#economy-item-create-icon"),
-        short_description: read("#economy-item-create-short-description"),
-        tooltip_description: read("#economy-item-create-tooltip-description"),
-        contextual_public_note: read("#economy-item-create-contextual-note"),
-        metadata_notes: read("#economy-item-create-notes"),
-        reason_text: read("#economy-item-create-reason")
-      };
+      state.itemEditorDrafts[key] = mergeMounted({
+        label: "#economy-item-create-label",
+        category: "#economy-item-create-category",
+        rarity: "#economy-item-create-rarity",
+        is_enabled: "#economy-item-create-enabled",
+        public_tooltip_enabled: "#economy-item-create-public-tooltip",
+        chat_alias: "#economy-item-create-chat-alias",
+        icon_path: "#economy-item-create-icon",
+        short_description: "#economy-item-create-short-description",
+        tooltip_description: "#economy-item-create-tooltip-description",
+        contextual_public_note: "#economy-item-create-contextual-note",
+        metadata_notes: "#economy-item-create-notes",
+        reason_text: "#economy-item-create-reason"
+      });
       return;
     }
-    state.itemEditorDrafts[key] = {
-      label: read('[data-item-field="label"]'),
-      category: read('[data-item-field="category"]'),
-      rarity: read('[data-item-field="rarity"]'),
-      is_enabled: read('[data-item-field="is_enabled"]') || "true",
-      public_tooltip_enabled: read('[data-item-field="public_tooltip_enabled"]') || "true",
-      chat_alias: read('[data-item-field="chat_alias"]'),
-      item_code_suffix: read('[data-item-field="item_code_suffix"]'),
-      icon_path: read('[data-item-field="icon_path"]'),
-      short_description: read('[data-item-field="short_description"]'),
-      tooltip_description: read('[data-item-field="tooltip_description"]'),
-      contextual_public_note: read('[data-item-field="contextual_public_note"]'),
-      metadata_notes: read('[data-item-field="metadata_notes"]'),
-      reason_text: read('[data-item-field="reason_text"]')
-    };
+    state.itemEditorDrafts[key] = mergeMounted({
+      label: '[data-item-field="label"]',
+      category: '[data-item-field="category"]',
+      rarity: '[data-item-field="rarity"]',
+      is_enabled: '[data-item-field="is_enabled"]',
+      public_tooltip_enabled: '[data-item-field="public_tooltip_enabled"]',
+      chat_alias: '[data-item-field="chat_alias"]',
+      item_code_suffix: '[data-item-field="item_code_suffix"]',
+      icon_path: '[data-item-field="icon_path"]',
+      short_description: '[data-item-field="short_description"]',
+      tooltip_description: '[data-item-field="tooltip_description"]',
+      contextual_public_note: '[data-item-field="contextual_public_note"]',
+      metadata_notes: '[data-item-field="metadata_notes"]',
+      reason_text: '[data-item-field="reason_text"]'
+    });
   }
 
   function createItemEditorDraft() {
@@ -2222,7 +2303,7 @@
       ${renderPager("items", pageInfo, "Item page")}
       ${renderItemDefinitionModal()}
     `;
-    document.body?.classList?.toggle("ss-economy-modal-open", Boolean(state.itemEditorCode));
+    document.body?.classList?.toggle("ss-economy-modal-open", Boolean(state.itemEditorCode || state.marketEditorCode));
     document.querySelectorAll(".ss-economy-item-editor-modal .ss-economy-item-definition").forEach((row) => syncItemEditorCodePreview(row));
     if (state.itemEditorCode === ITEM_CREATE_EDITOR_CODE) {
       syncGeneratedItemCodePreview();
@@ -3432,6 +3513,10 @@
         const normalized = normalizeItemIconPath(event.target.value);
         if (event.target.value !== normalized) event.target.value = normalized;
         syncIconPreview(event.target);
+        captureItemEditorDraft();
+      }
+      if (event.target.closest?.(".ss-economy-item-editor-modal .ss-economy-item-definition")) {
+        captureItemEditorDraft();
       }
       if (event.target.matches?.("#economy-item-create-label, #economy-item-create-category, #economy-item-create-reason")) {
         state.itemCreateErrors = {};
@@ -3455,7 +3540,7 @@
       }
       if (event.target.matches?.("#economy-asset-filter")) {
         state.assetPicker.filter = event.target.value;
-        refreshAssetPickerView();
+        if (!refreshIntegratedAssetFilterResults()) refreshAssetPickerView();
       }
       if (event.target.matches?.("#economy-asset-custom-url")) {
         state.assetPicker.customUrl = event.target.value;
