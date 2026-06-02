@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "generated_at": "2026-06-02T10:03:42.652985Z",
+  "generated_at": "2026-06-02T18:00:39.244424Z",
   "asset_root": "assets/games",
-  "count": 154,
+  "count": 162,
   "items": [
     {
       "path": "assets/games/00-stone.webp",
@@ -397,6 +397,49 @@
       ],
       "notes": "badge, youtube",
       "updated_at": "2026-05-25T00:55:51.751080Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/combat-aircraft-carrier.webp",
+      "filename": "combat-aircraft-carrier.webp",
+      "extension": "webp",
+      "label": "Combat Aircraft Carrier",
+      "category": "vehicle",
+      "tags": [
+        "aircraft carrier",
+        "carrier",
+        "aircraft"
+      ],
+      "notes": "aircraft carrier, carrier, aircraft",
+      "updated_at": "2026-06-02T17:47:18.387422Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/combat-battleship.webp",
+      "filename": "combat-battleship.webp",
+      "extension": "webp",
+      "label": "Combat Battleship",
+      "category": "vehicle",
+      "tags": [
+        "battleship",
+        "ship"
+      ],
+      "notes": "",
+      "updated_at": "2026-06-02T17:49:05.956438Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/combat-submarine2.webp",
+      "filename": "combat-submarine2.webp",
+      "extension": "webp",
+      "label": "Combat Submarine2",
+      "category": "Vechicle",
+      "tags": [
+        "submarine",
+        "nuclear"
+      ],
+      "notes": "",
+      "updated_at": "2026-06-02T17:44:54.653544Z",
       "definition_complete": true
     },
     {
@@ -1863,6 +1906,82 @@
       ],
       "notes": "token, ss, streamsuites, admin",
       "updated_at": "2026-05-22T17:53:39.974228Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-convertible.webp",
+      "filename": "vehicle-convertible.webp",
+      "extension": "webp",
+      "label": "Vehicle Convertible",
+      "category": "Vehicle",
+      "tags": [
+        "convertible",
+        "car",
+        "vehicle"
+      ],
+      "notes": "convertible, car, vehicle",
+      "updated_at": "2026-06-02T17:53:49.234258Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-convertible2.webp",
+      "filename": "vehicle-convertible2.webp",
+      "extension": "webp",
+      "label": "Vehicle Convertible2",
+      "category": "Vehicle",
+      "tags": [
+        "convertible",
+        "car",
+        "vehicle"
+      ],
+      "notes": "convertible, car, vehicle",
+      "updated_at": "2026-06-02T17:55:23.842381Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-escalade.webp",
+      "filename": "vehicle-escalade.webp",
+      "extension": "webp",
+      "label": "Vehicle Escalade",
+      "category": "vehicle",
+      "tags": [
+        "Cadillac",
+        "Escalade",
+        "car",
+        "vehicle"
+      ],
+      "notes": "Cadillac, Escalade, car, vehicle,",
+      "updated_at": "2026-06-02T18:00:39.219554Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-limousine.webp",
+      "filename": "vehicle-limousine.webp",
+      "extension": "webp",
+      "label": "Vehicle Limousine",
+      "category": "vehicle",
+      "tags": [
+        "limousine",
+        "limo",
+        "car",
+        "vehicle"
+      ],
+      "notes": "limousine, limo, car, vehicle",
+      "updated_at": "2026-06-02T17:57:49.104246Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-yacht.webp",
+      "filename": "vehicle-yacht.webp",
+      "extension": "webp",
+      "label": "Vehicle Yacht",
+      "category": "vehicle",
+      "tags": [
+        "yacht",
+        "luxury"
+      ],
+      "notes": "",
+      "updated_at": "2026-06-02T17:51:02.113589Z",
       "definition_complete": true
     },
     {
