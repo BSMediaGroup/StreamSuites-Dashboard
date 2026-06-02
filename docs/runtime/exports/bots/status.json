@@ -1,7 +1,7 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-06-02T18:21:21.750230Z",
-  "server_generated_at": "2026-06-02T18:21:21.750230Z",
+  "generated_at": "2026-06-02T19:22:25.380486Z",
+  "server_generated_at": "2026-06-02T19:22:25.380486Z",
   "count": 5,
   "bots": [
     {
@@ -69,8 +69,8 @@
       "active_visible_reason": "auto_configured",
       "superseded_by": null,
       "configuration_state": "connected",
-      "last_heartbeat_at": "2026-06-02T18:21:06.677918Z",
-      "last_evaluated_at": "2026-06-02T18:21:06.677918Z",
+      "last_heartbeat_at": "2026-06-02T19:21:47.334445Z",
+      "last_evaluated_at": "2026-06-02T19:21:47.334445Z",
       "last_transition_at": null,
       "resolved_target": {
         "platform": "kick",
@@ -106,7 +106,7 @@
       "last_webhook_event_at": null,
       "last_chat_event_at": null,
       "uptime_seconds": 0,
-      "state_age_seconds": 15,
+      "state_age_seconds": 38,
       "is_stale": false,
       "stale_reason": null,
       "trace_available": true,
@@ -158,8 +158,8 @@
       "superseded_by": null,
       "configuration_state": "connected",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-06-02T18:20:54.025832Z",
-      "last_transition_at": "2026-06-02T17:37:46.243514Z",
+      "last_evaluated_at": "2026-06-02T19:22:06.118277Z",
+      "last_transition_at": "2026-06-02T18:29:32.791224Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -186,14 +186,14 @@
       "state_source": "runtime_export",
       "confidence": "medium",
       "set_by": "kick_auto_deploy",
-      "set_at": "2026-06-02T17:37:46.243514Z",
+      "set_at": "2026-06-02T18:29:32.791224Z",
       "set_reason": "Rumble sample-parity browse/live request failed before a trustworthy offline result could be established.",
       "last_manual_deploy_at": null,
       "last_probe_at": null,
       "last_webhook_event_at": null,
       "last_chat_event_at": null,
       "uptime_seconds": 0,
-      "state_age_seconds": 27,
+      "state_age_seconds": 19,
       "is_stale": false,
       "stale_reason": null,
       "trace_available": false,
@@ -265,8 +265,8 @@
       "active_visible_reason": "auto_configured",
       "superseded_by": null,
       "configuration_state": "connected",
-      "last_heartbeat_at": "2026-06-02T18:21:06.677918Z",
-      "last_evaluated_at": "2026-06-02T18:21:06.677918Z",
+      "last_heartbeat_at": "2026-06-02T19:22:19.239387Z",
+      "last_evaluated_at": "2026-06-02T19:22:19.239387Z",
       "last_transition_at": null,
       "resolved_target": {
         "platform": "kick",
@@ -302,7 +302,7 @@
       "last_webhook_event_at": null,
       "last_chat_event_at": null,
       "uptime_seconds": 0,
-      "state_age_seconds": 15,
+      "state_age_seconds": 6,
       "is_stale": false,
       "stale_reason": null,
       "trace_available": false,
@@ -391,7 +391,7 @@
       "last_webhook_event_at": "2026-06-01T09:28:28.739421Z",
       "last_chat_event_at": "2026-06-01T09:28:28.739421Z",
       "uptime_seconds": 0,
-      "state_age_seconds": 118373,
+      "state_age_seconds": 122036,
       "is_stale": true,
       "stale_reason": "state_age_exceeds_threshold",
       "trace_available": false,
@@ -443,8 +443,8 @@
       "superseded_by": null,
       "configuration_state": "connected",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-06-02T18:20:54.025832Z",
-      "last_transition_at": "2026-06-02T17:37:46.243514Z",
+      "last_evaluated_at": "2026-06-02T19:22:06.118277Z",
+      "last_transition_at": "2026-06-02T18:29:32.791224Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -471,14 +471,14 @@
       "state_source": "runtime_export",
       "confidence": "medium",
       "set_by": "kick_auto_deploy",
-      "set_at": "2026-06-02T17:37:46.243514Z",
+      "set_at": "2026-06-02T18:29:32.791224Z",
       "set_reason": "Creator disabled Rumble bot auto-deploy.",
       "last_manual_deploy_at": null,
       "last_probe_at": null,
       "last_webhook_event_at": null,
       "last_chat_event_at": null,
       "uptime_seconds": 0,
-      "state_age_seconds": 27,
+      "state_age_seconds": 19,
       "is_stale": false,
       "stale_reason": null,
       "trace_available": false,
@@ -616,9 +616,9 @@
       },
       "hidden_placeholder_count": 0,
       "last_log": {
-        "timestamp": "2026-06-02T18:21:06.677918Z",
+        "timestamp": "2026-06-02T19:22:19.239387Z",
         "severity": "info",
-        "message": "[4TiOlvS] Kick webhook subscription is active; waiting for first webhook event."
+        "message": "[YR992ZS] Kick webhook subscription is active; waiting for first webhook event."
       }
     },
     {
@@ -718,7 +718,7 @@
       },
       "hidden_placeholder_count": 0,
       "last_log": {
-        "timestamp": "2026-06-02T17:37:46.243514Z",
+        "timestamp": "2026-06-02T18:29:32.791224Z",
         "severity": "warning",
         "message": "[4TiOlvS] Managed session state updated to blocked."
       }
