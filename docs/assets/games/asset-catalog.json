@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "generated_at": "2026-06-01T11:49:38.354089Z",
+  "generated_at": "2026-06-01T22:53:56.956206Z",
   "asset_root": "assets/games",
-  "count": 146,
+  "count": 153,
   "items": [
     {
       "path": "assets/games/00-stone.webp",
@@ -649,6 +649,35 @@
       "definition_complete": true
     },
     {
+      "path": "assets/games/item-bomb.webp",
+      "filename": "item-bomb.webp",
+      "extension": "webp",
+      "label": "Bomb",
+      "category": "Weapon",
+      "tags": [
+        "bomb",
+        "weapon"
+      ],
+      "notes": "bomb, weapon",
+      "updated_at": "2026-06-01T13:14:25.141619Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-bullet-vest.webp",
+      "filename": "item-bullet-vest.webp",
+      "extension": "webp",
+      "label": "Item Bullet Vest",
+      "category": "Armour",
+      "tags": [
+        "vest",
+        "tactical",
+        "bullet prrof"
+      ],
+      "notes": "vest, tactical, bullet prrof",
+      "updated_at": "2026-06-01T13:12:53.179397Z",
+      "definition_complete": true
+    },
+    {
       "path": "assets/games/item-chest.webp",
       "filename": "item-chest.webp",
       "extension": "webp",
@@ -791,6 +820,19 @@
       "definition_complete": true
     },
     {
+      "path": "assets/games/item-fish-fancy-1.webp",
+      "filename": "item-fish-fancy-1.webp",
+      "extension": "webp",
+      "label": "Item Fish Fancy 1",
+      "category": "Fish",
+      "tags": [
+        "Exotic Fish"
+      ],
+      "notes": "Exotic Fish",
+      "updated_at": "2026-06-01T13:01:40.866032Z",
+      "definition_complete": true
+    },
+    {
       "path": "assets/games/item-fish-large-1.webp",
       "filename": "item-fish-large-1.webp",
       "extension": "webp",
@@ -836,6 +878,22 @@
       ],
       "notes": "flame, flamethrower, thrower, weapon",
       "updated_at": "2026-05-31T18:30:44.701607Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-flamethrower2.webp",
+      "filename": "item-flamethrower2.webp",
+      "extension": "webp",
+      "label": "Item Flamethrower2",
+      "category": "Weapon",
+      "tags": [
+        "flame",
+        "flamethrower",
+        "thrower",
+        "weapon"
+      ],
+      "notes": "flame, flamethrower, thrower, weapon",
+      "updated_at": "2026-06-01T13:09:44.369918Z",
       "definition_complete": true
     },
     {
@@ -1045,6 +1103,20 @@
       "definition_complete": true
     },
     {
+      "path": "assets/games/item-slingshot.webp",
+      "filename": "item-slingshot.webp",
+      "extension": "webp",
+      "label": "Item Slingshot",
+      "category": "Weapon",
+      "tags": [
+        "slingshot",
+        "weapon"
+      ],
+      "notes": "slingshot, weapon",
+      "updated_at": "2026-06-01T13:11:00.986860Z",
+      "definition_complete": true
+    },
+    {
       "path": "assets/games/item-slots-2.webp",
       "filename": "item-slots-2.webp",
       "extension": "webp",
@@ -1137,6 +1209,22 @@
       ],
       "notes": "knife, tactical",
       "updated_at": "2026-05-31T18:28:54.364809Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/item-tank.webp",
+      "filename": "item-tank.webp",
+      "extension": "webp",
+      "label": "Item Tank",
+      "category": "Combat Vehicle",
+      "tags": [
+        "tank",
+        "battle",
+        "armor",
+        "weapon"
+      ],
+      "notes": "tank, battle, armor, weapon",
+      "updated_at": "2026-06-01T22:26:49.658391Z",
       "definition_complete": true
     },
     {
@@ -1234,6 +1322,20 @@
       "label": "Lb Third",
       "size_bytes": 102312,
       "category": "leaderboard",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/material-brass.webp",
+      "filename": "material-brass.webp",
+      "extension": "webp",
+      "label": "Material Brass",
+      "category": "Material",
+      "tags": [
+        "brass",
+        "material"
+      ],
+      "notes": "brass, material",
+      "updated_at": "2026-06-01T22:53:56.939567Z",
       "definition_complete": true
     },
     {
