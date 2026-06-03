@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "generated_at": "2026-06-02T18:00:39.244424Z",
+  "generated_at": "2026-06-03T19:04:43.411898Z",
   "asset_root": "assets/games",
-  "count": 162,
+  "count": 201,
   "items": [
     {
       "path": "assets/games/00-stone.webp",
@@ -440,6 +440,19 @@
       ],
       "notes": "",
       "updated_at": "2026-06-02T17:44:54.653544Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/combat-tactical-police.webp",
+      "filename": "combat-tactical-police.webp",
+      "extension": "webp",
+      "label": "Combat Tactical Police",
+      "category": "item",
+      "tags": [
+        "Tactical Police Van"
+      ],
+      "notes": "Tactical Police Van",
+      "updated_at": "2026-06-03T17:33:18.778745Z",
       "definition_complete": true
     },
     {
@@ -1909,6 +1922,194 @@
       "definition_complete": true
     },
     {
+      "path": "assets/games/vehicle-airforce-one.webp",
+      "filename": "vehicle-airforce-one.webp",
+      "extension": "webp",
+      "label": "Vehicle Airforce One",
+      "category": "vehicle",
+      "tags": [
+        "jet",
+        "plane",
+        "air force one"
+      ],
+      "notes": "jet, plane, air force one",
+      "updated_at": "2026-06-03T13:48:04.127601Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-ambulance.webp",
+      "filename": "vehicle-ambulance.webp",
+      "extension": "webp",
+      "label": "Ambulance",
+      "category": "item",
+      "tags": [
+        "Ambulance"
+      ],
+      "notes": "Ambulance",
+      "updated_at": "2026-06-03T18:06:11.216283Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-armored-van.webp",
+      "filename": "vehicle-armored-van.webp",
+      "extension": "webp",
+      "label": "Armored Van",
+      "category": "vehicle",
+      "tags": [
+        "Armored Van"
+      ],
+      "notes": "Armored Van",
+      "updated_at": "2026-06-03T17:26:03.753361Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-bentley-flying-spur.webp",
+      "filename": "vehicle-bentley-flying-spur.webp",
+      "extension": "webp",
+      "label": "Vehicle Bentley Flying Spur",
+      "category": "vehicle",
+      "tags": [
+        "Bentley",
+        "Flying",
+        "Spur"
+      ],
+      "notes": "Bentley Flying Spur",
+      "updated_at": "2026-06-03T14:23:55.045262Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-bmw.webp",
+      "filename": "vehicle-bmw.webp",
+      "extension": "webp",
+      "label": "Vehicle Bmw",
+      "category": "item",
+      "tags": [
+        "BMW Sedan"
+      ],
+      "notes": "BMW Sedan",
+      "updated_at": "2026-06-03T14:53:37.917679Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-bmw12.webp",
+      "filename": "vehicle-bmw12.webp",
+      "extension": "webp",
+      "label": "Vehicle Bmw12",
+      "category": "item",
+      "tags": [
+        "BMW Sedan"
+      ],
+      "notes": "BMW Sedan",
+      "updated_at": "2026-06-03T14:53:02.103505Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-bmw2.webp",
+      "filename": "vehicle-bmw2.webp",
+      "extension": "webp",
+      "label": "Vehicle Bmw2",
+      "category": "item",
+      "tags": [
+        "BMW Sedan"
+      ],
+      "notes": "BMW Sedan",
+      "updated_at": "2026-06-03T14:53:21.434860Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-boat.webp",
+      "filename": "vehicle-boat.webp",
+      "extension": "webp",
+      "label": "Vehicle Boat",
+      "category": "item",
+      "tags": [
+        "boat"
+      ],
+      "notes": "boat",
+      "updated_at": "2026-06-03T14:43:44.036706Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-cadillac.webp",
+      "filename": "vehicle-cadillac.webp",
+      "extension": "webp",
+      "label": "Vehicle Cadillac",
+      "category": "item",
+      "tags": [
+        "Cadillac Sedan"
+      ],
+      "notes": "Cadillac Sedan",
+      "updated_at": "2026-06-03T14:49:04.967499Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-cadillac1.webp",
+      "filename": "vehicle-cadillac1.webp",
+      "extension": "webp",
+      "label": "Vehicle Cadillac1",
+      "category": "item",
+      "tags": [
+        "Cadillac Sedan"
+      ],
+      "notes": "Cadillac Sedan",
+      "updated_at": "2026-06-03T14:49:35.249992Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-cadillac2.webp",
+      "filename": "vehicle-cadillac2.webp",
+      "extension": "webp",
+      "label": "Vehicle Cadillac2",
+      "category": "item",
+      "tags": [
+        "Cadillac Sedan"
+      ],
+      "notes": "Cadillac Sedan",
+      "updated_at": "2026-06-03T14:49:54.499795Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-chevrolet-camaro-zl1.webp",
+      "filename": "vehicle-chevrolet-camaro-zl1.webp",
+      "extension": "webp",
+      "label": "Vehicle Chevrolet Camaro Zl1",
+      "category": "vehicle",
+      "tags": [
+        "Chevrolet",
+        "Camaro",
+        "ZL1"
+      ],
+      "notes": "Chevrolet, Camaro, ZL1",
+      "updated_at": "2026-06-03T14:19:54.143428Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-chevrolet-suburban.webp",
+      "filename": "vehicle-chevrolet-suburban.webp",
+      "extension": "webp",
+      "label": "Vehicle Chevrolet Suburban",
+      "category": "item",
+      "tags": [
+        "Chevrolet Suburban"
+      ],
+      "notes": "Chevrolet Suburban",
+      "updated_at": "2026-06-03T17:27:21.116610Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-chevrolet-truck.webp",
+      "filename": "vehicle-chevrolet-truck.webp",
+      "extension": "webp",
+      "label": "Chevrolet Truck",
+      "category": "item",
+      "tags": [
+        "Chevrolet Truck"
+      ],
+      "notes": "Chevrolet Truck",
+      "updated_at": "2026-06-03T19:03:16.747635Z",
+      "definition_complete": true
+    },
+    {
       "path": "assets/games/vehicle-convertible.webp",
       "filename": "vehicle-convertible.webp",
       "extension": "webp",
@@ -1939,6 +2140,59 @@
       "definition_complete": true
     },
     {
+      "path": "assets/games/vehicle-cybertruck.webp",
+      "filename": "vehicle-cybertruck.webp",
+      "extension": "webp",
+      "label": "Tesla Cybertruck",
+      "category": "vehicle",
+      "tags": [
+        "Tesla",
+        "Cybertruck"
+      ],
+      "notes": "Tesla Cybertruck",
+      "updated_at": "2026-06-03T14:26:00.418658Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-dingy.webp",
+      "filename": "vehicle-dingy.webp",
+      "extension": "webp",
+      "label": "Vehicle Dingy",
+      "category": "item",
+      "tags": [
+        "Small Dingy"
+      ],
+      "notes": "Small Dingy",
+      "updated_at": "2026-06-03T14:42:54.561654Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-dodge-charger-srt-hellcat.webp",
+      "filename": "vehicle-dodge-charger-srt-hellcat.webp",
+      "extension": "webp",
+      "label": "Vehicle Dodge Charger Srt Hellcat",
+      "category": "item",
+      "tags": [
+        "Dodge Charger SRT Hellcat"
+      ],
+      "notes": "Dodge Charger SRT Hellcat",
+      "updated_at": "2026-06-03T14:41:00.476350Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-dodge-charger-srt-hellcat2.webp",
+      "filename": "vehicle-dodge-charger-srt-hellcat2.webp",
+      "extension": "webp",
+      "label": "Vehicle Dodge Charger Srt Hellcat2",
+      "category": "item",
+      "tags": [
+        "Dodge Charger SRT Hellcat"
+      ],
+      "notes": "Dodge Charger SRT Hellcat",
+      "updated_at": "2026-06-03T14:40:44.764936Z",
+      "definition_complete": true
+    },
+    {
       "path": "assets/games/vehicle-escalade.webp",
       "filename": "vehicle-escalade.webp",
       "extension": "webp",
@@ -1955,6 +2209,99 @@
       "definition_complete": true
     },
     {
+      "path": "assets/games/vehicle-ferrari.webp",
+      "filename": "vehicle-ferrari.webp",
+      "extension": "webp",
+      "label": "Vehicle Ferrari",
+      "category": "item",
+      "tags": [
+        "Ferrari"
+      ],
+      "notes": "Ferrari",
+      "updated_at": "2026-06-03T17:30:09.223792Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-firetruck.webp",
+      "filename": "vehicle-firetruck.webp",
+      "extension": "webp",
+      "label": "Firetruck",
+      "category": "item",
+      "tags": [
+        "Firetruck"
+      ],
+      "notes": "Firetruck",
+      "updated_at": "2026-06-03T18:08:34.660925Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-ford-f350.webp",
+      "filename": "vehicle-ford-f350.webp",
+      "extension": "webp",
+      "label": "Ford F350",
+      "category": "item",
+      "tags": [
+        "Ford F350"
+      ],
+      "notes": "Ford F350",
+      "updated_at": "2026-06-03T19:04:43.375291Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-gmc.webp",
+      "filename": "vehicle-gmc.webp",
+      "extension": "webp",
+      "label": "Vehicle Gmc",
+      "category": "item",
+      "tags": [
+        "suv"
+      ],
+      "notes": "suv",
+      "updated_at": "2026-06-03T14:47:21.238933Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-jeep-wrangler-rubicon.webp",
+      "filename": "vehicle-jeep-wrangler-rubicon.webp",
+      "extension": "webp",
+      "label": "Vehicle Jeep Wrangler Rubicon",
+      "category": "vehicle",
+      "tags": [
+        "Jeep",
+        "Wrangler",
+        "Rubicon"
+      ],
+      "notes": "Jeep Wrangler Rubicon",
+      "updated_at": "2026-06-03T14:22:11.410533Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-jet.webp",
+      "filename": "vehicle-jet.webp",
+      "extension": "webp",
+      "label": "Vehicle Jet",
+      "category": "item",
+      "tags": [
+        "Private Jet"
+      ],
+      "notes": "Private Jet",
+      "updated_at": "2026-06-03T15:01:33.428516Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-lamborghini.webp",
+      "filename": "vehicle-lamborghini.webp",
+      "extension": "webp",
+      "label": "Vehicle Lamborghini",
+      "category": "item",
+      "tags": [
+        "Lamborghini"
+      ],
+      "notes": "Lamborghini",
+      "updated_at": "2026-06-03T17:29:11.690169Z",
+      "definition_complete": true
+    },
+    {
       "path": "assets/games/vehicle-limousine.webp",
       "filename": "vehicle-limousine.webp",
       "extension": "webp",
@@ -1968,6 +2315,182 @@
       ],
       "notes": "limousine, limo, car, vehicle",
       "updated_at": "2026-06-02T17:57:49.104246Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-limousine2.webp",
+      "filename": "vehicle-limousine2.webp",
+      "extension": "webp",
+      "label": "Vehicle Limousine2",
+      "category": "vehicle",
+      "tags": [
+        "limo",
+        "limousine",
+        "Cadillac"
+      ],
+      "notes": "limo, limousine, Cadillac,",
+      "updated_at": "2026-06-03T14:14:26.095664Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-marine-one.webp",
+      "filename": "vehicle-marine-one.webp",
+      "extension": "webp",
+      "label": "Vehicle Marine One",
+      "category": "vehicle",
+      "tags": [
+        "Marine One",
+        "osprey",
+        "helicopter"
+      ],
+      "notes": "Marine One, osprey, helicopter",
+      "updated_at": "2026-06-03T17:23:53.585139Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-mercedes-gwagon.webp",
+      "filename": "vehicle-mercedes-gwagon.webp",
+      "extension": "webp",
+      "label": "Vehicle Mercedes Gwagon",
+      "category": "vehicle",
+      "tags": [
+        "Mercedes G-Wagon"
+      ],
+      "notes": "Mercedes G-Wagon",
+      "updated_at": "2026-06-03T14:27:40.216688Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-motorbike.webp",
+      "filename": "vehicle-motorbike.webp",
+      "extension": "webp",
+      "label": "Vehicle Motorbike",
+      "category": "item",
+      "tags": [
+        "Motorbike"
+      ],
+      "notes": "Motorbike",
+      "updated_at": "2026-06-03T14:45:24.489000Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-mustang-b.webp",
+      "filename": "vehicle-mustang-b.webp",
+      "extension": "webp",
+      "label": "Vehicle Mustang B",
+      "category": "item",
+      "tags": [
+        "Ford Mustang"
+      ],
+      "notes": "Ford Mustang",
+      "updated_at": "2026-06-03T14:31:39.682033Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-nasa-rocket.webp",
+      "filename": "vehicle-nasa-rocket.webp",
+      "extension": "webp",
+      "label": "Vehicle Nasa Rocket",
+      "category": "item",
+      "tags": [
+        "NASA Rocket System"
+      ],
+      "notes": "NASA Rocket System",
+      "updated_at": "2026-06-03T14:38:55.916479Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-police-patrol2.webp",
+      "filename": "vehicle-police-patrol2.webp",
+      "extension": "webp",
+      "label": "Police Patrol Car",
+      "category": "item",
+      "tags": [
+        "Police Patrol Car"
+      ],
+      "notes": "Police Patrol Car",
+      "updated_at": "2026-06-03T18:04:14.376604Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-police-patrol3.webp",
+      "filename": "vehicle-police-patrol3.webp",
+      "extension": "webp",
+      "label": "Police Patrol Truck",
+      "category": "item",
+      "tags": [
+        "Police Patrol Truck"
+      ],
+      "notes": "Police Patrol Truck",
+      "updated_at": "2026-06-03T18:57:16.903690Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-presidential-limo.webp",
+      "filename": "vehicle-presidential-limo.webp",
+      "extension": "webp",
+      "label": "Vehicle Presidential Limo",
+      "category": "vehicle",
+      "tags": [
+        "limousine",
+        "presidential",
+        "beast",
+        "limo"
+      ],
+      "notes": "limousine, presidential, beast, limo",
+      "updated_at": "2026-06-03T14:10:45.450898Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-private-jet.webp",
+      "filename": "vehicle-private-jet.webp",
+      "extension": "webp",
+      "label": "Vehicle Private Jet",
+      "category": "item",
+      "tags": [
+        "Private Jet"
+      ],
+      "notes": "Private Jet",
+      "updated_at": "2026-06-03T15:01:13.306754Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-private-jet2.webp",
+      "filename": "vehicle-private-jet2.webp",
+      "extension": "webp",
+      "label": "Vehicle Private Jet2",
+      "category": "item",
+      "tags": [
+        "Private Jet"
+      ],
+      "notes": "Private Jet",
+      "updated_at": "2026-06-03T14:58:15.268772Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-spacex-starship-black.webp",
+      "filename": "vehicle-spacex-starship-black.webp",
+      "extension": "webp",
+      "label": "Vehicle Spacex Starship Black",
+      "category": "item",
+      "tags": [
+        "SpaceX Rocket System"
+      ],
+      "notes": "SpaceX Rocket System",
+      "updated_at": "2026-06-03T14:36:50.034608Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-spacex-starship.webp",
+      "filename": "vehicle-spacex-starship.webp",
+      "extension": "webp",
+      "label": "Vehicle Spacex Starship",
+      "category": "item",
+      "tags": [
+        "SpaceX Starship"
+      ],
+      "notes": "SpaceX Starship",
+      "updated_at": "2026-06-03T14:37:56.896504Z",
       "definition_complete": true
     },
     {
