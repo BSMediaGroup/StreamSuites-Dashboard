@@ -6,6 +6,10 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Restored Dashboard account/user/identity/economy inspector avatar rendering from legacy and normalized image fields.
+- Image load fallback no longer mutates source identity data.
+- Dashboard avatar helpers now accept nested provider/profile media aliases and reject known local fallback profile icons before falling back to initials.
+
 - Emergency bot status rendering now ignores stale export-only bot rows and synthetic Twitch attachment probes when grouping creators or computing active/managed counts.
 - Dashboard bot rows now depend on Runtime/Auth truth fields such as `live_worker_exists`, `export_snapshot_only`, `stale_export_ignored`, and non-stale managed registry posture instead of treating every auto/session row as active.
 - Human note: Admin Bots should stop showing fake Twitch rows and stale Kick/Twitch export snapshots as active/managed; debug fallback remains visible rather than hidden under green readiness.

@@ -196,6 +196,16 @@
     }
   }
 
+  function isUsableProfileImageUrl(value) {
+    const source = coerceText(value);
+    if (!source) return false;
+    if (source.startsWith("data:") || source.startsWith("blob:")) return true;
+    if (/^https?:\/\//i.test(source)) return true;
+    if (source.startsWith("//")) return true;
+    if (source.startsWith("/") && !source.includes("/assets/icons/ui/profile.svg")) return true;
+    return false;
+  }
+
   function normalizedImageContract(source = {}, fallback = {}) {
     const profileMedia = source?.profile_media || source?.profileMedia || {};
     const image = source?.image || profileMedia.avatar || {};
@@ -205,15 +215,27 @@
     const avatarUrl = [
       image.avatar_url,
       image.profile_image_url,
+      image.profile_photo_url,
       image.url,
       image.image_url,
       image.picture,
+      image.provider_picture,
+      image.provider_avatar_url,
+      image.display_avatar_url,
+      image.public_avatar_url,
       profileMedia.avatar_url,
       profileMedia.profile_image_url,
       profileMedia.profile_photo_url,
       profileMedia.public_url,
+      profileMedia.provider_picture,
+      profileMedia.provider_avatar_url,
+      profileMedia.display_avatar_url,
+      profileMedia.public_avatar_url,
       media.avatar_url,
       media.profile_image_url,
+      media.profile_photo_url,
+      media.picture,
+      media.provider_picture,
       source?.profile_image_url,
       source?.profileImageUrl,
       source?.profile_photo_url,
@@ -234,13 +256,21 @@
       source?.publicAvatarUrl,
       fallbackImage.avatar_url,
       fallbackImage.profile_image_url,
+      fallbackImage.profile_photo_url,
+      fallbackImage.picture,
+      fallbackImage.provider_picture,
+      fallbackImage.provider_avatar_url,
       fallbackProfileMedia.avatar_url,
       fallbackProfileMedia.profile_image_url,
+      fallbackProfileMedia.profile_photo_url,
+      fallbackProfileMedia.provider_picture,
       fallback?.avatar_url,
       fallback?.avatarUrl,
       fallback?.avatar,
-      fallback?.picture
-    ].map(coerceText).find(Boolean) || "";
+      fallback?.picture,
+      fallback?.provider_picture,
+      fallback?.providerPicture
+    ].map(coerceText).find(isUsableProfileImageUrl) || "";
     const imageVersion = coerceText(
       image.image_version ||
         image.cache_key ||

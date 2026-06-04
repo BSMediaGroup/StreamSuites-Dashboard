@@ -638,15 +638,26 @@
     const profileMedia = identity?.profile_media || identity?.profileMedia || {};
     const image = identity?.image || profileMedia.avatar || {};
     const media = identity?.media || {};
+    const usableImageUrl = (value) => {
+      const source = text(value);
+      if (!source) return false;
+      if (source.startsWith("data:") || source.startsWith("blob:")) return true;
+      if (/^https?:\/\//i.test(source)) return true;
+      if (source.startsWith("//")) return true;
+      if (source.startsWith("/") && !source.includes("/assets/icons/ui/profile.svg")) return true;
+      return false;
+    };
     const avatarUrl = [
-      image.avatar_url, image.profile_image_url, image.url, image.image_url, image.picture,
+      image.avatar_url, image.profile_image_url, image.profile_photo_url, image.url, image.image_url, image.picture,
+      image.provider_picture, image.provider_avatar_url, image.display_avatar_url, image.public_avatar_url,
       profileMedia.avatar_url, profileMedia.profile_image_url, profileMedia.profile_photo_url, profileMedia.public_url,
-      media.avatar_url, media.profile_image_url,
+      profileMedia.provider_picture, profileMedia.provider_avatar_url, profileMedia.display_avatar_url, profileMedia.public_avatar_url,
+      media.avatar_url, media.profile_image_url, media.profile_photo_url, media.picture, media.provider_picture,
       identity.profile_image_url, identity.profileImageUrl, identity.profile_photo_url, identity.profilePhotoUrl,
       identity.avatar_url, identity.avatarUrl, identity.avatar, identity.picture, identity.image_url, identity.imageUrl,
       identity.provider_avatar_url, identity.providerAvatarUrl, identity.provider_picture, identity.providerPicture,
       identity.display_avatar_url, identity.displayAvatarUrl, identity.public_avatar_url, identity.publicAvatarUrl
-    ].map(text).find(Boolean) || "";
+    ].map(text).find(usableImageUrl) || "";
     const cacheKey = text(
       image.image_version ||
         image.cache_key ||

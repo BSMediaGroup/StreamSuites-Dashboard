@@ -106,7 +106,10 @@ test("admin account/avatar surfaces consume normalized runtime image metadata", 
     assert.match(js, /provider_picture/);
     assert.match(js, /profile_photo_url/);
     assert.match(js, /public_avatar_url/);
-    const stableImageHelper = js.match(/function stableImageUrl\(url, cacheKey\)[\s\S]*?\n  }\n\n  function normalizedImageContract/)?.[0] || "";
+    assert.match(js, /function isUsableProfileImageUrl\(value\)/);
+    assert.match(js, /find\(isUsableProfileImageUrl\)/);
+    assert.match(js, /!source\.includes\("\/assets\/icons\/ui\/profile\.svg"\)/);
+    const stableImageHelper = js.match(/function stableImageUrl\(url, cacheKey\)[\s\S]*?\n  }\n\n  function isUsableProfileImageUrl/)?.[0] || "";
     assert.doesNotMatch(stableImageHelper, /Date\.now\(\)/);
     assert.match(stableImageHelper, /parsed\.origin !== window\.location\.origin\) return source/);
   }
