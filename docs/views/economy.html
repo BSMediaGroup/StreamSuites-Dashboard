@@ -85,6 +85,9 @@
           </p>
         </div>
         <div class="ss-panel-header-actions">
+          <button class="ss-btn ss-btn-secondary ss-economy-selector-toggle" type="button" data-identity-selector-open>Find identity</button>
+          <button class="ss-btn ss-btn-secondary" type="button" data-audit-drawer-open="ledger">Ledger</button>
+          <button class="ss-btn ss-btn-secondary" type="button" data-audit-drawer-open="inventory-events">Inventory Events</button>
           <button class="ss-btn ss-btn-secondary ss-admin-collapse-toggle" type="button" data-collapse-target="economy-identity-search" aria-expanded="true">Collapse</button>
         </div>
       </header>
@@ -126,7 +129,7 @@
       </div>
   </section>
 
-  <section class="ss-panel ss-admin-control-section ss-admin-collapsible" id="economy-ledger-section" data-collapsible-section="economy-ledger">
+  <section class="ss-panel ss-admin-control-section ss-admin-collapsible ss-economy-audit-drawer" id="economy-ledger-section" data-collapsible-section="economy-ledger" data-audit-drawer="ledger" aria-hidden="true">
       <header class="ss-panel-header">
         <div class="ss-panel-header-main">
           <h2>Economy Ledger</h2>
@@ -135,6 +138,7 @@
           </p>
         </div>
         <div class="ss-panel-header-actions">
+          <button class="ss-btn ss-btn-secondary" type="button" data-audit-drawer-close>Close</button>
           <button class="ss-btn ss-btn-secondary ss-admin-collapse-toggle" type="button" data-collapse-target="economy-ledger" aria-expanded="true">Collapse</button>
         </div>
       </header>
@@ -200,7 +204,7 @@
     </div>
   </section>
 
-  <section class="ss-panel ss-admin-control-section ss-admin-collapsible" id="economy-inventory-events-section" data-collapsible-section="inventory-events">
+  <section class="ss-panel ss-admin-control-section ss-admin-collapsible ss-economy-audit-drawer" id="economy-inventory-events-section" data-collapsible-section="inventory-events" data-audit-drawer="inventory-events" aria-hidden="true">
       <header class="ss-panel-header">
         <div class="ss-panel-header-main">
           <h2>Inventory Events</h2>
@@ -209,6 +213,7 @@
           </p>
         </div>
         <div class="ss-panel-header-actions">
+          <button class="ss-btn ss-btn-secondary" type="button" data-audit-drawer-close>Close</button>
           <button class="ss-btn ss-btn-secondary ss-admin-collapse-toggle" type="button" data-collapse-target="inventory-events" aria-expanded="true">Collapse</button>
         </div>
       </header>

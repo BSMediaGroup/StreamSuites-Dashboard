@@ -6672,14 +6672,26 @@ body.ss-col-resizing-active {
 
 .ss-economy-master-detail {
   display: grid;
-  grid-template-columns: minmax(440px, 1.35fr) minmax(320px, 0.85fr);
-  gap: 14px;
+  grid-template-columns: minmax(250px, 0.42fr) minmax(0, 1.58fr);
+  gap: 16px;
   align-items: start;
+  min-width: 0;
 }
 
 .ss-economy-master-pane,
 .ss-economy-detail-pane {
   min-width: 0;
+}
+
+.ss-economy-master-pane {
+  position: sticky;
+  top: 84px;
+  max-height: calc(100vh - 140px);
+  overflow: auto;
+  border: 1px solid rgba(132, 184, 255, 0.16);
+  border-radius: 12px;
+  background: rgba(5, 12, 24, 0.62);
+  padding: 10px;
 }
 
 .ss-economy-detail-pane {
@@ -6984,7 +6996,13 @@ body.ss-col-resizing-active {
 
 .ss-economy-combined-inspector .ss-economy-inspector {
   display: grid;
-  gap: 12px;
+  gap: 16px;
+}
+
+.ss-economy-identity-workspace {
+  background:
+    linear-gradient(135deg, rgba(44, 92, 154, 0.18), rgba(12, 18, 31, 0.12)),
+    rgba(255, 255, 255, 0.025);
 }
 
 .ss-economy-identity-selector-head,
@@ -6993,10 +7011,12 @@ body.ss-col-resizing-active {
   display: grid;
   gap: 10px;
   min-width: 0;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  padding: 10px;
+  border: 1px solid rgba(132, 184, 255, 0.18);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.018)),
+    rgba(6, 14, 28, 0.7);
+  padding: 14px;
 }
 
 .ss-economy-identity-selector-head {
@@ -7008,21 +7028,29 @@ body.ss-col-resizing-active {
   min-width: 150px;
 }
 
+.ss-economy-selector-close {
+  display: none;
+}
+
 .ss-economy-selected-identity-summary {
-  grid-template-columns: 136px minmax(0, 1fr);
+  grid-template-columns: 124px minmax(0, 1fr);
   align-items: center;
+  border-color: rgba(255, 210, 110, 0.24);
+  background:
+    linear-gradient(135deg, rgba(255, 210, 110, 0.08), rgba(42, 98, 160, 0.09)),
+    rgba(8, 16, 31, 0.76);
 }
 
 .ss-economy-selected-identity-summary .ss-economy-avatar {
-  width: 136px;
-  height: 136px;
-  border-radius: 16px;
-  font-size: 34px;
+  width: 124px;
+  height: 124px;
+  border-radius: 14px;
+  font-size: 32px;
 }
 
 .ss-economy-inventory-gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
   gap: 12px;
 }
 
@@ -7033,24 +7061,26 @@ body.ss-col-resizing-active {
 
 .ss-economy-inventory-card {
   display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
-  gap: 10px;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: 12px;
   min-width: 0;
+  min-height: 128px;
   align-items: start;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  border-radius: 9px;
-  background: rgba(9, 14, 26, 0.45);
-  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 10px;
+  background: rgba(9, 14, 26, 0.5);
+  padding: 12px;
 }
 
 .ss-economy-inventory-card .ss-economy-item-icon {
-  width: 88px;
-  height: 88px;
+  width: 104px;
+  height: 104px;
+  border-radius: 12px;
 }
 
 .ss-economy-inventory-card-main {
   display: grid;
-  gap: 5px;
+  gap: 7px;
   min-width: 0;
 }
 
@@ -7058,6 +7088,123 @@ body.ss-col-resizing-active {
 .ss-economy-inventory-card-main span {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.ss-economy-audit-drawer {
+  position: fixed;
+  inset: 0 0 0 auto;
+  z-index: 1002;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(760px, calc(100vw - 24px));
+  max-height: 100vh;
+  margin: 0;
+  border-radius: 0;
+  border-width: 0 0 0 1px;
+  background:
+    linear-gradient(180deg, rgba(20, 36, 58, 0.98), rgba(7, 12, 22, 0.98)),
+    var(--surface-panel);
+  box-shadow: -28px 0 70px rgba(0, 0, 0, 0.42);
+  transform: translateX(105%);
+  transition: transform 180ms ease;
+  pointer-events: none;
+}
+
+.ss-economy-audit-drawer.is-open {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.ss-economy-audit-drawer .ss-panel-body {
+  min-height: 0;
+  overflow: auto;
+}
+
+.ss-economy-bulk-dialog {
+  width: min(1480px, 100%);
+}
+
+.ss-economy-bulk-toolbar {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.8fr) minmax(280px, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  padding: 14px;
+  border-bottom: 1px solid rgba(132, 184, 255, 0.16);
+}
+
+.ss-economy-bulk-table-wrap {
+  max-height: min(62vh, 700px);
+  overflow: auto;
+}
+
+.ss-economy-bulk-table {
+  width: 100%;
+  min-width: 1360px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.ss-economy-bulk-table th,
+.ss-economy-bulk-table td {
+  padding: 8px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  vertical-align: top;
+}
+
+.ss-economy-bulk-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: rgba(8, 16, 31, 0.96);
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.ss-economy-bulk-table tr.is-dirty {
+  background: rgba(255, 210, 110, 0.055);
+}
+
+.ss-economy-bulk-table td > strong,
+.ss-economy-bulk-table td > span {
+  display: block;
+  min-width: 160px;
+}
+
+.ss-economy-bulk-table input,
+.ss-economy-bulk-table select,
+.ss-economy-bulk-table textarea {
+  min-width: 130px;
+  width: 100%;
+}
+
+.ss-economy-bulk-state {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.ss-economy-bulk-state.is-dirty {
+  border-color: rgba(255, 210, 110, 0.4);
+  color: #ffe29a;
+}
+
+.ss-economy-bulk-state.is-success {
+  border-color: rgba(77, 214, 148, 0.42);
+  color: #9ef3c5;
+}
+
+.ss-economy-bulk-state.is-error {
+  border-color: rgba(255, 132, 132, 0.5);
+  color: #ffb7b7;
+  white-space: normal;
 }
 
 .ss-economy-exclusion-target-fields {
@@ -7320,10 +7467,10 @@ body.ss-col-resizing-active {
   background: rgba(255, 255, 255, 0.025);
   color: var(--text-primary);
   display: grid;
-  grid-template-columns: 76px minmax(0, 1fr) auto;
-  gap: 12px;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 10px;
   align-items: center;
-  padding: 10px;
+  padding: 9px;
   text-align: left;
   cursor: pointer;
 }
@@ -7353,11 +7500,11 @@ body.ss-col-resizing-active {
 }
 
 .ss-economy-avatar {
-  width: 68px;
-  height: 68px;
-  flex: 0 0 68px;
-  border-radius: 12px;
-  font-size: 20px;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border-radius: 10px;
+  font-size: 15px;
 }
 
 .ss-economy-avatar img,
@@ -7392,12 +7539,14 @@ body.ss-col-resizing-active {
 
 .ss-economy-identity-main span,
 .ss-economy-event-main span {
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.35;
 }
 
 .ss-economy-identity-side {
-  justify-items: end;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 1fr) auto;
+  justify-items: start;
   font-size: 12px;
   color: var(--text-secondary);
 }
@@ -8782,11 +8931,39 @@ body.ss-col-resizing-active {
 
 @media (max-width: 1120px) {
   .ss-economy-grid,
-  .ss-economy-master-detail,
   .ss-economy-exclusion-layout,
   .ss-economy-market-editor-modal-body,
   .ss-economy-policy-modal .ss-economy-exclusion-toggles,
   .ss-economy-search-row {
+    grid-template-columns: 1fr;
+  }
+
+  .ss-economy-master-detail {
+    grid-template-columns: 1fr;
+  }
+
+  .ss-economy-master-pane {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 1002;
+    width: min(420px, calc(100vw - 24px));
+    max-height: none;
+    border-radius: 0 14px 14px 0;
+    transform: translateX(-105%);
+    transition: transform 180ms ease;
+    pointer-events: none;
+  }
+
+  .ss-economy-master-detail.is-selector-open .ss-economy-master-pane {
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+
+  .ss-economy-selector-close {
+    display: inline-flex;
+  }
+
+  .ss-economy-bulk-toolbar {
     grid-template-columns: 1fr;
   }
 
@@ -8842,6 +9019,14 @@ body.ss-col-resizing-active {
   .ss-economy-denomination-row,
   .ss-economy-kpis {
     grid-template-columns: 1fr;
+  }
+
+  .ss-economy-audit-drawer {
+    width: 100vw;
+  }
+
+  .ss-economy-bulk-dialog {
+    width: 100%;
   }
 
   .ss-economy-identity-side,

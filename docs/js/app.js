@@ -1606,6 +1606,15 @@ function scrollAccountsShellRail(direction) {
 }
 
 function scrollToAccountsShellSection(sectionId, options = {}) {
+  if (
+    App.currentView === "economy" &&
+    (sectionId === "economy-ledger-section" || sectionId === "economy-inventory-events-section")
+  ) {
+    const drawer = sectionId === "economy-ledger-section" ? "ledger" : "inventory-events";
+    window.dispatchEvent(new CustomEvent("streamsuites:economy-audit-drawer", { detail: { drawer } }));
+    setAccountsShellActiveSection(sectionId, { updateHash: options.updateHash !== false });
+    return;
+  }
   const target =
     typeof sectionId === "string" ? document.getElementById(sectionId) : null;
   if (!target) return;

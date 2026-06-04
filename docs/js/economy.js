@@ -84,11 +84,24 @@
     inventoryViewMode: "cards",
     economyEventPage: 1,
     inventoryEventPage: 1,
+    auditDrawer: "",
+    identitySelectorOpen: false,
     itemPage: 1,
     itemPageSize: DEFAULT_ITEM_PAGE_SIZE,
     itemSearch: "",
     itemViewMode: "cards",
     itemEditorCode: "",
+    bulkEditor: {
+      type: "",
+      search: "",
+      selected: [],
+      drafts: {},
+      dirty: {},
+      errors: {},
+      results: {},
+      reason: "",
+      applying: false
+    },
     marketItems: [],
     marketEditorCode: "",
     marketSearch: "",
@@ -520,6 +533,242 @@
     return IDENTITY_PAGE_SIZE_OPTIONS.map((size) => `<option value="${size}" ${state.identityPageSize === size ? "selected" : ""}>${size}</option>`).join("");
   }
 
+  function resetBulkEditor(type = "") {
+    state.bulkEditor = {
+      type,
+      search: "",
+      selected: [],
+      drafts: {},
+      dirty: {},
+      errors: {},
+      results: {},
+      reason: "",
+      applying: false
+    };
+  }
+
+  function openBulkEditor(type) {
+    resetBulkEditor(type);
+    renderAll();
+  }
+
+  function closeBulkEditor() {
+    resetBulkEditor("");
+    renderAll();
+  }
+
+  function bulkSourceItems() {
+    return state.bulkEditor.type === "market"
+      ? (Array.isArray(state.marketItems) ? state.marketItems : [])
+      : (Array.isArray(state.itemDefinitions) ? state.itemDefinitions : []);
+  }
+
+  function bulkItemKey(item = {}) {
+    return text(item.item_code);
+  }
+
+  function bulkDraftFor(item = {}) {
+    const key = bulkItemKey(item);
+    if (state.bulkEditor.drafts[key]) return state.bulkEditor.drafts[key];
+    if (state.bulkEditor.type === "market") {
+      return {
+        item_type: marketItemType(item),
+        market_enabled: marketEnabled(item) ? "true" : "false",
+        market_price_stekels: String(marketPrice(item)),
+        exchange_enabled: exchangeEnabled(item) ? "true" : "false",
+        exchange_value_stekels: String(exchangeValue(item)),
+        unlimited_stock: item.unlimited_stock ? "true" : "false",
+        stock: item.stock ?? "",
+        stock_limit: item.stock_limit ?? item.max_quantity ?? "",
+        market_label: text(item.market_label || item.short_label || item.label),
+        short_label: text(item.short_label || item.market_label || "")
+      };
+    }
+    const model = itemDefinitionViewModel(item);
+    return {
+      label: text(item.label || item.item_name || item.item_code),
+      category: text(item.category || model.categoryRaw || ""),
+      rarity: text(item.rarity || ""),
+      is_enabled: item.is_enabled === false ? "false" : "true",
+      public_tooltip_enabled: item.public_tooltip_enabled === false ? "false" : "true",
+      chat_alias: model.chatAlias || "",
+      icon_path: model.normalizedIcon || "",
+      short_description: text(item.short_description || item.short_public_description || item.metadata?.short_description || ""),
+      tooltip_description: text(item.tooltip_description || item.tooltip_public_description || item.metadata?.tooltip_description || ""),
+      contextual_public_note: text(item.contextual_public_note || item.contextual_note || item.metadata?.contextual_public_note || ""),
+      metadata_notes: text(item.metadata?.notes || item.notes || "")
+    };
+  }
+
+  function filteredBulkItems() {
+    const query = text(state.bulkEditor.search).toLowerCase();
+    return bulkSourceItems().filter((item) => {
+      if (!query) return true;
+      const model = state.bulkEditor.type === "market" ? null : itemDefinitionViewModel(item);
+      const haystack = [
+        item.item_code,
+        item.label,
+        item.display_name,
+        item.market_label,
+        item.short_label,
+        item.category,
+        item.category_label,
+        item.rarity,
+        item.item_type,
+        model?.chatAlias
+      ].map((value) => text(value).toLowerCase()).join(" ");
+      return haystack.includes(query);
+    });
+  }
+
+  function bulkSelectionSet() {
+    return new Set(state.bulkEditor.selected.map(text).filter(Boolean));
+  }
+
+  function updateBulkDraft(row) {
+    const key = text(row?.dataset?.bulkItemCode);
+    if (!key) return;
+    const draft = { ...bulkDraftFor({ item_code: key }) };
+    row.querySelectorAll("[data-bulk-field]").forEach((input) => {
+      draft[input.dataset.bulkField] = input.value;
+    });
+    state.bulkEditor.drafts[key] = draft;
+    state.bulkEditor.dirty[key] = true;
+  }
+
+  function readBulkNumber(draft, field) {
+    const raw = text(draft[field]);
+    if (raw === "") return null;
+    const value = Number(raw);
+    if (!Number.isFinite(value) || value < 0) throw new Error(`${field} must be a non-negative number.`);
+    return value;
+  }
+
+  function validateBulkItem(key, draft) {
+    if (state.bulkEditor.type === "market") {
+      readBulkNumber(draft, "market_price_stekels");
+      readBulkNumber(draft, "exchange_value_stekels");
+      readBulkNumber(draft, "stock");
+      readBulkNumber(draft, "stock_limit");
+      return "";
+    }
+    const alias = normalizeChatAlias(draft.chat_alias);
+    if (!chatAliasLooksValid(alias)) return "Chat alias must use letters, numbers, hyphens, or underscores with no spaces.";
+    if (!text(draft.label)) return "Item name is required.";
+    return "";
+  }
+
+  function renderBulkResult(key) {
+    const result = state.bulkEditor.results[key];
+    const error = state.bulkEditor.errors[key];
+    if (result === "success") return `<span class="ss-economy-bulk-state is-success">Saved</span>`;
+    if (error) return `<span class="ss-economy-bulk-state is-error">${escapeHtml(error)}</span>`;
+    if (state.bulkEditor.dirty[key]) return `<span class="ss-economy-bulk-state is-dirty">Dirty</span>`;
+    return `<span class="muted">Clean</span>`;
+  }
+
+  function renderMarketBulkCells(item, draft) {
+    return `
+      <td><select data-bulk-field="market_enabled"><option value="true" ${draft.market_enabled === "true" ? "selected" : ""}>On sale</option><option value="false" ${draft.market_enabled === "true" ? "" : "selected"}>Off sale</option></select></td>
+      <td><input data-bulk-field="market_price_stekels" type="number" min="0" step="1" value="${escapeHtml(draft.market_price_stekels)}" /></td>
+      <td><select data-bulk-field="exchange_enabled"><option value="true" ${draft.exchange_enabled === "true" ? "selected" : ""}>Exchangeable</option><option value="false" ${draft.exchange_enabled === "true" ? "" : "selected"}>No exchange</option></select></td>
+      <td><input data-bulk-field="exchange_value_stekels" type="number" min="0" step="1" value="${escapeHtml(draft.exchange_value_stekels)}" /></td>
+      <td><select data-bulk-field="item_type">${itemCategoryOptions(draft.item_type)}</select></td>
+      <td><input data-bulk-field="stock" type="number" min="0" step="1" value="${escapeHtml(draft.stock)}" placeholder="blank" /></td>
+      <td><input data-bulk-field="stock_limit" type="number" min="0" step="1" value="${escapeHtml(draft.stock_limit)}" placeholder="blank" /></td>
+      <td><select data-bulk-field="unlimited_stock"><option value="true" ${draft.unlimited_stock === "true" ? "selected" : ""}>Unlimited</option><option value="false" ${draft.unlimited_stock === "true" ? "" : "selected"}>Track</option></select></td>
+      <td><input data-bulk-field="market_label" value="${escapeHtml(draft.market_label)}" /></td>
+      <td><input data-bulk-field="short_label" value="${escapeHtml(draft.short_label)}" /></td>
+    `;
+  }
+
+  function renderInventoryBulkCells(item, draft) {
+    return `
+      <td><input data-bulk-field="label" value="${escapeHtml(draft.label)}" /></td>
+      <td><select data-bulk-field="category">${itemCategoryOptions(draft.category)}</select></td>
+      <td><select data-bulk-field="rarity">${presetOptions(state.rarityPresets, draft.rarity)}</select></td>
+      <td><select data-bulk-field="is_enabled"><option value="true" ${draft.is_enabled === "false" ? "" : "selected"}>Enabled</option><option value="false" ${draft.is_enabled === "false" ? "selected" : ""}>Disabled</option></select></td>
+      <td><select data-bulk-field="public_tooltip_enabled"><option value="true" ${draft.public_tooltip_enabled === "false" ? "" : "selected"}>Tooltip on</option><option value="false" ${draft.public_tooltip_enabled === "false" ? "selected" : ""}>Tooltip off</option></select></td>
+      <td><input data-bulk-field="chat_alias" value="${escapeHtml(draft.chat_alias)}" /></td>
+      <td><input data-bulk-field="icon_path" value="${escapeHtml(draft.icon_path)}" /></td>
+      <td><textarea data-bulk-field="short_description" rows="2">${escapeHtml(draft.short_description)}</textarea></td>
+      <td><textarea data-bulk-field="tooltip_description" rows="2">${escapeHtml(draft.tooltip_description)}</textarea></td>
+      <td><textarea data-bulk-field="contextual_public_note" rows="2">${escapeHtml(draft.contextual_public_note)}</textarea></td>
+      <td><textarea data-bulk-field="metadata_notes" rows="2">${escapeHtml(draft.metadata_notes)}</textarea></td>
+    `;
+  }
+
+  function renderBulkEditorModal() {
+    const type = state.bulkEditor.type;
+    if (!type) return "";
+    const title = type === "market" ? "Bulk Edit Market Items" : "Bulk Edit Inventory Items";
+    const rows = filteredBulkItems();
+    const selection = bulkSelectionSet();
+    const selectedDirtyCount = state.bulkEditor.selected.filter((key) => state.bulkEditor.dirty[key]).length;
+    const header = type === "market"
+      ? `<th>Sale</th><th>Price</th><th>Exchange</th><th>Value</th><th>Type/category</th><th>Stock</th><th>Limit</th><th>Availability</th><th>Market label</th><th>Short label</th>`
+      : `<th>Name</th><th>Category</th><th>Rarity</th><th>Status</th><th>Tooltip</th><th>Chat alias</th><th>Icon path</th><th>Short description</th><th>Tooltip details</th><th>Public note</th><th>Admin notes</th>`;
+    return `
+      <div class="ss-economy-item-editor-modal ss-economy-bulk-modal" role="dialog" aria-modal="true" aria-labelledby="economy-bulk-editor-title" data-bulk-modal>
+        <div class="ss-economy-item-editor-dialog ss-economy-bulk-dialog">
+          <header class="ss-economy-item-editor-head">
+            <div class="ss-economy-item-editor-title">
+              <div>
+                <span class="ss-subtitle">${type === "market" ? "Market Governance" : "Inventory Definitions"}</span>
+                <h3 id="economy-bulk-editor-title">${escapeHtml(title)}</h3>
+                <code>${formatNumber(state.bulkEditor.selected.length)} selected · ${formatNumber(selectedDirtyCount)} dirty selected rows</code>
+              </div>
+            </div>
+            <button class="ss-economy-item-modal-close" type="button" aria-label="Close bulk editor" data-bulk-close><span aria-hidden="true"></span></button>
+          </header>
+          <div class="ss-economy-bulk-toolbar">
+            <label>Search/filter<input id="economy-bulk-search" type="search" value="${escapeHtml(state.bulkEditor.search)}" placeholder="Item code, name, category, alias" /></label>
+            <label>Shared reason<input id="economy-bulk-reason" value="${escapeHtml(state.bulkEditor.reason)}" placeholder="Required before apply" /></label>
+            <div class="ss-inline-actions">
+              <button class="ss-btn ss-btn-secondary" type="button" data-bulk-select-visible>Select visible</button>
+              <button class="ss-btn ss-btn-secondary" type="button" data-bulk-clear-selection>Clear selection</button>
+            </div>
+          </div>
+          <div class="ss-economy-bulk-table-wrap">
+            <table class="ss-economy-bulk-table">
+              <thead>
+                <tr><th>Select</th><th>Item</th>${header}<th>State</th></tr>
+              </thead>
+              <tbody>
+                ${rows.map((item) => {
+                  const key = bulkItemKey(item);
+                  const draft = bulkDraftFor(item);
+                  return `
+                    <tr data-bulk-item-code="${escapeHtml(key)}" class="${state.bulkEditor.dirty[key] ? "is-dirty" : ""}">
+                      <td><input type="checkbox" data-bulk-select="${escapeHtml(key)}" ${selection.has(key) ? "checked" : ""} /></td>
+                      <td><strong>${escapeHtml(item.label || item.display_name || key)}</strong><span class="muted">${escapeHtml(key)}</span></td>
+                      ${type === "market" ? renderMarketBulkCells(item, draft) : renderInventoryBulkCells(item, draft)}
+                      <td>${renderBulkResult(key)}</td>
+                    </tr>
+                  `;
+                }).join("") || `<tr><td colspan="14"><div class="ss-empty ss-empty-compact">No items match this bulk editor filter.</div></td></tr>`}
+              </tbody>
+            </table>
+          </div>
+          <footer class="ss-economy-item-editor-foot">
+            <button class="ss-btn ss-btn-secondary" type="button" data-bulk-close>Cancel</button>
+            <button class="ss-btn" type="button" data-bulk-apply ${state.bulkEditor.applying ? "disabled" : ""}>${state.bulkEditor.applying ? "Applying..." : "Validate & apply selected rows"}</button>
+          </footer>
+        </div>
+      </div>
+    `;
+  }
+
+  function economyOverlayOpen() {
+    return Boolean(
+      state.itemEditorCode ||
+      state.marketEditorCode ||
+      state.bulkEditor.type ||
+      state.auditDrawer ||
+      state.participationExclusions.policyModalOpen
+    );
+  }
+
   function renderItemDefinitionsToolbar(pageInfo) {
     const first = pageInfo.totalItems ? ((pageInfo.page - 1) * state.itemPageSize) + 1 : 0;
     const last = Math.min(pageInfo.totalItems, pageInfo.page * state.itemPageSize);
@@ -537,6 +786,7 @@
           <button class="ss-btn ss-btn-secondary ${state.itemViewMode === "cards" ? "is-active" : ""}" type="button" data-item-view="cards" aria-pressed="${state.itemViewMode === "cards"}">Card Grid</button>
           <button class="ss-btn ss-btn-secondary ${state.itemViewMode === "list" ? "is-active" : ""}" type="button" data-item-view="list" aria-pressed="${state.itemViewMode === "list"}">List</button>
         </div>
+        <button class="ss-btn ss-btn-secondary" type="button" data-bulk-open="inventory">Bulk edit items</button>
         <label class="ss-economy-item-page-size">
           Items per page
           <select id="economy-item-page-size">${itemPageSizeOptions()}</select>
@@ -1285,6 +1535,8 @@
     if (!el.identitiesList) return;
     el.identityCount.textContent = formatNumber(state.identities.length);
     el.identitiesEmpty?.classList.toggle("hidden", state.identities.length > 0);
+    const workspace = document.querySelector(".ss-economy-master-detail");
+    workspace?.classList.toggle("is-selector-open", Boolean(state.identitySelectorOpen));
     const pageInfo = pageSlice(state.identities, state.identityPage, state.identityPageSize);
     state.identityPage = pageInfo.page;
     const first = pageInfo.totalItems ? ((pageInfo.page - 1) * state.identityPageSize) + 1 : 0;
@@ -1295,6 +1547,7 @@
           <strong>Identity selector</strong>
           <span class="muted">Showing ${formatNumber(first)}-${formatNumber(last)} of ${formatNumber(pageInfo.totalItems)}</span>
         </div>
+        <button class="ss-btn ss-btn-secondary ss-economy-selector-close" type="button" data-identity-selector-close>Close</button>
         <label>Result page size<select id="economy-identity-page-size">${identityPageSizeOptions()}</select></label>
       </div>
     ` + pageInfo.items
@@ -1400,7 +1653,10 @@
             <strong>Wallet</strong>
             <span class="muted">Runtime/Auth wallet summary</span>
           </div>
-          <a class="ss-btn ss-btn-secondary" href="#economy-ledger-section">Ledger</a>
+          <div class="ss-inline-actions">
+            <button class="ss-btn ss-btn-secondary" type="button" data-audit-drawer-open="ledger">Ledger</button>
+            <button class="ss-btn ss-btn-secondary" type="button" data-audit-drawer-open="inventory-events">Inventory Events</button>
+          </div>
         </div>
         <div class="ss-economy-kpis">
           <div><span>Total balance</span><strong>${renderWalletMoneyValue(wallet.balance_total_credits ?? wallet.balance_current ?? 0, { prominent: true })}</strong></div>
@@ -1798,7 +2054,7 @@
       </div>
       ${renderParticipationPolicyModal(stateSlice, selectedTarget, effective, policy, activeScopes)}
     `;
-    document.body?.classList?.toggle("ss-economy-modal-open", Boolean(state.itemEditorCode || state.marketEditorCode || stateSlice.policyModalOpen));
+    document.body?.classList?.toggle("ss-economy-modal-open", economyOverlayOpen());
   }
 
   function renderInventory() {
@@ -1807,6 +2063,12 @@
   }
 
   function renderEvents() {
+    document.querySelectorAll("[data-audit-drawer]").forEach((panel) => {
+      const open = panel.dataset.auditDrawer === state.auditDrawer;
+      panel.classList.toggle("is-open", open);
+      panel.setAttribute("aria-hidden", String(!open));
+    });
+    document.body?.classList?.toggle("ss-economy-modal-open", economyOverlayOpen());
     const detail = state.detail || {};
     const economyEvents = Array.isArray(detail.economy_events) ? detail.economy_events : [];
     const inventoryEvents = Array.isArray(detail.inventory_events) ? detail.inventory_events : [];
@@ -2085,6 +2347,7 @@
             <button class="ss-btn ss-btn-secondary ${state.marketViewMode === "cards" ? "is-active" : ""}" type="button" data-market-view="cards" aria-pressed="${state.marketViewMode === "cards"}">Card Grid</button>
             <button class="ss-btn ss-btn-secondary ${state.marketViewMode === "list" ? "is-active" : ""}" type="button" data-market-view="list" aria-pressed="${state.marketViewMode === "list"}">List</button>
           </div>
+          <button class="ss-btn ss-btn-secondary" type="button" data-bulk-open="market">Bulk edit market</button>
           <label class="ss-economy-item-page-size">Items per page<select id="economy-market-page-size">${marketPageSizeOptions()}</select></label>
         </div>
       </div>
@@ -2116,8 +2379,9 @@
       </div>
       ${renderPager("market", pageInfo, "Market page")}
       ${renderMarketGovernanceModal()}
+      ${state.bulkEditor.type === "market" ? renderBulkEditorModal() : ""}
     `;
-    document.body?.classList?.toggle("ss-economy-modal-open", Boolean(state.itemEditorCode || state.marketEditorCode || state.participationExclusions.policyModalOpen));
+    document.body?.classList?.toggle("ss-economy-modal-open", economyOverlayOpen());
   }
 
   function itemDefinitionViewModel(item = {}) {
@@ -2512,8 +2776,9 @@
       </div>
       ${renderPager("items", pageInfo, "Item page")}
       ${renderItemDefinitionModal()}
+      ${state.bulkEditor.type === "inventory" ? renderBulkEditorModal() : ""}
     `;
-    document.body?.classList?.toggle("ss-economy-modal-open", Boolean(state.itemEditorCode || state.marketEditorCode));
+    document.body?.classList?.toggle("ss-economy-modal-open", economyOverlayOpen());
     document.querySelectorAll(".ss-economy-item-editor-modal .ss-economy-item-definition").forEach((row) => syncItemEditorCodePreview(row));
     if (state.itemEditorCode === ITEM_CREATE_EDITOR_CODE) {
       syncGeneratedItemCodePreview();
@@ -3166,6 +3431,109 @@
     setStatus("Market governance saved.", "success");
   }
 
+  async function applyBulkEditor() {
+    const type = state.bulkEditor.type;
+    const selected = state.bulkEditor.selected.map(text).filter(Boolean);
+    const reason = text(state.bulkEditor.reason);
+    if (!type || !selected.length) {
+      setStatus("Choose at least one bulk editor row before applying changes.", "error");
+      return;
+    }
+    if (!reason) {
+      setStatus("Bulk editor changes require a shared reason.", "error");
+      return;
+    }
+    const nextErrors = {};
+    const dirtySelected = selected.filter((key) => state.bulkEditor.dirty[key]);
+    dirtySelected.forEach((key) => {
+      const source = bulkSourceItems().find((item) => bulkItemKey(item) === key) || { item_code: key };
+      const draft = bulkDraftFor(source);
+      try {
+        const error = validateBulkItem(key, draft);
+        if (error) nextErrors[key] = error;
+      } catch (err) {
+        nextErrors[key] = err?.message || "Invalid row.";
+      }
+    });
+    state.bulkEditor.errors = nextErrors;
+    renderAll();
+    if (Object.keys(nextErrors).length) {
+      setStatus("Bulk editor validation failed. Fix the marked rows before applying.", "error");
+      return;
+    }
+    if (!dirtySelected.length) {
+      setStatus("No selected bulk editor rows have pending changes.", "error");
+      return;
+    }
+    const label = type === "market" ? "market governance" : "inventory item definition";
+    if (!window.confirm?.(`Apply ${dirtySelected.length} ${label} row change(s) through Runtime/Auth?`)) return;
+    state.bulkEditor.applying = true;
+    state.bulkEditor.results = {};
+    renderAll();
+    for (const key of dirtySelected) {
+      const source = bulkSourceItems().find((item) => bulkItemKey(item) === key) || { item_code: key };
+      const draft = bulkDraftFor(source);
+      try {
+        if (type === "market") {
+          const item = {
+            item_type: text(draft.item_type),
+            market_enabled: draft.market_enabled === "true",
+            market_price_stekels: readBulkNumber(draft, "market_price_stekels"),
+            exchange_enabled: draft.exchange_enabled === "true",
+            exchange_value_stekels: readBulkNumber(draft, "exchange_value_stekels"),
+            stock: readBulkNumber(draft, "stock"),
+            stock_limit: readBulkNumber(draft, "stock_limit"),
+            unlimited_stock: draft.unlimited_stock === "true",
+            market_label: text(draft.market_label),
+            short_label: text(draft.short_label)
+          };
+          await requestJson(MARKET_GOVERNANCE_ITEM(key), {
+            method: "PATCH",
+            body: JSON.stringify({ item, reason_text: reason })
+          });
+        } else {
+          const chatAlias = normalizeChatAlias(draft.chat_alias);
+          await requestJson(ITEM_DEFINITION(key), {
+            method: "PATCH",
+            body: JSON.stringify({
+              label: text(draft.label),
+              category: text(draft.category),
+              icon_path: normalizeItemIconPath(draft.icon_path),
+              rarity: text(draft.rarity),
+              is_enabled: draft.is_enabled !== "false",
+              public_tooltip_enabled: draft.public_tooltip_enabled !== "false",
+              chat_alias: chatAlias,
+              short_description: text(draft.short_description),
+              tooltip_description: text(draft.tooltip_description),
+              contextual_public_note: text(draft.contextual_public_note),
+              metadata: {
+                notes: text(draft.metadata_notes),
+                chat_alias: chatAlias,
+                public_tooltip_enabled: draft.public_tooltip_enabled !== "false",
+                short_description: text(draft.short_description),
+                tooltip_description: text(draft.tooltip_description),
+                contextual_public_note: text(draft.contextual_public_note)
+              },
+              reason_text: reason
+            })
+          });
+        }
+        state.bulkEditor.results[key] = "success";
+        delete state.bulkEditor.errors[key];
+        delete state.bulkEditor.dirty[key];
+      } catch (err) {
+        state.bulkEditor.errors[key] = err?.message || "Save failed.";
+        state.bulkEditor.results[key] = "error";
+      }
+    }
+    state.bulkEditor.applying = false;
+    await loadItems();
+    renderAll();
+    const saved = Object.values(state.bulkEditor.results).filter((value) => value === "success").length;
+    const failed = Object.values(state.bulkEditor.results).filter((value) => value === "error").length;
+    setStatus(`Bulk editor applied ${formatNumber(saved)} row(s)${failed ? ` with ${formatNumber(failed)} error(s)` : ""}.`, failed ? "error" : "success");
+  }
+
   async function saveDenominationIcon(button) {
     const row = button.closest(".ss-economy-denomination-row");
     const denominationCode = text(row?.dataset?.denominationCode);
@@ -3330,6 +3698,10 @@
     el.searchInput?.addEventListener("keydown", (event) => {
       if (event.key === "Enter") refresh();
     });
+    window.addEventListener("streamsuites:economy-audit-drawer", (event) => {
+      state.auditDrawer = text(event.detail?.drawer);
+      renderEvents();
+    });
     document.addEventListener("click", async (event) => {
       const browseButton = event.target.closest?.(".ss-economy-asset-browse");
       if (browseButton) {
@@ -3471,6 +3843,27 @@
         }
         return;
       }
+      if (event.target.closest?.("[data-identity-selector-open]")) {
+        state.identitySelectorOpen = true;
+        renderIdentities();
+        return;
+      }
+      if (event.target.closest?.("[data-identity-selector-close]")) {
+        state.identitySelectorOpen = false;
+        renderIdentities();
+        return;
+      }
+      const auditOpenButton = event.target.closest?.("[data-audit-drawer-open]");
+      if (auditOpenButton) {
+        state.auditDrawer = text(auditOpenButton.dataset.auditDrawerOpen);
+        renderEvents();
+        return;
+      }
+      if (event.target.closest?.("[data-audit-drawer-close]")) {
+        state.auditDrawer = "";
+        renderEvents();
+        return;
+      }
       const publicIdentityChip = event.target.closest?.("[data-public-identity-unassign-chip]");
       if (publicIdentityChip) {
         event.preventDefault();
@@ -3487,6 +3880,7 @@
       const identityButton = event.target.closest?.(".ss-economy-identity");
       if (identityButton) {
         state.selectedIdentityCode = text(identityButton.dataset.identityCode);
+        state.identitySelectorOpen = false;
         await loadDetail(state.selectedIdentityCode);
         renderAll();
         return;
@@ -3685,6 +4079,30 @@
         }
         return;
       }
+      const bulkOpenButton = event.target.closest?.("[data-bulk-open]");
+      if (bulkOpenButton) {
+        openBulkEditor(text(bulkOpenButton.dataset.bulkOpen));
+        return;
+      }
+      if (event.target.closest?.("[data-bulk-close]")) {
+        closeBulkEditor();
+        return;
+      }
+      if (event.target.closest?.("[data-bulk-select-visible]")) {
+        const visible = filteredBulkItems().map(bulkItemKey).filter(Boolean);
+        state.bulkEditor.selected = Array.from(new Set([...state.bulkEditor.selected, ...visible]));
+        renderAll();
+        return;
+      }
+      if (event.target.closest?.("[data-bulk-clear-selection]")) {
+        state.bulkEditor.selected = [];
+        renderAll();
+        return;
+      }
+      if (event.target.closest?.("[data-bulk-apply]")) {
+        await applyBulkEditor();
+        return;
+      }
       const marketSaveButton = event.target.closest?.("[data-market-save]");
       if (marketSaveButton) {
         try {
@@ -3780,6 +4198,23 @@
           search.setSelectionRange(selectionStart, selectionEnd);
         }
       }
+      if (event.target.matches?.("#economy-bulk-search")) {
+        const selectionStart = event.target.selectionStart;
+        const selectionEnd = event.target.selectionEnd;
+        state.bulkEditor.search = event.target.value;
+        renderAll();
+        const search = $("#economy-bulk-search");
+        if (search) {
+          search.focus();
+          search.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }
+      if (event.target.matches?.("#economy-bulk-reason")) {
+        state.bulkEditor.reason = event.target.value;
+      }
+      if (event.target.matches?.("[data-bulk-field]")) {
+        updateBulkDraft(event.target.closest("[data-bulk-item-code]"));
+      }
       if (event.target.matches?.("#economy-inspector-inventory-search")) {
         const selectionStart = event.target.selectionStart;
         const selectionEnd = event.target.selectionEnd;
@@ -3860,6 +4295,18 @@
       if (event.target.closest?.("#economy-exchange-actions")) {
         syncExchangePreview();
       }
+      if (event.target.matches?.("[data-bulk-select]")) {
+        const key = text(event.target.dataset.bulkSelect);
+        const selected = bulkSelectionSet();
+        if (event.target.checked) selected.add(key);
+        else selected.delete(key);
+        state.bulkEditor.selected = Array.from(selected);
+        return;
+      }
+      if (event.target.matches?.("[data-bulk-field]")) {
+        updateBulkDraft(event.target.closest("[data-bulk-item-code]"));
+        return;
+      }
       if (event.target.matches?.("#economy-item-page-size")) {
         const nextSize = Number(event.target.value);
         state.itemPageSize = ITEM_PAGE_SIZE_OPTIONS.includes(nextSize) ? nextSize : DEFAULT_ITEM_PAGE_SIZE;
@@ -3904,6 +4351,15 @@
       if (event.key === "Escape" && state.assetPicker.open) {
         state.assetPicker.open = false;
         refreshAssetPickerView();
+        return;
+      }
+      if (event.key === "Escape" && state.bulkEditor.type) {
+        closeBulkEditor();
+        return;
+      }
+      if (event.key === "Escape" && state.auditDrawer) {
+        state.auditDrawer = "";
+        renderEvents();
         return;
       }
       if (event.key === "Escape" && state.itemEditorCode) {

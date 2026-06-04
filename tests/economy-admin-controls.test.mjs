@@ -73,6 +73,10 @@ test("economy view exposes required control sections and boundary copy", () => {
   assert.match(html, /id="economy-denominations-section"/);
   assert.match(html, /id="economy-wallet-inventory-section"/);
   assert.match(html, /id="economy-ledger-section"/);
+  assert.match(html, /data-audit-drawer="ledger"/);
+  assert.match(html, /data-audit-drawer="inventory-events"/);
+  assert.match(html, /data-audit-drawer-open="ledger"/);
+  assert.match(html, /data-identity-selector-open/);
   assert.match(html, /id="economy-actions-section"/);
   assert.doesNotMatch(html, /id="economy-inventory-section"/);
   assert.match(html, /id="economy-inventory-events-section"/);
@@ -279,6 +283,17 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /itemViewMode: "cards"/);
   assert.match(js, /marketViewMode: "cards"/);
   assert.match(js, /marketPageSize: DEFAULT_ITEM_PAGE_SIZE/);
+  assert.match(js, /bulkEditor:\s*\{/);
+  assert.match(js, /function renderBulkEditorModal\(\)/);
+  assert.match(js, /function applyBulkEditor\(\)/);
+  assert.match(js, /data-bulk-open="market"/);
+  assert.match(js, /data-bulk-open="inventory"/);
+  assert.match(js, /await requestJson\(MARKET_GOVERNANCE_ITEM\(key\)/);
+  assert.match(js, /await requestJson\(ITEM_DEFINITION\(key\)/);
+  assert.match(js, /window\.confirm\?\.\(`Apply \$\{dirtySelected\.length\}/);
+  assert.match(js, /data-audit-drawer-open="ledger"/);
+  assert.match(js, /state\.auditDrawer = text\(auditOpenButton\.dataset\.auditDrawerOpen\)/);
+  assert.match(js, /streamsuites:economy-audit-drawer/);
   assert.match(js, /id="economy-item-search"/);
   assert.match(js, /data-item-view="cards"/);
   assert.match(js, /data-item-view="list"/);
@@ -361,7 +376,8 @@ test("item definition save reads the visible editor reason and sends reason_text
   assert.match(js, /id="economy-item-create-open"/);
   assert.match(js, /state\.itemEditorCode = ITEM_CREATE_EDITOR_CODE/);
   assert.match(js, /state\.itemEditorCode = code;/);
-  assert.match(js, /document\.body\?\.classList\?\.toggle\("ss-economy-modal-open", Boolean\(state\.itemEditorCode \|\| state\.marketEditorCode\)\)/);
+  assert.match(js, /function economyOverlayOpen\(\)/);
+  assert.match(js, /document\.body\?\.classList\?\.toggle\("ss-economy-modal-open", economyOverlayOpen\(\)\)/);
   assert.match(js, /item\.public_short_description/);
   assert.match(js, /item\.description/);
   assert.match(js, /item\.tooltip_public_details/);
@@ -532,14 +548,15 @@ test("economy route uses the shared top-bar section anchor row", () => {
   assert.match(app, /\{ id: "economy-danger-zone-section", label: "Danger Zone" \}/);
   assert.match(app, /data-accounts-shell-anchor="\$\{section\.id\}"/);
   assert.match(app, /scrollToAccountsShellSection\(sectionId\)/);
+  assert.match(app, /streamsuites:economy-audit-drawer/);
   assert.match(app, /if \(!resolveSectionShellConfig\(App\.currentView\)\) return;/);
 });
 
 test("economy styling includes compact identity rows and currency/denomination treatments", () => {
   const css = read("docs/css/components.css");
 
-  assert.match(css, /\.ss-economy-identity\s*\{[\s\S]*grid-template-columns:\s*76px minmax\(0,\s*1fr\) auto/);
-  assert.match(css, /\.ss-economy-avatar\s*\{[\s\S]*width:\s*68px[\s\S]*height:\s*68px/);
+  assert.match(css, /\.ss-economy-identity\s*\{[\s\S]*grid-template-columns:\s*42px minmax\(0,\s*1fr\)/);
+  assert.match(css, /\.ss-economy-avatar\s*\{[\s\S]*width:\s*42px[\s\S]*height:\s*42px/);
   assert.match(css, /\.ss-economy-avatar img,[\s\S]*\.ss-economy-item-icon img\s*\{[\s\S]*object-fit:\s*contain/);
   assert.match(css, /\.ss-economy-currency-symbol\s*\{[\s\S]*mask:\s*var\(--economy-currency-symbol\) center \/ contain no-repeat/);
   assert.match(css, /\.ss-economy-credit-value--compact \.ss-economy-currency-symbol/);
@@ -572,17 +589,23 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-exclusion-facts\s*\{/);
   assert.match(css, /\.ss-economy-combined-inspector\s*\{/);
   assert.match(css, /\.ss-economy-identity-selector-head\s*\{/);
-  assert.match(css, /\.ss-economy-selected-identity-summary\s*\{[\s\S]*grid-template-columns:\s*136px minmax\(0,\s*1fr\)/);
-  assert.match(css, /\.ss-economy-selected-identity-summary \.ss-economy-avatar\s*\{[\s\S]*width:\s*136px[\s\S]*height:\s*136px/);
+  assert.match(css, /\.ss-economy-selected-identity-summary\s*\{[\s\S]*grid-template-columns:\s*124px minmax\(0,\s*1fr\)/);
+  assert.match(css, /\.ss-economy-selected-identity-summary \.ss-economy-avatar\s*\{[\s\S]*width:\s*124px[\s\S]*height:\s*124px/);
   assert.match(css, /\.ss-economy-inventory-gallery\s*\{/);
-  assert.match(css, /\.ss-economy-inventory-card \.ss-economy-item-icon\s*\{[\s\S]*width:\s*88px[\s\S]*height:\s*88px/);
+  assert.match(css, /\.ss-economy-inventory-card \.ss-economy-item-icon\s*\{[\s\S]*width:\s*104px[\s\S]*height:\s*104px/);
   assert.match(css, /\.ss-economy-item-chip\s*\{/);
   assert.match(css, /\.ss-economy-item-chip-row\s*\{/);
   assert.match(css, /\.ss-economy-item-chip-archived\s*\{[\s\S]*background:\s*rgba\(148,\s*163,\s*184,\s*0\.16\)/);
   assert.match(css, /\.ss-economy-item-definition\.is-archived\s*\{[\s\S]*opacity:\s*0\.74/);
   assert.match(css, /\.ss-economy-item-definition\.is-archived \.ss-economy-item-icon\s*\{[\s\S]*filter:\s*grayscale\(1\)/);
   assert.match(css, /\.ss-economy-state-reversed,[\s\S]*\.ss-economy-state-reversal/);
-  assert.match(css, /\.ss-economy-master-detail\s*\{[\s\S]*grid-template-columns:\s*minmax\(440px,\s*1\.35fr\) minmax\(320px,\s*0\.85fr\)/);
+  assert.match(css, /\.ss-economy-master-detail\s*\{[\s\S]*grid-template-columns:\s*minmax\(250px,\s*0\.42fr\) minmax\(0,\s*1\.58fr\)/);
+  assert.match(css, /\.ss-economy-master-pane\s*\{[\s\S]*position:\s*sticky/);
+  assert.match(css, /\.ss-economy-master-detail\.is-selector-open \.ss-economy-master-pane\s*\{[\s\S]*transform:\s*translateX\(0\)/);
+  assert.match(css, /\.ss-economy-audit-drawer\s*\{[\s\S]*position:\s*fixed[\s\S]*transform:\s*translateX\(105%\)/);
+  assert.match(css, /\.ss-economy-audit-drawer\.is-open\s*\{[\s\S]*transform:\s*translateX\(0\)/);
+  assert.match(css, /\.ss-economy-bulk-dialog\s*\{[\s\S]*width:\s*min\(1480px,\s*100%\)/);
+  assert.match(css, /\.ss-economy-bulk-table-wrap\s*\{[\s\S]*overflow:\s*auto/);
   assert.match(css, /\.ss-economy-item-definition-summary\s*\{[\s\S]*grid-template-columns:\s*76px minmax\(0,\s*1fr\) auto/);
   assert.match(css, /\.ss-economy-item-create-shell\s*\{/);
   assert.match(css, /\.ss-economy-item-create-grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(300px,\s*1fr\) minmax\(280px,\s*0\.82fr\) minmax\(360px,\s*1\.12fr\)/);
