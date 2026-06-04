@@ -92,6 +92,55 @@
     return "";
   }
 
+  function stableImageUrl(url, cacheKey) {
+    const source = coerceText(url).trim();
+    const key = coerceText(cacheKey).trim();
+    if (!source || !key || source.startsWith("data:") || source.startsWith("blob:")) return source;
+    try {
+      const parsed = new URL(source, window.location.origin);
+      if (!parsed.searchParams.has("v")) parsed.searchParams.set("v", key);
+      return parsed.origin === window.location.origin && source.startsWith("/")
+        ? `${parsed.pathname}${parsed.search}${parsed.hash}`
+        : parsed.toString();
+    } catch (_) {
+      return source;
+    }
+  }
+
+  function normalizedImageContract(source = {}, fallback = {}) {
+    const profileMedia = source?.profile_media || source?.profileMedia || {};
+    const image = source?.image || profileMedia.avatar || {};
+    const avatarUrl = coerceText(
+      image.avatar_url ||
+        image.profile_image_url ||
+        image.url ||
+        profileMedia.avatar_url ||
+        profileMedia.profile_image_url ||
+        source?.profile_image_url ||
+        source?.profileImageUrl ||
+        source?.avatar_url ||
+        source?.avatarUrl ||
+        fallback?.avatar_url ||
+        fallback?.avatarUrl ||
+        ""
+    ).trim();
+    const imageVersion = coerceText(
+      image.image_version ||
+        image.cache_key ||
+        profileMedia.image_version ||
+        profileMedia.cache_key ||
+        source?.image_version ||
+        source?.imageVersion ||
+        fallback?.imageVersion ||
+        ""
+    ).trim();
+    return {
+      avatarUrl: stableImageUrl(avatarUrl, imageVersion),
+      rawAvatarUrl: avatarUrl,
+      imageVersion
+    };
+  }
+
   function normalizeAuthReason(value) {
     if (typeof value !== "string") return "";
     const trimmed = value.trim().toLowerCase();
@@ -711,8 +760,16 @@
       }
       if (this.elements.headerAvatar) {
         const resolvedAvatar = avatarUrl || fallbackAvatar;
+        this.elements.headerAvatar.onerror = null;
         this.elements.headerAvatar.src = resolvedAvatar;
         this.elements.headerAvatar.classList.toggle("is-avatar", Boolean(avatarUrl));
+        if (avatarUrl) {
+          this.elements.headerAvatar.onerror = () => {
+            this.elements.headerAvatar.onerror = null;
+            this.elements.headerAvatar.src = fallbackAvatar;
+            this.elements.headerAvatar.classList.remove("is-avatar");
+          };
+        }
       }
       this.elements.headerWrap.classList.toggle("hidden", !this.state.authorized);
       if (this.elements.overviewName) {
@@ -898,13 +955,8 @@
           ""
       );
 
-      const avatarUrl = coerceText(
-        payload?.avatar_url ??
-          payload?.avatarUrl ??
-          payload?.user?.avatar_url ??
-          payload?.user?.avatarUrl ??
-          ""
-      );
+      const imageContract = normalizedImageContract(payload, payload?.user || {});
+      const avatarUrl = imageContract.avatarUrl;
 
       const tier = coerceText(
         payload?.tier ??

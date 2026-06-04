@@ -635,16 +635,49 @@
   }
 
   function identityAvatar(identity = {}) {
-    return text(identity.avatar_url);
+    const profileMedia = identity?.profile_media || identity?.profileMedia || {};
+    const image = identity?.image || profileMedia.avatar || {};
+    const avatarUrl = text(
+      image.avatar_url ||
+        image.profile_image_url ||
+        image.url ||
+        profileMedia.avatar_url ||
+        profileMedia.profile_image_url ||
+        identity.profile_image_url ||
+        identity.profileImageUrl ||
+        identity.avatar_url ||
+        identity.avatarUrl
+    );
+    const cacheKey = text(
+      image.image_version ||
+        image.cache_key ||
+        profileMedia.image_version ||
+        profileMedia.cache_key ||
+        identity.image_version ||
+        identity.imageVersion
+    );
+    if (!avatarUrl || !cacheKey || avatarUrl.startsWith("data:") || avatarUrl.startsWith("blob:")) return avatarUrl;
+    try {
+      const parsed = new URL(avatarUrl, window.location.origin);
+      if (!parsed.searchParams.has("v")) parsed.searchParams.set("v", cacheKey);
+      return parsed.origin === window.location.origin && avatarUrl.startsWith("/")
+        ? `${parsed.pathname}${parsed.search}${parsed.hash}`
+        : parsed.toString();
+    } catch (_) {
+      return avatarUrl;
+    }
   }
 
   function renderAvatar(identity = {}, wallet = {}) {
     const avatarUrl = identityAvatar(identity);
     const displayName = text(identity.display_name || wallet.display_name || identityUserCode(identity, wallet) || "Identity");
+    const fallbackValue = text(identity.fallback_display_initial || identity.fallbackDisplayInitial) || (displayName || "?").slice(0, 1).toUpperCase();
+    const fallback = escapeHtml(fallbackValue);
+    const fallbackJsText = escapeHtml(JSON.stringify(fallbackValue));
     if (avatarUrl) {
-      return `<span class="ss-economy-avatar has-image"><img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(displayName)} avatar" loading="lazy" decoding="async" /></span>`;
+      return `<span class="ss-economy-avatar has-image"><img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(displayName)} avatar" loading="lazy" decoding="async" onerror="this.closest('.ss-economy-avatar')?.classList.remove('has-image');this.replaceWith(document.createTextNode(${fallbackJsText}));" /></span>`;
     }
-    return `<span class="ss-economy-avatar" aria-hidden="true">${escapeHtml((displayName || "?").slice(0, 1).toUpperCase())}</span>`;
+    return `<span class="ss-economy-avatar" aria-hidden="true">${fallback}</span>`;
   }
 
   function renderCurrencySymbol(options = {}) {

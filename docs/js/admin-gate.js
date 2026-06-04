@@ -442,7 +442,7 @@
       role: role || "",
       provider: provider || getLastOauthProvider(),
       tier: coerceText(payload.tier || payload.session?.tier || payload.user?.tier || payload.plan),
-      avatarUrl: coerceText(payload.avatar_url || payload.avatarUrl || payload.user?.avatar_url),
+      avatarUrl: normalizedImageContract(payload, payload.user || {}),
       adminAccess
     };
   }
@@ -567,6 +567,51 @@
     return "";
   }
 
+  function stableImageUrl(url, cacheKey) {
+    const source = coerceText(url);
+    const key = coerceText(cacheKey);
+    if (!source || !key || source.startsWith("data:") || source.startsWith("blob:")) return source;
+    try {
+      const parsed = new URL(source, window.location.origin);
+      if (!parsed.searchParams.has("v")) parsed.searchParams.set("v", key);
+      return parsed.origin === window.location.origin && source.startsWith("/")
+        ? `${parsed.pathname}${parsed.search}${parsed.hash}`
+        : parsed.toString();
+    } catch (_) {
+      return source;
+    }
+  }
+
+  function normalizedImageContract(source = {}, fallback = {}) {
+    const profileMedia = source?.profile_media || source?.profileMedia || {};
+    const image = source?.image || profileMedia.avatar || {};
+    const avatarUrl = coerceText(
+      image.avatar_url ||
+        image.profile_image_url ||
+        image.url ||
+        profileMedia.avatar_url ||
+        profileMedia.profile_image_url ||
+        source?.profile_image_url ||
+        source?.profileImageUrl ||
+        source?.avatar_url ||
+        source?.avatarUrl ||
+        fallback?.avatar_url ||
+        fallback?.avatarUrl ||
+        ""
+    );
+    const imageVersion = coerceText(
+      image.image_version ||
+        image.cache_key ||
+        profileMedia.image_version ||
+        profileMedia.cache_key ||
+        source?.image_version ||
+        source?.imageVersion ||
+        fallback?.imageVersion ||
+        ""
+    );
+    return stableImageUrl(avatarUrl, imageVersion);
+  }
+
   function resolveTierLabel(value) {
     if (value === undefined || value === null) return "";
     const text = String(value).trim();
@@ -630,8 +675,16 @@
     }
     if (headerAvatar) {
       const resolvedAvatar = admin.avatarUrl || fallbackAvatar;
+      headerAvatar.onerror = null;
       headerAvatar.src = resolvedAvatar;
       headerAvatar.classList.toggle("is-avatar", Boolean(admin.avatarUrl));
+      if (admin.avatarUrl) {
+        headerAvatar.onerror = () => {
+          headerAvatar.onerror = null;
+          headerAvatar.src = fallbackAvatar;
+          headerAvatar.classList.remove("is-avatar");
+        };
+      }
     }
 
     headerWrap.classList.remove("hidden");

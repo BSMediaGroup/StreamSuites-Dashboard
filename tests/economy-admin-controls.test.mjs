@@ -665,3 +665,15 @@ test("economy exchange controls preview held gem and diamond values", () => {
   assert.match(js, /await requestJson\(ECONOMY_EXCHANGE\(state\.selectedIdentityCode\)/);
   assert.match(css, /\.ss-economy-exchange-preview/);
 });
+
+test("economy identity avatars consume normalized runtime image fields and fallback", () => {
+  const js = read("docs/js/economy.js");
+
+  assert.match(js, /image\.avatar_url/);
+  assert.match(js, /profileMedia\.profile_image_url/);
+  assert.match(js, /identity\.profile_image_url/);
+  assert.match(js, /image\.image_version/);
+  assert.match(js, /parsed\.searchParams\.set\("v", cacheKey\)/);
+  assert.match(js, /onerror="this\.closest\('\.ss-economy-avatar'\)\?\.classList\.remove\('has-image'\)/);
+  assert.doesNotMatch(js, /Date\.now\(\)/);
+});

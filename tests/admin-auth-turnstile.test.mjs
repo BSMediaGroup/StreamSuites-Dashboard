@@ -93,6 +93,27 @@ test("admin session consumer hydrates the dropdown overview card", () => {
   assert.match(css, /ss-user-menu-overview/);
 });
 
+test("admin account/avatar surfaces consume normalized runtime image metadata", () => {
+  const authJs = read("docs/js/admin-auth.js");
+  const gateJs = read("docs/js/admin-gate.js");
+  const accountsJs = read("docs/js/accounts.js");
+  const creatorsJs = read("docs/js/creators.js");
+  const userDetailJs = read("docs/js/user-detail.js");
+
+  for (const js of [authJs, gateJs, accountsJs, creatorsJs, userDetailJs]) {
+    assert.match(js, /normalizedImageContract/);
+    assert.match(js, /stableImageUrl/);
+    const stableImageHelper = js.match(/function stableImageUrl\(url, cacheKey\)[\s\S]*?\n  }\n\n  function normalizedImageContract/)?.[0] || "";
+    assert.doesNotMatch(stableImageHelper, /Date\.now\(\)/);
+  }
+  assert.match(authJs, /const imageContract = normalizedImageContract\(payload, payload\?\.user \|\| \{\}\)/);
+  assert.match(gateJs, /avatarUrl: normalizedImageContract\(payload, payload\.user \|\| \{\}\)/);
+  assert.match(accountsJs, /const imageContract = normalizedImageContract\(raw, publicProfile\)/);
+  assert.match(creatorsJs, /const imageContract = normalizedImageContract\(entry, account\)/);
+  assert.match(userDetailJs, /const imageContract = normalizedImageContract\(account, publicProfile\)/);
+  assert.match(accountsJs, /onerror="this\.closest\('\.accounts-table-avatar'\)\?\.classList\.remove\('has-image'\)/);
+});
+
 test("admin sidebar keeps the desktop rail tight and centers collapsed nav icons", () => {
   const css = read("docs/css/base.css");
 

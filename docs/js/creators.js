@@ -43,6 +43,55 @@
       .replace(/'/g, "&#39;");
   }
 
+  function stableImageUrl(url, cacheKey) {
+    const source = String(url || "").trim();
+    const key = String(cacheKey || "").trim();
+    if (!source || !key || source.startsWith("data:") || source.startsWith("blob:")) return source;
+    try {
+      const parsed = new URL(source, window.location.origin);
+      if (!parsed.searchParams.has("v")) parsed.searchParams.set("v", key);
+      return parsed.origin === window.location.origin && source.startsWith("/")
+        ? `${parsed.pathname}${parsed.search}${parsed.hash}`
+        : parsed.toString();
+    } catch (_) {
+      return source;
+    }
+  }
+
+  function normalizedImageContract(source = {}, fallback = {}) {
+    const profileMedia = source?.profile_media || source?.profileMedia || {};
+    const image = source?.image || profileMedia.avatar || {};
+    const avatarUrl = String(
+      image.avatar_url ||
+        image.profile_image_url ||
+        image.url ||
+        profileMedia.avatar_url ||
+        profileMedia.profile_image_url ||
+        source?.profile_image_url ||
+        source?.profileImageUrl ||
+        source?.avatar_url ||
+        source?.avatarUrl ||
+        fallback?.avatar_url ||
+        fallback?.avatarUrl ||
+        ""
+    ).trim();
+    const imageVersion = String(
+      image.image_version ||
+        image.cache_key ||
+        profileMedia.image_version ||
+        profileMedia.cache_key ||
+        source?.image_version ||
+        source?.imageVersion ||
+        fallback?.imageVersion ||
+        ""
+    ).trim();
+    return {
+      avatarUrl: stableImageUrl(avatarUrl, imageVersion),
+      imageVersion,
+      fallbackInitial: String(image.fallback_display_initial || profileMedia.fallback_display_initial || source?.fallback_display_initial || source?.fallbackDisplayInitial || "").trim()
+    };
+  }
+
   function getLinkageNavState() {
     if (!window.StreamSuitesIdentityLinkageNav || typeof window.StreamSuitesIdentityLinkageNav !== "object") {
       window.StreamSuitesIdentityLinkageNav = {};
@@ -122,7 +171,8 @@
         const accountId = String(entry?.account_id || account?.account_id || "").trim();
         const accountEmail = String(entry?.email || account?.email || "").trim();
         const displayName = String(entry?.display_name || account?.display_name || userCode).trim() || userCode;
-        const avatarUrl = String(entry?.avatar_url || account?.avatar_url || "").trim();
+        const imageContract = normalizedImageContract(entry, account);
+        const avatarUrl = imageContract.avatarUrl || String(entry?.avatar_url || account?.avatar_url || "").trim();
         const publicProfile = account?.public_profile && typeof account.public_profile === "object" ? account.public_profile : {};
         const status = String(entry?.status || "").trim().toLowerCase() || "pending";
         return {
@@ -130,6 +180,8 @@
           creator_id: userCode,
           display_name: displayName,
           avatar_url: avatarUrl,
+          image_version: imageContract.imageVersion,
+          fallback_display_initial: imageContract.fallbackInitial,
           badges: Array.isArray(entry?.badges) ? entry.badges : Array.isArray(account?.badges) ? account.badges : [],
           bio: String(publicProfile?.bio || "").trim(),
           social_links: publicProfile?.social_links && typeof publicProfile.social_links === "object" ? publicProfile.social_links : {},
@@ -204,7 +256,9 @@
   function renderAvatarCell(creator) {
     const displayName = escapeHtml(creator.display_name || creator.user_code);
     const avatarUrl = escapeHtml(creator.avatar_url || "");
-    const fallback = escapeHtml(String(creator.display_name || creator.user_code || "NA").trim().slice(0, 2).toUpperCase());
+    const fallbackValue = String(creator.fallback_display_initial || creator.display_name || creator.user_code || "NA").trim().slice(0, 2).toUpperCase();
+    const fallback = escapeHtml(fallbackValue);
+    const fallbackJsText = escapeHtml(JSON.stringify(fallbackValue));
     return `
       <span
         class="accounts-table-avatar${avatarUrl ? " has-image" : ""}"
@@ -221,7 +275,7 @@
         data-ss-social-links="${escapeHtml(JSON.stringify(creator.social_links || {}))}"
         data-ss-profile-href="${escapeHtml(`https://streamsuites.app/u/${encodeURIComponent(creator.public_slug || creator.user_code || "")}`)}"
       >
-        ${avatarUrl ? `<img src="${avatarUrl}" alt="${displayName} avatar" loading="lazy" decoding="async" />` : `<span>${fallback}</span>`}
+        ${avatarUrl ? `<img src="${avatarUrl}" alt="${displayName} avatar" loading="lazy" decoding="async" onerror="this.closest('.accounts-table-avatar')?.classList.remove('has-image');this.replaceWith(document.createTextNode(${fallbackJsText}));" />` : `<span>${fallback}</span>`}
       </span>
     `;
   }

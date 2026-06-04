@@ -6,6 +6,10 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Dashboard admin auth/header, account rows, creator rows, user detail, and Economy identity avatar displays now consume Runtime/Auth normalized image/profile media fields before legacy avatar aliases.
+- Added stable image cache-key handling and one-shot fallback swaps for missing/broken avatar URLs without erasing stored account or public identity image state.
+- Human note: Admin user/avatar surfaces should show consistent Runtime/Auth-owned profile images or clean initials/fallbacks instead of broken image icons after refresh.
+
 - Replaced broken Participation Exclusions controls with a dedicated policy editor modal and existing-policy browser.
 - Fixed policy controls so labels and switches no longer overlap by removing the scaled switch-card treatment and using stable switch/tile rows.
 - Added stepped create/edit flow to the Item Definition modal with preserved draft state.

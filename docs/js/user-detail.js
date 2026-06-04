@@ -64,6 +64,54 @@
     return normalized || fallback;
   }
 
+  function stableImageUrl(url, cacheKey) {
+    const source = coerceText(url);
+    const key = coerceText(cacheKey);
+    if (!source || !key || source.startsWith("data:") || source.startsWith("blob:")) return source;
+    try {
+      const parsed = new URL(source, window.location.origin);
+      if (!parsed.searchParams.has("v")) parsed.searchParams.set("v", key);
+      return parsed.origin === window.location.origin && source.startsWith("/")
+        ? `${parsed.pathname}${parsed.search}${parsed.hash}`
+        : parsed.toString();
+    } catch (_) {
+      return source;
+    }
+  }
+
+  function normalizedImageContract(source = {}, fallback = {}) {
+    const profileMedia = source?.profile_media || source?.profileMedia || {};
+    const image = source?.image || profileMedia.avatar || {};
+    const avatarUrl = coerceText(
+      image.avatar_url ||
+        image.profile_image_url ||
+        image.url ||
+        profileMedia.avatar_url ||
+        profileMedia.profile_image_url ||
+        source?.profile_image_url ||
+        source?.profileImageUrl ||
+        source?.avatar_url ||
+        source?.avatarUrl ||
+        fallback?.avatar_url ||
+        fallback?.avatarUrl ||
+        ""
+    );
+    const imageVersion = coerceText(
+      image.image_version ||
+        image.cache_key ||
+        profileMedia.image_version ||
+        profileMedia.cache_key ||
+        source?.image_version ||
+        source?.imageVersion ||
+        fallback?.imageVersion ||
+        ""
+    );
+    return {
+      avatarUrl: stableImageUrl(avatarUrl, imageVersion),
+      fallbackInitial: coerceText(image.fallback_display_initial || profileMedia.fallback_display_initial || source?.fallback_display_initial || source?.fallbackDisplayInitial)
+    };
+  }
+
   function getSocialPlatformApi() {
     return window.StreamSuitesSocialPlatforms || null;
   }
@@ -592,11 +640,15 @@
     const title = coerceText(account?.display_name || account?.user_code, "User detail");
     const subtitle = coerceText(account?.email || account?.user_code, "Loading user context");
     const coverImage = coerceText(publicProfile.cover_image_url || account?.cover_image_url || publicProfile.background_image_url);
-    const avatarUrl = coerceText(account?.avatar_url);
+    const imageContract = normalizedImageContract(account, publicProfile);
+    const avatarUrl = imageContract.avatarUrl || coerceText(account?.avatar_url);
     const publicProfileHref = buildPublicProfileHref(account);
+    const heroFallback = imageContract.fallbackInitial || resolveAvatarInitials(account);
+    const heroFallbackText = escapeHtml(heroFallback);
+    const heroFallbackJsText = escapeHtml(JSON.stringify(heroFallback));
     const avatarMarkup = avatarUrl
-      ? `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(title)} avatar" loading="lazy" decoding="async" />`
-      : `<span>${escapeHtml(resolveAvatarInitials(account))}</span>`;
+      ? `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(title)} avatar" loading="lazy" decoding="async" onerror="this.closest('.user-detail-hero-avatar')?.classList.remove('has-image');this.replaceWith(document.createTextNode(${heroFallbackJsText}));" />`
+      : `<span>${heroFallbackText}</span>`;
     const heroBadges = [
       renderBadge(account?.role || "unknown", badgeToneForStatus(account?.account_status)),
       renderBadge(account?.tier || "core"),
@@ -658,14 +710,19 @@
     const customMarkup = customLinks.length
       ? customLinks.map((item) => `<span>${escapeHtml(item?.label || item?.url || "Link")}</span>`).join(" · ")
       : '<span class="muted">No custom links saved.</span>';
-    const avatarMarkup = account?.avatar_url
-      ? `<img src="${escapeHtml(account.avatar_url)}" alt="${escapeHtml(title)} avatar" loading="lazy" decoding="async" />`
-      : `<span>${escapeHtml(resolveAvatarInitials(account))}</span>`;
+    const imageContract = normalizedImageContract(account, publicProfile);
+    const avatarUrl = imageContract.avatarUrl || coerceText(account?.avatar_url);
+    const profileFallback = imageContract.fallbackInitial || resolveAvatarInitials(account);
+    const profileFallbackText = escapeHtml(profileFallback);
+    const profileFallbackJsText = escapeHtml(JSON.stringify(profileFallback));
+    const avatarMarkup = avatarUrl
+      ? `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(title)} avatar" loading="lazy" decoding="async" onerror="this.closest('.accounts-details-avatar')?.classList.remove('has-image');this.replaceWith(document.createTextNode(${profileFallbackJsText}));" />`
+      : `<span>${profileFallbackText}</span>`;
     el.profile.innerHTML = `
       <article class="accounts-details-profile-card glass-card user-detail-profile-card">
         <div class="accounts-details-preview-cover"${publicProfile?.cover_image_url ? ` style="background-image:url('${escapeHtml(publicProfile.cover_image_url)}')"` : ""}></div>
         <div class="accounts-details-profile-head">
-          <div class="accounts-details-avatar${account?.avatar_url ? " has-image" : ""}" aria-hidden="true">${avatarMarkup}</div>
+          <div class="accounts-details-avatar${avatarUrl ? " has-image" : ""}" aria-hidden="true">${avatarMarkup}</div>
           <div class="accounts-details-identity">
             <strong class="accounts-details-name">${escapeHtml(title)}</strong>
             <span class="accounts-details-user-code">${escapeHtml(coerceText(account?.user_code, "—"))}</span>
