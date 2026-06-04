@@ -331,6 +331,8 @@
   }
 
   function isHiddenPlaceholderBot(bot) {
+    if (bot?.export_snapshot_only === true && bot?.stale_export_ignored === true) return true;
+    if (String(bot?.session_type || "").trim().toLowerCase() === "attachment_probe") return true;
     if (bot?.visible_in_admin === true || bot?.actionable === true) return false;
     if (bot?.visible_in_admin === false || bot?.session_origin === "placeholder") return true;
     const platform = normalizePlatformKey(bot?.platform);
@@ -757,6 +759,21 @@
       return '<span class="ss-badge ss-badge-warning">Manual ON</span>';
     }
     return '<span class="ss-badge">Manual OFF</span>';
+  }
+
+  function isHonestManagedBot(bot) {
+    if (!bot || typeof bot !== "object") return false;
+    if (String(bot.session_type || "").trim().toLowerCase() === "attachment_probe") return false;
+    if (bot.export_snapshot_only === true || bot.stale_export_ignored === true) return false;
+    if (bot.is_stale === true) return false;
+    if (bot.live_worker_exists === true) return true;
+    const sessionType = String(bot.session_type || "").trim().toLowerCase();
+    const lifecycle = String(bot.lifecycle_state || bot.status || "").trim().toLowerCase();
+    return (
+      sessionType === "auto" &&
+      bot.desired === true &&
+      !["", "offline", "stopped", "stale", "blocked", "error"].includes(lifecycle)
+    );
   }
 
   function renderBadge(label, tone = "") {
@@ -1248,7 +1265,7 @@
       } else if (!group.reason && reasons.length) {
         group.reason = reasons[0];
       }
-      if (sessionType === "auto" || isBotAttached(bot)) {
+      if (isHonestManagedBot(bot) || (isBotAttached(bot) && bot.is_stale !== true && bot.export_snapshot_only !== true)) {
         group.activeManagedCount += 1;
       }
       if (["Blocked", "Error"].includes(posture.label)) {
