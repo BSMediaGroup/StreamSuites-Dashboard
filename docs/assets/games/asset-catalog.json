@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "generated_at": "2026-06-03T19:04:43.411898Z",
+  "generated_at": "2026-06-04T13:05:24.925819Z",
   "asset_root": "assets/games",
-  "count": 201,
+  "count": 202,
   "items": [
     {
       "path": "assets/games/00-stone.webp",
@@ -2465,6 +2465,19 @@
       ],
       "notes": "Private Jet",
       "updated_at": "2026-06-03T14:58:15.268772Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-spacex-falcon-9.webp",
+      "filename": "vehicle-spacex-falcon-9.webp",
+      "extension": "webp",
+      "label": "Vehicle Spacex Falcon 9",
+      "category": "item",
+      "tags": [
+        "SpaceX Falcon 9"
+      ],
+      "notes": "SpaceX Falcon 9",
+      "updated_at": "2026-06-04T13:05:24.905336Z",
       "definition_complete": true
     },
     {
