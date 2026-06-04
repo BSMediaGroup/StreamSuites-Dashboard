@@ -1,5 +1,538 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-06-03T19:12:06.730880Z",
-  "errors": []
+  "generated_at": "2026-06-04T13:29:48.688239Z",
+  "errors": [
+    {
+      "timestamp": "2026-06-04T12:18:41.939127Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:18:42.315644Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:19:23.437824Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:19:23.918594Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:20:01.174257Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:20:01.668291Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:20:37.045907Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:20:37.531196Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:21:17.260646Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:21:17.679008Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:21:54.136238Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:21:57.240339Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:23:13.640918Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:23:14.093043Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:25:17.556824Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:25:17.851228Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:27:22.825183Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:27:23.165655Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:29:32.802179Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:29:33.128818Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:31:41.468918Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:31:41.761463Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:33:45.324090Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:33:45.618787Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:35:48.632470Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:35:48.916468Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:37:50.016850Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:37:50.308707Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:39:54.375299Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:39:54.661636Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:41:58.735424Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:41:59.015713Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:44:03.637169Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:44:04.687138Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:46:09.417862Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:46:09.751494Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:48:12.679963Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:48:12.993457Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:50:25.954241Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:50:26.242466Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:52:32.342545Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:52:32.775357Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:54:48.924153Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:54:49.282219Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:56:58.190543Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:56:59.673553Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:59:05.981870Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T12:59:06.298966Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:01:14.162123Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:01:14.464944Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:03:23.896542Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:03:24.209953Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:05:31.484628Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:05:31.785307Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:07:39.327561Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:07:39.632645Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:09:49.080202Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:09:49.390677Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:11:56.360729Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:11:56.678816Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:14:04.292917Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:14:04.607404Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:16:13.342395Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:16:13.638800Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:18:20.252573Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:18:20.559462Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:20:27.991070Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:20:28.285255Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:22:40.159385Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:22:40.493416Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:24:45.854137Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:24:46.164957Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:26:47.609338Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:26:47.937745Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:28:49.146435Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    },
+    {
+      "timestamp": "2026-06-04T13:28:49.446702Z",
+      "subsystem": "platform",
+      "error_type": "platform_error",
+      "message": "TwitchEventSubChatConnector.run() got an unexpected keyword argument 'channel'",
+      "source": "twitch"
+    }
+  ]
 }
