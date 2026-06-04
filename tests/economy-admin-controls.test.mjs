@@ -672,8 +672,12 @@ test("economy identity avatars consume normalized runtime image fields and fallb
   assert.match(js, /image\.avatar_url/);
   assert.match(js, /profileMedia\.profile_image_url/);
   assert.match(js, /identity\.profile_image_url/);
+  assert.match(js, /identity\.provider_picture/);
+  assert.match(js, /identity\.picture/);
+  assert.match(js, /media\.avatar_url/);
   assert.match(js, /image\.image_version/);
   assert.match(js, /parsed\.searchParams\.set\("v", cacheKey\)/);
+  assert.match(js, /parsed\.origin !== window\.location\.origin\) return avatarUrl/);
   assert.match(js, /onerror="this\.closest\('\.ss-economy-avatar'\)\?\.classList\.remove\('has-image'\)/);
   assert.doesNotMatch(js, /Date\.now\(\)/);
 });

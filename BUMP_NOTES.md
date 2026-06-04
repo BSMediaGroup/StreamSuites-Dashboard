@@ -6,6 +6,10 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Emergency hotfixed Dashboard avatar rendering from normalized and legacy Runtime/Auth image fields, including provider picture, profile photo, display/public avatar, nested media, and legacy `avatar` aliases.
+- Wallet & Inventory Inspector identity rows and selected identity summary now choose valid image URLs before fallback initials and avoid appending cache params to external provider URLs.
+- Human note: Admin header/account/creator/user detail and Economy identity avatars should show real images again when Runtime/Auth provides any valid legacy or normalized image URL.
+
 - Dashboard admin auth/header, account rows, creator rows, user detail, and Economy identity avatar displays now consume Runtime/Auth normalized image/profile media fields before legacy avatar aliases.
 - Added stable image cache-key handling and one-shot fallback swaps for missing/broken avatar URLs without erasing stored account or public identity image state.
 - Human note: Admin user/avatar surfaces should show consistent Runtime/Auth-owned profile images or clean initials/fallbacks instead of broken image icons after refresh.

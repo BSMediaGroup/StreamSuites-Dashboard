@@ -637,17 +637,16 @@
   function identityAvatar(identity = {}) {
     const profileMedia = identity?.profile_media || identity?.profileMedia || {};
     const image = identity?.image || profileMedia.avatar || {};
-    const avatarUrl = text(
-      image.avatar_url ||
-        image.profile_image_url ||
-        image.url ||
-        profileMedia.avatar_url ||
-        profileMedia.profile_image_url ||
-        identity.profile_image_url ||
-        identity.profileImageUrl ||
-        identity.avatar_url ||
-        identity.avatarUrl
-    );
+    const media = identity?.media || {};
+    const avatarUrl = [
+      image.avatar_url, image.profile_image_url, image.url, image.image_url, image.picture,
+      profileMedia.avatar_url, profileMedia.profile_image_url, profileMedia.profile_photo_url, profileMedia.public_url,
+      media.avatar_url, media.profile_image_url,
+      identity.profile_image_url, identity.profileImageUrl, identity.profile_photo_url, identity.profilePhotoUrl,
+      identity.avatar_url, identity.avatarUrl, identity.avatar, identity.picture, identity.image_url, identity.imageUrl,
+      identity.provider_avatar_url, identity.providerAvatarUrl, identity.provider_picture, identity.providerPicture,
+      identity.display_avatar_url, identity.displayAvatarUrl, identity.public_avatar_url, identity.publicAvatarUrl
+    ].map(text).find(Boolean) || "";
     const cacheKey = text(
       image.image_version ||
         image.cache_key ||
@@ -659,6 +658,7 @@
     if (!avatarUrl || !cacheKey || avatarUrl.startsWith("data:") || avatarUrl.startsWith("blob:")) return avatarUrl;
     try {
       const parsed = new URL(avatarUrl, window.location.origin);
+      if (/^https?:\/\//i.test(avatarUrl) && parsed.origin !== window.location.origin) return avatarUrl;
       if (!parsed.searchParams.has("v")) parsed.searchParams.set("v", cacheKey);
       return parsed.origin === window.location.origin && avatarUrl.startsWith("/")
         ? `${parsed.pathname}${parsed.search}${parsed.hash}`

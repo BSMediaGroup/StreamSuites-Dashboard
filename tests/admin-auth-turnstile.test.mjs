@@ -103,8 +103,12 @@ test("admin account/avatar surfaces consume normalized runtime image metadata", 
   for (const js of [authJs, gateJs, accountsJs, creatorsJs, userDetailJs]) {
     assert.match(js, /normalizedImageContract/);
     assert.match(js, /stableImageUrl/);
+    assert.match(js, /provider_picture/);
+    assert.match(js, /profile_photo_url/);
+    assert.match(js, /public_avatar_url/);
     const stableImageHelper = js.match(/function stableImageUrl\(url, cacheKey\)[\s\S]*?\n  }\n\n  function normalizedImageContract/)?.[0] || "";
     assert.doesNotMatch(stableImageHelper, /Date\.now\(\)/);
+    assert.match(stableImageHelper, /parsed\.origin !== window\.location\.origin\) return source/);
   }
   assert.match(authJs, /const imageContract = normalizedImageContract\(payload, payload\?\.user \|\| \{\}\)/);
   assert.match(gateJs, /avatarUrl: normalizedImageContract\(payload, payload\.user \|\| \{\}\)/);
