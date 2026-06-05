@@ -6,6 +6,14 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Admin `/economy` item detail lightboxes now match the Public modal fixes with compact non-obstructing Previous/Next controls, disabled edge states, Left/Right key navigation, Escape close, focus trapping, and return focus.
+- Dashboard item detail navigation is scoped to the current visible collection: Wallet denomination rows, filtered Inventory Inspector rows, current Market Governance page/filter rows, and current Item Definitions page/filter rows.
+- Dashboard item detail value rows now render currency/Stekel/Credit amounts with the existing `assets/games/currencyunit.svg` currentColor mask and high-contrast value text for balance/value, market price, and exchange value fields without adding symbols to counts or metadata.
+- Dashboard item detail timestamps now format parseable Updated/Created/Granted/Acquired/Expires values as human-readable UTC strings and preserve original text when parsing fails.
+- Dashboard item detail hero art no longer inherits the nested `.ss-economy-item-icon` border/background frame inside the main hero well; the override is scoped to the economy item-detail modal.
+- Manual Inventory Actions searchable picker and selected item preview were verified as still present; the existing add/subtract mutation payload path remains unchanged.
+- Human note: admins can inspect adjacent market/definition/inventory items with the same lightbox parity as Public while Dashboard remains a Runtime/Auth consumer/control surface only.
+
 - Admin `/economy` Manual Inventory Actions now includes a searchable item picker layered over the existing item selector, with filtering by item code/name/category/rarity/aliases/tags, compact suggestions, mouse selection, ArrowUp/ArrowDown, Enter, and Escape support.
 - Manual Inventory Actions now renders a read-only selected item preview using already-loaded item definition data, including thumbnail, title/code, category/type/subtype, rarity/tier, description, value/price/exchange details, enabled/market/exchange status, and aliases/tags when present.
 - Technical note: the picker updates the existing `#inventory-action-item` select, and `applyInventoryAction` still reads that field and sends the same Runtime/Auth JSON payload shape; no Dashboard mutation authority or new inventory state layer was added.

@@ -1639,6 +1639,38 @@
     return text(value);
   }
 
+  function formatEconomyDetailTimestamp(value) {
+    const raw = text(value);
+    if (!raw) return "";
+    const parsed = new Date(raw);
+    if (Number.isNaN(parsed.getTime())) return raw;
+    const day = parsed.getUTCDate();
+    const suffix = day % 100 >= 11 && day % 100 <= 13
+      ? "th"
+      : day % 10 === 1
+        ? "st"
+        : day % 10 === 2
+          ? "nd"
+          : day % 10 === 3
+            ? "rd"
+            : "th";
+    const month = parsed.toLocaleString("en-US", { month: "long", timeZone: "UTC" });
+    let hours = parsed.getUTCHours();
+    const minutes = String(parsed.getUTCMinutes()).padStart(2, "0");
+    const period = hours >= 12 ? "pm" : "am";
+    hours = hours % 12 || 12;
+    return `${month} ${day}${suffix}, ${parsed.getUTCFullYear()} at ${String(hours).padStart(2, "0")}:${minutes}${period} UTC`;
+  }
+
+  function isEconomyDetailCurrencyLabel(label = "") {
+    return /(?:balance|value|price|cost|amount)/i.test(text(label));
+  }
+
+  function renderItemDetailValue(value) {
+    if (value && typeof value === "object" && value.html) return String(value.html);
+    return escapeHtml(value);
+  }
+
   function itemDetailModel(item = {}, kind = "item") {
     const definition = item.definition || itemDefinitionFor(item.item_code) || {};
     const metadata = item.metadata && typeof item.metadata === "object" ? item.metadata : {};
@@ -1658,7 +1690,15 @@
     const stats = [];
     const addStat = (label, value) => {
       const formatted = detailValue(value);
-      if (formatted) stats.push({ label, value: formatted });
+      if (formatted) {
+        const rawNumber = Number(value);
+        stats.push({
+          label,
+          value: formatted,
+          currency: isEconomyDetailCurrencyLabel(label) && Number.isFinite(rawNumber),
+          rawValue: rawNumber
+        });
+      }
     };
     addStat(kind === "wallet" ? "Count" : "Held", firstPresent(item.count, item.quantity, item.held_quantity));
     addStat("Balance / value", firstPresent(item.value_total_credits, item.balance_total_credits, item.balance_current, item.value_in_credits));
@@ -1666,8 +1706,8 @@
     addStat("Exchange value", firstPresent(item.exchange_value_stekels, item.exchange_value_credits, item.exchange_value));
     addStat("Stock", item.unlimited_stock ? "Unlimited" : firstPresent(item.stock, item.stock_limit, item.max_quantity, item.purchase_limit));
     const meta = [];
-    const addMeta = (label, value) => {
-      const formatted = detailValue(value);
+    const addMeta = (label, value, options = {}) => {
+      const formatted = options.timestamp ? formatEconomyDetailTimestamp(value) : detailValue(value);
       if (formatted) meta.push({ label, value: formatted });
     };
     addMeta("Item code", code);
@@ -1679,18 +1719,41 @@
     addMeta("Exchange state", kind === "market" ? (exchangeEnabled(item) ? "Exchange enabled" : "No exchange") : "");
     addMeta("Source", firstPresent(item.source, item.provider, item.origin, item.source_domain, item.source_action));
     addMeta("Version", firstPresent(item.version, item.export_version, item.schema_version, metadata.version));
-    addMeta("Updated", firstPresent(item.updated_at, item.modified_at, item.created_at, item.exported_at));
+    addMeta("Updated", firstPresent(item.updated_at, item.modified_at, item.exported_at), { timestamp: true });
+    addMeta("Created", firstPresent(item.created_at, definition.created_at), { timestamp: true });
+    addMeta("Granted", firstPresent(item.granted_at, item.grant_time), { timestamp: true });
+    addMeta("Acquired", firstPresent(item.acquired_at, item.acquired_time), { timestamp: true });
+    addMeta("Expires", firstPresent(item.expires_at, item.expiration_at, item.expires_on), { timestamp: true });
     addMeta("Tags / attributes", firstPresent(item.tags, item.attributes, item.chips, metadata.tags));
     return { title, description, details, icon, chips, stats, meta };
+  }
+
+  function renderItemDetailCurrencyAmount(value) {
+    return `<span class="ss-economy-detail-currency">${renderCurrencySymbol({ compact: true })}<span>${escapeHtml(formatNumber(value))}</span></span>`;
+  }
+
+  function itemDetailContextState() {
+    const context = state.itemDetailContext || {};
+    const items = Array.isArray(context.items) ? context.items : [];
+    const index = Number(context.index);
+    return { items, index: Number.isFinite(index) ? index : -1, kind: text(context.kind || "item") };
   }
 
   function renderItemDetailModalContent(item = {}, kind = "item") {
     const model = itemDetailModel(item, kind);
     const iconItem = { ...item, label: model.title, icon_path: model.icon };
+    const context = itemDetailContextState();
+    const canNavigate = context.items.length > 1;
     return `
       <div class="ss-economy-item-detail-modal" role="dialog" aria-modal="true" aria-labelledby="economy-item-detail-title" data-item-detail-modal>
         <div class="ss-economy-item-detail-dialog">
-          <button class="ss-economy-item-modal-close ss-economy-item-detail-close" type="button" aria-label="Close item detail modal" data-item-detail-close><span aria-hidden="true"></span></button>
+          <header class="ss-economy-item-detail-head">
+            <div class="ss-economy-item-detail-nav" aria-label="Item detail navigation">
+              <button class="ss-btn ss-btn-secondary" type="button" data-item-detail-previous ${!canNavigate || context.index <= 0 ? "disabled" : ""}>&lt;- Previous</button>
+              <button class="ss-btn ss-btn-secondary" type="button" data-item-detail-next ${!canNavigate || context.index >= context.items.length - 1 ? "disabled" : ""}>Next -&gt;</button>
+            </div>
+            <button class="ss-economy-item-modal-close ss-economy-item-detail-close" type="button" aria-label="Close item detail modal" data-item-detail-close><span aria-hidden="true"></span></button>
+          </header>
           <section class="ss-economy-item-detail-hero">
             ${renderItemIcon(iconItem)}
           </section>
@@ -1699,8 +1762,8 @@
             <h3 id="economy-item-detail-title">${escapeHtml(model.title)}</h3>
             <p>${escapeHtml(model.description || "No public description has been added yet.")}</p>
             ${model.details ? `<p class="ss-economy-item-detail-copy">${escapeHtml(model.details)}</p>` : ""}
-            ${model.stats.length ? `<div class="ss-economy-item-detail-stats">${model.stats.map((stat) => `<div><span>${escapeHtml(stat.label)}</span><strong>${escapeHtml(stat.value)}</strong></div>`).join("")}</div>` : ""}
-            ${model.meta.length ? `<dl class="ss-economy-item-detail-meta">${model.meta.map((row) => `<dt>${escapeHtml(row.label)}</dt><dd>${escapeHtml(row.value)}</dd>`).join("")}</dl>` : ""}
+            ${model.stats.length ? `<div class="ss-economy-item-detail-stats">${model.stats.map((stat) => `<div><span>${escapeHtml(stat.label)}</span><strong>${stat.currency ? renderItemDetailCurrencyAmount(stat.rawValue) : renderItemDetailValue(stat.value)}</strong></div>`).join("")}</div>` : ""}
+            ${model.meta.length ? `<dl class="ss-economy-item-detail-meta">${model.meta.map((row) => `<dt>${escapeHtml(row.label)}</dt><dd>${renderItemDetailValue(row.value)}</dd>`).join("")}</dl>` : ""}
           </section>
         </div>
       </div>
@@ -1713,12 +1776,18 @@
     document.body?.classList?.toggle("ss-economy-modal-open", economyOverlayOpen());
     const target = state.itemDetailReturnFocus;
     state.itemDetailReturnFocus = null;
+    state.itemDetailContext = null;
     target?.focus?.({ preventScroll: true });
   }
 
-  function openItemDetailModal(item = {}, kind = "item", sourceElement = null) {
+  function openItemDetailModal(item = {}, kind = "item", sourceElement = null, context = {}) {
     document.querySelector("[data-item-detail-modal]")?.remove();
     state.itemDetailReturnFocus = sourceElement || document.activeElement;
+    state.itemDetailContext = {
+      kind,
+      items: Array.isArray(context.items) ? context.items : [item],
+      index: Number.isFinite(Number(context.index)) ? Number(context.index) : 0
+    };
     const wrap = document.createElement("div");
     wrap.innerHTML = renderItemDetailModalContent(item, kind);
     const modal = wrap.firstElementChild;
@@ -1727,20 +1796,54 @@
     modal.querySelector("[data-item-detail-close]")?.focus?.({ preventScroll: true });
   }
 
+  function filteredInventoryDetailItems() {
+    const inventory = Array.isArray(state.detail?.inventory) ? state.detail.inventory : [];
+    const query = text(state.inventorySearch).toLowerCase();
+    if (!query) return inventory;
+    return inventory.filter((item) => {
+      const definition = item.definition || itemDefinitionFor(item.item_code) || {};
+      return [
+        item.item_code,
+        item.label,
+        definition.label,
+        definition.category,
+        definition.category_label,
+        definition.rarity
+      ].map((value) => text(value).toLowerCase()).join(" ").includes(query);
+    });
+  }
+
   function resolveItemDetailTarget(trigger) {
     const kind = text(trigger?.dataset?.itemDetailKind || "");
     const code = text(trigger?.dataset?.itemDetailCode || "");
     if (kind === "wallet") {
       const rows = Array.isArray(state.detail?.wallet?.denomination_breakdown) ? state.detail.wallet.denomination_breakdown : [];
-      return { kind, item: rows.find((item) => text(item.denomination_code || item.item_code || item.label) === code) || {} };
+      const index = rows.findIndex((item) => text(item.denomination_code || item.item_code || item.label) === code);
+      return { kind, item: rows[index] || {}, items: rows, index };
     }
     if (kind === "inventory") {
-      const rows = Array.isArray(state.detail?.inventory) ? state.detail.inventory : [];
-      return { kind, item: rows.find((item) => text(item.item_code) === code) || {} };
+      const rows = filteredInventoryDetailItems();
+      const index = rows.findIndex((item) => text(item.item_code) === code);
+      return { kind, item: rows[index] || {}, items: rows, index };
     }
-    if (kind === "market") return { kind, item: state.marketItems.find((item) => text(item.item_code) === code) || {} };
-    if (kind === "definition") return { kind, item: state.itemDefinitions.find((item) => text(item.item_code) === code) || {} };
-    return { kind: "item", item: {} };
+    if (kind === "market") {
+      const rows = pageSlice(filteredMarketItems(), state.marketPage, state.marketPageSize).items;
+      const index = rows.findIndex((item) => text(item.item_code) === code);
+      return { kind, item: rows[index] || {}, items: rows, index };
+    }
+    if (kind === "definition") {
+      const rows = pageSlice(filteredItemDefinitions(), state.itemPage, state.itemPageSize).items;
+      const index = rows.findIndex((item) => text(item.item_code) === code);
+      return { kind, item: rows[index] || {}, items: rows, index };
+    }
+    return { kind: "item", item: {}, items: [], index: -1 };
+  }
+
+  function navigateItemDetail(delta) {
+    const context = itemDetailContextState();
+    const nextIndex = context.index + delta;
+    if (nextIndex < 0 || nextIndex >= context.items.length) return;
+    openItemDetailModal(context.items[nextIndex], context.kind, state.itemDetailReturnFocus, { items: context.items, index: nextIndex });
   }
 
   function eventState(event = {}) {
@@ -4487,11 +4590,19 @@
         closeItemDetailModal();
         return;
       }
+      if (event.target.closest?.("[data-item-detail-previous]")) {
+        navigateItemDetail(-1);
+        return;
+      }
+      if (event.target.closest?.("[data-item-detail-next]")) {
+        navigateItemDetail(1);
+        return;
+      }
       const detailTrigger = event.target.closest?.("[data-item-detail-open]");
       const interactive = event.target.closest?.("button, a, input, select, textarea, [data-market-edit], .ss-inline-actions");
       if (detailTrigger && (!interactive || interactive === detailTrigger)) {
         const target = resolveItemDetailTarget(detailTrigger);
-        openItemDetailModal(target.item, target.kind, detailTrigger);
+        openItemDetailModal(target.item, target.kind, detailTrigger, { items: target.items, index: target.index });
         return;
       }
     });
@@ -4719,6 +4830,16 @@
         closeItemDetailModal();
         return;
       }
+      if (event.key === "ArrowLeft" && document.querySelector("[data-item-detail-modal]")) {
+        event.preventDefault();
+        navigateItemDetail(-1);
+        return;
+      }
+      if (event.key === "ArrowRight" && document.querySelector("[data-item-detail-modal]")) {
+        event.preventDefault();
+        navigateItemDetail(1);
+        return;
+      }
       if (event.key === "Tab" && document.querySelector("[data-item-detail-modal]")) {
         const modal = document.querySelector("[data-item-detail-modal]");
         const focusable = Array.from(modal.querySelectorAll("button, [href], [tabindex]:not([tabindex='-1'])")).filter((node) => !node.disabled && !node.hidden);
@@ -4737,7 +4858,7 @@
       if ((event.key === "Enter" || event.key === " ") && event.target?.matches?.("[data-item-detail-open]")) {
         event.preventDefault();
         const target = resolveItemDetailTarget(event.target);
-        openItemDetailModal(target.item, target.kind, event.target);
+        openItemDetailModal(target.item, target.kind, event.target, { items: target.items, index: target.index });
         return;
       }
       if (event.key === "Escape" && state.assetPicker.open) {
