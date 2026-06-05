@@ -6,6 +6,13 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Emergency redesigned the Admin Economy / Inventory Wallet & Inventory workspace again after the rejected side-by-side pass: the permanent identity selector column is replaced by a full-width command/search area and results panel above the inspector, with mobile/drawer behavior kept for the result list.
+- Wallet & Inventory Inspector now owns the main content width below identity finding, with selected identity summary, wallet KPIs, denomination chips, inventory search/view controls, and audit buttons grouped as the primary workspace.
+- Market Governance and Inventory Item Definitions now use matching management toolbar/header structure for title, subtitle, search, filters, view toggle, bulk edit action, counts, and items-per-page controls.
+- Bulk Market and Inventory Item Definition editor lightboxes now use a full-width header with eyebrow, large title, readable description, compact selected/dirty/visible-row chips, clean close placement, and the existing search/reason/table/footer workflow below.
+- Economy Ledger and Inventory Events remain secondary audit drawers opened from the inspector/page controls; they were not moved back into permanent main page flow.
+- Human note: Admin Economy / Inventory should no longer show a squeezed identity list beside the inspector, and bulk editing should open as a readable management modal instead of a squashed title/subtitle column.
+
 - Emergency bot table restore: empty-state copy now distinguishes zero configured targets from zero live workers, and the Bots page surfaces “No live workers currently running” from Runtime/Auth diagnostics while keeping configured/attached/staged rows visible.
 - Dashboard bot payload normalization now preserves backend `runtime_diagnostics` for row/count messaging without inventing active worker status or treating visible configured rows as live.
 - Human note: Admin Bots should show configured Kick and staged Twitch rows supplied by Runtime/Auth instead of collapsing to “No bots are running” when workers are down.

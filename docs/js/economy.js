@@ -705,21 +705,29 @@
     const rows = filteredBulkItems();
     const selection = bulkSelectionSet();
     const selectedDirtyCount = state.bulkEditor.selected.filter((key) => state.bulkEditor.dirty[key]).length;
+    const dirtyTotal = Object.keys(state.bulkEditor.dirty || {}).length;
+    const subtitle = type === "market"
+      ? "Edit sale status, pricing, exchange values, stock, and market labels for selected Runtime/Auth item definitions."
+      : "Edit item labels, category metadata, public copy, icons, tooltip controls, and admin notes for selected inventory definitions.";
     const header = type === "market"
       ? `<th>Sale</th><th>Price</th><th>Exchange</th><th>Value</th><th>Type/category</th><th>Stock</th><th>Limit</th><th>Availability</th><th>Market label</th><th>Short label</th>`
       : `<th>Name</th><th>Category</th><th>Rarity</th><th>Status</th><th>Tooltip</th><th>Chat alias</th><th>Icon path</th><th>Short description</th><th>Tooltip details</th><th>Public note</th><th>Admin notes</th>`;
     return `
       <div class="ss-economy-item-editor-modal ss-economy-bulk-modal" role="dialog" aria-modal="true" aria-labelledby="economy-bulk-editor-title" data-bulk-modal>
         <div class="ss-economy-item-editor-dialog ss-economy-bulk-dialog">
-          <header class="ss-economy-item-editor-head">
-            <div class="ss-economy-item-editor-title">
-              <div>
-                <span class="ss-subtitle">${type === "market" ? "Market Governance" : "Inventory Definitions"}</span>
-                <h3 id="economy-bulk-editor-title">${escapeHtml(title)}</h3>
-                <code>${formatNumber(state.bulkEditor.selected.length)} selected · ${formatNumber(selectedDirtyCount)} dirty selected rows</code>
+          <header class="ss-economy-bulk-head">
+            <div class="ss-economy-bulk-title">
+              <span class="ss-subtitle">${type === "market" ? "Market Governance" : "Inventory Definitions"}</span>
+              <h3 id="economy-bulk-editor-title">${escapeHtml(title)}</h3>
+              <p>${escapeHtml(subtitle)}</p>
+              <div class="ss-economy-bulk-chip-row">
+                <span>${formatNumber(state.bulkEditor.selected.length)} selected</span>
+                <span>${formatNumber(selectedDirtyCount)} dirty selected</span>
+                <span>${formatNumber(dirtyTotal)} dirty total</span>
+                <span>${formatNumber(rows.length)} visible rows</span>
               </div>
             </div>
-            <button class="ss-economy-item-modal-close" type="button" aria-label="Close bulk editor" data-bulk-close><span aria-hidden="true"></span></button>
+            <button class="ss-economy-item-modal-close ss-economy-bulk-close" type="button" aria-label="Close bulk editor" data-bulk-close><span aria-hidden="true"></span></button>
           </header>
           <div class="ss-economy-bulk-toolbar">
             <label>Search/filter<input id="economy-bulk-search" type="search" value="${escapeHtml(state.bulkEditor.search)}" placeholder="Item code, name, category, alias" /></label>
@@ -773,24 +781,32 @@
     const first = pageInfo.totalItems ? ((pageInfo.page - 1) * state.itemPageSize) + 1 : 0;
     const last = Math.min(pageInfo.totalItems, pageInfo.page * state.itemPageSize);
     return `
-      <div class="ss-economy-item-list-toolbar ss-economy-browser-header">
-        <div>
-          <strong>Inventory item definitions</strong>
-          <span class="muted">Showing ${formatNumber(first)}-${formatNumber(last)} of ${formatNumber(pageInfo.totalItems)}</span>
+      <div class="ss-economy-management-toolbar ss-economy-item-list-toolbar">
+        <div class="ss-economy-management-head">
+          <div>
+            <span class="ss-subtitle">Inventory definitions</span>
+            <strong>Item Definitions</strong>
+            <span class="muted">Metadata, categories, icons, rarity, enabled state, and public-safe notes.</span>
+          </div>
+          <span class="ss-economy-management-count">Showing ${formatNumber(first)}-${formatNumber(last)} of ${formatNumber(pageInfo.totalItems)}</span>
         </div>
-        <label class="ss-economy-wide">
-          Search inventory
-          <input id="economy-item-search" type="search" value="${escapeHtml(state.itemSearch)}" placeholder="Item code, name, category, rarity" />
-        </label>
-        <div class="ss-economy-view-toggle" aria-label="Inventory browser view">
-          <button class="ss-btn ss-btn-secondary ${state.itemViewMode === "cards" ? "is-active" : ""}" type="button" data-item-view="cards" aria-pressed="${state.itemViewMode === "cards"}">Card Grid</button>
-          <button class="ss-btn ss-btn-secondary ${state.itemViewMode === "list" ? "is-active" : ""}" type="button" data-item-view="list" aria-pressed="${state.itemViewMode === "list"}">List</button>
+        <div class="ss-economy-management-search">
+          <label>
+            Search inventory
+            <input id="economy-item-search" type="search" value="${escapeHtml(state.itemSearch)}" placeholder="Item code, name, category, rarity" />
+          </label>
         </div>
-        <button class="ss-btn ss-btn-secondary" type="button" data-bulk-open="inventory">Bulk edit items</button>
-        <label class="ss-economy-item-page-size">
-          Items per page
-          <select id="economy-item-page-size">${itemPageSizeOptions()}</select>
-        </label>
+        <div class="ss-economy-management-controls">
+          <div class="ss-economy-view-toggle" aria-label="Inventory browser view">
+            <button class="ss-btn ss-btn-secondary ${state.itemViewMode === "cards" ? "is-active" : ""}" type="button" data-item-view="cards" aria-pressed="${state.itemViewMode === "cards"}">Card Grid</button>
+            <button class="ss-btn ss-btn-secondary ${state.itemViewMode === "list" ? "is-active" : ""}" type="button" data-item-view="list" aria-pressed="${state.itemViewMode === "list"}">List</button>
+          </div>
+          <button class="ss-btn ss-btn-secondary" type="button" data-bulk-open="inventory">Bulk edit items</button>
+          <label class="ss-economy-item-page-size">
+            Items per page
+            <select id="economy-item-page-size">${itemPageSizeOptions()}</select>
+          </label>
+        </div>
       </div>
     `;
   }
@@ -1535,7 +1551,7 @@
     if (!el.identitiesList) return;
     el.identityCount.textContent = formatNumber(state.identities.length);
     el.identitiesEmpty?.classList.toggle("hidden", state.identities.length > 0);
-    const workspace = document.querySelector(".ss-economy-master-detail");
+    const workspace = document.querySelector(".ss-economy-identity-finder");
     workspace?.classList.toggle("is-selector-open", Boolean(state.identitySelectorOpen));
     const pageInfo = pageSlice(state.identities, state.identityPage, state.identityPageSize);
     state.identityPage = pageInfo.page;
@@ -1544,11 +1560,12 @@
     el.identitiesList.innerHTML = `
       <div class="ss-economy-identity-selector-head">
         <div>
-          <strong>Identity selector</strong>
-          <span class="muted">Showing ${formatNumber(first)}-${formatNumber(last)} of ${formatNumber(pageInfo.totalItems)}</span>
+          <span class="ss-subtitle">Results</span>
+          <strong>Identity results</strong>
+          <span class="muted">${formatNumber(first)}-${formatNumber(last)} of ${formatNumber(pageInfo.totalItems)} identities</span>
         </div>
         <button class="ss-btn ss-btn-secondary ss-economy-selector-close" type="button" data-identity-selector-close>Close</button>
-        <label>Result page size<select id="economy-identity-page-size">${identityPageSizeOptions()}</select></label>
+        <label>Page size<select id="economy-identity-page-size">${identityPageSizeOptions()}</select></label>
       </div>
     ` + pageInfo.items
       .map((entry) => {
@@ -2332,17 +2349,26 @@
       state.marketFilters.disabled ? "disabled/off sale" : ""
     ].filter(Boolean).join(", ");
     el.marketGovernance.innerHTML = `
-      <div class="ss-economy-market-toolbar">
-        <label class="ss-economy-wide">Search items<input id="economy-market-search" type="search" value="${escapeHtml(state.marketSearch)}" placeholder="Item code, display name, or type" /></label>
+      <div class="ss-economy-management-toolbar ss-economy-market-toolbar">
+        <div class="ss-economy-management-head">
+          <div>
+            <span class="ss-subtitle">Market authority</span>
+            <strong>Market Governance</strong>
+            <span class="muted">Sale status, Stekel prices, exchange values, type/category, and stock metadata.</span>
+          </div>
+          <span class="ss-economy-management-count">${formatNumber(rows.length)} of ${formatNumber(state.marketItems.length)} items${filterSummary ? ` · ${escapeHtml(filterSummary)}` : ""}</span>
+        </div>
+        <div class="ss-economy-management-search">
+          <label>Search items<input id="economy-market-search" type="search" value="${escapeHtml(state.marketSearch)}" placeholder="Item code, display name, or type" /></label>
+        </div>
         <div class="ss-economy-market-filter-row">
           <div class="ss-economy-market-filter-group" aria-label="Market filters">
             <label class="ss-economy-market-filter ss-checkbox-wrapper"><input id="economy-market-filter-purchasable" type="checkbox" ${state.marketFilters.purchasable ? "checked" : ""} /><div class="ss-checkbox"></div><span class="ss-checkbox-text">On sale</span></label>
             <label class="ss-economy-market-filter ss-checkbox-wrapper"><input id="economy-market-filter-exchangeable" type="checkbox" ${state.marketFilters.exchangeable ? "checked" : ""} /><div class="ss-checkbox"></div><span class="ss-checkbox-text">Exchangeable</span></label>
             <label class="ss-economy-market-filter ss-checkbox-wrapper"><input id="economy-market-filter-disabled" type="checkbox" ${state.marketFilters.disabled ? "checked" : ""} /><div class="ss-checkbox"></div><span class="ss-checkbox-text">Disabled</span></label>
           </div>
-          <span class="muted ss-economy-market-count">${formatNumber(rows.length)} of ${formatNumber(state.marketItems.length)} items${filterSummary ? ` · ${escapeHtml(filterSummary)}` : ""}</span>
         </div>
-        <div class="ss-economy-browser-controls">
+        <div class="ss-economy-management-controls ss-economy-browser-controls">
           <div class="ss-economy-view-toggle" aria-label="Market Governance browser view">
             <button class="ss-btn ss-btn-secondary ${state.marketViewMode === "cards" ? "is-active" : ""}" type="button" data-market-view="cards" aria-pressed="${state.marketViewMode === "cards"}">Card Grid</button>
             <button class="ss-btn ss-btn-secondary ${state.marketViewMode === "list" ? "is-active" : ""}" type="button" data-market-view="list" aria-pressed="${state.marketViewMode === "list"}">List</button>

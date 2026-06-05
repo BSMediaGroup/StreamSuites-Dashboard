@@ -25,13 +25,6 @@
       </div>
     </header>
     <div class="ss-panel-body ss-admin-collapsible-body" id="economy-overview-panel">
-      <div class="ss-economy-search-row">
-        <div class="ss-form-row">
-          <label for="economy-search-input">Identity, account, user code, or display name</label>
-          <input id="economy-search-input" type="search" placeholder="Search public economy identities" />
-        </div>
-        <button id="economy-search-submit" class="ss-btn" type="button">Search</button>
-      </div>
       <div class="ss-meta-row">
         <div><strong>Scope:</strong> global public identities</div>
         <div><strong>Identities:</strong> <span id="economy-identity-count">--</span></div>
@@ -92,19 +85,40 @@
         </div>
       </header>
       <div class="ss-panel-body ss-admin-collapsible-body" id="economy-identity-search-panel">
-        <div class="ss-economy-master-detail">
-          <div class="ss-economy-master-pane">
+        <div class="ss-economy-identity-command">
+          <div class="ss-economy-command-copy">
+            <span class="ss-subtitle">Identity finder</span>
+            <strong>Find an account, public identity, or user code</strong>
+            <span class="muted">Search visible name, user code, public identity, account UUID, and Runtime/Auth identifiers before inspecting wallet and inventory state.</span>
+          </div>
+          <div class="ss-economy-command-search">
+            <label for="economy-search-input">Search identities</label>
+            <div class="ss-economy-command-input-row">
+              <input id="economy-search-input" type="search" placeholder="Display name, user code, public identity, account UUID, or identifier" autocomplete="off" />
+              <button id="economy-search-submit" class="ss-btn" type="button">Search</button>
+            </div>
+          </div>
+        </div>
+        <div class="ss-economy-identity-finder">
+          <div class="ss-economy-identity-results-panel">
             <div id="economy-identities-list" class="ss-economy-list"></div>
             <div id="economy-identities-empty" class="ss-empty hidden">No public economy identities match the current search.</div>
           </div>
-          <div class="ss-economy-detail-pane ss-economy-combined-inspector" id="economy-wallet-inventory-section">
-            <h3>WALLET &amp; INVENTORY INSPECTOR</h3>
-            <p class="muted" style="margin:0 0 10px;">
-              Wallet totals and held items are read from the authoritative identity summary.
-            </p>
-            <div id="economy-wallet-inspector" class="ss-economy-inspector ss-empty">
-              Select an identity to inspect wallet and inventory state.
+        </div>
+        <div class="ss-economy-combined-inspector" id="economy-wallet-inventory-section">
+          <div class="ss-economy-inspector-shell-head">
+            <div>
+              <span class="ss-subtitle">Primary workspace</span>
+              <h3>Wallet &amp; Inventory Inspector</h3>
+              <p class="muted">Wallet totals and held items are read from the authoritative identity summary.</p>
             </div>
+            <div class="ss-inline-actions">
+              <button class="ss-btn ss-btn-secondary" type="button" data-audit-drawer-open="ledger">Ledger</button>
+              <button class="ss-btn ss-btn-secondary" type="button" data-audit-drawer-open="inventory-events">Inventory Events</button>
+            </div>
+          </div>
+          <div id="economy-wallet-inspector" class="ss-economy-inspector ss-empty">
+            Select an identity to inspect wallet and inventory state.
           </div>
         </div>
       </div>
