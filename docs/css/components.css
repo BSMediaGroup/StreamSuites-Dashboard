@@ -7024,7 +7024,7 @@ body.ss-col-resizing-active {
   min-width: 0;
   border: 1px solid rgba(132, 184, 255, 0.16);
   border-radius: 14px;
-  background: rgba(5, 12, 24, 0.66);
+  background: rgb(5, 12, 24);
   padding: 12px;
 }
 
@@ -7079,7 +7079,15 @@ body.ss-col-resizing-active {
   border-color: rgba(255, 210, 110, 0.24);
   background:
     linear-gradient(135deg, rgba(255, 210, 110, 0.08), rgba(42, 98, 160, 0.09)),
-    rgba(8, 16, 31, 0.76);
+    rgb(8, 16, 31);
+}
+
+.ss-economy-combined-inspector.is-selection-highlighted {
+  border-color: rgba(255, 210, 110, 0.58);
+  box-shadow:
+    0 0 0 2px rgba(255, 210, 110, 0.16),
+    0 22px 54px rgba(0, 0, 0, 0.28);
+  outline: 0;
 }
 
 .ss-economy-selected-identity-summary .ss-economy-avatar {
@@ -7142,9 +7150,7 @@ body.ss-col-resizing-active {
   margin: 0;
   border-radius: 0;
   border-width: 0 0 0 1px;
-  background:
-    linear-gradient(180deg, rgba(20, 36, 58, 0.98), rgba(7, 12, 22, 0.98)),
-    var(--surface-panel);
+  background: rgb(7, 12, 22);
   box-shadow: -28px 0 70px rgba(0, 0, 0, 0.42);
   transform: translateX(105%);
   transition: transform 180ms ease;
@@ -7514,6 +7520,24 @@ body.ss-col-resizing-active {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.ss-economy-management-controls-left,
+.ss-economy-management-controls-right {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ss-economy-management-controls-left {
+  justify-content: flex-start;
+}
+
+.ss-economy-management-controls-right {
+  justify-content: flex-end;
+  margin-left: auto;
 }
 
 .ss-economy-market-list {
@@ -8277,6 +8301,13 @@ body.ss-col-resizing-active {
   flex-direction: column;
   gap: 3px;
   min-width: 0;
+}
+
+.ss-economy-item-list-toolbar > .ss-economy-management-controls {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .ss-economy-item-list-toolbar > label.ss-economy-wide,
@@ -9222,6 +9253,18 @@ body.ss-col-resizing-active {
   .ss-economy-market-filter-row {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .ss-economy-management-controls,
+  .ss-economy-management-controls-left,
+  .ss-economy-management-controls-right {
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .ss-economy-management-controls-right {
+    justify-content: flex-start;
+    margin-left: 0;
   }
 
   .ss-economy-market-count {

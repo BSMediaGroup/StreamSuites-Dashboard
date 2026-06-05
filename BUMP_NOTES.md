@@ -6,6 +6,12 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Corrected the rejected Admin `/economy` management polish pass without changing Runtime/Auth authority. Market Governance now keeps Bulk edit market in the right-side control group beside Items per page, while Item Definitions uses the same management header/search/control structure and keeps search, pagination, view toggle, create, individual editor, and bulk editor behavior intact.
+- Fixed the dashboard stale snapshot warning regression by making snapshot health source-aware: connected/runtime-polled and successful admin API-hydrated views clear the global static snapshot warning, while genuinely stale static snapshot fallbacks can still show it.
+- Economy Ledger, Inventory Events, and the mobile identity finder drawer now use fully opaque dark panel backgrounds. Drawer headers expose only a close action, while normal in-page section Collapse controls remain available.
+- Selecting an identity result now closes the selector drawer state, loads the existing Wallet & Inventory detail, scrolls to the inspector, focuses it, and briefly highlights the selected workspace so the operator can see the selection took effect.
+- Human note: Admin Economy / Inventory should now show aligned management controls, readable solid side drawers with close-only headers, truthful snapshot freshness messaging after live API hydration, and obvious inspector feedback after identity selection.
+
 - Emergency redesigned the Admin Economy / Inventory Wallet & Inventory workspace again after the rejected side-by-side pass: the permanent identity selector column is replaced by a full-width command/search area and results panel above the inspector, with mobile/drawer behavior kept for the result list.
 - Wallet & Inventory Inspector now owns the main content width below identity finding, with selected identity summary, wallet KPIs, denomination chips, inventory search/view controls, and audit buttons grouped as the primary workspace.
 - Market Governance and Inventory Item Definitions now use matching management toolbar/header structure for title, subtitle, search, filters, view toggle, bulk edit action, counts, and items-per-page controls.

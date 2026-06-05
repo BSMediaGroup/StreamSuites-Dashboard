@@ -77,12 +77,12 @@
     return snapshotHealthModule.promise;
   }
 
-  async function reportSnapshotHealth(rawSnapshot) {
+  async function reportSnapshotHealth(rawSnapshot, context = {}) {
     const module = await getSnapshotHealthModule();
     if (!module || typeof module.evaluateSnapshotHealth !== "function") return;
 
     try {
-      const health = module.evaluateSnapshotHealth(rawSnapshot);
+      const health = module.evaluateSnapshotHealth(rawSnapshot, context);
       const render =
         module.renderSnapshotHealthBanner || module.renderSnapshotWarning || (() => {});
       render(health);
@@ -720,6 +720,7 @@
       const hasTriggers = polled?.triggers;
       if (polled && (hasPlatforms || hasTriggers)) {
         cache.runtimeSnapshot = { ...polled, source: "connected" };
+        await reportSnapshotHealth(cache.runtimeSnapshot, { source: "connected" });
         return deepClone(cache.runtimeSnapshot);
       }
     }
@@ -735,6 +736,7 @@
       const hasTriggers = refreshed?.triggers;
       if (refreshed && (hasPlatforms || hasTriggers)) {
         cache.runtimeSnapshot = { ...refreshed, source: "connected" };
+        await reportSnapshotHealth(cache.runtimeSnapshot, { source: "connected" });
         return deepClone(cache.runtimeSnapshot);
       }
     }
@@ -742,7 +744,7 @@
     const sharedRaw = await loadStateJson("runtime_snapshot.json", {
       loaderReason: "Hydrating runtime snapshot..."
     });
-    await reportSnapshotHealth(sharedRaw);
+    await reportSnapshotHealth(sharedRaw, { source: "static" });
 
     const shared = normalizeRuntimeSnapshot(sharedRaw);
 

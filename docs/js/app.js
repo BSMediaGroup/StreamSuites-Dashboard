@@ -957,6 +957,7 @@ function registerView(name, config) {
     onLoad: config.onLoad || (() => {}),
     onUnload: config.onUnload || (() => {}),
     onModeChange: config.onModeChange || null,
+    dataSource: config.dataSource || "",
     containerId: config.containerId || "view-container",
     templatePath: config.templatePath || name
   };
@@ -1338,6 +1339,22 @@ function broadcastViewHydrationState() {
     );
   } catch (err) {
     console.warn("[Dashboard] View hydration event dispatch failed", err);
+  }
+}
+
+function broadcastAdminLiveData(viewName, source = "api") {
+  try {
+    window.dispatchEvent(
+      new CustomEvent("streamsuites:admin-live-data", {
+        detail: {
+          view: viewName || App.currentView || "",
+          source,
+          ok: true
+        }
+      })
+    );
+  } catch (err) {
+    console.warn("[Dashboard] Admin live-data event dispatch failed", err);
   }
 }
 
@@ -1858,6 +1875,9 @@ async function loadView(name, options = {}) {
       const result = view.onLoad(App.mode);
       if (result && typeof result.then === "function") {
         await result;
+      }
+      if (view.dataSource === "api") {
+        broadcastAdminLiveData(name, "api");
       }
     } catch (e) {
       console.error(`[Dashboard] View load error (${name})`, e);
@@ -2775,6 +2795,7 @@ registerView("progression", {
 });
 registerView("economy", {
   templatePath: "economy",
+  dataSource: "api",
   onLoad: () => window.EconomyInventoryAdminView?.init?.(),
   onUnload: () => window.EconomyInventoryAdminView?.destroy?.()
 });

@@ -797,15 +797,19 @@
           </label>
         </div>
         <div class="ss-economy-management-controls">
-          <div class="ss-economy-view-toggle" aria-label="Inventory browser view">
-            <button class="ss-btn ss-btn-secondary ${state.itemViewMode === "cards" ? "is-active" : ""}" type="button" data-item-view="cards" aria-pressed="${state.itemViewMode === "cards"}">Card Grid</button>
-            <button class="ss-btn ss-btn-secondary ${state.itemViewMode === "list" ? "is-active" : ""}" type="button" data-item-view="list" aria-pressed="${state.itemViewMode === "list"}">List</button>
+          <div class="ss-economy-management-controls-left">
+            <div class="ss-economy-view-toggle" aria-label="Inventory browser view">
+              <button class="ss-btn ss-btn-secondary ${state.itemViewMode === "cards" ? "is-active" : ""}" type="button" data-item-view="cards" aria-pressed="${state.itemViewMode === "cards"}">Card Grid</button>
+              <button class="ss-btn ss-btn-secondary ${state.itemViewMode === "list" ? "is-active" : ""}" type="button" data-item-view="list" aria-pressed="${state.itemViewMode === "list"}">List</button>
+            </div>
           </div>
-          <button class="ss-btn ss-btn-secondary" type="button" data-bulk-open="inventory">Bulk edit items</button>
-          <label class="ss-economy-item-page-size">
-            Items per page
-            <select id="economy-item-page-size">${itemPageSizeOptions()}</select>
-          </label>
+          <div class="ss-economy-management-controls-right">
+            <button class="ss-btn ss-btn-secondary" type="button" data-bulk-open="inventory">Bulk edit items</button>
+            <label class="ss-economy-item-page-size">
+              Items per page
+              <select id="economy-item-page-size">${itemPageSizeOptions()}</select>
+            </label>
+          </div>
         </div>
       </div>
     `;
@@ -2369,12 +2373,16 @@
           </div>
         </div>
         <div class="ss-economy-management-controls ss-economy-browser-controls">
-          <div class="ss-economy-view-toggle" aria-label="Market Governance browser view">
-            <button class="ss-btn ss-btn-secondary ${state.marketViewMode === "cards" ? "is-active" : ""}" type="button" data-market-view="cards" aria-pressed="${state.marketViewMode === "cards"}">Card Grid</button>
-            <button class="ss-btn ss-btn-secondary ${state.marketViewMode === "list" ? "is-active" : ""}" type="button" data-market-view="list" aria-pressed="${state.marketViewMode === "list"}">List</button>
+          <div class="ss-economy-management-controls-left">
+            <div class="ss-economy-view-toggle" aria-label="Market Governance browser view">
+              <button class="ss-btn ss-btn-secondary ${state.marketViewMode === "cards" ? "is-active" : ""}" type="button" data-market-view="cards" aria-pressed="${state.marketViewMode === "cards"}">Card Grid</button>
+              <button class="ss-btn ss-btn-secondary ${state.marketViewMode === "list" ? "is-active" : ""}" type="button" data-market-view="list" aria-pressed="${state.marketViewMode === "list"}">List</button>
+            </div>
           </div>
-          <button class="ss-btn ss-btn-secondary" type="button" data-bulk-open="market">Bulk edit market</button>
-          <label class="ss-economy-item-page-size">Items per page<select id="economy-market-page-size">${marketPageSizeOptions()}</select></label>
+          <div class="ss-economy-management-controls-right">
+            <button class="ss-btn ss-btn-secondary" type="button" data-bulk-open="market">Bulk edit market</button>
+            <label class="ss-economy-item-page-size">Items per page<select id="economy-market-page-size">${marketPageSizeOptions()}</select></label>
+          </div>
         </div>
       </div>
       <div class="ss-economy-market-list ${state.marketViewMode === "cards" ? "ss-economy-card-grid" : "ss-economy-list-view"}">
@@ -3210,10 +3218,36 @@
       }
       if (token !== state.token) return;
       renderAll();
+      announceApiHydration();
       setStatus(options.silent ? "" : "Economy controls loaded.", "success");
     } catch (err) {
       setStatus(err?.message || "Failed to load economy controls.", "error");
     }
+  }
+
+  function announceApiHydration() {
+    try {
+      window.dispatchEvent(new CustomEvent("streamsuites:admin-live-data", {
+        detail: { view: "economy", source: "api", ok: true }
+      }));
+    } catch (err) {
+      console.warn("[EconomyAdmin] API hydration event failed", err);
+    }
+  }
+
+  function highlightInspectorSelection() {
+    const inspector = document.getElementById("economy-wallet-inventory-section");
+    if (!inspector) return;
+    inspector.classList.remove("is-selection-highlighted");
+    inspector.setAttribute("tabindex", "-1");
+    inspector.scrollIntoView({ behavior: "smooth", block: "start" });
+    requestAnimationFrame(() => {
+      inspector.focus?.({ preventScroll: true });
+      inspector.classList.add("is-selection-highlighted");
+      window.setTimeout(() => {
+        inspector.classList.remove("is-selection-highlighted");
+      }, 1600);
+    });
   }
 
   async function applyEconomyAction() {
@@ -3909,6 +3943,7 @@
         state.identitySelectorOpen = false;
         await loadDetail(state.selectedIdentityCode);
         renderAll();
+        highlightInspectorSelection();
         return;
       }
       const collapseButton = event.target.closest?.("[data-collapse-target]");

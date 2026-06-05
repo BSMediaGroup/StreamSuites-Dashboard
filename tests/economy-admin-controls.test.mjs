@@ -24,6 +24,9 @@ test("economy admin route is registered and loaded by the dashboard shell", () =
   assert.match(pagesFunction, /"\/inventory"/);
   assert.match(docsPagesFunction, /"\/economy"/);
   assert.match(app, /registerView\("economy"/);
+  assert.match(app, /registerView\("economy",\s*\{[\s\S]*dataSource:\s*"api"/);
+  assert.match(app, /dataSource:\s*config\.dataSource \|\| ""/);
+  assert.match(app, /function broadcastAdminLiveData\(viewName, source = "api"\)/);
   assert.match(app, /window\.EconomyInventoryAdminView\?\.init\?\.\(\)/);
   assert.match(app, /economy:\s*"\/assets\/icons\/economy\.svg"/);
   assert.match(root, /data-view="economy">Economy \/ Inventory/);
@@ -61,7 +64,7 @@ test("economy view exposes required control sections and boundary copy", () => {
   assert.doesNotMatch(html, /ss-economy-master-detail/);
   assert.doesNotMatch(html, /ss-economy-master-pane/);
   assert.doesNotMatch(html, /ss-economy-detail-pane/);
-  assert.match(html, /data-collapse-target="economy-ledger"/);
+  assert.match(html, /data-collapsible-section="economy-ledger"/);
   assert.match(html, /data-collapse-target="economy-actions"/);
   assert.match(html, /data-collapse-target="inventory-actions"/);
   assert.match(html, /data-collapse-target="economy-overview"/);
@@ -82,6 +85,10 @@ test("economy view exposes required control sections and boundary copy", () => {
   assert.match(html, /id="economy-ledger-section"/);
   assert.match(html, /data-audit-drawer="ledger"/);
   assert.match(html, /data-audit-drawer="inventory-events"/);
+  assert.match(html, /aria-label="Close Economy Ledger drawer"/);
+  assert.match(html, /aria-label="Close Inventory Events drawer"/);
+  assert.doesNotMatch(html, /data-collapse-target="economy-ledger" aria-expanded="true">Collapse/);
+  assert.doesNotMatch(html, /data-collapse-target="inventory-events" aria-expanded="true">Collapse/);
   assert.match(html, /data-audit-drawer-open="ledger"/);
   assert.match(html, /data-identity-selector-open/);
   assert.match(html, /id="economy-actions-section"/);
@@ -281,6 +288,8 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /ss-economy-management-head/);
   assert.match(js, /ss-economy-management-search/);
   assert.match(js, /ss-economy-management-controls/);
+  assert.match(js, /ss-economy-management-controls-left/);
+  assert.match(js, /ss-economy-management-controls-right/);
   assert.match(js, /function renderMarketGovernanceModal\(\)/);
   assert.match(js, /ss-economy-market-modal/);
   assert.match(js, /ss-economy-market-editor-modal-body/);
@@ -305,12 +314,20 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.match(js, /function applyBulkEditor\(\)/);
   assert.match(js, /data-bulk-open="market"/);
   assert.match(js, /data-bulk-open="inventory"/);
+  assert.match(js, /data-bulk-open="market"[\s\S]*economy-market-page-size/);
+  assert.match(js, /data-bulk-open="inventory"[\s\S]*economy-item-page-size/);
   assert.match(js, /await requestJson\(MARKET_GOVERNANCE_ITEM\(key\)/);
   assert.match(js, /await requestJson\(ITEM_DEFINITION\(key\)/);
   assert.match(js, /window\.confirm\?\.\(`Apply \$\{dirtySelected\.length\}/);
   assert.match(js, /data-audit-drawer-open="ledger"/);
   assert.match(js, /state\.auditDrawer = text\(auditOpenButton\.dataset\.auditDrawerOpen\)/);
   assert.match(js, /streamsuites:economy-audit-drawer/);
+  assert.match(js, /function announceApiHydration\(\)/);
+  assert.match(js, /streamsuites:admin-live-data/);
+  assert.match(js, /function highlightInspectorSelection\(\)/);
+  assert.match(js, /economy-wallet-inventory-section/);
+  assert.match(js, /scrollIntoView\(\{ behavior: "smooth", block: "start" \}\)/);
+  assert.match(js, /is-selection-highlighted/);
   assert.match(js, /id="economy-item-search"/);
   assert.match(js, /data-item-view="cards"/);
   assert.match(js, /data-item-view="list"/);
@@ -529,12 +546,12 @@ test("economy collapsible sections default expanded", () => {
   assert.match(html, /data-collapse-target="economy-denominations" aria-expanded="true">Collapse/);
   assert.match(html, /data-collapse-target="economy-identity-search" aria-expanded="true">Collapse/);
   assert.match(html, /data-collapse-target="economy-participation-exclusions" aria-expanded="true">Collapse/);
-  assert.match(html, /data-collapse-target="economy-ledger" aria-expanded="true">Collapse/);
+  assert.doesNotMatch(html, /data-collapse-target="economy-ledger" aria-expanded="true">Collapse/);
   assert.match(html, /data-collapse-target="economy-actions" aria-expanded="true">Collapse/);
   assert.doesNotMatch(html, /data-collapse-target="economy-inventory" aria-expanded="true">Collapse/);
   assert.match(html, /data-collapse-target="inventory-actions" aria-expanded="true">Collapse/);
   assert.match(html, /data-collapse-target="economy-exchange" aria-expanded="true">Collapse/);
-  assert.match(html, /data-collapse-target="inventory-events" aria-expanded="true">Collapse/);
+  assert.doesNotMatch(html, /data-collapse-target="inventory-events" aria-expanded="true">Collapse/);
   assert.match(html, /data-collapse-target="economy-market-governance" aria-expanded="true">Collapse/);
   assert.match(html, /data-collapse-target="economy-item-definitions" aria-expanded="true">Collapse/);
   assert.match(html, /data-collapse-target="economy-danger-zone" aria-expanded="true">Collapse/);
@@ -566,7 +583,22 @@ test("economy route uses the shared top-bar section anchor row", () => {
   assert.match(app, /data-accounts-shell-anchor="\$\{section\.id\}"/);
   assert.match(app, /scrollToAccountsShellSection\(sectionId\)/);
   assert.match(app, /streamsuites:economy-audit-drawer/);
+  assert.match(app, /streamsuites:admin-live-data/);
   assert.match(app, /if \(!resolveSectionShellConfig\(App\.currentView\)\) return;/);
+});
+
+test("snapshot warning stays source-aware for API hydrated admin views", () => {
+  const state = read("docs/js/state.js");
+  const health = read("docs/js/utils/snapshot-health.js");
+
+  assert.match(health, /function isLiveDataSource\(context = \{\}\)/);
+  assert.match(health, /export function evaluateSnapshotHealth\(snapshot, context = \{\}\)/);
+  assert.match(health, /source === "api"/);
+  assert.match(health, /export function clearSnapshotHealthBanner\(\)/);
+  assert.match(health, /streamsuites:admin-live-data/);
+  assert.match(state, /evaluateSnapshotHealth\(rawSnapshot, context\)/);
+  assert.match(state, /reportSnapshotHealth\(cache\.runtimeSnapshot, \{ source: "connected" \}\)/);
+  assert.match(state, /reportSnapshotHealth\(sharedRaw, \{ source: "static" \}\)/);
 });
 
 test("economy styling includes compact identity rows and currency/denomination treatments", () => {
@@ -625,6 +657,9 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.doesNotMatch(css, /\.ss-economy-detail-pane\s*\{/);
   assert.match(css, /\.ss-economy-identity-finder\.is-selector-open \.ss-economy-identity-results-panel\s*\{[\s\S]*transform:\s*translateX\(0\)/);
   assert.match(css, /\.ss-economy-audit-drawer\s*\{[\s\S]*position:\s*fixed[\s\S]*transform:\s*translateX\(105%\)/);
+  assert.match(css, /\.ss-economy-audit-drawer\s*\{[\s\S]*background:\s*rgb\(7,\s*12,\s*22\)/);
+  assert.match(css, /\.ss-economy-identity-results-panel\s*\{[\s\S]*rgb\(5,\s*12,\s*24\)/);
+  assert.match(css, /\.ss-economy-combined-inspector\.is-selection-highlighted/);
   assert.match(css, /\.ss-economy-audit-drawer\.is-open\s*\{[\s\S]*transform:\s*translateX\(0\)/);
   assert.match(css, /\.ss-economy-bulk-dialog\s*\{[\s\S]*width:\s*min\(1480px,\s*100%\)/);
   assert.match(css, /\.ss-economy-bulk-head\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto/);
@@ -644,6 +679,7 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-management-head\s*\{/);
   assert.match(css, /\.ss-economy-management-search label\s*\{/);
   assert.match(css, /\.ss-economy-management-controls\s*\{/);
+  assert.match(css, /\.ss-economy-management-controls-left,\s*\.ss-economy-management-controls-right\s*\{/);
   assert.match(css, /\.ss-economy-item-page-size select\s*\{[\s\S]*min-width:\s*82px/);
   assert.match(css, /\.ss-economy-view-toggle\s*\{[\s\S]*flex-wrap:\s*nowrap/);
   assert.match(css, /\.ss-economy-view-toggle \.ss-btn\s*\{[\s\S]*white-space:\s*nowrap/);
