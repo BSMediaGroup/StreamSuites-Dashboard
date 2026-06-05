@@ -1639,37 +1639,138 @@
     return text(value);
   }
 
-  function normalizeItemDetailTags(value) {
-    if (value === undefined || value === null) return [];
-    const rawEntries = Array.isArray(value) ? value : [value];
+  function formatItemDetailTagToken(raw) {
+    let token = text(raw).replace(/^#+/, "").trim();
+    if (!token) return "";
+    if (/^[a-z0-9][a-z0-9 _-]*$/i.test(token)) return token.toLowerCase();
+    return token;
+  }
+
+  function extractItemDetailTagToken(entry) {
+    if (entry === undefined || entry === null) return "";
+    if (typeof entry === "string" || typeof entry === "number" || typeof entry === "boolean") {
+      return formatItemDetailTagToken(entry);
+    }
+    if (typeof entry === "object") {
+      const candidate = firstPresent(
+        entry.label,
+        entry.name,
+        entry.value,
+        entry.code,
+        entry.tag,
+        entry.text,
+        entry.alias,
+        entry.keyword,
+        entry.hashtag
+      );
+      return formatItemDetailTagToken(candidate);
+    }
+    return "";
+  }
+
+  function collectEconomyItemDetailTagSources(item = {}, definition = {}, metadata = {}) {
+    const publicCopy = item.public_copy && typeof item.public_copy === "object" ? item.public_copy : {};
+    return [
+      item.tags,
+      item.tag,
+      item.hashtags,
+      item.keywords,
+      item.aliases,
+      item.search_tags,
+      item.searchTags,
+      item.item_tags,
+      item.itemTags,
+      item.attributes,
+      item.chips,
+      metadata.tags,
+      metadata.tag,
+      metadata.hashtags,
+      metadata.keywords,
+      metadata.aliases,
+      metadata.search_tags,
+      metadata.searchTags,
+      metadata.item_tags,
+      metadata.itemTags,
+      definition.tags,
+      definition.tag,
+      definition.hashtags,
+      definition.keywords,
+      definition.aliases,
+      definition.search_tags,
+      definition.searchTags,
+      definition.item_tags,
+      definition.itemTags,
+      publicCopy.tags,
+      publicCopy.tag,
+      publicCopy.search_tags,
+      publicCopy.searchTags,
+      publicCopy.aliases,
+      item.chat_alias,
+      item.chatAlias,
+      definition.chat_alias,
+      definition.chatAlias,
+      metadata.chat_alias,
+      metadata.chatAlias
+    ];
+  }
+
+  function normalizeItemDetailTags(...sources) {
     const tags = [];
-    rawEntries.forEach((entry) => {
-      if (entry === undefined || entry === null) return;
-      if (typeof entry === "string") {
-        entry.split(/[,;|]/).forEach((part) => {
-          const tag = text(part);
-          if (tag) tags.push(tag);
-        });
+    const seen = new Set();
+    const pushToken = (raw) => {
+      const token = formatItemDetailTagToken(raw);
+      if (!token) return;
+      const key = token.toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      tags.push(token);
+    };
+    const visit = (value) => {
+      if (value === undefined || value === null) return;
+      if (Array.isArray(value)) {
+        value.forEach(visit);
         return;
       }
-      if (typeof entry === "number" || typeof entry === "boolean") {
-        const tag = text(entry);
-        if (tag) tags.push(tag);
+      if (typeof value === "object") {
+        const shapedToken = extractItemDetailTagToken(value);
+        const hasTagShape = shapedToken && (
+          value.label !== undefined ||
+          value.name !== undefined ||
+          value.tag !== undefined ||
+          value.hashtag !== undefined ||
+          value.alias !== undefined ||
+          value.keyword !== undefined ||
+          (value.value !== undefined && (typeof value.value === "string" || typeof value.value === "number"))
+        );
+        if (hasTagShape) {
+          pushToken(shapedToken);
+          return;
+        }
+        const values = Object.values(value);
+        if (values.length && values.every((entry) => (
+          typeof entry === "string" ||
+          typeof entry === "number" ||
+          typeof entry === "boolean" ||
+          (entry && typeof entry === "object" && (entry.label !== undefined || entry.name !== undefined || entry.tag !== undefined))
+        ))) {
+          values.forEach(visit);
+        }
+        return;
       }
-    });
-    const seen = new Set();
-    return tags.filter((tag) => {
-      const key = tag.toLowerCase();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
+      text(value)
+        .split(/[,;|]/)
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .forEach(pushToken);
+    };
+    sources.forEach(visit);
+    return tags;
   }
 
   function economyItemTagChipLabel(tag = "") {
-    const normalized = text(tag);
+    const normalized = formatItemDetailTagToken(tag);
     if (!normalized) return "";
-    return normalized.startsWith("#") ? normalized : `#${normalized}`;
+    return `#${normalized}`;
   }
 
   function renderItemDetailTagChips(tags = []) {
@@ -1746,11 +1847,6 @@
     addStat("Stock", item.unlimited_stock ? "Unlimited" : firstPresent(item.stock, item.stock_limit, item.max_quantity, item.purchase_limit));
     const meta = [];
     const addMeta = (label, value, options = {}) => {
-      if (options.tags) {
-        const tags = normalizeItemDetailTags(value);
-        if (tags.length) meta.push({ label, tags, variant: "tags" });
-        return;
-      }
       const formatted = options.timestamp ? formatEconomyDetailTimestamp(value) : detailValue(value);
       if (!formatted) return;
       if (label === "Item code") {
@@ -1773,7 +1869,8 @@
     addMeta("Granted", firstPresent(item.granted_at, item.grant_time), { timestamp: true });
     addMeta("Acquired", firstPresent(item.acquired_at, item.acquired_time), { timestamp: true });
     addMeta("Expires", firstPresent(item.expires_at, item.expiration_at, item.expires_on), { timestamp: true });
-    addMeta("Tags / attributes", firstPresent(item.tags, item.attributes, item.chips, metadata.tags), { tags: true });
+    const detailTags = normalizeItemDetailTags(...collectEconomyItemDetailTagSources(item, definition, metadata));
+    if (detailTags.length) meta.push({ label: "Tags / attributes", tags: detailTags, variant: "tags" });
     return { title, description, details, icon, chips, stats, meta };
   }
 
