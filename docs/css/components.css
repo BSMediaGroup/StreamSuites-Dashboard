@@ -7119,6 +7119,23 @@ body.ss-col-resizing-active {
   border-radius: 10px;
   background: rgba(9, 14, 26, 0.5);
   padding: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.ss-economy-inventory-card:hover,
+.ss-economy-inventory-card:focus-visible,
+.ss-economy-market-row[data-item-detail-open]:hover,
+.ss-economy-market-row[data-item-detail-open]:focus-visible,
+.ss-economy-item-definition[data-item-detail-open]:hover,
+.ss-economy-item-definition[data-item-detail-open]:focus-visible,
+.ss-economy-denomination-chip:hover,
+.ss-economy-denomination-chip:focus-visible {
+  border-color: rgba(255, 210, 110, 0.46);
+  background: rgba(255, 210, 110, 0.065);
+  box-shadow: 0 0 0 1px rgba(255, 210, 110, 0.12), 0 14px 34px rgba(0, 0, 0, 0.22);
+  outline: 0;
 }
 
 .ss-economy-inventory-card .ss-economy-item-icon {
@@ -7842,6 +7859,8 @@ body.ss-col-resizing-active {
   background: rgba(255, 255, 255, 0.035);
   color: var(--text-primary);
   font-size: 12px;
+  font: inherit;
+  cursor: pointer;
 }
 
 .ss-economy-denomination-chip img {
@@ -8614,6 +8633,151 @@ body.ss-col-resizing-active {
   outline: 0;
 }
 
+.ss-economy-item-detail-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1004;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: rgba(2, 6, 13, 0.78);
+  backdrop-filter: blur(14px);
+}
+
+.ss-economy-item-detail-dialog {
+  position: relative;
+  width: min(1100px, 100%);
+  max-height: calc(100vh - 44px);
+  display: grid;
+  grid-template-columns: minmax(280px, 0.88fr) minmax(0, 1.12fr);
+  gap: 22px;
+  overflow: auto;
+  border: 1px solid rgba(132, 184, 255, 0.28);
+  border-radius: 12px;
+  background:
+    linear-gradient(145deg, rgba(19, 30, 49, 0.98), rgba(6, 11, 21, 0.98)),
+    #08101d;
+  box-shadow: 0 30px 96px rgba(0, 0, 0, 0.56);
+  padding: 24px;
+}
+
+.ss-economy-item-detail-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 1;
+}
+
+.ss-economy-item-detail-hero {
+  min-height: 360px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(132, 184, 255, 0.22);
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(255, 210, 110, 0.16), transparent 34%),
+    radial-gradient(circle at 50% 54%, rgba(132, 184, 255, 0.2), transparent 58%),
+    linear-gradient(145deg, rgba(17, 27, 44, 0.92), rgba(6, 10, 18, 0.94));
+}
+
+.ss-economy-item-detail-hero .ss-economy-item-icon {
+  width: min(78%, 330px);
+  height: min(78%, 330px);
+  border-radius: 18px;
+  font-size: 48px;
+}
+
+.ss-economy-item-detail-body {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 24px 4px 4px 0;
+}
+
+.ss-economy-item-detail-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.ss-economy-item-detail-chips span {
+  min-height: 23px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text-secondary);
+  padding: 3px 8px;
+  font-size: 11px;
+}
+
+.ss-economy-item-detail-body h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(24px, 3vw, 36px);
+  line-height: 1.08;
+}
+
+.ss-economy-item-detail-body p {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.84);
+  line-height: 1.5;
+}
+
+.ss-economy-item-detail-copy {
+  color: rgba(246, 251, 255, 0.9);
+}
+
+.ss-economy-item-detail-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 8px;
+}
+
+.ss-economy-item-detail-stats div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(132, 184, 255, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.ss-economy-item-detail-stats span,
+.ss-economy-item-detail-meta dt {
+  color: var(--text-secondary);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ss-economy-item-detail-stats strong,
+.ss-economy-item-detail-meta dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--text-primary);
+}
+
+.ss-economy-item-detail-meta {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 8px 12px;
+  margin: 2px 0 0;
+  padding: 12px;
+  border: 1px solid rgba(132, 184, 255, 0.16);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.ss-economy-item-detail-meta dt,
+.ss-economy-item-detail-meta dd {
+  margin: 0;
+  line-height: 1.35;
+}
+
 .ss-economy-asset-modal {
   position: fixed;
   inset: 0;
@@ -9346,6 +9510,29 @@ body.ss-col-resizing-active {
   .ss-economy-item-editor-modal {
     align-items: stretch;
     padding: 10px;
+  }
+
+  .ss-economy-item-detail-modal {
+    padding: 10px;
+  }
+
+  .ss-economy-item-detail-dialog {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    max-height: calc(100vh - 20px);
+    padding: 18px;
+  }
+
+  .ss-economy-item-detail-hero {
+    min-height: 220px;
+  }
+
+  .ss-economy-item-detail-body {
+    padding: 0;
+  }
+
+  .ss-economy-item-detail-meta {
+    grid-template-columns: 1fr;
   }
 
   .ss-economy-item-editor-dialog {

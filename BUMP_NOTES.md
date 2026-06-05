@@ -6,6 +6,12 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Admin `/economy` now has a read-only maximum-detail economy item lightbox for Wallet & Inventory Inspector denominations/items, Market Governance rows, and Inventory Item Definitions.
+- The Dashboard detail modal uses only the already-loaded admin economy payload fields and a presentation-only normalizer for title, art, descriptions, quantities, balances/values, sale/exchange/stock state, category/rarity, source/version/timestamp metadata, and tags/attributes.
+- Existing Market Governance edit modals, Item Definition create/edit/archive flows, bulk editors, filters, dropdowns, audit drawers, and action buttons remain separate; row/card clicks open details only when they are not on an existing action control.
+- Dashboard item detail styling now mirrors the Public game-item lightbox pattern with a large hero art panel, slim chips, stat cards, metadata rows, Escape/backdrop/close handling, focus return, and mobile-safe stacked layout.
+- Human note: admins can inspect item records with the same polished game-item detail treatment as Public without Dashboard becoming an economy authority or adding new mutation paths.
+
 - Surgical bot table rescue: Dashboard now honors `visible_in_admin=true` before suppressing `attachment_probe` rows, so real creator-attached Twitch staged rows from Runtime/Auth render instead of disappearing.
 - Bot platform live totals now count only rows that satisfy live-worker evidence, not every visible configured/staged/stale row. Configured targets can appear in the table while `TOTAL LIVE BOTS` remains `0`.
 - Empty-state behavior remains truthful: zero rows shows “No bot targets are configured,” while configured rows with no workers stay visible and the page notes “No live workers currently running.”

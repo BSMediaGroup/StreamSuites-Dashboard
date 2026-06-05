@@ -603,6 +603,7 @@ test("snapshot warning stays source-aware for API hydrated admin views", () => {
 
 test("economy styling includes compact identity rows and currency/denomination treatments", () => {
   const css = read("docs/css/components.css");
+  const js = read("docs/js/economy.js");
 
   assert.match(css, /\.ss-economy-identity\s*\{[\s\S]*grid-template-columns:\s*42px minmax\(0,\s*1fr\)/);
   assert.match(css, /\.ss-economy-avatar\s*\{[\s\S]*width:\s*42px[\s\S]*height:\s*42px/);
@@ -691,6 +692,15 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-item-editor-modal\s*\{/);
   assert.match(css, /\.ss-economy-item-editor-dialog\s*\{[\s\S]*width:\s*min\(1320px,\s*100%\)/);
   assert.match(css, /\.ss-economy-modal-open\s*\{[\s\S]*overflow:\s*hidden/);
+  assert.match(js, /function openItemDetailModal\(item = \{\}, kind = "item", sourceElement = null\)/);
+  assert.match(js, /data-item-detail-open/);
+  assert.match(js, /data-item-detail-kind="wallet"/);
+  assert.match(js, /data-item-detail-kind="inventory"/);
+  assert.match(js, /data-item-detail-kind="market"/);
+  assert.match(js, /data-item-detail-kind="definition"/);
+  assert.match(css, /\.ss-economy-item-detail-modal\s*\{/);
+  assert.match(css, /\.ss-economy-item-detail-dialog\s*\{[\s\S]*grid-template-columns:\s*minmax\(280px,\s*0\.88fr\) minmax\(0,\s*1\.12fr\)/);
+  assert.match(css, /\.ss-economy-item-detail-hero \.ss-economy-item-icon\s*\{[\s\S]*width:\s*min\(78%,\s*330px\)/);
   assert.match(css, /\.ss-economy-market-toolbar\s*\{/);
   assert.match(css, /\.ss-economy-market-filter-row\s*\{[\s\S]*justify-content:\s*space-between/);
   assert.match(css, /\.ss-economy-market-filter-group\s*\{[\s\S]*flex-wrap:\s*wrap/);

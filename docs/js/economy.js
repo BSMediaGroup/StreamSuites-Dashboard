@@ -996,11 +996,11 @@
     return `
       <div class="ss-economy-denomination-breakdown">
         ${visible.map((item) => `
-          <span class="ss-economy-denomination-chip" title="${escapeHtml(formatNumber(item.value_in_credits || 0))} credits each">
+          <button class="ss-economy-denomination-chip" type="button" title="${escapeHtml(formatNumber(item.value_in_credits || 0))} credits each" data-item-detail-open data-item-detail-kind="wallet" data-item-detail-code="${escapeHtml(item.denomination_code || item.item_code || item.label)}" aria-label="Open ${escapeHtml(item.label || item.plural_label || "wallet unit")} details">
             <img src="${escapeHtml(assetPath(item.icon_path))}" alt="" loading="lazy" decoding="async" />
             <strong>${formatNumber(item.count || 0)}</strong>
             <span>${escapeHtml(Number(item.count || 0) === 1 ? item.label : item.plural_label || item.label)}</span>
-          </span>
+          </button>
         `).join("")}
       </div>
     `;
@@ -1503,6 +1503,138 @@
     return `<span class="ss-economy-item-icon" title="${escapeHtml(fallbackLabel || "No icon configured")}" aria-label="${escapeHtml(fallbackLabel || "No icon configured")}">${escapeHtml((itemLabel(item) || "?").slice(0, 1).toUpperCase())}</span>`;
   }
 
+  function firstPresent(...values) {
+    for (const value of values) {
+      if (value === undefined || value === null) continue;
+      if (Array.isArray(value)) {
+        if (value.length) return value;
+        continue;
+      }
+      if (typeof value === "object") return value;
+      const stringValue = text(value);
+      if (stringValue) return value;
+    }
+    return "";
+  }
+
+  function detailValue(value) {
+    if (value === true) return "Yes";
+    if (value === false) return "No";
+    if (Array.isArray(value)) return value.map(detailValue).filter(Boolean).join(", ");
+    if (value && typeof value === "object") {
+      return Object.entries(value)
+        .filter(([, entryValue]) => entryValue !== undefined && entryValue !== null && text(entryValue))
+        .map(([key, entryValue]) => `${formatLabel(key)}: ${detailValue(entryValue)}`)
+        .join(" / ");
+    }
+    if (typeof value === "number") return formatNumber(value);
+    return text(value);
+  }
+
+  function itemDetailModel(item = {}, kind = "item") {
+    const definition = item.definition || itemDefinitionFor(item.item_code) || {};
+    const metadata = item.metadata && typeof item.metadata === "object" ? item.metadata : {};
+    const publicCopy = item.public_copy && typeof item.public_copy === "object" ? item.public_copy : {};
+    const title = text(firstPresent(item.label, item.display_name, item.item_name, item.plural_label, definition.label, definition.display_name, item.item_code, item.denomination_code, "Item"));
+    const description = text(firstPresent(item.short_description, item.description, definition.short_description, definition.description, publicCopy.short_description, metadata.short_description, item.tooltip_description, definition.tooltip_description));
+    const details = text(firstPresent(item.tooltip_public_details, item.tooltip_description, item.public_details, item.details, definition.tooltip_public_details, definition.tooltip_description, publicCopy.tooltip_description, metadata.tooltip_description, item.contextual_public_note, definition.contextual_public_note));
+    const code = text(firstPresent(item.item_code, item.denomination_code, item.asset_code, definition.item_code));
+    const category = text(firstPresent(item.category_label, item.category, definition.category_label, definition.category, item.item_type, item.type));
+    const rarity = text(firstPresent(item.rarity, item.tier, item.grade, definition.rarity, definition.tier, definition.grade));
+    const icon = normalizeItemIconPath(firstPresent(item.icon_path, item.icon_url, item.image_asset_key, definition.icon_path, definition.icon_url));
+    const chips = [
+      kind === "wallet" ? "Wallet" : kind === "market" ? "Market" : kind === "definition" ? "Definition" : "Inventory",
+      category ? categoryDisplayLabel(category) : "",
+      rarity ? formatLabel(rarity) : ""
+    ].filter(Boolean);
+    const stats = [];
+    const addStat = (label, value) => {
+      const formatted = detailValue(value);
+      if (formatted) stats.push({ label, value: formatted });
+    };
+    addStat(kind === "wallet" ? "Count" : "Held", firstPresent(item.count, item.quantity, item.held_quantity));
+    addStat("Balance / value", firstPresent(item.value_total_credits, item.balance_total_credits, item.balance_current, item.value_in_credits));
+    addStat("Market price", firstPresent(item.market_price_stekels, item.market_price_credits, item.price));
+    addStat("Exchange value", firstPresent(item.exchange_value_stekels, item.exchange_value_credits, item.exchange_value));
+    addStat("Stock", item.unlimited_stock ? "Unlimited" : firstPresent(item.stock, item.stock_limit, item.max_quantity, item.purchase_limit));
+    const meta = [];
+    const addMeta = (label, value) => {
+      const formatted = detailValue(value);
+      if (formatted) meta.push({ label, value: formatted });
+    };
+    addMeta("Item code", code);
+    addMeta("Category / type", category ? categoryDisplayLabel(category) : "");
+    addMeta("Rarity / tier", rarity ? formatLabel(rarity) : "");
+    addMeta("Chat alias", firstPresent(item.chat_alias, definition.chat_alias, metadata.chat_alias));
+    addMeta("Enabled", firstPresent(item.is_enabled, definition.is_enabled, item.public_tooltip_enabled, definition.public_tooltip_enabled));
+    addMeta("Sale state", kind === "market" ? (marketEnabled(item) ? "On sale" : "Not sold") : "");
+    addMeta("Exchange state", kind === "market" ? (exchangeEnabled(item) ? "Exchange enabled" : "No exchange") : "");
+    addMeta("Source", firstPresent(item.source, item.provider, item.origin, item.source_domain, item.source_action));
+    addMeta("Version", firstPresent(item.version, item.export_version, item.schema_version, metadata.version));
+    addMeta("Updated", firstPresent(item.updated_at, item.modified_at, item.created_at, item.exported_at));
+    addMeta("Tags / attributes", firstPresent(item.tags, item.attributes, item.chips, metadata.tags));
+    return { title, description, details, icon, chips, stats, meta };
+  }
+
+  function renderItemDetailModalContent(item = {}, kind = "item") {
+    const model = itemDetailModel(item, kind);
+    const iconItem = { ...item, label: model.title, icon_path: model.icon };
+    return `
+      <div class="ss-economy-item-detail-modal" role="dialog" aria-modal="true" aria-labelledby="economy-item-detail-title" data-item-detail-modal>
+        <div class="ss-economy-item-detail-dialog">
+          <button class="ss-economy-item-modal-close ss-economy-item-detail-close" type="button" aria-label="Close item detail modal" data-item-detail-close><span aria-hidden="true"></span></button>
+          <section class="ss-economy-item-detail-hero">
+            ${renderItemIcon(iconItem)}
+          </section>
+          <section class="ss-economy-item-detail-body">
+            <div class="ss-economy-item-detail-chips">${model.chips.map((chip) => `<span>${escapeHtml(chip)}</span>`).join("")}</div>
+            <h3 id="economy-item-detail-title">${escapeHtml(model.title)}</h3>
+            <p>${escapeHtml(model.description || "No public description has been added yet.")}</p>
+            ${model.details ? `<p class="ss-economy-item-detail-copy">${escapeHtml(model.details)}</p>` : ""}
+            ${model.stats.length ? `<div class="ss-economy-item-detail-stats">${model.stats.map((stat) => `<div><span>${escapeHtml(stat.label)}</span><strong>${escapeHtml(stat.value)}</strong></div>`).join("")}</div>` : ""}
+            ${model.meta.length ? `<dl class="ss-economy-item-detail-meta">${model.meta.map((row) => `<dt>${escapeHtml(row.label)}</dt><dd>${escapeHtml(row.value)}</dd>`).join("")}</dl>` : ""}
+          </section>
+        </div>
+      </div>
+    `;
+  }
+
+  function closeItemDetailModal() {
+    const modal = document.querySelector("[data-item-detail-modal]");
+    modal?.remove();
+    document.body?.classList?.toggle("ss-economy-modal-open", economyOverlayOpen());
+    const target = state.itemDetailReturnFocus;
+    state.itemDetailReturnFocus = null;
+    target?.focus?.({ preventScroll: true });
+  }
+
+  function openItemDetailModal(item = {}, kind = "item", sourceElement = null) {
+    document.querySelector("[data-item-detail-modal]")?.remove();
+    state.itemDetailReturnFocus = sourceElement || document.activeElement;
+    const wrap = document.createElement("div");
+    wrap.innerHTML = renderItemDetailModalContent(item, kind);
+    const modal = wrap.firstElementChild;
+    document.body?.appendChild(modal);
+    document.body?.classList?.add("ss-economy-modal-open");
+    modal.querySelector("[data-item-detail-close]")?.focus?.({ preventScroll: true });
+  }
+
+  function resolveItemDetailTarget(trigger) {
+    const kind = text(trigger?.dataset?.itemDetailKind || "");
+    const code = text(trigger?.dataset?.itemDetailCode || "");
+    if (kind === "wallet") {
+      const rows = Array.isArray(state.detail?.wallet?.denomination_breakdown) ? state.detail.wallet.denomination_breakdown : [];
+      return { kind, item: rows.find((item) => text(item.denomination_code || item.item_code || item.label) === code) || {} };
+    }
+    if (kind === "inventory") {
+      const rows = Array.isArray(state.detail?.inventory) ? state.detail.inventory : [];
+      return { kind, item: rows.find((item) => text(item.item_code) === code) || {} };
+    }
+    if (kind === "market") return { kind, item: state.marketItems.find((item) => text(item.item_code) === code) || {} };
+    if (kind === "definition") return { kind, item: state.itemDefinitions.find((item) => text(item.item_code) === code) || {} };
+    return { kind: "item", item: {} };
+  }
+
   function eventState(event = {}) {
     if (event.is_reversal || event.reversal_of_event_code) return "reversal";
     if (event.is_reversed || event.reversed_by_event_code) return "reversed";
@@ -1626,7 +1758,7 @@
       const definition = item.definition || itemDefinitionFor(item.item_code) || {};
       const iconSource = { ...definition, ...item, icon_path: itemIcon(item) };
       return `
-        <article class="ss-economy-inventory-card">
+        <article class="ss-economy-inventory-card" role="button" tabindex="0" data-item-detail-open data-item-detail-kind="inventory" data-item-detail-code="${escapeHtml(item.item_code)}" aria-label="Open ${escapeHtml(itemLabel(item))} details">
           ${renderItemIcon(iconSource)}
           <div class="ss-economy-inventory-card-main">
             <strong>${escapeHtml(itemLabel(item))}</strong>
@@ -2393,7 +2525,7 @@
           const categoryLabel = categoryDisplayLabel(item.category_label || item.category || type);
           const stock = item.unlimited_stock ? "Unlimited" : item.stock !== null && item.stock !== undefined ? formatNumber(item.stock) : "Untracked";
           return `
-            <article class="ss-economy-market-row${state.marketViewMode === "cards" ? " ss-economy-browser-card" : ""}" data-market-item-code="${escapeHtml(item.item_code)}">
+            <article class="ss-economy-market-row${state.marketViewMode === "cards" ? " ss-economy-browser-card" : ""}" data-market-item-code="${escapeHtml(item.item_code)}" role="button" tabindex="0" data-item-detail-open data-item-detail-kind="market" data-item-detail-code="${escapeHtml(item.item_code)}" aria-label="Open ${escapeHtml(item.label || item.display_name || item.item_code)} details">
               <div class="ss-economy-market-summary">
                 <span class="ss-economy-item-icon${icon ? "" : " is-unavailable"}">${icon ? `<img src="${escapeHtml(assetPath(icon))}" alt="" loading="lazy" decoding="async" />` : `<span class="ss-economy-item-icon-fallback">No icon</span>`}</span>
                 <div class="ss-economy-market-main">
@@ -2780,7 +2912,7 @@
         const model = itemDefinitionViewModel(item);
         const isEditing = state.itemEditorCode === item.item_code;
         return `
-          <article class="ss-economy-item-definition${isEditing ? " is-editing" : ""}${model.isArchived ? " is-archived" : ""}${state.itemViewMode === "cards" ? " ss-economy-browser-card" : ""}" data-item-code="${escapeHtml(item.item_code)}">
+          <article class="ss-economy-item-definition${isEditing ? " is-editing" : ""}${model.isArchived ? " is-archived" : ""}${state.itemViewMode === "cards" ? " ss-economy-browser-card" : ""}" data-item-code="${escapeHtml(item.item_code)}" role="button" tabindex="0" data-item-detail-open data-item-detail-kind="definition" data-item-detail-code="${escapeHtml(item.item_code)}" aria-label="Open ${escapeHtml(item.label || item.item_code)} details">
             <div class="ss-economy-item-definition-summary">
               ${renderItemIcon(item)}
               <div class="ss-economy-item-definition-main">
@@ -4228,6 +4360,17 @@
         renderItemDefinitions();
         return;
       }
+      if (event.target.closest?.("[data-item-detail-close]") || event.target.matches?.("[data-item-detail-modal]")) {
+        closeItemDetailModal();
+        return;
+      }
+      const detailTrigger = event.target.closest?.("[data-item-detail-open]");
+      const interactive = event.target.closest?.("button, a, input, select, textarea, [data-market-edit], .ss-inline-actions");
+      if (detailTrigger && (!interactive || interactive === detailTrigger)) {
+        const target = resolveItemDetailTarget(detailTrigger);
+        openItemDetailModal(target.item, target.kind, detailTrigger);
+        return;
+      }
     });
     document.addEventListener("input", (event) => {
       if (event.target.closest?.("#economy-exchange-actions")) {
@@ -4409,6 +4552,31 @@
       }
     });
     document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && document.querySelector("[data-item-detail-modal]")) {
+        closeItemDetailModal();
+        return;
+      }
+      if (event.key === "Tab" && document.querySelector("[data-item-detail-modal]")) {
+        const modal = document.querySelector("[data-item-detail-modal]");
+        const focusable = Array.from(modal.querySelectorAll("button, [href], [tabindex]:not([tabindex='-1'])")).filter((node) => !node.disabled && !node.hidden);
+        if (focusable.length) {
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
+        }
+      }
+      if ((event.key === "Enter" || event.key === " ") && event.target?.matches?.("[data-item-detail-open]")) {
+        event.preventDefault();
+        const target = resolveItemDetailTarget(event.target);
+        openItemDetailModal(target.item, target.kind, event.target);
+        return;
+      }
       if (event.key === "Escape" && state.assetPicker.open) {
         state.assetPicker.open = false;
         refreshAssetPickerView();
