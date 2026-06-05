@@ -6,6 +6,11 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Admin `/economy` Manual Inventory Actions now includes a searchable item picker layered over the existing item selector, with filtering by item code/name/category/rarity/aliases/tags, compact suggestions, mouse selection, ArrowUp/ArrowDown, Enter, and Escape support.
+- Manual Inventory Actions now renders a read-only selected item preview using already-loaded item definition data, including thumbnail, title/code, category/type/subtype, rarity/tier, description, value/price/exchange details, enabled/market/exchange status, and aliases/tags when present.
+- Technical note: the picker updates the existing `#inventory-action-item` select, and `applyInventoryAction` still reads that field and sends the same Runtime/Auth JSON payload shape; no Dashboard mutation authority or new inventory state layer was added.
+- Human note: admins can confirm the exact inventory item before grant/remove/adjust without losing the existing manual action and reversal flows.
+
 - Admin Bots debug now renders Kick trigger pipeline target diagnostics from Runtime/Auth, including configured target, active target, webhook event target, target match, and mismatch reason alongside evaluation and dispatch fields.
 - Twitch staged/disabled/quarantined rows remain display-only Runtime/Auth consumer state; Dashboard does not mark them as runner-starting or synthesize active Twitch rows while `TWITCH_BOT_RUNTIME_ENABLED` is false.
 - Human note: Kick debug should make target drift and dispatch blockers visible without hiding configured rows or inflating live counts.

@@ -370,6 +370,28 @@ test("economy controller uses runtime authority endpoints and configurable curre
   assert.doesNotMatch(js, /storefront|trading|transfer|consume item/i);
 });
 
+test("manual inventory actions include searchable item picker and read-only selected item preview", () => {
+  const js = read("docs/js/economy.js");
+  const css = read("docs/css/components.css");
+
+  assert.match(js, /manualInventorySearch: ""/);
+  assert.match(js, /function manualInventorySearchText\(item = \{\}\)/);
+  assert.match(js, /id="inventory-action-item-search"/);
+  assert.match(js, /id="inventory-action-item-suggestions"/);
+  assert.match(js, /data-inventory-action-pick/);
+  assert.match(js, /function renderManualInventoryPreview\(\)/);
+  assert.match(js, /id="inventory-action-item-preview"/);
+  assert.match(js, /selectManualInventoryItem\(text\(event\.target\.value\)\)/);
+  assert.match(js, /event\.key === "ArrowDown"[\s\S]*manualInventoryHighlightedIndex/);
+  assert.match(js, /event\.key === "ArrowUp"[\s\S]*manualInventoryHighlightedIndex/);
+  assert.match(js, /event\.key === "Enter"[\s\S]*selectManualInventoryItem/);
+  assert.match(js, /event\.key === "Escape"[\s\S]*manualInventorySuggestionsOpen = false/);
+  assert.match(js, /const itemCode = activeFieldValue\("#economy-inventory-actions \.ss-economy-action-grid", "#inventory-action-item"\);/);
+  assert.match(js, /body: JSON\.stringify\(\{ event_type: eventType, item_code: itemCode, quantity_delta: quantity, reason_text: reason \}\)/);
+  assert.match(css, /\.ss-economy-item-picker-results/);
+  assert.match(css, /\.ss-economy-manual-item-preview-card/);
+});
+
 test("economy manual and reversal controls read visible reason fields", () => {
   const js = read("docs/js/economy.js");
 

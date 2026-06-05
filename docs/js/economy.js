@@ -82,6 +82,9 @@
     identityPageSize: IDENTITY_PAGE_SIZE,
     inventorySearch: "",
     inventoryViewMode: "cards",
+    manualInventorySearch: "",
+    manualInventorySuggestionsOpen: false,
+    manualInventoryHighlightedIndex: 0,
     economyEventPage: 1,
     inventoryEventPage: 1,
     auditDrawer: "",
@@ -1023,6 +1026,111 @@
   function itemIcon(item = {}) {
     const definition = item.definition || itemDefinitionFor(item.item_code) || {};
     return text(definition.icon_path || item.icon_path);
+  }
+
+  function manualInventorySelectedItem() {
+    const select = $("#inventory-action-item");
+    const selectedCode = text(select?.value) || text(state.itemDefinitions?.[0]?.item_code);
+    return itemDefinitionFor(selectedCode) || state.itemDefinitions?.[0] || null;
+  }
+
+  function manualInventorySearchText(item = {}) {
+    return [
+      item.item_code,
+      item.slug,
+      item.label,
+      item.display_name,
+      item.name,
+      item.category,
+      item.category_label,
+      item.item_type,
+      item.type,
+      item.subtype,
+      item.rarity,
+      item.tier,
+      item.alias,
+      item.chat_alias,
+      item.command_alias,
+      item.short_description,
+      item.description,
+      item.tags,
+      item.attributes
+    ].flatMap((value) => Array.isArray(value) ? value : [value]).map(text).join(" ").toLowerCase();
+  }
+
+  function manualInventorySuggestionItems() {
+    const query = text(state.manualInventorySearch).toLowerCase();
+    const rows = Array.isArray(state.itemDefinitions) ? state.itemDefinitions : [];
+    const filtered = query ? rows.filter((item) => manualInventorySearchText(item).includes(query)) : rows;
+    return filtered.slice(0, 12);
+  }
+
+  function selectManualInventoryItem(itemCode, options = {}) {
+    const select = $("#inventory-action-item");
+    if (select) select.value = itemCode;
+    const item = itemDefinitionFor(itemCode) || {};
+    state.manualInventorySearch = options.keepSearch ? state.manualInventorySearch : text(item.label || item.display_name || item.item_code);
+    state.manualInventorySuggestionsOpen = false;
+    state.manualInventoryHighlightedIndex = 0;
+    renderManualInventoryPreview();
+  }
+
+  function renderManualInventorySuggestions() {
+    const list = $("#inventory-action-item-suggestions");
+    if (!list) return;
+    const results = manualInventorySuggestionItems();
+    if (!state.manualInventorySuggestionsOpen) {
+      list.hidden = true;
+      list.innerHTML = "";
+      return;
+    }
+    list.hidden = false;
+    if (!results.length) {
+      list.innerHTML = `<div class="ss-economy-item-picker-empty">No item matches this search.</div>`;
+      return;
+    }
+    state.manualInventoryHighlightedIndex = Math.max(0, Math.min(state.manualInventoryHighlightedIndex, results.length - 1));
+    list.innerHTML = results.map((item, index) => `
+      <button class="ss-economy-item-picker-result${index === state.manualInventoryHighlightedIndex ? " is-highlighted" : ""}" type="button" data-inventory-action-pick="${escapeHtml(item.item_code)}" role="option" aria-selected="${index === state.manualInventoryHighlightedIndex ? "true" : "false"}">
+        ${renderItemIcon(item)}
+        <span><strong>${escapeHtml(item.label || item.display_name || item.item_code)}</strong><small>${escapeHtml([item.item_code, item.category_label || item.category, item.rarity || item.tier].filter(Boolean).join(" · "))}</small></span>
+      </button>
+    `).join("");
+  }
+
+  function renderManualInventoryPreview() {
+    const host = $("#inventory-action-item-preview");
+    if (!host) return;
+    const item = manualInventorySelectedItem();
+    if (!item) {
+      host.innerHTML = `<div class="ss-empty ss-empty-compact">Select an item to preview the existing definition before applying an inventory action.</div>`;
+      return;
+    }
+    const valueRows = [
+      item.market_price_stekels != null ? `Price ${formatNumber(item.market_price_stekels)} Stekels` : "",
+      item.value_in_credits != null ? `Value ${formatNumber(item.value_in_credits)} ${currencyPluralLabel(item.value_in_credits)}` : "",
+      item.exchange_value_stekels != null ? `Exchange ${formatNumber(item.exchange_value_stekels)} Stekels` : ""
+    ].filter(Boolean);
+    const statusRows = [
+      item.is_enabled === false ? "Disabled" : item.is_enabled === true ? "Enabled" : "",
+      item.market_enabled != null || item.purchasable != null || item.can_buy != null ? (marketEnabled(item) ? "On sale" : "Off sale") : "",
+      item.exchange_enabled != null || item.exchangeable != null || item.can_exchange != null ? (exchangeEnabled(item) ? "Exchangeable" : "No exchange") : ""
+    ].filter(Boolean);
+    const tags = [item.alias, item.chat_alias, item.command_alias, ...(Array.isArray(item.tags) ? item.tags : []), ...(Array.isArray(item.attributes) ? item.attributes : [])].map(text).filter(Boolean);
+    host.innerHTML = `
+      <article class="ss-economy-manual-item-preview-card">
+        ${renderItemIcon(item)}
+        <div class="ss-economy-manual-item-preview-body">
+          <strong>${escapeHtml(item.label || item.display_name || item.item_code)}</strong>
+          <code>${escapeHtml(item.item_code || "")}</code>
+          <span class="muted">${escapeHtml([item.category_label || item.category || item.item_type || item.type, item.subtype, item.rarity || item.tier].filter(Boolean).join(" · "))}</span>
+          ${text(item.short_description || item.description) ? `<p>${escapeHtml(text(item.short_description || item.description))}</p>` : ""}
+          ${valueRows.length ? `<div class="ss-economy-item-chip-row">${valueRows.map((row) => `<span class="ss-economy-item-chip">${escapeHtml(row)}</span>`).join("")}</div>` : ""}
+          ${statusRows.length ? `<div class="ss-economy-item-chip-row">${statusRows.map((row) => `<span class="ss-economy-state ${row === "Enabled" || row === "On sale" || row === "Exchangeable" ? "ss-economy-state-active" : ""}">${escapeHtml(row)}</span>`).join("")}</div>` : ""}
+          ${tags.length ? `<span class="muted">Aliases/tags: ${escapeHtml(tags.join(", "))}</span>` : ""}
+        </div>
+      </article>
+    `;
   }
 
   function marketEnabled(item = {}) {
@@ -2322,20 +2430,29 @@
       </div>
     `;
     el.inventoryActions.className = "ss-economy-actions";
+    const selectedInventoryItem = manualInventorySelectedItem() || state.itemDefinitions[0] || {};
+    if (!state.manualInventorySearch) state.manualInventorySearch = text(selectedInventoryItem.label || selectedInventoryItem.display_name || selectedInventoryItem.item_code);
     el.inventoryActions.innerHTML = `
       <div class="ss-economy-action-grid">
         <label>Action<select id="inventory-action-type"><option value="grant">Grant</option><option value="remove">Remove</option><option value="adjustment">Adjust</option></select></label>
-        <label>Item<select id="inventory-action-item">${state.itemDefinitions.map((item) => `<option value="${escapeHtml(item.item_code)}">${escapeHtml(item.item_code)} - ${escapeHtml(item.label || item.item_code)}</option>`).join("")}</select></label>
+        <label class="ss-economy-item-picker-label">Item search
+          <input id="inventory-action-item-search" type="search" value="${escapeHtml(state.manualInventorySearch)}" placeholder="Search name, code, category, rarity, alias" autocomplete="off" role="combobox" aria-controls="inventory-action-item-suggestions" aria-expanded="${state.manualInventorySuggestionsOpen ? "true" : "false"}" />
+          <div id="inventory-action-item-suggestions" class="ss-economy-item-picker-results" role="listbox" ${state.manualInventorySuggestionsOpen ? "" : "hidden"}></div>
+        </label>
+        <label>Item<select id="inventory-action-item">${state.itemDefinitions.map((item) => `<option value="${escapeHtml(item.item_code)}" ${item.item_code === selectedInventoryItem.item_code ? "selected" : ""}>${escapeHtml(item.item_code)} - ${escapeHtml(item.label || item.item_code)}</option>`).join("")}</select></label>
         <label>Quantity<input id="inventory-action-quantity" type="number" step="1" value="0" /></label>
         <label class="ss-economy-wide">Reason<input id="inventory-action-reason" type="text" placeholder="Required manual action note" /></label>
         <button id="inventory-action-submit" class="ss-btn" type="button">Apply inventory action</button>
       </div>
+      <div id="inventory-action-item-preview" class="ss-economy-manual-item-preview" aria-live="polite"></div>
       <div class="ss-economy-reversal-box">
         <label>Selected event code<input id="inventory-reversal-code" type="text" placeholder="inv_..." /></label>
         <label>Reversal reason<input id="inventory-reversal-reason" type="text" placeholder="Required reversal note" /></label>
         <button id="inventory-reversal-submit" class="ss-btn ss-btn-secondary" type="button">Create inventory reversal</button>
       </div>
     `;
+    renderManualInventorySuggestions();
+    renderManualInventoryPreview();
     renderExchangeActions();
   }
 
@@ -4107,6 +4224,12 @@
         }
         return;
       }
+      const inventoryPickButton = event.target.closest?.("[data-inventory-action-pick]");
+      if (inventoryPickButton) {
+        selectManualInventoryItem(text(inventoryPickButton.dataset.inventoryActionPick));
+        $("#inventory-action-item-search")?.focus();
+        return;
+      }
       if (event.target.closest?.("#economy-action-submit")) {
         await applyEconomyAction();
         return;
@@ -4373,6 +4496,13 @@
       }
     });
     document.addEventListener("input", (event) => {
+      if (event.target.matches?.("#inventory-action-item-search")) {
+        state.manualInventorySearch = event.target.value;
+        state.manualInventorySuggestionsOpen = true;
+        state.manualInventoryHighlightedIndex = 0;
+        renderManualInventorySuggestions();
+        return;
+      }
       if (event.target.closest?.("#economy-exchange-actions")) {
         syncExchangePreview();
       }
@@ -4496,6 +4626,10 @@
       }
     });
     document.addEventListener("change", (event) => {
+      if (event.target.matches?.("#inventory-action-item")) {
+        selectManualInventoryItem(text(event.target.value));
+        return;
+      }
       if (event.target.closest?.("#economy-exchange-actions")) {
         syncExchangePreview();
       }
@@ -4552,6 +4686,35 @@
       }
     });
     document.addEventListener("keydown", (event) => {
+      if (event.target?.matches?.("#inventory-action-item-search")) {
+        const results = manualInventorySuggestionItems();
+        if (event.key === "ArrowDown") {
+          event.preventDefault();
+          state.manualInventorySuggestionsOpen = true;
+          state.manualInventoryHighlightedIndex = results.length ? Math.min(state.manualInventoryHighlightedIndex + 1, results.length - 1) : 0;
+          renderManualInventorySuggestions();
+          return;
+        }
+        if (event.key === "ArrowUp") {
+          event.preventDefault();
+          state.manualInventorySuggestionsOpen = true;
+          state.manualInventoryHighlightedIndex = results.length ? Math.max(state.manualInventoryHighlightedIndex - 1, 0) : 0;
+          renderManualInventorySuggestions();
+          return;
+        }
+        if (event.key === "Enter") {
+          if (state.manualInventorySuggestionsOpen && results[state.manualInventoryHighlightedIndex]) {
+            event.preventDefault();
+            selectManualInventoryItem(text(results[state.manualInventoryHighlightedIndex].item_code));
+          }
+          return;
+        }
+        if (event.key === "Escape") {
+          state.manualInventorySuggestionsOpen = false;
+          renderManualInventorySuggestions();
+          return;
+        }
+      }
       if (event.key === "Escape" && document.querySelector("[data-item-detail-modal]")) {
         closeItemDetailModal();
         return;
