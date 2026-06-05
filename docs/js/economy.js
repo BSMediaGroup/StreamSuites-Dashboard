@@ -1670,7 +1670,7 @@
 
   const ECONOMY_ITEM_DETAIL_TAG_FIELD_KEYS = [
     "tags", "tag", "hashtags", "keywords", "aliases", "search_tags", "searchTags",
-    "item_tags", "itemTags", "chat_alias", "chatAlias", "command_alias", "commandAlias"
+    "item_tags", "itemTags"
   ];
 
   function economyItemDetailTagContainer(value = {}) {
@@ -1715,7 +1715,6 @@
       item.hashtags,
       item.keywords,
       item.aliases,
-      item.alias,
       item.search_tags,
       item.searchTags,
       item.item_tags,
@@ -1736,7 +1735,6 @@
       definition.hashtags,
       definition.keywords,
       definition.aliases,
-      definition.alias,
       definition.search_tags,
       definition.searchTags,
       definition.item_tags,
@@ -1747,17 +1745,7 @@
       publicCopy.keywords,
       publicCopy.aliases,
       publicCopy.search_tags,
-      publicCopy.searchTags,
-      item.chat_alias,
-      item.chatAlias,
-      item.command_alias,
-      item.commandAlias,
-      definition.chat_alias,
-      definition.chatAlias,
-      definition.command_alias,
-      definition.commandAlias,
-      metadata.chat_alias,
-      metadata.chatAlias
+      publicCopy.searchTags
     ];
     candidates.forEach((value) => appendEconomyItemDetailTagSource(sources, value));
     appendEconomyItemDetailTagFields(sources, item.attributes);

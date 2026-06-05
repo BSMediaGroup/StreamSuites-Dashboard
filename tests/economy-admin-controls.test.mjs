@@ -852,6 +852,26 @@ this.collectEconomyItemDetailTagSources = collectEconomyItemDetailTagSources;`, 
     ).join("|"),
     "limo|limousine|cadillac"
   );
+  assert.equal(
+    context.normalizeItemDetailTags(
+      ...context.collectEconomyItemDetailTagSources(
+        { chat_alias: "limo", tags: ["limousine", "Cadillac"] },
+        {},
+        {}
+      )
+    ).join("|"),
+    "limousine|cadillac"
+  );
+  assert.equal(
+    context.normalizeItemDetailTags(
+      ...context.collectEconomyItemDetailTagSources({ chat_alias: "limo", alias: "limo" }, {}, {})
+    ).length,
+    0
+  );
+  const collectBlock = extractBetween(js, "  function collectEconomyItemDetailTagSources(item = {}, definition = {}, metadata = {}) {", "  function normalizeItemDetailTags(...sources) {");
+  assert.doesNotMatch(collectBlock, /chat_alias/);
+  assert.doesNotMatch(collectBlock, /command_alias/);
+  assert.doesNotMatch(collectBlock, /item\.alias,/);
   assert.match(js, /data-item-detail-previous/);
   assert.match(js, /renderItemDetailCurrencyAmount\(stat\.rawValue\)/);
   assert.match(js, /variant: "item-code"/);
