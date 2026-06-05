@@ -6,6 +6,10 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Emergency bot table restore: empty-state copy now distinguishes zero configured targets from zero live workers, and the Bots page surfaces “No live workers currently running” from Runtime/Auth diagnostics while keeping configured/attached/staged rows visible.
+- Dashboard bot payload normalization now preserves backend `runtime_diagnostics` for row/count messaging without inventing active worker status or treating visible configured rows as live.
+- Human note: Admin Bots should show configured Kick and staged Twitch rows supplied by Runtime/Auth instead of collapsing to “No bots are running” when workers are down.
+
 - Redesigned the Admin Economy / Inventory workspace so Wallet & Inventory inspection is the dominant panel, with a slim identity selector, compact identity rows, responsive selector drawer behavior, and larger held-item cards.
 - Converted Economy Ledger and Inventory Events into audit drawer panels opened from page controls and the existing economy section tabs instead of occupying permanent page flow.
 - Added dedicated bulk-edit modal workspaces for Market Governance and Inventory Item Definitions with row selection, search/filter, dirty-row tracking, validation, confirmation, and per-row success/error feedback.

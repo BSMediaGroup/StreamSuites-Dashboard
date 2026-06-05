@@ -503,6 +503,10 @@
       serverGeneratedAt: payload?.server_generated_at || payload?.generated_at || null,
       count: bots.length,
       hiddenPlaceholderCount: hiddenPlaceholderCount + platformHiddenCount,
+      runtimeDiagnostics:
+        payload?.runtime_diagnostics && typeof payload.runtime_diagnostics === "object"
+          ? { ...payload.runtime_diagnostics }
+          : {},
       supportedPlatforms: sortPlatformKeys(
         supportedPlatforms.map((platform) => normalizePlatformKey(platform))
       ),
@@ -2381,9 +2385,14 @@
     }
     if (el.hiddenNote) {
       const hiddenCount = Number(normalized?.hiddenPlaceholderCount || 0);
-      el.hiddenNote.textContent = hiddenCount > 0
+      const rowCount = Array.isArray(normalized?.bots) ? normalized.bots.length : 0;
+      const activeWorkerCount = Number(normalized?.runtimeDiagnostics?.active_worker_count);
+      const liveWorkerNote = rowCount > 0 && Number.isFinite(activeWorkerCount) && activeWorkerCount === 0
+        ? " No live workers currently running."
+        : "";
+      el.hiddenNote.textContent = (hiddenCount > 0
         ? `Unconfigured platform placeholders are hidden (${hiddenCount}).`
-        : "Unconfigured platform placeholders are hidden.";
+        : "Unconfigured platform placeholders are hidden.") + liveWorkerNote;
     }
     if (el.status) {
       if (state.hydrationLive) {
