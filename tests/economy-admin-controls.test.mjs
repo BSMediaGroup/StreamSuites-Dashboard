@@ -751,6 +751,9 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(js, /function renderItemDetailTagChips\(tags = \[\]\)/);
   assert.match(js, /function renderItemDetailMetaRow\(row = \{\}\)/);
   assert.match(js, /variant: "item-code"/);
+  assert.match(js, /label === "Item code" \|\| label === "Chat alias"/);
+  assert.match(js, /addMeta\("Item code", code\);[\s\S]*addMeta\("Chat alias"/);
+  assert.match(js, /addMeta\("Chat alias", firstPresent\(item\.chat_alias[\s\S]*\{ always: true \}\)/);
   assert.match(js, /const tags = normalizeItemDetailTags\(\.\.\.collectEconomyItemDetailTagSources/);
   assert.match(js, /renderItemDetailTagGroup\(model\.tags\)/);
   assert.match(js, /function formatItemTagsForInput\(tags = \[\]\)/);

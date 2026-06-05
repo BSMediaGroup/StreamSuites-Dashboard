@@ -1905,17 +1905,17 @@
     const meta = [];
     const addMeta = (label, value, options = {}) => {
       const formatted = options.timestamp ? formatEconomyDetailTimestamp(value) : detailValue(value);
-      if (!formatted) return;
-      if (label === "Item code") {
-        meta.push({ label, value: formatted, variant: "item-code" });
+      if (!formatted && !options.always) return;
+      if (label === "Item code" || label === "Chat alias") {
+        meta.push({ label, value: formatted || "—", variant: "item-code" });
         return;
       }
       meta.push({ label, value: formatted });
     };
     addMeta("Item code", code);
+    addMeta("Chat alias", firstPresent(item.chat_alias, definition.chat_alias, metadata.chat_alias), { always: true });
     addMeta("Category / type", category ? categoryDisplayLabel(category) : "");
     addMeta("Rarity / tier", rarity ? formatLabel(rarity) : "");
-    addMeta("Chat alias", firstPresent(item.chat_alias, definition.chat_alias, metadata.chat_alias));
     addMeta("Enabled", firstPresent(item.is_enabled, definition.is_enabled, item.public_tooltip_enabled, definition.public_tooltip_enabled));
     addMeta("Sale state", kind === "market" ? (marketEnabled(item) ? "On sale" : "Not sold") : "");
     addMeta("Exchange state", kind === "market" ? (exchangeEnabled(item) ? "Exchange enabled" : "No exchange") : "");
