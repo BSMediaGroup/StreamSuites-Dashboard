@@ -738,9 +738,10 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(js, /function normalizeItemDetailTags\(\.\.\.sources\)/);
   assert.match(js, /function renderItemDetailTagChips\(tags = \[\]\)/);
   assert.match(js, /function renderItemDetailMetaRow\(row = \{\}\)/);
-  assert.match(js, /variant: "tags"/);
   assert.match(js, /variant: "item-code"/);
-  assert.match(js, /const detailTags = normalizeItemDetailTags\(\.\.\.collectEconomyItemDetailTagSources/);
+  assert.match(js, /const tags = normalizeItemDetailTags\(\.\.\.collectEconomyItemDetailTagSources/);
+  assert.match(js, /renderItemDetailTagGroup\(model\.tags\)/);
+  assert.match(css, /\.ss-economy-item-detail-tags\s*\{/);
   assert.match(js, /economy-item-tag-chips/);
   assert.match(js, /economy-item-code-value/);
   assert.match(css, /\.economy-item-tag-chip\s*\{/);

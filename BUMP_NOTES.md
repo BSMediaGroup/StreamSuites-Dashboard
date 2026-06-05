@@ -6,6 +6,7 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Dashboard economy item detail hashtag chips render in the description block again (after public copy, before stats/metadata), not in the bottom metadata table, across Market Governance, Item Definitions, and Inventory/Wallet inspector modals.
 - Emergency regression fix: Dashboard economy item detail modals again show associated tags as slim `#hashtag` chips; tag extraction now merges strings, arrays, object tag rows, and nested definition/metadata/search-tag fields instead of relying on a single `firstPresent` source.
 - Dashboard `/economy` item detail modals render associated tags as slim `#hashtag` chips (Market Governance, Item Definitions, Inventory/Wallet inspector) instead of plaintext comma-separated tag lines; item code values use scoped `SUSEMono` with a subtle blue tint; economy manual-action quantity inputs use dark-themed native spinner styling.
 - Technical note: reused existing `docs/assets/fonts/mono/SUSEMono-Variable.ttf` via `theme-dark.css`; tag chips consume existing item tag/chip/attribute fields only; Previous/Next navigation, currency rendering, timestamps, manual inventory picker/preview, and mutation payloads are unchanged.

@@ -1869,15 +1869,16 @@
     addMeta("Granted", firstPresent(item.granted_at, item.grant_time), { timestamp: true });
     addMeta("Acquired", firstPresent(item.acquired_at, item.acquired_time), { timestamp: true });
     addMeta("Expires", firstPresent(item.expires_at, item.expiration_at, item.expires_on), { timestamp: true });
-    const detailTags = normalizeItemDetailTags(...collectEconomyItemDetailTagSources(item, definition, metadata));
-    if (detailTags.length) meta.push({ label: "Tags / attributes", tags: detailTags, variant: "tags" });
-    return { title, description, details, icon, chips, stats, meta };
+    const tags = normalizeItemDetailTags(...collectEconomyItemDetailTagSources(item, definition, metadata));
+    return { title, description, details, tags, icon, chips, stats, meta };
+  }
+
+  function renderItemDetailTagGroup(tags = []) {
+    if (!Array.isArray(tags) || !tags.length) return "";
+    return `<div class="ss-economy-item-detail-tags"><div class="economy-item-tag-chips">${renderItemDetailTagChips(tags)}</div></div>`;
   }
 
   function renderItemDetailMetaRow(row = {}) {
-    if (row.variant === "tags" && Array.isArray(row.tags) && row.tags.length) {
-      return `<dt>${escapeHtml(row.label)}</dt><dd><div class="economy-item-tag-chips">${renderItemDetailTagChips(row.tags)}</div></dd>`;
-    }
     if (row.variant === "item-code") {
       return `<dt>${escapeHtml(row.label)}</dt><dd class="economy-item-code-value">${escapeHtml(row.value)}</dd>`;
     }
@@ -1918,6 +1919,7 @@
             <h3 id="economy-item-detail-title">${escapeHtml(model.title)}</h3>
             <p>${escapeHtml(model.description || "No public description has been added yet.")}</p>
             ${model.details ? `<p class="ss-economy-item-detail-copy">${escapeHtml(model.details)}</p>` : ""}
+            ${renderItemDetailTagGroup(model.tags)}
             ${model.stats.length ? `<div class="ss-economy-item-detail-stats">${model.stats.map((stat) => `<div><span>${escapeHtml(stat.label)}</span><strong>${stat.currency ? renderItemDetailCurrencyAmount(stat.rawValue) : renderItemDetailValue(stat.value)}</strong></div>`).join("")}</div>` : ""}
             ${model.meta.length ? `<dl class="ss-economy-item-detail-meta">${model.meta.map((row) => renderItemDetailMetaRow(row)).join("")}</dl>` : ""}
           </section>

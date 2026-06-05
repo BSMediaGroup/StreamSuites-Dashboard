@@ -8845,6 +8845,14 @@ body.ss-col-resizing-active {
   color: rgba(246, 251, 255, 0.9);
 }
 
+.ss-economy-item-detail-tags {
+  margin: 2px 0 6px;
+}
+
+.ss-economy-item-detail-tags .economy-item-tag-chips {
+  margin-top: 2px;
+}
+
 .ss-economy-item-detail-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
