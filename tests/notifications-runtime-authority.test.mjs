@@ -974,8 +974,55 @@ test("bots view hides unconfigured placeholder rows from older runtime payloads"
   assert.doesNotMatch(tableHtml, /Phantom/);
   assert.doesNotMatch(tableHtml, /Rumble bot auto-deploy disabled/);
   assert.match(elements.get("bots-count").textContent, /1 creator \/ 1 bot/);
-  assert.match(elements.get("bots-live-total").textContent, /TOTAL LIVE BOTS: 1/);
+  assert.match(elements.get("bots-live-total").textContent, /TOTAL LIVE BOTS: 0/);
   assert.match(elements.get("bots-hidden-note").textContent, /Unconfigured platform placeholders are hidden \(2\)\./);
+});
+
+test("bots view renders visible staged attachment rows without counting them live", async () => {
+  const payload = {
+    generated_at: "2026-06-05T01:00:00Z",
+    server_generated_at: "2026-06-05T01:00:00Z",
+    supported_platforms: ["twitch"],
+    platform_capabilities: {
+      twitch: { platform: "twitch", label: "Twitch", manual_deploy_enabled: false, staged: true }
+    },
+    platforms: [
+      {
+        platform: "twitch",
+        label: "Twitch",
+        available: false,
+        status: "staged",
+        staged: true,
+        disabled_reason: "Twitch bot runtime is staged/disabled pending stabilization."
+      }
+    ],
+    bots: [
+      {
+        creator_id: "creator-twitch",
+        platform: "twitch",
+        session_type: "attachment_probe",
+        status: "staged_disabled",
+        lifecycle_state: "staged_disabled",
+        visible_in_admin: true,
+        configured: true,
+        attached: true,
+        desired: false,
+        live_worker_exists: false,
+        target_normalized: "creatorchannel",
+        resolved_target: { channel_handle: "creatorchannel" },
+        status_reason: "Twitch bot runtime is staged/disabled pending stabilization."
+      }
+    ],
+    runtime_diagnostics: { active_worker_count: 0 }
+  };
+  const { sandbox, elements } = buildBotsSandbox({ botPayloads: [payload] });
+  sandbox.window.BotsView.init();
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.match(elements.get("bots-table-body").innerHTML, /creator-twitch/);
+  assert.match(elements.get("bots-count").textContent, /1 creator \/ 1 bot/);
+  assert.match(elements.get("bots-live-total").textContent, /TOTAL LIVE BOTS: 0/);
+  assert.match(elements.get("bots-hidden-note").textContent, /No live workers currently running/);
 });
 
 test("bots view does not stack duplicate pollers across repeated mounts", async () => {

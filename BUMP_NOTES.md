@@ -6,6 +6,13 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Surgical bot table rescue: Dashboard now honors `visible_in_admin=true` before suppressing `attachment_probe` rows, so real creator-attached Twitch staged rows from Runtime/Auth render instead of disappearing.
+- Bot platform live totals now count only rows that satisfy live-worker evidence, not every visible configured/staged/stale row. Configured targets can appear in the table while `TOTAL LIVE BOTS` remains `0`.
+- Empty-state behavior remains truthful: zero rows shows “No bot targets are configured,” while configured rows with no workers stay visible and the page notes “No live workers currently running.”
+- Platform chips continue to come from actual row platforms; global platform availability cards do not synthesize per-creator Kick/Rumble/Twitch rows.
+- Public/Admin stability note: Dashboard-side change is limited to `/telemetry` Bots rendering/count logic and does not alter Public profile hydration or runtime-control routing.
+- Human note: Admin Bots should show configured/staged rows from Runtime/Auth and stop reporting `0 creators / 0 bots` when the backend returned rows.
+
 - Corrected the rejected Admin `/economy` management polish pass without changing Runtime/Auth authority. Market Governance now keeps Bulk edit market in the right-side control group beside Items per page, while Item Definitions uses the same management header/search/control structure and keeps search, pagination, view toggle, create, individual editor, and bulk editor behavior intact.
 - Fixed the dashboard stale snapshot warning regression by making snapshot health source-aware: connected/runtime-polled and successful admin API-hydrated views clear the global static snapshot warning, while genuinely stale static snapshot fallbacks can still show it.
 - Economy Ledger, Inventory Events, and the mobile identity finder drawer now use fully opaque dark panel backgrounds. Drawer headers expose only a close action, while normal in-page section Collapse controls remain available.

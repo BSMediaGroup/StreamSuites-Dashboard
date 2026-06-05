@@ -332,8 +332,8 @@
 
   function isHiddenPlaceholderBot(bot) {
     if (bot?.export_snapshot_only === true && bot?.stale_export_ignored === true) return true;
-    if (String(bot?.session_type || "").trim().toLowerCase() === "attachment_probe") return true;
     if (bot?.visible_in_admin === true || bot?.actionable === true) return false;
+    if (String(bot?.session_type || "").trim().toLowerCase() === "attachment_probe") return true;
     if (bot?.visible_in_admin === false || bot?.session_origin === "placeholder") return true;
     const platform = normalizePlatformKey(bot?.platform);
     if (!["kick", "rumble"].includes(platform)) return false;
@@ -1631,6 +1631,7 @@
     bots.forEach((bot) => {
       const key = normalizePlatformKey(bot?.platform);
       if (!key) return;
+      if (!isHonestManagedBot(bot)) return;
       byPlatform[key] = (byPlatform[key] || 0) + 1;
     });
     Object.keys(platformSummary || {}).forEach((platform) => {
@@ -1640,7 +1641,7 @@
     });
     return {
       byPlatform,
-      total: bots.length
+      total: bots.filter((bot) => isHonestManagedBot(bot)).length
     };
   }
 
