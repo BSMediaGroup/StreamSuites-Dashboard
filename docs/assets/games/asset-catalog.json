@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "generated_at": "2026-06-04T13:05:24.925819Z",
+  "generated_at": "2026-06-05T19:08:24.965795Z",
   "asset_root": "assets/games",
-  "count": 202,
+  "count": 214,
   "items": [
     {
       "path": "assets/games/00-stone.webp",
@@ -1658,6 +1658,33 @@
       "definition_complete": true
     },
     {
+      "path": "assets/games/seal-ss-silver.webp",
+      "filename": "seal-ss-silver.webp",
+      "extension": "webp",
+      "label": "Seal Ss Silver",
+      "category": "item",
+      "tags": [
+        "seal",
+        "achievement"
+      ],
+      "notes": "seal, achievement",
+      "updated_at": "2026-06-05T19:08:24.951933Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/smith-wesson-586.webp",
+      "filename": "smith-wesson-586.webp",
+      "extension": "webp",
+      "label": "Smith Wesson 586",
+      "category": "Weapon",
+      "tags": [
+        "Smith & Wesson 586 Revolver"
+      ],
+      "notes": "Smith & Wesson 586 Revolver",
+      "updated_at": "2026-06-05T18:46:27.159242Z",
+      "definition_complete": true
+    },
+    {
       "path": "assets/games/ssbanknote.webp",
       "filename": "ssbanknote.webp",
       "extension": "webp",
@@ -2084,6 +2111,19 @@
       "definition_complete": true
     },
     {
+      "path": "assets/games/vehicle-chevrolet-camaro.webp",
+      "filename": "vehicle-chevrolet-camaro.webp",
+      "extension": "webp",
+      "label": "Vehicle Chevrolet Camaro",
+      "category": "item",
+      "tags": [
+        "Vehicle. Chevrolet. Camaro"
+      ],
+      "notes": "",
+      "updated_at": "2026-06-05T19:06:20.316925Z",
+      "definition_complete": true
+    },
+    {
       "path": "assets/games/vehicle-chevrolet-suburban.webp",
       "filename": "vehicle-chevrolet-suburban.webp",
       "extension": "webp",
@@ -2107,6 +2147,21 @@
       ],
       "notes": "Chevrolet Truck",
       "updated_at": "2026-06-03T19:03:16.747635Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/vehicle-chevrolet.webp",
+      "filename": "vehicle-chevrolet.webp",
+      "extension": "webp",
+      "label": "Vehicle Chevrolet",
+      "category": "Vehicle",
+      "tags": [
+        "Vehicle",
+        "Chevrolet",
+        "SUV"
+      ],
+      "notes": "Vehicle, Chevrolet, SUV",
+      "updated_at": "2026-06-05T19:07:16.591875Z",
       "definition_complete": true
     },
     {
@@ -2518,6 +2573,115 @@
       ],
       "notes": "",
       "updated_at": "2026-06-02T17:51:02.113589Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/weapon-ak47.webp",
+      "filename": "weapon-ak47.webp",
+      "extension": "webp",
+      "label": "Weapon Ak47",
+      "category": "Weapon",
+      "tags": [
+        "Kalashnikova (AK-47)"
+      ],
+      "notes": "Kalashnikova (AK-47)",
+      "updated_at": "2026-06-05T18:49:09.284329Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/weapon-ar-556.webp",
+      "filename": "weapon-ar-556.webp",
+      "extension": "webp",
+      "label": "Weapon Ar 556",
+      "category": "Weapon",
+      "tags": [
+        "AR 556",
+        "gun",
+        "rifle",
+        "weapon",
+        "AR"
+      ],
+      "notes": "AR 556, gun, rifle, weapon, AR,",
+      "updated_at": "2026-06-05T14:45:13.965736Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/weapon-desert-eagle-50-ae-2.webp",
+      "filename": "weapon-desert-eagle-50-ae-2.webp",
+      "extension": "webp",
+      "label": "Weapon Desert Eagle 50 Ae 2",
+      "category": "item",
+      "tags": [
+        "Desert Eagle 50 AE"
+      ],
+      "notes": "Desert Eagle 50 AE",
+      "updated_at": "2026-06-05T18:55:52.567663Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/weapon-desert-eagle-50-ae.webp",
+      "filename": "weapon-desert-eagle-50-ae.webp",
+      "extension": "webp",
+      "label": "Weapon Desert Eagle 50 Ae",
+      "category": "item",
+      "tags": [
+        "Desert Eagle 50 AE"
+      ],
+      "notes": "Desert Eagle 50 AE",
+      "updated_at": "2026-06-05T18:56:10.968483Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/weapon-glock19.webp",
+      "filename": "weapon-glock19.webp",
+      "extension": "webp",
+      "label": "Weapon Glock19",
+      "category": "item",
+      "tags": [
+        "Glock 19"
+      ],
+      "notes": "Glock 19",
+      "updated_at": "2026-06-05T18:57:54.497809Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/weapon-smith-wesson-jframe-38special.webp",
+      "filename": "weapon-smith-wesson-jframe-38special.webp",
+      "extension": "webp",
+      "label": "Weapon Smith Wesson Jframe 38special",
+      "category": "Weapon",
+      "tags": [
+        "Smith & Wesson J-Frame"
+      ],
+      "notes": "Smith & Wesson J-Frame",
+      "updated_at": "2026-06-05T18:43:37.212137Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/weapon-walther-ppk-silencer.webp",
+      "filename": "weapon-walther-ppk-silencer.webp",
+      "extension": "webp",
+      "label": "Weapon Walther Ppk Silencer",
+      "category": "Weapon",
+      "tags": [
+        "Walther PPK",
+        "silencer"
+      ],
+      "notes": "Walther PPK",
+      "updated_at": "2026-06-05T18:51:15.584746Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/weapon-walther-ppk.webp",
+      "filename": "weapon-walther-ppk.webp",
+      "extension": "webp",
+      "label": "Weapon Walther Ppk",
+      "category": "Weapon",
+      "tags": [
+        "Walther PPK"
+      ],
+      "notes": "Walther PPK",
+      "updated_at": "2026-06-05T18:51:38.658135Z",
       "definition_complete": true
     },
     {
