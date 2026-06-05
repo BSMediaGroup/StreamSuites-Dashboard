@@ -599,6 +599,7 @@
       short_description: text(item.short_description || item.short_public_description || item.metadata?.short_description || ""),
       tooltip_description: text(item.tooltip_description || item.tooltip_public_description || item.metadata?.tooltip_description || ""),
       contextual_public_note: text(item.contextual_public_note || item.contextual_note || item.metadata?.contextual_public_note || ""),
+      tags: formatItemTagsForInput(item.tags || item.metadata?.tags || []),
       metadata_notes: text(item.metadata?.notes || item.notes || "")
     };
   }
@@ -618,6 +619,7 @@
         item.category_label,
         item.rarity,
         item.item_type,
+        model?.tagsInput,
         model?.chatAlias
       ].map((value) => text(value).toLowerCase()).join(" ");
       return haystack.includes(query);
@@ -697,6 +699,7 @@
       <td><textarea data-bulk-field="short_description" rows="2">${escapeHtml(draft.short_description)}</textarea></td>
       <td><textarea data-bulk-field="tooltip_description" rows="2">${escapeHtml(draft.tooltip_description)}</textarea></td>
       <td><textarea data-bulk-field="contextual_public_note" rows="2">${escapeHtml(draft.contextual_public_note)}</textarea></td>
+      <td><input data-bulk-field="tags" value="${escapeHtml(draft.tags)}" placeholder="limo, limousine, cadillac" /></td>
       <td><textarea data-bulk-field="metadata_notes" rows="2">${escapeHtml(draft.metadata_notes)}</textarea></td>
     `;
   }
@@ -714,7 +717,7 @@
       : "Edit item labels, category metadata, public copy, icons, tooltip controls, and admin notes for selected inventory definitions.";
     const header = type === "market"
       ? `<th>Sale</th><th>Price</th><th>Exchange</th><th>Value</th><th>Type/category</th><th>Stock</th><th>Limit</th><th>Availability</th><th>Market label</th><th>Short label</th>`
-      : `<th>Name</th><th>Category</th><th>Rarity</th><th>Status</th><th>Tooltip</th><th>Chat alias</th><th>Icon path</th><th>Short description</th><th>Tooltip details</th><th>Public note</th><th>Admin notes</th>`;
+      : `<th>Name</th><th>Category</th><th>Rarity</th><th>Status</th><th>Tooltip</th><th>Chat alias</th><th>Icon path</th><th>Short description</th><th>Tooltip details</th><th>Public note</th><th>Tags</th><th>Admin notes</th>`;
     return `
       <div class="ss-economy-item-editor-modal ss-economy-bulk-modal" role="dialog" aria-modal="true" aria-labelledby="economy-bulk-editor-title" data-bulk-modal>
         <div class="ss-economy-item-editor-dialog ss-economy-bulk-dialog">
@@ -1637,6 +1640,18 @@
     }
     if (typeof value === "number") return formatNumber(value);
     return text(value);
+  }
+
+  function formatItemTagsForInput(tags = []) {
+    if (Array.isArray(tags)) return tags.map(text).filter(Boolean).join(", ");
+    return text(tags);
+  }
+
+  function parseCommaSeparatedTags(raw = "") {
+    return text(raw)
+      .split(/[,;|]/)
+      .map((part) => text(part).replace(/^#+/, "").trim().toLowerCase())
+      .filter(Boolean);
   }
 
   function formatItemDetailTagToken(raw) {
@@ -3016,6 +3031,8 @@
       ""
     );
     const contextualPublicNote = text(item.contextual_public_note || item.contextual_note || item.public_note || publicCopy.contextual_public_note || publicCopy.contextual_note || publicCopy.public_note || metadata.contextual_public_note || metadata.contextual_note || metadata.public_note || metadata.context_note || metadataPublicCopy.contextual_public_note || metadataPublicCopy.contextual_note || metadataPublicCopy.public_note || "");
+    const tags = Array.isArray(item.tags) ? item.tags : Array.isArray(metadata.tags) ? metadata.tags : [];
+    const tagsInput = formatItemTagsForInput(tags);
     const chatAlias = text(item.chat_alias || metadata.chat_alias || "");
     const publicTooltipEnabled = item.public_tooltip_enabled !== false && metadata.public_tooltip_enabled !== false;
     const systemType = text(metadata.system_asset_type || metadata.denomination_code || "");
@@ -3026,6 +3043,8 @@
       tooltipDescription,
       contextualPublicNote,
       chatAlias,
+      tags,
+      tagsInput,
       publicTooltipEnabled,
       assetChip: systemType ? (metadata.wallet_balance_unit ? "Currency unit" : "Denomination") : "Inventory item",
       isArchived: item.is_enabled === false,
@@ -3065,6 +3084,7 @@
         short_description: "#economy-item-create-short-description",
         tooltip_description: "#economy-item-create-tooltip-description",
         contextual_public_note: "#economy-item-create-contextual-note",
+        tags: "#economy-item-create-tags",
         metadata_notes: "#economy-item-create-notes",
         reason_text: "#economy-item-create-reason"
       });
@@ -3082,6 +3102,7 @@
       short_description: '[data-item-field="short_description"]',
       tooltip_description: '[data-item-field="tooltip_description"]',
       contextual_public_note: '[data-item-field="contextual_public_note"]',
+      tags: '[data-item-field="tags"]',
       metadata_notes: '[data-item-field="metadata_notes"]',
       reason_text: '[data-item-field="reason_text"]'
     });
@@ -3099,6 +3120,7 @@
       short_description: "",
       tooltip_description: "",
       contextual_public_note: "",
+      tags: "",
       metadata_notes: "",
       reason_text: "",
       ...(state.itemEditorDrafts[ITEM_CREATE_EDITOR_CODE] || {})
@@ -3119,6 +3141,7 @@
       tooltip_description: model.tooltipDescription,
       contextual_public_note: model.contextualPublicNote,
       metadata_notes: model.notes,
+      tags: model.tagsInput,
       reason_text: "",
       ...(state.itemEditorDrafts[text(item.item_code)] || {})
     };
@@ -3177,6 +3200,7 @@
             <h4>Public Copy</h4>
             <label class="ss-economy-wide">Short public description<textarea id="economy-item-create-short-description" rows="5">${escapeHtml(draft.short_description)}</textarea><span id="economy-item-create-error-short_description" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "short_description"))}</span></label>
             <label class="ss-economy-wide">Tooltip public details<textarea id="economy-item-create-tooltip-description" rows="8">${escapeHtml(draft.tooltip_description)}</textarea><span id="economy-item-create-error-tooltip_description" class="ss-field-error">${escapeHtml(fieldErrorText(state.itemCreateErrors, "tooltip_description"))}</span></label>
+            <label class="ss-economy-wide">Catalog tags (comma-separated)<input id="economy-item-create-tags" type="text" value="${escapeHtml(draft.tags)}" placeholder="limo, limousine, cadillac" /><span class="muted">Shown as hashtag chips on Public and Dashboard item detail modals.</span></label>
             <label class="ss-economy-wide">Contextual public note<textarea id="economy-item-create-contextual-note" rows="4" placeholder="Optional public-safe context">${escapeHtml(draft.contextual_public_note)}</textarea></label>
             <p class="muted ss-economy-wide">Public fields are saved with the item definition metadata returned by Runtime/Auth and shown by consumer surfaces when available.</p>
           </section>
@@ -3218,6 +3242,7 @@
           <h4>Public Copy</h4>
           <label class="ss-economy-wide">Short public description<textarea data-item-field="short_description" rows="5">${escapeHtml(draft.short_description)}</textarea></label>
           <label class="ss-economy-wide">Tooltip public details<textarea data-item-field="tooltip_description" rows="8">${escapeHtml(draft.tooltip_description)}</textarea></label>
+          <label class="ss-economy-wide">Catalog tags (comma-separated)<input data-item-field="tags" value="${escapeHtml(draft.tags)}" placeholder="limo, limousine, cadillac" /><span class="muted">Shown as hashtag chips on Public and Dashboard item detail modals.</span></label>
           <label class="ss-economy-wide">Contextual public note<textarea data-item-field="contextual_public_note" rows="4" placeholder="Optional scope, source, or usage context">${escapeHtml(draft.contextual_public_note)}</textarea></label>
           <p class="muted ss-economy-wide">Public copy is passed through the existing item definition save payload without Dashboard-owned fallback text.</p>
         </section>
@@ -3952,6 +3977,7 @@
       setStatus("Item code suffix is required and must use safe characters.", "error");
       return;
     }
+    const tags = parseCommaSeparatedTags(readField("tags"));
     const chatAlias = normalizeChatAlias(readField("chat_alias"));
     if (!chatAliasLooksValid(chatAlias)) {
       setStatus("Chat alias must use letters, numbers, hyphens, or underscores with no spaces.", "error");
@@ -3970,13 +3996,15 @@
         short_description: readField("short_description"),
         tooltip_description: readField("tooltip_description"),
         contextual_public_note: readField("contextual_public_note"),
+        tags,
         metadata: {
           notes: readField("metadata_notes"),
           chat_alias: chatAlias,
           public_tooltip_enabled: readField("public_tooltip_enabled") !== "false",
           short_description: readField("short_description"),
           tooltip_description: readField("tooltip_description"),
-          contextual_public_note: readField("contextual_public_note")
+          contextual_public_note: readField("contextual_public_note"),
+          tags
         },
         reason_text: reason
       })
@@ -4104,6 +4132,7 @@
             body: JSON.stringify({ item, reason_text: reason })
           });
         } else {
+          const tags = parseCommaSeparatedTags(draft.tags);
           const chatAlias = normalizeChatAlias(draft.chat_alias);
           await requestJson(ITEM_DEFINITION(key), {
             method: "PATCH",
@@ -4118,13 +4147,15 @@
               short_description: text(draft.short_description),
               tooltip_description: text(draft.tooltip_description),
               contextual_public_note: text(draft.contextual_public_note),
+              tags,
               metadata: {
                 notes: text(draft.metadata_notes),
                 chat_alias: chatAlias,
                 public_tooltip_enabled: draft.public_tooltip_enabled !== "false",
                 short_description: text(draft.short_description),
                 tooltip_description: text(draft.tooltip_description),
-                contextual_public_note: text(draft.contextual_public_note)
+                contextual_public_note: text(draft.contextual_public_note),
+                tags
               },
               reason_text: reason
             })
@@ -4202,6 +4233,7 @@
       setStatus(generated.collision ? "Generated item code already exists. Choose a different item name." : "Choose a category and item name before creating an item definition.", "error");
       return;
     }
+    const tags = parseCommaSeparatedTags($("#economy-item-create-tags")?.value || draft.tags);
     const chatAlias = normalizeChatAlias($("#economy-item-create-chat-alias")?.value || draft.chat_alias);
     if (!chatAliasLooksValid(chatAlias)) {
       state.itemCreateErrors = { chat_alias: "Use lowercase letters, numbers, hyphens, or underscores with no spaces." };
@@ -4228,13 +4260,15 @@
             short_description: text($("#economy-item-create-short-description")?.value || draft.short_description),
             tooltip_description: text($("#economy-item-create-tooltip-description")?.value || draft.tooltip_description),
             contextual_public_note: text($("#economy-item-create-contextual-note")?.value || draft.contextual_public_note),
+            tags,
             metadata: {
               notes: text($("#economy-item-create-notes")?.value || draft.metadata_notes),
               chat_alias: chatAlias,
               public_tooltip_enabled: text($("#economy-item-create-public-tooltip")?.value || draft.public_tooltip_enabled) !== "false",
               short_description: text($("#economy-item-create-short-description")?.value || draft.short_description),
               tooltip_description: text($("#economy-item-create-tooltip-description")?.value || draft.tooltip_description),
-              contextual_public_note: text($("#economy-item-create-contextual-note")?.value || draft.contextual_public_note)
+              contextual_public_note: text($("#economy-item-create-contextual-note")?.value || draft.contextual_public_note),
+              tags
             }
           },
           reason_text: reason

@@ -7,6 +7,7 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
 - Emergency regression fix: Dashboard economy item detail modals now render all available tags as individual hashtag chips instead of only one tag.
+- Item-level catalog tags: Runtime/Auth seeds and persists `tags` on all 157 item definitions; Dashboard Item Definitions create/edit modals and the bulk editor now include a comma-separated Tags field that saves through existing economy admin APIs.
 - Follow-up fix: hashtag chips exclude chat/command aliases and singular `alias`; those remain in the Chat alias metadata row while catalog/search `tags`, `search_tags`, `aliases`, and nested definition/metadata fields supply chip text.
 - Technical note: tag extraction now aggregates all supported tag sources (strings, arrays, object rows, nested definition/metadata/attributes/public_copy fields) before normalization and case-insensitive dedupe across Market Governance, Item Definitions, and Inventory/Wallet inspector modals.
 - Dashboard economy item detail hashtag chips use Sui Generis Regular (lightest available face) with a soft light-blue tint for chip text; item code values remain SUSEMono.

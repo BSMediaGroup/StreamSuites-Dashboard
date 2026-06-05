@@ -877,6 +877,32 @@ this.collectEconomyItemDetailTagSources = collectEconomyItemDetailTagSources;`, 
   assert.match(js, /variant: "item-code"/);
 });
 
+test("economy item definition editors persist catalog tags on create, edit, and bulk flows", () => {
+  const js = read("docs/js/economy.js");
+
+  assert.match(js, /function formatItemTagsForInput\(tags = \[\]\)/);
+  assert.match(js, /function parseCommaSeparatedTags\(raw = ""\)/);
+  assert.match(js, /id="economy-item-create-tags"/);
+  assert.match(js, /data-item-field="tags"/);
+  assert.match(js, /data-bulk-field="tags"/);
+  assert.match(js, /<th>Tags<\/th>/);
+  assert.match(js, /const tags = parseCommaSeparatedTags\(readField\("tags"\)\)/);
+  assert.match(js, /tags,\s*\n\s*metadata: \{/);
+  assert.match(js, /model\?\.tagsInput/);
+  assert.equal(
+    vm.runInNewContext(`function text(value) { return String(value ?? "").trim(); }
+function formatItemTagsForInput(tags = []) {
+  if (Array.isArray(tags)) return tags.map(text).filter(Boolean).join(", ");
+  return text(tags);
+}
+function parseCommaSeparatedTags(raw = "") {
+  return text(raw).split(/[,;|]/).map((part) => text(part).replace(/^#+/, "").trim().toLowerCase()).filter(Boolean);
+}
+formatItemTagsForInput(["limo", "Cadillac"]) + "|" + parseCommaSeparatedTags("limo, limousine, Cadillac").join(";")`, { filename: "economy-tags-editor.js" }),
+    "limo, Cadillac|limo;limousine;cadillac"
+  );
+});
+
 test("economy exchange controls preview held gem and diamond values", () => {
   const js = read("docs/js/economy.js");
   const css = read("docs/css/components.css");
