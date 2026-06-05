@@ -744,7 +744,7 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-item-detail-tags\s*\{/);
   assert.match(js, /economy-item-tag-chips/);
   assert.match(js, /economy-item-code-value/);
-  assert.match(css, /\.economy-item-tag-chip\s*\{[\s\S]*font-weight:\s*200[\s\S]*rgba\(186,\s*220,\s*255/);
+  assert.match(css, /\.economy-item-tag-chip\s*\{[\s\S]*SuiGenerisRg[\s\S]*font-weight:\s*400[\s\S]*rgba\(186,\s*220,\s*255/);
   assert.match(css, /\.ss-economy-item-detail-modal \.economy-item-code-value\s*\{[\s\S]*SUSEMono/);
   assert.match(css, /#economy-inventory-actions input\[type="number"\][\s\S]*color-scheme:\s*dark/);
   assert.match(css, /\.ss-economy-market-toolbar\s*\{/);

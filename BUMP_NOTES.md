@@ -6,7 +6,7 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
-- Dashboard economy item detail hashtag chips use SUSEMono weight 200 with a soft light-blue tint for chip text (lighter than item code values).
+- Dashboard economy item detail hashtag chips use Sui Generis Regular (lightest available face) with a soft light-blue tint for chip text; item code values remain SUSEMono.
 - Dashboard economy item detail hashtag chips render in the description block again (after public copy, before stats/metadata), not in the bottom metadata table, across Market Governance, Item Definitions, and Inventory/Wallet inspector modals.
 - Emergency regression fix: Dashboard economy item detail modals again show associated tags as slim `#hashtag` chips; tag extraction now merges strings, arrays, object tag rows, and nested definition/metadata/search-tag fields instead of relying on a single `firstPresent` source.
 - Dashboard `/economy` item detail modals render associated tags as slim `#hashtag` chips (Market Governance, Item Definitions, Inventory/Wallet inspector) instead of plaintext comma-separated tag lines; item code values use scoped `SUSEMono` with a subtle blue tint; economy manual-action quantity inputs use dark-themed native spinner styling.
