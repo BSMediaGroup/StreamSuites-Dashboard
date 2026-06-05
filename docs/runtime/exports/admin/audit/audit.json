@@ -1,12 +1,985 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-06-04T13:29:50.020493Z",
+  "exported_at": "2026-06-05T19:21:10.208662Z",
   "runtime": {
     "project": "StreamSuites™ Runtime",
     "version": "0.5.0-alpha",
-    "build": "2026.06.04+004"
+    "build": "2026.06.05+004"
   },
   "audit": [
+    {
+      "id": "cbbdbe1f-1ef9-4346-bac0-e3a99450fb2d",
+      "ts": "2026-06-05T19:04:28Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "weapons.walther_ppk",
+        "new": {
+          "category": "weapons",
+          "chat_alias": "ppk",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 1985,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": true,
+          "market_label": "Walther PPK",
+          "market_price_stekels": 2250,
+          "short_label": "Walther PPK",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "weapons",
+          "chat_alias": "ppk",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": false,
+          "market_label": "Walther PPK",
+          "market_price_stekels": null,
+          "short_label": "Walther PPK",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "dc"
+      }
+    },
+    {
+      "id": "ec6d43cc-a2fb-4ee6-8f6f-e3f9a3d2ef92",
+      "ts": "2026-06-05T19:04:04Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "weapons.walther_ppk_silencer",
+        "new": {
+          "category": "weapons",
+          "chat_alias": "silentppk",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 2105,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": true,
+          "market_label": "Walther PPK + Silencer",
+          "market_price_stekels": 2420,
+          "short_label": "Walther PPK + Silencer",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "weapons",
+          "chat_alias": "silentppk",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": false,
+          "market_label": "Walther PPK + Silencer",
+          "market_price_stekels": null,
+          "short_label": "Walther PPK + Silencer",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "dc"
+      }
+    },
+    {
+      "id": "830f7cd5-5510-44dd-85c7-9adcdb6ebf4a",
+      "ts": "2026-06-05T19:03:07Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "gear.weapon.*",
+        "new": {
+          "category": "weapons",
+          "chat_alias": "grenade",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 200,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": true,
+          "market_label": "Grenade",
+          "market_price_stekels": 240,
+          "short_label": "Grenade",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "weapons",
+          "chat_alias": "grenade",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": false,
+          "market_label": "Grenade",
+          "market_price_stekels": null,
+          "short_label": "Grenade",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "dc"
+      }
+    },
+    {
+      "id": "7a3a0c75-517c-48f0-9ad0-4e8df362fa9e",
+      "ts": "2026-06-05T19:02:44Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "weapons.smith_wesson_j_frame_38",
+        "new": {
+          "category": "weapons",
+          "chat_alias": "jframe",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 250,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": true,
+          "market_label": "Smith & Wesson J-Frame .38",
+          "market_price_stekels": 350,
+          "short_label": "Smith & Wesson J-Frame .38",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "weapons",
+          "chat_alias": "jframe",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": false,
+          "market_label": "Smith & Wesson J-Frame .38",
+          "market_price_stekels": null,
+          "short_label": "Smith & Wesson J-Frame .38",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "dc"
+      }
+    },
+    {
+      "id": "7b60a5d6-8874-4cc8-8a85-cd9552f0a293",
+      "ts": "2026-06-05T19:02:24Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "weapons.kalashnikova_ak_47",
+        "new": {
+          "category": "weapons",
+          "chat_alias": "ak47",
+          "exchange_enabled": false,
+          "exchange_value_stekels": 995,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": true,
+          "market_label": "Kalashnikova (AK-47)",
+          "market_price_stekels": 1150,
+          "short_label": "Kalashnikova (AK-47)",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "weapons",
+          "chat_alias": "ak47",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": false,
+          "market_label": "Kalashnikova (AK-47)",
+          "market_price_stekels": null,
+          "short_label": "Kalashnikova (AK-47)",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "dc"
+      }
+    },
+    {
+      "id": "dd23ad3b-b885-4ef8-8f29-8b9ab650f5e2",
+      "ts": "2026-06-05T19:01:48Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "weapons.glock_19",
+        "new": {
+          "category": "weapons",
+          "chat_alias": "glock",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 350,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": true,
+          "market_label": "Glock 19",
+          "market_price_stekels": 450,
+          "short_label": "Glock 19",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "weapons",
+          "chat_alias": "glock",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": false,
+          "market_label": "Glock 19",
+          "market_price_stekels": null,
+          "short_label": "Glock 19",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "dc"
+      }
+    },
+    {
+      "id": "289dd911-3139-414c-adf5-ad8e22de82d5",
+      "ts": "2026-06-05T19:01:30Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "weapons.desert_eagle_50_ae",
+        "new": {
+          "category": "weapons",
+          "chat_alias": "50ae",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 950,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": true,
+          "market_label": "Desert Eagle 50 AE",
+          "market_price_stekels": 1200,
+          "short_label": "Desert Eagle 50 AE",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "weapons",
+          "chat_alias": "50ae",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": false,
+          "market_label": "Desert Eagle 50 AE",
+          "market_price_stekels": null,
+          "short_label": "Desert Eagle 50 AE",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "dxc"
+      }
+    },
+    {
+      "id": "b66c41b7-39ca-47c6-95d2-b707e604da4e",
+      "ts": "2026-06-05T19:01:05Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "weapons.ar_556",
+        "new": {
+          "category": "weapons",
+          "chat_alias": "ar556",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 1260,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": true,
+          "market_label": "AR 556",
+          "market_price_stekels": 1650,
+          "short_label": "AR 556",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "weapons",
+          "chat_alias": "ar556",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": false,
+          "market_label": "AR 556",
+          "market_price_stekels": null,
+          "short_label": "AR 556",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "ed"
+      }
+    },
+    {
+      "id": "b5dc9b9d-228b-4f4a-9c90-a5d8c1e433e9",
+      "ts": "2026-06-05T19:00:41Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "equipment.silver_gun",
+        "new": {
+          "category": "weapons",
+          "chat_alias": "silver-gun",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 3240,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": false,
+          "market_label": "Silver Gun",
+          "market_price_stekels": 0,
+          "short_label": "Silver Gun",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "weapons",
+          "chat_alias": "silver-gun",
+          "exchange_enabled": false,
+          "exchange_value_stekels": 3240,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": false,
+          "market_label": "Silver Gun",
+          "market_price_stekels": 0,
+          "short_label": "Silver Gun",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "dc"
+      }
+    },
+    {
+      "id": "419cd4ba-2235-4d5e-840d-5acf94ce4e51",
+      "ts": "2026-06-05T19:00:34Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "equipment.silver_gun",
+        "new": {
+          "category": "weapons",
+          "chat_alias": "silver-gun",
+          "exchange_enabled": false,
+          "exchange_value_stekels": 3240,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": false,
+          "market_label": "Silver Gun",
+          "market_price_stekels": 0,
+          "short_label": "Silver Gun",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "weapons",
+          "chat_alias": "silver-gun",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": false,
+          "market_label": "Silver Gun",
+          "market_price_stekels": null,
+          "short_label": "Silver Gun",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "dc"
+      }
+    },
+    {
+      "id": "9ac32dd5-12c2-4615-9c6f-2a3653863c0f",
+      "ts": "2026-06-05T19:00:21Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "equipment.gold_gun",
+        "new": {
+          "category": "weapons",
+          "chat_alias": "gold-gun",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 8420,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": false,
+          "market_label": "Gold Gun",
+          "market_price_stekels": 0,
+          "short_label": "Gold Gun",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "weapons",
+          "chat_alias": "gold-gun",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 2420,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": false,
+          "market_label": "Gold Gun",
+          "market_price_stekels": 0,
+          "short_label": "Gold Gun",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "dc"
+      }
+    },
+    {
+      "id": "d2d82371-5891-49da-8117-71f958b52261",
+      "ts": "2026-06-05T19:00:09Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "equipment.gold_gun",
+        "new": {
+          "category": "weapons",
+          "chat_alias": "gold-gun",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 2420,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": false,
+          "market_label": "Gold Gun",
+          "market_price_stekels": 0,
+          "short_label": "Gold Gun",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "weapons",
+          "chat_alias": "gold-gun",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": false,
+          "market_label": "Gold Gun",
+          "market_price_stekels": null,
+          "short_label": "Gold Gun",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "dc"
+      }
+    },
+    {
+      "id": "906e90b9-74e1-4f20-a6f6-f5c0961275b7",
+      "ts": "2026-06-05T16:39:47Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "c08587d3-dbb3-48c8-bea1-9cde33eef89e",
+      "ts": "2026-06-05T16:39:47Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "3ada3b40-f250-4281-b88b-6e6abf3d9083",
+      "ts": "2026-06-05T16:39:46Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "3fa4619c-1a83-4974-861e-8762d2a89480",
+      "ts": "2026-06-05T14:40:23Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "7a7a190d-8027-4a16-98cd-e9056cbcd978",
+      "ts": "2026-06-05T14:40:23Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "19e6b6da-cbf6-475c-8f26-724350083181",
+      "ts": "2026-06-05T14:40:22Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "f09bc952-66a5-44fc-8a84-4e5460919afb",
+      "ts": "2026-06-05T11:56:54Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "624c9097-9a57-4eac-8077-307af99a3ecf",
+      "ts": "2026-06-05T11:56:54Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "0f682bbf-67fe-4769-9ee8-0199d12e0601",
+      "ts": "2026-06-05T11:56:53Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "fbf21c3a-4667-46eb-a7c7-28729d800daf",
+      "ts": "2026-06-05T08:42:54Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "ef210636-34a8-4143-bd99-c696b83020e6",
+      "ts": "2026-06-05T08:42:54Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "fc7ee1ca-298b-4f6e-ae40-c98611828aa0",
+      "ts": "2026-06-05T08:42:53Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "dac56daa-9bec-4384-a4ce-09f0a7dd5dbf",
+      "ts": "2026-06-05T02:30:39Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "4294c311-998c-4103-a797-0e0b6fc2d562",
+      "ts": "2026-06-05T02:30:39Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "37293326-4738-4b2d-ab4b-cd6e4be1a18c",
+      "ts": "2026-06-05T02:30:39Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "a6ca63c1-9f87-4021-ae9e-d0306a8bfc85",
+      "ts": "2026-06-04T19:14:39Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "5cc96e7c-1005-429b-b8cc-19f3977c9a8f",
+      "ts": "2026-06-04T19:14:39Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "811f604a-37b2-439e-b624-abb93c323c0c",
+      "ts": "2026-06-04T19:14:39Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "10fc655d-4521-443f-a212-ea39dae98aac",
+      "ts": "2026-06-04T17:18:27Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "110d6906-c942-4b09-a060-57c4880e6a31",
+      "ts": "2026-06-04T16:41:38Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "0907dc69-12c5-4ad4-ae82-8c0916be4379",
+      "ts": "2026-06-04T16:41:38Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "a4ae8bdd-d7f0-43c8-a3a8-4701850ad509",
+      "ts": "2026-06-04T16:41:38Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "ee24d6e9-8c60-42e1-ac37-f9f18710b334",
+      "ts": "2026-06-04T15:35:26Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "4d901603-34c5-4a21-82e0-a98168a7ae12",
+      "ts": "2026-06-04T15:35:26Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "e876f447-7c62-4316-b769-3be9fe8439e2",
+      "ts": "2026-06-04T15:35:26Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "6d2cf7f8-5529-44dc-a812-e8ebb9c20b15",
+      "ts": "2026-06-04T13:49:10Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "199ad767-b7bd-4031-a746-f6b1e88ff5e3",
+      "ts": "2026-06-04T13:49:10Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "1c27b124-3d93-40ab-947f-1e4687cd6f0b",
+      "ts": "2026-06-04T13:49:09Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
     {
       "id": "d2012a08-ca38-4a05-a77b-05b64cf82a22",
       "ts": "2026-06-04T13:08:56Z",

@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-06-04T13:29:48.688239Z",
+  "generated_at": "2026-06-05T19:21:08.328665Z",
   "events": [
     {
       "timestamp_utc": "2026-04-02T22:31:44Z",
@@ -12,20 +12,6 @@
       "user_identifier": "token:TPOVAkBJ...",
       "email_redacted": null,
       "result": "allowed",
-      "resend_message_id": null,
-      "ip": "185.187.168.204",
-      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
-    },
-    {
-      "timestamp_utc": "2026-04-02T22:31:44Z",
-      "event_type": "verification_success",
-      "event_name": "verification",
-      "action": "verification",
-      "email_type": "verification",
-      "account_id": null,
-      "user_identifier": "email:de***@streamsuites.app",
-      "email_redacted": "de***@streamsuites.app",
-      "result": "sent",
       "resend_message_id": null,
       "ip": "185.187.168.204",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
@@ -2800,6 +2786,20 @@
       "result": "success",
       "resend_message_id": null,
       "ip": "45.132.159.184",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+    },
+    {
+      "timestamp_utc": "2026-06-04T17:18:28Z",
+      "event_type": "session_issued",
+      "event_name": "github",
+      "action": "github",
+      "email_type": "github",
+      "account_id": "4TiOlvS",
+      "user_identifier": "user_code:4TiOlvS",
+      "email_redacted": null,
+      "result": "success",
+      "resend_message_id": null,
+      "ip": "120.155.97.197",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
     }
   ]
