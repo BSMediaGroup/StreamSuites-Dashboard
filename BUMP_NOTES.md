@@ -6,6 +6,12 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Historical bot restore follow-up: Admin Bots no longer hides `export_snapshot_only` + `stale_export_ignored` rows when Runtime/Auth marks them `visible_in_admin=true`; stale export rows remain visible for debugging while `TOTAL LIVE BOTS` continues to count only live-worker evidence.
+- The Bots view now preserves and renders runtime freshness diagnostics (`status_source`, `generated_at`, `stale_threshold_seconds`, `age_seconds`, `api_fetch_ok`) and dispatches the existing admin-live-data event after a successful `/api/admin/bots/status` fetch so the global stale snapshot banner clears only for real live admin API success.
+- Root cause note: the table could still collapse to “No bot targets are configured” because Dashboard filtered stale export-only rescue rows before rendering; the global stale warning stayed stuck because Bots did not explicitly mark successful admin status hydration as live data.
+- Twitch runtime remains staged/disabled by default in the UI when Runtime/Auth reports it that way; Dashboard does not synthesize per-creator Twitch rows from global platform cards.
+- Human note: Admin `/telemetry` Bots should show configured/stale creator rows with zero live workers instead of blanking the table, and a live API response should no longer leave the stale snapshot warning stuck over the page.
+
 - Admin `/economy` now has a read-only maximum-detail economy item lightbox for Wallet & Inventory Inspector denominations/items, Market Governance rows, and Inventory Item Definitions.
 - The Dashboard detail modal uses only the already-loaded admin economy payload fields and a presentation-only normalizer for title, art, descriptions, quantities, balances/values, sale/exchange/stock state, category/rarity, source/version/timestamp metadata, and tags/attributes.
 - Existing Market Governance edit modals, Item Definition create/edit/archive flows, bulk editors, filters, dropdowns, audit drawers, and action buttons remain separate; row/card clicks open details only when they are not on an existing action control.

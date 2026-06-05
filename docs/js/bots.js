@@ -331,7 +331,6 @@
   }
 
   function isHiddenPlaceholderBot(bot) {
-    if (bot?.export_snapshot_only === true && bot?.stale_export_ignored === true) return true;
     if (bot?.visible_in_admin === true || bot?.actionable === true) return false;
     if (String(bot?.session_type || "").trim().toLowerCase() === "attachment_probe") return true;
     if (bot?.visible_in_admin === false || bot?.session_origin === "placeholder") return true;
@@ -348,6 +347,42 @@
       PLACEHOLDER_LIFECYCLE_STATES.has(lifecycle) &&
       hasPlaceholderReasonOnly(bot)
     );
+  }
+
+  function parseTimestampMs(value) {
+    if (!value) return null;
+    const parsed = new Date(value).getTime();
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  }
+
+  function buildFreshnessDiagnostics(payload, receivedAt = Date.now()) {
+    const diagnostics = payload?.runtime_diagnostics && typeof payload.runtime_diagnostics === "object"
+      ? { ...payload.runtime_diagnostics }
+      : {};
+    const serverGeneratedAt = payload?.server_generated_at || payload?.generated_at || null;
+    const statusSource = String(diagnostics.status_source || diagnostics.statusSource || "").trim() ||
+      (serverGeneratedAt ? "live_api" : "fallback");
+    const threshold = Number(diagnostics.stale_threshold_seconds ?? diagnostics.staleThresholdSeconds);
+    const staleThresholdSeconds = Number.isFinite(threshold) && threshold > 0 ? threshold : 60;
+    const explicitAge = Number(diagnostics.age_seconds ?? diagnostics.ageSeconds);
+    const timestampMs = parseTimestampMs(serverGeneratedAt);
+    const ageSeconds = Number.isFinite(explicitAge)
+      ? Math.max(0, Math.round(explicitAge))
+      : timestampMs
+        ? Math.max(0, Math.round((receivedAt - timestampMs) / 1000))
+        : null;
+    const liveApi = statusSource === "live_api" || statusSource === "admin-live";
+    const stale = !liveApi && Number.isFinite(ageSeconds) && ageSeconds > staleThresholdSeconds;
+    return {
+      ...diagnostics,
+      status_source: statusSource,
+      generated_at: diagnostics.generated_at || payload?.generated_at || null,
+      server_generated_at: diagnostics.server_generated_at || serverGeneratedAt,
+      stale_threshold_seconds: staleThresholdSeconds,
+      age_seconds: ageSeconds,
+      api_fetch_ok: diagnostics.api_fetch_ok !== false,
+      stale
+    };
   }
 
   function uniqueReasonCodes(values) {
@@ -503,10 +538,7 @@
       serverGeneratedAt: payload?.server_generated_at || payload?.generated_at || null,
       count: bots.length,
       hiddenPlaceholderCount: hiddenPlaceholderCount + platformHiddenCount,
-      runtimeDiagnostics:
-        payload?.runtime_diagnostics && typeof payload.runtime_diagnostics === "object"
-          ? { ...payload.runtime_diagnostics }
-          : {},
+      runtimeDiagnostics: buildFreshnessDiagnostics(payload),
       supportedPlatforms: sortPlatformKeys(
         supportedPlatforms.map((platform) => normalizePlatformKey(platform))
       ),
@@ -2382,7 +2414,15 @@
       el.count.textContent = `${creatorCount} creator${creatorCount === 1 ? "" : "s"} / ${rowCount} bot${rowCount === 1 ? "" : "s"}`;
     }
     if (el.generatedAt) {
-      el.generatedAt.textContent = `Generated: ${formatTimestamp(normalized?.generatedAt)}`;
+      const diagnostics = normalized?.runtimeDiagnostics || {};
+      const source = String(diagnostics.status_source || "").trim();
+      const age = Number(diagnostics.age_seconds);
+      const threshold = Number(diagnostics.stale_threshold_seconds);
+      const ageDetail = Number.isFinite(age)
+        ? ` / age ${age}s${Number.isFinite(threshold) ? ` of ${threshold}s` : ""}`
+        : "";
+      const sourceDetail = source ? ` / ${source}` : "";
+      el.generatedAt.textContent = `Generated: ${formatTimestamp(normalized?.generatedAt)}${sourceDetail}${ageDetail}`;
     }
     if (el.hiddenNote) {
       const hiddenCount = Number(normalized?.hiddenPlaceholderCount || 0);
@@ -2398,7 +2438,9 @@
     if (el.status) {
       if (state.hydrationLive) {
         const received = formatTimestamp(new Date(receivedAt).toISOString());
-        el.status.textContent = `Live runtime API (${received})`;
+        const diagnostics = normalized?.runtimeDiagnostics || {};
+        const source = String(diagnostics.status_source || "live_api").trim();
+        el.status.textContent = `Live runtime API (${received}) / ${source}`;
       } else {
         el.status.textContent = state.hydrationLabel || "Runtime unreachable - bot status unavailable";
       }
@@ -2417,6 +2459,16 @@
     }
     const payload = await res.json();
     state.sourceUrl = endpoint;
+    try {
+      if (typeof window.dispatchEvent !== "function" || typeof CustomEvent !== "function") {
+        return normalizePayload(payload);
+      }
+      window.dispatchEvent(new CustomEvent("streamsuites:admin-live-data", {
+        detail: { ok: true, source: "admin-live", endpoint }
+      }));
+    } catch (err) {
+      console.warn("[Dashboard] Bot status live-data event dispatch failed", err);
+    }
     return normalizePayload(payload);
   }
 

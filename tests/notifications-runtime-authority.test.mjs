@@ -1025,6 +1025,62 @@ test("bots view renders visible staged attachment rows without counting them liv
   assert.match(elements.get("bots-hidden-note").textContent, /No live workers currently running/);
 });
 
+test("bots view renders stale export rows visibly without counting them live", async () => {
+  const payload = {
+    generated_at: "2026-06-04T03:30:09Z",
+    server_generated_at: "2026-06-05T11:00:00Z",
+    supported_platforms: ["kick"],
+    platform_capabilities: {
+      kick: { platform: "kick", label: "Kick", manual_deploy_enabled: true, staged: false }
+    },
+    platforms: [
+      {
+        platform: "kick",
+        label: "Kick",
+        available: true,
+        status: "ready"
+      }
+    ],
+    bots: [
+      {
+        creator_id: "creator-kick",
+        platform: "kick",
+        session_type: "auto",
+        status: "stale",
+        lifecycle_state: "stale",
+        visible_in_admin: true,
+        configured: true,
+        desired: true,
+        live_worker_exists: false,
+        export_snapshot_only: true,
+        stale_export_ignored: true,
+        target_normalized: "creator-kick",
+        active_target: "creator-kick",
+        resolved_target: { channel_slug: "creator-kick" },
+        status_reason: "Restored export row is stale."
+      }
+    ],
+    runtime_diagnostics: {
+      status_source: "live_api",
+      api_fetch_ok: true,
+      active_worker_count: 0,
+      stale_export_count: 1,
+      age_seconds: 0,
+      stale_threshold_seconds: 60
+    }
+  };
+  const { sandbox, elements } = buildBotsSandbox({ botPayloads: [payload] });
+  sandbox.window.BotsView.init();
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.match(elements.get("bots-table-body").innerHTML, /creator-kick/);
+  assert.match(elements.get("bots-count").textContent, /1 creator \/ 1 bot/);
+  assert.match(elements.get("bots-live-total").textContent, /TOTAL LIVE BOTS: 0/);
+  assert.match(elements.get("bots-generated-at").textContent, /live_api/);
+  assert.match(elements.get("bots-generated-at").textContent, /age 0s of 60s/);
+  assert.match(elements.get("bots-hidden-note").textContent, /No live workers currently running/);
+});
+
 test("bots view does not stack duplicate pollers across repeated mounts", async () => {
   const { sandbox, scheduler } = buildBotsSandbox();
 
