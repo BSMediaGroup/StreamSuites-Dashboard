@@ -2,11 +2,20 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import vm from "node:vm";
 
 const repoRoot = process.cwd();
 
 function read(relativePath) {
   return fs.readFileSync(path.join(repoRoot, relativePath), "utf8");
+}
+
+function extractBetween(source, start, end) {
+  const startIndex = source.indexOf(start);
+  assert.ok(startIndex >= 0, `expected snippet start: ${start}`);
+  const endIndex = source.indexOf(end, startIndex + start.length);
+  assert.ok(endIndex >= 0, `expected snippet end: ${end}`);
+  return source.slice(startIndex, endIndex);
 }
 
 test("economy admin route is registered and loaded by the dashboard shell", () => {
@@ -735,7 +744,10 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-item-detail-hero \.ss-economy-item-icon\s*\{[\s\S]*border:\s*0[\s\S]*background:\s*transparent/);
   assert.match(css, /\.ss-economy-detail-currency\s*\{[\s\S]*color:\s*var\(--text-primary\)/);
   assert.match(js, /function collectEconomyItemDetailTagSources\(/);
+  assert.match(js, /function appendEconomyItemDetailTagFields\(/);
+  assert.match(js, /function economyItemDetailTagContainer\(/);
   assert.match(js, /function normalizeItemDetailTags\(\.\.\.sources\)/);
+  assert.doesNotMatch(js, /item\.chips,\s*[\s\S]*metadata\.tags/);
   assert.match(js, /function renderItemDetailTagChips\(tags = \[\]\)/);
   assert.match(js, /function renderItemDetailMetaRow\(row = \{\}\)/);
   assert.match(js, /variant: "item-code"/);
@@ -791,6 +803,58 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-icon-preview-placeholder/);
   assert.match(css, /\.ss-economy-exchange-grid\s*\{/);
   assert.match(css, /\.ss-admin-pager\s*\{/);
+});
+
+test("economy item detail modal aggregates all tag sources into hashtag chips", () => {
+  const js = read("docs/js/economy.js");
+  const snippet = extractBetween(js, "  function formatItemDetailTagToken(raw) {", "  function formatEconomyDetailTimestamp(value) {");
+  const context = {
+    text(value) {
+      return String(value ?? "").trim();
+    },
+    firstPresent(...values) {
+      for (const value of values) {
+        if (value === undefined || value === null) continue;
+        if (Array.isArray(value)) {
+          if (value.length) return value;
+          continue;
+        }
+        if (typeof value === "object") return value;
+        const textValue = String(value).trim();
+        if (textValue) return value;
+      }
+      return "";
+    }
+  };
+  vm.runInNewContext(`${snippet}
+this.normalizeItemDetailTags = normalizeItemDetailTags;
+this.collectEconomyItemDetailTagSources = collectEconomyItemDetailTagSources;`, context, { filename: "economy-item-detail-tags.js" });
+
+  assert.equal(context.normalizeItemDetailTags("limo, limousine, Cadillac").join("|"), "limo|limousine|cadillac");
+  assert.equal(context.normalizeItemDetailTags(["limo", "limousine", "Cadillac"]).length, 3);
+  assert.equal(
+    context.normalizeItemDetailTags([{ label: "limo" }, { name: "limousine" }, { value: "Cadillac" }]).join("|"),
+    "limo|limousine|cadillac"
+  );
+  assert.equal(
+    context.normalizeItemDetailTags(
+      ...context.collectEconomyItemDetailTagSources(
+        { item_code: "vehicle.limo" },
+        { tags: ["limousine", "Cadillac"] },
+        { tags: ["limo"] }
+      )
+    ).join("|"),
+    "limo|limousine|cadillac"
+  );
+  assert.equal(
+    context.normalizeItemDetailTags(
+      ...context.collectEconomyItemDetailTagSources({ attributes: { tags: ["limo", "limousine", "Cadillac"] } }, {}, {})
+    ).join("|"),
+    "limo|limousine|cadillac"
+  );
+  assert.match(js, /data-item-detail-previous/);
+  assert.match(js, /renderItemDetailCurrencyAmount\(stat\.rawValue\)/);
+  assert.match(js, /variant: "item-code"/);
 });
 
 test("economy exchange controls preview held gem and diamond values", () => {

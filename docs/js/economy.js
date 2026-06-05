@@ -1668,20 +1668,60 @@
     return "";
   }
 
+  const ECONOMY_ITEM_DETAIL_TAG_FIELD_KEYS = [
+    "tags", "tag", "hashtags", "keywords", "aliases", "search_tags", "searchTags",
+    "item_tags", "itemTags", "chat_alias", "chatAlias", "command_alias", "commandAlias"
+  ];
+
+  function economyItemDetailTagContainer(value = {}) {
+    return value && typeof value === "object" && !Array.isArray(value)
+      && ECONOMY_ITEM_DETAIL_TAG_FIELD_KEYS.some((key) => value[key] !== undefined);
+  }
+
+  function appendEconomyItemDetailTagSource(sources, value) {
+    if (value === undefined || value === null) return;
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean" || Array.isArray(value)) {
+      if (typeof value === "string" ? text(value) : Array.isArray(value) ? value.length : text(value)) {
+        sources.push(value);
+      }
+      return;
+    }
+    if (typeof value === "object") {
+      if (economyItemDetailTagContainer(value)) {
+        sources.push(value);
+        return;
+      }
+      if (
+        value.label !== undefined || value.name !== undefined || value.tag !== undefined ||
+        value.hashtag !== undefined || value.alias !== undefined || value.keyword !== undefined ||
+        value.text !== undefined || value.code !== undefined || value.value !== undefined
+      ) {
+        sources.push(value);
+      }
+    }
+  }
+
+  function appendEconomyItemDetailTagFields(sources, container = {}) {
+    if (!container || typeof container !== "object") return;
+    ECONOMY_ITEM_DETAIL_TAG_FIELD_KEYS.forEach((key) => appendEconomyItemDetailTagSource(sources, container[key]));
+  }
+
   function collectEconomyItemDetailTagSources(item = {}, definition = {}, metadata = {}) {
     const publicCopy = item.public_copy && typeof item.public_copy === "object" ? item.public_copy : {};
-    return [
+    const sources = [];
+    const candidates = [
       item.tags,
       item.tag,
       item.hashtags,
       item.keywords,
       item.aliases,
+      item.alias,
       item.search_tags,
       item.searchTags,
       item.item_tags,
       item.itemTags,
       item.attributes,
-      item.chips,
+      item.metadata,
       metadata.tags,
       metadata.tag,
       metadata.hashtags,
@@ -1696,34 +1736,54 @@
       definition.hashtags,
       definition.keywords,
       definition.aliases,
+      definition.alias,
       definition.search_tags,
       definition.searchTags,
       definition.item_tags,
       definition.itemTags,
       publicCopy.tags,
       publicCopy.tag,
+      publicCopy.hashtags,
+      publicCopy.keywords,
+      publicCopy.aliases,
       publicCopy.search_tags,
       publicCopy.searchTags,
-      publicCopy.aliases,
       item.chat_alias,
       item.chatAlias,
+      item.command_alias,
+      item.commandAlias,
       definition.chat_alias,
       definition.chatAlias,
+      definition.command_alias,
+      definition.commandAlias,
       metadata.chat_alias,
       metadata.chatAlias
     ];
+    candidates.forEach((value) => appendEconomyItemDetailTagSource(sources, value));
+    appendEconomyItemDetailTagFields(sources, item.attributes);
+    appendEconomyItemDetailTagFields(sources, metadata);
+    appendEconomyItemDetailTagFields(sources, definition);
+    appendEconomyItemDetailTagFields(sources, publicCopy);
+    return sources;
   }
 
   function normalizeItemDetailTags(...sources) {
     const tags = [];
     const seen = new Set();
-    const pushToken = (raw) => {
-      const token = formatItemDetailTagToken(raw);
-      if (!token) return;
-      const key = token.toLowerCase();
-      if (seen.has(key)) return;
-      seen.add(key);
-      tags.push(token);
+    const pushTokensFromRaw = (raw) => {
+      if (raw === undefined || raw === null) return;
+      String(raw)
+        .split(/[,;|]/)
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .forEach((part) => {
+          const token = formatItemDetailTagToken(part);
+          if (!token) return;
+          const key = token.toLowerCase();
+          if (seen.has(key)) return;
+          seen.add(key);
+          tags.push(token);
+        });
     };
     const visit = (value) => {
       if (value === undefined || value === null) return;
@@ -1732,6 +1792,10 @@
         return;
       }
       if (typeof value === "object") {
+        if (economyItemDetailTagContainer(value)) {
+          ECONOMY_ITEM_DETAIL_TAG_FIELD_KEYS.forEach((key) => visit(value[key]));
+          return;
+        }
         const shapedToken = extractItemDetailTagToken(value);
         const hasTagShape = shapedToken && (
           value.label !== undefined ||
@@ -1740,28 +1804,18 @@
           value.hashtag !== undefined ||
           value.alias !== undefined ||
           value.keyword !== undefined ||
+          value.text !== undefined ||
+          value.code !== undefined ||
           (value.value !== undefined && (typeof value.value === "string" || typeof value.value === "number"))
         );
         if (hasTagShape) {
-          pushToken(shapedToken);
+          pushTokensFromRaw(shapedToken);
           return;
         }
-        const values = Object.values(value);
-        if (values.length && values.every((entry) => (
-          typeof entry === "string" ||
-          typeof entry === "number" ||
-          typeof entry === "boolean" ||
-          (entry && typeof entry === "object" && (entry.label !== undefined || entry.name !== undefined || entry.tag !== undefined))
-        ))) {
-          values.forEach(visit);
-        }
+        Object.values(value).forEach(visit);
         return;
       }
-      text(value)
-        .split(/[,;|]/)
-        .map((part) => part.trim())
-        .filter(Boolean)
-        .forEach(pushToken);
+      pushTokensFromRaw(value);
     };
     sources.forEach(visit);
     return tags;
