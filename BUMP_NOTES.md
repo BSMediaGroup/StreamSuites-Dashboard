@@ -6,6 +6,10 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Dashboard `/economy` item detail modals now render associated tags as slim `#hashtag` chips (Market Governance, Item Definitions, Inventory/Wallet inspector) instead of plaintext comma-separated tag lines; item code values use scoped `SUSEMono` with a subtle blue tint; economy manual-action quantity inputs use dark-themed native spinner styling.
+- Technical note: reused existing `docs/assets/fonts/mono/SUSEMono-Variable.ttf` via `theme-dark.css`; tag chips consume existing item tag/chip/attribute fields only; Previous/Next navigation, currency rendering, timestamps, manual inventory picker/preview, and mutation payloads are unchanged.
+- Human note: item detail modals and Manual Inventory Actions quantity fields should match Public modal polish without altering admin authority flows.
+
 - Admin `/economy` item detail lightboxes now match the Public modal fixes with compact non-obstructing Previous/Next controls, disabled edge states, Left/Right key navigation, Escape close, focus trapping, and return focus.
 - Dashboard item detail navigation is scoped to the current visible collection: Wallet denomination rows, filtered Inventory Inspector rows, current Market Governance page/filter rows, and current Item Definitions page/filter rows.
 - Dashboard item detail value rows now render currency/Stekel/Credit amounts with the existing `assets/games/currencyunit.svg` currentColor mask and high-contrast value text for balance/value, market price, and exchange value fields without adding symbols to counts or metadata.

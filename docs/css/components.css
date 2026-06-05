@@ -8905,6 +8905,52 @@ body.ss-col-resizing-active {
   line-height: 1.35;
 }
 
+.ss-economy-item-detail-modal .economy-item-code-value {
+  font-family: var(--system-mono-font, "SUSEMono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
+  color: rgba(147, 197, 253, 0.94);
+  letter-spacing: 0.02em;
+}
+
+.economy-item-tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.economy-item-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(154, 209, 255, 0.22);
+  background: rgba(15, 23, 42, 0.72);
+  color: rgba(226, 236, 252, 0.88);
+  font-size: 0.68rem;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+}
+
+.ss-economy-item-detail-modal input[type="number"],
+#economy-inventory-actions input[type="number"],
+#economy-exchange-actions input[type="number"],
+#economy-actions input[type="number"] {
+  color-scheme: dark;
+  accent-color: rgba(147, 197, 253, 0.85);
+}
+
+.ss-economy-item-detail-modal input[type="number"]::-webkit-inner-spin-button,
+.ss-economy-item-detail-modal input[type="number"]::-webkit-outer-spin-button,
+#economy-inventory-actions input[type="number"]::-webkit-inner-spin-button,
+#economy-inventory-actions input[type="number"]::-webkit-outer-spin-button,
+#economy-exchange-actions input[type="number"]::-webkit-inner-spin-button,
+#economy-exchange-actions input[type="number"]::-webkit-outer-spin-button,
+#economy-actions input[type="number"]::-webkit-inner-spin-button,
+#economy-actions input[type="number"]::-webkit-outer-spin-button {
+  opacity: 0.92;
+  filter: brightness(1.45);
+}
+
 .ss-economy-asset-modal {
   position: fixed;
   inset: 0;

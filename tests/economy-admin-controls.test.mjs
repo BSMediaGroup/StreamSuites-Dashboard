@@ -734,6 +734,16 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-item-detail-hero \.ss-economy-item-icon\s*\{[\s\S]*width:\s*min\(78%,\s*330px\)/);
   assert.match(css, /\.ss-economy-item-detail-hero \.ss-economy-item-icon\s*\{[\s\S]*border:\s*0[\s\S]*background:\s*transparent/);
   assert.match(css, /\.ss-economy-detail-currency\s*\{[\s\S]*color:\s*var\(--text-primary\)/);
+  assert.match(js, /function normalizeItemDetailTags\(value\)/);
+  assert.match(js, /function renderItemDetailTagChips\(tags = \[\]\)/);
+  assert.match(js, /function renderItemDetailMetaRow\(row = \{\}\)/);
+  assert.match(js, /variant: "tags"/);
+  assert.match(js, /variant: "item-code"/);
+  assert.match(js, /economy-item-tag-chips/);
+  assert.match(js, /economy-item-code-value/);
+  assert.match(css, /\.economy-item-tag-chip\s*\{/);
+  assert.match(css, /\.ss-economy-item-detail-modal \.economy-item-code-value\s*\{[\s\S]*SUSEMono/);
+  assert.match(css, /#economy-inventory-actions input\[type="number"\][\s\S]*color-scheme:\s*dark/);
   assert.match(css, /\.ss-economy-market-toolbar\s*\{/);
   assert.match(css, /\.ss-economy-market-filter-row\s*\{[\s\S]*justify-content:\s*space-between/);
   assert.match(css, /\.ss-economy-market-filter-group\s*\{[\s\S]*flex-wrap:\s*wrap/);

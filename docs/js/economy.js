@@ -1639,6 +1639,45 @@
     return text(value);
   }
 
+  function normalizeItemDetailTags(value) {
+    if (value === undefined || value === null) return [];
+    const rawEntries = Array.isArray(value) ? value : [value];
+    const tags = [];
+    rawEntries.forEach((entry) => {
+      if (entry === undefined || entry === null) return;
+      if (typeof entry === "string") {
+        entry.split(/[,;|]/).forEach((part) => {
+          const tag = text(part);
+          if (tag) tags.push(tag);
+        });
+        return;
+      }
+      if (typeof entry === "number" || typeof entry === "boolean") {
+        const tag = text(entry);
+        if (tag) tags.push(tag);
+      }
+    });
+    const seen = new Set();
+    return tags.filter((tag) => {
+      const key = tag.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  function economyItemTagChipLabel(tag = "") {
+    const normalized = text(tag);
+    if (!normalized) return "";
+    return normalized.startsWith("#") ? normalized : `#${normalized}`;
+  }
+
+  function renderItemDetailTagChips(tags = []) {
+    return tags
+      .map((tag) => `<span class="economy-item-tag-chip">${escapeHtml(economyItemTagChipLabel(tag))}</span>`)
+      .join("");
+  }
+
   function formatEconomyDetailTimestamp(value) {
     const raw = text(value);
     if (!raw) return "";
@@ -1707,8 +1746,18 @@
     addStat("Stock", item.unlimited_stock ? "Unlimited" : firstPresent(item.stock, item.stock_limit, item.max_quantity, item.purchase_limit));
     const meta = [];
     const addMeta = (label, value, options = {}) => {
+      if (options.tags) {
+        const tags = normalizeItemDetailTags(value);
+        if (tags.length) meta.push({ label, tags, variant: "tags" });
+        return;
+      }
       const formatted = options.timestamp ? formatEconomyDetailTimestamp(value) : detailValue(value);
-      if (formatted) meta.push({ label, value: formatted });
+      if (!formatted) return;
+      if (label === "Item code") {
+        meta.push({ label, value: formatted, variant: "item-code" });
+        return;
+      }
+      meta.push({ label, value: formatted });
     };
     addMeta("Item code", code);
     addMeta("Category / type", category ? categoryDisplayLabel(category) : "");
@@ -1724,8 +1773,18 @@
     addMeta("Granted", firstPresent(item.granted_at, item.grant_time), { timestamp: true });
     addMeta("Acquired", firstPresent(item.acquired_at, item.acquired_time), { timestamp: true });
     addMeta("Expires", firstPresent(item.expires_at, item.expiration_at, item.expires_on), { timestamp: true });
-    addMeta("Tags / attributes", firstPresent(item.tags, item.attributes, item.chips, metadata.tags));
+    addMeta("Tags / attributes", firstPresent(item.tags, item.attributes, item.chips, metadata.tags), { tags: true });
     return { title, description, details, icon, chips, stats, meta };
+  }
+
+  function renderItemDetailMetaRow(row = {}) {
+    if (row.variant === "tags" && Array.isArray(row.tags) && row.tags.length) {
+      return `<dt>${escapeHtml(row.label)}</dt><dd><div class="economy-item-tag-chips">${renderItemDetailTagChips(row.tags)}</div></dd>`;
+    }
+    if (row.variant === "item-code") {
+      return `<dt>${escapeHtml(row.label)}</dt><dd class="economy-item-code-value">${escapeHtml(row.value)}</dd>`;
+    }
+    return `<dt>${escapeHtml(row.label)}</dt><dd>${renderItemDetailValue(row.value)}</dd>`;
   }
 
   function renderItemDetailCurrencyAmount(value) {
@@ -1763,7 +1822,7 @@
             <p>${escapeHtml(model.description || "No public description has been added yet.")}</p>
             ${model.details ? `<p class="ss-economy-item-detail-copy">${escapeHtml(model.details)}</p>` : ""}
             ${model.stats.length ? `<div class="ss-economy-item-detail-stats">${model.stats.map((stat) => `<div><span>${escapeHtml(stat.label)}</span><strong>${stat.currency ? renderItemDetailCurrencyAmount(stat.rawValue) : renderItemDetailValue(stat.value)}</strong></div>`).join("")}</div>` : ""}
-            ${model.meta.length ? `<dl class="ss-economy-item-detail-meta">${model.meta.map((row) => `<dt>${escapeHtml(row.label)}</dt><dd>${renderItemDetailValue(row.value)}</dd>`).join("")}</dl>` : ""}
+            ${model.meta.length ? `<dl class="ss-economy-item-detail-meta">${model.meta.map((row) => renderItemDetailMetaRow(row)).join("")}</dl>` : ""}
           </section>
         </div>
       </div>
