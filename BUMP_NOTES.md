@@ -6,6 +6,10 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Admin Bots debug now renders Kick trigger pipeline target diagnostics from Runtime/Auth, including configured target, active target, webhook event target, target match, and mismatch reason alongside evaluation and dispatch fields.
+- Twitch staged/disabled/quarantined rows remain display-only Runtime/Auth consumer state; Dashboard does not mark them as runner-starting or synthesize active Twitch rows while `TWITCH_BOT_RUNTIME_ENABLED` is false.
+- Human note: Kick debug should make target drift and dispatch blockers visible without hiding configured rows or inflating live counts.
+
 - Historical bot restore follow-up: Admin Bots no longer hides `export_snapshot_only` + `stale_export_ignored` rows when Runtime/Auth marks them `visible_in_admin=true`; stale export rows remain visible for debugging while `TOTAL LIVE BOTS` continues to count only live-worker evidence.
 - The Bots view now preserves and renders runtime freshness diagnostics (`status_source`, `generated_at`, `stale_threshold_seconds`, `age_seconds`, `api_fetch_ok`) and dispatches the existing admin-live-data event after a successful `/api/admin/bots/status` fetch so the global stale snapshot banner clears only for real live admin API success.
 - Root cause note: the table could still collapse to “No bot targets are configured” because Dashboard filtered stale export-only rescue rows before rendering; the global stale warning stayed stuck because Bots did not explicitly mark successful admin status hydration as live data.

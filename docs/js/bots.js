@@ -1099,6 +1099,11 @@
         <div><span class="ss-bot-field-label">Dispatch HTTP</span><strong>${escapeHtml(String(pipeline.last_dispatch_http_status ?? "-"))}</strong></div>
         <div><span class="ss-bot-field-label">Dispatch message</span><strong>${escapeHtml(pipeline.last_dispatch_response_message || "-")}</strong></div>
         <div><span class="ss-bot-field-label">Suppression</span><strong>${escapeHtml(pipeline.last_suppression_reason || "-")}</strong></div>
+        <div><span class="ss-bot-field-label">Configured target</span><strong>${escapeHtml(pipeline.configured_target || "-")}</strong></div>
+        <div><span class="ss-bot-field-label">Active target</span><strong>${escapeHtml(pipeline.active_target || "-")}</strong></div>
+        <div><span class="ss-bot-field-label">Webhook target</span><strong>${escapeHtml(pipeline.webhook_event_target || "-")}</strong></div>
+        <div><span class="ss-bot-field-label">Target match</span><strong>${escapeHtml(pipeline.target_match === true ? "true" : pipeline.target_match === false ? "false" : "-")}</strong></div>
+        <div><span class="ss-bot-field-label">Target mismatch</span><strong>${escapeHtml(pipeline.target_mismatch_reason || "-")}</strong></div>
         ${recent.length ? `<div><span class="ss-bot-field-label">Recent messages</span><code>${escapeHtml(JSON.stringify(recent))}</code></div>` : ""}
       </div>
     `;
