@@ -6,6 +6,7 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Item detail lightbox layout: desktop economy item detail modals are wider (`min(1360px, calc(100vw - 32px))`) with a larger copy column ratio and slim dark-themed scrollbars on the modal surface across Market Governance, Item Definitions, and Inventory/Wallet inspector flows.
 - Item detail metadata parity: Chat alias now renders immediately after Item code across Market Governance, Item Definitions, and Inventory/Wallet inspector modals, using the same scoped `SUSEMono` blue tint (`economy-item-code-value`) as item codes; empty aliases show `—`.
 - Authoritative item-definition `tags` field: Dashboard Item Definitions editor, create flow, and bulk inventory editor now edit comma-separated catalog tags persisted through Runtime/Auth; detail modals read definition `tags` for hashtag chips (chat alias remains separate metadata).
 - Emergency regression fix: Dashboard economy item detail modals now render all available tags as individual hashtag chips instead of only one tag.

@@ -739,7 +739,10 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-item-detail-modal\s*\{/);
   assert.match(css, /\.ss-economy-item-detail-head\s*\{[\s\S]*grid-column:\s*1 \/ -1/);
   assert.match(css, /\.ss-economy-item-detail-nav\s*\{[\s\S]*display:\s*inline-flex/);
-  assert.match(css, /\.ss-economy-item-detail-dialog\s*\{[\s\S]*grid-template-columns:\s*minmax\(280px,\s*0\.88fr\) minmax\(0,\s*1\.12fr\)/);
+  assert.match(css, /\.ss-economy-item-detail-dialog\s*\{[\s\S]*width:\s*min\(1360px, calc\(100vw - 32px\)\)/);
+  assert.match(css, /\.ss-economy-item-detail-dialog\s*\{[\s\S]*grid-template-columns:\s*minmax\(300px, 0\.8fr\) minmax\(0, 1\.2fr\)/);
+  assert.match(css, /\.ss-economy-item-detail-dialog\s*\{[\s\S]*scrollbar-width:\s*thin/);
+  assert.match(css, /\.ss-economy-item-detail-dialog::-webkit-scrollbar-thumb\s*\{/);
   assert.match(css, /\.ss-economy-item-detail-hero \.ss-economy-item-icon\s*\{[\s\S]*width:\s*min\(78%,\s*330px\)/);
   assert.match(css, /\.ss-economy-item-detail-hero \.ss-economy-item-icon\s*\{[\s\S]*border:\s*0[\s\S]*background:\s*transparent/);
   assert.match(css, /\.ss-economy-detail-currency\s*\{[\s\S]*color:\s*var\(--text-primary\)/);
