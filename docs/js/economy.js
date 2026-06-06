@@ -1897,10 +1897,39 @@
         });
       }
     };
+    const pushCurrencyStat = (label, numeric, unavailable = false) => {
+      if (unavailable) {
+        stats.push({ label, currency: true, unavailable: true, rawValue: 0, value: "N/A" });
+        return;
+      }
+      if (!Number.isFinite(numeric)) return;
+      stats.push({ label, currency: true, rawValue: numeric, value: formatNumber(numeric) });
+    };
+    const saleEnabled = economyDetailMarketSaleEnabled(item, definition);
+    const exchangeCapable = economyDetailExchangeEnabled(item, definition);
+    const marketPrice = Number(firstPresent(
+      item.market_price_stekels,
+      item.market_price_credits,
+      item.price,
+      definition.market_price_stekels,
+      definition.market_price_credits
+    ));
+    const exchangeValueAmount = Number(firstPresent(
+      item.exchange_value_stekels,
+      item.exchange_value_credits,
+      item.exchange_value,
+      definition.exchange_value_stekels,
+      definition.exchange_value_credits,
+      definition.exchange_value
+    ));
     addStat(kind === "wallet" ? "Count" : "Held", firstPresent(item.count, item.quantity, item.held_quantity));
     addStat("Balance / value", firstPresent(item.value_total_credits, item.balance_total_credits, item.balance_current, item.value_in_credits));
-    addStat("Market price", firstPresent(item.market_price_stekels, item.market_price_credits, item.price));
-    addStat("Exchange value", firstPresent(item.exchange_value_stekels, item.exchange_value_credits, item.exchange_value));
+    if (kind !== "wallet") {
+      if (!saleEnabled) pushCurrencyStat("Price", marketPrice, true);
+      else if (Number.isFinite(marketPrice)) pushCurrencyStat("Price", marketPrice, false);
+      if (!exchangeCapable) pushCurrencyStat("Exchange value", exchangeValueAmount, true);
+      else if (Number.isFinite(exchangeValueAmount)) pushCurrencyStat("Exchange value", exchangeValueAmount, false);
+    }
     addStat("Stock", item.unlimited_stock ? "Unlimited" : firstPresent(item.stock, item.stock_limit, item.max_quantity, item.purchase_limit));
     const meta = [];
     const addMeta = (label, value, options = {}) => {
@@ -1942,7 +1971,45 @@
     return `<dt>${escapeHtml(row.label)}</dt><dd>${renderItemDetailValue(row.value)}</dd>`;
   }
 
-  function renderItemDetailCurrencyAmount(value) {
+  function economyDetailMarketSaleEnabled(item = {}, definition = {}) {
+    const def = definition && typeof definition === "object" ? definition : {};
+    const marketEnabledValue = firstPresent(item.market_enabled, def.market_enabled);
+    const canBuy = firstPresent(item.can_buy, def.can_buy);
+    const purchasable = firstPresent(item.purchasable, def.purchasable);
+    if (marketEnabledValue === false || canBuy === false || purchasable === false) return false;
+    if (marketEnabledValue === true || canBuy === true || purchasable === true) return true;
+    const marketPrice = Number(firstPresent(
+      item.market_price_stekels,
+      item.market_price_credits,
+      item.price,
+      def.market_price_stekels,
+      def.market_price_credits
+    ));
+    return Number.isFinite(marketPrice) && marketPrice > 0;
+  }
+
+  function economyDetailExchangeEnabled(item = {}, definition = {}) {
+    const def = definition && typeof definition === "object" ? definition : {};
+    const exchangeEnabledValue = firstPresent(item.exchange_enabled, def.exchange_enabled);
+    const canExchange = firstPresent(item.can_exchange, def.can_exchange);
+    const exchangeable = firstPresent(item.exchangeable, def.exchangeable);
+    if (exchangeEnabledValue === false || canExchange === false || exchangeable === false) return false;
+    if (exchangeEnabledValue === true || canExchange === true || exchangeable === true) return true;
+    const exchangeValueAmount = Number(firstPresent(
+      item.exchange_value_stekels,
+      item.exchange_value_credits,
+      item.exchange_value,
+      def.exchange_value_stekels,
+      def.exchange_value_credits,
+      def.exchange_value
+    ));
+    return Number.isFinite(exchangeValueAmount) && exchangeValueAmount > 0;
+  }
+
+  function renderItemDetailCurrencyAmount(value, options = {}) {
+    if (options.unavailable) {
+      return `<span class="ss-economy-detail-currency is-unavailable-value">${renderCurrencySymbol({ compact: true })}<span>N/A</span></span>`;
+    }
     return `<span class="ss-economy-detail-currency">${renderCurrencySymbol({ compact: true })}<span>${escapeHtml(formatNumber(value))}</span></span>`;
   }
 
@@ -1977,7 +2044,7 @@
             <p>${escapeHtml(model.description || "No public description has been added yet.")}</p>
             ${model.details ? `<p class="ss-economy-item-detail-copy">${escapeHtml(model.details)}</p>` : ""}
             ${renderItemDetailTagGroup(model.tags)}
-            ${model.stats.length ? `<div class="ss-economy-item-detail-stats">${model.stats.map((stat) => `<div><span>${escapeHtml(stat.label)}</span><strong>${stat.currency ? renderItemDetailCurrencyAmount(stat.rawValue) : renderItemDetailValue(stat.value)}</strong></div>`).join("")}</div>` : ""}
+            ${model.stats.length ? `<div class="ss-economy-item-detail-stats">${model.stats.map((stat) => `<div><span>${escapeHtml(stat.label)}</span><strong>${stat.currency ? renderItemDetailCurrencyAmount(stat.rawValue, { unavailable: stat.unavailable }) : renderItemDetailValue(stat.value)}</strong></div>`).join("")}</div>` : ""}
             ${model.meta.length ? `<dl class="ss-economy-item-detail-meta">${model.meta.map((row) => renderItemDetailMetaRow(row)).join("")}</dl>` : ""}
           </section>
         </div>

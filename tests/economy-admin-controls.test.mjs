@@ -730,7 +730,10 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(js, /function navigateItemDetail\(delta\)/);
   assert.match(js, /event\.key === "ArrowLeft"[\s\S]*navigateItemDetail\(-1\)/);
   assert.match(js, /event\.key === "ArrowRight"[\s\S]*navigateItemDetail\(1\)/);
-  assert.match(js, /renderItemDetailCurrencyAmount\(stat\.rawValue\)/);
+  assert.match(js, /renderItemDetailCurrencyAmount\(stat\.rawValue, \{ unavailable: stat\.unavailable \}\)/);
+  assert.match(js, /economyDetailMarketSaleEnabled\(/);
+  assert.match(js, /economyDetailExchangeEnabled\(/);
+  assert.match(js, /pushCurrencyStat\("Price"/);
   assert.match(js, /data-item-detail-open/);
   assert.match(js, /data-item-detail-kind="wallet"/);
   assert.match(js, /data-item-detail-kind="inventory"/);
@@ -885,7 +888,10 @@ this.collectEconomyItemDetailTagSources = collectEconomyItemDetailTagSources;`, 
   assert.doesNotMatch(collectBlock, /command_alias/);
   assert.doesNotMatch(collectBlock, /item\.alias,/);
   assert.match(js, /data-item-detail-previous/);
-  assert.match(js, /renderItemDetailCurrencyAmount\(stat\.rawValue\)/);
+  assert.match(js, /renderItemDetailCurrencyAmount\(stat\.rawValue, \{ unavailable: stat\.unavailable \}\)/);
+  assert.match(js, /economyDetailMarketSaleEnabled\(/);
+  assert.match(js, /economyDetailExchangeEnabled\(/);
+  assert.match(js, /pushCurrencyStat\("Price"/);
   assert.match(js, /variant: "item-code"/);
 });
 
