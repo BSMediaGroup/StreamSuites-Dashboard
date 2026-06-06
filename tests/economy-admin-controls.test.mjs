@@ -656,10 +656,12 @@ test("economy styling includes compact identity rows and currency/denomination t
   assert.match(css, /\.ss-economy-denomination-editor \.ss-economy-icon-preview\s*\{[\s\S]*grid-column:\s*1 \/ -1/);
   assert.match(css, /\.ss-economy-exclusion-toggle-group\s*\{/);
   assert.match(css, /\.ss-economy-exclusion-switch\s*\{/);
-  assert.match(css, /\.ss-economy-exclusion-switch\s*\{[\s\S]*grid-template-columns:\s*58px minmax\(0,\s*1fr\)/);
-  assert.match(css, /\.ss-economy-exclusion-switch\s*\{[\s\S]*overflow:\s*hidden/);
+  assert.match(css, /\.ss-economy-exclusion-switch\s*\{[\s\S]*grid-template-columns:\s*60px minmax\(0,\s*1fr\)/);
+  assert.match(css, /\.ss-economy-exclusion-switch\s*\{[\s\S]*overflow:\s*visible/);
   assert.match(css, /\.ss-economy-exclusion-switch \.switch-button\s*\{/);
-  assert.match(css, /\.ss-economy-exclusion-switch \.switch-scale\s*\{[\s\S]*transform:\s*none/);
+  assert.match(css, /\.ss-economy-exclusion-switch \.switch-scale\s*\{[\s\S]*transform:\s*scale\(0\.5\)/);
+  assert.match(css, /\.ss-economy-item-modal-close span\s*\{[\s\S]*width:\s*18px[\s\S]*-webkit-mask-image:\s*url\("\/assets\/icons\/ui\/cross\.svg"\)/);
+  assert.match(css, /\.ss-economy-item-modal-close\s*\{[\s\S]*color:\s*#edf5ff/);
   assert.match(css, /\.ss-economy-exclusion-existing\s*,/);
   assert.match(css, /\.ss-economy-exclusion-policy-card\s*\{/);
   assert.match(css, /\.ss-economy-policy-modal\s*\{/);
