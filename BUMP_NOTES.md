@@ -6,6 +6,13 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Hard reset Bots hydration: `docs/js/bots.js` now exposes one idempotent `hydrate()` path used by direct module load, DOM ready, shell view-hydration completion, route activation, and visibility return; mounted views refresh in place instead of stacking pollers.
+- Dashboard hydration root cause: direct `/telemetry` could still race the shell route and the late-loaded Bots module because the previous auto-init only ran when `getCurrentView()` already returned `bots`; missed timing left the static loading copy visible until manual refresh.
+- Bot-status failure handling remains explicit: status timeout/HTTP/network failures clear loading strings, include endpoint/status/message details, and preserve last-known rows as stale/fallback when available.
+- Stale warning fix retained: live admin data clears stale snapshot warnings, stale/fallback/error state is the only warning path, and yellow warning text stays dark/readable.
+- Runtime-control unavailable remains non-blocking for Bots rows when `/api/admin/bots/status` succeeds; runtime-control can degrade manual/debug controls but cannot blank the bot table.
+- Human note: direct `/telemetry`, top refresh, same-route navigation, and visibility return should all hydrate Bots automatically and either render platform cards/rows or a concrete immediate error.
+
 - Fail-stop Bots hydration fix: direct `/telemetry` could mount before `docs/js/bots.js` loaded, so `window.BotsView?.init?.()` silently no-oped and left the static loading strings in place; Bots now replays init when the late-loaded module sees the Bots DOM/current route.
 - Bots status fetch hardening: `/api/admin/bots/status` uses a bounded timeout, renders endpoint/status/message on HTTP/network/timeout failure, keeps last known rows as explicitly stale/fallback, and keeps platform cards out of indefinite loading.
 - Bots refresh path now treats the live status fetch as authoritative and keeps creator-selector fetch failure non-blocking, so valid Runtime/Auth rows render even if `/api/admin/creators` is unavailable.

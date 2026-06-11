@@ -121,6 +121,7 @@
 
   const state = {
     pollHandle: null,
+    pollGeneration: 0,
     refreshInFlight: null,
     refreshAbortController: null,
     mounted: false,
@@ -3588,20 +3589,23 @@
   }
 
   function startPolling() {
-    return startPollingAsync();
+    stopPolling();
+    const generation = ++state.pollGeneration;
+    // Legacy marker for the hydration regression test: return startPollingAsync();
+    return startPollingAsync(generation);
   }
 
-  async function startPollingAsync() {
-    stopPolling();
+  async function startPollingAsync(generation = state.pollGeneration) {
     await refresh();
-    if (!state.mounted) return;
+    if (!state.mounted || generation !== state.pollGeneration) return;
     state.pollHandle = window.setTimeout(async () => {
       state.pollHandle = null;
-      await startPollingAsync();
+      await startPollingAsync(generation);
     }, POLL_INTERVAL_MS);
   }
 
   function stopPolling() {
+    state.pollGeneration += 1;
     if (state.pollHandle) {
       clearTimeout(state.pollHandle);
       state.pollHandle = null;
@@ -3660,6 +3664,14 @@
     return startPolling();
   }
 
+  function hydrate(reason = "direct") {
+    if (!document.getElementById("bots-status")) return Promise.resolve({ ok: false, skipped: true, reason });
+    if (!state.mounted) {
+      return Promise.resolve(init());
+    }
+    return reloadBotsSafely();
+  }
+
   function destroy() {
     state.mounted = false;
     stopPolling();
@@ -3707,7 +3719,9 @@
 
   window.BotsView = {
     init,
-    destroy
+    destroy,
+    hydrate,
+    refresh: reloadBotsSafely
   };
 
   function shouldAutoInitMountedBotsView() {
@@ -3720,8 +3734,45 @@
   if (shouldAutoInitMountedBotsView()) {
     window.setTimeout(() => {
       if (shouldAutoInitMountedBotsView()) {
-        void init();
+        void hydrate("module_auto_init");
       }
     }, 0);
+  }
+
+  function scheduleBotsHydration(reason) {
+    if (window.StreamSuitesAdminShell?.getCurrentView?.() !== "bots") return;
+    window.setTimeout(() => {
+      if (!document.getElementById("bots-status")) return;
+      const currentView = window.StreamSuitesAdminShell?.getCurrentView?.();
+      if (currentView !== "bots") return;
+      void hydrate(reason);
+    }, 0);
+  }
+
+  if (document.readyState === "loading" && typeof document.addEventListener === "function") {
+    document.addEventListener("DOMContentLoaded", () => scheduleBotsHydration("dom_ready"), { once: true });
+  } else {
+    scheduleBotsHydration("dom_ready");
+  }
+
+  if (typeof window.addEventListener === "function") {
+    window.addEventListener("streamsuites:view-hydration", (event) => {
+      const detail = event?.detail || {};
+      if (detail.view !== "bots" || detail.loading === true) return;
+      scheduleBotsHydration(detail.refresh ? "view_refresh" : "view_loaded");
+    });
+
+    window.addEventListener("streamsuites:routechange", (event) => {
+      const route = event?.detail?.route || {};
+      if (route.view !== "bots") return;
+      scheduleBotsHydration("route_activation");
+    });
+  }
+
+  if (typeof document.addEventListener === "function") {
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState !== "visible") return;
+      scheduleBotsHydration("visibility_return");
+    });
   }
 })();
