@@ -1,7 +1,7 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-06-05T19:21:13.250574Z",
-  "server_generated_at": "2026-06-05T19:21:13.250574Z",
+  "generated_at": "2026-06-11T12:37:59.768122Z",
+  "server_generated_at": "2026-06-11T12:37:59.768122Z",
   "count": 7,
   "bots": [
     {
@@ -69,8 +69,8 @@
       "active_visible_reason": "auto_configured",
       "superseded_by": null,
       "configuration_state": "connected",
-      "last_heartbeat_at": "2026-06-05T19:20:49.505440Z",
-      "last_evaluated_at": "2026-06-05T19:20:49.505440Z",
+      "last_heartbeat_at": "2026-06-11T12:37:36.424899Z",
+      "last_evaluated_at": "2026-06-11T12:37:36.424899Z",
       "last_transition_at": null,
       "resolved_target": {
         "platform": "kick",
@@ -85,7 +85,7 @@
       "target_normalized": "streamsuites",
       "target_source": "manual_channel",
       "target_input": "streamsuites",
-      "target_last_changed_at": "1780683772",
+      "target_last_changed_at": "1781175942",
       "target_changed_by": "creator",
       "detection_attempted_at": null,
       "detection_status": null,
@@ -163,8 +163,8 @@
       "superseded_by": null,
       "configuration_state": "connected",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-06-05T19:20:34.841309Z",
-      "last_transition_at": "2026-06-05T16:40:55.268764Z",
+      "last_evaluated_at": "2026-06-11T12:37:56.951489Z",
+      "last_transition_at": "2026-06-11T07:08:46.915135Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -191,14 +191,14 @@
       "state_source": "runtime_export",
       "confidence": "medium",
       "set_by": "kick_auto_deploy",
-      "set_at": "2026-06-05T16:40:55.268764Z",
+      "set_at": "2026-06-11T07:08:46.915135Z",
       "set_reason": "Rumble sample-parity browse/live request failed before a trustworthy offline result could be established.",
       "last_manual_deploy_at": null,
       "last_probe_at": null,
       "last_webhook_event_at": null,
       "last_chat_event_at": null,
       "uptime_seconds": 0,
-      "state_age_seconds": 38,
+      "state_age_seconds": 2,
       "is_stale": false,
       "stale_reason": null,
       "trace_available": false,
@@ -288,7 +288,7 @@
       "last_webhook_event_at": null,
       "last_chat_event_at": null,
       "uptime_seconds": 0,
-      "state_age_seconds": 95918,
+      "state_age_seconds": 590124,
       "is_stale": true,
       "stale_reason": "state_age_exceeds_threshold",
       "trace_available": true,
@@ -365,8 +365,8 @@
       "active_visible_reason": "auto_configured",
       "superseded_by": null,
       "configuration_state": "connected",
-      "last_heartbeat_at": "2026-06-05T19:20:49.505440Z",
-      "last_evaluated_at": "2026-06-05T19:20:49.505440Z",
+      "last_heartbeat_at": "2026-06-11T12:37:36.424899Z",
+      "last_evaluated_at": "2026-06-11T12:37:36.424899Z",
       "last_transition_at": null,
       "resolved_target": {
         "platform": "kick",
@@ -381,7 +381,7 @@
       "target_normalized": "streamsuites",
       "target_source": "manual_channel",
       "target_input": "streamsuites",
-      "target_last_changed_at": "1780683740",
+      "target_last_changed_at": "1781175954",
       "target_changed_by": "creator",
       "detection_attempted_at": null,
       "detection_status": null,
@@ -492,7 +492,7 @@
       "last_webhook_event_at": null,
       "last_chat_event_at": null,
       "uptime_seconds": 0,
-      "state_age_seconds": 95919,
+      "state_age_seconds": 590125,
       "is_stale": true,
       "stale_reason": "state_age_exceeds_threshold",
       "trace_available": true,
@@ -586,7 +586,7 @@
       "last_webhook_event_at": "2026-06-01T09:28:28.739421Z",
       "last_chat_event_at": "2026-06-01T09:28:28.739421Z",
       "uptime_seconds": 0,
-      "state_age_seconds": 381164,
+      "state_age_seconds": 875371,
       "is_stale": true,
       "stale_reason": "state_age_exceeds_threshold",
       "trace_available": false,
@@ -643,8 +643,8 @@
       "superseded_by": null,
       "configuration_state": "connected",
       "last_heartbeat_at": null,
-      "last_evaluated_at": "2026-06-05T19:21:10.835331Z",
-      "last_transition_at": "2026-06-05T16:40:55.268764Z",
+      "last_evaluated_at": "2026-06-11T12:37:56.951489Z",
+      "last_transition_at": "2026-06-11T07:08:46.915135Z",
       "resolved_target": {
         "watch_url": null,
         "stream_identity": null,
@@ -671,7 +671,7 @@
       "state_source": "runtime_export",
       "confidence": "medium",
       "set_by": "kick_auto_deploy",
-      "set_at": "2026-06-05T16:40:55.268764Z",
+      "set_at": "2026-06-11T07:08:46.915135Z",
       "set_reason": "Creator disabled Rumble bot auto-deploy.",
       "last_manual_deploy_at": null,
       "last_probe_at": null,
@@ -820,7 +820,7 @@
       },
       "hidden_placeholder_count": 0,
       "last_log": {
-        "timestamp": "2026-06-05T19:20:49.505440Z",
+        "timestamp": "2026-06-11T12:37:36.424899Z",
         "severity": "info",
         "message": "[4TiOlvS] Kick webhook subscription is active; waiting for first webhook event."
       }
@@ -922,9 +922,9 @@
       },
       "hidden_placeholder_count": 0,
       "last_log": {
-        "timestamp": "2026-06-05T16:40:55.268764Z",
+        "timestamp": "2026-06-11T07:08:46.915135Z",
         "severity": "warning",
-        "message": "[fowTR0T] Managed session state updated to disabled."
+        "message": "[4TiOlvS] Managed session state updated to blocked."
       }
     },
     {
@@ -1037,13 +1037,13 @@
   "runtime_diagnostics": {
     "runtime_process_detected": true,
     "scheduler_running": true,
-    "scheduler_last_tick_at": "2026-06-05T19:21:10.835331Z",
+    "scheduler_last_tick_at": "2026-06-11T12:37:56.951489Z",
     "runtime_control_configured_base_url": null,
     "runtime_control_reachable": null,
     "runtime_control_health_status": "not_checked_by_registry",
     "live_worker_registry_count": 0,
     "live_trace_count": 4,
-    "export_snapshot_age_seconds": 7,
+    "export_snapshot_age_seconds": 0,
     "stale_export_ignored": true
   }
 }

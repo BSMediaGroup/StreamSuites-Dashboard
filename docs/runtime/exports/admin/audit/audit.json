@@ -1,12 +1,329 @@
 {
   "schema_version": "v1",
-  "exported_at": "2026-06-05T19:21:10.208662Z",
+  "exported_at": "2026-06-11T12:37:56.408576Z",
   "runtime": {
     "project": "StreamSuites™ Runtime",
     "version": "0.5.0-alpha",
-    "build": "2026.06.05+004"
+    "build": "2026.06.05+009"
   },
   "audit": [
+    {
+      "id": "5a8c9005-5ba5-46d6-99e1-76c0c6d42c84",
+      "ts": "2026-06-11T07:07:34Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "e6f68847-ab5d-4eaa-9c15-4ea5aa647522",
+      "ts": "2026-06-11T07:07:34Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "c5f10f29-7e68-40ac-b80e-b2bb0dfce026",
+      "ts": "2026-06-11T07:07:33Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "b8399ea1-c729-4eb5-9cbd-298b26346828",
+      "ts": "2026-06-11T01:06:17Z",
+      "actor_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "actor_user_code": "YR992ZS",
+      "actor_role": "admin",
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "login_success",
+      "metadata": {
+        "ip": "91.196.220.161",
+        "provider": "email_password",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+      }
+    },
+    {
+      "id": "1c55a95c-0bd7-4e29-ae62-f97aa7dcd303",
+      "ts": "2026-06-09T10:33:28Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "97577859-7800-4285-8316-dd2f78c76e75",
+      "ts": "2026-06-08T10:52:45Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "weapons.smith_wesson_j_frame",
+        "new": {
+          "category": "weapons",
+          "chat_alias": "jframe",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 320,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": true,
+          "market_label": "Smith & Wesson J-Frame",
+          "market_price_stekels": 345,
+          "short_label": "Smith & Wesson J-Frame",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "weapons",
+          "chat_alias": "jframe",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 705,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": true,
+          "market_label": "Smith & Wesson J-Frame",
+          "market_price_stekels": 785,
+          "short_label": "Smith & Wesson J-Frame",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "dc"
+      }
+    },
+    {
+      "id": "b4783e0a-8c42-4851-9f38-1491437d3862",
+      "ts": "2026-06-08T10:50:20Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "weapons.smith_wesson_j_frame",
+        "new": {
+          "category": "weapons",
+          "chat_alias": "jframe",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 705,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": true,
+          "market_label": "Smith & Wesson J-Frame",
+          "market_price_stekels": 785,
+          "short_label": "Smith & Wesson J-Frame",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "weapons",
+          "chat_alias": "jframe",
+          "exchange_enabled": false,
+          "exchange_value_stekels": null,
+          "is_enabled": true,
+          "item_type": "weapons",
+          "market_enabled": false,
+          "market_label": "Smith & Wesson J-Frame",
+          "market_price_stekels": null,
+          "short_label": "Smith & Wesson J-Frame",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "DC"
+      }
+    },
+    {
+      "id": "b5ac60ac-bb4f-46dd-8043-a28fc2ada56d",
+      "ts": "2026-06-08T10:41:49Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "login_success",
+      "metadata": {
+        "provider": "github"
+      }
+    },
+    {
+      "id": "04dbc716-cbc4-4e86-91d1-52f609666a67",
+      "ts": "2026-06-07T14:45:26Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "94d22861-e5f8-408e-8b18-e01be34d1778",
+      "ts": "2026-06-07T14:45:26Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "748c36d4-ecd7-4d49-af56-fcc790cf00af",
+      "ts": "2026-06-07T14:45:25Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "9bfedd7e-c6d0-4615-8eda-9d8392b0b69d",
+      "ts": "2026-06-06T22:08:50Z",
+      "actor_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "actor_user_code": "4TiOlvS",
+      "actor_role": "admin",
+      "target_user_id": "aa4359f0-b243-42de-bbf4-dbab8cbaa09c",
+      "target_user_code": "4TiOlvS",
+      "action": "economy_market_item_updated",
+      "metadata": {
+        "item_code": "currency.bank_token",
+        "new": {
+          "category": "Currency",
+          "chat_alias": "banknotes",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 25,
+          "is_enabled": true,
+          "item_type": "currency",
+          "market_enabled": false,
+          "market_label": "Cash Note",
+          "market_price_stekels": 0,
+          "short_label": "Cash",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "old": {
+          "category": "Currency",
+          "chat_alias": "banknotes",
+          "exchange_enabled": true,
+          "exchange_value_stekels": 25,
+          "is_enabled": true,
+          "item_type": "currency",
+          "market_enabled": false,
+          "market_label": "Bank Token",
+          "market_price_stekels": 0,
+          "short_label": "Bank Token",
+          "stock": null,
+          "stock_limit": null,
+          "unlimited_stock": false
+        },
+        "reason_text": "DC"
+      }
+    },
+    {
+      "id": "aab8d05e-1603-4379-b1d6-f9853c12c208",
+      "ts": "2026-06-05T23:33:08Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "3c426a3d-2409-4409-a0bf-c26960081027",
+      "target_user_code": "YR992ZS",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "admin@streamsuites.app",
+        "key": "admin",
+        "provider_user_id": "DCadmin",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "aae0ad63-f9d1-49e5-a070-f38c4cdbc4b6",
+      "ts": "2026-06-05T23:33:08Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "45385ed3-1b85-4deb-853f-2bf75fa6360c",
+      "target_user_code": "Y55GHS6",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "system@streamsuites.app",
+        "key": "system",
+        "provider_user_id": "System",
+        "source": "bootstrap_service_env"
+      }
+    },
+    {
+      "id": "87a3aafe-376e-45cc-ac44-555b00faa1da",
+      "ts": "2026-06-05T23:33:08Z",
+      "actor_user_id": null,
+      "actor_user_code": null,
+      "actor_role": null,
+      "target_user_id": "b3a2875c-545b-4ab8-a9f2-9cd14ff12baf",
+      "target_user_code": "JQ6MMUB",
+      "action": "bootstrap_service_account_synced",
+      "metadata": {
+        "email": "automations@streamsuites.app",
+        "key": "automations",
+        "provider_user_id": "Automations",
+        "source": "bootstrap_service_env"
+      }
+    },
     {
       "id": "cbbdbe1f-1ef9-4346-bac0-e3a99450fb2d",
       "ts": "2026-06-05T19:04:28Z",
