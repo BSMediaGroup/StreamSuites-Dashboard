@@ -1348,7 +1348,9 @@ function broadcastAdminLiveData(viewName, source = "api") {
       new CustomEvent("streamsuites:admin-live-data", {
         detail: {
           view: viewName || App.currentView || "",
+          route: App.currentRoute?.pathname || window.location.pathname || "",
           source,
+          status_source: source,
           ok: true
         }
       })
@@ -2587,6 +2589,10 @@ function handleDashboardRouteChange(route = resolveDashboardRoute()) {
   if (App.currentView === targetView && !routeChanged) {
     return;
   }
+  if (App.currentView === targetView && routeChanged) {
+    void refreshCurrentView({ reason: `Refreshing ${resolveViewTitle(targetView, route)}...` });
+    return;
+  }
 
   loadView(targetView, { route });
 }
@@ -2607,6 +2613,16 @@ function bindTopbarRefresh() {
   });
 
   updateViewRefreshButton();
+}
+
+function bindVisibilityRefresh() {
+  if (window.__STREAMSUITES_ADMIN_VISIBILITY_REFRESH_BOUND__) return;
+  window.__STREAMSUITES_ADMIN_VISIBILITY_REFRESH_BOUND__ = true;
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible") return;
+    if (!App.initialized || App.viewHydration.inFlight === true || !App.currentView) return;
+    void refreshCurrentView({ reason: `Refreshing ${resolveViewTitle(App.currentView, App.currentRoute)}...` });
+  });
 }
 
 /* ----------------------------------------------------------------------
@@ -2676,6 +2692,7 @@ async function initApp() {
     initSidebarShell();
     initAdminUserMenu();
     bindTopbarRefresh();
+    bindVisibilityRefresh();
     bindNavigation();
     bindDelegatedNavigation();
     bindRouteChanges();

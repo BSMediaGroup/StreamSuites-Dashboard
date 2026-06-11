@@ -112,11 +112,12 @@ html.admin-gate-unavailable #app {
   border-bottom: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
   background: linear-gradient(135deg, rgba(225, 172, 30, 0.9), rgba(225, 172, 30, 0.8));
-  color: var(--text-primary, #0e0f12);
+  color: #241a04;
 }
 
 #snapshot-health-banner.snapshot-health-stale {
   background: linear-gradient(135deg, rgba(225, 172, 30, 0.95), rgba(249, 193, 76, 0.9));
+  color: #241a04;
 }
 
 #snapshot-health-banner.snapshot-health-missing,

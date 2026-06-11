@@ -1081,6 +1081,40 @@ test("bots view renders stale export rows visibly without counting them live", a
   assert.match(elements.get("bots-hidden-note").textContent, /No live workers currently running/);
 });
 
+test("bots view emits source-aware freshness diagnostics and preserves stale rows on fetch failure", () => {
+  const botsJs = read("docs/js/bots.js");
+
+  assert.match(botsJs, /function dispatchHydrationDiagnostics\(detail = \{\}\)/);
+  assert.match(botsJs, /status_source: source/);
+  assert.match(botsJs, /last_successful_live_fetch_at: state\.lastSuccessfulLiveFetchAt/);
+  assert.match(botsJs, /source === "live_api" \? "admin-live" : source/);
+  assert.match(botsJs, /Runtime API error - showing last known bot rows as stale\/fallback/);
+  assert.match(botsJs, /stale_reason: "live_api_fetch_failed"/);
+  assert.match(botsJs, /renderRowsAndCountersFromState\(state\.lastReceivedAt\)/);
+  assert.match(botsJs, /const previousPayload = state\.lastPayload && Array\.isArray\(state\.lastPayload\.bots\)/);
+});
+
+test("dashboard shell refreshes current route on visibility return and same-view route changes", () => {
+  const appJs = read("docs/js/app.js");
+
+  assert.match(appJs, /function bindVisibilityRefresh\(\)/);
+  assert.match(appJs, /document\.addEventListener\("visibilitychange"/);
+  assert.match(appJs, /document\.visibilityState !== "visible"/);
+  assert.match(appJs, /void refreshCurrentView\(\{ reason:/);
+  assert.match(appJs, /App\.currentView === targetView && routeChanged/);
+});
+
+test("snapshot warning remains source-aware and readable on warning background", () => {
+  const healthJs = read("docs/js/utils/snapshot-health.js");
+  const baseCss = read("docs/css/base.css");
+
+  assert.match(healthJs, /source === "live_api"/);
+  assert.match(healthJs, /detail\.ok !== false && isLiveDataSource/);
+  assert.match(healthJs, /detail\.ok === false \|\| detail\.stale === true/);
+  assert.match(baseCss, /#snapshot-health-banner[\s\S]*color: #241a04;/);
+  assert.match(baseCss, /#snapshot-health-banner\.snapshot-health-stale[\s\S]*color: #241a04;/);
+});
+
 test("bots view does not stack duplicate pollers across repeated mounts", async () => {
   const { sandbox, scheduler } = buildBotsSandbox();
 
@@ -1174,6 +1208,10 @@ test("bots view exposes per-instance debug endpoint and correlation-aware errors
   assert.match(botsJs, /subscription_auth_mode/);
   assert.match(botsJs, /bot\?\.transport_status \|\| bot\?\.status/);
   assert.match(botsJs, /target_source/);
+  assert.match(botsJs, /Target changed/);
+  assert.match(botsJs, /pipeline\.target_last_changed_at/);
+  assert.match(botsJs, /Target changed by/);
+  assert.match(botsJs, /pipeline\.target_changed_by/);
   assert.match(botsJs, /awaiting_first_webhook_event/);
   assert.match(botsJs, /normalized === "awaiting_first_webhook_event"\) return ""/);
   assert.match(botsJs, /values\.includes\("awaiting_first_webhook_event"\) \? "" : "ss-badge-warning"/);

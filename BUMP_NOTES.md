@@ -6,6 +6,13 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Emergency Admin hydration stabilization: the dashboard shell now rehydrates the current route on same-view route changes and visibility return, while preserving the explicit top-bar refresh button.
+- Stale snapshot banner handling is now source-aware: live admin API freshness events clear the warning, failed/stale admin hydration emits an actionable stale/error state, and the yellow warning uses dark readable text.
+- Bots `/telemetry` hydration now fetches `/api/admin/bots/status` on page entry, records live freshness diagnostics (`status_source`, `generated_at`, `age_seconds`, `stale_threshold_seconds`, `last_successful_live_fetch_at`), and keeps configured/stale rows visible on fetch failure as fallback instead of blanking the table.
+- Runtime-control bridge status remains separated from normal bot status: runtime-control/debug unavailability can degrade probe/manual debug, but it no longer dominates successful `/api/admin/bots/status` hydration.
+- Bots debug continues to surface Kick target, trigger evaluation, match/no-match, suppression, and dispatch fields from Runtime/Auth; Twitch staged/disabled rows remain non-running and do not look like active EventSub workers.
+- Human note: Admin pages should hydrate without clicking refresh, stale warnings should clear only after real live admin data, and Bots should stop sitting indefinitely on “Loading runtime status…” or “Waiting for runtime platform state…” when the status endpoint responds.
+
 - Item detail lightbox layout: desktop economy item detail modals are wider (`min(1360px, calc(100vw - 32px))`) with a larger copy column ratio and slim dark-themed scrollbars on the modal surface across Market Governance, Item Definitions, and Inventory/Wallet inspector flows.
 - Item detail metadata parity: Chat alias now renders immediately after Item code across Market Governance, Item Definitions, and Inventory/Wallet inspector modals, using the same scoped `SUSEMono` blue tint (`economy-item-code-value`) as item codes; empty aliases show `—`.
 - Authoritative item-definition `tags` field: Dashboard Item Definitions editor, create flow, and bulk inventory editor now edit comma-separated catalog tags persisted through Runtime/Auth; detail modals read definition `tags` for hashtag chips (chat alias remains separate metadata).

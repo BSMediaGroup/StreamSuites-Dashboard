@@ -130,6 +130,7 @@
     sourceUrl: null,
     hydrationLive: false,
     hydrationLabel: "Waiting for runtime status...",
+    lastSuccessfulLiveFetchAt: null,
     rowUi: Object.create(null),
     expandedCreators: Object.create(null),
     onBodyClick: null,
@@ -381,8 +382,25 @@
       stale_threshold_seconds: staleThresholdSeconds,
       age_seconds: ageSeconds,
       api_fetch_ok: diagnostics.api_fetch_ok !== false,
+      last_successful_live_fetch_at: diagnostics.last_successful_live_fetch_at || state.lastSuccessfulLiveFetchAt,
       stale
     };
+  }
+
+  function dispatchHydrationDiagnostics(detail = {}) {
+    try {
+      if (typeof window.dispatchEvent !== "function" || typeof CustomEvent !== "function") return;
+      window.dispatchEvent(new CustomEvent("streamsuites:admin-live-data", {
+        detail: {
+          view: "bots",
+          route: window.location?.pathname || "",
+          endpoint: state.sourceUrl || buildApiUrl(BOTS_STATUS_ENDPOINT),
+          ...detail
+        }
+      }));
+    } catch (err) {
+      console.warn("[Dashboard] Bot status live-data event dispatch failed", err);
+    }
   }
 
   function uniqueReasonCodes(values) {
@@ -1104,6 +1122,8 @@
         <div><span class="ss-bot-field-label">Webhook target</span><strong>${escapeHtml(pipeline.webhook_event_target || "-")}</strong></div>
         <div><span class="ss-bot-field-label">Target match</span><strong>${escapeHtml(pipeline.target_match === true ? "true" : pipeline.target_match === false ? "false" : "-")}</strong></div>
         <div><span class="ss-bot-field-label">Target mismatch</span><strong>${escapeHtml(pipeline.target_mismatch_reason || "-")}</strong></div>
+        <div><span class="ss-bot-field-label">Target changed</span><strong>${escapeHtml(formatTimestamp(pipeline.target_last_changed_at || ""))}</strong></div>
+        <div><span class="ss-bot-field-label">Target changed by</span><strong>${escapeHtml(pipeline.target_changed_by || "-")}</strong></div>
         ${recent.length ? `<div><span class="ss-bot-field-label">Recent messages</span><code>${escapeHtml(JSON.stringify(recent))}</code></div>` : ""}
       </div>
     `;
@@ -2464,17 +2484,24 @@
     }
     const payload = await res.json();
     state.sourceUrl = endpoint;
-    try {
-      if (typeof window.dispatchEvent !== "function" || typeof CustomEvent !== "function") {
-        return normalizePayload(payload);
-      }
-      window.dispatchEvent(new CustomEvent("streamsuites:admin-live-data", {
-        detail: { ok: true, source: "admin-live", endpoint }
-      }));
-    } catch (err) {
-      console.warn("[Dashboard] Bot status live-data event dispatch failed", err);
+    const normalized = normalizePayload(payload);
+    const diagnostics = normalized.runtimeDiagnostics || {};
+    const source = String(diagnostics.status_source || "").trim() || "live_api";
+    if (diagnostics.api_fetch_ok !== false && source === "live_api") {
+      state.lastSuccessfulLiveFetchAt = new Date().toISOString();
     }
-    return normalizePayload(payload);
+    dispatchHydrationDiagnostics({
+      ok: diagnostics.api_fetch_ok !== false,
+      source: source === "live_api" ? "admin-live" : source,
+      status_source: source,
+      generated_at: diagnostics.generated_at,
+      age_seconds: diagnostics.age_seconds,
+      stale_threshold_seconds: diagnostics.stale_threshold_seconds,
+      stale: diagnostics.stale === true,
+      stale_reason: diagnostics.stale_reason || null,
+      last_successful_live_fetch_at: state.lastSuccessfulLiveFetchAt
+    });
+    return normalized;
   }
 
   function normalizeCreatorsPayload(payload) {
@@ -2596,6 +2623,14 @@
     }
     state.refreshAbortController?.abort();
     state.refreshAbortController = new AbortController();
+    if (!state.lastPayload) {
+      if (el.status) {
+        el.status.textContent = "Loading runtime status...";
+      }
+      if (el.platformsStatus) {
+        el.platformsStatus.textContent = "Loading runtime platform state...";
+      }
+    }
     try {
       state.refreshInFlight = Promise.all([fetchPayload(state.refreshAbortController.signal), fetchCreators(state.refreshAbortController.signal)])
         .then(([normalized, creators]) => {
@@ -2607,16 +2642,44 @@
         .catch((err) => {
           if (isAbortLikeError(err)) return { aborted: true };
           setRuntimeAvailable(false);
-          state.creators = [];
-          state.lastPayload = { bots: [], supportedPlatforms: [], generatedAt: null };
+          const previousPayload = state.lastPayload && Array.isArray(state.lastPayload.bots)
+            ? state.lastPayload
+            : null;
+          state.creators = Array.isArray(state.creators) ? state.creators : [];
+          state.lastPayload = previousPayload
+            ? {
+              ...previousPayload,
+              runtimeDiagnostics: {
+                ...(previousPayload.runtimeDiagnostics || {}),
+                api_fetch_ok: false,
+                status_source: "error",
+                stale: true,
+                stale_reason: "live_api_fetch_failed",
+                last_successful_live_fetch_at: state.lastSuccessfulLiveFetchAt
+              }
+            }
+            : {
+              bots: [],
+              supportedPlatforms: [],
+              generatedAt: null,
+              runtimeDiagnostics: {
+                api_fetch_ok: false,
+                status_source: "error",
+                stale: true,
+                stale_reason: "live_api_fetch_failed",
+                last_successful_live_fetch_at: state.lastSuccessfulLiveFetchAt
+              }
+            };
           state.deployPlatformSchemas = buildFallbackDeploySchemas();
-          state.platformSummary = buildPlatformSummary(null, state.deployPlatformSchemas, {
+          state.platformSummary = buildPlatformSummary(state.lastPayload, state.deployPlatformSchemas, {
             fallback: true,
             fallbackReason: "STALE / FALLBACK: runtime API unreachable."
           });
           state.lastReceivedAt = Date.now();
           state.hydrationLive = false;
-          state.hydrationLabel = "Runtime unreachable - bot status unavailable";
+          state.hydrationLabel = previousPayload
+            ? "Runtime API error - showing last known bot rows as stale/fallback"
+            : "Runtime unreachable - bot status unavailable";
           state.renderCache.rowSignature = "";
           state.renderCache.platformSignature = "";
           state.renderCache.creatorsSignature = "";
@@ -2625,14 +2688,15 @@
             el.status.textContent = state.hydrationLabel;
           }
           if (el.count) {
-            el.count.textContent = "-- creators";
+            const fallbackCount = Array.isArray(state.lastPayload.bots) ? state.lastPayload.bots.length : 0;
+            el.count.textContent = fallbackCount
+              ? `-- creators / ${fallbackCount} stale bot${fallbackCount === 1 ? "" : "s"}`
+              : "-- creators";
           }
           if (el.generatedAt) {
             el.generatedAt.textContent = "Generated: --";
           }
-          if (el.body) {
-            el.body.innerHTML = "";
-          }
+          renderRowsAndCountersFromState(state.lastReceivedAt);
           renderPlatformSummary(state.platformSummary, {
             live: false,
             updatedAt: null,
@@ -2647,6 +2711,16 @@
           const normalized = normalizeDashboardError(err, "runtime API unreachable");
           const detail = normalized ? ` (${normalized})` : "";
           setError(`Unable to load bot status from runtime API${detail}`);
+          dispatchHydrationDiagnostics({
+            ok: false,
+            source: "error",
+            status_source: "error",
+            api_fetch_ok: false,
+            stale: true,
+            stale_reason: "live_api_fetch_failed",
+            last_successful_live_fetch_at: state.lastSuccessfulLiveFetchAt,
+            error: normalized || "runtime API unreachable"
+          });
           return { aborted: false };
         })
         .finally(() => {
@@ -3470,6 +3544,7 @@
     state.sourceUrl = null;
     state.hydrationLive = false;
     state.hydrationLabel = "Waiting for runtime status...";
+    state.lastSuccessfulLiveFetchAt = null;
     state.rowUi = Object.create(null);
     state.expandedCreators = Object.create(null);
     state.renderCache = {

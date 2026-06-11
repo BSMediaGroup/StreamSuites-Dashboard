@@ -10,6 +10,7 @@ function isLiveDataSource(context = {}) {
   return source === "connected" ||
     source === "api" ||
     source === "admin-live" ||
+    source === "live_api" ||
     source.includes("runtime:auto") ||
     source.includes("runtime:polled");
 }
@@ -100,8 +101,17 @@ if (typeof window !== "undefined" && !window.__STREAMSUITES_SNAPSHOT_HEALTH_EVEN
   window.__STREAMSUITES_SNAPSHOT_HEALTH_EVENTS_BOUND__ = true;
   window.addEventListener("streamsuites:admin-live-data", (event) => {
     const detail = event?.detail || {};
-    if (detail.ok !== false) {
+    const source = String(detail.status_source || detail.source || "").trim();
+    if (detail.ok !== false && isLiveDataSource({ source })) {
       clearSnapshotHealthBanner();
+      return;
+    }
+    if (detail.ok === false || detail.stale === true) {
+      renderSnapshotHealthBanner({
+        status: detail.stale === true ? "stale" : "invalid",
+        ageMs: Number.isFinite(Number(detail.age_seconds)) ? Number(detail.age_seconds) * 1000 : null,
+        source
+      });
     }
   });
 }
