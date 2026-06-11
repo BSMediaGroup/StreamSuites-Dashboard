@@ -6,6 +6,14 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Fail-stop Bots hydration fix: direct `/telemetry` could mount before `docs/js/bots.js` loaded, so `window.BotsView?.init?.()` silently no-oped and left the static loading strings in place; Bots now replays init when the late-loaded module sees the Bots DOM/current route.
+- Bots status fetch hardening: `/api/admin/bots/status` uses a bounded timeout, renders endpoint/status/message on HTTP/network/timeout failure, keeps last known rows as explicitly stale/fallback, and keeps platform cards out of indefinite loading.
+- Bots refresh path now treats the live status fetch as authoritative and keeps creator-selector fetch failure non-blocking, so valid Runtime/Auth rows render even if `/api/admin/creators` is unavailable.
+- Stale snapshot warning fix: live admin data results are stored/replayed globally so a successful fresh Bots/admin fetch clears stale state even when the snapshot-health module imports after the fetch event; stale/fallback failures still set a specific warning reason.
+- Stale banner readability reinforced with dark stale-warning text and no text shadow on the yellow warning background.
+- Runtime-control/debug bridge unavailability remains non-blocking for Bots render; it can affect manual/debug controls but not `/api/admin/bots/status` hydration.
+- Human note: Admin Bots should hydrate automatically on direct load, same-route refresh, top-bar refresh, and visibility return, and should show a real fetch error instead of sitting on “Loading runtime status…” or “Loading runtime platform state…”.
+
 - Emergency Admin hydration stabilization: the dashboard shell now rehydrates the current route on same-view route changes and visibility return, while preserving the explicit top-bar refresh button.
 - Stale snapshot banner handling is now source-aware: live admin API freshness events clear the warning, failed/stale admin hydration emits an actionable stale/error state, and the yellow warning uses dark readable text.
 - Bots `/telemetry` hydration now fetches `/api/admin/bots/status` on page entry, records live freshness diagnostics (`status_source`, `generated_at`, `age_seconds`, `stale_threshold_seconds`, `last_successful_live_fetch_at`), and keeps configured/stale rows visible on fetch failure as fallback instead of blanking the table.

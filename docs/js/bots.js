@@ -8,6 +8,8 @@
   const POLL_INTERVAL_MS = 8000;
   const ASYNC_PROBE_POLL_INTERVAL_MS = 1500;
   const ASYNC_PROBE_TIMEOUT_MS = 120000;
+  const BOTS_STATUS_TIMEOUT_MS = 6500;
+  const BOTS_CREATORS_TIMEOUT_MS = 6500;
   const BOTS_STATUS_ENDPOINT = "/api/admin/bots/status";
   const BOTS_DEBUG_ENDPOINT = "/api/admin/bots/debug";
   const BOTS_DEBUG_PROBE_ENDPOINT = "/api/admin/bots/debug/probe";
@@ -388,15 +390,22 @@
   }
 
   function dispatchHydrationDiagnostics(detail = {}) {
+    const eventDetail = {
+      view: "bots",
+      route: window.location?.pathname || "",
+      endpoint: state.sourceUrl || buildApiUrl(BOTS_STATUS_ENDPOINT),
+      ...detail
+    };
+    try {
+      window.__STREAMSUITES_ADMIN_LIVE_DATA__ = eventDetail;
+      window.StreamSuitesSnapshotHealth?.handleAdminLiveData?.(eventDetail);
+    } catch (err) {
+      console.warn("[Dashboard] Bot status live-data replay failed", err);
+    }
     try {
       if (typeof window.dispatchEvent !== "function" || typeof CustomEvent !== "function") return;
       window.dispatchEvent(new CustomEvent("streamsuites:admin-live-data", {
-        detail: {
-          view: "bots",
-          route: window.location?.pathname || "",
-          endpoint: state.sourceUrl || buildApiUrl(BOTS_STATUS_ENDPOINT),
-          ...detail
-        }
+        detail: eventDetail
       }));
     } catch (err) {
       console.warn("[Dashboard] Bot status live-data event dispatch failed", err);
@@ -455,6 +464,116 @@
     if (!base) return path;
     const normalized = path.startsWith("/") ? path : `/${path}`;
     return `${base}${normalized}`;
+  }
+
+  function createTimeoutError(endpoint, timeoutMs) {
+    const err = new Error(`Request timed out after ${timeoutMs}ms`);
+    err.status = 0;
+    err.url = endpoint;
+    err.isTimeout = true;
+    return err;
+  }
+
+  async function parseResponsePayload(response) {
+    try {
+      return await response.json();
+    } catch (jsonError) {
+      try {
+        const text = await response.text();
+        return text ? { message: text } : null;
+      } catch (textError) {
+        return null;
+      }
+    }
+  }
+
+  function responseMessage(payload) {
+    if (!payload || typeof payload !== "object") return "";
+    return String(
+      payload.message ||
+        payload.error_description ||
+        payload.error ||
+        payload.detail ||
+        ""
+    ).trim();
+  }
+
+  async function fetchJsonWithTimeout(endpoint, { signal, timeoutMs, headers = {} } = {}) {
+    let timedOut = false;
+    let timeoutHandle = null;
+    const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+    let removeAbortListener = null;
+    const requestSignal = controller?.signal || signal;
+
+    if (controller && signal) {
+      const abortFromUpstream = () => controller.abort();
+      if (signal.aborted) {
+        abortFromUpstream();
+      } else if (typeof signal.addEventListener === "function") {
+        signal.addEventListener("abort", abortFromUpstream, { once: true });
+        removeAbortListener = () => signal.removeEventListener("abort", abortFromUpstream);
+      }
+    }
+
+    const fetchPromise = fetch(endpoint, {
+      cache: "no-store",
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+        ...headers
+      },
+      signal: requestSignal
+    }).catch((err) => {
+      if (timedOut) {
+        return new Promise(() => {});
+      }
+      throw err;
+    });
+    const timeoutPromise = new Promise((_, reject) => {
+      timeoutHandle = window.setTimeout(() => {
+        timedOut = true;
+        controller?.abort();
+        reject(createTimeoutError(endpoint, timeoutMs));
+      }, timeoutMs);
+    });
+
+    try {
+      const response = await Promise.race([fetchPromise, timeoutPromise]);
+      if (!response.ok) {
+        const payload = await parseResponsePayload(response);
+        const detail = responseMessage(payload);
+        const err = new Error(detail || `HTTP ${response.status}`);
+        err.status = response.status;
+        err.url = endpoint;
+        err.payload = payload;
+        err.responseMessage = detail;
+        err.isAuthError = response.status === 401 || response.status === 403;
+        throw err;
+      }
+      return await response.json();
+    } catch (err) {
+      if (err?.name === "AbortError") {
+        if (signal?.aborted && !timedOut) {
+          const abortErr = new Error("Request was aborted");
+          abortErr.status = 0;
+          abortErr.url = endpoint;
+          abortErr.isAbort = true;
+          throw abortErr;
+        }
+        throw createTimeoutError(endpoint, timeoutMs);
+      }
+      if (err && typeof err === "object" && !err.url) {
+        err.url = endpoint;
+      }
+      throw err;
+    } finally {
+      if (typeof removeAbortListener === "function") {
+        removeAbortListener();
+      }
+      if (timeoutHandle !== null) {
+        clearTimeout(timeoutHandle);
+      }
+    }
   }
 
   function isRuntimeAvailable() {
@@ -2474,17 +2593,15 @@
 
   async function fetchPayload(signal) {
     const endpoint = buildApiUrl(BOTS_STATUS_ENDPOINT);
-    const res = await fetch(endpoint, {
-      cache: "no-store",
-      credentials: "include",
-      signal
-    });
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`);
-    }
-    const payload = await res.json();
     state.sourceUrl = endpoint;
+    const payload = await fetchJsonWithTimeout(endpoint, {
+      signal,
+      timeoutMs: BOTS_STATUS_TIMEOUT_MS
+    });
     const normalized = normalizePayload(payload);
+    if (payload?.success === false) {
+      normalized.statusErrorMessage = responseMessage(payload) || "Runtime returned an error payload.";
+    }
     const diagnostics = normalized.runtimeDiagnostics || {};
     const source = String(diagnostics.status_source || "").trim() || "live_api";
     if (diagnostics.api_fetch_ok !== false && source === "live_api") {
@@ -2541,21 +2658,31 @@
 
   async function fetchCreators(signal) {
     const endpoint = buildApiUrl(CREATORS_ENDPOINT);
-    const res = await fetch(endpoint, {
-      cache: "no-store",
-      credentials: "include",
-      headers: { Accept: "application/json" },
-      signal
+    const payload = await fetchJsonWithTimeout(endpoint, {
+      signal,
+      timeoutMs: BOTS_CREATORS_TIMEOUT_MS
     });
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`);
-    }
-    const payload = await res.json();
     if (payload?.success === false) {
       const detail = String(payload?.error || payload?.message || "Creators endpoint failed");
       throw new Error(detail);
     }
     return normalizeCreatorsPayload(payload);
+  }
+
+  function formatStatusFetchError(err) {
+    const endpoint = String(err?.url || state.sourceUrl || buildApiUrl(BOTS_STATUS_ENDPOINT));
+    const status = Number(err?.status);
+    const statusText = err?.isTimeout
+      ? err.message || `Request timed out after ${BOTS_STATUS_TIMEOUT_MS}ms`
+      : Number.isFinite(status) && status > 0
+        ? `HTTP ${status}`
+        : err?.isAbort
+          ? "Request aborted"
+          : "Network error";
+    const detail =
+      responseMessage(err?.payload) ||
+      String(err?.responseMessage || err?.message || "runtime API unreachable").trim();
+    return `Endpoint: ${endpoint}. Status: ${statusText}. Message: ${detail}`;
   }
 
   function render(normalized) {
@@ -2632,12 +2759,33 @@
       }
     }
     try {
-      state.refreshInFlight = Promise.all([fetchPayload(state.refreshAbortController.signal), fetchCreators(state.refreshAbortController.signal)])
-        .then(([normalized, creators]) => {
+      state.refreshInFlight = Promise.allSettled([
+        fetchPayload(state.refreshAbortController.signal),
+        fetchCreators(state.refreshAbortController.signal)
+      ])
+        .then(([statusResult, creatorsResult]) => {
           if (!state.mounted) return;
-          state.creators = Array.isArray(creators) ? creators : [];
-          setError("");
+          if (statusResult.status !== "fulfilled") {
+            throw statusResult.reason;
+          }
+          const normalized = statusResult.value;
+          if (creatorsResult.status === "fulfilled") {
+            state.creators = Array.isArray(creatorsResult.value) ? creatorsResult.value : [];
+          }
           render(normalized);
+          if (normalized?.statusErrorMessage || normalized?.runtimeDiagnostics?.api_fetch_ok === false) {
+            const endpoint = state.sourceUrl || buildApiUrl(BOTS_STATUS_ENDPOINT);
+            const detail = normalized.statusErrorMessage ||
+              normalized.runtimeDiagnostics?.stale_reason ||
+              "Runtime returned a degraded bot status payload.";
+            setError(`Bot status loaded with runtime warning. Endpoint: ${endpoint}. Message: ${detail}`);
+          } else if (creatorsResult.status === "rejected") {
+            const detail = normalizeDashboardError(creatorsResult.reason, "creator selector unavailable");
+            setError(`Bot status loaded; creator selector unavailable (${detail}).`);
+          } else {
+            setError("");
+          }
+          return { ok: normalized?.runtimeDiagnostics?.api_fetch_ok !== false };
         })
         .catch((err) => {
           if (isAbortLikeError(err)) return { aborted: true };
@@ -2708,9 +2856,11 @@
           }
           updateManualCreatorSuggestions();
           updateManualDeployUi();
-          const normalized = normalizeDashboardError(err, "runtime API unreachable");
-          const detail = normalized ? ` (${normalized})` : "";
-          setError(`Unable to load bot status from runtime API${detail}`);
+          const errorDetail = formatStatusFetchError(err);
+          const fallbackDetail = previousPayload
+            ? " Showing last known bot rows as stale/fallback."
+            : " No fallback bot rows are available.";
+          setError(`Unable to load bot status. ${errorDetail}.${fallbackDetail}`);
           dispatchHydrationDiagnostics({
             ok: false,
             source: "error",
@@ -2719,7 +2869,7 @@
             stale: true,
             stale_reason: "live_api_fetch_failed",
             last_successful_live_fetch_at: state.lastSuccessfulLiveFetchAt,
-            error: normalized || "runtime API unreachable"
+            error: errorDetail
           });
           return { aborted: false };
         })
@@ -3438,7 +3588,7 @@
   }
 
   function startPolling() {
-    void startPollingAsync();
+    return startPollingAsync();
   }
 
   async function startPollingAsync() {
@@ -3507,7 +3657,7 @@
     updateManualCreatorSuggestions();
     updateManualDeployUi();
 
-    startPolling();
+    return startPolling();
   }
 
   function destroy() {
@@ -3559,4 +3709,19 @@
     init,
     destroy
   };
+
+  function shouldAutoInitMountedBotsView() {
+    if (state.mounted) return false;
+    if (!document.getElementById("bots-status")) return false;
+    if (window.StreamSuitesAdminShell?.getCurrentView?.() !== "bots") return false;
+    return true;
+  }
+
+  if (shouldAutoInitMountedBotsView()) {
+    window.setTimeout(() => {
+      if (shouldAutoInitMountedBotsView()) {
+        void init();
+      }
+    }, 0);
+  }
 })();

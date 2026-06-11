@@ -1343,16 +1343,23 @@ function broadcastViewHydrationState() {
 }
 
 function broadcastAdminLiveData(viewName, source = "api") {
+  const detail = {
+    view: viewName || App.currentView || "",
+    route: App.currentRoute?.pathname || window.location.pathname || "",
+    source,
+    status_source: source,
+    ok: true
+  };
+  try {
+    window.__STREAMSUITES_ADMIN_LIVE_DATA__ = detail;
+    window.StreamSuitesSnapshotHealth?.handleAdminLiveData?.(detail);
+  } catch (err) {
+    console.warn("[Dashboard] Admin live-data replay failed", err);
+  }
   try {
     window.dispatchEvent(
       new CustomEvent("streamsuites:admin-live-data", {
-        detail: {
-          view: viewName || App.currentView || "",
-          route: App.currentRoute?.pathname || window.location.pathname || "",
-          source,
-          status_source: source,
-          ok: true
-        }
+        detail
       })
     );
   } catch (err) {

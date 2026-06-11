@@ -1349,6 +1349,11 @@ button {
   z-index: 9999;
 }
 
+#snapshot-health-banner.snapshot-health-stale {
+  color: #241a04;
+  text-shadow: none;
+}
+
 /* ------------------------------
    Admin Shell (Phase 1 Sidebar)
    ------------------------------ */

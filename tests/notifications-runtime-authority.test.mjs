@@ -267,7 +267,14 @@ function createKickAwaitingLivestreamPayload() {
   };
 }
 
-function buildBotsSandbox({ botPayloads = [createBotsPayload()], creatorsPayload } = {}) {
+function buildBotsSandbox({
+  botPayloads = [createBotsPayload()],
+  creatorsPayload,
+  statusFetch,
+  creatorsFetch,
+  currentView = "",
+  snapshotHealthHandler = null
+} = {}) {
   const ids = [
     "bots-status",
     "bots-count",
@@ -298,6 +305,8 @@ function buildBotsSandbox({ botPayloads = [createBotsPayload()], creatorsPayload
 
   const scheduler = new FakeTimerScheduler();
   let botFetchIndex = 0;
+  const fetchLog = [];
+  const eventLog = [];
   const creatorsResponse = creatorsPayload || {
     creators: [{ creator_id: "daniel", display_name: "Daniel", tier: "pro", status: "active" }]
   };
@@ -311,9 +320,13 @@ function buildBotsSandbox({ botPayloads = [createBotsPayload()], creatorsPayload
     }
   };
 
-  async function fetchMock(url) {
+  async function fetchMock(url, options = {}) {
     const href = String(url);
+    fetchLog.push({ url: href, options });
     if (href.includes("/api/admin/bots/status")) {
+      if (typeof statusFetch === "function") {
+        return statusFetch(url, options);
+      }
       const payload = botPayloads[Math.min(botFetchIndex, botPayloads.length - 1)];
       botFetchIndex += 1;
       return {
@@ -325,6 +338,9 @@ function buildBotsSandbox({ botPayloads = [createBotsPayload()], creatorsPayload
       };
     }
     if (href.includes("/api/admin/creators")) {
+      if (typeof creatorsFetch === "function") {
+        return creatorsFetch(url, options);
+      }
       return {
         ok: true,
         status: 200,
@@ -340,16 +356,31 @@ function buildBotsSandbox({ botPayloads = [createBotsPayload()], creatorsPayload
     setTimeout: scheduler.setTimeout.bind(scheduler),
     clearTimeout: scheduler.clearTimeout.bind(scheduler),
     fetch: fetchMock,
+    location: { pathname: "/telemetry" },
     prompt: () => null,
     StreamSuitesDashboardPermissions: { has: () => true },
-    StreamSuitesAdminAuth: { config: { baseUrl: "" } }
+    StreamSuitesAdminAuth: { config: { baseUrl: "" } },
+    StreamSuitesAdminShell: currentView ? { getCurrentView: () => currentView } : undefined,
+    StreamSuitesSnapshotHealth: snapshotHealthHandler ? { handleAdminLiveData: snapshotHealthHandler } : undefined,
+    dispatchEvent(event) {
+      eventLog.push(event);
+      return true;
+    }
   };
+
+  class FakeCustomEvent {
+    constructor(type, init = {}) {
+      this.type = type;
+      this.detail = init.detail || {};
+    }
+  }
 
   const sandbox = {
     window,
     document,
     fetch: fetchMock,
     console,
+    CustomEvent: FakeCustomEvent,
     AbortController,
     setTimeout: scheduler.setTimeout.bind(scheduler),
     clearTimeout: scheduler.clearTimeout.bind(scheduler),
@@ -358,7 +389,7 @@ function buildBotsSandbox({ botPayloads = [createBotsPayload()], creatorsPayload
 
   vm.createContext(sandbox);
   vm.runInContext(read("docs/js/bots.js"), sandbox);
-  return { sandbox, elements, scheduler };
+  return { sandbox, elements, scheduler, fetchLog, eventLog };
 }
 
 function createRumbleBotsPayload() {
@@ -1081,10 +1112,97 @@ test("bots view renders stale export rows visibly without counting them live", a
   assert.match(elements.get("bots-hidden-note").textContent, /No live workers currently running/);
 });
 
+test("direct telemetry route auto-inits bots view when the module loads after the shell route", async () => {
+  const { scheduler, fetchLog, elements } = buildBotsSandbox({ currentView: "bots" });
+
+  await scheduler.runNext();
+  await flushMicrotasks();
+
+  assert.equal(fetchLog.filter((entry) => entry.url.includes("/api/admin/bots/status")).length, 1);
+  assert.match(elements.get("bots-table-body").innerHTML, /daniel/);
+  assert.doesNotMatch(elements.get("bots-status").textContent, /Loading runtime status/);
+});
+
+test("bots status fetch failure renders endpoint status and message instead of indefinite loading", async () => {
+  const { sandbox, elements } = buildBotsSandbox({
+    statusFetch: async () => ({
+      ok: false,
+      status: 503,
+      async json() {
+        return { message: "runtime status unavailable" };
+      },
+      async text() {
+        return "runtime status unavailable";
+      }
+    })
+  });
+
+  sandbox.window.BotsView.init();
+  await flushMicrotasks();
+
+  assert.match(elements.get("bots-error").textContent, /Endpoint: \/api\/admin\/bots\/status/);
+  assert.match(elements.get("bots-error").textContent, /HTTP 503/);
+  assert.match(elements.get("bots-error").textContent, /runtime status unavailable/);
+  assert.doesNotMatch(elements.get("bots-status").textContent, /Loading runtime status/);
+  assert.doesNotMatch(elements.get("bots-platforms-status").textContent, /Loading runtime platform state/);
+});
+
+test("bots view keeps status rows when creator selector fetch fails", async () => {
+  const { sandbox, elements } = buildBotsSandbox({
+    creatorsFetch: async () => {
+      throw new Error("creator endpoint unavailable");
+    }
+  });
+
+  sandbox.window.BotsView.init();
+  await flushMicrotasks();
+
+  assert.match(elements.get("bots-table-body").innerHTML, /daniel/);
+  assert.match(elements.get("bots-error").textContent, /creator selector unavailable/);
+});
+
+test("stale warning handler failures do not prevent bots rows rendering", async () => {
+  const { sandbox, elements } = buildBotsSandbox({
+    snapshotHealthHandler: () => {
+      throw new Error("banner failed");
+    }
+  });
+
+  sandbox.window.BotsView.init();
+  await flushMicrotasks();
+
+  assert.match(elements.get("bots-table-body").innerHTML, /Daniel/);
+  assert.match(elements.get("bots-count").textContent, /1 creator \/ 1 bot/);
+});
+
+test("runtime-control unavailable diagnostics do not block bots render", async () => {
+  const payload = createBotsPayload({ unchanged: true });
+  payload.runtime_diagnostics = {
+    status_source: "live_api",
+    api_fetch_ok: true,
+    runtime_control_reachable: false,
+    age_seconds: 0,
+    stale_threshold_seconds: 60
+  };
+  const { sandbox, elements } = buildBotsSandbox({ botPayloads: [payload] });
+
+  sandbox.window.BotsView.init();
+  await flushMicrotasks();
+
+  assert.match(elements.get("bots-table-body").innerHTML, /Daniel/);
+  assert.doesNotMatch(elements.get("bots-error").textContent, /runtime-control/i);
+});
+
 test("bots view emits source-aware freshness diagnostics and preserves stale rows on fetch failure", () => {
   const botsJs = read("docs/js/bots.js");
 
   assert.match(botsJs, /function dispatchHydrationDiagnostics\(detail = \{\}\)/);
+  assert.match(botsJs, /const BOTS_STATUS_TIMEOUT_MS = 6500;/);
+  assert.match(botsJs, /function fetchJsonWithTimeout/);
+  assert.match(botsJs, /function formatStatusFetchError/);
+  assert.match(botsJs, /Promise\.allSettled/);
+  assert.match(botsJs, /return startPollingAsync\(\);/);
+  assert.match(botsJs, /shouldAutoInitMountedBotsView/);
   assert.match(botsJs, /status_source: source/);
   assert.match(botsJs, /last_successful_live_fetch_at: state\.lastSuccessfulLiveFetchAt/);
   assert.match(botsJs, /source === "live_api" \? "admin-live" : source/);
@@ -1097,6 +1215,9 @@ test("bots view emits source-aware freshness diagnostics and preserves stale row
 test("dashboard shell refreshes current route on visibility return and same-view route changes", () => {
   const appJs = read("docs/js/app.js");
 
+  assert.match(appJs, /function refreshCurrentView\(options = \{\}\)/);
+  assert.match(appJs, /return loadView\(targetView,[\s\S]*force: true,[\s\S]*refresh: true/);
+  assert.match(appJs, /registerView\("bots", \{[\s\S]*onLoad: \(\) => window\.BotsView\?\.init\?\.\(\)/);
   assert.match(appJs, /function bindVisibilityRefresh\(\)/);
   assert.match(appJs, /document\.addEventListener\("visibilitychange"/);
   assert.match(appJs, /document\.visibilityState !== "visible"/);
@@ -1109,10 +1230,15 @@ test("snapshot warning remains source-aware and readable on warning background",
   const baseCss = read("docs/css/base.css");
 
   assert.match(healthJs, /source === "live_api"/);
-  assert.match(healthJs, /detail\.ok !== false && isLiveDataSource/);
-  assert.match(healthJs, /detail\.ok === false \|\| detail\.stale === true/);
+  assert.match(healthJs, /handleAdminLiveData/);
+  assert.match(healthJs, /window\.__STREAMSUITES_ADMIN_LIVE_DATA__/);
+  assert.match(healthJs, /isFreshAdminLiveData/);
+  assert.match(healthJs, /detail\.ok !== false && detail\.stale !== true && isLiveDataSource/);
+  assert.match(healthJs, /latestAdminLiveData\.ok === false \|\| latestAdminLiveData\.stale === true/);
+  assert.match(read("docs/js/app.js"), /window\.__STREAMSUITES_ADMIN_LIVE_DATA__ = detail/);
   assert.match(baseCss, /#snapshot-health-banner[\s\S]*color: #241a04;/);
   assert.match(baseCss, /#snapshot-health-banner\.snapshot-health-stale[\s\S]*color: #241a04;/);
+  assert.match(baseCss, /#snapshot-health-banner\.snapshot-health-stale[\s\S]*text-shadow: none;/);
 });
 
 test("bots view does not stack duplicate pollers across repeated mounts", async () => {
