@@ -1198,6 +1198,9 @@ test("bots view emits source-aware freshness diagnostics and preserves stale row
 
   assert.match(botsJs, /function dispatchHydrationDiagnostics\(detail = \{\}\)/);
   assert.match(botsJs, /const BOTS_STATUS_TIMEOUT_MS = 6500;/);
+  assert.match(botsJs, /const POLL_MAX_BACKOFF_MS = 60000;/);
+  assert.match(botsJs, /state\.statusFailureCount = Math\.min\(6/);
+  assert.match(botsJs, /POLL_INTERVAL_MS \* Math\.max\(1, 2 \*\* failureCount\)/);
   assert.match(botsJs, /function fetchJsonWithTimeout/);
   assert.match(botsJs, /function formatStatusFetchError/);
   assert.match(botsJs, /Promise\.allSettled/);
@@ -1210,6 +1213,13 @@ test("bots view emits source-aware freshness diagnostics and preserves stale row
   assert.match(botsJs, /stale_reason: "live_api_fetch_failed"/);
   assert.match(botsJs, /renderRowsAndCountersFromState\(state\.lastReceivedAt\)/);
   assert.match(botsJs, /const previousPayload = state\.lastPayload && Array\.isArray\(state\.lastPayload\.bots\)/);
+});
+
+test("bots view empty state is explicit after creator integration purge", () => {
+  const view = read("docs/views/bots.html");
+
+  assert.match(view, /No creator platform integrations are connected/);
+  assert.match(view, /Reconnect creator channels from Creator Dashboard/);
 });
 
 test("dashboard shell refreshes current route on visibility return and same-view route changes", () => {

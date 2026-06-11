@@ -6,6 +6,9 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Emergency Bots purge behavior: the Bots view now applies bounded polling backoff after `/api/admin/bots/status` failures, preserves the stale/unreachable warning behavior, and renders a clear no-integrations empty state after creator integrations are purged.
+- Human note: Admin Bots should not hammer Runtime/Auth while the origin is unavailable, and an empty post-purge status should stop at an explicit reconnect-required message instead of looking stuck.
+
 - Hard reset Bots hydration: `docs/js/bots.js` now exposes one idempotent `hydrate()` path used by direct module load, DOM ready, shell view-hydration completion, route activation, and visibility return; mounted views refresh in place instead of stacking pollers.
 - Dashboard hydration root cause: direct `/telemetry` could still race the shell route and the late-loaded Bots module because the previous auto-init only ran when `getCurrentView()` already returned `bots`; missed timing left the static loading copy visible until manual refresh.
 - Bot-status failure handling remains explicit: status timeout/HTTP/network failures clear loading strings, include endpoint/status/message details, and preserve last-known rows as stale/fallback when available.

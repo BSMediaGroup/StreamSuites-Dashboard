@@ -6,6 +6,7 @@
   "use strict";
 
   const POLL_INTERVAL_MS = 8000;
+  const POLL_MAX_BACKOFF_MS = 60000;
   const ASYNC_PROBE_POLL_INTERVAL_MS = 1500;
   const ASYNC_PROBE_TIMEOUT_MS = 120000;
   const BOTS_STATUS_TIMEOUT_MS = 6500;
@@ -134,6 +135,7 @@
     hydrationLive: false,
     hydrationLabel: "Waiting for runtime status...",
     lastSuccessfulLiveFetchAt: null,
+    statusFailureCount: 0,
     rowUi: Object.create(null),
     expandedCreators: Object.create(null),
     onBodyClick: null,
@@ -2705,6 +2707,7 @@
     state.hydrationLabel = hasLivePlatformRows
       ? "Live runtime API"
       : "Runtime API reachable - STALE / FALLBACK platform availability";
+    state.statusFailureCount = 0;
     setRuntimeAvailable(true);
 
     if (el.source) {
@@ -2858,6 +2861,7 @@
           updateManualCreatorSuggestions();
           updateManualDeployUi();
           const errorDetail = formatStatusFetchError(err);
+          state.statusFailureCount = Math.min(6, Number(state.statusFailureCount || 0) + 1);
           const fallbackDetail = previousPayload
             ? " Showing last known bot rows as stale/fallback."
             : " No fallback bot rows are available.";
@@ -3596,12 +3600,14 @@
   }
 
   async function startPollingAsync(generation = state.pollGeneration) {
-    await refresh();
+    const result = await refresh();
     if (!state.mounted || generation !== state.pollGeneration) return;
+    const failureCount = Number(state.statusFailureCount || 0);
+    const nextDelay = Math.min(POLL_MAX_BACKOFF_MS, POLL_INTERVAL_MS * Math.max(1, 2 ** failureCount));
     state.pollHandle = window.setTimeout(async () => {
       state.pollHandle = null;
       await startPollingAsync(generation);
-    }, POLL_INTERVAL_MS);
+    }, result?.aborted ? POLL_INTERVAL_MS : nextDelay);
   }
 
   function stopPolling() {
@@ -3707,6 +3713,7 @@
     state.hydrationLive = false;
     state.hydrationLabel = "Waiting for runtime status...";
     state.lastSuccessfulLiveFetchAt = null;
+    state.statusFailureCount = 0;
     state.rowUi = Object.create(null);
     state.expandedCreators = Object.create(null);
     state.renderCache = {
