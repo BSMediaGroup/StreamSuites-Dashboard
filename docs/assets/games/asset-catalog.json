@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "generated_at": "2026-06-05T19:08:24.965795Z",
+  "generated_at": "2026-06-07T17:44:09.574135Z",
   "asset_root": "assets/games",
-  "count": 214,
+  "count": 221,
   "items": [
     {
       "path": "assets/games/00-stone.webp",
@@ -1658,6 +1658,88 @@
       "definition_complete": true
     },
     {
+      "path": "assets/games/seal-ss-bronze.webp",
+      "filename": "seal-ss-bronze.webp",
+      "extension": "webp",
+      "label": "Seal Ss Silver",
+      "category": "Badge",
+      "tags": [
+        "seal",
+        "achievement"
+      ],
+      "notes": "seal, achievement",
+      "updated_at": "2026-06-07T17:44:09.561397Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/seal-ss-gold.webp",
+      "filename": "seal-ss-gold.webp",
+      "extension": "webp",
+      "label": "Seal Ss Gold",
+      "category": "Badge",
+      "tags": [
+        "seal",
+        "badge",
+        "streamsuites",
+        "achievement",
+        "gold"
+      ],
+      "notes": "seal, badge, streamsuites, achievement, gold",
+      "updated_at": "2026-06-07T16:56:45.377800Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/seal-ss-gold2.webp",
+      "filename": "seal-ss-gold2.webp",
+      "extension": "webp",
+      "label": "Seal Ss Gold 3",
+      "category": "item",
+      "tags": [
+        "seal",
+        "badge",
+        "streamsuites",
+        "achievement",
+        "gold"
+      ],
+      "notes": "seal, badge, streamsuites, achievement, gold",
+      "updated_at": "2026-06-07T17:02:08.906799Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/seal-ss-green.webp",
+      "filename": "seal-ss-green.webp",
+      "extension": "webp",
+      "label": "SS Seal Green",
+      "category": "item",
+      "tags": [
+        "seal",
+        "badge",
+        "streamsuites",
+        "achievement",
+        "green"
+      ],
+      "notes": "seal, badge, streamsuites, achievement, green",
+      "updated_at": "2026-06-07T16:58:16.305191Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/seal-ss-green2.webp",
+      "filename": "seal-ss-green2.webp",
+      "extension": "webp",
+      "label": "SS Seal Green 2",
+      "category": "Badge",
+      "tags": [
+        "seal",
+        "badge",
+        "streamsuites",
+        "achievement",
+        "green"
+      ],
+      "notes": "seal, badge, streamsuites, achievement, green",
+      "updated_at": "2026-06-07T17:01:01.528869Z",
+      "definition_complete": true
+    },
+    {
       "path": "assets/games/seal-ss-silver.webp",
       "filename": "seal-ss-silver.webp",
       "extension": "webp",
@@ -1669,6 +1751,23 @@
       ],
       "notes": "seal, achievement",
       "updated_at": "2026-06-05T19:08:24.951933Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/seal-ss-silver2.webp",
+      "filename": "seal-ss-silver2.webp",
+      "extension": "webp",
+      "label": "Seal Ss Silver2",
+      "category": "Badge",
+      "tags": [
+        "seal",
+        "badge",
+        "streamsuites",
+        "achievement",
+        "silver"
+      ],
+      "notes": "seal, badge, streamsuites, achievement, silver",
+      "updated_at": "2026-06-07T17:02:45.505754Z",
       "definition_complete": true
     },
     {
@@ -2655,6 +2754,23 @@
       ],
       "notes": "Smith & Wesson J-Frame",
       "updated_at": "2026-06-05T18:43:37.212137Z",
+      "definition_complete": true
+    },
+    {
+      "path": "assets/games/weapon-smith-wesson-jframe.webp",
+      "filename": "weapon-smith-wesson-jframe.webp",
+      "extension": "webp",
+      "label": "Weapon Smith Wesson Jframe",
+      "category": "Weapon",
+      "tags": [
+        "Smith & Wesson",
+        "J-Frame",
+        ".38 Special",
+        "gun",
+        "weapon"
+      ],
+      "notes": "Smith & Wesson, J-Frame, .38 Special, gun, weapon",
+      "updated_at": "2026-06-07T17:34:44.759712Z",
       "definition_complete": true
     },
     {
