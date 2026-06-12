@@ -11860,6 +11860,69 @@ body.ss-col-resizing-active {
   word-break: break-word;
 }
 
+.ss-bot-debug-pipeline {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ss-bot-debug-recent-messages {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid rgba(140, 156, 186, 0.16);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.ss-bot-debug-field-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ss-bot-debug-toggle {
+  appearance: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.3;
+  cursor: pointer;
+}
+
+.ss-bot-debug-toggle:hover,
+.ss-bot-debug-toggle:focus-visible {
+  text-decoration: underline;
+}
+
+.ss-bot-debug-recent-text {
+  min-width: 0;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.ss-bot-debug-recent-text.is-collapsed {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+}
+
+.ss-bot-debug-recent-text.is-expanded {
+  display: block;
+}
+
 .ss-bot-debug-timeline {
   display: grid;
   gap: 8px;

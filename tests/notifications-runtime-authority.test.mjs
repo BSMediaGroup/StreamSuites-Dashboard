@@ -1372,6 +1372,29 @@ test("bots view exposes per-instance debug endpoint and correlation-aware errors
   assert.match(componentsCss, /\.ss-bot-debug-timeline/);
 });
 
+test("bots debug recent messages render as full-width collapsed expandable block", () => {
+  const botsJs = read("docs/js/bots.js");
+  const componentsCss = read("docs/css/components.css");
+
+  assert.match(botsJs, /function renderRecentMessagesDebugBlock\(recent, bot, ui\)/);
+  assert.match(botsJs, /formatRecentMessagesDebugText\(recent\)/);
+  assert.match(botsJs, /recent\.length \? JSON\.stringify\(recent, null, 2\) : "-"/);
+  assert.match(botsJs, /<div class="ss-bot-debug-pipeline">/);
+  assert.match(botsJs, /<div class="ss-bot-debug-grid">[\s\S]*\$\{renderRecentMessagesDebugBlock\(recent, bot, ui\)\}/);
+  assert.doesNotMatch(botsJs, /Recent messages<\/span><code>\$\{escapeHtml\(JSON\.stringify\(recent\)\)\}<\/code>/);
+  assert.match(botsJs, /class="ss-bot-debug-recent-messages"/);
+  assert.match(botsJs, /class="ss-bot-debug-recent-text \$\{expanded \? "is-expanded" : "is-collapsed"\}"/);
+  assert.match(botsJs, /data-bot-debug-recent-toggle="1"/);
+  assert.match(botsJs, /aria-expanded="\$\{expanded \? "true" : "false"\}"/);
+  assert.match(botsJs, /debugRecentMessagesExpanded: ui\.debugRecentMessagesExpanded === true/);
+  assert.match(botsJs, /ui\.debugRecentMessagesExpanded = ui\.debugRecentMessagesExpanded !== true/);
+  assert.match(componentsCss, /\.ss-bot-debug-pipeline/);
+  assert.match(componentsCss, /\.ss-bot-debug-recent-messages/);
+  assert.match(componentsCss, /\.ss-bot-debug-recent-text[\s\S]*white-space: pre-wrap;/);
+  assert.match(componentsCss, /\.ss-bot-debug-recent-text[\s\S]*overflow-wrap: anywhere;/);
+  assert.match(componentsCss, /\.ss-bot-debug-recent-text\.is-collapsed[\s\S]*-webkit-line-clamp: 5;/);
+});
+
 test("bots view renders Kick awaiting livestream as pending without blocked count", async () => {
   const { sandbox, elements } = buildBotsSandbox({
     botPayloads: [createKickAwaitingLivestreamPayload()],

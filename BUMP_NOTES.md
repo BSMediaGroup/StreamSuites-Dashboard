@@ -6,6 +6,9 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Bots debug recent messages layout: `docs/js/bots.js` now renders trigger-pipeline recent messages as a dedicated full-width debug block under the compact diagnostics grid, with per-bot Show more/Show less state and a `-` placeholder when no messages are present; `docs/css/components.css` clamps the block to five wrapped lines by default and uses pre-wrap/anywhere wrapping for long JSON, URLs, IDs, and tokens.
+- Human note: expanded Admin Bots debug panels should keep recent/latest chat messages readable without stretching or spilling out of the diagnostics panel.
+
 - Emergency Bots purge behavior: the Bots view now applies bounded polling backoff after `/api/admin/bots/status` failures, preserves the stale/unreachable warning behavior, and renders a clear no-integrations empty state after creator integrations are purged.
 - Human note: Admin Bots should not hammer Runtime/Auth while the origin is unavailable, and an empty post-purge status should stop at an explicit reconnect-required message instead of looking stuck.
 

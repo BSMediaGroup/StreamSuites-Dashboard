@@ -907,6 +907,7 @@
         debugNotice: "",
         debugPayload: null,
         debugProbeToken: null,
+        debugRecentMessagesExpanded: false,
         debugTransport: defaultDebugTransport()
       };
     }
@@ -1218,7 +1219,42 @@
     `;
   }
 
-  function renderTriggerPipeline(payload) {
+  function formatRecentMessagesDebugText(recent) {
+    return recent.length ? JSON.stringify(recent, null, 2) : "-";
+  }
+
+  function shouldExpandRecentMessagesDebug(text) {
+    if (!text || text === "-") return false;
+    return text.split(/\r?\n/).length > 5 || text.length > 420;
+  }
+
+  function renderRecentMessagesDebugBlock(recent, bot, ui) {
+    const text = formatRecentMessagesDebugText(recent);
+    const canExpand = shouldExpandRecentMessagesDebug(text);
+    const expanded = canExpand && ui?.debugRecentMessagesExpanded === true;
+    const creatorId = String(bot?.creator_id || "");
+    const platform = String(bot?.platform || "");
+    return `
+      <div class="ss-bot-debug-recent-messages">
+        <div class="ss-bot-debug-field-head">
+          <span class="ss-bot-field-label">Recent messages</span>
+          ${canExpand ? `
+            <button
+              class="ss-bot-debug-toggle"
+              type="button"
+              data-bot-debug-recent-toggle="1"
+              data-creator-id="${encodeData(creatorId)}"
+              data-platform="${encodeData(platform)}"
+              aria-expanded="${expanded ? "true" : "false"}"
+            >${expanded ? "Show less" : "Show more"}</button>
+          ` : ""}
+        </div>
+        <pre class="ss-bot-debug-recent-text ${expanded ? "is-expanded" : "is-collapsed"}">${escapeHtml(text)}</pre>
+      </div>
+    `;
+  }
+
+  function renderTriggerPipeline(payload, bot, ui) {
     const pipeline = debugRawValue(payload, ["diagnostics", "trigger_pipeline"], null);
     if (!pipeline || typeof pipeline !== "object") return "";
     const recent = Array.isArray(pipeline.recent_messages) ? pipeline.recent_messages.slice(-10) : [];
@@ -1226,27 +1262,29 @@
       ? pipeline.last_trigger_matches.map((item) => item?.name || item?.id || item).filter(Boolean).join(", ")
       : "";
     return `
-      <div class="ss-bot-debug-grid">
-        <div><span class="ss-bot-field-label">Trigger Pipeline</span><strong>${escapeHtml(pipeline.last_pipeline_outcome || "-")}</strong></div>
-        <div><span class="ss-bot-field-label">Inbound message</span><strong>${escapeHtml(pipeline.last_inbound_message_id || "-")}</strong></div>
-        <div><span class="ss-bot-field-label">Inbound time</span><strong>${escapeHtml(formatTimestamp(pipeline.last_chat_event_at || pipeline.last_webhook_event_at || ""))}</strong></div>
-        <div><span class="ss-bot-field-label">Command/text</span><strong>${escapeHtml((pipeline.last_inbound_message_text && (pipeline.last_inbound_message_text.command || `length ${pipeline.last_inbound_message_text.length}`)) || "-")}</strong></div>
-        <div><span class="ss-bot-field-label">Sender</span><strong>${escapeHtml(pipeline.last_sender_username || "-")}</strong></div>
-        <div><span class="ss-bot-field-label">Evaluation</span><strong>${escapeHtml(formatTimestamp(pipeline.last_trigger_evaluation_at || ""))}</strong></div>
-        <div><span class="ss-bot-field-label">Matched triggers</span><strong>${escapeHtml(String(pipeline.last_trigger_match_count ?? 0))}${matches ? ` - ${escapeHtml(matches)}` : ""}</strong></div>
-        <div><span class="ss-bot-field-label">Actions</span><strong>${escapeHtml(String(pipeline.last_trigger_action_count ?? 0))}</strong></div>
-        <div><span class="ss-bot-field-label">Dispatch</span><strong>${escapeHtml(pipeline.last_dispatch_status || "-")}</strong></div>
-        <div><span class="ss-bot-field-label">Dispatch HTTP</span><strong>${escapeHtml(String(pipeline.last_dispatch_http_status ?? "-"))}</strong></div>
-        <div><span class="ss-bot-field-label">Dispatch message</span><strong>${escapeHtml(pipeline.last_dispatch_response_message || "-")}</strong></div>
-        <div><span class="ss-bot-field-label">Suppression</span><strong>${escapeHtml(pipeline.last_suppression_reason || "-")}</strong></div>
-        <div><span class="ss-bot-field-label">Configured target</span><strong>${escapeHtml(pipeline.configured_target || "-")}</strong></div>
-        <div><span class="ss-bot-field-label">Active target</span><strong>${escapeHtml(pipeline.active_target || "-")}</strong></div>
-        <div><span class="ss-bot-field-label">Webhook target</span><strong>${escapeHtml(pipeline.webhook_event_target || "-")}</strong></div>
-        <div><span class="ss-bot-field-label">Target match</span><strong>${escapeHtml(pipeline.target_match === true ? "true" : pipeline.target_match === false ? "false" : "-")}</strong></div>
-        <div><span class="ss-bot-field-label">Target mismatch</span><strong>${escapeHtml(pipeline.target_mismatch_reason || "-")}</strong></div>
-        <div><span class="ss-bot-field-label">Target changed</span><strong>${escapeHtml(formatTimestamp(pipeline.target_last_changed_at || ""))}</strong></div>
-        <div><span class="ss-bot-field-label">Target changed by</span><strong>${escapeHtml(pipeline.target_changed_by || "-")}</strong></div>
-        ${recent.length ? `<div><span class="ss-bot-field-label">Recent messages</span><code>${escapeHtml(JSON.stringify(recent))}</code></div>` : ""}
+      <div class="ss-bot-debug-pipeline">
+        <div class="ss-bot-debug-grid">
+          <div><span class="ss-bot-field-label">Trigger Pipeline</span><strong>${escapeHtml(pipeline.last_pipeline_outcome || "-")}</strong></div>
+          <div><span class="ss-bot-field-label">Inbound message</span><strong>${escapeHtml(pipeline.last_inbound_message_id || "-")}</strong></div>
+          <div><span class="ss-bot-field-label">Inbound time</span><strong>${escapeHtml(formatTimestamp(pipeline.last_chat_event_at || pipeline.last_webhook_event_at || ""))}</strong></div>
+          <div><span class="ss-bot-field-label">Command/text</span><strong>${escapeHtml((pipeline.last_inbound_message_text && (pipeline.last_inbound_message_text.command || `length ${pipeline.last_inbound_message_text.length}`)) || "-")}</strong></div>
+          <div><span class="ss-bot-field-label">Sender</span><strong>${escapeHtml(pipeline.last_sender_username || "-")}</strong></div>
+          <div><span class="ss-bot-field-label">Evaluation</span><strong>${escapeHtml(formatTimestamp(pipeline.last_trigger_evaluation_at || ""))}</strong></div>
+          <div><span class="ss-bot-field-label">Matched triggers</span><strong>${escapeHtml(String(pipeline.last_trigger_match_count ?? 0))}${matches ? ` - ${escapeHtml(matches)}` : ""}</strong></div>
+          <div><span class="ss-bot-field-label">Actions</span><strong>${escapeHtml(String(pipeline.last_trigger_action_count ?? 0))}</strong></div>
+          <div><span class="ss-bot-field-label">Dispatch</span><strong>${escapeHtml(pipeline.last_dispatch_status || "-")}</strong></div>
+          <div><span class="ss-bot-field-label">Dispatch HTTP</span><strong>${escapeHtml(String(pipeline.last_dispatch_http_status ?? "-"))}</strong></div>
+          <div><span class="ss-bot-field-label">Dispatch message</span><strong>${escapeHtml(pipeline.last_dispatch_response_message || "-")}</strong></div>
+          <div><span class="ss-bot-field-label">Suppression</span><strong>${escapeHtml(pipeline.last_suppression_reason || "-")}</strong></div>
+          <div><span class="ss-bot-field-label">Configured target</span><strong>${escapeHtml(pipeline.configured_target || "-")}</strong></div>
+          <div><span class="ss-bot-field-label">Active target</span><strong>${escapeHtml(pipeline.active_target || "-")}</strong></div>
+          <div><span class="ss-bot-field-label">Webhook target</span><strong>${escapeHtml(pipeline.webhook_event_target || "-")}</strong></div>
+          <div><span class="ss-bot-field-label">Target match</span><strong>${escapeHtml(pipeline.target_match === true ? "true" : pipeline.target_match === false ? "false" : "-")}</strong></div>
+          <div><span class="ss-bot-field-label">Target mismatch</span><strong>${escapeHtml(pipeline.target_mismatch_reason || "-")}</strong></div>
+          <div><span class="ss-bot-field-label">Target changed</span><strong>${escapeHtml(formatTimestamp(pipeline.target_last_changed_at || ""))}</strong></div>
+          <div><span class="ss-bot-field-label">Target changed by</span><strong>${escapeHtml(pipeline.target_changed_by || "-")}</strong></div>
+        </div>
+        ${renderRecentMessagesDebugBlock(recent, bot, ui)}
       </div>
     `;
   }
@@ -1331,7 +1369,7 @@
               <div><span class="ss-bot-field-label">Validation</span><code>${escapeHtml(JSON.stringify(debugRawValue(payload, ["probe", "subscription_request_validation"], debugRawValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_request_validation"], {}))))}</code></div>
             </div>
             ${renderSubscriptionAttempts(payload)}
-            ${renderTriggerPipeline(payload)}
+            ${renderTriggerPipeline(payload, bot, ui)}
             ${renderDebugTimeline(payload)}
             <pre class="ss-bot-debug-json" aria-label="Redacted debug JSON">${escapeHtml(jsonText)}</pre>
           `
@@ -1540,6 +1578,7 @@
             debugOpen: ui.debugOpen === true,
             debugPending: ui.debugPending === true,
             debugProbePending: ui.debugProbePending === true,
+            debugRecentMessagesExpanded: ui.debugRecentMessagesExpanded === true,
             debugError: String(ui.debugError || ""),
             debugNotice: String(ui.debugNotice || ""),
             payloadCorrelation: String(payload?.correlation_id || payload?.diagnostics?.summary?.latest_correlation_id || ""),
@@ -3521,6 +3560,19 @@
       state.expandedCreators[creatorId] = state.expandedCreators[creatorId] !== true;
       state.renderCache.rowSignature = "";
       renderRowsAndCountersFromState();
+      return;
+    }
+
+    const recentMessagesToggle = event.target.closest("[data-bot-debug-recent-toggle]");
+    if (recentMessagesToggle instanceof HTMLButtonElement && !recentMessagesToggle.disabled) {
+      const creatorId = decodeData(recentMessagesToggle.dataset.creatorId || "");
+      const platform = decodeData(recentMessagesToggle.dataset.platform || "");
+      if (creatorId && platform) {
+        const ui = getRowUi(creatorId, platform);
+        ui.debugRecentMessagesExpanded = ui.debugRecentMessagesExpanded !== true;
+        state.renderCache.rowSignature = "";
+        renderRowsAndCountersFromState();
+      }
       return;
     }
 
