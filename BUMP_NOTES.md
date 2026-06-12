@@ -6,6 +6,10 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Admin Bots polling state preservation: `docs/js/bots.js` now keys per-row UI state by `creator_id`, `platform`, and `session_id` when present, migrates older creator/platform state, preserves expanded creator detail drawers, Twitch debug drawers, recent-message expansion, and scroll position across background polling and manual refresh, and prunes saved state only when the relevant row disappears.
+- Human note: the Bots table should keep open details/debug panels open while row content updates every poll; removed rows clean up their saved UI state without disabling polling or redesigning the page.
+- Validation performed: `node --check docs/js/bots.js`; `node --test tests\notifications-runtime-authority.test.mjs`; `git diff --check`.
+
 - Bots debug recent messages layout: `docs/js/bots.js` now renders trigger-pipeline recent messages as a dedicated full-width debug block under the compact diagnostics grid, with per-bot Show more/Show less state and a `-` placeholder when no messages are present; `docs/css/components.css` clamps the block to five wrapped lines by default and uses pre-wrap/anywhere wrapping for long JSON, URLs, IDs, and tokens.
 - Human note: expanded Admin Bots debug panels should keep recent/latest chat messages readable without stretching or spilling out of the diagnostics panel.
 

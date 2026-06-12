@@ -269,6 +269,7 @@ function createKickAwaitingLivestreamPayload() {
 
 function buildBotsSandbox({
   botPayloads = [createBotsPayload()],
+  debugPayloads = [],
   creatorsPayload,
   statusFetch,
   creatorsFetch,
@@ -305,6 +306,7 @@ function buildBotsSandbox({
 
   const scheduler = new FakeTimerScheduler();
   let botFetchIndex = 0;
+  let debugFetchIndex = 0;
   const fetchLog = [];
   const eventLog = [];
   const creatorsResponse = creatorsPayload || {
@@ -329,6 +331,26 @@ function buildBotsSandbox({
       }
       const payload = botPayloads[Math.min(botFetchIndex, botPayloads.length - 1)];
       botFetchIndex += 1;
+      return {
+        ok: true,
+        status: 200,
+        async json() {
+          return payload;
+        }
+      };
+    }
+    if (href.includes("/api/admin/bots/debug")) {
+      const payload = debugPayloads[Math.min(debugFetchIndex, Math.max(debugPayloads.length - 1, 0))] || {
+        success: true,
+        generated_at: "2026-06-13T01:00:00Z",
+        bot: { platform: "twitch", lifecycle_status: "listening", transport_status: "eventsub_websocket_connected", runner_status: "listening" },
+        diagnostics: {
+          summary: { event_count: 1, trace_source: "persisted" },
+          trigger_pipeline: { recent_messages: [] },
+          exports: { session_snapshot: {} }
+        }
+      };
+      debugFetchIndex += 1;
       return {
         ok: true,
         status: 200,
@@ -382,6 +404,7 @@ function buildBotsSandbox({
     console,
     CustomEvent: FakeCustomEvent,
     AbortController,
+    URLSearchParams,
     setTimeout: scheduler.setTimeout.bind(scheduler),
     clearTimeout: scheduler.clearTimeout.bind(scheduler),
     HTMLButtonElement: FakeButtonElement
@@ -968,6 +991,150 @@ test("bots view groups main runtime rows by creator and keeps platform details i
   assert.doesNotMatch(tableHtml, /ss-bot-instance-card/);
 });
 
+function clickBotsTable(elements, button) {
+  const handlers = Array.from(elements.get("bots-table-body").listeners.get("click") || []);
+  assert.ok(handlers.length > 0, "bots table click listener is registered");
+  return Promise.all(handlers.map((handler) => handler({
+    target: {
+      closest(selector) {
+        return selector === button.selector ? button.element : null;
+      }
+    },
+    preventDefault() {}
+  })));
+}
+
+function twitchBotsPayload({ reason = "first", includeRow = true } = {}) {
+  return {
+    generated_at: "2026-06-13T01:00:00Z",
+    server_generated_at: "2026-06-13T01:00:00Z",
+    supported_platforms: ["twitch"],
+    platform_capabilities: {
+      twitch: { platform: "twitch", label: "Twitch", manual_deploy_enabled: true, staged: false }
+    },
+    platforms: [
+      { platform: "twitch", label: "Twitch", available: true, status: "ready", global_status: "ready" }
+    ],
+    bots: includeRow ? [
+      {
+        creator_id: "creator-twitch",
+        platform: "twitch",
+        session_type: "auto",
+        session_id: "twitch-auto-a106f79667525d86",
+        status: "listening",
+        lifecycle_state: "listening",
+        runner_state: "listening",
+        transport_status: "eventsub_websocket_connected",
+        subscription_status: "enabled",
+        desired: true,
+        live_worker_exists: true,
+        status_reason: reason,
+        active_target: "danielclancylive",
+        target_normalized: "danielclancylive",
+        resolved_target: { channel_handle: "danielclancylive", broadcaster_user_id: "985020874" },
+        last_heartbeat_at: "2026-06-13T01:00:00Z"
+      }
+    ] : []
+  };
+}
+
+test("bots polling preserves expanded detail and debug drawers while row content updates", async () => {
+  const { sandbox, elements, scheduler } = buildBotsSandbox({
+    botPayloads: [
+      twitchBotsPayload({ reason: "first status reason" }),
+      twitchBotsPayload({ reason: "updated status reason" })
+    ]
+  });
+  sandbox.window.BotsView.init();
+  await flushMicrotasks();
+
+  const expand = new FakeButtonElement("expand");
+  expand.dataset.botExpand = encodeURIComponent("creator-twitch");
+  await clickBotsTable(elements, { selector: "[data-bot-expand]", element: expand });
+  assert.match(elements.get("bots-table-body").innerHTML, /ss-bot-instance-card/);
+
+  const debug = new FakeButtonElement("debug");
+  debug.dataset.creatorId = encodeURIComponent("creator-twitch");
+  debug.dataset.platform = encodeURIComponent("twitch");
+  debug.dataset.sessionId = encodeURIComponent("twitch-auto-a106f79667525d86");
+  await clickBotsTable(elements, { selector: "[data-bot-debug]", element: debug });
+  await flushMicrotasks();
+  assert.match(elements.get("bots-table-body").innerHTML, /ss-bot-debug-panel/);
+
+  await scheduler.runNext();
+  await flushMicrotasks();
+
+  const html = elements.get("bots-table-body").innerHTML;
+  assert.match(html, /updated status reason/);
+  assert.match(html, /ss-bot-instance-card/);
+  assert.match(html, /ss-bot-debug-panel/);
+});
+
+test("bots recent messages expansion survives mocked polling refresh", async () => {
+  const recent = Array.from({ length: 8 }, (_, index) => ({
+    timestamp: `2026-06-13T01:00:0${index}Z`,
+    message_id: `msg-${index}`,
+    message_text_summary: { command: "!ping", length: 5 }
+  }));
+  const debugPayload = {
+    success: true,
+    generated_at: "2026-06-13T01:00:00Z",
+    bot: { platform: "twitch", lifecycle_status: "listening", transport_status: "eventsub_websocket_connected", runner_status: "listening" },
+    diagnostics: {
+      summary: { event_count: 3, trace_source: "persisted" },
+      trigger_pipeline: { recent_messages: recent },
+      exports: { session_snapshot: {} }
+    }
+  };
+  const { sandbox, elements, scheduler } = buildBotsSandbox({
+    botPayloads: [twitchBotsPayload({ reason: "first" }), twitchBotsPayload({ reason: "second" })],
+    debugPayloads: [debugPayload]
+  });
+  sandbox.window.BotsView.init();
+  await flushMicrotasks();
+
+  const expand = new FakeButtonElement("expand");
+  expand.dataset.botExpand = encodeURIComponent("creator-twitch");
+  await clickBotsTable(elements, { selector: "[data-bot-expand]", element: expand });
+  const debug = new FakeButtonElement("debug");
+  debug.dataset.creatorId = encodeURIComponent("creator-twitch");
+  debug.dataset.platform = encodeURIComponent("twitch");
+  debug.dataset.sessionId = encodeURIComponent("twitch-auto-a106f79667525d86");
+  await clickBotsTable(elements, { selector: "[data-bot-debug]", element: debug });
+  await flushMicrotasks();
+
+  const recentToggle = new FakeButtonElement("recent");
+  recentToggle.dataset.creatorId = encodeURIComponent("creator-twitch");
+  recentToggle.dataset.platform = encodeURIComponent("twitch");
+  recentToggle.dataset.sessionId = encodeURIComponent("twitch-auto-a106f79667525d86");
+  await clickBotsTable(elements, { selector: "[data-bot-debug-recent-toggle]", element: recentToggle });
+  assert.match(elements.get("bots-table-body").innerHTML, /ss-bot-debug-recent-text is-expanded/);
+
+  await scheduler.runNext();
+  await flushMicrotasks();
+  assert.match(elements.get("bots-table-body").innerHTML, /ss-bot-debug-recent-text is-expanded/);
+});
+
+test("bots refresh prunes drawer state only when row disappears", async () => {
+  const { sandbox, elements, scheduler } = buildBotsSandbox({
+    botPayloads: [twitchBotsPayload({ reason: "present" }), twitchBotsPayload({ includeRow: false })]
+  });
+  sandbox.window.BotsView.init();
+  await flushMicrotasks();
+
+  const expand = new FakeButtonElement("expand");
+  expand.dataset.botExpand = encodeURIComponent("creator-twitch");
+  await clickBotsTable(elements, { selector: "[data-bot-expand]", element: expand });
+  assert.match(elements.get("bots-table-body").innerHTML, /ss-bot-instance-card/);
+
+  await scheduler.runNext();
+  await flushMicrotasks();
+
+  const html = elements.get("bots-table-body").innerHTML;
+  assert.doesNotMatch(html, /ss-bot-instance-card/);
+  assert.doesNotMatch(html, /creator-twitch/);
+});
+
 test("bots view hides unconfigured placeholder rows from older runtime payloads", async () => {
   const payload = createBotsPayload({ unchanged: true });
   payload.platforms[0].details.hidden_placeholder_count = 1;
@@ -1353,7 +1520,7 @@ test("bots view exposes per-instance debug endpoint and correlation-aware errors
   assert.match(botsJs, /values\.includes\("awaiting_first_webhook_event"\) \? "" : "ss-badge-warning"/);
   assert.match(botsJs, /listening_via_webhook/);
   assert.match(botsJs, /subscription_failed/);
-  assert.match(botsJs, /renderDebugPanel\(bot, getRowUi/);
+  assert.match(botsJs, /renderDebugPanel\(bot, ui\)/);
   assert.match(botsJs, /Copy Debug JSON/);
   assert.match(botsJs, /renderTriggerPipeline/);
   assert.match(botsJs, /Trigger Pipeline/);

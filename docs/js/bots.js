@@ -876,8 +876,10 @@
     return text || "unknown";
   }
 
-  function rowKey(creatorId, platform) {
-    return `${String(creatorId || "")}::${String(platform || "").toLowerCase()}`;
+  function rowKey(creatorId, platform, sessionId = "") {
+    const session = String(sessionId || "").trim();
+    const base = `${String(creatorId || "")}::${String(platform || "").toLowerCase()}`;
+    return session ? `${base}::${session}` : base;
   }
 
   function defaultDebugTransport() {
@@ -893,8 +895,13 @@
     };
   }
 
-  function getRowUi(creatorId, platform) {
-    const key = rowKey(creatorId, platform);
+  function getRowUi(creatorId, platform, sessionId = "") {
+    const key = rowKey(creatorId, platform, sessionId);
+    const legacyKey = rowKey(creatorId, platform);
+    if (!state.rowUi[key] && sessionId && state.rowUi[legacyKey]) {
+      state.rowUi[key] = state.rowUi[legacyKey];
+      delete state.rowUi[legacyKey];
+    }
     if (!state.rowUi[key]) {
       state.rowUi[key] = {
         pending: false,
@@ -912,6 +919,45 @@
       };
     }
     return state.rowUi[key];
+  }
+
+  function getBotUi(bot, fallbackCreatorId = "") {
+    return getRowUi(
+      String(bot?.creator_id || fallbackCreatorId || ""),
+      normalizePlatformKey(bot?.platform),
+      String(bot?.session_id || "")
+    );
+  }
+
+  function collectVisibleRowUiKeys(normalized) {
+    const keys = new Set();
+    (Array.isArray(normalized?.bots) ? normalized.bots : []).forEach((bot) => {
+      const creatorId = String(bot?.creator_id || bot?.creator_account_id || bot?.account_id || "").trim();
+      const platform = normalizePlatformKey(bot?.platform);
+      if (!creatorId || !platform) return;
+      keys.add(rowKey(creatorId, platform, String(bot?.session_id || "")));
+      keys.add(rowKey(creatorId, platform));
+    });
+    return keys;
+  }
+
+  function pruneMissingRowUi(normalized) {
+    const visibleKeys = collectVisibleRowUiKeys(normalized);
+    Object.keys(state.rowUi || {}).forEach((key) => {
+      if (!visibleKeys.has(key)) {
+        delete state.rowUi[key];
+      }
+    });
+    const visibleCreators = new Set(
+      (Array.isArray(normalized?.bots) ? normalized.bots : [])
+        .map((bot) => creatorKey(bot?.creator_id || bot?.creator_account_id || bot?.account_id))
+        .filter(Boolean)
+    );
+    Object.keys(state.expandedCreators || {}).forEach((creatorId) => {
+      if (!visibleCreators.has(creatorId)) {
+        delete state.expandedCreators[creatorId];
+      }
+    });
   }
 
   function isBotAttached(bot) {
@@ -1234,6 +1280,7 @@
     const expanded = canExpand && ui?.debugRecentMessagesExpanded === true;
     const creatorId = String(bot?.creator_id || "");
     const platform = String(bot?.platform || "");
+    const sessionId = String(bot?.session_id || "");
     return `
       <div class="ss-bot-debug-recent-messages">
         <div class="ss-bot-debug-field-head">
@@ -1245,6 +1292,7 @@
               data-bot-debug-recent-toggle="1"
               data-creator-id="${encodeData(creatorId)}"
               data-platform="${encodeData(platform)}"
+              data-session-id="${encodeData(sessionId)}"
               aria-expanded="${expanded ? "true" : "false"}"
             >${expanded ? "Show less" : "Show more"}</button>
           ` : ""}
@@ -1311,6 +1359,7 @@
             data-bot-debug-copy="1"
             data-creator-id="${encodeData(String(bot?.creator_id || ""))}"
             data-platform="${encodeData(String(bot?.platform || ""))}"
+            data-session-id="${encodeData(String(bot?.session_id || ""))}"
             ${payload ? "" : "disabled"}
           >Copy Debug JSON</button>
           <button
@@ -1531,7 +1580,7 @@
           return {
             bot,
             platformState: group.platformStates[platform] || null,
-            ui: getRowUi(String(bot?.creator_id || group.creatorId), platform)
+            ui: getBotUi(bot, group.creatorId)
           };
         })
       }))
@@ -1984,10 +2033,10 @@
     }
   }
 
-  function renderActionCell(bot, platformState) {
+  function renderActionCell(bot, platformState, uiOverride = null) {
     const creatorId = String(bot?.creator_id || "");
     const platform = String(bot?.platform || "");
-    const ui = getRowUi(creatorId, platform);
+    const ui = uiOverride || getBotUi(bot, creatorId);
     const deploySchema = getDeployPlatformSchema(platform);
     const deploySupported = deploySchema?.deployEnabled === true;
     const manageAllowed = canManageRuntime();
@@ -2149,6 +2198,7 @@
               .map((bot) => {
                 const platformKey = normalizePlatformKey(bot?.platform);
                 const platformState = group.platformStates[platformKey] || null;
+                const ui = getBotUi(bot, group.creatorId);
                 return `
                   <article class="ss-bot-instance-card">
                     <div class="ss-bot-instance-head">
@@ -2156,7 +2206,7 @@
                         <img src="${escapeHtml(platformIconPath(platformKey))}" alt="" loading="lazy" decoding="async" />
                         <span>${escapeHtml(platformDisplayName(platformKey))}</span>
                       </div>
-                      ${renderActionCell(bot, platformState)}
+                      ${renderActionCell(bot, platformState, ui)}
                     </div>
                     <div class="ss-bot-instance-grid">
                       <div>
@@ -2184,7 +2234,7 @@
                         ${renderBlockingCell(bot, platformState)}
                       </div>
                     </div>
-                    ${renderDebugPanel(bot, getRowUi(String(bot?.creator_id || group.creatorId), platformKey))}
+                    ${renderDebugPanel(bot, ui)}
                   </article>
                 `;
               })
@@ -2765,11 +2815,17 @@
     updateManualDeployUi();
 
     const hasRows = normalized && Array.isArray(normalized.bots) && normalized.bots.length > 0;
+    pruneMissingRowUi(normalized);
     const rowSignature = buildRowsSignature(normalized, state.platformSummary);
 
     if (el.body && rowSignature !== state.renderCache.rowSignature) {
+      const scrollX = Number.isFinite(window.scrollX) ? window.scrollX : null;
+      const scrollY = Number.isFinite(window.scrollY) ? window.scrollY : null;
       el.body.innerHTML = hasRows ? renderRows(normalized, now, state.platformSummary) : "";
       state.renderCache.rowSignature = rowSignature;
+      if (scrollX !== null && scrollY !== null && typeof window.scrollTo === "function") {
+        window.setTimeout(() => window.scrollTo(scrollX, scrollY), 0);
+      }
     }
     if (el.empty) {
       el.empty.classList.toggle("hidden", hasRows);
@@ -2979,10 +3035,15 @@
     const rowSignature = buildRowsSignature(state.lastPayload, state.platformSummary);
     if (el.body) {
       if (rowSignature !== state.renderCache.rowSignature) {
+        const scrollX = Number.isFinite(window.scrollX) ? window.scrollX : null;
+        const scrollY = Number.isFinite(window.scrollY) ? window.scrollY : null;
         el.body.innerHTML = hasRows
           ? renderRows(state.lastPayload, receivedAt, state.platformSummary)
           : "";
         state.renderCache.rowSignature = rowSignature;
+        if (scrollX !== null && scrollY !== null && typeof window.scrollTo === "function") {
+          window.setTimeout(() => window.scrollTo(scrollX, scrollY), 0);
+        }
       }
     }
     if (el.empty) {
@@ -3198,7 +3259,7 @@
   }
 
   async function loadBotDebug(creatorId, platform, sessionId = "") {
-    const ui = getRowUi(creatorId, platform);
+    const ui = getRowUi(creatorId, platform, sessionId);
     if (ui.debugPending) return;
     ui.debugOpen = true;
     ui.debugPending = true;
@@ -3235,8 +3296,8 @@
     }
   }
 
-  async function copyBotDebugJson(creatorId, platform) {
-    const ui = getRowUi(creatorId, platform);
+  async function copyBotDebugJson(creatorId, platform, sessionId = "") {
+    const ui = getRowUi(creatorId, platform, sessionId);
     if (!ui.debugPayload) return;
     const text = JSON.stringify(ui.debugPayload, null, 2);
     try {
@@ -3461,7 +3522,7 @@
   }
 
   async function runBotDebugProbe(creatorId, platform, sessionId = "", target = "") {
-    const ui = getRowUi(creatorId, platform);
+    const ui = getRowUi(creatorId, platform, sessionId);
     if (ui.debugProbePending) return;
     ui.debugOpen = true;
     ui.debugProbePending = true;
@@ -3567,8 +3628,9 @@
     if (recentMessagesToggle instanceof HTMLButtonElement && !recentMessagesToggle.disabled) {
       const creatorId = decodeData(recentMessagesToggle.dataset.creatorId || "");
       const platform = decodeData(recentMessagesToggle.dataset.platform || "");
+      const sessionId = decodeData(recentMessagesToggle.dataset.sessionId || "");
       if (creatorId && platform) {
-        const ui = getRowUi(creatorId, platform);
+        const ui = getRowUi(creatorId, platform, sessionId);
         ui.debugRecentMessagesExpanded = ui.debugRecentMessagesExpanded !== true;
         state.renderCache.rowSignature = "";
         renderRowsAndCountersFromState();
@@ -3580,8 +3642,9 @@
     if (debugCopyButton instanceof HTMLButtonElement && !debugCopyButton.disabled) {
       const creatorId = decodeData(debugCopyButton.dataset.creatorId || "");
       const platform = decodeData(debugCopyButton.dataset.platform || "");
+      const sessionId = decodeData(debugCopyButton.dataset.sessionId || "");
       if (creatorId && platform) {
-        void copyBotDebugJson(creatorId, platform);
+        void copyBotDebugJson(creatorId, platform, sessionId);
       }
       return;
     }
@@ -3604,7 +3667,7 @@
       const platform = decodeData(debugButton.dataset.platform || "");
       const sessionId = decodeData(debugButton.dataset.sessionId || "");
       if (!creatorId || !platform) return;
-      const ui = getRowUi(creatorId, platform);
+      const ui = getRowUi(creatorId, platform, sessionId);
       if (ui.debugOpen && (ui.debugPayload || ui.debugProbePending || ui.debugPending)) {
         cancelDebugProbePolling(ui, { preserveNotice: true });
         ui.debugOpen = false;
