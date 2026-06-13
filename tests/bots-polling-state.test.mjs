@@ -148,6 +148,69 @@ function debugPayload() {
   };
 }
 
+function currentVsHistoryDebugPayload() {
+  return {
+    success: true,
+    generated_at: "2026-06-13T01:00:00Z",
+    bot: {
+      platform: "twitch",
+      creator_id: "creator-twitch",
+      session_id: "twitch-eventsub-current",
+      lifecycle_status: "listening",
+      transport_status: "eventsub_websocket_connected",
+      runner_status: "listening"
+    },
+    diagnostics: {
+      summary: { event_count: 2, trace_source: "persisted", latest_error_code: null },
+      current_attempt: {
+        current_session_id: "twitch-eventsub-current",
+        current_session_status: "listening_no_messages_yet",
+        current_session_last_keepalive_at: "2026-06-13T01:00:00Z",
+        current_session_last_notification_at: null,
+        current_session_last_chat_message_at: null,
+        current_session_last_dispatch_status: "no_current_session_dispatch_attempt",
+        current_session_last_dispatch_response_message: null
+      },
+      trigger_pipeline: {
+        last_pipeline_outcome: "listening_no_messages_yet",
+        last_dispatch_status: "no_current_session_dispatch_attempt",
+        last_dispatch_response_message: null,
+        recent_messages: []
+      },
+      timeline: [
+        {
+          timestamp: "2026-06-13T00:50:00Z",
+          severity: "error",
+          phase: "dispatch_result",
+          step: "TwitchChatWorker._process_trigger_actions",
+          message: "Twitch dispatch attempt completed.",
+          code: "DISPATCH_FAILED",
+          history_scope: "history",
+          session_id: "twitch-eventsub-old"
+        },
+        {
+          timestamp: "2026-06-13T01:00:00Z",
+          severity: "info",
+          phase: "heartbeat",
+          step: "session_keepalive",
+          message: "Twitch EventSub keepalive received.",
+          history_scope: "current_session",
+          session_id: "twitch-eventsub-current"
+        }
+      ],
+      history_timeline: [
+        {
+          timestamp: "2026-06-13T00:50:00Z",
+          severity: "error",
+          phase: "dispatch_result",
+          message: "old dispatch failure"
+        }
+      ],
+      exports: { session_snapshot: {} }
+    }
+  };
+}
+
 function buildBotsSandbox({ botPayloads, debugPayloads = [debugPayload()], scroll = { x: 0, y: 0 } } = {}) {
   const ids = [
     "bots-status", "bots-count", "bots-generated-at", "bots-source", "bots-error",
@@ -340,4 +403,50 @@ test("Bots refresh prunes saved drawer state only after the row disappears", asy
   assert.doesNotMatch(html, /ss-bot-instance-card/);
   assert.doesNotMatch(html, /ss-bot-debug-panel/);
   assert.doesNotMatch(html, /creator-twitch/);
+});
+
+test("Bots debug shows current Twitch session placeholders while preserving old failures as history", async () => {
+  const { sandbox, elements } = buildBotsSandbox({
+    botPayloads: [twitchPayload({ reason: "Twitch EventSub keepalive received.", sessionId: "twitch-eventsub-current" })],
+    debugPayloads: [currentVsHistoryDebugPayload()]
+  });
+  sandbox.window.BotsView.init();
+  await flushMicrotasks();
+
+  const expand = new FakeButtonElement("expand");
+  expand.dataset.botExpand = encodeURIComponent("creator-twitch");
+  await clickBotsTable(elements, { selector: "[data-bot-expand]", element: expand });
+
+  const debug = new FakeButtonElement("debug");
+  debug.dataset.creatorId = encodeURIComponent("creator-twitch");
+  debug.dataset.platform = encodeURIComponent("twitch");
+  debug.dataset.sessionId = encodeURIComponent("twitch-eventsub-current");
+  await clickBotsTable(elements, { selector: "[data-bot-debug]", element: debug });
+  await flushMicrotasks();
+
+  const html = elements.get("bots-table-body").innerHTML;
+  assert.match(html, /listening_no_messages_yet/);
+  assert.match(html, /no_current_session_dispatch_attempt/);
+  assert.match(html, /History/);
+  assert.match(html, /old dispatch failure|DISPATCH_FAILED/);
+});
+
+test("Bots polling keeps Twitch debug drawer open across current session id rotation", async () => {
+  const { sandbox, elements, scheduler } = buildBotsSandbox({
+    botPayloads: [
+      twitchPayload({ reason: "first", sessionId: "twitch-session-one" }),
+      twitchPayload({ reason: "rotated", sessionId: "twitch-session-two" })
+    ],
+    debugPayloads: [debugPayload()]
+  });
+  sandbox.window.BotsView.init();
+  await flushMicrotasks();
+  await openTwitchInspection(elements);
+
+  await runUntilTableMatches(scheduler, elements, /rotated/);
+
+  const html = elements.get("bots-table-body").innerHTML;
+  assert.match(html, /twitch-session-two/);
+  assert.match(html, /ss-bot-debug-panel/);
+  assert.match(html, /ss-bot-instance-card/);
 });

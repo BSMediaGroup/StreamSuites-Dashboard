@@ -117,7 +117,10 @@
     "awaiting_livestream",
     "lifecycle_awaiting_livestream",
     "runner_awaiting_livestream",
-    "transport_awaiting_livestream"
+    "transport_awaiting_livestream",
+    "listening_no_messages_yet",
+    "waiting_for_current_session_chat_message",
+    "no_current_session_dispatch_attempt"
   ]);
 
   const state = {
@@ -1259,6 +1262,7 @@
                 <span class="ss-badge ${severityBadgeClass(event.severity)}">${escapeHtml(String(event.severity || "debug").toUpperCase())}</span>
                 <span>${escapeHtml(event.phase || "-")}</span>
                 <span>${escapeHtml(event.step || "-")}</span>
+                ${event.history_scope === "history" ? '<span class="ss-badge">History</span>' : ""}
               </div>
               <div class="ss-bot-debug-event-message">${escapeHtml(event.message || "-")}</div>
               ${event.code ? `<div class="muted">code: ${escapeHtml(event.code)}</div>` : ""}
@@ -1361,25 +1365,35 @@
 
   function renderTriggerPipeline(payload, bot, ui) {
     const pipeline = debugRawValue(payload, ["diagnostics", "trigger_pipeline"], null);
+    const currentAttempt = debugRawValue(payload, ["diagnostics", "current_attempt"], {}) || {};
     if (!pipeline || typeof pipeline !== "object") return "";
     const recent = Array.isArray(pipeline.recent_messages) ? pipeline.recent_messages.slice(-10) : [];
     const matches = Array.isArray(pipeline.last_trigger_matches)
       ? pipeline.last_trigger_matches.map((item) => item?.name || item?.id || item).filter(Boolean).join(", ")
       : "";
+    const currentStatus = currentAttempt.current_session_status || pipeline.last_pipeline_outcome || "-";
+    const currentDispatchStatus =
+      currentAttempt.current_session_last_dispatch_status ||
+      pipeline.last_dispatch_status ||
+      "no_current_session_dispatch_attempt";
+    const currentDispatchMessage =
+      currentAttempt.current_session_last_dispatch_response_message ||
+      pipeline.last_dispatch_response_message ||
+      "-";
     return `
       <div class="ss-bot-debug-pipeline">
         <div class="ss-bot-debug-grid">
-          <div><span class="ss-bot-field-label">Trigger Pipeline</span><strong>${escapeHtml(pipeline.last_pipeline_outcome || "-")}</strong></div>
+          <div><span class="ss-bot-field-label">Current Session Pipeline</span><strong>${escapeHtml(currentStatus)}</strong></div>
           <div><span class="ss-bot-field-label">Inbound message</span><strong>${escapeHtml(pipeline.last_inbound_message_id || "-")}</strong></div>
-          <div><span class="ss-bot-field-label">Inbound time</span><strong>${escapeHtml(formatTimestamp(pipeline.last_chat_event_at || pipeline.last_webhook_event_at || ""))}</strong></div>
-          <div><span class="ss-bot-field-label">Command/text</span><strong>${escapeHtml((pipeline.last_inbound_message_text && (pipeline.last_inbound_message_text.command || `length ${pipeline.last_inbound_message_text.length}`)) || "-")}</strong></div>
-          <div><span class="ss-bot-field-label">Sender</span><strong>${escapeHtml(pipeline.last_sender_username || "-")}</strong></div>
+          <div><span class="ss-bot-field-label">Inbound time</span><strong>${escapeHtml(formatTimestamp(currentAttempt.current_session_last_chat_message_at || pipeline.last_chat_event_at || pipeline.last_webhook_event_at || ""))}</strong></div>
+          <div><span class="ss-bot-field-label">Command/text</span><strong>${escapeHtml(currentAttempt.current_session_last_command_text || (pipeline.last_inbound_message_text && (pipeline.last_inbound_message_text.command || `length ${pipeline.last_inbound_message_text.length}`)) || "-")}</strong></div>
+          <div><span class="ss-bot-field-label">Sender</span><strong>${escapeHtml(currentAttempt.current_session_last_sender_username || pipeline.last_sender_username || "-")}</strong></div>
           <div><span class="ss-bot-field-label">Evaluation</span><strong>${escapeHtml(formatTimestamp(pipeline.last_trigger_evaluation_at || ""))}</strong></div>
-          <div><span class="ss-bot-field-label">Matched triggers</span><strong>${escapeHtml(String(pipeline.last_trigger_match_count ?? 0))}${matches ? ` - ${escapeHtml(matches)}` : ""}</strong></div>
+          <div><span class="ss-bot-field-label">Matched triggers</span><strong>${escapeHtml(String(currentAttempt.current_session_last_trigger_match_count ?? pipeline.last_trigger_match_count ?? 0))}${matches ? ` - ${escapeHtml(matches)}` : ""}</strong></div>
           <div><span class="ss-bot-field-label">Actions</span><strong>${escapeHtml(String(pipeline.last_trigger_action_count ?? 0))}</strong></div>
-          <div><span class="ss-bot-field-label">Dispatch</span><strong>${escapeHtml(pipeline.last_dispatch_status || "-")}</strong></div>
-          <div><span class="ss-bot-field-label">Dispatch HTTP</span><strong>${escapeHtml(String(pipeline.last_dispatch_http_status ?? "-"))}</strong></div>
-          <div><span class="ss-bot-field-label">Dispatch message</span><strong>${escapeHtml(pipeline.last_dispatch_response_message || "-")}</strong></div>
+          <div><span class="ss-bot-field-label">Dispatch</span><strong>${escapeHtml(currentDispatchStatus)}</strong></div>
+          <div><span class="ss-bot-field-label">Dispatch HTTP</span><strong>${escapeHtml(String(currentAttempt.current_session_last_dispatch_http_status ?? pipeline.last_dispatch_http_status ?? "-"))}</strong></div>
+          <div><span class="ss-bot-field-label">Dispatch message</span><strong>${escapeHtml(currentDispatchMessage)}</strong></div>
           <div><span class="ss-bot-field-label">Suppression</span><strong>${escapeHtml(pipeline.last_suppression_reason || "-")}</strong></div>
           <div><span class="ss-bot-field-label">Configured target</span><strong>${escapeHtml(pipeline.configured_target || "-")}</strong></div>
           <div><span class="ss-bot-field-label">Active target</span><strong>${escapeHtml(pipeline.active_target || "-")}</strong></div>
@@ -1470,6 +1484,13 @@
             </div>
             <div class="ss-bot-debug-grid">
               <div><span class="ss-bot-field-label">Current attempt</span><strong>${escapeHtml(currentAttempt.current_subscription_result || "-")}</strong></div>
+              <div><span class="ss-bot-field-label">Current session</span><strong>${escapeHtml(currentAttempt.current_session_status || debugValue(payload, ["diagnostics", "exports", "session_snapshot", "current_session_status"], "-"))}</strong></div>
+              <div><span class="ss-bot-field-label">Current keepalive</span><strong>${escapeHtml(formatTimestamp(currentAttempt.current_session_last_keepalive_at || ""))}</strong></div>
+              <div><span class="ss-bot-field-label">Current notification</span><strong>${escapeHtml(formatTimestamp(currentAttempt.current_session_last_notification_at || ""))}</strong></div>
+              <div><span class="ss-bot-field-label">Current chat</span><strong>${escapeHtml(formatTimestamp(currentAttempt.current_session_last_chat_message_at || ""))}</strong></div>
+              <div><span class="ss-bot-field-label">Current dispatch</span><strong>${escapeHtml(currentAttempt.current_session_last_dispatch_status || debugValue(payload, ["diagnostics", "exports", "session_snapshot", "current_session_dispatch_status"], "no_current_session_dispatch_attempt"))}</strong></div>
+              <div><span class="ss-bot-field-label">Current dispatch HTTP</span><strong>${escapeHtml(String(currentAttempt.current_session_last_dispatch_http_status ?? "-"))}</strong></div>
+              <div><span class="ss-bot-field-label">Current dispatch message</span><strong>${escapeHtml(currentAttempt.current_session_last_dispatch_response_message || "-")}</strong></div>
               <div><span class="ss-bot-field-label">Request body</span><code>${escapeHtml(JSON.stringify(debugRawValue(payload, ["probe", "subscription_request_body_redacted"], currentAttempt.current_subscription_request_body_redacted || debugRawValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_request_body_redacted"], {}))))}</code></div>
               <div><span class="ss-bot-field-label">Response data</span><code>${escapeHtml(JSON.stringify(debugRawValue(payload, ["probe", "subscription_response_data_redacted"], debugRawValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_response_data_redacted"], {}))))}</code></div>
               <div><span class="ss-bot-field-label">Validation</span><code>${escapeHtml(JSON.stringify(debugRawValue(payload, ["probe", "subscription_request_validation"], debugRawValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_request_validation"], {}))))}</code></div>
