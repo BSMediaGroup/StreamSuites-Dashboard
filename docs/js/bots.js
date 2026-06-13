@@ -877,9 +877,8 @@
   }
 
   function rowKey(creatorId, platform, sessionId = "") {
-    const session = String(sessionId || "").trim();
-    const base = `${String(creatorId || "")}::${String(platform || "").toLowerCase()}`;
-    return session ? `${base}::${session}` : base;
+    void sessionId;
+    return `${String(creatorId || "")}::${String(platform || "").toLowerCase()}`;
   }
 
   function defaultDebugTransport() {
@@ -899,6 +898,11 @@
     const key = rowKey(creatorId, platform, sessionId);
     const legacyKey = rowKey(creatorId, platform);
     const basePrefix = `${legacyKey}::`;
+    const rotatedSessionKey = Object.keys(state.rowUi || {}).find((candidate) => candidate.startsWith(basePrefix));
+    if (!state.rowUi[key] && rotatedSessionKey && state.rowUi[rotatedSessionKey]) {
+      state.rowUi[key] = state.rowUi[rotatedSessionKey];
+      delete state.rowUi[rotatedSessionKey];
+    }
     if (!state.rowUi[key] && sessionId && state.rowUi[legacyKey]) {
       state.rowUi[key] = state.rowUi[legacyKey];
       delete state.rowUi[legacyKey];
@@ -923,9 +927,11 @@
         debugPayload: null,
         debugProbeToken: null,
         debugRecentMessagesExpanded: false,
+        currentSessionId: "",
         debugTransport: defaultDebugTransport()
       };
     }
+    state.rowUi[key].currentSessionId = String(sessionId || "").trim();
     return state.rowUi[key];
   }
 
@@ -946,7 +952,6 @@
       if (!creatorId || !platform) return;
       const base = rowKey(creatorId, platform);
       visibleBases.add(base);
-      keys.add(rowKey(creatorId, platform, String(bot?.session_id || "")));
       keys.add(base);
     });
     Object.keys(state.rowUi || {}).forEach((key) => {
@@ -988,18 +993,27 @@
 
   function restoreRenderedBotsUiState(snapshot) {
     if (!snapshot || typeof snapshot !== "object") return;
-    if (snapshot.scrollX !== null && snapshot.scrollY !== null && typeof window.scrollTo === "function") {
+    const apply = () => {
+      if (snapshot.scrollX === null || snapshot.scrollY === null || typeof window.scrollTo !== "function") return;
       window.scrollTo(snapshot.scrollX, snapshot.scrollY);
-    }
-    if (snapshot.activeElementId && typeof document.getElementById === "function") {
-      const focusTarget = document.getElementById(snapshot.activeElementId);
-      if (focusTarget && typeof focusTarget.focus === "function") {
-        try {
-          focusTarget.focus({ preventScroll: true });
-        } catch (err) {
-          focusTarget.focus();
+      if (snapshot.activeElementId && typeof document.getElementById === "function") {
+        const focusTarget = document.getElementById(snapshot.activeElementId);
+        if (focusTarget && typeof focusTarget.focus === "function") {
+          try {
+            focusTarget.focus({ preventScroll: true });
+          } catch (err) {
+            focusTarget.focus();
+          }
         }
       }
+    };
+    apply();
+    if (typeof window.requestAnimationFrame === "function") {
+      window.requestAnimationFrame(apply);
+    } else if (typeof window.queueMicrotask === "function") {
+      window.queueMicrotask(apply);
+    } else if (typeof Promise !== "undefined") {
+      Promise.resolve().then(apply);
     }
   }
 
