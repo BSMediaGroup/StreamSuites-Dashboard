@@ -211,6 +211,59 @@ function currentVsHistoryDebugPayload() {
   };
 }
 
+function openingHandshakeDebugPayload() {
+  return {
+    success: true,
+    generated_at: "2026-06-13T01:00:00Z",
+    bot: {
+      platform: "twitch",
+      creator_id: "creator-twitch",
+      session_id: "twitch-eventsub-open-attempt",
+      lifecycle_status: "reconnecting",
+      transport_status: "websocket_open_timeout",
+      runner_status: "reconnecting",
+      readiness_reason: "timed out during opening handshake"
+    },
+    diagnostics: {
+      summary: { event_count: 3, trace_source: "persisted", latest_error_code: "websocket_open_timeout" },
+      current_attempt: {
+        current_session_id: "twitch-eventsub-open-attempt",
+        current_subscription_result: "websocket_open_timeout",
+        current_subscription_request_body_redacted: {},
+        current_session_status: "eventsub_opening_handshake",
+        connection_stage: "eventsub_opening_handshake",
+        transport_error_code: "websocket_open_timeout",
+        transport_error_message: "timed out during opening handshake",
+        current_session_reconnect_attempt_count: 2,
+        current_session_next_retry_at: "2026-06-13T01:00:30Z",
+        current_session_last_dispatch_status: "no_current_session_dispatch_attempt",
+        current_session_last_dispatch_response_message: null
+      },
+      trigger_pipeline: { recent_messages: [] },
+      timeline: [
+        {
+          timestamp: "2026-06-13T00:50:00Z",
+          severity: "error",
+          phase: "heartbeat",
+          message: "received 4002 failed ping pong",
+          code: "FAILED_PING_PONG",
+          history_scope: "history",
+          session_id: "twitch-eventsub-old"
+        }
+      ],
+      history_timeline: [
+        {
+          timestamp: "2026-06-13T00:50:00Z",
+          severity: "error",
+          phase: "dispatch_result",
+          message: "old dispatch failure"
+        }
+      ],
+      exports: { session_snapshot: {} }
+    }
+  };
+}
+
 function buildBotsSandbox({ botPayloads, debugPayloads = [debugPayload()], scroll = { x: 0, y: 0 } } = {}) {
   const ids = [
     "bots-status", "bots-count", "bots-generated-at", "bots-source", "bots-error",
@@ -429,6 +482,39 @@ test("Bots debug shows current Twitch session placeholders while preserving old 
   assert.match(html, /no_current_session_dispatch_attempt/);
   assert.match(html, /History/);
   assert.match(html, /old dispatch failure|DISPATCH_FAILED/);
+});
+
+test("Bots debug shows active Twitch opening handshake timeout and retry details", async () => {
+  const { sandbox, elements } = buildBotsSandbox({
+    botPayloads: [twitchPayload({
+      reason: "timed out during opening handshake",
+      sessionId: "twitch-eventsub-open-attempt"
+    })],
+    debugPayloads: [openingHandshakeDebugPayload()]
+  });
+  sandbox.window.BotsView.init();
+  await flushMicrotasks();
+
+  const expand = new FakeButtonElement("expand");
+  expand.dataset.botExpand = encodeURIComponent("creator-twitch");
+  await clickBotsTable(elements, { selector: "[data-bot-expand]", element: expand });
+
+  const debug = new FakeButtonElement("debug");
+  debug.dataset.creatorId = encodeURIComponent("creator-twitch");
+  debug.dataset.platform = encodeURIComponent("twitch");
+  debug.dataset.sessionId = encodeURIComponent("twitch-eventsub-open-attempt");
+  await clickBotsTable(elements, { selector: "[data-bot-debug]", element: debug });
+  await flushMicrotasks();
+
+  const html = elements.get("bots-table-body").innerHTML;
+  assert.match(html, /websocket_open_timeout/);
+  assert.match(html, /eventsub_opening_handshake/);
+  assert.match(html, /Retry attempt/);
+  assert.match(html, />2<\/strong>/);
+  assert.match(html, /2026-06-13T01:00:30Z/);
+  assert.match(html, /History/);
+  assert.match(html, /old dispatch failure/);
+  assert.doesNotMatch(html, /Current attempt<\/span><strong>subscription_failed/);
 });
 
 test("Bots polling keeps Twitch debug drawer open across current session id rotation", async () => {

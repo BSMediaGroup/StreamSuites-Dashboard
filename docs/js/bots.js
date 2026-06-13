@@ -1485,6 +1485,10 @@
             <div class="ss-bot-debug-grid">
               <div><span class="ss-bot-field-label">Current attempt</span><strong>${escapeHtml(currentAttempt.current_subscription_result || "-")}</strong></div>
               <div><span class="ss-bot-field-label">Current session</span><strong>${escapeHtml(currentAttempt.current_session_status || debugValue(payload, ["diagnostics", "exports", "session_snapshot", "current_session_status"], "-"))}</strong></div>
+              <div><span class="ss-bot-field-label">Connection stage</span><strong>${escapeHtml(currentAttempt.connection_stage || debugValue(payload, ["diagnostics", "exports", "session_snapshot", "connection_stage"], "-"))}</strong></div>
+              <div><span class="ss-bot-field-label">Transport error</span><strong>${escapeHtml(currentAttempt.transport_error_code || currentAttempt.transport_error_message || debugValue(payload, ["diagnostics", "exports", "session_snapshot", "transport_error_code"], "-"))}</strong></div>
+              <div><span class="ss-bot-field-label">Retry attempt</span><strong>${escapeHtml(String(currentAttempt.current_session_reconnect_attempt_count ?? debugRawValue(payload, ["diagnostics", "exports", "session_snapshot", "current_session_reconnect_attempt_count"], "-")))}</strong></div>
+              <div><span class="ss-bot-field-label">Next retry</span><strong>${escapeHtml(formatTimestamp(currentAttempt.current_session_next_retry_at || debugValue(payload, ["diagnostics", "exports", "session_snapshot", "current_session_next_retry_at"], "")))}</strong></div>
               <div><span class="ss-bot-field-label">Current keepalive</span><strong>${escapeHtml(formatTimestamp(currentAttempt.current_session_last_keepalive_at || ""))}</strong></div>
               <div><span class="ss-bot-field-label">Current notification</span><strong>${escapeHtml(formatTimestamp(currentAttempt.current_session_last_notification_at || ""))}</strong></div>
               <div><span class="ss-bot-field-label">Current chat</span><strong>${escapeHtml(formatTimestamp(currentAttempt.current_session_last_chat_message_at || ""))}</strong></div>
