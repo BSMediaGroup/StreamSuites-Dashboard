@@ -274,7 +274,8 @@ function buildBotsSandbox({
   statusFetch,
   creatorsFetch,
   currentView = "",
-  snapshotHealthHandler = null
+  snapshotHealthHandler = null,
+  scroll = null
 } = {}) {
   const ids = [
     "bots-status",
@@ -309,11 +310,13 @@ function buildBotsSandbox({
   let debugFetchIndex = 0;
   const fetchLog = [];
   const eventLog = [];
+  const scrollCalls = [];
   const creatorsResponse = creatorsPayload || {
     creators: [{ creator_id: "daniel", display_name: "Daniel", tier: "pro", status: "active" }]
   };
 
   const document = {
+    activeElement: null,
     getElementById(id) {
       return elements.get(id) || null;
     },
@@ -378,6 +381,13 @@ function buildBotsSandbox({
     setTimeout: scheduler.setTimeout.bind(scheduler),
     clearTimeout: scheduler.clearTimeout.bind(scheduler),
     fetch: fetchMock,
+    scrollX: scroll?.x ?? 0,
+    scrollY: scroll?.y ?? 0,
+    scrollTo(x, y) {
+      scrollCalls.push({ x, y });
+      this.scrollX = x;
+      this.scrollY = y;
+    },
     location: { pathname: "/telemetry" },
     prompt: () => null,
     StreamSuitesDashboardPermissions: { has: () => true },
@@ -412,7 +422,7 @@ function buildBotsSandbox({
 
   vm.createContext(sandbox);
   vm.runInContext(read("docs/js/bots.js"), sandbox);
-  return { sandbox, elements, scheduler, fetchLog, eventLog };
+  return { sandbox, elements, scheduler, fetchLog, eventLog, scrollCalls };
 }
 
 function createRumbleBotsPayload() {
@@ -1004,7 +1014,7 @@ function clickBotsTable(elements, button) {
   })));
 }
 
-function twitchBotsPayload({ reason = "first", includeRow = true } = {}) {
+function twitchBotsPayload({ reason = "first", includeRow = true, sessionId = "twitch-auto-a106f79667525d86" } = {}) {
   return {
     generated_at: "2026-06-13T01:00:00Z",
     server_generated_at: "2026-06-13T01:00:00Z",
@@ -1020,7 +1030,7 @@ function twitchBotsPayload({ reason = "first", includeRow = true } = {}) {
         creator_id: "creator-twitch",
         platform: "twitch",
         session_type: "auto",
-        session_id: "twitch-auto-a106f79667525d86",
+        session_id: sessionId,
         status: "listening",
         lifecycle_state: "listening",
         runner_state: "listening",
@@ -1113,6 +1123,41 @@ test("bots recent messages expansion survives mocked polling refresh", async () 
   await scheduler.runNext();
   await flushMicrotasks();
   assert.match(elements.get("bots-table-body").innerHTML, /ss-bot-debug-recent-text is-expanded/);
+});
+
+test("bots polling preserves debug drawer when session id rotates and restores scroll", async () => {
+  const { elements, scheduler, sandbox, scrollCalls } = buildBotsSandbox({
+    botPayloads: [
+      twitchBotsPayload({ reason: "first", sessionId: "twitch-session-old" }),
+      twitchBotsPayload({ reason: "rotated", sessionId: "twitch-session-new" })
+    ],
+    scroll: { x: 12, y: 640 }
+  });
+  sandbox.window.BotsView.init();
+  await flushMicrotasks();
+
+  const expand = new FakeButtonElement("expand");
+  expand.dataset.botExpand = encodeURIComponent("creator-twitch");
+  await clickBotsTable(elements, { selector: "[data-bot-expand]", element: expand });
+
+  const debug = new FakeButtonElement("debug");
+  debug.dataset.creatorId = encodeURIComponent("creator-twitch");
+  debug.dataset.platform = encodeURIComponent("twitch");
+  debug.dataset.sessionId = encodeURIComponent("twitch-session-old");
+  await clickBotsTable(elements, { selector: "[data-bot-debug]", element: debug });
+  await flushMicrotasks();
+  assert.match(elements.get("bots-table-body").innerHTML, /ss-bot-debug-panel/);
+
+  await scheduler.runNext();
+  await flushMicrotasks();
+
+  const html = elements.get("bots-table-body").innerHTML;
+  assert.match(html, /rotated/);
+  assert.match(html, /twitch-session-new/);
+  assert.match(html, /ss-bot-instance-card/);
+  assert.match(html, /ss-bot-debug-panel/);
+  assert.ok(scrollCalls.some((entry) => entry.x === 12 && entry.y === 640));
+  assert.equal(sandbox.window.scrollY, 640);
 });
 
 test("bots refresh prunes drawer state only when row disappears", async () => {

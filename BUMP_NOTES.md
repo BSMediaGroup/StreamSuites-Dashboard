@@ -6,6 +6,11 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Admin Bots polling/drawer reset root cause: background refresh still performed full table `innerHTML` replacement, and per-row UI state was pruned before a refreshed Twitch row with a rotated `session_id` could reuse the open creator/platform/debug state. That made expanded creator rows, Twitch debug panels, recent-message expansion, and scroll position snap during polling even though polling itself was working.
+- Admin Bots polling/drawer reset fix: row UI state now migrates from creator/platform keys and previous creator/platform/session keys to the refreshed session key, visible creator/platform state survives session ID rotation, row state is pruned only after the creator/platform row disappears, and scroll/focus state is captured and restored synchronously around table re-render. Polling remains enabled and row content still updates.
+- Human note: open creator rows, platform details, Twitch debug drawers, and recent-message expanded blocks should remain open during background polling and manual refresh; if a worker session ID changes, the open drawer follows `creator_id + platform`.
+- Validation performed: `node --check docs/js/bots.js`; `node --test tests/notifications-runtime-authority.test.mjs`.
+
 - Admin Bots polling state preservation: `docs/js/bots.js` now keys per-row UI state by `creator_id`, `platform`, and `session_id` when present, migrates older creator/platform state, preserves expanded creator detail drawers, Twitch debug drawers, recent-message expansion, and scroll position across background polling and manual refresh, and prunes saved state only when the relevant row disappears.
 - Human note: the Bots table should keep open details/debug panels open while row content updates every poll; removed rows clean up their saved UI state without disabling polling or redesigning the page.
 - Validation performed: `node --check docs/js/bots.js`; `node --test tests\notifications-runtime-authority.test.mjs`; `git diff --check`.

@@ -898,9 +898,17 @@
   function getRowUi(creatorId, platform, sessionId = "") {
     const key = rowKey(creatorId, platform, sessionId);
     const legacyKey = rowKey(creatorId, platform);
+    const basePrefix = `${legacyKey}::`;
     if (!state.rowUi[key] && sessionId && state.rowUi[legacyKey]) {
       state.rowUi[key] = state.rowUi[legacyKey];
       delete state.rowUi[legacyKey];
+    }
+    if (!state.rowUi[key] && sessionId) {
+      const rotatedKey = Object.keys(state.rowUi || {}).find((candidate) => candidate.startsWith(basePrefix));
+      if (rotatedKey && state.rowUi[rotatedKey]) {
+        state.rowUi[key] = state.rowUi[rotatedKey];
+        delete state.rowUi[rotatedKey];
+      }
     }
     if (!state.rowUi[key]) {
       state.rowUi[key] = {
@@ -931,12 +939,22 @@
 
   function collectVisibleRowUiKeys(normalized) {
     const keys = new Set();
+    const visibleBases = new Set();
     (Array.isArray(normalized?.bots) ? normalized.bots : []).forEach((bot) => {
       const creatorId = String(bot?.creator_id || bot?.creator_account_id || bot?.account_id || "").trim();
       const platform = normalizePlatformKey(bot?.platform);
       if (!creatorId || !platform) return;
+      const base = rowKey(creatorId, platform);
+      visibleBases.add(base);
       keys.add(rowKey(creatorId, platform, String(bot?.session_id || "")));
-      keys.add(rowKey(creatorId, platform));
+      keys.add(base);
+    });
+    Object.keys(state.rowUi || {}).forEach((key) => {
+      const [creatorId, platform] = String(key || "").split("::");
+      const base = rowKey(creatorId, platform);
+      if (visibleBases.has(base)) {
+        keys.add(key);
+      }
     });
     return keys;
   }
@@ -958,6 +976,31 @@
         delete state.expandedCreators[creatorId];
       }
     });
+  }
+
+  function captureRenderedBotsUiState() {
+    return {
+      scrollX: Number.isFinite(window.scrollX) ? window.scrollX : null,
+      scrollY: Number.isFinite(window.scrollY) ? window.scrollY : null,
+      activeElementId: String(document.activeElement?.id || "").trim()
+    };
+  }
+
+  function restoreRenderedBotsUiState(snapshot) {
+    if (!snapshot || typeof snapshot !== "object") return;
+    if (snapshot.scrollX !== null && snapshot.scrollY !== null && typeof window.scrollTo === "function") {
+      window.scrollTo(snapshot.scrollX, snapshot.scrollY);
+    }
+    if (snapshot.activeElementId && typeof document.getElementById === "function") {
+      const focusTarget = document.getElementById(snapshot.activeElementId);
+      if (focusTarget && typeof focusTarget.focus === "function") {
+        try {
+          focusTarget.focus({ preventScroll: true });
+        } catch (err) {
+          focusTarget.focus();
+        }
+      }
+    }
   }
 
   function isBotAttached(bot) {
@@ -2819,13 +2862,10 @@
     const rowSignature = buildRowsSignature(normalized, state.platformSummary);
 
     if (el.body && rowSignature !== state.renderCache.rowSignature) {
-      const scrollX = Number.isFinite(window.scrollX) ? window.scrollX : null;
-      const scrollY = Number.isFinite(window.scrollY) ? window.scrollY : null;
+      const renderedState = captureRenderedBotsUiState();
       el.body.innerHTML = hasRows ? renderRows(normalized, now, state.platformSummary) : "";
       state.renderCache.rowSignature = rowSignature;
-      if (scrollX !== null && scrollY !== null && typeof window.scrollTo === "function") {
-        window.setTimeout(() => window.scrollTo(scrollX, scrollY), 0);
-      }
+      restoreRenderedBotsUiState(renderedState);
     }
     if (el.empty) {
       el.empty.classList.toggle("hidden", hasRows);
@@ -3035,15 +3075,12 @@
     const rowSignature = buildRowsSignature(state.lastPayload, state.platformSummary);
     if (el.body) {
       if (rowSignature !== state.renderCache.rowSignature) {
-        const scrollX = Number.isFinite(window.scrollX) ? window.scrollX : null;
-        const scrollY = Number.isFinite(window.scrollY) ? window.scrollY : null;
+        const renderedState = captureRenderedBotsUiState();
         el.body.innerHTML = hasRows
           ? renderRows(state.lastPayload, receivedAt, state.platformSummary)
           : "";
         state.renderCache.rowSignature = rowSignature;
-        if (scrollX !== null && scrollY !== null && typeof window.scrollTo === "function") {
-          window.setTimeout(() => window.scrollTo(scrollX, scrollY), 0);
-        }
+        restoreRenderedBotsUiState(renderedState);
       }
     }
     if (el.empty) {
