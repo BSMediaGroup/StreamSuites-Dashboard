@@ -264,6 +264,70 @@ function openingHandshakeDebugPayload() {
   };
 }
 
+function eventsubSubscriptionFailureDebugPayload() {
+  return {
+    success: true,
+    generated_at: "2026-06-13T01:00:00Z",
+    bot: {
+      platform: "twitch",
+      creator_id: "creator-twitch",
+      session_id: "twitch-eventsub-current",
+      lifecycle_status: "subscription_failed",
+      transport_status: "websocket_connected_then_subscription_failed",
+      runner_status: "subscription_failed",
+      readiness_reason: "Twitch EventSub subscription failed with HTTP 400: Bad Request websocket transport session does not exist or has already disconnected"
+    },
+    diagnostics: {
+      summary: {
+        event_count: 4,
+        trace_source: "persisted",
+        latest_error_code: "subscription_session_expired_or_disconnected"
+      },
+      current_attempt: {
+        current_session_id: "twitch-eventsub-current",
+        current_session_status: "subscription_failed",
+        connection_stage: "eventsub_subscription_failed",
+        current_subscription_result: "subscription_session_expired_or_disconnected",
+        current_subscription_secondary_blocker_code: "connection_unused_4003",
+        current_subscription_attempted_at: "2026-06-13T01:00:00.100Z",
+        current_subscription_http_status: 400,
+        current_subscription_auth_mode: "creator_twitch_attachment",
+        current_subscription_request_body_redacted: {
+          type: "channel.chat.message",
+          version: "1",
+          condition: { broadcaster_user_id: "985020874", user_id: "985020874" },
+          transport: { method: "websocket", session_id: "twitch-eventsub-current" }
+        },
+        current_subscription_response_data_redacted: {
+          status: 400,
+          message: "Bad Request websocket transport session does not exist or has already disconnected; received 4003 connection unused"
+        },
+        current_subscription_broadcaster_user_id_included: true,
+        current_subscription_user_id_included: true,
+        transport_error_code: "connection_unused_4003",
+        transport_error_message: "received 4003 connection unused",
+        welcome_to_subscription_elapsed_ms: 37,
+        welcome_timeout_seconds: 10,
+        websocket_closed_before_subscription: true,
+        current_session_reconnect_attempt_count: 1,
+        current_session_next_retry_at: "2026-06-13T01:00:15Z"
+      },
+      trigger_pipeline: { recent_messages: [] },
+      timeline: [],
+      exports: {
+        session_snapshot: {
+          subscription_http_status: 400,
+          subscription_auth_mode: "creator_twitch_attachment",
+          secondary_blocker_code: "connection_unused_4003",
+          welcome_to_subscription_elapsed_ms: 37,
+          welcome_timeout_seconds: 10,
+          websocket_closed_before_subscription: true
+        }
+      }
+    }
+  };
+}
+
 function buildBotsSandbox({ botPayloads, debugPayloads = [debugPayload()], scroll = { x: 0, y: 0 } } = {}) {
   const ids = [
     "bots-status", "bots-count", "bots-generated-at", "bots-source", "bots-error",
@@ -407,6 +471,7 @@ test("Bots polling preserves creator, platform, debug, recent-message, scroll st
   const html = elements.get("bots-table-body").innerHTML;
   assert.match(html, /updated status reason/);
   assert.match(html, /twitch-session-two/);
+  assert.match(html, /aria-expanded="true"/);
   assert.match(html, /ss-bot-instance-card/);
   assert.match(html, /ss-bot-debug-panel/);
   assert.match(html, /ss-bot-debug-recent-text is-expanded/);
@@ -415,11 +480,12 @@ test("Bots polling preserves creator, platform, debug, recent-message, scroll st
 });
 
 test("Bots manual refresh uses the same state-preserving flow as polling", async () => {
-  const { sandbox, elements } = buildBotsSandbox({
+  const { sandbox, elements, scrollCalls } = buildBotsSandbox({
     botPayloads: [
       twitchPayload({ reason: "manual first", sessionId: "twitch-session-one" }),
       twitchPayload({ reason: "manual refreshed", sessionId: "twitch-session-three" })
-    ]
+    ],
+    scroll: { x: 8, y: 512 }
   });
   sandbox.window.BotsView.init();
   await flushMicrotasks();
@@ -431,9 +497,12 @@ test("Bots manual refresh uses the same state-preserving flow as polling", async
   const html = elements.get("bots-table-body").innerHTML;
   assert.match(html, /manual refreshed/);
   assert.match(html, /twitch-session-three/);
+  assert.match(html, /aria-expanded="true"/);
   assert.match(html, /ss-bot-instance-card/);
   assert.match(html, /ss-bot-debug-panel/);
   assert.match(html, /ss-bot-debug-recent-text is-expanded/);
+  assert.ok(scrollCalls.some((entry) => entry.x === 8 && entry.y === 512));
+  assert.equal(sandbox.window.scrollY, 512);
 });
 
 test("Bots refresh prunes saved drawer state only after the row disappears", async () => {
@@ -517,6 +586,43 @@ test("Bots debug shows active Twitch opening handshake timeout and retry details
   assert.doesNotMatch(html, /Current attempt<\/span><strong>subscription_failed/);
 });
 
+test("Bots debug shows Twitch 4003 subscription timing and preserved diagnostics", async () => {
+  const { sandbox, elements } = buildBotsSandbox({
+    botPayloads: [twitchPayload({
+      reason: "Twitch EventSub subscription failed with HTTP 400",
+      sessionId: "twitch-eventsub-current"
+    })],
+    debugPayloads: [eventsubSubscriptionFailureDebugPayload()]
+  });
+  sandbox.window.BotsView.init();
+  await flushMicrotasks();
+
+  const expand = new FakeButtonElement("expand");
+  expand.dataset.botExpand = encodeURIComponent("creator-twitch");
+  await clickBotsTable(elements, { selector: "[data-bot-expand]", element: expand });
+
+  const debug = new FakeButtonElement("debug");
+  debug.dataset.creatorId = encodeURIComponent("creator-twitch");
+  debug.dataset.platform = encodeURIComponent("twitch");
+  debug.dataset.sessionId = encodeURIComponent("twitch-eventsub-current");
+  await clickBotsTable(elements, { selector: "[data-bot-debug]", element: debug });
+  await flushMicrotasks();
+
+  const html = elements.get("bots-table-body").innerHTML;
+  assert.match(html, /websocket_connected_then_subscription_failed/);
+  assert.match(html, /subscription_session_expired_or_disconnected/);
+  assert.match(html, /connection_unused_4003/);
+  assert.match(html, /Welcome to subscription/);
+  assert.match(html, />37<\/strong>/);
+  assert.match(html, /Closed before subscription/);
+  assert.match(html, />true<\/strong>/);
+  assert.match(html, /creator_twitch_attachment/);
+  assert.match(html, /Subscription HTTP<\/span><strong>400<\/strong>/);
+  assert.match(html, /&quot;broadcaster_user_id&quot;:&quot;985020874&quot;/);
+  assert.match(html, /&quot;user_id&quot;:&quot;985020874&quot;/);
+  assert.match(html, /Bad Request websocket transport session does not exist/);
+});
+
 test("Bots polling keeps Twitch debug drawer open across current session id rotation", async () => {
   const { sandbox, elements, scheduler } = buildBotsSandbox({
     botPayloads: [
@@ -533,6 +639,8 @@ test("Bots polling keeps Twitch debug drawer open across current session id rota
 
   const html = elements.get("bots-table-body").innerHTML;
   assert.match(html, /twitch-session-two/);
+  assert.match(html, /aria-expanded="true"/);
   assert.match(html, /ss-bot-debug-panel/);
+  assert.match(html, /ss-bot-debug-recent-text is-expanded/);
   assert.match(html, /ss-bot-instance-card/);
 });

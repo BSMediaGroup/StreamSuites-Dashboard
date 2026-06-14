@@ -884,6 +884,12 @@
     return `${String(creatorId || "")}::${String(platform || "").toLowerCase()}`;
   }
 
+  function migrateLegacySessionRowUi(key) {
+    const parts = String(key || "").split("::");
+    if (parts.length <= 2) return key;
+    return rowKey(parts[0], parts[1]);
+  }
+
   function defaultDebugTransport() {
     return {
       mode: "",
@@ -899,24 +905,14 @@
 
   function getRowUi(creatorId, platform, sessionId = "") {
     const key = rowKey(creatorId, platform, sessionId);
-    const legacyKey = rowKey(creatorId, platform);
-    const basePrefix = `${legacyKey}::`;
-    const rotatedSessionKey = Object.keys(state.rowUi || {}).find((candidate) => candidate.startsWith(basePrefix));
-    if (!state.rowUi[key] && rotatedSessionKey && state.rowUi[rotatedSessionKey]) {
-      state.rowUi[key] = state.rowUi[rotatedSessionKey];
-      delete state.rowUi[rotatedSessionKey];
-    }
-    if (!state.rowUi[key] && sessionId && state.rowUi[legacyKey]) {
-      state.rowUi[key] = state.rowUi[legacyKey];
-      delete state.rowUi[legacyKey];
-    }
-    if (!state.rowUi[key] && sessionId) {
-      const rotatedKey = Object.keys(state.rowUi || {}).find((candidate) => candidate.startsWith(basePrefix));
-      if (rotatedKey && state.rowUi[rotatedKey]) {
-        state.rowUi[key] = state.rowUi[rotatedKey];
-        delete state.rowUi[rotatedKey];
+    const legacyPrefix = `${key}::`;
+    Object.keys(state.rowUi || {}).forEach((candidate) => {
+      if (!candidate.startsWith(legacyPrefix)) return;
+      if (!state.rowUi[key]) {
+        state.rowUi[key] = state.rowUi[candidate];
       }
-    }
+      delete state.rowUi[candidate];
+    });
     if (!state.rowUi[key]) {
       state.rowUi[key] = {
         pending: false,
@@ -948,21 +944,11 @@
 
   function collectVisibleRowUiKeys(normalized) {
     const keys = new Set();
-    const visibleBases = new Set();
     (Array.isArray(normalized?.bots) ? normalized.bots : []).forEach((bot) => {
       const creatorId = String(bot?.creator_id || bot?.creator_account_id || bot?.account_id || "").trim();
       const platform = normalizePlatformKey(bot?.platform);
       if (!creatorId || !platform) return;
-      const base = rowKey(creatorId, platform);
-      visibleBases.add(base);
-      keys.add(base);
-    });
-    Object.keys(state.rowUi || {}).forEach((key) => {
-      const [creatorId, platform] = String(key || "").split("::");
-      const base = rowKey(creatorId, platform);
-      if (visibleBases.has(base)) {
-        keys.add(key);
-      }
+      keys.add(rowKey(creatorId, platform));
     });
     return keys;
   }
@@ -970,7 +956,15 @@
   function pruneMissingRowUi(normalized) {
     const visibleKeys = collectVisibleRowUiKeys(normalized);
     Object.keys(state.rowUi || {}).forEach((key) => {
-      if (!visibleKeys.has(key)) {
+      const normalizedKey = migrateLegacySessionRowUi(key);
+      if (normalizedKey !== key) {
+        if (visibleKeys.has(normalizedKey) && !state.rowUi[normalizedKey]) {
+          state.rowUi[normalizedKey] = state.rowUi[key];
+        }
+        delete state.rowUi[key];
+        return;
+      }
+      if (!visibleKeys.has(normalizedKey)) {
         delete state.rowUi[key];
       }
     });
@@ -1018,6 +1012,13 @@
     } else if (typeof Promise !== "undefined") {
       Promise.resolve().then(apply);
     }
+  }
+
+  function renderWithPreservedBotsUiState(callback) {
+    const renderedState = captureRenderedBotsUiState();
+    const result = callback();
+    restoreRenderedBotsUiState(renderedState);
+    return result;
   }
 
   function isBotAttached(bot) {
@@ -1467,7 +1468,7 @@
               <div><span class="ss-bot-field-label">Detection</span><strong>${escapeHtml(debugValue({ detection }, ["detection", "detection_status"], detection.detection_attempted ? "attempted" : "not attempted"))}</strong></div>
               <div><span class="ss-bot-field-label">Next step</span><strong>${escapeHtml(debugValue({ detection }, ["detection", "next_required_step"]))}</strong></div>
               <div><span class="ss-bot-field-label">Subscription</span><strong>${escapeHtml(debugValue(payload, ["probe", "subscription_status"], debugValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_status"])))}</strong></div>
-              <div><span class="ss-bot-field-label">Subscription HTTP</span><strong>${escapeHtml(debugValue(payload, ["probe", "subscription_http_status"], debugValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_http_status"])))}</strong></div>
+              <div><span class="ss-bot-field-label">Subscription HTTP</span><strong>${escapeHtml(debugValue(payload, ["probe", "subscription_http_status"], debugValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_http_status"], currentAttempt.current_subscription_http_status)))}</strong></div>
               <div><span class="ss-bot-field-label">Subscription message</span><strong>${escapeHtml(debugValue(payload, ["probe", "subscription_response_message"], debugValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_response_message"])))}</strong></div>
               <div><span class="ss-bot-field-label">Subscription endpoint</span><strong>${escapeHtml(debugValue(payload, ["probe", "subscription_endpoint_path"], debugValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_endpoint_path"])))}</strong></div>
               <div><span class="ss-bot-field-label">Auth mode</span><strong>${escapeHtml(debugValue(payload, ["probe", "subscription_auth_mode"], debugValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_auth_mode"], currentAttempt.current_subscription_auth_mode)))}</strong></div>
@@ -1487,6 +1488,10 @@
               <div><span class="ss-bot-field-label">Current session</span><strong>${escapeHtml(currentAttempt.current_session_status || debugValue(payload, ["diagnostics", "exports", "session_snapshot", "current_session_status"], "-"))}</strong></div>
               <div><span class="ss-bot-field-label">Connection stage</span><strong>${escapeHtml(currentAttempt.connection_stage || debugValue(payload, ["diagnostics", "exports", "session_snapshot", "connection_stage"], "-"))}</strong></div>
               <div><span class="ss-bot-field-label">Transport error</span><strong>${escapeHtml(currentAttempt.transport_error_code || currentAttempt.transport_error_message || debugValue(payload, ["diagnostics", "exports", "session_snapshot", "transport_error_code"], "-"))}</strong></div>
+              <div><span class="ss-bot-field-label">Secondary blocker</span><strong>${escapeHtml(currentAttempt.current_subscription_secondary_blocker_code || debugValue(payload, ["diagnostics", "exports", "session_snapshot", "secondary_blocker_code"], "-"))}</strong></div>
+              <div><span class="ss-bot-field-label">Welcome to subscription</span><strong>${escapeHtml(String(currentAttempt.welcome_to_subscription_elapsed_ms ?? debugRawValue(payload, ["diagnostics", "exports", "session_snapshot", "welcome_to_subscription_elapsed_ms"], "-")))}</strong></div>
+              <div><span class="ss-bot-field-label">Welcome timeout</span><strong>${escapeHtml(String(currentAttempt.welcome_timeout_seconds ?? debugRawValue(payload, ["diagnostics", "exports", "session_snapshot", "welcome_timeout_seconds"], "-")))}</strong></div>
+              <div><span class="ss-bot-field-label">Closed before subscription</span><strong>${escapeHtml(String(currentAttempt.websocket_closed_before_subscription ?? debugRawValue(payload, ["diagnostics", "exports", "session_snapshot", "websocket_closed_before_subscription"], "-")))}</strong></div>
               <div><span class="ss-bot-field-label">Retry attempt</span><strong>${escapeHtml(String(currentAttempt.current_session_reconnect_attempt_count ?? debugRawValue(payload, ["diagnostics", "exports", "session_snapshot", "current_session_reconnect_attempt_count"], "-")))}</strong></div>
               <div><span class="ss-bot-field-label">Next retry</span><strong>${escapeHtml(formatTimestamp(currentAttempt.current_session_next_retry_at || debugValue(payload, ["diagnostics", "exports", "session_snapshot", "current_session_next_retry_at"], "")))}</strong></div>
               <div><span class="ss-bot-field-label">Current keepalive</span><strong>${escapeHtml(formatTimestamp(currentAttempt.current_session_last_keepalive_at || ""))}</strong></div>
@@ -1496,8 +1501,8 @@
               <div><span class="ss-bot-field-label">Current dispatch HTTP</span><strong>${escapeHtml(String(currentAttempt.current_session_last_dispatch_http_status ?? "-"))}</strong></div>
               <div><span class="ss-bot-field-label">Current dispatch message</span><strong>${escapeHtml(currentAttempt.current_session_last_dispatch_response_message || "-")}</strong></div>
               <div><span class="ss-bot-field-label">Request body</span><code>${escapeHtml(JSON.stringify(debugRawValue(payload, ["probe", "subscription_request_body_redacted"], currentAttempt.current_subscription_request_body_redacted || debugRawValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_request_body_redacted"], {}))))}</code></div>
-              <div><span class="ss-bot-field-label">Response data</span><code>${escapeHtml(JSON.stringify(debugRawValue(payload, ["probe", "subscription_response_data_redacted"], debugRawValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_response_data_redacted"], {}))))}</code></div>
-              <div><span class="ss-bot-field-label">Validation</span><code>${escapeHtml(JSON.stringify(debugRawValue(payload, ["probe", "subscription_request_validation"], debugRawValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_request_validation"], {}))))}</code></div>
+              <div><span class="ss-bot-field-label">Response data</span><code>${escapeHtml(JSON.stringify(debugRawValue(payload, ["probe", "subscription_response_data_redacted"], currentAttempt.current_subscription_response_data_redacted || debugRawValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_response_data_redacted"], {}))))}</code></div>
+              <div><span class="ss-bot-field-label">Validation</span><code>${escapeHtml(JSON.stringify(debugRawValue(payload, ["probe", "subscription_request_validation"], currentAttempt.current_subscription_request_validation || debugRawValue(payload, ["diagnostics", "exports", "session_snapshot", "subscription_request_validation"], {}))))}</code></div>
             </div>
             ${renderSubscriptionAttempts(payload)}
             ${renderTriggerPipeline(payload, bot, ui)}
@@ -2885,30 +2890,30 @@
       el.source.textContent = `Source: ${state.sourceUrl || buildApiUrl(BOTS_STATUS_ENDPOINT)}`;
     }
 
-    updateMeta(normalized, now);
-    const liveCounts = buildLiveBotCounts(normalized, state.platformSummary);
-    renderPlatformSummary(state.platformSummary, {
-      live: hasLivePlatformRows,
-      updatedAt: normalized?.serverGeneratedAt || normalized?.generatedAt || null,
-      liveCounts
+    renderWithPreservedBotsUiState(() => {
+      updateMeta(normalized, now);
+      const liveCounts = buildLiveBotCounts(normalized, state.platformSummary);
+      renderPlatformSummary(state.platformSummary, {
+        live: hasLivePlatformRows,
+        updatedAt: normalized?.serverGeneratedAt || normalized?.generatedAt || null,
+        liveCounts
+      });
+      renderManualPlatformOptions();
+      updateManualCreatorSuggestions();
+      updateManualDeployUi();
+
+      const hasRows = normalized && Array.isArray(normalized.bots) && normalized.bots.length > 0;
+      pruneMissingRowUi(normalized);
+      const rowSignature = buildRowsSignature(normalized, state.platformSummary);
+
+      if (el.body && rowSignature !== state.renderCache.rowSignature) {
+        el.body.innerHTML = hasRows ? renderRows(normalized, now, state.platformSummary) : "";
+        state.renderCache.rowSignature = rowSignature;
+      }
+      if (el.empty) {
+        el.empty.classList.toggle("hidden", hasRows);
+      }
     });
-    renderManualPlatformOptions();
-    updateManualCreatorSuggestions();
-    updateManualDeployUi();
-
-    const hasRows = normalized && Array.isArray(normalized.bots) && normalized.bots.length > 0;
-    pruneMissingRowUi(normalized);
-    const rowSignature = buildRowsSignature(normalized, state.platformSummary);
-
-    if (el.body && rowSignature !== state.renderCache.rowSignature) {
-      const renderedState = captureRenderedBotsUiState();
-      el.body.innerHTML = hasRows ? renderRows(normalized, now, state.platformSummary) : "";
-      state.renderCache.rowSignature = rowSignature;
-      restoreRenderedBotsUiState(renderedState);
-    }
-    if (el.empty) {
-      el.empty.classList.toggle("hidden", hasRows);
-    }
   }
 
   async function refresh() {
@@ -3110,25 +3115,25 @@
 
   function renderRowsAndCountersFromState(receivedAt = Date.now()) {
     if (!state.lastPayload) return;
-    const hasRows = Array.isArray(state.lastPayload.bots) && state.lastPayload.bots.length > 0;
-    const rowSignature = buildRowsSignature(state.lastPayload, state.platformSummary);
-    if (el.body) {
-      if (rowSignature !== state.renderCache.rowSignature) {
-        const renderedState = captureRenderedBotsUiState();
-        el.body.innerHTML = hasRows
-          ? renderRows(state.lastPayload, receivedAt, state.platformSummary)
-          : "";
-        state.renderCache.rowSignature = rowSignature;
-        restoreRenderedBotsUiState(renderedState);
+    renderWithPreservedBotsUiState(() => {
+      const hasRows = Array.isArray(state.lastPayload.bots) && state.lastPayload.bots.length > 0;
+      const rowSignature = buildRowsSignature(state.lastPayload, state.platformSummary);
+      if (el.body) {
+        if (rowSignature !== state.renderCache.rowSignature) {
+          el.body.innerHTML = hasRows
+            ? renderRows(state.lastPayload, receivedAt, state.platformSummary)
+            : "";
+          state.renderCache.rowSignature = rowSignature;
+        }
       }
-    }
-    if (el.empty) {
-      el.empty.classList.toggle("hidden", hasRows);
-    }
-    renderPlatformSummary(state.platformSummary, {
-      live: state.hydrationLive,
-      updatedAt: state.lastPayload?.serverGeneratedAt || state.lastPayload?.generatedAt || null,
-      liveCounts: buildLiveBotCounts(state.lastPayload, state.platformSummary)
+      if (el.empty) {
+        el.empty.classList.toggle("hidden", hasRows);
+      }
+      renderPlatformSummary(state.platformSummary, {
+        live: state.hydrationLive,
+        updatedAt: state.lastPayload?.serverGeneratedAt || state.lastPayload?.generatedAt || null,
+        liveCounts: buildLiveBotCounts(state.lastPayload, state.platformSummary)
+      });
     });
   }
 
