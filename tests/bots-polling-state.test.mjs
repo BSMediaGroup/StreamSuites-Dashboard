@@ -505,6 +505,33 @@ test("Bots manual refresh uses the same state-preserving flow as polling", async
   assert.equal(sandbox.window.scrollY, 512);
 });
 
+test("Bots same-view shell remount preserves drawers, recent expansion, and scroll", async () => {
+  const { sandbox, elements, scrollCalls } = buildBotsSandbox({
+    botPayloads: [
+      twitchPayload({ reason: "shell first", sessionId: "twitch-session-one" }),
+      twitchPayload({ reason: "shell remounted", sessionId: "twitch-session-two" })
+    ],
+    scroll: { x: 4, y: 720 }
+  });
+  sandbox.window.BotsView.init();
+  await flushMicrotasks();
+  await openTwitchInspection(elements);
+
+  sandbox.window.BotsView.destroy();
+  sandbox.window.BotsView.init();
+  await flushMicrotasks();
+
+  const html = elements.get("bots-table-body").innerHTML;
+  assert.match(html, /shell remounted/);
+  assert.match(html, /twitch-session-two/);
+  assert.match(html, /aria-expanded="true"/);
+  assert.match(html, /ss-bot-instance-card/);
+  assert.match(html, /ss-bot-debug-panel/);
+  assert.match(html, /ss-bot-debug-recent-text is-expanded/);
+  assert.ok(scrollCalls.some((entry) => entry.x === 4 && entry.y === 720));
+  assert.equal(sandbox.window.scrollY, 720);
+});
+
 test("Bots refresh prunes saved drawer state only after the row disappears", async () => {
   const { sandbox, elements, scheduler } = buildBotsSandbox({
     botPayloads: [

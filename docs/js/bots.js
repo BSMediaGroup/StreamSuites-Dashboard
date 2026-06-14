@@ -3910,8 +3910,8 @@
     state.hydrationLabel = "Waiting for runtime status...";
     state.lastSuccessfulLiveFetchAt = null;
     state.statusFailureCount = 0;
-    state.rowUi = Object.create(null);
-    state.expandedCreators = Object.create(null);
+    state.rowUi = state.rowUi || Object.create(null);
+    state.expandedCreators = state.expandedCreators || Object.create(null);
     state.renderCache = {
       rowSignature: "",
       platformSignature: "",
