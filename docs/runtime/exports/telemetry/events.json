@@ -1,7 +1,29 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-06-11T12:37:54.874779Z",
+  "generated_at": "2026-06-15T14:49:11.396482Z",
   "events": [
+    {
+      "timestamp": "2026-04-06T16:23:53Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: security_alert email=password_login_new_session user=account_id:3c426a3d-2409-4409-a0bf-c26960081027 email:ad***@streamsuites.app result=sent message_id=2ff90143-dd0f-4f07-a6b1-fe3140af1b3e",
+      "event_type": "security_alert",
+      "email_type": "password_login_new_session",
+      "user_identifier": "account_id:3c426a3d-2409-4409-a0bf-c26960081027 email:ad***@streamsuites.app",
+      "provider_message_id": "2ff90143-dd0f-4f07-a6b1-fe3140af1b3e",
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-04-06T16:23:54Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: session_issued email=email user=user_code:YR992ZS result=success",
+      "event_type": "session_issued",
+      "email_type": "email",
+      "user_identifier": "user_code:YR992ZS",
+      "provider_message_id": null,
+      "result": "success"
+    },
     {
       "timestamp": "2026-04-06T16:27:04Z",
       "source": "auth",
@@ -2170,22 +2192,10 @@
       "result": "success"
     },
     {
-      "timestamp": "2026-06-11T07:08:19.287330Z",
+      "timestamp": "2026-06-15T14:42:20.693682Z",
       "source": "system",
       "severity": "info",
       "message": "Runtime boot sequence started"
-    },
-    {
-      "timestamp": "2026-06-11T07:08:29.811989Z",
-      "source": "kick",
-      "severity": "info",
-      "message": "Platform worker started"
-    },
-    {
-      "timestamp": "2026-06-11T07:08:30.786524Z",
-      "source": "kick",
-      "severity": "info",
-      "message": "Platform worker started"
     }
   ]
 }
