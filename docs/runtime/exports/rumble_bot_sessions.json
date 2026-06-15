@@ -1,26 +1,13 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-06-11T23:53:23.808939Z",
+  "generated_at": "2026-06-15T14:49:07.442107Z",
   "provider": "rumble",
   "count": 0,
   "summary": {
     "desired_count": 0,
     "active_count": 0,
     "blocked_count": 0,
-    "awaiting_transport_count": 0,
-    "awaiting_credentials_count": 0,
-    "awaiting_livestream_count": 0,
-    "awaiting_first_webhook_event_count": 0,
-    "awaiting_chat_room_count": 0,
-    "awaiting_scopes_count": 0,
-    "awaiting_webhook_public_url_count": 0,
-    "channel_unresolved_count": 0,
-    "identity_resolution_required_count": 0,
-    "subscription_blocker_count": 0,
-    "subscription_failed_count": 0,
-    "subscription_pending_count": 0,
-    "dispatch_ready_count": 0,
-    "listening_via_webhook_count": 0,
+    "error_count": 0,
     "by_state": {}
   },
   "sessions": []
