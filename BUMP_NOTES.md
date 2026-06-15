@@ -6,6 +6,10 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Emergency alert-rule save guard: StreamSuites-Dashboard remains the only admin surface for alert rule definitions, and its Alerts workspace now validates saves before calling `/api/admin/alerts/configuration`.
+- Destructive partial-save blocking: Dashboard rejects DanielClancy-only saves, saves that reduce the canonical rule count, saves that drop existing StreamSuites rule IDs, and saves that drop protected minimum operator rule IDs.
+- DanielClancy rule support remains additive: imported rule JSON now merges into the loaded canonical configuration by rule ID instead of replacing the working rule list, and the DanielClancy `page_visit` trigger remains selectable through `danielclancy_page_visit`.
+
 - Emergency DanielClancy alert rule preservation: Admin Alerts now prefixes DanielClancy rule IDs with `dc_` when needed, stages `source_namespace` / `project` on saved rule payloads, and labels DanielClancy-only imports as additive so they must not replace StreamSuites rules.
 - StreamSuites rule preservation: the Alerts workspace keeps StreamSuites rules first-class while DanielClancy project/source options remain additive. The DanielClancy `page_visit` / Page visit option stays available through `danielclancy_page_visit`.
 - Focused static tests pin the DanielClancy project controls, page_visit compatibility metadata, namespace-safe rule IDs, source namespace payload fields, and additive-import copy.

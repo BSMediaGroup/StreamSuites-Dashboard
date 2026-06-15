@@ -20,6 +20,19 @@
       trigger_type: "page_visit"
     }
   ]);
+  const PROTECTED_ALERT_RULE_IDS = Object.freeze([
+    "e8eaaca5-95bf-4f1c-a195-54b3d96f2955",
+    "dc_a9ed791a-37a6-4413-b150-25b80f2bb6f5",
+    "91ea53a8-6bbc-4b5f-ad3d-2ca30873681a",
+    "7e05557e-4232-4bed-b909-eb3f7a42f4de",
+    "648ec5a6-a6f7-475f-9174-d3a853ef8934",
+    "59eab606-b99a-44ad-b6a6-4118012945c3",
+    "38413d8f-cc2d-41c9-a52c-2f53fa3c8188",
+    "2dbfad16-b9d8-4543-90e3-fec2a362fc59",
+    "2ca9049b-e25a-4a5f-860a-192b8b5d1f43",
+    "219c641f-545a-4e9f-b3e4-e10b51ea3a42",
+    "05d097bf-dfc6-4902-93f4-2fe7e3056724"
+  ]);
   const DEFAULT_RULES_PAGE_SIZE = 10;
   const RULES_PAGE_SIZE_OPTIONS = Object.freeze([5, 10, 20, 50]);
   const HISTORY_LIMIT = 250;
@@ -1334,6 +1347,12 @@
     return projectForEventMeta(meta || { key: eventType }) === "danielclancy";
   }
 
+  function isDanielClancyRule(rule) {
+    const namespace = String(rule?.source_namespace || rule?.project || "").trim().toLowerCase();
+    const eventType = String(rule?.event_type || "").trim().toLowerCase();
+    return namespace === "danielclancy" || eventType.startsWith("danielclancy_");
+  }
+
   function ensureDanielClancyRuleId(ruleId, eventType) {
     const normalized = String(ruleId || "").trim();
     const fallback = generateUuid();
@@ -1482,6 +1501,48 @@
     };
   }
 
+  function ruleIdSet(rules) {
+    return new Set(
+      (Array.isArray(rules) ? rules : [])
+        .map((rule) => String(rule?.id || "").trim())
+        .filter(Boolean)
+    );
+  }
+
+  function assertRuleIdsPreserved(requiredIds, incomingIds, messagePrefix) {
+    const missing = Array.from(requiredIds).filter((id) => !incomingIds.has(id));
+    if (missing.length) {
+      throw new Error(`${messagePrefix}: ${missing.join(", ")}`);
+    }
+  }
+
+  function validateConfigurationSnapshotForSave(snapshot) {
+    const incomingRules = Array.isArray(snapshot?.rules) ? snapshot.rules : [];
+    const canonicalRules = Array.isArray(state.configuration?.rules) ? state.configuration.rules : [];
+    if (!canonicalRules.length) return;
+
+    const incomingIds = ruleIdSet(incomingRules);
+    const canonicalStreamSuitesRules = canonicalRules.filter((rule) => !isDanielClancyRule(rule));
+    const hasIncomingDanielClancy = incomingRules.some((rule) => isDanielClancyRule(rule));
+    const hasIncomingStreamSuites = incomingRules.some((rule) => !isDanielClancyRule(rule));
+    if (hasIncomingDanielClancy && !hasIncomingStreamSuites && canonicalStreamSuitesRules.length) {
+      throw new Error("DanielClancy-only alert saves cannot replace the canonical StreamSuites rule list.");
+    }
+    if (incomingRules.length < canonicalRules.length) {
+      throw new Error("Alert save would drop existing canonical rules. Reload, merge by rule ID, and save the full configuration.");
+    }
+    assertRuleIdsPreserved(
+      ruleIdSet(canonicalStreamSuitesRules),
+      incomingIds,
+      "Alert save would drop existing StreamSuites rule IDs"
+    );
+    assertRuleIdsPreserved(
+      new Set(PROTECTED_ALERT_RULE_IDS.filter((id) => canonicalRules.some((rule) => String(rule?.id || "").trim() === id))),
+      incomingIds,
+      "Alert save would drop protected minimum rule IDs"
+    );
+  }
+
   function getConfigurationHash() {
     return stableSerialize(buildConfigurationSnapshot());
   }
@@ -1563,6 +1624,28 @@
       seenIds.add(rule.id);
     });
     return normalized;
+  }
+
+  function mergeImportedConfigurationIntoCurrent(configuration) {
+    const currentRules = Array.isArray(state.rules) ? state.rules.map((rule) => normalizeRuleForEditor(rule, 0)) : [];
+    const mergedRules = currentRules.slice();
+    const indexById = new Map(mergedRules.map((rule, index) => [rule.id, index]));
+    configuration.rules.forEach((rule) => {
+      const normalized = normalizeRuleForEditor(rule, mergedRules.length);
+      if (indexById.has(normalized.id)) {
+        mergedRules.splice(indexById.get(normalized.id), 1, normalized);
+      } else {
+        indexById.set(normalized.id, mergedRules.length);
+        mergedRules.push(normalized);
+      }
+    });
+    const merged = {
+      ...configuration,
+      preferences: normalizePreferences(configuration.preferences || state.preferences),
+      rules: mergedRules
+    };
+    validateConfigurationSnapshotForSave(merged);
+    return merged;
   }
 
   function renderSelectOptions(selectEl, items, getValue, getLabel, emptyLabel = "") {
@@ -3649,7 +3732,9 @@
     setStatus("Saving alert configuration...");
     if (el.configSave) el.configSave.disabled = true;
     try {
-      const response = await window.StreamSuitesApi.updateAdminAlertConfiguration(buildConfigurationSnapshot());
+      const snapshot = buildConfigurationSnapshot();
+      validateConfigurationSnapshotForSave(snapshot);
+      const response = await window.StreamSuitesApi.updateAdminAlertConfiguration(snapshot);
       const configuration = response?.configuration && typeof response.configuration === "object"
         ? response.configuration
         : response;
@@ -3712,14 +3797,15 @@
       const text = await file.text();
       const parsed = JSON.parse(text);
       const configuration = normalizeImportedConfigurationDocument(parsed);
-      const summary = `${file.name}: ${configuration.rules.length} rule${configuration.rules.length === 1 ? "" : "s"}, timezone ${configuration.preferences.timezone || "UTC"}`;
-      if (!window.confirm(`Stage imported ruleset?\n\n${summary}\n\nUse Save changes to persist it to the backend. DanielClancy-only imports are additive and must not replace StreamSuites rules.`)) {
+      const mergedConfiguration = mergeImportedConfigurationIntoCurrent(configuration);
+      const summary = `${file.name}: ${configuration.rules.length} imported rule${configuration.rules.length === 1 ? "" : "s"}, ${mergedConfiguration.rules.length} total rule${mergedConfiguration.rules.length === 1 ? "" : "s"}, timezone ${mergedConfiguration.preferences.timezone || "UTC"}`;
+      if (!window.confirm(`Stage imported ruleset?\n\n${summary}\n\nUse Save changes to persist it to the backend. DanielClancy-only imports are merged by rule ID and must not replace StreamSuites rules.`)) {
         input.value = "";
         setStatus("Import cancelled");
         return;
       }
       setWorkingConfiguration({
-        ...configuration,
+        ...mergedConfiguration,
         exported_at: state.configuration?.exported_at || state.settings?.generated_at || null
       }, { importedSummary: summary });
       renderAll();

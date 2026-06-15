@@ -42,7 +42,24 @@ test("DanielClancy rule IDs and saves are namespace-safe", () => {
 });
 
 test("DanielClancy imports are messaged as additive, not replacement authority", () => {
-  assert.match(alertsJs, /DanielClancy-only imports are additive and must not replace StreamSuites rules/);
+  assert.match(alertsJs, /mergeImportedConfigurationIntoCurrent/);
+  assert.match(alertsJs, /DanielClancy-only imports are merged by rule ID and must not replace StreamSuites rules/);
   assert.match(alertsHtml, /Save changes/);
-  assert.match(alertsJs, /updateAdminAlertConfiguration\(buildConfigurationSnapshot\(\)\)/);
+  assert.match(alertsJs, /const snapshot = buildConfigurationSnapshot\(\);/);
+  assert.match(alertsJs, /validateConfigurationSnapshotForSave\(snapshot\)/);
+  assert.match(alertsJs, /updateAdminAlertConfiguration\(snapshot\)/);
+});
+
+test("Dashboard blocks partial or DanielClancy-only destructive saves", () => {
+  assert.match(alertsJs, /function validateConfigurationSnapshotForSave/);
+  assert.match(alertsJs, /DanielClancy-only alert saves cannot replace the canonical StreamSuites rule list\./);
+  assert.match(alertsJs, /Alert save would drop existing canonical rules\./);
+  assert.match(alertsJs, /Alert save would drop existing StreamSuites rule IDs/);
+});
+
+test("Dashboard preserves protected minimum rule IDs", () => {
+  assert.match(alertsJs, /PROTECTED_ALERT_RULE_IDS/);
+  assert.match(alertsJs, /e8eaaca5-95bf-4f1c-a195-54b3d96f2955/);
+  assert.match(alertsJs, /05d097bf-dfc6-4902-93f4-2fe7e3056724/);
+  assert.match(alertsJs, /Alert save would drop protected minimum rule IDs/);
 });
