@@ -31,3 +31,18 @@ test("DanielClancy alert rules default to backend-owned event and scope metadata
   assert.match(alertsJs, /autoEnable = true/);
   assert.doesNotMatch(alertsJs, /localStorage\.setItem\([^)]*alert/i);
 });
+
+test("DanielClancy rule IDs and saves are namespace-safe", () => {
+  assert.match(alertsJs, /function ensureDanielClancyRuleId/);
+  assert.match(alertsJs, /return \/\^\(dc_\|danielclancy_\)\/i\.test\(candidate\) \? candidate : `dc_\$\{candidate\}`;/);
+  assert.match(alertsJs, /id: ensureDanielClancyRuleId\(existingRule\?\.id \|\| generateUuid\(\), eventType\)/);
+  assert.match(alertsJs, /sourceNamespace = isDanielClancyEventType\(eventType\) \? "danielclancy" : "streamsuites"/);
+  assert.match(alertsJs, /source_namespace: sourceNamespace/);
+  assert.match(alertsJs, /project: sourceNamespace/);
+});
+
+test("DanielClancy imports are messaged as additive, not replacement authority", () => {
+  assert.match(alertsJs, /DanielClancy-only imports are additive and must not replace StreamSuites rules/);
+  assert.match(alertsHtml, /Save changes/);
+  assert.match(alertsJs, /updateAdminAlertConfiguration\(buildConfigurationSnapshot\(\)\)/);
+});

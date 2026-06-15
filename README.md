@@ -62,7 +62,7 @@ flowchart TD
 - The current routing and auth cutover work is reflected in fail-closed Auth API session gating, Cloudflare Pages-safe login routing, and current route compatibility handling.
 - Alerts now live in a dedicated admin route and sidebar destination, separate from Analytics, while still consuming the same backend-owned alert settings, rules, targets, and history APIs.
 - The Alerts workspace exposes backend-authored notification title/message fields, a backend-driven placeholder picker, a local live preview, and clearer delivery/status terminology without changing backend contracts.
-- The Alerts workspace can now author Runtime/Auth-backed StreamSuites and DanielClancy alert rules through the same rule/destination contract, including DanielClancy.net and DanielClancy Admin surface filters.
+- The Alerts workspace can now author Runtime/Auth-backed StreamSuites and DanielClancy alert rules through the same rule/destination contract, including DanielClancy.net and DanielClancy Admin surface filters. DanielClancy controls are additive: saved DanielClancy rules are namespaced/prefixed and must not replace existing StreamSuites rules.
 - Alert preferences continue to manage backend-authored quiet hours, timezone-aware overnight suppression, and per-destination enabled/minimum-severity controls from the dedicated Alerts workspace.
 
 ## Hosting and Routing

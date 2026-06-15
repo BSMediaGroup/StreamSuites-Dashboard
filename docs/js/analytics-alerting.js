@@ -1329,6 +1329,19 @@
       : "streamsuites";
   }
 
+  function isDanielClancyEventType(eventType) {
+    const meta = getEventMeta(eventType);
+    return projectForEventMeta(meta || { key: eventType }) === "danielclancy";
+  }
+
+  function ensureDanielClancyRuleId(ruleId, eventType) {
+    const normalized = String(ruleId || "").trim();
+    const fallback = generateUuid();
+    if (!isDanielClancyEventType(eventType)) return normalized || fallback;
+    const candidate = normalized || fallback;
+    return /^(dc_|danielclancy_)/i.test(candidate) ? candidate : `dc_${candidate}`;
+  }
+
   function currentRuleProject() {
     return String(el.ruleProject?.value || "streamsuites").trim().toLowerCase() || "streamsuites";
   }
@@ -1439,7 +1452,7 @@
       : [];
     return {
       ...base,
-      id: String(base.id || "").trim() || generateUuid(),
+      id: ensureDanielClancyRuleId(base.id, eventType),
       event_type: eventType,
       enabled: coerceBoolean(base.enabled, true),
       name: String(base.name || base.label || labelize(eventType)).trim() || labelize(eventType),
@@ -3212,11 +3225,14 @@
     if (!destinations.length) {
       throw new Error("Select at least one destination.");
     }
+    const sourceNamespace = isDanielClancyEventType(eventType) ? "danielclancy" : "streamsuites";
 
     return {
       ...(cloneJson(existingRule) || {}),
-      id: existingRule?.id || generateUuid(),
+      id: ensureDanielClancyRuleId(existingRule?.id || generateUuid(), eventType),
       event_type: eventType,
+      source_namespace: sourceNamespace,
+      project: sourceNamespace,
       enabled: el.ruleEnabled?.value !== "false",
       name,
       description: String(el.ruleDescription?.value || "").trim() || null,
@@ -3697,7 +3713,7 @@
       const parsed = JSON.parse(text);
       const configuration = normalizeImportedConfigurationDocument(parsed);
       const summary = `${file.name}: ${configuration.rules.length} rule${configuration.rules.length === 1 ? "" : "s"}, timezone ${configuration.preferences.timezone || "UTC"}`;
-      if (!window.confirm(`Stage imported ruleset?\n\n${summary}\n\nUse Save changes to persist it to the backend.`)) {
+      if (!window.confirm(`Stage imported ruleset?\n\n${summary}\n\nUse Save changes to persist it to the backend. DanielClancy-only imports are additive and must not replace StreamSuites rules.`)) {
         input.value = "";
         setStatus("Import cancelled");
         return;
