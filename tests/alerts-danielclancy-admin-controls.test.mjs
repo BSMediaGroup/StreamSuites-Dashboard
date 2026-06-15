@@ -15,6 +15,11 @@ test("alerts editor exposes DanielClancy project and surface controls", () => {
   assert.match(alertsJs, /danielclancy_admin:\s*"DanielClancy Admin"/);
   assert.match(alertsJs, /projectForEventMeta/);
   assert.match(alertsJs, /eventTypesForProject/);
+  assert.match(alertsJs, /DANIELCLANCY_REQUIRED_EVENT_TYPES/);
+  assert.match(alertsJs, /key:\s*"danielclancy_page_visit"/);
+  assert.match(alertsJs, /trigger_type:\s*"page_visit"/);
+  assert.match(alertsJs, /Alert when a tracked public\/admin page visit event is received\./);
+  assert.match(alertsJs, /mergeRequiredDanielClancyEventTypes\(extractItems\(eventTypesPayload\)\)/);
   assert.match(alertsJs, /handleRuleProjectChange/);
   assert.match(alertsJs, /source_namespace/);
 });

@@ -6,6 +6,20 @@
     { key: "streamsuites", label: "StreamSuites" },
     { key: "danielclancy", label: "DanielClancy" }
   ]);
+  const DANIELCLANCY_REQUIRED_EVENT_TYPES = Object.freeze([
+    {
+      key: "danielclancy_page_visit",
+      label: "DanielClancy page visit",
+      description: "Alert when a tracked public/admin page visit event is received.",
+      default_severity: "info",
+      source_namespace: "danielclancy",
+      surface_defaults: ["danielclancy_public", "danielclancy_admin"],
+      recognized_domains: ["danielclancy.net", "www.danielclancy.net", "admin.danielclancy.net"],
+      delivery_targets: DEFAULT_DESTINATIONS,
+      supported_scope_keys: ["page_path", "route", "surface", "destination_type"],
+      trigger_type: "page_visit"
+    }
+  ]);
   const DEFAULT_RULES_PAGE_SIZE = 10;
   const RULES_PAGE_SIZE_OPTIONS = Object.freeze([5, 10, 20, 50]);
   const HISTORY_LIMIT = 250;
@@ -1322,6 +1336,17 @@
   function eventTypesForProject(projectKey) {
     const normalizedProject = String(projectKey || "streamsuites").trim().toLowerCase();
     return state.eventTypes.filter((item) => projectForEventMeta(item) === normalizedProject);
+  }
+
+  function mergeRequiredDanielClancyEventTypes(items) {
+    const next = Array.isArray(items) ? items.filter(Boolean) : [];
+    const existing = new Set(next.map((item) => item?.key).filter(Boolean));
+    DANIELCLANCY_REQUIRED_EVENT_TYPES.forEach((item) => {
+      if (!existing.has(item.key)) {
+        next.push({ ...item, dashboard_compatibility_fallback: true });
+      }
+    });
+    return next;
   }
 
   function extractItems(payload) {
@@ -3035,7 +3060,7 @@
 
         const eventTypesPayload = getSettledValue(eventTypesResult);
         if (eventTypesPayload) {
-          state.eventTypes = extractItems(eventTypesPayload);
+          state.eventTypes = mergeRequiredDanielClancyEventTypes(extractItems(eventTypesPayload));
         }
 
         const templateVariablesPayload = getSettledValue(templateVariablesResult);

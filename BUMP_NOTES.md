@@ -6,6 +6,10 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- DanielClancy page-visit alert support: the Admin Alerts editor now includes a narrow compatibility metadata entry for `danielclancy_page_visit` with `trigger_type=page_visit`, Page visit labeling, DanielClancy public/admin surface defaults, and page/route/surface scope support.
+- Existing StreamSuites alert options and saved rule payloads remain on the same backend-owned `event_type` / `scope` / `destinations` contract; the compatibility entry only affects DanielClancy project rules and keeps `danielclancy.net` / `admin.danielclancy.net` surfaces available.
+- Human note: Dashboard remains a Runtime/Auth consumer/control surface. DanielClancy page visit delivery still depends on the Runtime/Auth ingest contract and sender/tracking wiring; this does not create local alert authority.
+
 - Alerts DanielClancy rule support: the Admin Alerts editor now has an additive Project selector (`StreamSuites`, `DanielClancy`) that filters backend-provided event types by source namespace, exposes DanielClancy trigger options from Runtime/Auth metadata, and keeps saved rule payloads on the existing `event_type` / `scope` / `destinations` contract.
 - DanielClancy surface controls: the existing Match filters surface selector now includes `DanielClancy.net` (`danielclancy_public`) and `DanielClancy Admin` (`danielclancy_admin`), and DanielClancy event metadata defaults the editor toward the relevant surface without changing StreamSuites rule defaults.
 - Human note: Dashboard remains a Runtime/Auth consumer/control surface only. Existing StreamSuites alert rules, Windows client targets, and Pushover destination options are preserved; DanielClancy live delivery still depends on Runtime/Auth `POST /api/alerts/danielclancy` env/config wiring.
