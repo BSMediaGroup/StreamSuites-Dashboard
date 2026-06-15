@@ -2,6 +2,10 @@
   "use strict";
 
   const DEFAULT_DESTINATIONS = ["windows_client", "pushover"];
+  const ALERT_PROJECTS = Object.freeze([
+    { key: "streamsuites", label: "StreamSuites" },
+    { key: "danielclancy", label: "DanielClancy" }
+  ]);
   const DEFAULT_RULES_PAGE_SIZE = 10;
   const RULES_PAGE_SIZE_OPTIONS = Object.freeze([5, 10, 20, 50]);
   const HISTORY_LIMIT = 250;
@@ -94,7 +98,9 @@
     directory: "FindMeHere Directory",
     desktop: "Desktop Admin",
     "auth-controls": "Auth Controls",
-    self_service: "Self Service"
+    self_service: "Self Service",
+    danielclancy_public: "DanielClancy.net",
+    danielclancy_admin: "DanielClancy Admin"
   });
 
   const locationFormatting = (() => {
@@ -360,6 +366,7 @@
     ruleFormTitle: null,
     ruleCancel: null,
     ruleSave: null,
+    ruleProject: null,
     ruleEventType: null,
     ruleSeverity: null,
     ruleThresholdType: null,
@@ -1051,12 +1058,21 @@
 
   function getScopeProfile(eventType) {
     const key = String(eventType || "").trim().toLowerCase();
+    const meta = getEventMeta(key);
     let recommended = ["surface"];
     let helper = "Keep filters broad unless you need a page, provider, user-type, or admin-only slice.";
     let defaults = {};
     let autoEnable = false;
 
-    if (key === "public_page_visit" || key === "public_page_visit_spike") {
+    if (projectForEventMeta(meta) === "danielclancy") {
+      recommended = ["surface", "route", "destination_type"];
+      helper = "DanielClancy alert rules usually scope to DanielClancy.net or DanielClancy Admin before choosing destinations.";
+      const surfaces = Array.isArray(meta?.surface_defaults) ? meta.surface_defaults.filter(Boolean) : [];
+      if (surfaces.length) {
+        defaults = { surface: surfaces };
+        autoEnable = true;
+      }
+    } else if (key === "public_page_visit" || key === "public_page_visit_spike") {
       recommended = ["page_path", "page_key", "route", "surface"];
       helper = "Page visit alerts usually scope to a route or specific public page to avoid broad traffic noise.";
     } else if (
@@ -1289,6 +1305,23 @@
 
   function getEventMeta(eventType) {
     return state.eventTypes.find((item) => item?.key === eventType) || null;
+  }
+
+  function projectForEventMeta(item) {
+    const namespace = String(item?.source_namespace || "").trim().toLowerCase();
+    const key = String(item?.key || "").trim().toLowerCase();
+    return namespace === "danielclancy" || key.startsWith("danielclancy_")
+      ? "danielclancy"
+      : "streamsuites";
+  }
+
+  function currentRuleProject() {
+    return String(el.ruleProject?.value || "streamsuites").trim().toLowerCase() || "streamsuites";
+  }
+
+  function eventTypesForProject(projectKey) {
+    const normalizedProject = String(projectKey || "streamsuites").trim().toLowerCase();
+    return state.eventTypes.filter((item) => projectForEventMeta(item) === normalizedProject);
   }
 
   function extractItems(payload) {
@@ -2196,8 +2229,15 @@
 
   function renderEventTypeSelects() {
     renderSelectOptions(
+      el.ruleProject,
+      ALERT_PROJECTS,
+      (item) => item.key,
+      (item) => item.label
+    );
+    const projectEventTypes = eventTypesForProject(currentRuleProject());
+    renderSelectOptions(
       el.ruleEventType,
-      state.eventTypes,
+      projectEventTypes.length ? projectEventTypes : state.eventTypes,
       (item) => item.key,
       (item) => item.label
     );
@@ -2451,8 +2491,13 @@
       ensureRulesPageForRule(next.id);
     }
     state.ruleScopePassthrough = getPassthroughScope(next?.scope);
+    if (el.ruleProject) {
+      el.ruleProject.value = projectForEventMeta(getEventMeta(next?.event_type)) || "streamsuites";
+      renderEventTypeSelects();
+    }
     if (el.ruleEventType) {
-      el.ruleEventType.value = next?.event_type || state.eventTypes[0]?.key || "";
+      const projectEvents = eventTypesForProject(currentRuleProject());
+      el.ruleEventType.value = next?.event_type || projectEvents[0]?.key || state.eventTypes[0]?.key || "";
     }
     if (el.ruleSeverity) {
       el.ruleSeverity.value = next?.severity || getEventMeta(el.ruleEventType?.value)?.default_severity || "info";
@@ -3484,6 +3529,23 @@
     renderTemplateBrowser();
   }
 
+  function handleRuleProjectChange() {
+    renderEventTypeSelects();
+    const projectEvents = eventTypesForProject(currentRuleProject());
+    if (el.ruleEventType && projectEvents.length) {
+      el.ruleEventType.value = projectEvents[0].key;
+    }
+    const profile = getScopeProfile(el.ruleEventType?.value);
+    if (el.ruleScopeEnabled && profile.autoEnable) {
+      el.ruleScopeEnabled.checked = true;
+    }
+    renderScopeEditor(profile.defaults || {});
+    updateScopeVisibility();
+    applyRuleDefaultsFromEventType(el.ruleEventType?.value);
+    renderTemplateBrowser();
+    renderRulePreview();
+  }
+
   function handleRuleScopeToggle() {
     if (el.ruleScopeEnabled?.checked) {
       const currentScope = readScopeInputs();
@@ -3654,6 +3716,7 @@
     el.ruleForm?.addEventListener("input", renderRulePreview);
     el.ruleForm?.addEventListener("change", renderRulePreview);
     el.previewSurfaceToggle?.addEventListener("click", handlePreviewSurfaceToggle);
+    el.ruleProject?.addEventListener("change", handleRuleProjectChange);
     el.ruleThresholdType?.addEventListener("change", updateThresholdFieldVisibility);
     el.ruleEventType?.addEventListener("change", handleRuleEventTypeChange);
     el.ruleScopeEnabled?.addEventListener("change", handleRuleScopeToggle);
@@ -3706,6 +3769,7 @@
     el.ruleForm?.removeEventListener("input", renderRulePreview);
     el.ruleForm?.removeEventListener("change", renderRulePreview);
     el.previewSurfaceToggle?.removeEventListener("click", handlePreviewSurfaceToggle);
+    el.ruleProject?.removeEventListener("change", handleRuleProjectChange);
     el.ruleThresholdType?.removeEventListener("change", updateThresholdFieldVisibility);
     el.ruleEventType?.removeEventListener("change", handleRuleEventTypeChange);
     el.ruleScopeEnabled?.removeEventListener("change", handleRuleScopeToggle);
@@ -3792,6 +3856,7 @@
     el.ruleFormTitle = $("analytics-alerts-rule-form-title");
     el.ruleCancel = $("analytics-alerts-rule-cancel");
     el.ruleSave = $("analytics-alerts-rule-save");
+    el.ruleProject = $("analytics-alerts-rule-project");
     el.ruleEventType = $("analytics-alerts-rule-event-type");
     el.ruleSeverity = $("analytics-alerts-rule-severity");
     el.ruleThresholdType = $("analytics-alerts-rule-threshold-type");
