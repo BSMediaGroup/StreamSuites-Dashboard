@@ -61,6 +61,7 @@ flowchart TD
 - Admin account inspection now exposes authoritative public-profile state, including canonical slug, creator-capable vs viewer-only posture, StreamSuites and FindMeHere visibility or eligibility, slug aliases, canonical URLs, and reserved media fields including background image URL.
 - The current routing and auth cutover work is reflected in fail-closed Auth API session gating, Cloudflare Pages-safe login routing, and current route compatibility handling.
 - Alerts now live in a dedicated admin route and sidebar destination, separate from Analytics, while still consuming the same backend-owned alert settings, rules, targets, and history APIs.
+- The Analytics map consumes runtime-provided `by_country_markers` when available so DanielClancy.net traffic is visually distinct from StreamSuites-native traffic with separate marker colors, legend entries, and popup project/source/surface labels while preserving session and request scaling.
 - The Alerts workspace exposes backend-authored notification title/message fields, a backend-driven placeholder picker, a local live preview, and clearer delivery/status terminology without changing backend contracts.
 - The Alerts workspace can now author Runtime/Auth-backed StreamSuites and DanielClancy alert rules through the same rule/destination contract, including DanielClancy.net and DanielClancy Admin surface filters. DanielClancy controls are additive: saved DanielClancy rules are namespaced/prefixed and must not replace existing StreamSuites rules.
 - Alert configuration saves are full-canonical saves through Runtime/Auth only. Dashboard blocks DanielClancy-only or partial rule lists, protects existing StreamSuites rule IDs, guards the protected minimum operator rule IDs, and merges imported DanielClancy rule JSON by rule ID instead of replacing canonical rules.
@@ -242,6 +243,7 @@ StreamSuites-Dashboard/
 │   └── platform/
 ├── tests/
 │   ├── admin-auth-turnstile.test.mjs
+│   ├── analytics-map-project-markers.test.mjs
 │   ├── alerts-danielclancy-admin-controls.test.mjs
 │   ├── bots-polling-state.test.mjs
 │   ├── economy-admin-controls.test.mjs

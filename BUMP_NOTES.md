@@ -6,6 +6,11 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Analytics marker distinction: the Dashboard Analytics map now prefers runtime-provided `by_country_markers` and renders DanielClancy.net rows with distinct marker dot, halo, stroke, popup, and legend labeling while StreamSuites-native markers keep the existing visual family.
+- Marker semantics preserved: existing request halo scaling still uses request counts, and dot sizing still uses session counts. The new project styling does not alter alert rules, rule saves, or runtime authority.
+- Added `tests/analytics-map-project-markers.test.mjs` to pin DanielClancy marker color/halo distinction, popup/legend labels, and preserved StreamSuites marker scaling. README repo tree was updated for the new test file.
+- Validation performed for this marker distinction work: `node --check docs/js/analytics.js`; `node --test tests/analytics-map-project-markers.test.mjs` (`2 passed`); `git diff --check`; Playwright browser validation against the Analytics view/module with mocked StreamSuites and DanielClancy marker rows.
+
 - Emergency alert-rule save guard: StreamSuites-Dashboard remains the only admin surface for alert rule definitions, and its Alerts workspace now validates saves before calling `/api/admin/alerts/configuration`.
 - Destructive partial-save blocking: Dashboard rejects DanielClancy-only saves, saves that reduce the canonical rule count, saves that drop existing StreamSuites rule IDs, and saves that drop protected minimum operator rule IDs.
 - DanielClancy rule support remains additive: imported rule JSON now merges into the loaded canonical configuration by rule ID instead of replacing the working rule list, and the DanielClancy `page_visit` trigger remains selectable through `danielclancy_page_visit`.

@@ -1384,6 +1384,50 @@ button.ss-public-identity-chip:focus-visible {
   isolation: isolate;
 }
 
+.ss-analytics-map-legend {
+  position: absolute;
+  left: 22px;
+  bottom: 22px;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  max-width: calc(100% - 44px);
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: rgba(8, 12, 20, 0.82);
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  line-height: 1.25;
+  backdrop-filter: blur(10px);
+}
+
+.ss-analytics-map-legend span {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+}
+
+.ss-analytics-map-legend-swatch {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  border-radius: 999px;
+  box-shadow: 0 0 0 4px rgba(159, 77, 255, 0.18);
+}
+
+.ss-analytics-map-legend-swatch.is-streamsuites {
+  background: #d6b8ff;
+}
+
+.ss-analytics-map-legend-swatch.is-danielclancy {
+  background: #ffd166;
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2);
+}
+
 .ss-analytics-map-panel.is-map-enlarged .ss-analytics-map-shell {
   min-height: clamp(700px, 86vh, 1100px);
 }

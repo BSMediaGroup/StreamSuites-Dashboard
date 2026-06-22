@@ -30,10 +30,16 @@
     public: "StreamSuites Public",
     creator: "StreamSuites Creator",
     admin: "StreamSuites Admin",
+    danielclancy_public: "DanielClancy.net",
+    danielclancy_admin: "DanielClancy Admin",
     directory: "FindMeHere Directory",
     desktop: "Desktop Admin",
     "auth-controls": "Auth Controls",
     self_service: "Self Service"
+  });
+  const PROJECT_LABELS = Object.freeze({
+    danielclancy: "DanielClancy.net",
+    streamsuites: "StreamSuites"
   });
 
   const SOURCE_ID = "ss-analytics-country-points";
@@ -391,6 +397,16 @@
     return SURFACE_LABELS[normalized] || labelize(normalized, fallback);
   }
 
+  function normalizeProject(value) {
+    const normalized = safeToText(value).trim().toLowerCase();
+    return normalized === "danielclancy" ? "danielclancy" : "streamsuites";
+  }
+
+  function formatProjectLabel(value) {
+    const normalized = normalizeProject(value);
+    return PROJECT_LABELS[normalized] || labelize(normalized, "StreamSuites");
+  }
+
   function formatShare(value, total) {
     const numerator = Number(value);
     const denominator = Number(total);
@@ -678,6 +694,38 @@
     requestsValue.textContent = formatNumber(requests);
     requestsLine.append(requestsLabel, document.createTextNode(" "), requestsValue);
     root.appendChild(requestsLine);
+
+    const project = normalizeProject(entry?.project);
+    const projectLine = document.createElement("span");
+    const projectLabel = document.createElement("span");
+    projectLabel.className = "ss-map-popup-label";
+    projectLabel.textContent = "Project:";
+    const projectValue = document.createElement("span");
+    projectValue.className = "ss-map-popup-value";
+    projectValue.textContent = formatProjectLabel(project);
+    projectLine.append(projectLabel, document.createTextNode(" "), projectValue);
+    root.appendChild(projectLine);
+
+    if (project === "danielclancy") {
+      const sourceLine = document.createElement("span");
+      const sourceLabel = document.createElement("span");
+      sourceLabel.className = "ss-map-popup-label";
+      sourceLabel.textContent = "Source:";
+      const sourceValue = document.createElement("span");
+      sourceValue.className = "ss-map-popup-value";
+      sourceValue.textContent = "DanielClancy";
+      sourceLine.append(sourceLabel, document.createTextNode(" "), sourceValue);
+      root.appendChild(sourceLine);
+      const surfaceLine = document.createElement("span");
+      const surfaceLabel = document.createElement("span");
+      surfaceLabel.className = "ss-map-popup-label";
+      surfaceLabel.textContent = "Surface:";
+      const surfaceValue = document.createElement("span");
+      surfaceValue.className = "ss-map-popup-value";
+      surfaceValue.textContent = formatSurfaceLabel(entry?.surface || "danielclancy_public");
+      surfaceLine.append(surfaceLabel, document.createTextNode(" "), surfaceValue);
+      root.appendChild(surfaceLine);
+    }
 
     return root;
   }
@@ -1097,7 +1145,12 @@
         source: SOURCE_ID,
         filter: ["!", ["has", "point_count"]],
         paint: {
-          "circle-color": "#1d4d93",
+          "circle-color": [
+            "case",
+            ["==", ["get", "project"], "danielclancy"],
+            "#f59e0b",
+            "#1d4d93"
+          ],
           "circle-opacity": [
             "interpolate",
             ["linear"],
@@ -1130,7 +1183,12 @@
         source: SOURCE_ID,
         filter: ["!", ["has", "point_count"]],
         paint: {
-          "circle-color": "#9f4dff",
+          "circle-color": [
+            "case",
+            ["==", ["get", "project"], "danielclancy"],
+            "#7c3aed",
+            "#9f4dff"
+          ],
           "circle-opacity": [
             "interpolate",
             ["linear"],
@@ -1163,7 +1221,12 @@
         source: SOURCE_ID,
         filter: ["!", ["has", "point_count"]],
         paint: {
-          "circle-color": "#d6b8ff",
+          "circle-color": [
+            "case",
+            ["==", ["get", "project"], "danielclancy"],
+            "#ffd166",
+            "#d6b8ff"
+          ],
           "circle-opacity": [
             "interpolate",
             ["linear"],
@@ -1175,7 +1238,12 @@
             400, 0.99
           ],
           "circle-blur": 0.08,
-          "circle-stroke-color": "rgba(242,228,255,0.86)",
+          "circle-stroke-color": [
+            "case",
+            ["==", ["get", "project"], "danielclancy"],
+            "rgba(255, 182, 72, 0.92)",
+            "rgba(242,228,255,0.86)"
+          ],
           "circle-stroke-width": 0.75,
           "circle-radius": [
             "interpolate",
@@ -1247,7 +1315,10 @@
               code,
               name,
               sessions,
-              requests
+              requests,
+              project: props.project,
+              source_namespace: props.source_namespace,
+              surface: props.surface
             })
           )
           .addTo(map);
@@ -1361,18 +1432,24 @@
       const requests = Number.isFinite(requestsRaw) ? Math.max(0, Math.round(requestsRaw)) : 0;
       const sessions = Number.isFinite(sessionsRaw) ? Math.max(0, Math.round(sessionsRaw)) : requests;
       if (requests <= 0 && sessions <= 0) return;
-      const existing = aggregate.get(code);
+      const project = normalizeProject(entry?.project);
+      const key = `${code}|${project}`;
+      const existing = aggregate.get(key);
       if (existing) {
         existing.requests += requests;
         existing.sessions += sessions;
         return;
       }
-      aggregate.set(code, {
+      aggregate.set(key, {
         code,
         name: resolveCountryName(code),
         requests,
         sessions,
-        centroid: [lon, lat]
+        centroid: [lon, lat],
+        project,
+        source_namespace: entry?.source_namespace || project,
+        surface: entry?.surface || (project === "danielclancy" ? "danielclancy_public" : "public"),
+        projectLabel: entry?.project_label || formatProjectLabel(project)
       });
     });
     return Array.from(aggregate.values());
@@ -1438,7 +1515,11 @@
         country: code,
         name: entry?.name || resolveCountryName(code),
         requests: Number.isFinite(requests) ? requests : 0,
-        sessions: Number.isFinite(sessions) ? sessions : 0
+        sessions: Number.isFinite(sessions) ? sessions : 0,
+        project: normalizeProject(entry?.project),
+        source_namespace: entry?.source_namespace || normalizeProject(entry?.project),
+        surface: entry?.surface || (normalizeProject(entry?.project) === "danielclancy" ? "danielclancy_public" : "public"),
+        project_label: entry?.projectLabel || formatProjectLabel(entry?.project)
       },
       geometry: {
         type: "Point",
@@ -2431,7 +2512,7 @@
         renderRecentRequests(data?.recent_requests);
         setSummary(data);
         updateLocationBreakdown(data?.by_location, data?.location_support);
-        await updateMap(data?.by_country);
+        await updateMap(data?.by_country_markers || data?.by_country);
         updateExecutiveSummary(data);
 
         if (Number(data?.totals?.requests || 0) <= 0) {
