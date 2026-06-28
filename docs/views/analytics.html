@@ -69,6 +69,24 @@
             Requests only
           </button>
         </div>
+        <div class="ss-analytics-map-layer-controls" role="group" aria-label="Map layer controls">
+          <button
+            type="button"
+            class="ss-btn ss-btn-secondary ss-btn-small is-active"
+            data-map-layer-toggle="dots"
+            aria-pressed="true"
+          >
+            Location dots
+          </button>
+          <button
+            type="button"
+            class="ss-btn ss-btn-secondary ss-btn-small is-active"
+            data-map-layer-toggle="glow"
+            aria-pressed="true"
+          >
+            Request glow
+          </button>
+        </div>
         <button
           id="analytics-map-toggle"
           class="ss-btn ss-btn-secondary ss-btn-small ss-analytics-map-toggle"
@@ -140,6 +158,10 @@
           <p class="muted">Fullscreen MapLibre location view using the selected analytics window.</p>
         </div>
         <div class="ss-analytics-map-fullscreen-actions">
+          <div class="ss-analytics-map-layer-controls" role="group" aria-label="Fullscreen map layer controls">
+            <button type="button" class="ss-btn ss-btn-secondary ss-btn-small is-active" data-map-layer-toggle="dots" aria-pressed="true">Location dots</button>
+            <button type="button" class="ss-btn ss-btn-secondary ss-btn-small is-active" data-map-layer-toggle="glow" aria-pressed="true">Request glow</button>
+          </div>
           <label class="muted" for="analytics-map-fullscreen-window-select">Window</label>
           <select id="analytics-map-fullscreen-window-select">
             <option value="5m">Last 5m</option>
@@ -147,6 +169,15 @@
             <option value="1h">Last 1h</option>
             <option value="24h">Last 24h</option>
           </select>
+          <button
+            id="analytics-map-fullscreen-sidebar-toggle"
+            class="ss-btn ss-btn-secondary ss-btn-small"
+            type="button"
+            aria-controls="analytics-map-fullscreen-sidebar"
+            aria-pressed="false"
+          >
+            <span data-map-sidebar-toggle-label>Hide details</span>
+          </button>
           <button
             id="analytics-map-fullscreen-close"
             class="ss-btn ss-btn-secondary ss-btn-small"
@@ -160,8 +191,17 @@
       <div class="ss-analytics-map-fullscreen-body">
         <div class="ss-analytics-map-fullscreen-map-shell">
           <div id="analytics-fullscreen-world-map" class="ss-analytics-map ss-analytics-map-fullscreen-map" role="img" aria-label="Fullscreen global session map"></div>
+          <button
+            id="analytics-map-fullscreen-sidebar-restore"
+            class="ss-btn ss-btn-secondary ss-btn-small ss-analytics-map-sidebar-restore"
+            type="button"
+            hidden
+          >
+            Show details
+          </button>
         </div>
         <aside id="analytics-map-fullscreen-sidebar" class="ss-analytics-map-fullscreen-sidebar" aria-label="Fullscreen map details">
+          <section data-analytics-map-sidebar-section="selected"><h3>Selected location</h3></section>
           <section data-analytics-map-sidebar-section="summary">
             <h3>Map summary</h3>
             <p class="muted">Map details load with analytics data.</p>

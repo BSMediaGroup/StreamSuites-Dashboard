@@ -50,8 +50,13 @@
     requestsBackdrop: "ss-analytics-requests-backdrop",
     activityGlow: "ss-analytics-activity-glow",
     activityCore: "ss-analytics-activity-core",
+    selectedRing: "ss-analytics-selected-ring",
     activityHit: "ss-analytics-activity-hit"
   };
+  const MAP_LAYER_VISIBILITY_DEFAULT = Object.freeze({
+    dots: true,
+    glow: true
+  });
 
   const FALLBACK_COUNTRY_CENTROIDS = {
     US: [-98.5795, 39.8283],
@@ -146,6 +151,71 @@
     { city: "Paris", region: "Île-de-France", country_code: "FR", latitude: 48.8566, longitude: 2.3522 },
     { city: "Amsterdam", region: "North Holland", country_code: "NL", latitude: 52.3676, longitude: 4.9041 }
   ]);
+  const LOCATION_COVER_BASE_PATH = "/assets/analytics/location-covers";
+  const LOCATION_COVER_LICENSE = "Project-owned generated fallback illustration";
+  const LOCATION_COVER_CREDIT = "Generated locally for StreamSuites analytics map location covers";
+  const LOCATION_COVER_LOCATIONS = Object.freeze([
+    ["us:oregon:portland", "Portland, Oregon, US", "Portland", "Oregon", "US"],
+    ["us:california:los-angeles", "Los Angeles, California, US", "Los Angeles", "California", "US"],
+    ["us:california:santa-clara", "Santa Clara, California, US", "Santa Clara", "California", "US"],
+    ["us:virginia:ashburn", "Ashburn, Virginia, US", "Ashburn", "Virginia", "US"],
+    ["gb:england:london", "London, England, GB", "London", "England", "GB"],
+    ["ls:maseru-district:maseru", "Maseru, Maseru District, LS", "Maseru", "Maseru District", "LS"],
+    ["dk:capital-region:copenhagen", "Copenhagen, Capital Region, DK", "Copenhagen", "Capital Region", "DK"],
+    ["pt:lisbon", "Lisbon, PT", "Lisbon", "", "PT"],
+    ["pt:faro:portimao", "Portimao, Faro, PT", "Portimao", "Faro", "PT"],
+    ["us:oregon:boardman", "Boardman, Oregon, US", "Boardman", "Oregon", "US"],
+    ["au:new-south-wales:sydney", "Sydney, New South Wales, AU", "Sydney", "New South Wales", "AU"],
+    ["au:victoria:melbourne", "Melbourne, Victoria, AU", "Melbourne", "Victoria", "AU"],
+    ["ca:ontario:toronto", "Toronto, Ontario, CA", "Toronto", "Ontario", "CA"],
+    ["br:sao-paulo:sao-paulo", "Sao Paulo, Sao Paulo, BR", "Sao Paulo", "Sao Paulo", "BR"]
+  ]);
+  const LOCATION_COVER_COUNTRY_FALLBACKS = Object.freeze([
+    ["us", "Washington, DC", "Washington", "District of Columbia", "US"],
+    ["gb", "London", "London", "England", "GB"],
+    ["ls", "Maseru", "Maseru", "Maseru District", "LS"],
+    ["dk", "Copenhagen", "Copenhagen", "Capital Region", "DK"],
+    ["pt", "Lisbon", "Lisbon", "", "PT"],
+    ["au", "Canberra", "Canberra", "Australian Capital Territory", "AU"],
+    ["ca", "Ottawa", "Ottawa", "Ontario", "CA"],
+    ["br", "Brasilia", "Brasilia", "Federal District", "BR"],
+    ["de", "Berlin", "Berlin", "Berlin", "DE"],
+    ["fr", "Paris", "Paris", "Ile-de-France", "FR"],
+    ["nl", "Amsterdam", "Amsterdam", "North Holland", "NL"],
+    ["jp", "Tokyo", "Tokyo", "Tokyo", "JP"],
+    ["sg", "Singapore", "Singapore", "", "SG"],
+    ["ie", "Dublin", "Dublin", "Leinster", "IE"],
+    ["nz", "Wellington", "Wellington", "Wellington Region", "NZ"]
+  ]);
+  const LOCATION_COVER_IMAGES = {
+    schemaVersion: "location-cover-images.v1",
+    defaultFallback: `${LOCATION_COVER_BASE_PATH}/default-location-cover.svg`,
+    defaultFallbackMeta: {
+      title: "Generated analytics location cover",
+      imagePath: `${LOCATION_COVER_BASE_PATH}/default-location-cover.svg`,
+      sourceUrl: "",
+      license: LOCATION_COVER_LICENSE,
+      credit: LOCATION_COVER_CREDIT,
+      kind: "default",
+      assetType: "generated-illustration",
+      isFallbackIllustration: true
+    },
+    locations: Object.fromEntries(
+      LOCATION_COVER_LOCATIONS.map(([key, title, city, region, countryCode]) => [
+        key,
+        makeLocationCoverEntry("city", title, city, region, countryCode)
+      ])
+    ),
+    countryFallbacks: Object.fromEntries(
+      LOCATION_COVER_COUNTRY_FALLBACKS.map(([key, capital, city, region, countryCode]) => [
+        key,
+        {
+          capital,
+          ...makeLocationCoverEntry("capital", `${capital}, ${countryCode}`, city, region, countryCode)
+        }
+      ])
+    )
+  };
 
   const state = {
     map: null,
@@ -185,6 +255,7 @@
     mapCollapsed: false,
     mapEnlarged: false,
     mapMarkerFilter: MAP_MARKER_FILTER_DEFAULT,
+    mapLayerVisibility: { ...MAP_LAYER_VISIBILITY_DEFAULT },
     mapResizeRaf: null,
     mapResizeTimeout: null,
     mapFrameTimeout: null,
@@ -192,6 +263,9 @@
     fullscreenMap: null,
     fullscreenMapReady: false,
     fullscreenPopup: null,
+    fullscreenSidebarCollapsed: false,
+    selectedMapFeatureId: "",
+    selectedMapFeature: null,
     mapFeatureCollection: emptyGeoJson(),
     mapMetadata: {
       cityMarkers: 0,
@@ -229,6 +303,8 @@
     mapFullscreenClose: null,
     fullscreenMap: null,
     fullscreenSidebar: null,
+    fullscreenSidebarToggle: null,
+    fullscreenSidebarRestore: null,
     fullscreenWindowSelect: null,
     mapMarkerFilter: null,
     mapGeneratedAt: null,
@@ -577,6 +653,87 @@
       .toLowerCase();
   }
 
+  function normalizeCoverPart(value) {
+    return safeToText(value)
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .replace(/[^a-zA-Z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .toLowerCase();
+  }
+
+  function locationCoverFilename(kind, countryCode, region, city) {
+    return `${kind}-${normalizeCoverPart(countryCode)}-${normalizeCoverPart(region)}-${normalizeCoverPart(city)}.svg`
+      .replace(/--+/g, "-");
+  }
+
+  function makeLocationCoverEntry(kind, title, city, region, countryCode) {
+    return {
+      title,
+      city,
+      region,
+      countryCode,
+      imagePath: `${LOCATION_COVER_BASE_PATH}/${locationCoverFilename(kind, countryCode, region, city || title)}`,
+      sourceUrl: "",
+      license: LOCATION_COVER_LICENSE,
+      credit: LOCATION_COVER_CREDIT,
+      kind,
+      assetType: "generated-illustration",
+      isFallbackIllustration: true
+    };
+  }
+
+  function normalizeCoverEntry(entry) {
+    if (!entry || typeof entry !== "object") return null;
+    return {
+      imagePath: entry.imagePath || LOCATION_COVER_IMAGES.defaultFallback,
+      title: entry.title || "Generated analytics location cover",
+      credit: entry.credit || LOCATION_COVER_CREDIT,
+      license: entry.license || LOCATION_COVER_LICENSE,
+      sourceUrl: entry.sourceUrl || "",
+      kind: entry.kind || "default",
+      assetType: entry.assetType || "generated-illustration",
+      isFallbackIllustration: entry.isFallbackIllustration !== false
+    };
+  }
+
+  function buildLocationCoverKey(city, region, countryCode) {
+    const code = normalizeCountryCode(countryCode).toLowerCase();
+    const cityPart = normalizeCoverPart(city);
+    const regionPart = normalizeCoverPart(region);
+    if (!code || !cityPart) return "";
+    return regionPart ? `${code}:${regionPart}:${cityPart}` : `${code}:${cityPart}`;
+  }
+
+  function getCountryFallbackCover(countryCode) {
+    const code = normalizeCountryCode(countryCode).toLowerCase();
+    return normalizeCoverEntry(LOCATION_COVER_IMAGES.countryFallbacks[code]) || getDefaultLocationCover();
+  }
+
+  function getDefaultLocationCover() {
+    return normalizeCoverEntry(LOCATION_COVER_IMAGES.defaultFallbackMeta);
+  }
+
+  function getLocationCoverImage(locationFeature) {
+    const props = locationFeature?.properties || locationFeature || {};
+    const countryCode = normalizeCountryCode(props.country_code || props.countryCode || props.country || props.code);
+    if (props.plottedPrecision === "country_fallback" || props.mapPrecision === "country_fallback") {
+      return getCountryFallbackCover(countryCode);
+    }
+    const exactKey = buildLocationCoverKey(props.city, props.region || props.regionCode, countryCode);
+    const exact = normalizeCoverEntry(LOCATION_COVER_IMAGES.locations[exactKey]);
+    if (exact) return exact;
+    const cityPart = normalizeCoverPart(props.city);
+    const countryPart = countryCode.toLowerCase();
+    const cityCountry = Object.values(LOCATION_COVER_IMAGES.locations).find((entry) =>
+      normalizeCountryCode(entry.countryCode).toLowerCase() === countryPart &&
+      normalizeCoverPart(entry.city) === cityPart
+    );
+    if (cityCountry) return normalizeCoverEntry(cityCountry);
+    return getCountryFallbackCover(countryCode);
+  }
+
   function normalizeCountryCode(value) {
     const raw = collapseLocationWhitespace(value);
     if (!raw || isPlaceholderLocationValue(raw) || raw.toUpperCase() === "ZZ") return "";
@@ -606,6 +763,20 @@
       if (text && !isPlaceholderLocationValue(text)) return text;
     }
     return "";
+  }
+
+  function latestTimestamp(left, right) {
+    const leftTime = Date.parse(left || "");
+    const rightTime = Date.parse(right || "");
+    if (!Number.isFinite(leftTime)) return right || left || "";
+    if (!Number.isFinite(rightTime)) return left || right || "";
+    return rightTime > leftTime ? right : left;
+  }
+
+  function pushUniqueText(list, value) {
+    const text = collapseLocationWhitespace(value);
+    if (!text || list.includes(text)) return;
+    list.push(text);
   }
 
   function parseFiniteNumber(value) {
@@ -887,15 +1058,33 @@
     const requestsRaw = Number(entry?.requests ?? 0);
     const sessions = Number.isFinite(sessionsRaw) ? Math.max(0, Math.round(sessionsRaw)) : 0;
     const requests = Number.isFinite(requestsRaw) ? Math.max(0, Math.round(requestsRaw)) : 0;
+    const cover = normalizeCoverEntry(entry?.coverImage) || getLocationCoverImage({
+      city: entry?.city,
+      region: entry?.region || entry?.regionCode,
+      countryCode: code,
+      plottedPrecision: entry?.plottedPrecision || entry?.mapPrecision
+    });
 
     const root = document.createElement("div");
     root.className = "ss-map-popup-inner";
+
+    const figure = document.createElement("figure");
+    figure.className = "ss-map-popup-cover";
+    const coverImage = document.createElement("img");
+    coverImage.src = cover.imagePath;
+    coverImage.alt = "";
+    coverImage.loading = "lazy";
+    coverImage.decoding = "async";
+    const caption = document.createElement("figcaption");
+    caption.textContent = `Image: ${cover.credit} / ${cover.license}`;
+    figure.append(coverImage, caption);
+    root.appendChild(figure);
 
     const title = document.createElement("strong");
     title.appendChild(
       buildRegionLabelNode({
         code,
-        name: resolvedName
+        name: entry?.locationLabel || resolvedName
       })
     );
     root.appendChild(title);
@@ -939,6 +1128,20 @@
       contributingLine.append(contributingLabel, document.createTextNode(" "), contributingValue);
       root.appendChild(contributingLine);
     }
+
+    const coordinateLine = document.createElement("span");
+    const coordinateLabel = document.createElement("span");
+    coordinateLabel.className = "ss-map-popup-label";
+    coordinateLabel.textContent = "Coordinates:";
+    const coordinateValue = document.createElement("span");
+    coordinateValue.className = "ss-map-popup-value";
+    coordinateValue.textContent = entry?.coordinateSource === "country_centroid" || markerPrecision === "country_fallback"
+      ? "Country fallback"
+      : entry?.coordinateSource === "event_coordinate"
+        ? "Event coordinate"
+        : "City lookup";
+    coordinateLine.append(coordinateLabel, document.createTextNode(" "), coordinateValue);
+    root.appendChild(coordinateLine);
 
     const sessionsLine = document.createElement("span");
     const sessionsLabel = document.createElement("span");
@@ -990,6 +1193,45 @@
       surfaceValue.textContent = formatSurfaceLabel(entry?.surface || "danielclancy_public");
       surfaceLine.append(surfaceLabel, document.createTextNode(" "), surfaceValue);
       root.appendChild(surfaceLine);
+    }
+
+    const lastSeen = formatTimestamp(entry?.lastSeen || entry?.last_seen || entry?.timestamp);
+    if (lastSeen && lastSeen !== "--") {
+      const lastSeenLine = document.createElement("span");
+      const lastSeenLabel = document.createElement("span");
+      lastSeenLabel.className = "ss-map-popup-label";
+      lastSeenLabel.textContent = "Last seen:";
+      const lastSeenValue = document.createElement("span");
+      lastSeenValue.className = "ss-map-popup-value";
+      lastSeenValue.textContent = lastSeen;
+      lastSeenLine.append(lastSeenLabel, document.createTextNode(" "), lastSeenValue);
+      root.appendChild(lastSeenLine);
+    }
+
+    const pageSummary = String(entry?.page_path || entry?.pages || "").trim();
+    if (pageSummary) {
+      const pageLine = document.createElement("span");
+      const pageLabel = document.createElement("span");
+      pageLabel.className = "ss-map-popup-label";
+      pageLabel.textContent = "Page:";
+      const pageValue = document.createElement("span");
+      pageValue.className = "ss-map-popup-value";
+      pageValue.textContent = pageSummary;
+      pageLine.append(pageLabel, document.createTextNode(" "), pageValue);
+      root.appendChild(pageLine);
+    }
+
+    const referrerSummary = String(entry?.referrer_host || entry?.referrers || "").trim();
+    if (referrerSummary) {
+      const referrerLine = document.createElement("span");
+      const referrerLabel = document.createElement("span");
+      referrerLabel.className = "ss-map-popup-label";
+      referrerLabel.textContent = "Referrer:";
+      const referrerValue = document.createElement("span");
+      referrerValue.className = "ss-map-popup-value";
+      referrerValue.textContent = referrerSummary;
+      referrerLine.append(referrerLabel, document.createTextNode(" "), referrerValue);
+      root.appendChild(referrerLine);
     }
 
     return root;
@@ -1186,9 +1428,10 @@
     const mode = normalizeMapMarkerFilter(state.mapMarkerFilter);
     const showSessions = mode === "sessions" || mode === "both";
     const showRequests = mode === "requests" || mode === "both";
-    setMapLayerVisibility(LAYERS.requestsBackdrop, showRequests);
-    setMapLayerVisibility(LAYERS.activityGlow, showSessions);
-    setMapLayerVisibility(LAYERS.activityCore, showSessions);
+    setMapLayerVisibility(LAYERS.requestsBackdrop, showRequests && state.mapLayerVisibility.glow);
+    setMapLayerVisibility(LAYERS.activityGlow, showSessions && state.mapLayerVisibility.glow);
+    setMapLayerVisibility(LAYERS.activityCore, showSessions && state.mapLayerVisibility.dots);
+    setMapLayerVisibility(LAYERS.selectedRing, Boolean(state.selectedMapFeatureId) && state.mapLayerVisibility.dots);
     setMapLayerVisibility(LAYERS.activityHit, showSessions || showRequests);
   }
 
@@ -1212,6 +1455,34 @@
       ensureFullscreenMapLayers();
     }
     renderMapFullscreenSidebar();
+  }
+
+  function renderMapLayerControlsUi() {
+    document.querySelectorAll("[data-map-layer-toggle]").forEach((button) => {
+      const layer = String(button.getAttribute("data-map-layer-toggle") || "").trim();
+      if (layer !== "dots" && layer !== "glow") return;
+      const active = state.mapLayerVisibility[layer] !== false;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
+  }
+
+  function setMapLayerToggle(layer, visible) {
+    if (layer !== "dots" && layer !== "glow") return;
+    state.mapLayerVisibility[layer] = visible !== false;
+    renderMapLayerControlsUi();
+    applyMapMarkerVisibility();
+    if (state.fullscreenMapReady) {
+      ensureFullscreenMapLayers();
+    }
+    updateMapDebugState();
+  }
+
+  function handleMapLayerToggleClick(event) {
+    const button = event.target.closest("[data-map-layer-toggle]");
+    if (!(button instanceof HTMLButtonElement)) return;
+    const layer = String(button.getAttribute("data-map-layer-toggle") || "").trim();
+    setMapLayerToggle(layer, !state.mapLayerVisibility[layer]);
   }
 
   function handleMapMarkerFilterClick(event) {
@@ -1282,6 +1553,7 @@
       el.fullscreenWindowSelect.value = state.selectedWindow || DEFAULT_WINDOW;
     }
     if (shouldOpen) {
+      setFullscreenSidebarCollapsed(false);
       initFullscreenMap();
       renderMapFullscreenSidebar();
       updateMapDebugState();
@@ -1310,9 +1582,37 @@
     }
   }
 
+  function setFullscreenSidebarCollapsed(collapsed) {
+    const next = collapsed === true;
+    state.fullscreenSidebarCollapsed = next;
+    document.querySelector(".ss-analytics-map-fullscreen-body")?.classList.toggle("is-sidebar-collapsed", next);
+    el.fullscreenSidebarToggle?.setAttribute("aria-pressed", String(next));
+    el.fullscreenSidebarToggle?.querySelector("[data-map-sidebar-toggle-label]")?.replaceChildren(next ? "Show details" : "Hide details");
+    if (el.fullscreenSidebarRestore) {
+      el.fullscreenSidebarRestore.hidden = !next;
+    }
+    setTimeout(() => {
+      state.fullscreenMap?.resize();
+      fitFullscreenMap();
+    }, 60);
+  }
+
+  function handleFullscreenSidebarToggleClick() {
+    setFullscreenSidebarCollapsed(!state.fullscreenSidebarCollapsed);
+  }
+
+  function handleFullscreenSidebarClick(event) {
+    const button = event.target.closest("[data-map-location-select]");
+    if (!(button instanceof HTMLButtonElement)) return;
+    const id = button.getAttribute("data-map-location-select");
+    selectMapFeatureById(id, state.fullscreenMap);
+  }
+
   function handleMapFullscreenWindowChange(event) {
     const value = String(event?.target?.value || "").trim();
     state.selectedWindow = value || DEFAULT_WINDOW;
+    state.selectedMapFeatureId = "";
+    state.selectedMapFeature = null;
     if (el.windowSelect) {
       el.windowSelect.value = state.selectedWindow;
     }
@@ -1388,6 +1688,9 @@
       markerCount: Array.isArray(state.pendingGeoJson?.features) ? state.pendingGeoJson.features.length : 0,
       fullscreenOpen: state.mapFullscreenOpen,
       fullscreenMapReady: state.fullscreenMapReady,
+      layerVisibility: { ...state.mapLayerVisibility },
+      selectedFeatureId: state.selectedMapFeatureId,
+      selectedFeature: state.selectedMapFeature,
       selectedWindow: state.selectedWindow
     };
   }
@@ -1595,6 +1898,31 @@
       });
     }
 
+    if (!map.getLayer(LAYERS.selectedRing)) {
+      map.addLayer({
+        id: LAYERS.selectedRing,
+        type: "circle",
+        source: SOURCE_ID,
+        filter: ["==", ["get", "id"], ""],
+        paint: {
+          "circle-color": "rgba(255,255,255,0)",
+          "circle-opacity": 0,
+          "circle-stroke-color": "#f7fbff",
+          "circle-stroke-opacity": 0.94,
+          "circle-stroke-width": 2.5,
+          "circle-radius": [
+            "interpolate",
+            ["linear"],
+            ["max", ["coalesce", ["get", "sessions"], 0], ["coalesce", ["get", "requests"], 0]],
+            1, 10,
+            10, 12,
+            50, 16,
+            150, 21
+          ]
+        }
+      });
+    }
+
     if (!map.getLayer(LAYERS.activityHit)) {
       map.addLayer({
         id: LAYERS.activityHit,
@@ -1618,6 +1946,7 @@
     }
 
     applyMapMarkerVisibility();
+    applySelectedLayerForMap(map);
 
     const source = map.getSource(SOURCE_ID);
     if (source) {
@@ -1633,6 +1962,9 @@
       map.on("mouseleave", LAYERS.activityHit, () => {
         map.getCanvas().style.cursor = "";
         map.__ssAnalyticsPopup?.remove();
+      });
+      map.on("click", LAYERS.activityHit, (event) => {
+        selectMapFeature(event?.features?.[0], map, event?.lngLat);
       });
       map.on("mousemove", LAYERS.activityHit, (event) => {
         const feature = event?.features?.[0];
@@ -1736,7 +2068,59 @@
     if (!map.getSource(SOURCE_ID)) {
       map.addSource(SOURCE_ID, {
         type: "geojson",
-        data: state.mapFeatureCollection || emptyGeoJson()
+        data: state.mapFeatureCollection || emptyGeoJson(),
+        cluster: true,
+        clusterRadius: 42,
+        clusterProperties: {
+          sum: [
+            "+",
+            ["coalesce", ["get", "sessions"], ["get", "requests"], 0]
+          ]
+        }
+      });
+    }
+    if (!map.getLayer(LAYERS.clusterHalo)) {
+      map.addLayer({
+        id: LAYERS.clusterHalo,
+        type: "circle",
+        source: SOURCE_ID,
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-color": "#56c9ff",
+          "circle-opacity": 0.2,
+          "circle-blur": 0.7,
+          "circle-radius": ["interpolate", ["linear"], ["get", "sum"], 1, 16, 20, 24, 80, 34, 200, 44]
+        }
+      });
+    }
+    if (!map.getLayer(LAYERS.clusterCore)) {
+      map.addLayer({
+        id: LAYERS.clusterCore,
+        type: "circle",
+        source: SOURCE_ID,
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-color": "#a8ecff",
+          "circle-opacity": 0.88,
+          "circle-stroke-color": "rgba(255,255,255,0.8)",
+          "circle-stroke-width": 0.8,
+          "circle-radius": ["interpolate", ["linear"], ["get", "sum"], 1, 6, 20, 10, 80, 14, 200, 18]
+        }
+      });
+    }
+    if (!map.getLayer(LAYERS.clusterLabel)) {
+      map.addLayer({
+        id: LAYERS.clusterLabel,
+        type: "symbol",
+        source: SOURCE_ID,
+        filter: ["has", "point_count"],
+        layout: {
+          "text-field": ["to-string", ["get", "sum"]],
+          "text-size": 11
+        },
+        paint: {
+          "text-color": "#07131c"
+        }
       });
     }
     if (!map.getLayer(LAYERS.requestsBackdrop)) {
@@ -1744,6 +2128,7 @@
         id: LAYERS.requestsBackdrop,
         type: "circle",
         source: SOURCE_ID,
+        filter: ["!", ["has", "point_count"]],
         paint: {
           "circle-color": ["case", ["==", ["get", "project"], "danielclancy"], "#f59e0b", "#1d4d93"],
           "circle-opacity": ["interpolate", ["linear"], ["coalesce", ["get", "requests"], 0], 0, 0.1, 10, 0.16, 50, 0.22, 150, 0.28, 400, 0.34],
@@ -1757,6 +2142,7 @@
         id: LAYERS.activityGlow,
         type: "circle",
         source: SOURCE_ID,
+        filter: ["!", ["has", "point_count"]],
         paint: {
           "circle-color": ["case", ["==", ["get", "project"], "danielclancy"], "#7c3aed", "#9f4dff"],
           "circle-opacity": ["interpolate", ["linear"], ["coalesce", ["get", "sessions"], 0], 0, 0.16, 10, 0.24, 50, 0.34, 150, 0.46, 400, 0.58],
@@ -1770,6 +2156,7 @@
         id: LAYERS.activityCore,
         type: "circle",
         source: SOURCE_ID,
+        filter: ["!", ["has", "point_count"]],
         paint: {
           "circle-color": ["case", ["==", ["get", "project"], "danielclancy"], "#ffd166", "#d6b8ff"],
           "circle-opacity": ["interpolate", ["linear"], ["coalesce", ["get", "sessions"], 0], 0, 0.82, 10, 0.88, 50, 0.93, 150, 0.97, 400, 0.99],
@@ -1780,11 +2167,28 @@
         }
       });
     }
+    if (!map.getLayer(LAYERS.selectedRing)) {
+      map.addLayer({
+        id: LAYERS.selectedRing,
+        type: "circle",
+        source: SOURCE_ID,
+        filter: ["==", ["get", "id"], ""],
+        paint: {
+          "circle-color": "rgba(255,255,255,0)",
+          "circle-opacity": 0,
+          "circle-stroke-color": "#f7fbff",
+          "circle-stroke-opacity": 0.94,
+          "circle-stroke-width": 2.5,
+          "circle-radius": ["interpolate", ["linear"], ["max", ["coalesce", ["get", "sessions"], 0], ["coalesce", ["get", "requests"], 0]], 1, 10, 10, 12, 50, 16, 150, 21]
+        }
+      });
+    }
     if (!map.getLayer(LAYERS.activityHit)) {
       map.addLayer({
         id: LAYERS.activityHit,
         type: "circle",
         source: SOURCE_ID,
+        filter: ["!", ["has", "point_count"]],
         paint: {
           "circle-radius": ["interpolate", ["linear"], ["max", ["coalesce", ["get", "sessions"], 0], ["coalesce", ["get", "requests"], 0]], 1, 14, 10, 15, 50, 17.5, 150, 20],
           "circle-opacity": 0,
@@ -1796,17 +2200,7 @@
       map.on("click", LAYERS.activityHit, (event) => {
         const feature = event?.features?.[0];
         if (!feature) return;
-        const props = feature.properties || {};
-        state.fullscreenPopup?.remove();
-        state.fullscreenPopup = new window.maplibregl.Popup({
-          closeButton: true,
-          closeOnClick: true,
-          offset: 12,
-          className: "ss-map-popup"
-        })
-          .setLngLat(event.lngLat)
-          .setDOMContent(buildCountryPopupContent(props))
-          .addTo(map);
+        selectMapFeature(feature, map, event?.lngLat);
       });
       map.on("mouseenter", LAYERS.activityHit, () => {
         map.getCanvas().style.cursor = "pointer";
@@ -1817,15 +2211,79 @@
       map.__ssAnalyticsFullscreenHoverBound = true;
     }
     applyFullscreenGeoJson(state.mapFeatureCollection || emptyGeoJson());
-    setMapLayerVisibilityForMap(map, LAYERS.requestsBackdrop, state.mapMarkerFilter === "requests" || state.mapMarkerFilter === "both");
-    setMapLayerVisibilityForMap(map, LAYERS.activityGlow, state.mapMarkerFilter === "sessions" || state.mapMarkerFilter === "both");
-    setMapLayerVisibilityForMap(map, LAYERS.activityCore, state.mapMarkerFilter === "sessions" || state.mapMarkerFilter === "both");
+    setMapLayerVisibilityForMap(map, LAYERS.requestsBackdrop, (state.mapMarkerFilter === "requests" || state.mapMarkerFilter === "both") && state.mapLayerVisibility.glow);
+    setMapLayerVisibilityForMap(map, LAYERS.activityGlow, (state.mapMarkerFilter === "sessions" || state.mapMarkerFilter === "both") && state.mapLayerVisibility.glow);
+    setMapLayerVisibilityForMap(map, LAYERS.activityCore, (state.mapMarkerFilter === "sessions" || state.mapMarkerFilter === "both") && state.mapLayerVisibility.dots);
+    setMapLayerVisibilityForMap(map, LAYERS.selectedRing, Boolean(state.selectedMapFeatureId) && state.mapLayerVisibility.dots);
     setMapLayerVisibilityForMap(map, LAYERS.activityHit, true);
+    applySelectedLayerForMap(map);
   }
 
   function setMapLayerVisibilityForMap(map, layerId, visible) {
     if (!map || !layerId || !map.getLayer(layerId)) return;
     map.setLayoutProperty(layerId, "visibility", visible ? "visible" : "none");
+  }
+
+  function featureById(featureId) {
+    const id = String(featureId || "").trim();
+    if (!id) return null;
+    return (state.mapFeatureCollection?.features || []).find((feature) =>
+      String(feature?.id || feature?.properties?.id || "") === id
+    ) || null;
+  }
+
+  function applySelectedLayerForMap(map) {
+    if (!map || !map.getLayer(LAYERS.selectedRing)) return;
+    map.setFilter(LAYERS.selectedRing, ["==", ["get", "id"], state.selectedMapFeatureId || ""]);
+  }
+
+  function selectMapFeature(feature, map, lngLat) {
+    if (!feature) return;
+    const props = feature.properties || {};
+    const coordinates = Array.isArray(feature.geometry?.coordinates) ? feature.geometry.coordinates : null;
+    const targetMap = map || state.fullscreenMap || state.map;
+    const popupLocation = lngLat || coordinates;
+    state.selectedMapFeatureId = String(feature.id || props.id || "");
+    state.selectedMapFeature = feature;
+    applySelectedLayerForMap(state.map);
+    applySelectedLayerForMap(state.fullscreenMap);
+    applyMapMarkerVisibility();
+    if (targetMap && popupLocation) {
+      if (targetMap === state.fullscreenMap) {
+        state.fullscreenPopup?.remove();
+        state.fullscreenPopup = new window.maplibregl.Popup({
+          closeButton: true,
+          closeOnClick: true,
+          offset: 12,
+          className: "ss-map-popup"
+        })
+          .setLngLat(popupLocation)
+          .setDOMContent(buildCountryPopupContent(props))
+          .addTo(targetMap);
+      } else {
+        getOrCreateMapPopup(targetMap)
+          ?.setLngLat(popupLocation)
+          .setDOMContent(buildCountryPopupContent(props))
+          .addTo(targetMap);
+      }
+    }
+    renderMapFullscreenSidebar();
+    updateMapDebugState();
+  }
+
+  function selectMapFeatureById(featureId, map = state.fullscreenMap) {
+    const feature = featureById(featureId);
+    if (!feature) return;
+    const coordinates = Array.isArray(feature.geometry?.coordinates) ? feature.geometry.coordinates : null;
+    selectMapFeature(feature, map, coordinates);
+    if (map && coordinates) {
+      map.easeTo({
+        center: coordinates,
+        zoom: Math.max(map.getZoom?.() || 1, 3.8),
+        duration: 280,
+        essential: true
+      });
+    }
   }
 
   function fitFullscreenMap() {
@@ -1961,20 +2419,85 @@
     return formatTimestamp(candidates.find(Boolean));
   }
 
+  function countryFlagSlotHtml(code) {
+    const normalized = normalizeCountryCode(code);
+    const renderer = window.StreamSuitesCountryFlags?.renderFlagSlotHtml;
+    if (typeof renderer === "function") {
+      return renderer(normalized, { className: "ss-analytics-map-title-flag" });
+    }
+    return `<span class="ss-country-flag-slot ss-analytics-map-title-flag" data-ss-country-flag-slot="${escapeHtml(normalized)}" aria-hidden="true"></span>`;
+  }
+
+  function mapFeatureTitleHtml(props = {}) {
+    const code = normalizeCountryCode(props.country_code || props.country || props.code);
+    const title = props.locationLabel || props.label || props.locationDetailLabel || props.name || resolveCountryName(code) || code || "Location";
+    return `<span class="ss-analytics-map-flag-title">${countryFlagSlotHtml(code)}<strong>${escapeHtml(title)}</strong></span>`;
+  }
+
+  function renderSelectedLocationCard(feature) {
+    if (!feature?.properties) {
+      return `
+        <article class="ss-analytics-map-selected-card is-empty" data-analytics-selected-location>
+          <p>Select a map location to inspect details.</p>
+        </article>
+      `;
+    }
+    const props = feature.properties;
+    const cover = normalizeCoverEntry(props.coverImage) || getLocationCoverImage(props);
+    const isCountryFallback = props.plottedPrecision === "country_fallback";
+    return `
+      <article class="ss-analytics-map-selected-card" data-analytics-selected-location data-selected-map-location-id="${escapeHtml(props.id || "")}">
+        <figure class="ss-analytics-map-selected-cover">
+          <img src="${escapeHtml(cover.imagePath)}" alt="" loading="lazy" decoding="async" />
+          <figcaption>Image: ${escapeHtml(cover.credit)} / ${escapeHtml(cover.license)}</figcaption>
+        </figure>
+        <div class="ss-analytics-map-selected-content">
+          ${mapFeatureTitleHtml(props)}
+          <div class="ss-analytics-map-selected-badges">
+            <span>${escapeHtml(isCountryFallback ? "country fallback" : props.precision || "city")}</span>
+            <span>${escapeHtml(formatProjectLabel(props.project))}</span>
+            <span>${escapeHtml(props.coordinateSource || "coordinate source")}</span>
+          </div>
+          <div class="ss-analytics-map-selected-stats">
+            <span><strong>${escapeHtml(formatNumber(props.requests))}</strong><small>requests</small></span>
+            <span><strong>${escapeHtml(formatNumber(props.sessions))}</strong><small>sessions</small></span>
+            <span><strong>${escapeHtml(formatTimestamp(props.lastSeen))}</strong><small>last seen</small></span>
+          </div>
+          <dl class="ss-analytics-map-sidebar-stats">
+            <div><dt>City</dt><dd>${escapeHtml(props.city || (isCountryFallback ? "Country fallback marker" : "n/a"))}</dd></div>
+            <div><dt>Region</dt><dd>${escapeHtml(props.region || "n/a")}</dd></div>
+            <div><dt>Country</dt><dd>${escapeHtml(props.name || props.country || "Unavailable")}</dd></div>
+            <div><dt>Original precision</dt><dd>${escapeHtml(props.originalPrecision || "unknown")}</dd></div>
+            <div><dt>Source/project</dt><dd>${escapeHtml(props.source || props.source_namespace || props.project || "unknown")} / ${escapeHtml(formatProjectLabel(props.project))}</dd></div>
+            <div><dt>Page/referrer</dt><dd>${escapeHtml([props.page_path || props.pages, props.referrer_host || props.referrers].filter(Boolean).join(" / ") || "n/a")}</dd></div>
+            <div><dt>Contributing rows/cities</dt><dd>${escapeHtml(props.contributingLocations || (isCountryFallback ? "Country-only row" : "n/a"))}</dd></div>
+          </dl>
+        </div>
+      </article>
+    `;
+  }
+
   function renderMapFullscreenSidebar() {
     if (!el.fullscreenSidebar) return;
     const rows = state.locationRows.length ? state.locationRows : state.countryRows;
-    const mappedRows = rows.filter((entry) => Array.isArray(entry?.centroid) && entry.centroid.length === 2);
+    const features = Array.isArray(state.mapFeatureCollection?.features) ? state.mapFeatureCollection.features : [];
     const unmappedRows = state.mapMetadata.unmappedRows || [];
     const totals = state.locationRows.length ? state.locationTotals : state.countryTotals;
-    const mappedList = mappedRows
-      .map((entry) => `
-        <li>
-          <strong>${escapeHtml(entry.locationDetailLabel || entry.locationLabel || entry.name || entry.code)}</strong>
-          <span>${escapeHtml(markerPrecisionLabel(entry.mapPrecision || entry.plottedPrecision))}</span>
-          <small>${escapeHtml(formatNumber(entry.requests))} requests · ${escapeHtml(formatNumber(entry.sessions))} sessions · ${escapeHtml(formatProjectLabel(entry.project))}</small>
+    const selectedFeature = featureById(state.selectedMapFeatureId);
+    const mappedList = features
+      .map((feature) => {
+        const props = feature.properties || {};
+        const active = String(props.id || feature.id || "") === String(selectedFeature?.properties?.id || selectedFeature?.id || "");
+        return `
+        <li class="ss-analytics-map-sidebar-list-item${active ? " is-active" : ""}">
+          <button class="ss-analytics-map-sidebar-location-button${active ? " is-active" : ""}" type="button" data-map-location-select="${escapeHtml(props.id || feature.id || "")}" aria-pressed="${active ? "true" : "false"}">
+            ${mapFeatureTitleHtml(props)}
+          </button>
+          <span>${escapeHtml(markerPrecisionLabel(props.plottedPrecision || props.mapPrecision))}</span>
+          <small>${escapeHtml(formatNumber(props.requests))} requests · ${escapeHtml(formatNumber(props.sessions))} sessions · ${escapeHtml(formatProjectLabel(props.project))}</small>
         </li>
-      `)
+      `;
+      })
       .join("");
     const unmappedList = unmappedRows
       .slice(0, 25)
@@ -1986,11 +2509,15 @@
       `)
       .join("");
     el.fullscreenSidebar.innerHTML = `
+      <section data-analytics-map-sidebar-section="selected">
+        <h3>Selected location</h3>
+        ${renderSelectedLocationCard(selectedFeature)}
+      </section>
       <section data-analytics-map-sidebar-section="summary">
         <h3>Map summary</h3>
         <dl class="ss-analytics-map-sidebar-stats">
           <div><dt>Selected window</dt><dd>${escapeHtml(state.selectedWindow || DEFAULT_WINDOW)}</dd></div>
-          <div><dt>Source/project filter</dt><dd>${escapeHtml(state.mapMarkerFilter)} markers · current payload</dd></div>
+          <div><dt>Layer controls</dt><dd>Dots ${state.mapLayerVisibility.dots ? "on" : "off"} · Glow ${state.mapLayerVisibility.glow ? "on" : "off"}</dd></div>
           <div><dt>Total rows</dt><dd>${escapeHtml(formatNumber(rows.length))}</dd></div>
           <div><dt>Requests/events</dt><dd>${escapeHtml(formatNumber(totals.requests))}</dd></div>
           <div><dt>Sessions</dt><dd>${escapeHtml(formatNumber(totals.sessions))}</dd></div>
@@ -2033,6 +2560,7 @@
         </ul>
       </section>
     `;
+    window.StreamSuitesCountryFlags?.upgradeFlagSlots?.(el.fullscreenSidebar);
   }
 
   function normalizeCountryRows(byCountry) {
@@ -2178,6 +2706,9 @@
         if (location.detailedLabel && !existing.contributingLocations.includes(location.detailedLabel)) {
           existing.contributingLocations.push(location.detailedLabel);
         }
+        pushUniqueText(existing.pages, entry?.page_path || entry?.path || entry?.page || entry?.url);
+        pushUniqueText(existing.referrers, entry?.referrer_host || entry?.referrerHost || entry?.referrer);
+        existing.lastSeen = latestTimestamp(existing.lastSeen, entry?.lastSeen || entry?.last_seen || entry?.recordedAt || entry?.recorded_at || entry?.timestamp);
         return;
       }
       const project = normalizeProject(entry?.project || entry?.source_namespace);
@@ -2199,6 +2730,9 @@
         latitude: coordinate.latitude,
         unmappedReason: "",
         contributingLocations: [location.detailedLabel].filter(Boolean),
+        pages: [entry?.page_path || entry?.path || entry?.page || entry?.url].map(collapseLocationWhitespace).filter(Boolean).slice(0, 4),
+        referrers: [entry?.referrer_host || entry?.referrerHost || entry?.referrer].map(collapseLocationWhitespace).filter(Boolean).slice(0, 4),
+        lastSeen: entry?.lastSeen || entry?.last_seen || entry?.recordedAt || entry?.recorded_at || entry?.timestamp || "",
         locationLabel: location.primaryLabel,
         locationDetailLabel: location.detailedLabel,
         locationMeta: mapPrecision === "country_fallback" ? "Country fallback marker" : location.secondaryLabel,
@@ -2223,10 +2757,19 @@
     const requests = Number(entry?.requests ?? 0);
     const sessions = Number(entry?.sessions ?? 0);
     const plottedPrecision = entry?.plottedPrecision || entry?.mapPrecision || "country_fallback";
+    const coverImage = getLocationCoverImage({
+      city: entry?.city,
+      region: entry?.region || entry?.regionCode,
+      countryCode: code,
+      plottedPrecision
+    });
     return {
       type: "Feature",
+      id: entry?.key || `${code}|${entry?.project || ""}|${centroid.join(",")}`,
       properties: {
+        id: entry?.key || `${code}|${entry?.project || ""}|${centroid.join(",")}`,
         country: code,
+        country_code: code,
         name: entry?.countryName || entry?.name || resolveCountryName(code),
         city: entry?.city || "",
         region: entry?.region || entry?.regionCode || "",
@@ -2238,6 +2781,14 @@
         plottedPrecision,
         coordinateSource: entry?.coordinateSource || (plottedPrecision === "country_fallback" ? "country_centroid" : "city_lookup"),
         contributingLocations: Array.isArray(entry?.contributingLocations) ? entry.contributingLocations.join("; ") : "",
+        contributingLocationsList: Array.isArray(entry?.contributingLocations) ? entry.contributingLocations : [],
+        pages: Array.isArray(entry?.pages) ? entry.pages.join(", ") : "",
+        page_path: Array.isArray(entry?.pages) ? entry.pages[0] || "" : "",
+        referrers: Array.isArray(entry?.referrers) ? entry.referrers.join(", ") : "",
+        referrer_host: Array.isArray(entry?.referrers) ? entry.referrers[0] || "" : "",
+        lastSeen: entry?.lastSeen || "",
+        coverImage,
+        coverImagePath: coverImage.imagePath,
         requests: Number.isFinite(requests) ? requests : 0,
         sessions: Number.isFinite(sessions) ? sessions : 0,
         project: normalizeProject(entry?.project),
@@ -2849,9 +3400,15 @@
         state.activeCountryCode = "";
       }
     }
+    if (state.selectedMapFeatureId && !featureById(state.selectedMapFeatureId)) {
+      state.selectedMapFeatureId = "";
+      state.selectedMapFeature = null;
+    }
     renderCountryTable();
     applyGeoJson(locationFeatureCollection);
+    applySelectedLayerForMap(state.map);
     applyFullscreenGeoJson(locationFeatureCollection);
+    applySelectedLayerForMap(state.fullscreenMap);
     renderMapFullscreenSidebar();
 
     if (options.errorMessage) {
@@ -3350,6 +3907,8 @@
   function handleWindowChange() {
     const value = String(el.windowSelect?.value || "").trim();
     state.selectedWindow = value || DEFAULT_WINDOW;
+    state.selectedMapFeatureId = "";
+    state.selectedMapFeature = null;
     if (el.fullscreenWindowSelect) {
       el.fullscreenWindowSelect.value = state.selectedWindow;
     }
@@ -3410,6 +3969,10 @@
     state.countryFilter = "";
     state.activeCountryCode = "";
     state.countryFocusToken = 0;
+    state.mapLayerVisibility = { ...MAP_LAYER_VISIBILITY_DEFAULT };
+    state.fullscreenSidebarCollapsed = false;
+    state.selectedMapFeatureId = "";
+    state.selectedMapFeature = null;
 
     el.map = $("analytics-world-map");
     el.mapPanel = document.querySelector(".ss-analytics-map-panel");
@@ -3423,6 +3986,8 @@
     el.mapFullscreenClose = $("analytics-map-fullscreen-close");
     el.fullscreenMap = $("analytics-fullscreen-world-map");
     el.fullscreenSidebar = $("analytics-map-fullscreen-sidebar");
+    el.fullscreenSidebarToggle = $("analytics-map-fullscreen-sidebar-toggle");
+    el.fullscreenSidebarRestore = $("analytics-map-fullscreen-sidebar-restore");
     el.fullscreenWindowSelect = $("analytics-map-fullscreen-window-select");
     el.mapMarkerFilter = document.querySelector(".ss-analytics-map-marker-filter");
     el.mapGeneratedAt = $("analytics-map-generated-at");
@@ -3490,6 +4055,15 @@
     if (el.mapFullscreenModal) {
       el.mapFullscreenModal.addEventListener("click", handleMapFullscreenBackdropClick);
     }
+    if (el.fullscreenSidebarToggle) {
+      el.fullscreenSidebarToggle.addEventListener("click", handleFullscreenSidebarToggleClick);
+    }
+    if (el.fullscreenSidebarRestore) {
+      el.fullscreenSidebarRestore.addEventListener("click", handleFullscreenSidebarToggleClick);
+    }
+    if (el.fullscreenSidebar) {
+      el.fullscreenSidebar.addEventListener("click", handleFullscreenSidebarClick);
+    }
     if (el.fullscreenWindowSelect) {
       el.fullscreenWindowSelect.value = state.selectedWindow || DEFAULT_WINDOW;
       el.fullscreenWindowSelect.addEventListener("change", handleMapFullscreenWindowChange);
@@ -3498,6 +4072,9 @@
     if (el.mapMarkerFilter) {
       el.mapMarkerFilter.addEventListener("click", handleMapMarkerFilterClick);
     }
+    document.querySelectorAll(".ss-analytics-map-layer-controls").forEach((node) => {
+      node.addEventListener("click", handleMapLayerToggleClick);
+    });
     if (el.refreshButton) {
       el.refreshButton.addEventListener("click", handleRefreshButtonClick);
     }
@@ -3534,6 +4111,7 @@
       container?.addEventListener("click", handleAnalyticsPaginationClick);
     });
     setMapMarkerFilter(MAP_MARKER_FILTER_DEFAULT);
+    renderMapLayerControlsUi();
 
     if (el.windowSelect) {
       el.windowSelect.value = DEFAULT_WINDOW;
@@ -3604,6 +4182,15 @@
     if (el.mapFullscreenModal) {
       el.mapFullscreenModal.removeEventListener("click", handleMapFullscreenBackdropClick);
     }
+    if (el.fullscreenSidebarToggle) {
+      el.fullscreenSidebarToggle.removeEventListener("click", handleFullscreenSidebarToggleClick);
+    }
+    if (el.fullscreenSidebarRestore) {
+      el.fullscreenSidebarRestore.removeEventListener("click", handleFullscreenSidebarToggleClick);
+    }
+    if (el.fullscreenSidebar) {
+      el.fullscreenSidebar.removeEventListener("click", handleFullscreenSidebarClick);
+    }
     if (el.fullscreenWindowSelect) {
       el.fullscreenWindowSelect.removeEventListener("change", handleMapFullscreenWindowChange);
     }
@@ -3611,6 +4198,9 @@
     if (el.mapMarkerFilter) {
       el.mapMarkerFilter.removeEventListener("click", handleMapMarkerFilterClick);
     }
+    document.querySelectorAll(".ss-analytics-map-layer-controls").forEach((node) => {
+      node.removeEventListener("click", handleMapLayerToggleClick);
+    });
     if (el.refreshButton) {
       el.refreshButton.removeEventListener("click", handleRefreshButtonClick);
     }
@@ -3661,6 +4251,10 @@
     state.mapEnlarged = false;
     state.mapFullscreenOpen = false;
     state.mapMarkerFilter = MAP_MARKER_FILTER_DEFAULT;
+    state.mapLayerVisibility = { ...MAP_LAYER_VISIBILITY_DEFAULT };
+    state.fullscreenSidebarCollapsed = false;
+    state.selectedMapFeatureId = "";
+    state.selectedMapFeature = null;
     state.pendingGeoJson = emptyGeoJson();
     state.mapFeatureCollection = emptyGeoJson();
     state.mapMetadata = {
@@ -3727,6 +4321,10 @@
     aggregateLocationRows,
     buildLocationFeatures,
     classifyMapPrecision,
+    buildLocationCoverKey,
+    getLocationCoverImage,
+    getCountryFallbackCover,
+    getDefaultLocationCover,
     markerPrecisionLabel
   };
 

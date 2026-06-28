@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720" role="img" aria-labelledby="cover-title cover-desc">
+  <title id="cover-title">Amsterdam, NL generated analytics location cover</title>
+  <desc id="cover-desc">A project-owned generated illustration used as a local fallback cover image for Amsterdam, NL.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#09111e"/><stop offset="0.42" stop-color="hsl(54 68% 48%)"/><stop offset="1" stop-color="#080b10"/></linearGradient>
+    <radialGradient id="glow" cx="74%" cy="20%" r="62%"><stop offset="0" stop-color="hsl(294 68% 48%)" stop-opacity="0.72"/><stop offset="0.58" stop-color="hsl(258 68% 48%)" stop-opacity="0.18"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+    <pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse"><path d="M64 0H0V64" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1"/></pattern>
+  </defs>
+  <rect width="1280" height="720" fill="url(#sky)"/>
+  <rect width="1280" height="720" fill="url(#glow)"/>
+  <rect width="1280" height="720" fill="url(#grid)" opacity="0.42"/>
+  <path d="M0 506 C130 462 204 500 310 452 C420 404 512 478 638 426 C760 375 842 429 960 390 C1072 353 1166 389 1280 338 V720 H0 Z" fill="#02060d" fill-opacity="0.68"/>
+  <path d="M84 510 H128 V398 H176 V510 H222 V326 H276 V510 H330 V426 H388 V510 H446 V356 H514 V510 H568 V450 H622 V510 H690 V304 H754 V510 H810 V384 H870 V510 H930 V430 H990 V510 H1054 V342 H1118 V510 H1198 V456 H1238 V592 H84 Z" fill="#0b1724" fill-opacity="0.92"/>
+  <path d="M84 510 H1238" stroke="#e8f7ff" stroke-opacity="0.22" stroke-width="2"/>
+  <circle cx="1052" cy="142" r="54" fill="#ffffff" fill-opacity="0.18"/>
+  <circle cx="1052" cy="142" r="28" fill="#ffffff" fill-opacity="0.22"/>
+  <g transform="translate(72 78)">
+    <rect x="0" y="0" width="720" height="184" rx="18" fill="#02060d" fill-opacity="0.42" stroke="#ffffff" stroke-opacity="0.16"/>
+    <text x="34" y="70" fill="#f7fbff" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="700">Amsterdam, NL</text>
+    <text x="34" y="122" fill="#d7e6f7" font-family="Arial, Helvetica, sans-serif" font-size="24">Capital cover for NL country fallback</text>
+    <text x="34" y="154" fill="#9fb2ca" font-family="Arial, Helvetica, sans-serif" font-size="18">Local generated illustration · not a documentary city photo</text>
+  </g>
+</svg>

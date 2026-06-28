@@ -1288,12 +1288,24 @@ button.ss-public-identity-chip:focus-visible {
   background: rgba(11, 27, 41, 0.66);
 }
 
-.ss-analytics-map-marker-filter .ss-btn {
+.ss-analytics-map-layer-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px;
+  border: 1px solid rgba(132, 168, 226, 0.28);
+  border-radius: 999px;
+  background: rgba(11, 27, 41, 0.66);
+}
+
+.ss-analytics-map-marker-filter .ss-btn,
+.ss-analytics-map-layer-controls .ss-btn {
   border-radius: 999px;
   padding-inline: 9px;
 }
 
-.ss-analytics-map-marker-filter .ss-btn.is-active {
+.ss-analytics-map-marker-filter .ss-btn.is-active,
+.ss-analytics-map-layer-controls .ss-btn.is-active {
   background: rgba(69, 129, 220, 0.34);
   border-color: rgba(124, 182, 255, 0.52);
   color: #e8f3ff;
@@ -1498,12 +1510,23 @@ button.ss-public-identity-chip:focus-visible {
   min-height: 0;
 }
 
+.ss-analytics-map-fullscreen-body.is-sidebar-collapsed {
+  grid-template-columns: minmax(0, 1fr) 0;
+}
+
 .ss-analytics-map-fullscreen-map-shell {
   position: relative;
   min-width: 0;
   min-height: 0;
   background: rgba(5, 8, 10, 0.96);
   border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ss-analytics-map-sidebar-restore {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 4;
 }
 
 .ss-analytics-map-fullscreen-map {
@@ -1521,6 +1544,12 @@ button.ss-public-identity-chip:focus-visible {
   overflow: auto;
   padding: 16px;
   background: rgba(10, 15, 25, 0.96);
+}
+
+.ss-analytics-map-fullscreen-body.is-sidebar-collapsed .ss-analytics-map-fullscreen-sidebar {
+  width: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 .ss-analytics-map-fullscreen-sidebar section {
@@ -1569,6 +1598,14 @@ button.ss-public-identity-chip:focus-visible {
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+.ss-analytics-map-sidebar-list li.is-active {
+  margin-inline: -8px;
+  padding-inline: 8px;
+  border: 1px solid rgba(130, 211, 255, 0.3);
+  border-radius: var(--radius-sm);
+  background: rgba(130, 211, 255, 0.08);
+}
+
 .ss-analytics-map-sidebar-list li:last-child {
   border-bottom: 0;
 }
@@ -1577,6 +1614,39 @@ button.ss-public-identity-chip:focus-visible {
 .ss-analytics-map-sidebar-list span {
   color: var(--text-muted);
   overflow-wrap: anywhere;
+}
+
+.ss-analytics-map-sidebar-location-button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ss-analytics-map-sidebar-location-button:focus-visible {
+  outline: 2px solid rgba(130, 211, 255, 0.56);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+.ss-analytics-map-flag-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ss-analytics-map-flag-title strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ss-analytics-map-title-flag {
+  flex: 0 0 auto;
 }
 
 .ss-analytics-map .maplibregl-canvas {
@@ -1607,18 +1677,159 @@ button.ss-public-identity-chip:focus-visible {
   padding: 10px 12px;
 }
 
+.ss-map-popup .maplibregl-popup-close-button {
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  color: #f7fbff;
+  background: rgba(8, 12, 20, 0.76);
+  font-size: 18px;
+  line-height: 22px;
+}
+
+.ss-map-popup .maplibregl-popup-close-button:hover,
+.ss-map-popup .maplibregl-popup-close-button:focus-visible {
+  color: #ffffff;
+  background: rgba(130, 211, 255, 0.2);
+  outline: 1px solid rgba(255, 255, 255, 0.48);
+}
+
 .ss-map-popup .ss-map-popup-inner {
   display: flex;
   flex-direction: column;
   gap: 4px;
   font-size: 12px;
   line-height: 1.35;
+  width: min(330px, 78vw);
 }
 
 .ss-map-popup .ss-map-popup-inner strong {
   color: #f7fbff;
   font-size: 12px;
   letter-spacing: 0.05em;
+}
+
+.ss-map-popup-cover {
+  position: relative;
+  margin: 0 0 4px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ss-map-popup-cover img {
+  display: block;
+  width: 100%;
+  height: 118px;
+  object-fit: cover;
+}
+
+.ss-map-popup-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(8, 12, 20, 0), rgba(8, 12, 20, 0.76));
+  pointer-events: none;
+}
+
+.ss-map-popup-cover figcaption {
+  position: absolute;
+  left: 8px;
+  right: 32px;
+  bottom: 7px;
+  z-index: 1;
+  color: rgba(247, 251, 255, 0.75);
+  font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ss-analytics-map-selected-card {
+  overflow: hidden;
+  border: 1px solid rgba(134, 163, 201, 0.22);
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02));
+}
+
+.ss-analytics-map-selected-card.is-empty {
+  padding: 16px;
+  color: var(--text-muted);
+}
+
+.ss-analytics-map-selected-cover {
+  position: relative;
+  margin: 0;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ss-analytics-map-selected-cover img {
+  display: block;
+  width: 100%;
+  height: 164px;
+  object-fit: cover;
+}
+
+.ss-analytics-map-selected-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(8, 12, 20, 0), rgba(8, 12, 20, 0.82));
+  pointer-events: none;
+}
+
+.ss-analytics-map-selected-cover figcaption {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 10px;
+  z-index: 1;
+  color: rgba(247, 251, 255, 0.72);
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ss-analytics-map-selected-content {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.ss-analytics-map-selected-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ss-analytics-map-selected-badges span {
+  padding: 4px 8px;
+  border: 1px solid rgba(130, 211, 255, 0.2);
+  border-radius: 999px;
+  color: #dceeff;
+  background: rgba(130, 211, 255, 0.08);
+}
+
+.ss-analytics-map-selected-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ss-analytics-map-selected-stats span {
+  display: grid;
+  gap: 2px;
+  padding: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.ss-analytics-map-selected-stats strong {
+  color: var(--text-primary);
 }
 
 .region-label {

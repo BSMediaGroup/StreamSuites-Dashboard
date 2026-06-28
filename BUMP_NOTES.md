@@ -6,6 +6,14 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
+- Analytics fullscreen map presentation polish: the fullscreen lightbox now uses the same GeoJSON feature/source model as the inline Analytics map, including location dot, request glow/halo, cluster, country fallback, source/project styling, selected time-window, and selected-marker ring behavior.
+- Shared map layer controls: inline and fullscreen Analytics maps now share `Location dots` and `Request glow` controls that toggle MapLibre layer visibility without removing sources or reloading marker data.
+- Selected location details: marker clicks now open a richer dark popup, update the fullscreen selected-location sidebar, highlight the matching mapped-location list row, and preserve flag-prefixed titles for tooltip/sidebar/list contexts while keeping table flag behavior unchanged.
+- Fullscreen sidebar polish: the map lightbox now has a desktop-expanded, user-collapsible details sidebar with selected cover image, precision/source badges, requests/sessions/last-seen stats, mapped/unmapped/source summaries, country fallback contributing rows, and a restore control when collapsed.
+- Local cover image asset pack: added generated project-owned fallback illustration covers under `docs/assets/analytics/location-covers/` plus `docs/shared/data/location-cover-images.json` attribution/coverage metadata. These are local fallback illustrations, not documentary city photos, and no runtime hotlinking or base64 embedding is used.
+- Popup close icon fix: MapLibre popup close buttons in Analytics now render as light visible controls on the dark popup surface, with visible hover/focus states while preserving default MapLibre close behavior.
+- Test coverage: added `tests/analytics-map-fullscreen-polish.test.mjs` for fullscreen layer controls, toggle layer targeting, marker selection/sidebar hydration, cover manifest coverage, popup close color, country fallback cover resolution, sidebar collapse controls, and mapped-list selection.
+
 - Analytics map city-location fix: Dashboard now maps runtime `by_location` rows before country aggregates, so city-level rows with exact lookup coverage plot at city precision instead of collapsing to country-only dots. Maseru, Maseru District, LS is covered by the city lookup and Lesotho country fallback is available for unknown LS cities.
 - Coordinate fallback standard: map resolution now prefers explicit event coordinates, then exact city lookup, then labelled country centroid fallback, and only then unmapped. Tables and popups preserve original city/region/country text while marking country fallback rows honestly as `country_fallback`.
 - Marker behavior preserved: DanielClancy.net rows remain visually distinct from StreamSuites-native rows, request halos still scale by request/event count, and activity dots still scale by sessions when available.
