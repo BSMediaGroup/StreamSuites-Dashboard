@@ -1436,6 +1436,149 @@ button.ss-public-identity-chip:focus-visible {
   min-height: calc(clamp(700px, 86vh, 1100px) - 20px);
 }
 
+.ss-analytics-map-fullscreen-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(2, 6, 14, 0.78);
+  backdrop-filter: blur(12px);
+}
+
+.ss-analytics-map-fullscreen-modal.hidden {
+  display: none;
+}
+
+.ss-analytics-map-fullscreen-surface {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(1680px, 98vw);
+  height: min(980px, 96vh);
+  min-height: 0;
+  border: 1px solid rgba(134, 163, 201, 0.36);
+  border-radius: var(--radius-md);
+  background: rgba(8, 12, 20, 0.98);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.58);
+  overflow: hidden;
+}
+
+.ss-analytics-map-fullscreen-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.ss-analytics-map-fullscreen-header h2,
+.ss-analytics-map-fullscreen-sidebar h3 {
+  margin: 0;
+  font-family: "RechargeBd", sans-serif;
+  letter-spacing: 0.04em;
+}
+
+.ss-analytics-map-fullscreen-header p {
+  margin: 4px 0 0;
+}
+
+.ss-analytics-map-fullscreen-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.ss-analytics-map-fullscreen-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(330px, 0.34fr);
+  min-height: 0;
+}
+
+.ss-analytics-map-fullscreen-map-shell {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  background: rgba(5, 8, 10, 0.96);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ss-analytics-map-fullscreen-map {
+  position: absolute;
+  inset: 0;
+  min-height: 100%;
+  border-radius: 0;
+}
+
+.ss-analytics-map-fullscreen-sidebar {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  min-width: 0;
+  overflow: auto;
+  padding: 16px;
+  background: rgba(10, 15, 25, 0.96);
+}
+
+.ss-analytics-map-fullscreen-sidebar section {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ss-analytics-map-sidebar-stats {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+}
+
+.ss-analytics-map-sidebar-stats div {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.45fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.ss-analytics-map-sidebar-stats dt {
+  color: var(--text-muted);
+}
+
+.ss-analytics-map-sidebar-stats dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.ss-analytics-map-sidebar-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ss-analytics-map-sidebar-list li {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ss-analytics-map-sidebar-list li:last-child {
+  border-bottom: 0;
+}
+
+.ss-analytics-map-sidebar-list small,
+.ss-analytics-map-sidebar-list span {
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
 .ss-analytics-map .maplibregl-canvas {
   outline: none;
 }
@@ -2066,6 +2209,21 @@ button.ss-public-identity-chip:focus-visible {
   .ss-analytics-map-panel.is-map-enlarged .ss-analytics-map {
     min-height: calc(clamp(540px, 80vh, 860px) - 20px);
   }
+
+  .ss-analytics-map-fullscreen-body {
+    grid-template-columns: 1fr;
+    overflow: auto;
+  }
+
+  .ss-analytics-map-fullscreen-map-shell {
+    min-height: 58vh;
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .ss-analytics-map-fullscreen-sidebar {
+    max-height: none;
+  }
 }
 
 @media (max-width: 760px) {
@@ -2096,6 +2254,24 @@ button.ss-public-identity-chip:focus-visible {
 
   .ss-analytics-map-panel.is-map-enlarged .ss-analytics-map {
     min-height: calc(clamp(460px, 76vh, 700px) - 20px);
+  }
+
+  .ss-analytics-map-fullscreen-modal {
+    padding: 8px;
+  }
+
+  .ss-analytics-map-fullscreen-surface {
+    width: 100%;
+    height: calc(100vh - 16px);
+  }
+
+  .ss-analytics-map-fullscreen-header {
+    flex-direction: column;
+  }
+
+  .ss-analytics-map-fullscreen-actions {
+    width: 100%;
+    justify-content: flex-start;
   }
 
   #analytics-countries-count {

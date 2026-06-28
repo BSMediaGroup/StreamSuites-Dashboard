@@ -108,8 +108,44 @@
     MY: [101.9758, 4.2105],
     PH: [121.774, 12.8797],
     AU: [133.7751, -25.2744],
-    NZ: [174.886, -40.9006]
+    NZ: [174.886, -40.9006],
+    LS: [28.2336, -29.61]
   };
+
+  const COUNTRY_CODE_ALIASES = Object.freeze({
+    UK: "GB",
+    USA: "US",
+    "UNITED STATES": "US",
+    "UNITED STATES OF AMERICA": "US",
+    "UNITED KINGDOM": "GB",
+    "GREAT BRITAIN": "GB",
+    LESOTHO: "LS"
+  });
+
+  const CITY_COORDINATE_LOOKUP = Object.freeze([
+    { city: "Portland", region: "Oregon", country_code: "US", latitude: 45.5152, longitude: -122.6784 },
+    { city: "Los Angeles", region: "California", country_code: "US", latitude: 34.0522, longitude: -118.2437 },
+    { city: "Santa Clara", region: "California", country_code: "US", latitude: 37.3541, longitude: -121.9552 },
+    { city: "Ashburn", region: "Virginia", country_code: "US", latitude: 39.0438, longitude: -77.4874 },
+    { city: "London", region: "England", country_code: "GB", latitude: 51.5072, longitude: -0.1276 },
+    { city: "Sydney", region: "New South Wales", country_code: "AU", latitude: -33.8688, longitude: 151.2093 },
+    { city: "Sydney", region: "NSW", country_code: "AU", latitude: -33.8688, longitude: 151.2093 },
+    { city: "Melbourne", region: "Victoria", country_code: "AU", latitude: -37.8136, longitude: 144.9631 },
+    { city: "Brisbane", region: "Queensland", country_code: "AU", latitude: -27.4698, longitude: 153.0251 },
+    { city: "Perth", region: "Western Australia", country_code: "AU", latitude: -31.9523, longitude: 115.8613 },
+    { city: "Toronto", region: "Ontario", country_code: "CA", latitude: 43.6532, longitude: -79.3832 },
+    { city: "Vancouver", region: "British Columbia", country_code: "CA", latitude: 49.2827, longitude: -123.1207 },
+    { city: "São Paulo", region: "São Paulo", country_code: "BR", latitude: -23.5505, longitude: -46.6333 },
+    { city: "Rio de Janeiro", region: "Rio de Janeiro", country_code: "BR", latitude: -22.9068, longitude: -43.1729 },
+    { city: "Maseru", region: "Maseru District", country_code: "LS", latitude: -29.31, longitude: 27.48 },
+    { city: "Auckland", region: "Auckland", country_code: "NZ", latitude: -36.8509, longitude: 174.7645 },
+    { city: "Tokyo", region: "Tokyo", country_code: "JP", latitude: 35.6762, longitude: 139.6503 },
+    { city: "Singapore", region: "Singapore", country_code: "SG", latitude: 1.3521, longitude: 103.8198 },
+    { city: "Dublin", region: "Leinster", country_code: "IE", latitude: 53.3498, longitude: -6.2603 },
+    { city: "Frankfurt", region: "Hesse", country_code: "DE", latitude: 50.1109, longitude: 8.6821 },
+    { city: "Paris", region: "Île-de-France", country_code: "FR", latitude: 48.8566, longitude: 2.3522 },
+    { city: "Amsterdam", region: "North Holland", country_code: "NL", latitude: 52.3676, longitude: 4.9041 }
+  ]);
 
   const state = {
     map: null,
@@ -152,6 +188,18 @@
     mapResizeRaf: null,
     mapResizeTimeout: null,
     mapFrameTimeout: null,
+    mapFullscreenOpen: false,
+    fullscreenMap: null,
+    fullscreenMapReady: false,
+    fullscreenPopup: null,
+    mapFeatureCollection: emptyGeoJson(),
+    mapMetadata: {
+      cityMarkers: 0,
+      countryFallbackMarkers: 0,
+      unmappedRows: [],
+      eligibleRows: []
+    },
+    lastPayload: null,
     tableViews: {
       countries: {
         page: 1,
@@ -176,6 +224,12 @@
     mapToggleLabel: null,
     mapEnlargeToggle: null,
     mapEnlargeToggleLabel: null,
+    mapFullscreenToggle: null,
+    mapFullscreenModal: null,
+    mapFullscreenClose: null,
+    fullscreenMap: null,
+    fullscreenSidebar: null,
+    fullscreenWindowSelect: null,
     mapMarkerFilter: null,
     mapGeneratedAt: null,
     mapCountryCount: null,
@@ -513,6 +567,69 @@
     return text;
   }
 
+  function normalizeLocationLookupKey(value) {
+    return safeToText(value)
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .replace(/[^a-zA-Z0-9]+/g, " ")
+      .replace(/\s+/g, " ")
+      .toLowerCase();
+  }
+
+  function normalizeCountryCode(value) {
+    const raw = collapseLocationWhitespace(value);
+    if (!raw || isPlaceholderLocationValue(raw) || raw.toUpperCase() === "ZZ") return "";
+    const alpha = raw.toUpperCase().replace(/[^A-Z]/g, "");
+    if (/^[A-Z]{2}$/.test(alpha)) return COUNTRY_CODE_ALIASES[alpha] || alpha;
+    const alias = COUNTRY_CODE_ALIASES[raw.toUpperCase()] || COUNTRY_CODE_ALIASES[normalizeLocationLookupKey(raw).toUpperCase()];
+    if (alias) return alias;
+    const displayNames = typeof Intl !== "undefined" && typeof Intl.DisplayNames === "function"
+      ? new Intl.DisplayNames(["en"], { type: "region" })
+      : null;
+    if (displayNames) {
+      for (const code of Object.keys(FALLBACK_COUNTRY_CENTROIDS)) {
+        try {
+          const name = displayNames.of(code);
+          if (normalizeLocationLookupKey(name) === normalizeLocationLookupKey(raw)) return code;
+        } catch (_) {
+          // Ignore unsupported display-name rows.
+        }
+      }
+    }
+    return "";
+  }
+
+  function firstPresentText(...values) {
+    for (const value of values) {
+      const text = collapseLocationWhitespace(value);
+      if (text && !isPlaceholderLocationValue(text)) return text;
+    }
+    return "";
+  }
+
+  function parseFiniteNumber(value) {
+    if (value === null || value === undefined) return null;
+    if (typeof value === "string" && !value.trim()) return null;
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+  }
+
+  function firstFiniteField(row, names) {
+    for (const name of names) {
+      const value = parseFiniteNumber(row?.[name]);
+      if (value !== null) return value;
+    }
+    return null;
+  }
+
+  function hasPresentField(row, names) {
+    return names.some((name) => {
+      const value = row?.[name];
+      return value !== null && value !== undefined && String(value).trim() !== "";
+    });
+  }
+
   function dedupeLocationParts(parts) {
     const normalized = [];
     parts.forEach((part) => {
@@ -632,6 +749,114 @@
     return buildFallbackLocationPresentation(payload);
   }
 
+  function coordinateFromLngLat(longitudeValue, latitudeValue, coordinateSource, plottedPrecision, originalPrecision) {
+    const longitude = parseFiniteNumber(longitudeValue);
+    const latitude = parseFiniteNumber(latitudeValue);
+    if (longitude === null || latitude === null) return null;
+    if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) return null;
+    return {
+      longitude,
+      latitude,
+      centroid: [longitude, latitude],
+      coordinateSource: coordinateSource || "event_coordinate",
+      plottedPrecision: plottedPrecision || "city",
+      originalPrecision: originalPrecision || "unknown"
+    };
+  }
+
+  function originalLocationPrecision(row) {
+    const explicit = normalizeLocationLookupKey(row?.precision);
+    if (explicit) return explicit;
+    if (firstPresentText(row?.city, row?.cityName)) return "city";
+    if (firstPresentText(row?.region, row?.region_code, row?.regionCode)) return "region";
+    return normalizeCountryCode(row?.country_code || row?.countryCode || row?.country || row?.code) ? "country" : "unknown";
+  }
+
+  function resolveEventCoordinate(row) {
+    const originalPrecision = originalLocationPrecision(row);
+    const explicitLatitude = firstFiniteField(row, ["latitude", "lat"]);
+    const explicitLongitude = firstFiniteField(row, ["longitude", "lng", "lon"]);
+    if (hasPresentField(row, ["latitude", "lat"]) || hasPresentField(row, ["longitude", "lng", "lon"])) {
+      if (explicitLatitude !== null && explicitLongitude !== null) {
+        return coordinateFromLngLat(explicitLongitude, explicitLatitude, "event_coordinate", "city", originalPrecision);
+      }
+    }
+
+    const values = row?.coordinates || row?.coordinate || row?.lngLat || row?.latLng;
+    if (!Array.isArray(values) || values.length < 2) return null;
+    const first = parseFiniteNumber(values[0]);
+    const second = parseFiniteNumber(values[1]);
+    if (first === null || second === null) return null;
+    const order = normalizeLocationLookupKey(row?.coordinateOrder || row?.coordinatesOrder || row?.coordinate_order || row?.order);
+    if (["lnglat", "lonlat", "longlat", "longitude latitude"].includes(order)) {
+      return coordinateFromLngLat(first, second, "event_coordinate", "city", originalPrecision);
+    }
+    if (["latlng", "latlon", "latitude longitude"].includes(order)) {
+      return coordinateFromLngLat(second, first, "event_coordinate", "city", originalPrecision);
+    }
+    if (Math.abs(first) > 90 && Math.abs(second) <= 90) {
+      return coordinateFromLngLat(first, second, "event_coordinate", "city", originalPrecision);
+    }
+    if (Math.abs(second) > 90 && Math.abs(first) <= 90) {
+      return coordinateFromLngLat(second, first, "event_coordinate", "city", originalPrecision);
+    }
+    return null;
+  }
+
+  function resolveCityCoordinate(row) {
+    const city = normalizeLocationLookupKey(row?.city || row?.cityName);
+    if (!city) return null;
+    const region = normalizeLocationLookupKey(row?.region || row?.region_code || row?.regionCode);
+    const countryCode = normalizeCountryCode(row?.country_code || row?.countryCode || row?.country || row?.code);
+    if (!countryCode) return null;
+    const countryName = normalizeLocationLookupKey(resolveCountryName(countryCode));
+    const match = CITY_COORDINATE_LOOKUP.find((candidate) => {
+      const candidateCity = normalizeLocationLookupKey(candidate.city);
+      const candidateRegion = normalizeLocationLookupKey(candidate.region);
+      const candidateCode = normalizeCountryCode(candidate.country_code);
+      if (candidateCity !== city || candidateCode !== countryCode) return false;
+      if (region && candidateRegion === region) return true;
+      if (!region) return true;
+      return countryName && region === countryName;
+    });
+    if (!match) return null;
+    return coordinateFromLngLat(match.longitude, match.latitude, "city_lookup", "city", originalLocationPrecision(row));
+  }
+
+  function resolveCountryCentroid(row, centroids) {
+    const countryCode = normalizeCountryCode(row?.country_code || row?.countryCode || row?.country || row?.code);
+    if (!countryCode) return null;
+    const coords = centroids?.[countryCode] || FALLBACK_COUNTRY_CENTROIDS[countryCode];
+    if (!Array.isArray(coords) || coords.length !== 2) return null;
+    return coordinateFromLngLat(coords[0], coords[1], "country_centroid", "country_fallback", originalLocationPrecision(row));
+  }
+
+  function resolveLocationCoordinate(row, centroids) {
+    return resolveEventCoordinate(row) || resolveCityCoordinate(row) || resolveCountryCentroid(row, centroids);
+  }
+
+  function classifyMapPrecision(row, coordinate) {
+    if (!coordinate) return "unmapped";
+    if (coordinate.plottedPrecision === "country_fallback") return "country_fallback";
+    if (coordinate.coordinateSource === "event_coordinate") return "event_coordinate";
+    return "city";
+  }
+
+  function locationUnmappedReason(row, centroids) {
+    const countryCode = normalizeCountryCode(row?.country_code || row?.countryCode || row?.country || row?.code);
+    if (!countryCode) return "missing_country_code";
+    if (!centroids?.[countryCode] && !FALLBACK_COUNTRY_CENTROIDS[countryCode]) return "missing_country_centroid";
+    return "invalid_or_unverified_coordinate";
+  }
+
+  function markerPrecisionLabel(value) {
+    const normalized = String(value || "").trim().toLowerCase();
+    if (normalized === "country_fallback") return "country fallback";
+    if (normalized === "event_coordinate") return "event coordinate";
+    if (normalized === "unmapped") return "unmapped";
+    return "city";
+  }
+
   function buildRegionLabelNode({ code, name }) {
     const iso2 = String(code || "").trim().toUpperCase();
     const labelName = String(name || resolveCountryName(iso2) || iso2 || "Unknown").trim() || "Unknown";
@@ -674,6 +899,46 @@
       })
     );
     root.appendChild(title);
+
+    const markerPrecision = String(entry?.plottedPrecision || entry?.mapPrecision || "").trim();
+    const markerLine = document.createElement("span");
+    const markerLabel = document.createElement("span");
+    markerLabel.className = "ss-map-popup-label";
+    markerLabel.textContent = "Marker:";
+    const markerValue = document.createElement("span");
+    markerValue.className = "ss-map-popup-value";
+    markerValue.textContent = markerPrecision === "country_fallback"
+      ? "Country fallback location"
+      : markerPrecision === "event_coordinate"
+        ? "Exact event coordinate"
+        : "City lookup";
+    markerLine.append(markerLabel, document.createTextNode(" "), markerValue);
+    root.appendChild(markerLine);
+
+    const locationDetail = String(entry?.locationDetailLabel || entry?.locationLabel || "").trim();
+    if (locationDetail) {
+      const locationLine = document.createElement("span");
+      const locationLabel = document.createElement("span");
+      locationLabel.className = "ss-map-popup-label";
+      locationLabel.textContent = "Location:";
+      const locationValue = document.createElement("span");
+      locationValue.className = "ss-map-popup-value";
+      locationValue.textContent = locationDetail;
+      locationLine.append(locationLabel, document.createTextNode(" "), locationValue);
+      root.appendChild(locationLine);
+    }
+
+    if (entry?.contributingLocations) {
+      const contributingLine = document.createElement("span");
+      const contributingLabel = document.createElement("span");
+      contributingLabel.className = "ss-map-popup-label";
+      contributingLabel.textContent = "Rows:";
+      const contributingValue = document.createElement("span");
+      contributingValue.className = "ss-map-popup-value";
+      contributingValue.textContent = String(entry.contributingLocations);
+      contributingLine.append(contributingLabel, document.createTextNode(" "), contributingValue);
+      root.appendChild(contributingLine);
+    }
 
     const sessionsLine = document.createElement("span");
     const sessionsLabel = document.createElement("span");
@@ -943,6 +1208,10 @@
     state.mapMarkerFilter = normalizeMapMarkerFilter(value);
     renderMapMarkerFilterUi();
     applyMapMarkerVisibility();
+    if (state.fullscreenMapReady) {
+      ensureFullscreenMapLayers();
+    }
+    renderMapFullscreenSidebar();
   }
 
   function handleMapMarkerFilterClick(event) {
@@ -1004,6 +1273,58 @@
     });
   }
 
+  function setMapFullscreenOpen(open) {
+    const shouldOpen = open === true;
+    state.mapFullscreenOpen = shouldOpen;
+    el.mapFullscreenModal?.classList.toggle("hidden", !shouldOpen);
+    el.mapFullscreenModal?.setAttribute("aria-hidden", shouldOpen ? "false" : "true");
+    if (el.fullscreenWindowSelect) {
+      el.fullscreenWindowSelect.value = state.selectedWindow || DEFAULT_WINDOW;
+    }
+    if (shouldOpen) {
+      initFullscreenMap();
+      renderMapFullscreenSidebar();
+      updateMapDebugState();
+      setTimeout(() => {
+        state.fullscreenMap?.resize();
+        fitFullscreenMap();
+        updateMapDebugState();
+      }, 80);
+      return;
+    }
+    destroyFullscreenMap();
+    updateMapDebugState();
+  }
+
+  function handleMapFullscreenToggleClick() {
+    setMapFullscreenOpen(true);
+  }
+
+  function handleMapFullscreenCloseClick() {
+    setMapFullscreenOpen(false);
+  }
+
+  function handleMapFullscreenBackdropClick(event) {
+    if (event.target === el.mapFullscreenModal) {
+      setMapFullscreenOpen(false);
+    }
+  }
+
+  function handleMapFullscreenWindowChange(event) {
+    const value = String(event?.target?.value || "").trim();
+    state.selectedWindow = value || DEFAULT_WINDOW;
+    if (el.windowSelect) {
+      el.windowSelect.value = state.selectedWindow;
+    }
+    fetchAnalytics({ withLoader: true, forceRefresh: true });
+  }
+
+  function handleDocumentKeydown(event) {
+    if (event.key === "Escape" && state.mapFullscreenOpen) {
+      setMapFullscreenOpen(false);
+    }
+  }
+
   async function loadCountryCentroids() {
     if (state.countryCentroids) return state.countryCentroids;
     if (state.countryCentroidsPromise) return state.countryCentroidsPromise;
@@ -1050,10 +1371,25 @@
 
   function applyGeoJson(geojson) {
     state.pendingGeoJson = geojson;
+    updateMapDebugState();
     if (!state.map) return;
     const source = state.map.getSource(SOURCE_ID);
     if (!source) return;
     source.setData(geojson);
+  }
+
+  function updateMapDebugState() {
+    window.StreamSuitesAnalyticsMapDebug = {
+      map: state.map,
+      fullscreenMap: state.fullscreenMap,
+      sourceId: SOURCE_ID,
+      featureCollection: state.pendingGeoJson || emptyGeoJson(),
+      metadata: state.mapMetadata,
+      markerCount: Array.isArray(state.pendingGeoJson?.features) ? state.pendingGeoJson.features.length : 0,
+      fullscreenOpen: state.mapFullscreenOpen,
+      fullscreenMapReady: state.fullscreenMapReady,
+      selectedWindow: state.selectedWindow
+    };
   }
 
   function ensureMapLayers() {
@@ -1314,10 +1650,18 @@
             buildCountryPopupContent({
               code,
               name,
+              city: props.city,
+              region: props.region,
+              locationLabel: props.locationLabel,
+              locationDetailLabel: props.locationDetailLabel,
+              plottedPrecision: props.plottedPrecision,
+              coordinateSource: props.coordinateSource,
+              contributingLocations: props.contributingLocations,
               sessions,
               requests,
               project: props.project,
               source_namespace: props.source_namespace,
+              source: props.source,
               surface: props.surface
             })
           )
@@ -1386,6 +1730,311 @@
     });
   }
 
+  function ensureFullscreenMapLayers() {
+    const map = state.fullscreenMap;
+    if (!map || !state.fullscreenMapReady) return;
+    if (!map.getSource(SOURCE_ID)) {
+      map.addSource(SOURCE_ID, {
+        type: "geojson",
+        data: state.mapFeatureCollection || emptyGeoJson()
+      });
+    }
+    if (!map.getLayer(LAYERS.requestsBackdrop)) {
+      map.addLayer({
+        id: LAYERS.requestsBackdrop,
+        type: "circle",
+        source: SOURCE_ID,
+        paint: {
+          "circle-color": ["case", ["==", ["get", "project"], "danielclancy"], "#f59e0b", "#1d4d93"],
+          "circle-opacity": ["interpolate", ["linear"], ["coalesce", ["get", "requests"], 0], 0, 0.1, 10, 0.16, 50, 0.22, 150, 0.28, 400, 0.34],
+          "circle-blur": 0.68,
+          "circle-radius": ["interpolate", ["linear"], ["coalesce", ["get", "requests"], 0], 0, 10.5, 10, 15, 50, 21, 150, 27, 400, 33]
+        }
+      });
+    }
+    if (!map.getLayer(LAYERS.activityGlow)) {
+      map.addLayer({
+        id: LAYERS.activityGlow,
+        type: "circle",
+        source: SOURCE_ID,
+        paint: {
+          "circle-color": ["case", ["==", ["get", "project"], "danielclancy"], "#7c3aed", "#9f4dff"],
+          "circle-opacity": ["interpolate", ["linear"], ["coalesce", ["get", "sessions"], 0], 0, 0.16, 10, 0.24, 50, 0.34, 150, 0.46, 400, 0.58],
+          "circle-blur": 0.78,
+          "circle-radius": ["interpolate", ["linear"], ["coalesce", ["get", "sessions"], 0], 0, 9, 10, 13, 50, 18, 150, 23, 400, 28]
+        }
+      });
+    }
+    if (!map.getLayer(LAYERS.activityCore)) {
+      map.addLayer({
+        id: LAYERS.activityCore,
+        type: "circle",
+        source: SOURCE_ID,
+        paint: {
+          "circle-color": ["case", ["==", ["get", "project"], "danielclancy"], "#ffd166", "#d6b8ff"],
+          "circle-opacity": ["interpolate", ["linear"], ["coalesce", ["get", "sessions"], 0], 0, 0.82, 10, 0.88, 50, 0.93, 150, 0.97, 400, 0.99],
+          "circle-blur": 0.08,
+          "circle-stroke-color": ["case", ["==", ["get", "project"], "danielclancy"], "rgba(255, 182, 72, 0.92)", "rgba(242,228,255,0.86)"],
+          "circle-stroke-width": 0.75,
+          "circle-radius": ["interpolate", ["linear"], ["coalesce", ["get", "sessions"], 0], 0, 3.2, 10, 4.8, 50, 7.2, 150, 9.4, 400, 11.2]
+        }
+      });
+    }
+    if (!map.getLayer(LAYERS.activityHit)) {
+      map.addLayer({
+        id: LAYERS.activityHit,
+        type: "circle",
+        source: SOURCE_ID,
+        paint: {
+          "circle-radius": ["interpolate", ["linear"], ["max", ["coalesce", ["get", "sessions"], 0], ["coalesce", ["get", "requests"], 0]], 1, 14, 10, 15, 50, 17.5, 150, 20],
+          "circle-opacity": 0,
+          "circle-stroke-opacity": 0
+        }
+      });
+    }
+    if (!map.__ssAnalyticsFullscreenHoverBound) {
+      map.on("click", LAYERS.activityHit, (event) => {
+        const feature = event?.features?.[0];
+        if (!feature) return;
+        const props = feature.properties || {};
+        state.fullscreenPopup?.remove();
+        state.fullscreenPopup = new window.maplibregl.Popup({
+          closeButton: true,
+          closeOnClick: true,
+          offset: 12,
+          className: "ss-map-popup"
+        })
+          .setLngLat(event.lngLat)
+          .setDOMContent(buildCountryPopupContent(props))
+          .addTo(map);
+      });
+      map.on("mouseenter", LAYERS.activityHit, () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+      map.on("mouseleave", LAYERS.activityHit, () => {
+        map.getCanvas().style.cursor = "";
+      });
+      map.__ssAnalyticsFullscreenHoverBound = true;
+    }
+    applyFullscreenGeoJson(state.mapFeatureCollection || emptyGeoJson());
+    setMapLayerVisibilityForMap(map, LAYERS.requestsBackdrop, state.mapMarkerFilter === "requests" || state.mapMarkerFilter === "both");
+    setMapLayerVisibilityForMap(map, LAYERS.activityGlow, state.mapMarkerFilter === "sessions" || state.mapMarkerFilter === "both");
+    setMapLayerVisibilityForMap(map, LAYERS.activityCore, state.mapMarkerFilter === "sessions" || state.mapMarkerFilter === "both");
+    setMapLayerVisibilityForMap(map, LAYERS.activityHit, true);
+  }
+
+  function setMapLayerVisibilityForMap(map, layerId, visible) {
+    if (!map || !layerId || !map.getLayer(layerId)) return;
+    map.setLayoutProperty(layerId, "visibility", visible ? "visible" : "none");
+  }
+
+  function fitFullscreenMap() {
+    if (!state.fullscreenMap || !state.fullscreenMapReady) return;
+    const coordinates = collectMapCoordinatesFromGeoJson();
+    if (!coordinates.length) return;
+    if (coordinates.length === 1) {
+      state.fullscreenMap.easeTo({
+        center: coordinates[0],
+        zoom: 3.8,
+        duration: 240,
+        essential: true
+      });
+      return;
+    }
+    let minLon = 180;
+    let maxLon = -180;
+    let minLat = 90;
+    let maxLat = -90;
+    coordinates.forEach(([lon, lat]) => {
+      minLon = Math.min(minLon, lon);
+      maxLon = Math.max(maxLon, lon);
+      minLat = Math.min(minLat, lat);
+      maxLat = Math.max(maxLat, lat);
+    });
+    state.fullscreenMap.fitBounds(
+      [
+        [minLon, minLat],
+        [maxLon, maxLat]
+      ],
+      {
+        padding: 72,
+        maxZoom: 5.2,
+        duration: 240,
+        essential: true
+      }
+    );
+  }
+
+  function initFullscreenMap() {
+    if (!state.mapFullscreenOpen || !el.fullscreenMap) return;
+    if (state.fullscreenMap) {
+      state.fullscreenMap.resize();
+      fitFullscreenMap();
+      return;
+    }
+    if (!window.maplibregl || typeof window.maplibregl.Map !== "function") {
+      return;
+    }
+    state.fullscreenMapReady = false;
+    state.fullscreenMap = new window.maplibregl.Map({
+      container: el.fullscreenMap,
+      style: resolveMapStyleUrl(),
+      center: [10, 20],
+      zoom: 1.2,
+      minZoom: 1,
+      maxZoom: 6,
+      projection: "mercator",
+      attributionControl: false,
+      pitch: 0,
+      bearing: 0,
+      dragRotate: false,
+      pitchWithRotate: false,
+      touchPitch: false
+    });
+    state.fullscreenMap.dragRotate?.disable();
+    state.fullscreenMap.touchZoomRotate?.disableRotation();
+    state.fullscreenMap.keyboard?.disableRotation();
+    state.fullscreenMap.addControl(
+      new window.maplibregl.NavigationControl({
+        showCompass: false,
+        visualizePitch: false
+      }),
+      "top-right"
+    );
+    state.fullscreenMap.once("load", () => {
+      state.fullscreenMapReady = true;
+      ensureFullscreenMapLayers();
+      state.fullscreenMap?.resize();
+      fitFullscreenMap();
+    });
+  }
+
+  function destroyFullscreenMap() {
+    state.fullscreenPopup?.remove();
+    state.fullscreenPopup = null;
+    if (state.fullscreenMap) {
+      state.fullscreenMap.remove();
+      state.fullscreenMap = null;
+    }
+    state.fullscreenMapReady = false;
+  }
+
+  function applyFullscreenGeoJson(geojson) {
+    if (!state.fullscreenMap || !state.fullscreenMapReady) return;
+    const source = state.fullscreenMap.getSource(SOURCE_ID);
+    if (source?.setData) {
+      source.setData(geojson || emptyGeoJson());
+    }
+    fitFullscreenMap();
+  }
+
+  function sourceBreakdownRows() {
+    const rows = state.locationRows.length ? state.locationRows : state.countryRows;
+    const counts = new Map();
+    rows.forEach((entry) => {
+      const source = String(entry?.source || entry?.source_namespace || entry?.project || "unknown").trim() || "unknown";
+      counts.set(source, (counts.get(source) || 0) + Number(entry?.requests || 0));
+    });
+    return Array.from(counts.entries()).sort((left, right) => right[1] - left[1]);
+  }
+
+  function projectBreakdownRows() {
+    const rows = state.locationRows.length ? state.locationRows : state.countryRows;
+    const counts = new Map();
+    rows.forEach((entry) => {
+      const project = formatProjectLabel(entry?.project || entry?.source_namespace);
+      counts.set(project, (counts.get(project) || 0) + Number(entry?.requests || 0));
+    });
+    return Array.from(counts.entries()).sort((left, right) => right[1] - left[1]);
+  }
+
+  function latestLiveEventLabel() {
+    const payload = state.lastPayload || {};
+    const candidates = [
+      payload.last_live_event_at,
+      payload.lastLiveEventAt,
+      payload.lastLivePageVisitEventTime,
+      payload.generated_at,
+      payload.generatedAt,
+      ...(Array.isArray(payload.recent_requests) ? payload.recent_requests.map((entry) => entry?.timestamp || entry?.recorded_at || entry?.recordedAt) : [])
+    ];
+    return formatTimestamp(candidates.find(Boolean));
+  }
+
+  function renderMapFullscreenSidebar() {
+    if (!el.fullscreenSidebar) return;
+    const rows = state.locationRows.length ? state.locationRows : state.countryRows;
+    const mappedRows = rows.filter((entry) => Array.isArray(entry?.centroid) && entry.centroid.length === 2);
+    const unmappedRows = state.mapMetadata.unmappedRows || [];
+    const totals = state.locationRows.length ? state.locationTotals : state.countryTotals;
+    const mappedList = mappedRows
+      .map((entry) => `
+        <li>
+          <strong>${escapeHtml(entry.locationDetailLabel || entry.locationLabel || entry.name || entry.code)}</strong>
+          <span>${escapeHtml(markerPrecisionLabel(entry.mapPrecision || entry.plottedPrecision))}</span>
+          <small>${escapeHtml(formatNumber(entry.requests))} requests · ${escapeHtml(formatNumber(entry.sessions))} sessions · ${escapeHtml(formatProjectLabel(entry.project))}</small>
+        </li>
+      `)
+      .join("");
+    const unmappedList = unmappedRows
+      .slice(0, 25)
+      .map(({ row, reason }) => `
+        <li>
+          <strong>${escapeHtml(row?.locationDetailLabel || row?.locationLabel || "Unknown location")}</strong>
+          <small>${escapeHtml(reason || row?.unmappedReason || "unmapped")}</small>
+        </li>
+      `)
+      .join("");
+    el.fullscreenSidebar.innerHTML = `
+      <section data-analytics-map-sidebar-section="summary">
+        <h3>Map summary</h3>
+        <dl class="ss-analytics-map-sidebar-stats">
+          <div><dt>Selected window</dt><dd>${escapeHtml(state.selectedWindow || DEFAULT_WINDOW)}</dd></div>
+          <div><dt>Source/project filter</dt><dd>${escapeHtml(state.mapMarkerFilter)} markers · current payload</dd></div>
+          <div><dt>Total rows</dt><dd>${escapeHtml(formatNumber(rows.length))}</dd></div>
+          <div><dt>Requests/events</dt><dd>${escapeHtml(formatNumber(totals.requests))}</dd></div>
+          <div><dt>Sessions</dt><dd>${escapeHtml(formatNumber(totals.sessions))}</dd></div>
+          <div><dt>City markers</dt><dd>${escapeHtml(formatNumber(state.mapMetadata.cityMarkers))}</dd></div>
+          <div><dt>Country fallback markers</dt><dd>${escapeHtml(formatNumber(state.mapMetadata.countryFallbackMarkers))}</dd></div>
+          <div><dt>Unmapped rows</dt><dd>${escapeHtml(formatNumber(unmappedRows.length))}</dd></div>
+          <div><dt>Last live event</dt><dd>${escapeHtml(latestLiveEventLabel())}</dd></div>
+        </dl>
+      </section>
+      <section data-analytics-map-sidebar-section="mapped">
+        <h3>Mapped locations</h3>
+        <ul class="ss-analytics-map-sidebar-list">${mappedList || "<li><strong>No mapped locations</strong><small>No usable coordinates in this window.</small></li>"}</ul>
+      </section>
+      <section data-analytics-map-sidebar-section="unmapped">
+        <h3>Unmapped rows</h3>
+        <ul class="ss-analytics-map-sidebar-list">${unmappedList || "<li><strong>None</strong><small>Every eligible row has a city coordinate or country fallback.</small></li>"}</ul>
+      </section>
+      <section data-analytics-map-sidebar-section="source">
+        <h3>Source breakdown</h3>
+        <ul class="ss-analytics-map-sidebar-list">${sourceBreakdownRows().map(([source, count]) => `<li><strong>${escapeHtml(source)}</strong><small>${escapeHtml(formatNumber(count))} requests/events</small></li>`).join("") || "<li><strong>No source rows</strong><small>No rows in this window.</small></li>"}</ul>
+      </section>
+      <section data-analytics-map-sidebar-section="project">
+        <h3>Project breakdown</h3>
+        <ul class="ss-analytics-map-sidebar-list">${projectBreakdownRows().map(([project, count]) => `<li><strong>${escapeHtml(project)}</strong><small>${escapeHtml(formatNumber(count))} requests/events</small></li>`).join("") || "<li><strong>No project rows</strong><small>No rows in this window.</small></li>"}</ul>
+      </section>
+      <section data-analytics-map-sidebar-section="precision">
+        <h3>Precision legend</h3>
+        <ul class="ss-analytics-map-sidebar-list">
+          <li><strong>Exact event coordinate</strong><small>Trusted latitude/longitude on the event row.</small></li>
+          <li><strong>City lookup</strong><small>Exact city/region/country coordinate lookup.</small></li>
+          <li><strong>Country fallback</strong><small>Verified country centroid, labelled as fallback.</small></li>
+          <li><strong>Unmapped</strong><small>No usable coordinates or country fallback.</small></li>
+        </ul>
+      </section>
+      <section data-analytics-map-sidebar-section="marker">
+        <h3>Marker legend</h3>
+        <ul class="ss-analytics-map-sidebar-list">
+          <li><strong>StreamSuites</strong><small>Purple session marker and blue request halo.</small></li>
+          <li><strong>DanielClancy.net</strong><small>Gold session marker and amber request halo.</small></li>
+        </ul>
+      </section>
+    `;
+  }
+
   function normalizeCountryRows(byCountry) {
     if (Array.isArray(byCountry)) {
       return byCountry;
@@ -1420,7 +2069,7 @@
   function buildCountryRows(countryRows, centroids) {
     const aggregate = new Map();
     normalizeCountryRows(countryRows).forEach((entry) => {
-      const code = String(entry?.country || entry?.code || "").trim().toUpperCase();
+      const code = normalizeCountryCode(entry?.country_code || entry?.country || entry?.code);
       if (!code || code === "ZZ") return;
       const centroid = centroids?.[code];
       if (!Array.isArray(centroid) || centroid.length !== 2) return;
@@ -1446,8 +2095,17 @@
         requests,
         sessions,
         centroid: [lon, lat],
+        coordinateSource: "country_centroid",
+        plottedPrecision: "country_fallback",
+        originalPrecision: "country",
+        precision: "country fallback",
+        mapPrecision: "country_fallback",
+        locationLabel: resolveCountryName(code),
+        locationDetailLabel: resolveCountryName(code),
+        locationMeta: "Country fallback",
         project,
         source_namespace: entry?.source_namespace || project,
+        source: entry?.source || entry?.source_namespace || project,
         surface: entry?.surface || (project === "danielclancy" ? "danielclancy_public" : "public"),
         projectLabel: entry?.project_label || formatProjectLabel(project)
       });
@@ -1455,33 +2113,74 @@
     return Array.from(aggregate.values());
   }
 
-  function buildLocationRows(locationRows) {
+  function buildLocationRows(locationRows, centroids = state.countryCentroids || FALLBACK_COUNTRY_CENTROIDS) {
     const aggregate = new Map();
+    const unmapped = [];
     normalizeLocationRows(locationRows).forEach((entry) => {
-      const code = String(entry?.country_code || entry?.country || entry?.code || "").trim().toUpperCase();
-      if (!code || code === "ZZ") return;
+      const code = normalizeCountryCode(entry?.country_code || entry?.countryCode || entry?.country || entry?.code);
       const location = buildLocationPresentation({
         ...entry,
         countryCode: code
       });
-      const precision = location.precision;
+      const coordinate = resolveLocationCoordinate({ ...entry, country_code: code }, centroids);
+      const mapPrecision = classifyMapPrecision(entry, coordinate);
+      const precision = markerPrecisionLabel(mapPrecision);
       const requestsRaw = Number(entry?.requests ?? entry?.count ?? 0);
       const sessionsRaw = Number(entry?.sessions ?? entry?.count ?? requestsRaw);
       const requests = Number.isFinite(requestsRaw) ? Math.max(0, Math.round(requestsRaw)) : 0;
       const sessions = Number.isFinite(sessionsRaw) ? Math.max(0, Math.round(sessionsRaw)) : requests;
       if (requests <= 0 && sessions <= 0) return;
+      if (!coordinate) {
+        unmapped.push({
+          ...entry,
+          key: `unmapped|${aggregate.size}|${location.sortKey}`,
+          code,
+          countryCode: code,
+          countryName: location.countryName || resolveCountryName(code),
+          region: location.region,
+          regionCode: location.regionCode,
+          city: location.city,
+          precision: "unmapped",
+          originalPrecision: originalLocationPrecision(entry),
+          mapPrecision: "unmapped",
+          plottedPrecision: "unmapped",
+          coordinateSource: "",
+          unmappedReason: locationUnmappedReason(entry, centroids),
+          locationLabel: location.primaryLabel,
+          locationDetailLabel: location.detailedLabel,
+          locationMeta: location.secondaryLabel || "Unmapped",
+          locationSortKey: location.sortKey,
+          locationFilterText: location.filterText,
+          requests,
+          sessions,
+          project: normalizeProject(entry?.project || entry?.source_namespace),
+          source_namespace: entry?.source_namespace || normalizeProject(entry?.project || entry?.source_namespace),
+          source: entry?.source || entry?.source_namespace || normalizeProject(entry?.project),
+          surface: entry?.surface || (normalizeProject(entry?.project || entry?.source_namespace) === "danielclancy" ? "danielclancy_public" : "public")
+        });
+        return;
+      }
       const key = [
+        normalizeProject(entry?.project || entry?.source_namespace),
+        entry?.source || entry?.source_namespace || "",
+        mapPrecision,
         location.countryCode || code,
         location.region,
         location.regionCode,
-        location.city
+        mapPrecision === "country_fallback" ? "" : location.city,
+        Number(coordinate.longitude).toFixed(4),
+        Number(coordinate.latitude).toFixed(4)
       ].join("|");
       const existing = aggregate.get(key);
       if (existing) {
         existing.requests += requests;
         existing.sessions += sessions;
+        if (location.detailedLabel && !existing.contributingLocations.includes(location.detailedLabel)) {
+          existing.contributingLocations.push(location.detailedLabel);
+        }
         return;
       }
+      const project = normalizeProject(entry?.project || entry?.source_namespace);
       aggregate.set(key, {
         key,
         code,
@@ -1491,33 +2190,59 @@
         regionCode: location.regionCode,
         city: location.city,
         precision,
+        originalPrecision: originalLocationPrecision(entry),
+        mapPrecision,
+        plottedPrecision: coordinate.plottedPrecision,
+        coordinateSource: coordinate.coordinateSource,
+        centroid: coordinate.centroid,
+        longitude: coordinate.longitude,
+        latitude: coordinate.latitude,
+        unmappedReason: "",
+        contributingLocations: [location.detailedLabel].filter(Boolean),
         locationLabel: location.primaryLabel,
         locationDetailLabel: location.detailedLabel,
-        locationMeta: location.secondaryLabel,
+        locationMeta: mapPrecision === "country_fallback" ? "Country fallback marker" : location.secondaryLabel,
         locationSortKey: location.sortKey,
         locationFilterText: location.filterText,
         requests,
-        sessions
+        sessions,
+        project,
+        source_namespace: entry?.source_namespace || project,
+        source: entry?.source || entry?.source_namespace || project,
+        surface: entry?.surface || (project === "danielclancy" ? "danielclancy_public" : "public"),
+        projectLabel: entry?.project_label || formatProjectLabel(project)
       });
     });
-    return Array.from(aggregate.values());
+    return Array.from(aggregate.values()).concat(unmapped);
   }
 
   function toMapFeature(entry) {
-    const code = String(entry?.code || entry?.country || "").trim().toUpperCase();
+    const code = normalizeCountryCode(entry?.countryCode || entry?.country_code || entry?.code || entry?.country);
     const centroid = entry?.centroid;
     if (!code || !Array.isArray(centroid) || centroid.length !== 2) return null;
     const requests = Number(entry?.requests ?? 0);
     const sessions = Number(entry?.sessions ?? 0);
+    const plottedPrecision = entry?.plottedPrecision || entry?.mapPrecision || "country_fallback";
     return {
       type: "Feature",
       properties: {
         country: code,
-        name: entry?.name || resolveCountryName(code),
+        name: entry?.countryName || entry?.name || resolveCountryName(code),
+        city: entry?.city || "",
+        region: entry?.region || entry?.regionCode || "",
+        locationLabel: entry?.locationLabel || entry?.name || resolveCountryName(code),
+        locationDetailLabel: entry?.locationDetailLabel || entry?.locationLabel || entry?.name || resolveCountryName(code),
+        locationMeta: entry?.locationMeta || "",
+        precision: entry?.precision || markerPrecisionLabel(plottedPrecision),
+        originalPrecision: entry?.originalPrecision || "unknown",
+        plottedPrecision,
+        coordinateSource: entry?.coordinateSource || (plottedPrecision === "country_fallback" ? "country_centroid" : "city_lookup"),
+        contributingLocations: Array.isArray(entry?.contributingLocations) ? entry.contributingLocations.join("; ") : "",
         requests: Number.isFinite(requests) ? requests : 0,
         sessions: Number.isFinite(sessions) ? sessions : 0,
         project: normalizeProject(entry?.project),
         source_namespace: entry?.source_namespace || normalizeProject(entry?.project),
+        source: entry?.source || entry?.source_namespace || normalizeProject(entry?.project),
         surface: entry?.surface || (normalizeProject(entry?.project) === "danielclancy" ? "danielclancy_public" : "public"),
         project_label: entry?.projectLabel || formatProjectLabel(entry?.project)
       },
@@ -1542,6 +2267,42 @@
         requests: 0
       }
     );
+  }
+
+  function aggregateLocationRows(locationRows, centroids) {
+    const rows = buildLocationRows(locationRows, centroids);
+    const mappedRows = rows.filter((entry) => Array.isArray(entry?.centroid) && entry.centroid.length === 2);
+    const unmappedRows = rows
+      .filter((entry) => entry?.mapPrecision === "unmapped")
+      .map((entry) => ({
+        row: entry,
+        reason: entry.unmappedReason || "unmapped"
+      }));
+    return {
+      rows,
+      mappedRows,
+      unmappedRows,
+      eligibleRows: normalizeLocationRows(locationRows),
+      cityMarkers: mappedRows.filter((entry) => entry.mapPrecision === "city" || entry.mapPrecision === "event_coordinate").length,
+      countryFallbackMarkers: mappedRows.filter((entry) => entry.mapPrecision === "country_fallback").length
+    };
+  }
+
+  function buildLocationFeatures(locationRows, options = {}) {
+    const centroids = options.centroids || state.countryCentroids || FALLBACK_COUNTRY_CENTROIDS;
+    const aggregate = aggregateLocationRows(locationRows, centroids);
+    const features = aggregate.mappedRows.map((entry) => toMapFeature(entry)).filter(Boolean);
+    return {
+      type: "FeatureCollection",
+      features,
+      metadata: {
+        eligibleRows: aggregate.eligibleRows,
+        unmappedRows: aggregate.unmappedRows,
+        cityMarkers: aggregate.cityMarkers,
+        countryFallbackMarkers: aggregate.countryFallbackMarkers,
+        groupedRows: aggregate.mappedRows.length
+      }
+    };
   }
 
   function resolveTopCountry(rows) {
@@ -1569,28 +2330,32 @@
   }
 
   function resolveLocationLabel(entry) {
+    if (entry?.locationLabel) return String(entry.locationLabel);
     return buildLocationPresentation(entry).primaryLabel || "Unknown";
   }
 
   function resolveLocationMeta(entry) {
+    if (entry?.locationMeta) return String(entry.locationMeta);
     return buildLocationPresentation(entry).secondaryLabel;
   }
 
   function updateMapStatsStrip() {
     if (el.mapCountryCount) {
-      el.mapCountryCount.textContent = formatNumber(state.countryRows.length);
+      el.mapCountryCount.textContent = formatNumber(state.mapMetadata.cityMarkers + state.mapMetadata.countryFallbackMarkers);
     }
     if (el.mapSessions) {
-      el.mapSessions.textContent = formatNumber(state.countryTotals.sessions);
+      const totals = state.locationRows.length ? state.locationTotals : state.countryTotals;
+      el.mapSessions.textContent = formatNumber(totals.sessions);
     }
     if (el.mapTopCountry) {
-      const top = resolveTopCountry(state.countryRows);
+      const mapped = state.locationRows.filter((entry) => Array.isArray(entry?.centroid));
+      const top = resolveTopCountry(mapped.length ? mapped : state.countryRows);
       el.mapTopCountry.textContent = "";
       if (!top) {
         el.mapTopCountry.textContent = "--";
       } else {
-        const code = String(top?.code || top?.country || "").trim().toUpperCase();
-        const name = String(top?.name || resolveCountryName(code) || code).trim() || code;
+        const code = normalizeCountryCode(top?.countryCode || top?.code || top?.country);
+        const name = String(top?.locationLabel || top?.name || resolveCountryName(code) || code).trim() || code;
         el.mapTopCountry.appendChild(
           buildRegionLabelNode({
             code,
@@ -1610,9 +2375,14 @@
     }
     if (key === "precision") {
       const order = {
+        "event coordinate": 4,
+        "event_coordinate": 4,
         city: 3,
         region: 2,
-        country: 1
+        "country fallback": 1,
+        country_fallback: 1,
+        country: 1,
+        unmapped: 0
       };
       return order[String(entry?.precision || "").toLowerCase()] || 0;
     }
@@ -1829,18 +2599,20 @@
     el.countriesBody.textContent = "";
     const fragment = document.createDocumentFragment();
     pageInfo.items.forEach((entry) => {
-      const code = String(entry?.code || "").toUpperCase();
+      const code = normalizeCountryCode(entry?.countryCode || entry?.country_code || entry?.code || entry?.country);
       const countryName = String(entry?.countryName || entry?.name || resolveCountryName(code) || code).trim() || code;
       const locationName = resolveLocationLabel(entry);
       const locationMeta = resolveLocationMeta(entry);
-      const isActive = code === state.activeCountryCode;
+      const locationKey = String(entry?.key || code || "").trim();
+      const isActive = locationKey && locationKey === state.activeCountryCode;
 
       const row = document.createElement("tr");
       row.className = `ss-analytics-country-row${isActive ? " is-active" : ""}`;
       row.setAttribute("data-country-code", code);
+      row.setAttribute("data-location-key", locationKey);
       row.setAttribute("tabindex", "0");
       row.setAttribute("role", "button");
-      row.setAttribute("aria-label", `Focus map on ${countryName}`);
+      row.setAttribute("aria-label", `Focus map on ${locationName || countryName}`);
       row.setAttribute("data-region-name", countryName);
 
       const locationCell = document.createElement("td");
@@ -1903,12 +2675,15 @@
   }
 
   async function focusCountryFromTable(code) {
-    const iso2 = String(code || "").trim().toUpperCase();
-    if (!iso2) return;
-    const country = state.countryRows.find((entry) => entry.code === iso2);
+    const token = String(code || "").trim();
+    if (!token) return;
+    const mappedLocations = state.locationRows.filter((entry) => Array.isArray(entry?.centroid) && entry.centroid.length === 2);
+    const country = mappedLocations.find((entry) => String(entry?.key || "") === token)
+      || mappedLocations.find((entry) => normalizeCountryCode(entry?.countryCode || entry?.code) === normalizeCountryCode(token))
+      || state.countryRows.find((entry) => normalizeCountryCode(entry?.code || entry?.country) === normalizeCountryCode(token));
     if (!country || !Array.isArray(country.centroid) || country.centroid.length !== 2) return;
 
-    state.activeCountryCode = iso2;
+    state.activeCountryCode = String(country?.key || country?.code || token);
     renderCountryTable();
 
     const focusToken = ++state.countryFocusToken;
@@ -1970,7 +2745,7 @@
     const row = event.target.closest("tr.ss-analytics-country-row[data-country-code]");
     if (!(row instanceof HTMLTableRowElement) || !el.countriesBody?.contains(row)) return;
     event.preventDefault();
-    const code = row.getAttribute("data-country-code");
+    const code = row.getAttribute("data-location-key") || row.getAttribute("data-country-code");
     void focusCountryFromTable(code);
   }
 
@@ -1979,7 +2754,7 @@
     const row = event.target.closest("tr.ss-analytics-country-row[data-country-code]");
     if (!(row instanceof HTMLTableRowElement) || !el.countriesBody?.contains(row)) return;
     event.preventDefault();
-    const code = row.getAttribute("data-country-code");
+    const code = row.getAttribute("data-location-key") || row.getAttribute("data-country-code");
     void focusCountryFromTable(code);
   }
 
@@ -2035,37 +2810,60 @@
     }
   }
 
-  async function updateMap(countryRows, options = {}) {
-    const rows = normalizeCountryRows(countryRows);
-    state.latestByCountry = [...rows];
+  async function updateMap(locationRows, options = {}) {
+    const rows = normalizeLocationRows(locationRows);
+    const countryRows = normalizeCountryRows(options.countryRows);
+    state.latestByCountry = [...countryRows];
     const centroids = await loadCountryCentroids();
-    state.countryRows = buildCountryRows(rows, centroids);
+    state.countryRows = buildCountryRows(countryRows, centroids);
     state.countryTotals = computeCountryTotals(state.countryRows);
+    const locationFeatureCollection = rows.length
+      ? buildLocationFeatures(rows, { centroids })
+      : {
+          type: "FeatureCollection",
+          features: state.countryRows.map((entry) => toMapFeature(entry)).filter(Boolean),
+          metadata: {
+            eligibleRows: countryRows,
+            unmappedRows: [],
+            cityMarkers: 0,
+            countryFallbackMarkers: state.countryRows.length,
+            groupedRows: state.countryRows.length
+          }
+        };
+    if (rows.length) {
+      state.locationRows = buildLocationRows(rows, centroids);
+      state.locationTotals = computeCountryTotals(state.locationRows);
+    }
+    state.mapFeatureCollection = locationFeatureCollection;
+    state.mapMetadata = {
+      eligibleRows: locationFeatureCollection.metadata?.eligibleRows || [],
+      unmappedRows: locationFeatureCollection.metadata?.unmappedRows || [],
+      cityMarkers: Number(locationFeatureCollection.metadata?.cityMarkers || 0),
+      countryFallbackMarkers: Number(locationFeatureCollection.metadata?.countryFallbackMarkers || 0)
+    };
     updateMapStatsStrip();
     if (state.activeCountryCode) {
-      const exists = state.countryRows.some((entry) => entry.code === state.activeCountryCode);
+      const exists = state.locationRows.some((entry) => String(entry?.key || "") === state.activeCountryCode)
+        || state.countryRows.some((entry) => entry.code === state.activeCountryCode);
       if (!exists) {
         state.activeCountryCode = "";
       }
     }
     renderCountryTable();
-
-    const features = state.countryRows.map((entry) => toMapFeature(entry)).filter(Boolean);
-    applyGeoJson({
-      type: "FeatureCollection",
-      features
-    });
+    applyGeoJson(locationFeatureCollection);
+    applyFullscreenGeoJson(locationFeatureCollection);
+    renderMapFullscreenSidebar();
 
     if (options.errorMessage) {
       setMapFeedback(options.errorMessage, { isError: true });
       return;
     }
-    if (!rows.length) {
+    if (!rows.length && !countryRows.length) {
       setMapFeedback("No country analytics yet for this window.");
       return;
     }
-    if (!features.length) {
-      setMapFeedback("Country data exists, but no supported country centroids were available to map.");
+    if (!locationFeatureCollection.features.length) {
+      setMapFeedback("Location data exists, but no supported city coordinates or country centroids were available to map.");
       return;
     }
     setMapFeedback("");
@@ -2512,7 +3310,10 @@
         renderRecentRequests(data?.recent_requests);
         setSummary(data);
         updateLocationBreakdown(data?.by_location, data?.location_support);
-        await updateMap(data?.by_country_markers || data?.by_country);
+        state.lastPayload = data;
+        await updateMap(data?.by_location, {
+          countryRows: data?.by_country_markers || data?.by_country
+        });
         updateExecutiveSummary(data);
 
         if (Number(data?.totals?.requests || 0) <= 0) {
@@ -2549,6 +3350,9 @@
   function handleWindowChange() {
     const value = String(el.windowSelect?.value || "").trim();
     state.selectedWindow = value || DEFAULT_WINDOW;
+    if (el.fullscreenWindowSelect) {
+      el.fullscreenWindowSelect.value = state.selectedWindow;
+    }
     fetchAnalytics({ withLoader: true, forceRefresh: true });
   }
 
@@ -2574,6 +3378,15 @@
       region: 0,
       city: 0
     };
+    state.mapFullscreenOpen = false;
+    state.mapFeatureCollection = emptyGeoJson();
+    state.mapMetadata = {
+      cityMarkers: 0,
+      countryFallbackMarkers: 0,
+      unmappedRows: [],
+      eligibleRows: []
+    };
+    state.lastPayload = null;
     state.tableViews = {
       countries: {
         page: 1,
@@ -2605,6 +3418,12 @@
     el.mapToggleLabel = $("analytics-map-toggle-label");
     el.mapEnlargeToggle = $("analytics-map-enlarge-toggle");
     el.mapEnlargeToggleLabel = $("analytics-map-enlarge-toggle-label");
+    el.mapFullscreenToggle = $("analytics-map-fullscreen-toggle");
+    el.mapFullscreenModal = $("analytics-map-fullscreen-modal");
+    el.mapFullscreenClose = $("analytics-map-fullscreen-close");
+    el.fullscreenMap = $("analytics-fullscreen-world-map");
+    el.fullscreenSidebar = $("analytics-map-fullscreen-sidebar");
+    el.fullscreenWindowSelect = $("analytics-map-fullscreen-window-select");
     el.mapMarkerFilter = document.querySelector(".ss-analytics-map-marker-filter");
     el.mapGeneratedAt = $("analytics-map-generated-at");
     el.mapCountryCount = $("analytics-map-country-count");
@@ -2662,6 +3481,20 @@
     if (el.mapEnlargeToggle) {
       el.mapEnlargeToggle.addEventListener("click", handleMapEnlargeToggleClick);
     }
+    if (el.mapFullscreenToggle) {
+      el.mapFullscreenToggle.addEventListener("click", handleMapFullscreenToggleClick);
+    }
+    if (el.mapFullscreenClose) {
+      el.mapFullscreenClose.addEventListener("click", handleMapFullscreenCloseClick);
+    }
+    if (el.mapFullscreenModal) {
+      el.mapFullscreenModal.addEventListener("click", handleMapFullscreenBackdropClick);
+    }
+    if (el.fullscreenWindowSelect) {
+      el.fullscreenWindowSelect.value = state.selectedWindow || DEFAULT_WINDOW;
+      el.fullscreenWindowSelect.addEventListener("change", handleMapFullscreenWindowChange);
+    }
+    document.addEventListener("keydown", handleDocumentKeydown);
     if (el.mapMarkerFilter) {
       el.mapMarkerFilter.addEventListener("click", handleMapMarkerFilterClick);
     }
@@ -2762,6 +3595,19 @@
     if (el.mapEnlargeToggle) {
       el.mapEnlargeToggle.removeEventListener("click", handleMapEnlargeToggleClick);
     }
+    if (el.mapFullscreenToggle) {
+      el.mapFullscreenToggle.removeEventListener("click", handleMapFullscreenToggleClick);
+    }
+    if (el.mapFullscreenClose) {
+      el.mapFullscreenClose.removeEventListener("click", handleMapFullscreenCloseClick);
+    }
+    if (el.mapFullscreenModal) {
+      el.mapFullscreenModal.removeEventListener("click", handleMapFullscreenBackdropClick);
+    }
+    if (el.fullscreenWindowSelect) {
+      el.fullscreenWindowSelect.removeEventListener("change", handleMapFullscreenWindowChange);
+    }
+    document.removeEventListener("keydown", handleDocumentKeydown);
     if (el.mapMarkerFilter) {
       el.mapMarkerFilter.removeEventListener("click", handleMapMarkerFilterClick);
     }
@@ -2784,6 +3630,7 @@
       state.map.remove();
       state.map = null;
     }
+    destroyFullscreenMap();
 
     if (state.refreshHandle) {
       clearInterval(state.refreshHandle);
@@ -2812,8 +3659,17 @@
     state.mapReady = false;
     state.mapCollapsed = false;
     state.mapEnlarged = false;
+    state.mapFullscreenOpen = false;
     state.mapMarkerFilter = MAP_MARKER_FILTER_DEFAULT;
     state.pendingGeoJson = emptyGeoJson();
+    state.mapFeatureCollection = emptyGeoJson();
+    state.mapMetadata = {
+      cityMarkers: 0,
+      countryFallbackMarkers: 0,
+      unmappedRows: [],
+      eligibleRows: []
+    };
+    state.lastPayload = null;
     state.latestByCountry = [];
     state.countryRows = [];
     state.countryTotals = {
@@ -2861,6 +3717,18 @@
     });
 
   }
+
+  window.StreamSuitesAnalyticsMapLocationDebug = {
+    normalizeCountryCode,
+    normalizeLocationName,
+    resolveCityCoordinate,
+    resolveCountryCentroid,
+    resolveLocationCoordinate,
+    aggregateLocationRows,
+    buildLocationFeatures,
+    classifyMapPrecision,
+    markerPrecisionLabel
+  };
 
   window.AnalyticsView = {
     init,

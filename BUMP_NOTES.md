@@ -6,7 +6,13 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
 
-- Analytics marker distinction: the Dashboard Analytics map now prefers runtime-provided `by_country_markers` and renders DanielClancy.net rows with distinct marker dot, halo, stroke, popup, and legend labeling while StreamSuites-native markers keep the existing visual family.
+- Analytics map city-location fix: Dashboard now maps runtime `by_location` rows before country aggregates, so city-level rows with exact lookup coverage plot at city precision instead of collapsing to country-only dots. Maseru, Maseru District, LS is covered by the city lookup and Lesotho country fallback is available for unknown LS cities.
+- Coordinate fallback standard: map resolution now prefers explicit event coordinates, then exact city lookup, then labelled country centroid fallback, and only then unmapped. Tables and popups preserve original city/region/country text while marking country fallback rows honestly as `country_fallback`.
+- Marker behavior preserved: DanielClancy.net rows remain visually distinct from StreamSuites-native rows, request halos still scale by request/event count, and activity dots still scale by sessions when available.
+- Fullscreen map mode: Analytics now keeps the existing inline/expanded MapLibre card and adds a fullscreen lightbox map with selected-window control, mapped/unmapped rows, source and project breakdowns, precision counts, marker legend, last live event, Escape close, and backdrop close.
+- Validation performed for this map-location/fullscreen work: `node --check docs/js/analytics.js`; `node --test tests/analytics-map-project-markers.test.mjs`; `git diff --check`; Playwright MCP browser validation against the Analytics route with mocked runtime rows for city lookup, Lesotho fallback, unmapped rows, DanielClancy marker styling, fullscreen open/close, and window switching.
+
+- Analytics marker distinction: the Dashboard Analytics map renders DanielClancy.net rows with distinct marker dot, halo, stroke, popup, and legend labeling while StreamSuites-native markers keep the existing visual family.
 - Marker semantics preserved: existing request halo scaling still uses request counts, and dot sizing still uses session counts. The new project styling does not alter alert rules, rule saves, or runtime authority.
 - Added `tests/analytics-map-project-markers.test.mjs` to pin DanielClancy marker color/halo distinction, popup/legend labels, and preserved StreamSuites marker scaling. README repo tree was updated for the new test file.
 - Validation performed for this marker distinction work: `node --check docs/js/analytics.js`; `node --test tests/analytics-map-project-markers.test.mjs` (`2 passed`); `git diff --check`; Playwright browser validation against the Analytics view/module with mocked StreamSuites and DanielClancy marker rows.
