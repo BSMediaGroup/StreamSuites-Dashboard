@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import test from "node:test";
@@ -80,10 +80,10 @@ test("fullscreen popup and sidebar styling keep dark close icon, covers, flags, 
 test("location cover helpers resolve city, country fallback, and default covers", () => {
   const helpers = analyticsMapHelpers();
   assert.equal(helpers.buildLocationCoverKey("Portland", "Oregon", "US"), "us:oregon:portland");
-  assert.match(helpers.getLocationCoverImage({ city: "Maseru", region: "Maseru District", countryCode: "LS" }).imagePath, /city-ls-maseru-district-maseru\.svg$/);
-  assert.match(helpers.getCountryFallbackCover("LS").imagePath, /capital-ls-maseru-district-maseru\.svg$/);
+  assert.match(helpers.getLocationCoverImage({ city: "Maseru", region: "Maseru District", countryCode: "LS" }).imagePath, /city-ls-maseru-district-maseru\.webp$/);
+  assert.match(helpers.getCountryFallbackCover("LS").imagePath, /capital-ls-maseru-district-maseru\.webp$/);
   assert.match(helpers.getCountryFallbackCover("US").title, /Washington/);
-  assert.match(helpers.getDefaultLocationCover().imagePath, /default-location-cover\.svg$/);
+  assert.match(helpers.getDefaultLocationCover().imagePath, /default-location-cover\.webp$/);
 });
 
 test("location cover manifest covers required keys with local files and attribution", () => {
@@ -101,10 +101,11 @@ test("location cover manifest covers required keys with local files and attribut
     "au:new-south-wales:sydney",
     "au:victoria:melbourne",
     "ca:ontario:toronto",
-    "br:sao-paulo:sao-paulo"
+    "br:sao-paulo:sao-paulo",
+    "br:rio-de-janeiro:rio-de-janeiro"
   ];
   const requiredCountries = ["us", "gb", "ls", "dk", "pt", "au", "ca", "br", "de", "fr", "nl", "jp", "sg", "ie", "nz"];
-  assert.equal(coverManifest.schemaVersion, "location-cover-images.v1");
+  assert.equal(coverManifest.schemaVersion, "location-cover-images.v2");
   for (const key of requiredLocations) {
     assert.ok(coverManifest.locations[key], `${key} missing`);
   }
@@ -119,9 +120,10 @@ test("location cover manifest covers required keys with local files and attribut
   for (const entry of entries) {
     assert.ok(entry.imagePath.startsWith("/assets/analytics/location-covers/"), entry.imagePath);
     assert.equal(/^https?:\/\//.test(entry.imagePath), false, entry.imagePath);
+    assert.ok(entry.sourceQuality, entry.title);
     assert.ok(entry.credit);
     assert.ok(entry.license);
     assert.ok(existsSync(join(repoRoot, "docs", entry.imagePath.replace(/^\/assets\//, "assets/"))), entry.imagePath);
   }
-  assert.match(readFileSync(new URL("../docs/assets/analytics/location-covers/city-ls-maseru-district-maseru.svg", import.meta.url), "utf8"), /Maseru/);
+  assert.ok(existsSync(new URL("../docs/assets/analytics/location-covers/city-ls-maseru-district-maseru.webp", import.meta.url)));
 });

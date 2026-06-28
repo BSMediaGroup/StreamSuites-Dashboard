@@ -1669,22 +1669,28 @@ button.ss-public-identity-chip:focus-visible {
 }
 
 .ss-map-popup .maplibregl-popup-content {
+  box-sizing: border-box;
+  width: min(420px, calc(100vw - 32px));
+  max-width: min(420px, calc(100vw - 32px)) !important;
+  overflow: hidden;
   border: 1px solid rgba(134, 163, 201, 0.34);
   border-radius: 10px;
   background: rgba(8, 12, 20, 0.97);
   color: #edf4ff;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.42);
-  padding: 10px 12px;
+  padding: 0;
 }
 
 .ss-map-popup .maplibregl-popup-close-button {
   top: 8px;
   right: 8px;
+  z-index: 3;
   width: 24px;
   height: 24px;
   border-radius: 999px;
   color: #f7fbff;
   background: rgba(8, 12, 20, 0.76);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.34);
   font-size: 18px;
   line-height: 22px;
 }
@@ -1699,13 +1705,23 @@ button.ss-public-identity-chip:focus-visible {
 .ss-map-popup .ss-map-popup-inner {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
+  max-height: min(680px, calc(100vh - 96px));
+  overflow: auto;
+  padding-bottom: 14px;
   font-size: 12px;
   line-height: 1.35;
-  width: min(330px, 78vw);
+  width: 100%;
+}
+
+.ss-map-popup .ss-map-popup-inner > :not(.ss-map-popup-cover) {
+  padding-inline: 16px;
 }
 
 .ss-map-popup .ss-map-popup-inner strong {
+  display: flex;
+  align-items: center;
+  min-width: 0;
   color: #f7fbff;
   font-size: 12px;
   letter-spacing: 0.05em;
@@ -1713,17 +1729,20 @@ button.ss-public-identity-chip:focus-visible {
 
 .ss-map-popup-cover {
   position: relative;
+  aspect-ratio: 16 / 9;
   margin: 0 0 4px;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: 0;
   background: rgba(255, 255, 255, 0.05);
 }
 
 .ss-map-popup-cover img {
   display: block;
   width: 100%;
-  height: 118px;
+  max-width: 100%;
+  height: 100%;
   object-fit: cover;
+  object-position: center;
 }
 
 .ss-map-popup-cover::after {
@@ -1737,7 +1756,7 @@ button.ss-public-identity-chip:focus-visible {
 .ss-map-popup-cover figcaption {
   position: absolute;
   left: 8px;
-  right: 32px;
+  right: 44px;
   bottom: 7px;
   z-index: 1;
   color: rgba(247, 251, 255, 0.75);
@@ -1761,15 +1780,19 @@ button.ss-public-identity-chip:focus-visible {
 
 .ss-analytics-map-selected-cover {
   position: relative;
+  aspect-ratio: 16 / 9;
   margin: 0;
+  overflow: hidden;
   background: rgba(255, 255, 255, 0.04);
 }
 
 .ss-analytics-map-selected-cover img {
   display: block;
   width: 100%;
-  height: 164px;
+  max-width: 100%;
+  height: 100%;
   object-fit: cover;
+  object-position: center;
 }
 
 .ss-analytics-map-selected-cover::after {
