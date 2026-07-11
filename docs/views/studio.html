@@ -1,0 +1,92 @@
+<header class="ss-header ss-studio-header-shell">
+  <div class="ss-header-left">
+    <div class="ss-studio-header-copy">
+      <span class="ss-chip">Closed ALPHA Access</span>
+      <div class="ss-studio-title-row">
+        <h1 class="ss-title">StreamSuites Studio</h1>
+        <span class="ss-chip ss-chip-muted">ALPHA</span>
+      </div>
+      <p class="muted">Manage Runtime/Auth-owned invited tester grants without changing account type, role, tier, creator status, or profile visibility.</p>
+    </div>
+  </div>
+  <div class="ss-header-right ss-studio-header-actions">
+    <a class="ss-btn ss-btn-secondary" href="https://studio.streamsuites.app" target="_blank" rel="noopener noreferrer">Open Studio</a>
+    <button type="button" id="studio-refresh" class="ss-btn ss-btn-secondary">Refresh</button>
+    <button type="button" id="studio-add-tester" class="ss-btn ss-btn-primary">Add ALPHA tester</button>
+  </div>
+</header>
+
+<main class="ss-main ss-studio-main" id="studio-page-root">
+  <div id="studio-banner" class="ss-alert hidden" role="alert" aria-live="assertive"></div>
+
+  <section class="ss-panel" aria-labelledby="studio-summary-title">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2 id="studio-summary-title">Closed ALPHA Access</h2>
+        <p class="muted">Invite-only access is decided and persisted by StreamSuites Runtime/Auth. Admin accounts are automatically eligible and never consume invited tester slots.</p>
+      </div>
+      <span id="studio-runtime-status" class="ss-chip ss-chip-muted" aria-live="polite">Checking Runtime/Auth…</span>
+    </header>
+    <div class="ss-panel-body">
+      <div class="ss-studio-summary-grid" aria-live="polite">
+        <article class="ss-studio-summary-card"><span>Stage</span><strong id="studio-stage">—</strong><small>Closed / invite-only</small></article>
+        <article class="ss-studio-summary-card"><span>Active invited testers</span><strong id="studio-active-count">—</strong><small>Non-admin accounts only</small></article>
+        <article class="ss-studio-summary-card"><span>Maximum invited testers</span><strong id="studio-limit">—</strong><small>Runtime/Auth policy</small></article>
+        <article class="ss-studio-summary-card"><span>Remaining slots</span><strong id="studio-remaining">—</strong><small>Derived from authoritative summary</small></article>
+      </div>
+      <div class="ss-studio-authority-note">
+        <strong>Authority boundary</strong>
+        <span>Dashboard manages grants through Runtime/Auth; it does not own an allowlist or tester count. Room and media controls are not implemented here.</span>
+        <span id="studio-last-refresh" class="muted">No successful refresh yet.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="ss-panel" aria-labelledby="studio-grants-title">
+    <header class="ss-panel-header">
+      <div class="ss-panel-header-main">
+        <h2 id="studio-grants-title">Studio access grants</h2>
+        <p class="muted">Current and revoked non-admin ALPHA grants returned by Runtime/Auth.</p>
+      </div>
+      <span id="studio-visible-count" class="muted">Loading…</span>
+    </header>
+    <div class="ss-panel-body">
+      <div class="ss-toolbar ss-studio-toolbar">
+        <label class="ss-studio-field" for="studio-search"><span>Search grants</span><input id="studio-search" class="ss-input" type="search" placeholder="Name, user code, or account ID" /></label>
+        <label class="ss-studio-field" for="studio-status-filter"><span>Grant status</span><select id="studio-status-filter" class="ss-input"><option value="all">All grants</option><option value="active">Active</option><option value="revoked">Revoked</option></select></label>
+      </div>
+      <div class="ss-table-scroll ss-studio-table-scroll">
+        <table id="studio-grants-table" class="ss-table ss-table-compact">
+          <caption class="sr-only">StreamSuites Studio ALPHA access grants</caption>
+          <thead><tr><th scope="col">Account</th><th scope="col">Stable account ID</th><th scope="col">Account type / tier</th><th scope="col">Account status</th><th scope="col">Grant status</th><th scope="col">Granted / updated</th><th scope="col">Administrator</th><th scope="col">Note</th><th scope="col" class="align-right">Actions</th></tr></thead>
+          <tbody id="studio-grants-body"></tbody>
+        </table>
+      </div>
+      <div id="studio-empty" class="ss-empty hidden" role="status">No Studio grant records were returned.</div>
+    </div>
+  </section>
+
+  <section class="ss-panel" aria-labelledby="studio-direction-title">
+    <header class="ss-panel-header"><div class="ss-panel-header-main"><h2 id="studio-direction-title">Studio surface awareness</h2><p class="muted">StreamSuites Studio is the flagship browser livestream-production surface at <a class="ss-link" href="https://studio.streamsuites.app" target="_blank" rel="noopener noreferrer">studio.streamsuites.app</a>.</p></div></header>
+    <div class="ss-panel-body ss-studio-direction-grid">
+      <div><strong>Current stage</strong><span>Closed ALPHA access management only.</span></div>
+      <div><strong>Initial media direction</strong><span>Cloudflare Realtime is planned for the ALPHA media layer.</span></div>
+      <div><strong>Later production direction</strong><span>Self-hosted LiveKit + Egress is planned, not shipped Dashboard functionality.</span></div>
+      <div><strong>Not implemented here</strong><span>No rooms, destinations, scenes, guests, recordings, broadcasting, or media configuration controls.</span></div>
+    </div>
+  </section>
+</main>
+
+<div id="studio-modal-backdrop" class="ss-studio-modal-backdrop hidden" aria-hidden="true"></div>
+<section id="studio-add-modal" class="ss-studio-modal hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="studio-modal-title" tabindex="-1">
+  <header class="ss-studio-modal-header"><div><span class="ss-overview-kicker">Existing account</span><h3 id="studio-modal-title">Add ALPHA tester</h3><p class="muted">Select an existing Runtime/Auth account by its stable account ID.</p></div><button type="button" id="studio-modal-close" class="ss-btn ss-btn-small ss-btn-secondary" aria-label="Close Add ALPHA tester">Close</button></header>
+  <div class="ss-studio-modal-body">
+    <label class="ss-studio-field" for="studio-account-search"><span>Search accounts</span><input id="studio-account-search" class="ss-input" type="search" autocomplete="off" placeholder="Name, email, user code, or account ID" /></label>
+    <div id="studio-account-status" class="muted" role="status" aria-live="polite">Account directory not loaded.</div>
+    <div id="studio-account-results" class="ss-studio-account-results" role="listbox" aria-label="Eligible existing accounts"></div>
+    <div id="studio-selected-account" class="ss-studio-selected hidden" aria-live="polite"></div>
+    <label class="ss-studio-field" for="studio-note"><span>Administrative note <small>(optional, 240 characters)</small></span><textarea id="studio-note" class="ss-input" maxlength="240" rows="3"></textarea></label>
+    <p class="muted">Granting Studio ALPHA access does not change the selected account’s role, tier, account type, creator status, or other permissions.</p>
+  </div>
+  <footer class="ss-studio-modal-footer"><button type="button" id="studio-modal-cancel" class="ss-btn ss-btn-secondary">Cancel</button><button type="button" id="studio-modal-submit" class="ss-btn ss-btn-primary" disabled>Grant Studio access</button></footer>
+</section>

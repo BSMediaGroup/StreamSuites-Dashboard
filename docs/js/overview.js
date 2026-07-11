@@ -94,6 +94,7 @@
     el.scaffoldGrid = document.getElementById("overview-scaffold-grid");
     el.openAlerts = document.getElementById("overview-open-alerts");
     el.openAccounts = document.getElementById("overview-open-accounts");
+    el.openStudio = document.getElementById("overview-open-studio");
     el.openPermissions = document.getElementById("overview-open-permissions");
     el.openSettings = document.getElementById("overview-open-settings");
   }
@@ -102,6 +103,7 @@
     if (VIEW_STATE.wired) return;
     el.openAlerts?.addEventListener("click", () => navigateToView("alerts"));
     el.openAccounts?.addEventListener("click", () => navigateToView("accounts"));
+    el.openStudio?.addEventListener("click", () => navigateToView("studio"));
     el.openPermissions?.addEventListener("click", () => navigateToView("permissions"));
     el.openSettings?.addEventListener("click", () => navigateToView("settings"));
     VIEW_STATE.wired = true;
@@ -1131,6 +1133,7 @@
   function renderScaffolds() {
     if (!el.scaffoldGrid) return;
     const cards = [
+      buildStudioSurfaceCard(),
       buildScaffoldCard(
         "Runtime mutations stay external",
         "Restart execution, deploy orchestration, and deeper runtime service mutations remain outside this page until StreamSuites exposes a safe authoritative contract for them."
@@ -1146,6 +1149,20 @@
     ];
 
     el.scaffoldGrid.innerHTML = cards.join("");
+  }
+
+  function buildStudioSurfaceCard() {
+    const managementUrl = window.StreamSuitesAdminRoutes?.buildDashboardUrl?.("studio") || "/studio";
+    return `
+      <article class="ss-overview-scaffold-card">
+        <span class="ss-overview-kicker">Flagship product surface</span>
+        <h3>StreamSuites Studio · Closed ALPHA</h3>
+        <p class="muted">Dashboard manages Runtime/Auth-owned tester grants and capacity. Admin access is automatic; room and media controls are not implemented.</p>
+        <div class="ss-inline-actions" style="margin-top:12px;">
+          <a class="ss-btn ss-btn-small ss-btn-primary" href="${escapeHtml(managementUrl)}">Manage access</a>
+          <a class="ss-btn ss-btn-small ss-btn-secondary" href="https://studio.streamsuites.app" target="_blank" rel="noopener noreferrer">Open Studio</a>
+        </div>
+      </article>`;
   }
 
   function buildWarningsMarkup() {

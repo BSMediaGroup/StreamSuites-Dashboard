@@ -1972,6 +1972,7 @@ const SIDEBAR_VIEW_ICON_MAP = Object.freeze({
   creators: "/assets/icons/ui/profile.svg",
   "creator-integrations": "/assets/icons/ui/automation.svg",
   "creator-stats": "/assets/icons/ui/statgraph.svg",
+  studio: "/assets/icons/ui/media.svg",
   accounts: "/assets/icons/ui/identity-filled.svg",
   "public-identities": "/assets/icons/ui/groupcircle.svg",
   progression: "/assets/icons/ui/statgraph.svg",
@@ -2796,6 +2797,10 @@ registerView("user-detail", {
 registerView("creator-stats", {
   onLoad: () => window.CreatorStatsView?.init?.(),
   onUnload: () => window.CreatorStatsView?.destroy?.()
+});
+registerView("studio", {
+  onLoad: () => window.StudioAccessView?.init?.(),
+  onUnload: () => window.StudioAccessView?.destroy?.()
 });
   registerView("accounts", {
     onLoad: () => window.AccountsView?.init?.()

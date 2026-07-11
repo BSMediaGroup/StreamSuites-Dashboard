@@ -12,6 +12,8 @@ const EXACT_DASHBOARD_ROUTES = new Set([
   "/creators",
   "/creator-integrations",
   "/creator-stats",
+  "/studio",
+  "/studio/access",
   "/telemetry",
   "/bots",
   "/runtime-status",

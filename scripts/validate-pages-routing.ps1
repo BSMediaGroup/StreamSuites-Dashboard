@@ -150,6 +150,11 @@ async (page) => {
       expectedPathname: '/permissions'
     },
     {
+      pathname: '/studio',
+      expectedView: 'studio',
+      expectedPathname: '/studio'
+    },
+    {
       pathname: '/integrations/discord',
       expectedView: 'discord',
       expectedPathname: '/integrations/discord'
@@ -270,6 +275,11 @@ if (permissions.view !== 'permissions') {
   throw new Error(`Admin permissions route mismatch: ${JSON.stringify(permissions)}`);
 }
 
+const studio = routes.resolveViewFromPath('/studio', '');
+if (studio.view !== 'studio') {
+  throw new Error(`Admin Studio route mismatch: ${JSON.stringify(studio)}`);
+}
+
 const discord = routes.resolveViewFromPath('/integrations/discord', '');
 if (discord.view !== 'discord') {
   throw new Error(`Admin discord route mismatch: ${JSON.stringify(discord)}`);
@@ -325,6 +335,7 @@ try {
   Invoke-RouteCheck -Path "/profiles/integrations?user_code=UGHW8WQ" -ExpectedStatus 200
   Invoke-RouteCheck -Path "/integrations/discord" -ExpectedStatus 200
   Invoke-RouteCheck -Path "/permissions" -ExpectedStatus 200
+  Invoke-RouteCheck -Path "/studio" -ExpectedStatus 200
   Invoke-RouteCheck -Path "/definitely-invalid-route" -ExpectedStatus 404
   Invoke-RouteCheck -Path "/js/admin-routes.js" -ExpectedStatus 200 -RejectHtml
 

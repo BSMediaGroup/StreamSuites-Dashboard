@@ -36,6 +36,7 @@
       aliases: ["/creator-stats"],
       title: "Creator Stats"
     },
+    studio: { canonical: "/studio", aliases: ["/studio/access"], title: "Studio - Closed ALPHA Access" },
     audit: { canonical: "/audit", title: "Audit Logs" },
     alerts: { canonical: "/alerts", aliases: ["/analytics-alerts"], title: "Alerts" },
     analytics: { canonical: "/analytics", title: "Analytics" },

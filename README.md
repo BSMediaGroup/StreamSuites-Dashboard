@@ -9,6 +9,7 @@ Admin-facing StreamSuites surface deployed to Cloudflare Pages at `https://admin
 - The repo-root admin shell now acts as the canonical Pages entry point, matching the working Creator/Public single-root routing model, while shared assets and published exports still live under `docs/`.
 - The deploy workflow now builds a root-style publish artifact into `dist/` instead of shipping the raw `docs/` tree directly, so the published shell, fallback files, and asset paths all resolve from the same root.
 - This repo consumes runtime exports for visibility and uses Auth API/runtime endpoints for privileged operations; it does not own runtime execution.
+- The authenticated Admin shell includes `/studio` for Runtime/Auth-owned StreamSuites Studio closed-ALPHA tester access management; the Dashboard does not own Studio grants or capacity.
 - Cloudflare deep-link handling now avoids invalid wildcard-to-shell rewrites. The route manifests use exact admin shell paths plus a single dynamic `/users/:user_code` placeholder, which Cloudflare/Wrangler accepts without discarding the rules as loop candidates.
 
 ## Scope & Authority
@@ -16,6 +17,7 @@ Admin-facing StreamSuites surface deployed to Cloudflare Pages at `https://admin
 - This repo is the admin/operator web shell, not the runtime itself.
 - Admin access is privileged, but runtime execution, Auth decisions, version/build ownership, and exported state remain runtime-owned in `StreamSuites`.
 - The dashboard is allowed to call privileged runtime/Auth endpoints, yet it still consumes those contracts rather than redefining them.
+- Studio grants, the 25 active invited non-admin tester cap, automatic admin eligibility, eligibility checks, audit data, and access decisions remain Runtime/Auth-owned. Admin accounts do not consume invited tester slots.
 - Runtime-exported version/build files are mirrored under `docs/runtime/exports/`, while published state snapshots land under `docs/shared/state/`.
 
 ## Repo-Scoped Flowchart
@@ -23,7 +25,7 @@ Admin-facing StreamSuites surface deployed to Cloudflare Pages at `https://admin
 ```mermaid
 flowchart TD
     Admin["Admin operator"] --> Gate["Admin session gate<br/>docs/auth + admin-gate.js"]
-    Gate --> Shell["Dashboard shell and routes<br/>/overview /accounts /public-identities /progression /economy /alerts /analytics /bots /settings /permissions /profiles/integrations"]
+    Gate --> Shell["Dashboard shell and routes<br/>/overview /accounts /studio /public-identities /progression /economy /alerts /analytics /bots /settings /permissions /profiles/integrations"]
 
     Shell --> Accounts["Accounts and creators views"]
     Shell --> PublicIdentities["Public identity reconciliation<br/>runtime-owned account assignment"]
@@ -33,6 +35,7 @@ flowchart TD
     Shell --> Progression["XP/level admin controls<br/>runtime-owned global progression"]
     Shell --> Economy["Economy/inventory admin controls<br/>runtime-owned public identity authority"]
     Shell --> Integrations["Creator integrations inspection"]
+    Shell --> Studio["Studio closed-ALPHA access<br/>grant / revoke / re-enable"]
     Shell --> Settings["Tier, auth, and admin settings"]
 
     Shell --> RuntimeExports["Published runtime exports<br/>docs/runtime/exports + docs/shared/state"]
@@ -43,6 +46,7 @@ flowchart TD
     Accounts -. public profile visibility .-> Public["StreamSuites-Public"]
     Accounts -. FindMeHere eligibility .-> Members["StreamSuites-Members / FindMeHere"]
     Integrations -. creator readiness inspection .-> Creator["StreamSuites-Creator"]
+    Studio -->|credentialed admin access APIs| Auth
 ```
 
 ## Current Admin Surface Model
@@ -60,12 +64,21 @@ flowchart TD
 - The trigger oversight route at `/integrations/triggers` is now a runtime/Auth-backed admin surface for creator-scoped Rumble text trigger CRUD and controlled managed-send testing.
 - Admin account inspection now exposes authoritative public-profile state, including canonical slug, creator-capable vs viewer-only posture, StreamSuites and FindMeHere visibility or eligibility, slug aliases, canonical URLs, and reserved media fields including background image URL.
 - The current routing and auth cutover work is reflected in fail-closed Auth API session gating, Cloudflare Pages-safe login routing, and current route compatibility handling.
+- The `/studio` navigation destination provides authoritative capacity summary, existing-account selection through the same `/admin/accounts` source used by Accounts, grant, revoke, re-enable, search/filter, refresh, and explicit loading/empty/auth/unavailable states. It links to `https://studio.streamsuites.app` and never stores grants or counts locally.
 - Alerts now live in a dedicated admin route and sidebar destination, separate from Analytics, while still consuming the same backend-owned alert settings, rules, targets, and history APIs.
 - The Analytics map consumes runtime-provided `by_location` rows first, resolving explicit coordinates, exact city lookups, and labelled country centroid fallbacks before treating rows as unmapped. DanielClancy.net traffic remains visually distinct from StreamSuites-native traffic with separate marker colors, legend entries, and popup project/source/surface labels while preserving session and request scaling. The map also supports the existing expanded card mode plus a fullscreen MapLibre lightbox with shared dot/glow layer toggles, selected-location popups/sidebar details, a collapsible details sidebar, mapped/unmapped rows, source/project breakdowns, precision counts, and marker legends. Location cards hydrate local real raster WebP covers from `docs/assets/analytics/location-covers/`, with Wikimedia Commons/Openverse sourcing and attribution/license metadata in `docs/shared/data/location-cover-images.json`; the default raster fallback is reserved only for unknown future locations or compact broken-image recovery.
 - The Alerts workspace exposes backend-authored notification title/message fields, a backend-driven placeholder picker, a local live preview, and clearer delivery/status terminology without changing backend contracts.
 - The Alerts workspace can now author Runtime/Auth-backed StreamSuites and DanielClancy alert rules through the same rule/destination contract, including DanielClancy.net and DanielClancy Admin surface filters. DanielClancy controls are additive: saved DanielClancy rules are namespaced/prefixed and must not replace existing StreamSuites rules.
 - Alert configuration saves are full-canonical saves through Runtime/Auth only. Dashboard blocks DanielClancy-only or partial rule lists, protects existing StreamSuites rule IDs, guards the protected minimum operator rule IDs, and merges imported DanielClancy rule JSON by rule ID instead of replacing canonical rules.
 - Alert preferences continue to manage backend-authored quiet hours, timezone-aware overnight suppression, and per-destination enabled/minimum-severity controls from the dedicated Alerts workspace.
+
+### StreamSuites Studio Admin Integration
+
+- StreamSuites Studio is the flagship browser livestream-production surface at `https://studio.streamsuites.app`; its current access-management stage is closed ALPHA.
+- The Dashboard calls `GET/POST /api/admin/studio/access` and `PATCH/DELETE /api/admin/studio/access/{account_id}` through the shared credentialed Runtime/Auth client. Runtime/Auth owns grant persistence, stable account identity, eligibility, audit history, cap enforcement, and all access decisions.
+- The page shows the Runtime/Auth summary for active invited non-admin testers, the maximum of 25, and remaining capacity. Admin accounts have automatic Studio access and are excluded from that tester count.
+- Admin operators can select an existing Runtime/Auth account, add a grant, revoke Studio eligibility without deleting or suspending the account, and re-enable a revoked grant subject to current eligibility and capacity. These actions do not change account type, role, tier, creator status, profile visibility, or other permissions.
+- No Studio room, destination, scene, guest, recording, broadcasting, or media-configuration controls are implemented in this Dashboard milestone. Cloudflare Realtime is the planned first ALPHA media direction, with self-hosted LiveKit + Egress planned later for production; neither is shipped Dashboard functionality here.
 
 ## Hosting and Routing
 
@@ -175,6 +188,8 @@ StreamSuites-Dashboard/
 │   │   ├── progression.js
 │   │   ├── public-identities.js
 │   │   ├── settings.js
+│   │   ├── studio-access-api.js
+│   │   ├── studio.js
 │   │   ├── state.js
 │   │   ├── triggers.js
 │   │   ├── turnstile-inline.js
@@ -221,6 +236,7 @@ StreamSuites-Dashboard/
 │       ├── progression.html
 │       ├── public-identities.html
 │       ├── settings.html
+│       ├── studio.html
 │       ├── triggers.html
 │       ├── user-detail.html
 │       └── platforms/
@@ -259,6 +275,7 @@ StreamSuites-Dashboard/
 │   ├── progression-admin-controls.test.mjs
 │   ├── public-identities-admin-controls.test.mjs
 │   ├── rumble-challenge-session-posture.test.mjs
+│   ├── studio-access-admin.test.mjs
 │   └── triggers-runtime-authority.test.mjs
 ├── shared/
 │   └── state/

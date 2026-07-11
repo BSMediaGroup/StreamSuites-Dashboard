@@ -14681,6 +14681,259 @@ button.public-btn:active::after {
   gap: 18px;
 }
 
+/* Studio closed-ALPHA access management */
+.ss-studio-main,
+.ss-studio-header-copy,
+.ss-studio-authority-note,
+.ss-studio-modal-body,
+.ss-studio-field,
+.ss-studio-selected {
+  display: grid;
+  gap: 10px;
+}
+
+.ss-studio-header-shell,
+.ss-studio-title-row,
+.ss-studio-header-actions,
+.ss-studio-modal-header,
+.ss-studio-modal-footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ss-studio-title-row {
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ss-studio-header-copy p,
+.ss-studio-modal-header p {
+  margin: 0;
+  max-width: 78ch;
+}
+
+.ss-studio-header-actions {
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ss-studio-summary-grid,
+.ss-studio-direction-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+  gap: 14px;
+}
+
+.ss-studio-summary-card,
+.ss-studio-direction-grid > div,
+.ss-studio-selected {
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.ss-studio-summary-card {
+  display: grid;
+  gap: 5px;
+}
+
+.ss-studio-summary-card > span,
+.ss-studio-summary-card small,
+.ss-studio-field > span,
+.ss-studio-cell-secondary,
+.ss-studio-account-option small {
+  color: var(--text-secondary);
+}
+
+.ss-studio-summary-card strong {
+  font-family: "RechargeBd", sans-serif;
+  font-size: clamp(1.25rem, 2vw, 1.8rem);
+}
+
+.ss-studio-authority-note {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-left: 3px solid var(--accent-shell);
+  background: rgba(70, 136, 255, 0.07);
+}
+
+.ss-studio-toolbar {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(180px, 260px);
+  align-items: end;
+  margin-bottom: 14px;
+}
+
+.ss-studio-table-scroll {
+  max-width: 100%;
+}
+
+#studio-grants-table {
+  min-width: 1180px;
+}
+
+.ss-studio-cell-secondary {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.76rem;
+}
+
+.ss-studio-account-id,
+.ss-studio-selected code {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.ss-studio-badge-row,
+.ss-studio-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ss-studio-row-actions {
+  justify-content: flex-end;
+}
+
+.ss-studio-note-cell {
+  max-width: 260px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.ss-studio-direction-grid > div {
+  display: grid;
+  gap: 6px;
+}
+
+.ss-studio-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1600;
+  background: rgba(3, 7, 13, 0.74);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.ss-studio-modal-backdrop.is-open {
+  opacity: 1;
+}
+
+.ss-studio-modal {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 1601;
+  width: min(760px, calc(100vw - 32px));
+  max-height: min(88dvh, 840px);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, rgba(22, 27, 37, 0.99), rgba(13, 17, 25, 0.99));
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.52);
+  opacity: 0;
+  transform: translate(-50%, -48%) scale(0.985);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.ss-studio-modal.is-open {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.ss-studio-modal-header,
+.ss-studio-modal-footer {
+  flex: 0 0 auto;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.ss-studio-modal-header h3 {
+  margin: 4px 0;
+}
+
+.ss-studio-modal-body {
+  min-height: 0;
+  overflow: auto;
+  padding: 16px;
+}
+
+.ss-studio-modal-footer {
+  justify-content: flex-end;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 0;
+}
+
+.ss-studio-account-results {
+  display: grid;
+  gap: 8px;
+  max-height: 300px;
+  overflow: auto;
+}
+
+.ss-studio-account-option {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(190px, auto);
+  gap: 14px;
+  width: 100%;
+  padding: 12px;
+  color: var(--text-primary);
+  text-align: left;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.025);
+  cursor: pointer;
+}
+
+.ss-studio-account-option > span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ss-studio-account-option-meta {
+  text-align: right;
+}
+
+.ss-studio-account-option:hover:not(:disabled),
+.ss-studio-account-option:focus-visible,
+.ss-studio-account-option.is-selected {
+  border-color: var(--accent-shell);
+  background: rgba(70, 136, 255, 0.1);
+}
+
+.ss-studio-account-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+@media (max-width: 760px) {
+  .ss-studio-header-shell,
+  .ss-studio-modal-header,
+  .ss-studio-toolbar,
+  .ss-studio-account-option {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+
+  .ss-studio-header-actions,
+  .ss-studio-header-actions .ss-btn,
+  .ss-studio-header-actions a {
+    width: 100%;
+  }
+
+  .ss-studio-account-option-meta {
+    text-align: left;
+  }
+}
+
 .ss-settings-header-shell,
 .ss-settings-header-right,
 .ss-settings-section-heading,
