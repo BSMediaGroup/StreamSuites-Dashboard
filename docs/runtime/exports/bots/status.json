@@ -1,7 +1,7 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-06-22T18:02:01.771751Z",
-  "server_generated_at": "2026-06-22T18:02:01.771751Z",
+  "generated_at": "2026-07-16T11:21:51.719491Z",
+  "server_generated_at": "2026-07-16T11:21:51.719491Z",
   "count": 0,
   "bots": [],
   "supported_platforms": [
@@ -356,7 +356,7 @@
     "runtime_control_health_status": "not_checked_by_registry",
     "live_worker_registry_count": 0,
     "live_trace_count": 0,
-    "export_snapshot_age_seconds": 824,
+    "export_snapshot_age_seconds": 5177,
     "stale_export_ignored": false
   }
 }
