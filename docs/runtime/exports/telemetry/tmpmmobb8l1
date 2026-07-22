@@ -1,0 +1,221 @@
+{
+  "schema_version": "v1",
+  "generated_at": "2026-01-25T17:57:40.450563Z",
+  "events": [
+    {
+      "timestamp": "2026-01-22T05:45:05Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=signup_email user=email:ka***@gmail.com result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "signup_email",
+      "user_identifier": "email:ka***@gmail.com",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-01-22T05:45:06Z",
+      "source": "auth",
+      "severity": "error",
+      "message": "Auth event: email_sent email=verification user=email:ka***@gmail.com result=failed",
+      "event_type": "email_sent",
+      "email_type": "verification",
+      "user_identifier": "email:ka***@gmail.com",
+      "provider_message_id": null,
+      "result": "failed"
+    },
+    {
+      "timestamp": "2026-01-22T05:47:24Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:fowTR0T result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:fowTR0T",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-01-22T05:47:24Z",
+      "source": "auth",
+      "severity": "error",
+      "message": "Auth event: email_sent email=verification user=email:th***@gmail.com result=failed",
+      "event_type": "email_sent",
+      "email_type": "verification",
+      "user_identifier": "email:th***@gmail.com",
+      "provider_message_id": null,
+      "result": "failed"
+    },
+    {
+      "timestamp": "2026-01-22T05:47:41Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:JqhcS2m result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:JqhcS2m",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-01-22T05:47:41Z",
+      "source": "auth",
+      "severity": "error",
+      "message": "Auth event: email_sent email=verification user=email:ka***@gmail.com result=failed",
+      "event_type": "email_sent",
+      "email_type": "verification",
+      "user_identifier": "email:ka***@gmail.com",
+      "provider_message_id": null,
+      "result": "failed"
+    },
+    {
+      "timestamp": "2026-01-22T05:53:46Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:hVRt8Qp result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:hVRt8Qp",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-01-22T05:54:23Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:ka***@gmail.com result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:ka***@gmail.com",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-01-22T05:54:53Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:ka***@gmail.com result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:ka***@gmail.com",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-01-22T08:18:06Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:ka***@gmail.com result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:ka***@gmail.com",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-01-22T08:19:03Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:ka***@gmail.com result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:ka***@gmail.com",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-01-22T08:19:17Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:ka***@gmail.com result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:ka***@gmail.com",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-01-22T08:19:17Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit_blocked email=login_email user=email:ka***@gmail.com result=login_backoff",
+      "event_type": "rate_limit_blocked",
+      "email_type": "login_email",
+      "user_identifier": "email:ka***@gmail.com",
+      "provider_message_id": null,
+      "result": "login_backoff"
+    },
+    {
+      "timestamp": "2026-01-22T08:24:47Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:VIvXsPS result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:VIvXsPS",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-01-22T08:24:47Z",
+      "source": "auth",
+      "severity": "error",
+      "message": "Auth event: email_sent email=verification user=email:re***@gmail.com result=failed",
+      "event_type": "email_sent",
+      "email_type": "verification",
+      "user_identifier": "email:re***@gmail.com",
+      "provider_message_id": null,
+      "result": "failed"
+    },
+    {
+      "timestamp": "2026-01-22T08:26:34Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:4TiOlvS result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-01-23T00:46:14Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:VIvXsPS result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:VIvXsPS",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-01-23T21:44:21Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: rate_limit email=login_email user=email:ka***@gmail.com result=allowed",
+      "event_type": "rate_limit",
+      "email_type": "login_email",
+      "user_identifier": "email:ka***@gmail.com",
+      "provider_message_id": null,
+      "result": "allowed"
+    },
+    {
+      "timestamp": "2026-01-25T09:34:45Z",
+      "source": "auth",
+      "severity": "info",
+      "message": "Auth event: token_invalidated user=user_code:4TiOlvS result=sent",
+      "event_type": "token_invalidated",
+      "email_type": null,
+      "user_identifier": "user_code:4TiOlvS",
+      "provider_message_id": null,
+      "result": "sent"
+    },
+    {
+      "timestamp": "2026-01-25T09:35:33.768253Z",
+      "source": "system",
+      "severity": "info",
+      "message": "Runtime boot sequence started"
+    }
+  ]
+}
