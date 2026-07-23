@@ -1,10 +1,17 @@
 # Bump Notes
 
-## RELEASED / PACKAGED: 0.4.2-alpha
+## RELEASED / PACKAGED: 0.5.0-alpha
 
-Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.5.0-alpha` section below.
+Packaged / released and no longer the active pending bucket. Preserve new notes for the open `0.5.4-alpha` section below.
 
-## CURRENT VER= 0.5.0-alpha / PENDING VER= 0.5.1-alpha
+## CURRENT VER= 0.5.4-alpha / PENDING VER= 0.5.5-alpha
+
+### 2026-07-24 - Version-cycle synchronization only
+
+- Opened the `0.5.4-alpha / 0.5.5-alpha` cycle after downstream and runtime mirrors moved to `0.5.4-alpha`.
+- Updated dashboard runtime metadata mirror to `0.5.4-alpha`.
+- Added the v0.5.4 dashboard release notes file.
+- No runtime-facing behavior change is included in this cycle.
 
 - Studio Admin navigation/page: added an authenticated `Studio` sidebar destination at `/studio`, a closed-ALPHA access workspace, a safe `https://studio.streamsuites.app` launch link, and a restrained Overview awareness card/action.
 - Authoritative access integration: the Dashboard delegates grant listing, creation, revocation, and re-enable to Runtime/Auth `GET/POST /api/admin/studio/access` plus `PATCH/DELETE /api/admin/studio/access/{account_id}` through the existing credentialed API client. No allowlist, tester count, or grant state is stored locally.
