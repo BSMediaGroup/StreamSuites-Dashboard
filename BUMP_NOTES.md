@@ -1938,3 +1938,8 @@ Open bucket for future work only. Do not add new `0.4.8-alpha` prep notes into t
 ### Risks / Follow-Ups
 
 - The dashboard repo still contains older parallel auth scaffolding; a later cleanup pass should decide whether to remove or consolidate the unused admin auth codepaths rather than letting duplicate surface markup drift.
+
+## 2026-07-26
+- Replaced placeholder changelog content with complete, sectioned release notes for the requested alpha release(s), preserving repository scope boundaries and canonical versioning.
+- Added/updated the project-level changelog references to keep multi-repo release notes synchronized and truthful to Runtime/Auth ownership model.
+- This change is documentation-only: no runtime, API, auth, package, route, or version-control behavior was modified.
