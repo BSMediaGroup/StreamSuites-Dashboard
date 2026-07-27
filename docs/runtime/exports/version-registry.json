@@ -6,6 +6,18 @@
   "latest_ecosystem_build_id": null,
   "components": [
     {
+      "component_id": "alerts-windows",
+      "display_name": "StreamSuites Alerts Client",
+      "version_policy": "deferred_product_semantic",
+      "semantic_version_status": "deferred",
+      "semantic_version": null,
+      "state": "deferred",
+      "last_build": null,
+      "last_deployment": null,
+      "last_publication": null,
+      "compatibility": "Existing executable metadata is not promoted to a registry semantic baseline."
+    },
+    {
       "component_id": "creator-web",
       "display_name": "StreamSuites Creator",
       "version_policy": "deployment_identity_only",
@@ -28,6 +40,18 @@
       "last_deployment": null,
       "last_publication": null,
       "compatibility": "Admin Auth client; deployment/build identity only."
+    },
+    {
+      "component_id": "desktop-admin-winforms",
+      "display_name": "StreamSuites Desktop Admin",
+      "version_policy": "deferred_product_semantic",
+      "semantic_version_status": "deferred",
+      "semantic_version": null,
+      "state": "deferred",
+      "last_build": null,
+      "last_deployment": null,
+      "last_publication": null,
+      "compatibility": "Privileged Windows administration product spanning the authoritative WinForms host and staged WPF replacement path; independent semantic policy is deferred."
     },
     {
       "component_id": "developer-web",
