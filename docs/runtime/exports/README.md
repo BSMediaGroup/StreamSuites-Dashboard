@@ -22,8 +22,9 @@ The registry export is regenerated atomically after a newly accepted registry ev
 
 - `admin/users/users.json` captures the authoritative account snapshot for admin dashboards.
 - `admin/audit/audit.json` captures the authoritative audit log snapshot for admin dashboards.
-- Both exports include schema versioning plus runtime version/build metadata for downstream consumers.
-- Admin exports are intended for privileged surfaces only and are not published to public dashboards.
+- `admin/version-registry-admin.json` is the versioned, bounded, Runtime-authored administrative registry projection used by local operator tooling. It contains all registered components, reporter readiness/health, counters, and at most 50 recent immutable events by default without tokens, cookies, authorization headers, OIDC claim sets, signing material, database paths, environment data, or unbounded metadata.
+- Admin exports include schema versioning and remain privileged local-operator inputs. Public publishers, bulk web-contract mirroring, and Runtime-to-Dashboard `rsync` jobs explicitly exclude the complete `runtime/exports/admin/` tree.
+- Regenerating the administrative registry export is atomic and counter-neutral. Revision-zero history stays empty rather than fabricating evidence, and accepted events regenerate both registry projections.
 
 ## Optional hot reload watcher
 
