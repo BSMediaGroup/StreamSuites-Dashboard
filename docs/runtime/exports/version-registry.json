@@ -1,0 +1,141 @@
+{
+  "schema_version": "version-registry-public-v1",
+  "generated_at": "2026-07-27T00:00:00Z",
+  "system_semantic_version": "0.5.4-alpha",
+  "ecosystem_revision": 0,
+  "latest_ecosystem_build_id": null,
+  "components": [
+    {
+      "component_id": "creator-web",
+      "display_name": "StreamSuites Creator",
+      "version_policy": "deployment_identity_only",
+      "semantic_version_status": "not_applicable",
+      "semantic_version": null,
+      "state": "ready",
+      "last_build": null,
+      "last_deployment": null,
+      "last_publication": null,
+      "compatibility": "Runtime/Auth client; deployment/build identity only."
+    },
+    {
+      "component_id": "dashboard-web",
+      "display_name": "StreamSuites Dashboard/Admin Web",
+      "version_policy": "deployment_identity_only",
+      "semantic_version_status": "not_applicable",
+      "semantic_version": null,
+      "state": "ready",
+      "last_build": null,
+      "last_deployment": null,
+      "last_publication": null,
+      "compatibility": "Admin Auth client; deployment/build identity only."
+    },
+    {
+      "component_id": "developer-web",
+      "display_name": "StreamSuites Developer",
+      "version_policy": "deployment_identity_only",
+      "semantic_version_status": "not_applicable",
+      "semantic_version": null,
+      "state": "ready",
+      "last_build": null,
+      "last_deployment": null,
+      "last_publication": null,
+      "compatibility": "Runtime/Auth client; deployment/build identity only."
+    },
+    {
+      "component_id": "docs-web",
+      "display_name": "StreamSuites Docs",
+      "version_policy": "deployment_identity_only",
+      "semantic_version_status": "not_applicable",
+      "semantic_version": null,
+      "state": "ready",
+      "last_build": null,
+      "last_deployment": null,
+      "last_publication": null,
+      "compatibility": "Shipped-reality documentation; deployment/build identity only."
+    },
+    {
+      "component_id": "livechat-launcher",
+      "display_name": "StreamSuites LiveChat Launcher",
+      "version_policy": "independent_product_semantic",
+      "semantic_version_status": "uninitialized",
+      "semantic_version": null,
+      "state": "uninitialized",
+      "last_build": null,
+      "last_deployment": null,
+      "last_publication": null,
+      "compatibility": "Browser launcher/bridge only; semantic baseline waits for packaged-product approval."
+    },
+    {
+      "component_id": "members-web",
+      "display_name": "FindMeHere Members",
+      "version_policy": "deployment_identity_only",
+      "semantic_version_status": "not_applicable",
+      "semantic_version": null,
+      "state": "ready",
+      "last_build": null,
+      "last_deployment": null,
+      "last_publication": null,
+      "compatibility": "Runtime/Auth client; deployment/build identity only."
+    },
+    {
+      "component_id": "obs-plugin",
+      "display_name": "StreamSuites OBS Plugin",
+      "version_policy": "independent_product_semantic",
+      "semantic_version_status": "initialized",
+      "semantic_version": "0.1.1-alpha",
+      "state": "ready",
+      "last_build": null,
+      "last_deployment": null,
+      "last_publication": null,
+      "compatibility": "Independent plugin product using OBS-owned media pipelines."
+    },
+    {
+      "component_id": "public-web",
+      "display_name": "StreamSuites Public",
+      "version_policy": "deployment_identity_only",
+      "semantic_version_status": "not_applicable",
+      "semantic_version": null,
+      "state": "ready",
+      "last_build": null,
+      "last_deployment": null,
+      "last_publication": null,
+      "compatibility": "Read-only public client; deployment/build identity only."
+    },
+    {
+      "component_id": "runtime-system",
+      "display_name": "StreamSuites Runtime/System",
+      "version_policy": "system_semantic",
+      "semantic_version_status": "initialized",
+      "semantic_version": "0.5.4-alpha",
+      "state": "ready",
+      "last_build": null,
+      "last_deployment": null,
+      "last_publication": null,
+      "compatibility": "Canonical Runtime/Auth system authority; legacy version export remains supported during migration."
+    },
+    {
+      "component_id": "studio-web",
+      "display_name": "StreamSuites Browser Studio",
+      "version_policy": "independent_product_semantic",
+      "semantic_version_status": "uninitialized",
+      "semantic_version": null,
+      "state": "uninitialized",
+      "last_build": null,
+      "last_deployment": null,
+      "last_publication": null,
+      "compatibility": "Independent browser product; separate from the native StudioApp version line."
+    },
+    {
+      "component_id": "studio-windows",
+      "display_name": "StreamSuites StudioApp",
+      "version_policy": "independent_product_semantic",
+      "semantic_version_status": "initialized",
+      "semantic_version": "0.2.4-alpha",
+      "state": "ready",
+      "last_build": null,
+      "last_deployment": null,
+      "last_publication": null,
+      "compatibility": "Independent native product; Runtime compatibility remains a separate projection."
+    }
+  ]
+}

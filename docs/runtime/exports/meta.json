@@ -9,7 +9,12 @@
     {
       "file": "version.json",
       "visibility": "public",
-      "description": "Canonical runtime version contract for dashboards and public pages"
+      "description": "Legacy Runtime system version/build compatibility projection"
+    },
+    {
+      "file": "version-registry.json",
+      "visibility": "public",
+      "description": "Public-safe Runtime/Auth component version and build registry projection"
     },
     {
       "file": "clips.json",
