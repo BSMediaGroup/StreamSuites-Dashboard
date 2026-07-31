@@ -13,6 +13,7 @@ test("standalone admin login includes inline turnstile wiring", () => {
   const html = read("docs/auth/login.html");
   const js = read("docs/js/admin-login.js");
 
+  assert.match(html, /src="\.\.\/assets\/icons\/adcon\.webp"/);
   assert.match(html, /admin-login-turnstile-panel/);
   assert.match(html, /<script src="\/js\/turnstile-inline\.js" defer><\/script>/);
   assert.match(html, /<script src="\/js\/admin-login\.js" defer><\/script>/);
@@ -26,7 +27,11 @@ test("standalone admin login includes inline turnstile wiring", () => {
 test("admin overlay markup keeps parity links and turnstile slot", () => {
   for (const relativePath of ["docs/index.html", "index.html"]) {
     const html = read(relativePath);
-    assert.match(html, /src="\/assets\/logos\/ssadminshldv2\.png"/);
+    assert.equal(
+      html.match(/src="\/assets\/icons\/adcon\.webp"/g)?.length,
+      2,
+      `${relativePath} should use adcon.webp in the sidebar and login modal`
+    );
     assert.match(html, /admin-auth-turnstile-panel/);
     assert.match(html, /Login to other surfaces/);
     assert.doesNotMatch(html, /Elsewhere/);

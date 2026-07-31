@@ -6,6 +6,18 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.4-alpha / PENDING VER= 0.5.5-alpha
 
+### 2026-08-01 - Unified Admin icon branding
+
+#### Technical notes
+
+- Replaced the Admin shell sidebar mark with the supplied `/assets/icons/adcon.webp` icon in both the root and `docs/` compatibility entry points.
+- Updated the in-shell Admin login modal and standalone `/auth/login.html` surface to use the same Admin icon, removing the visible brand drift between shell and authentication entry points without changing authentication behavior.
+- Updated focused source assertions to require the new icon in all three locations. No routes, Runtime/Auth contracts, operator workflows, palette, authority boundaries, or files were removed.
+
+#### Human-readable summary
+
+The Admin sidebar and login experiences now use the same requested dark silver shield icon throughout.
+
 ### 2026-08-01 - Admin sidebar brand shield
 
 #### Technical notes

@@ -150,6 +150,8 @@ StreamSuites-Dashboard/
 │   ├── assets/
 │   │   ├── analytics/
 │   │   │   └── location-covers/
+│   │   ├── icons/
+│   │   │   └── adcon.webp
 │   │   ├── logos/
 │   │   │   └── ssadminshldv2.png
 │   │   ├── games/
