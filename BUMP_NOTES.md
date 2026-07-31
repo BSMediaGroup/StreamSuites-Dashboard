@@ -12,6 +12,7 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 - Replaced the Admin shell sidebar mark with the supplied `/assets/icons/adcon.webp` icon in both the root and `docs/` compatibility entry points.
 - Updated the in-shell Admin login modal and standalone `/auth/login.html` surface to use the same Admin icon, removing the visible brand drift between shell and authentication entry points without changing authentication behavior.
+- Added the shared `v=20260801-adcon` asset revision to every Admin icon reference so existing browser and edge caches cannot continue displaying the retired shield after the production Pages deployment.
 - Updated focused source assertions to require the new icon in all three locations. No routes, Runtime/Auth contracts, operator workflows, palette, authority boundaries, or files were removed.
 
 #### Human-readable summary
