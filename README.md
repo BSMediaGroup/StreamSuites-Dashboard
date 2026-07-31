@@ -12,6 +12,14 @@ Admin-facing StreamSuites surface deployed to Cloudflare Pages at `https://admin
 - The authenticated Admin shell includes `/studio` for Runtime/Auth-owned StreamSuites Studio closed-ALPHA tester access management; the Dashboard does not own Studio grants or capacity.
 - Cloudflare deep-link handling now avoids invalid wildcard-to-shell rewrites. The route manifests use exact admin shell paths plus a single dynamic `/users/:user_code` placeholder, which Cloudflare/Wrangler accepts without discarding the rules as loop candidates.
 
+## Studio-first operator design system
+
+- `docs/css/studio-first-system.css` is staged into the root Pages artifact and loads last for the canonical shell, compatibility shell, 404, login, and auth-success surfaces. It retains the Admin Dashboard's existing dark muted graphite/blue palette while refining typography, dense tables, forms, dialogs, severity/status chips, destructive emphasis, focus rings, narrow table containment, and reduced-motion behavior.
+- Tektur is limited to product identity and major operator titles, Geist Sans covers dense navigation, controls, forms, tables, and dialogs, and IBM Plex Mono covers version/build data, statuses, permissions, IDs, timestamps, and telemetry. The repo-local sources are `docs/assets/fonts/Tektur-VariableFont_wdth,wght.ttf`, `docs/assets/fonts/Geist-{Light,Regular,Medium,SemiBold,Bold,ExtraBold}.ttf`, and `docs/assets/fonts/mono/IBMPlexMono-{Light,Regular,Medium,SemiBold,Bold}.ttf`.
+- Font hashes match the approved read-only Public sources. Genuine Geist and IBM Plex Mono licenses remain at `docs/assets/fonts/GEISTMONOOFL.txt` and `docs/assets/fonts/mono/IBMPLEXMONOOFL.txt`; a genuine local Tektur license file remains unavailable and blocks publication of that font.
+- Operator metadata now describes the Dashboard as the privileged Runtime/Auth client across Studio access, accounts, permissions, alerts, audit, telemetry, and system status. Authentication, CSRF assumptions, privileged endpoints, confirmations, tables, charts, filters, pagination, routes, version authority, and exports are unchanged.
+- The new stylesheet is listed in the repository tree below. Existing validation uses `node --test tests/*.test.mjs` and `powershell -File scripts/build-pages-artifact.ps1`.
+
 ## Scope & Authority
 
 - This repo is the admin/operator web shell, not the runtime itself.
@@ -135,6 +143,7 @@ StreamSuites-Dashboard/
 │   │   ├── components.css
 │   │   ├── layout.css
 │   │   ├── overrides.css
+│   │   ├── studio-first-system.css
 │   │   ├── status-widget.css
 │   │   ├── theme-dark.css
 │   │   └── updates.css

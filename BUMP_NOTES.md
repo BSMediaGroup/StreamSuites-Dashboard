@@ -6,6 +6,21 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.4-alpha / PENDING VER= 0.5.5-alpha
 
+### 2026-07-31 - Studio-first Admin presentation
+
+#### Technical notes
+
+- Added `docs/css/studio-first-system.css` as the final shared layer for the canonical Dashboard shell, authentication pages, and not-found surfaces.
+- Remapped inherited shell font aliases to the approved local Tektur/Geist files; excluded chat and OBS presentation views keep their existing appearance but now load their legacy fonts locally rather than from an external URL.
+- Applied local Tektur, Geist Sans, and IBM Plex Mono roles with improved tables, forms, dialogs, keyboard focus, responsive density, and reduced-motion behavior.
+- Prevented the wrapped mobile operator topbar from shrinking into the section-tab row, eliminating the overlap found during the 390px Chrome acceptance pass.
+- Deliberately retained the Admin Dashboard's existing dark muted graphite palette and restrained blue status/accent language; routes, operator permissions, Runtime/Auth calls, audit behavior, and privileged workflows are unchanged.
+- No version/build authority changed. Publication remains blocked on locating and confirming the redistribution license text for the supplied Tektur binary; no matching license was present in the approved local repositories or reference bundle.
+
+#### Human-readable summary
+
+The Admin Dashboard now shares the StreamSuites typography and finish while still looking and behaving like the same subdued, high-density operator console.
+
 ### 2026-07-24 - Version-cycle synchronization only
 
 - Opened the `0.5.4-alpha / 0.5.5-alpha` cycle after downstream and runtime mirrors moved to `0.5.4-alpha`.

@@ -1,0 +1,333 @@
+/* StreamSuites Admin — approved Studio-first typography with muted operator polish. */
+
+@font-face {
+  font-family: "Tektur";
+  src: url("/assets/fonts/Tektur-VariableFont_wdth,wght.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400 900;
+  font-stretch: 75% 100%;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Sans";
+  src: url("/assets/fonts/Geist-Light.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Sans";
+  src: url("/assets/fonts/Geist-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Sans";
+  src: url("/assets/fonts/Geist-Medium.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Sans";
+  src: url("/assets/fonts/Geist-SemiBold.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Sans";
+  src: url("/assets/fonts/Geist-Bold.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Sans";
+  src: url("/assets/fonts/Geist-ExtraBold.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("/assets/fonts/mono/IBMPlexMono-Light.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("/assets/fonts/mono/IBMPlexMono-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("/assets/fonts/mono/IBMPlexMono-Medium.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("/assets/fonts/mono/IBMPlexMono-SemiBold.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("/assets/fonts/mono/IBMPlexMono-Bold.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --ss-font-display: "Tektur", "Geist Sans", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+  --ss-font-ui: "Geist Sans", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+  --ss-font-mono: "IBM Plex Mono", "Cascadia Mono", Consolas, Menlo, Monaco, monospace;
+  --ss-weight-body: 400;
+  --ss-weight-ui-medium: 500;
+  --ss-weight-ui-semibold: 600;
+  --ss-weight-ui-bold: 700;
+  --ss-weight-display-medium: 500;
+  --ss-weight-display-semibold: 600;
+  --ss-weight-display-bold: 700;
+  --ss-weight-mono-regular: 400;
+  --ss-weight-mono-medium: 500;
+  --ss-weight-mono-semibold: 600;
+  --system-mono-font: var(--ss-font-mono);
+}
+
+html {
+  font-synthesis: none;
+}
+
+body,
+button,
+input,
+select,
+textarea,
+#app,
+.ss-panel,
+.ss-modal,
+.ss-dialog {
+  font-family: var(--ss-font-ui);
+}
+
+body {
+  font-weight: var(--ss-weight-body);
+  letter-spacing: 0;
+  text-rendering: optimizeLegibility;
+}
+
+body :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--ss-font-ui);
+  font-weight: var(--ss-weight-ui-semibold);
+  letter-spacing: -0.01em;
+}
+
+.app-title,
+.ss-title,
+.ss-overview-hero-copy > h2,
+.admin-gate-title,
+.auth-title,
+.ss-404-title {
+  font-family: var(--ss-font-display);
+  font-weight: var(--ss-weight-display-semibold);
+  font-variation-settings: "wdth" 96;
+  letter-spacing: -0.015em;
+}
+
+.app-title {
+  font-size: 1rem;
+}
+
+.ss-topbar-title,
+.ss-panel-header h2,
+.ss-panel-header h3,
+.ss-overview-section-heading h3 {
+  font-family: var(--ss-font-ui);
+  font-weight: var(--ss-weight-ui-semibold);
+  letter-spacing: -0.005em;
+}
+
+code,
+pre,
+kbd,
+samp,
+.mono,
+.footer-version,
+.version-value,
+.status-indicator,
+.ss-chip,
+.ss-status-label,
+.ss-status-details,
+.ss-permissions-row-key,
+.ss-overview-meta-list,
+.ss-overview-summary-value,
+.ss-overview-metric-value,
+[data-version],
+[data-build] {
+  font-family: var(--ss-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.dashboard-badge,
+.nav-group-label,
+.ss-chip,
+.status-indicator,
+.ss-status-label,
+.table-toolbar label,
+.ss-table-toolbar label {
+  font-family: var(--ss-font-mono);
+  font-weight: var(--ss-weight-mono-medium);
+  letter-spacing: 0.065em;
+}
+
+#app-nav li,
+#app-nav a,
+.ss-btn,
+.ss-link-btn,
+button,
+input,
+select,
+textarea,
+label,
+legend {
+  font-family: var(--ss-font-ui);
+}
+
+#app-nav li,
+#app-nav a,
+.ss-btn,
+.ss-link-btn,
+button {
+  font-weight: var(--ss-weight-ui-semibold);
+  letter-spacing: 0.035em;
+}
+
+.dashboard-badge,
+.nav-group-label,
+.ss-chip,
+.status-indicator,
+.ss-status-label {
+  text-transform: uppercase;
+}
+
+:is(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-shell-strong, #a4cbff);
+  outline-offset: 3px;
+}
+
+.ss-panel,
+.ss-card,
+.ss-modal,
+.ss-dialog,
+.admin-gate-card {
+  border-color: var(--border-subtle);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.ss-panel-header,
+.ss-modal-header,
+.ss-dialog-header {
+  border-bottom-color: var(--border-subtle);
+}
+
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+thead th {
+  color: var(--text-secondary);
+  font-family: var(--ss-font-mono);
+  font-size: 0.68rem;
+  font-weight: var(--ss-weight-mono-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+tbody tr {
+  transition: background-color 120ms ease;
+}
+
+tbody tr:hover {
+  background: rgba(var(--accent-shell-rgb, 90, 156, 255), 0.045);
+}
+
+:is(input, select, textarea) {
+  border-color: var(--border-subtle);
+  background-color: rgba(8, 11, 16, 0.78);
+  color: var(--text-primary);
+  font-weight: var(--ss-weight-body);
+  letter-spacing: 0;
+}
+
+:is(input, select, textarea):focus {
+  border-color: rgba(var(--accent-shell-rgb, 90, 156, 255), 0.62);
+  box-shadow: 0 0 0 2px rgba(var(--accent-shell-rgb, 90, 156, 255), 0.14);
+}
+
+.ss-alert-danger,
+.ss-btn-danger,
+.ss-btn-destructive,
+[data-danger="true"] {
+  box-shadow: inset 0 0 0 1px rgba(217, 83, 79, 0.1);
+}
+
+.ss-empty-state,
+.ss-loading-state,
+.ss-error-state {
+  border-color: var(--border-subtle);
+  background: rgba(255, 255, 255, 0.018);
+}
+
+@media (max-width: 980px) {
+  #app-header {
+    flex: 0 0 auto;
+  }
+
+  .app-title,
+  .ss-title,
+  .ss-overview-hero-copy > h2 {
+    font-variation-settings: "wdth" 92;
+  }
+
+  .ss-table-wrap,
+  .table-wrap,
+  .ss-table-scroll {
+    overscroll-behavior-inline: contain;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
