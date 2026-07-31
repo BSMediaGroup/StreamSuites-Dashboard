@@ -26,6 +26,7 @@ test("standalone admin login includes inline turnstile wiring", () => {
 test("admin overlay markup keeps parity links and turnstile slot", () => {
   for (const relativePath of ["docs/index.html", "index.html"]) {
     const html = read(relativePath);
+    assert.match(html, /src="\/assets\/logos\/ssadminshldv2\.png"/);
     assert.match(html, /admin-auth-turnstile-panel/);
     assert.match(html, /Login to other surfaces/);
     assert.doesNotMatch(html, /Elsewhere/);

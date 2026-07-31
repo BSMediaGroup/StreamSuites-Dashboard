@@ -6,6 +6,18 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.4-alpha / PENDING VER= 0.5.5-alpha
 
+### 2026-08-01 - Admin sidebar brand shield
+
+#### Technical notes
+
+- Updated both canonical Admin shell entry points to use the supplied `/assets/logos/ssadminshldv2.png` shield in the expanded and collapsed sidebar brand slot.
+- Preserved the existing dark muted Admin palette, shell spacing, routes, authentication, Runtime/Auth calls, and operator workflows; no files, behavior, or authority boundaries were removed or replaced.
+- Added a focused source regression assertion so the root and `docs/` compatibility shells cannot drift back to different sidebar marks.
+
+#### Human-readable summary
+
+The Admin sidebar now uses the requested silver shield while keeping the same subdued operator-console styling.
+
 ### 2026-07-31 - Studio-first Admin presentation
 
 #### Technical notes
