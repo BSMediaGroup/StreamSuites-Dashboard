@@ -1,396 +1,394 @@
 (() => {
-  const API_URL = "https://v0hwlmly3pd2.statuspage.io/api/v2/summary.json";
-  const STATUS_URL = "https://streamsuites.statuspage.io";
+  "use strict";
+
+  const API_BASE = "https://v0hwlmly3pd2.statuspage.io/api/v2";
+  const ENDPOINTS = Object.freeze({
+    summary: `${API_BASE}/summary.json`,
+    incidents: `${API_BASE}/incidents.json`,
+    maintenances: `${API_BASE}/scheduled-maintenances.json`,
+  });
+  const PRIMARY_STATUS_URL = "https://streamsuites.app/status";
+  const ATLASSIAN_STATUS_URL = "https://streamsuites.statuspage.io/";
   const ROOT_ID = "ss-status-indicator";
   const DETAILS_ID = "ss-status-details";
   const POLL_INTERVAL_MS = 60000;
+  const REQUEST_TIMEOUT_MS = 8000;
 
-  const INDICATOR_LABELS = {
-    none: "OPERATIONAL",
-    minor: "DEGRADED",
-    major: "OUTAGE",
-    critical: "CRITICAL",
-  };
+  const INDICATOR_META = Object.freeze({
+    none: { state: "operational", label: "OPERATIONAL", description: "All Systems Operational" },
+    minor: { state: "degraded", label: "DEGRADED", description: "Degraded performance" },
+    major: { state: "partial", label: "PARTIAL OUTAGE", description: "Partial system outage" },
+    critical: { state: "critical", label: "CRITICAL", description: "Critical system outage" },
+  });
 
-  const INDICATOR_STATES = {
-    none: "operational",
-    minor: "degraded",
-    major: "outage",
-    critical: "critical",
-  };
-
-  const COMPONENT_LABELS = {
-    operational: "Operational",
-    degraded_performance: "Degraded",
-    partial_outage: "Partial Outage",
-    major_outage: "Major Outage",
-    under_maintenance: "Maintenance",
-  };
-
-  const COMPONENT_STATES = {
-    operational: "operational",
-    degraded_performance: "degraded",
-    partial_outage: "outage",
-    major_outage: "critical",
-    under_maintenance: "maintenance",
-  };
+  const COMPONENT_META = Object.freeze({
+    operational: { state: "operational", label: "Operational" },
+    degraded_performance: { state: "degraded", label: "Degraded performance" },
+    partial_outage: { state: "partial", label: "Partial outage" },
+    major_outage: { state: "critical", label: "Major outage" },
+    under_maintenance: { state: "maintenance", label: "Maintenance" },
+  });
 
   if (document.getElementById(ROOT_ID)) return;
 
-  const toTitle = (value) => {
-    if (!value) return "";
-    return String(value)
-      .replace(/_/g, " ")
-      .split(" ")
-      .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
-      .join(" ");
+  const element = (tag, className, text) => {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text != null) node.textContent = text;
+    return node;
   };
 
-  const truncateText = (value, limit = 140) => {
-    if (!value) return "";
-    const text = String(value).trim();
+  const normalizeComponent = (component) => {
+    const meta = COMPONENT_META[component?.status] || { state: "unknown", label: "Unknown / unavailable" };
+    return { ...component, normalizedState: meta.state, statusLabel: meta.label };
+  };
+
+  const inferCategory = (component) => {
+    const name = String(component?.name || "").toLowerCase();
+    if (/runtime|auth api|login|account session|automation|trigger|telemetry|usage/.test(name)) return "core";
+    if (/streamsuites/.test(name) && /dashboard|studio|public|support|docs|console|creator|admin|pages/.test(name)) return "surfaces";
+    if (/cloudflare|edge|network|cdn|pages/.test(name)) return "edge";
+    return "dependencies";
+  };
+
+  const GROUP_LABELS = Object.freeze({
+    core: "Core services",
+    surfaces: "Product surfaces",
+    edge: "Delivery & edge",
+    dependencies: "External dependencies",
+    other: "Other components",
+  });
+
+  const groupComponents = (components) => {
+    const source = Array.isArray(components) ? components : [];
+    const parentGroups = new Map(
+      source.filter((component) => component?.group && component?.id)
+        .map((component) => [component.id, component.name || "Component group"])
+    );
+    const groups = new Map();
+    source.filter((component) => !component?.group)
+      .map(normalizeComponent)
+      .sort((a, b) => {
+        const aPosition = Number.isFinite(Number(a.position)) ? Number(a.position) : Number.MAX_SAFE_INTEGER;
+        const bPosition = Number.isFinite(Number(b.position)) ? Number(b.position) : Number.MAX_SAFE_INTEGER;
+        if (aPosition !== bPosition) return aPosition - bPosition;
+        return String(a.name || "").localeCompare(String(b.name || ""));
+      })
+      .forEach((component) => {
+        const id = component.group_id && parentGroups.has(component.group_id)
+          ? `statuspage:${component.group_id}`
+          : inferCategory(component) || "other";
+        const label = id.startsWith("statuspage:")
+          ? parentGroups.get(component.group_id)
+          : GROUP_LABELS[id] || GROUP_LABELS.other;
+        if (!groups.has(id)) groups.set(id, { id, label, components: [] });
+        groups.get(id).components.push(component);
+      });
+    const order = ["core", "surfaces", "edge", "dependencies", "other"];
+    return [...groups.values()].sort((a, b) => {
+      const aIndex = order.indexOf(a.id);
+      const bIndex = order.indexOf(b.id);
+      if (aIndex !== -1 || bIndex !== -1) return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
+      return a.label.localeCompare(b.label);
+    });
+  };
+
+  const activeIncidents = (incidents) => (Array.isArray(incidents) ? incidents : [])
+    .filter((incident) => !["resolved", "postmortem"].includes(String(incident?.status || "").toLowerCase()));
+
+  const activeMaintenances = (maintenances) => (Array.isArray(maintenances) ? maintenances : [])
+    .filter((maintenance) => String(maintenance?.status || "").toLowerCase() !== "completed");
+
+  const latestUpdate = (event) => Array.isArray(event?.incident_updates) && event.incident_updates.length
+    ? event.incident_updates[0]
+    : null;
+
+  const truncate = (value, limit = 150) => {
+    const text = String(value || "").trim();
     if (text.length <= limit) return text;
     const slice = text.slice(0, limit);
-    const lastSpace = slice.lastIndexOf(" ");
-    if (lastSpace > 60) return `${slice.slice(0, lastSpace)}...`;
-    return `${slice}...`;
+    const space = slice.lastIndexOf(" ");
+    return `${slice.slice(0, space > 70 ? space : limit)}…`;
   };
 
-  const sortComponents = (components) => {
-    return [...components].sort((a, b) => {
-      const aPos = Number.isFinite(Number(a?.position)) ? Number(a.position) : Number.MAX_SAFE_INTEGER;
-      const bPos = Number.isFinite(Number(b?.position)) ? Number(b.position) : Number.MAX_SAFE_INTEGER;
-      if (aPos !== bPos) return aPos - bPos;
-
-      const aName = String(a?.name || "").toLowerCase();
-      const bName = String(b?.name || "").toLowerCase();
-      if (aName < bName) return -1;
-      if (aName > bName) return 1;
-      return 0;
-    });
-  };
-
-  const createLink = () => {
-    const link = document.createElement("a");
-    link.className = "ss-status-link";
-    link.href = STATUS_URL;
-    link.rel = "noreferrer";
-    link.target = "_blank";
-    link.textContent = "View full status";
-    return link;
-  };
-
-  const createSection = (titleText) => {
-    const section = document.createElement("section");
-    section.className = "ss-status-section";
-
-    const title = document.createElement("h4");
-    title.className = "ss-status-section-title";
-    title.textContent = titleText;
-
-    const list = document.createElement("ul");
-    list.className = "ss-status-list";
-
-    section.append(title, list);
-    return { section, list };
-  };
-
-  const createHeader = (description) => {
-    const header = document.createElement("div");
-    header.className = "ss-status-header";
-
-    const title = document.createElement("div");
-    title.className = "ss-status-header-title";
-    title.textContent = "StreamSuites Status";
-
-    const descriptionEl = document.createElement("div");
-    descriptionEl.className = "ss-status-header-description";
-    descriptionEl.textContent = description || "Status unavailable.";
-
-    header.append(title, descriptionEl);
-    return header;
-  };
-
-  const createComponentItem = (component) => {
-    const item = document.createElement("li");
-    item.className = "ss-status-item ss-status-component-item";
-
-    const left = document.createElement("div");
-    left.className = "ss-status-item-left";
-
-    const dot = document.createElement("span");
-    dot.className = "ss-status-item-dot";
-    dot.dataset.state = COMPONENT_STATES[component?.status] || "unknown";
-    dot.setAttribute("aria-hidden", "true");
-
-    const name = document.createElement("span");
-    name.className = "ss-status-item-title";
-    name.textContent = component?.name || "Unnamed Component";
-
-    left.append(dot, name);
-
-    const meta = document.createElement("span");
-    meta.className = "ss-status-item-meta";
-    meta.textContent = COMPONENT_LABELS[component?.status] || "Unknown";
-
-    item.append(left, meta);
-    return item;
-  };
-
-  const createCompactItem = ({ title, meta, body }) => {
-    const item = document.createElement("li");
-    item.className = "ss-status-item";
-
-    const titleEl = document.createElement("div");
-    titleEl.className = "ss-status-item-title";
-    titleEl.textContent = title;
-    item.appendChild(titleEl);
-
-    if (meta) {
-      const metaEl = document.createElement("div");
-      metaEl.className = "ss-status-item-meta";
-      metaEl.textContent = meta;
-      item.appendChild(metaEl);
+  const formatRelative = (value) => {
+    const timestamp = Date.parse(value || "");
+    if (!Number.isFinite(timestamp)) return "Time unavailable";
+    const delta = Date.now() - timestamp;
+    const absolute = Math.abs(delta);
+    for (const [unit, size] of [["day", 86400000], ["hour", 3600000], ["minute", 60000]]) {
+      if (absolute >= size) {
+        return new Intl.RelativeTimeFormat(undefined, { numeric: "auto" }).format(-Math.round(delta / size), unit);
+      }
     }
-
-    if (body) {
-      const bodyEl = document.createElement("div");
-      bodyEl.className = "ss-status-item-body";
-      bodyEl.textContent = body;
-      item.appendChild(bodyEl);
-    }
-
-    return item;
+    return "Just now";
   };
 
-  const createWidgetElements = () => {
-    const root = document.createElement("div");
+  const createActions = () => {
+    const actions = element("div", "ss-status-actions");
+    const primary = element("a", "ss-status-action ss-status-action--primary", "Full StreamSuites status");
+    primary.href = PRIMARY_STATUS_URL;
+    const external = element("a", "ss-status-action", "Atlassian page ↗");
+    external.href = ATLASSIAN_STATUS_URL;
+    external.target = "_blank";
+    external.rel = "noopener noreferrer";
+    actions.append(primary, external);
+    return actions;
+  };
+
+  const createWidget = () => {
+    const root = element("div", "ss-status-indicator");
     root.id = ROOT_ID;
-    root.className = "ss-status-indicator";
     root.dataset.state = "unknown";
-    root.dataset.layout = "floating";
+    root.dataset.layout = "inline";
+    root.dataset.expanded = "false";
 
-    const toggle = document.createElement("button");
+    const toggle = element("button", "ss-status-toggle");
     toggle.type = "button";
-    toggle.className = "ss-status-toggle";
     toggle.setAttribute("aria-expanded", "false");
     toggle.setAttribute("aria-controls", DETAILS_ID);
-    toggle.setAttribute("aria-label", "Service status details");
-
-    const dot = document.createElement("span");
-    dot.className = "ss-status-dot";
+    toggle.setAttribute("aria-label", "Open complete StreamSuites service status");
+    const dot = element("span", "ss-status-dot");
     dot.setAttribute("aria-hidden", "true");
+    const label = element("span", "ss-status-label", "UNKNOWN");
+    const icon = document.createElement("img");
+    icon.className = "ss-status-expand-icon";
+    icon.src = "/assets/icons/ui/plus.svg";
+    icon.alt = "";
+    icon.setAttribute("aria-hidden", "true");
+    toggle.append(dot, label, icon);
 
-    const label = document.createElement("span");
-    label.className = "ss-status-label";
-    label.textContent = "UNKNOWN";
-
-    const details = document.createElement("div");
+    const details = element("section", "ss-status-details");
     details.id = DETAILS_ID;
-    details.className = "ss-status-details";
     details.hidden = true;
-
-    toggle.append(dot, label);
+    details.setAttribute("aria-label", "Detailed StreamSuites service status");
+    details.setAttribute("aria-live", "polite");
     root.append(toggle, details);
-
-    return { root, toggle, label, details };
+    return { root, toggle, dot, label, icon, details };
   };
 
-  const setSummaryIndicator = (widget, indicator) => {
-    const key = String(indicator || "").toLowerCase();
-    widget.root.dataset.state = INDICATOR_STATES[key] || "unknown";
-    widget.label.textContent = INDICATOR_LABELS[key] || "UNKNOWN";
+  const setSummaryState = (widget, summary) => {
+    const indicator = String(summary?.status?.indicator || "").toLowerCase();
+    const meta = INDICATOR_META[indicator] || { state: "unknown", label: "UNKNOWN", description: "Status unavailable" };
+    widget.root.dataset.state = meta.state;
+    widget.label.textContent = meta.label;
+    return meta;
   };
 
-  const renderUnavailable = (widget) => {
-    setSummaryIndicator(widget, null);
-    widget.root.dataset.stale = "false";
-    widget.details.innerHTML = "";
-    widget.details.append(createHeader("Status unavailable."), createLink());
+  const appendHeader = (widget, description, snapshot) => {
+    const header = element("header", "ss-status-header");
+    const copy = element("div", "ss-status-header-copy");
+    copy.append(
+      element("p", "ss-status-eyebrow", snapshot.live ? "Live Atlassian Statuspage" : snapshot.stale ? "Last successful public read" : "Public read unavailable"),
+      element("h2", "ss-status-title", description),
+      element("span", "ss-status-freshness", `Checked ${formatRelative(snapshot.checkedAt)}${snapshot.latencyMs == null ? "" : ` · ${snapshot.latencyMs} ms`}`)
+    );
+    const close = element("button", "ss-status-close", "×");
+    close.type = "button";
+    close.setAttribute("aria-label", "Close status details");
+    header.append(copy, close);
+    widget.details.appendChild(header);
+    return close;
   };
 
-  const renderSummary = (widget, summary, { stale = false } = {}) => {
-    const status = summary?.status || {};
-    const components = Array.isArray(summary?.components) ? summary.components : [];
-    const incidents = Array.isArray(summary?.incidents) ? summary.incidents : [];
-    const maintenances = Array.isArray(summary?.scheduled_maintenances)
-      ? summary.scheduled_maintenances
-      : [];
+  const appendStats = (widget, components, incidents, maintenances, snapshot) => {
+    const operational = components.filter((component) => component.normalizedState === "operational").length;
+    const stats = element("div", "ss-status-stats");
+    for (const [value, label] of [
+      [String(components.length), "Components"],
+      [String(components.length - operational), "Attention"],
+      [String(incidents.length), "Incidents"],
+      [snapshot.latencyMs == null ? "—" : `${snapshot.latencyMs}ms`, "Response"],
+    ]) {
+      const item = element("div");
+      item.append(element("strong", "", value), element("span", "", label));
+      stats.appendChild(item);
+    }
+    widget.details.appendChild(stats);
+  };
 
-    setSummaryIndicator(widget, status.indicator);
-    widget.root.dataset.stale = stale ? "true" : "false";
-
-    widget.details.innerHTML = "";
-    widget.details.appendChild(createHeader(status.description || "Status unavailable."));
-
-    const sortedComponents = sortComponents(components);
-    const componentSection = createSection("Components");
-    if (sortedComponents.length) {
-      sortedComponents.forEach((component) => {
-        componentSection.list.appendChild(createComponentItem(component));
-      });
-    } else {
-      componentSection.list.appendChild(
-        createCompactItem({
-          title: "No components reported",
-          meta: "Unknown",
-        })
+  const appendComponentGroup = (root, group) => {
+    const section = element("section", "ss-status-section");
+    const heading = element("div", "ss-status-section-head");
+    const operational = group.components.filter((component) => component.normalizedState === "operational").length;
+    heading.append(element("h3", "", group.label), element("span", "", `${operational}/${group.components.length} operational`));
+    const list = element("ul", "ss-status-list");
+    group.components.forEach((component) => {
+      const item = element("li", "ss-status-component");
+      item.dataset.state = component.normalizedState;
+      item.append(
+        element("span", "ss-status-component-dot"),
+        element("span", "ss-status-component-name", component.name || "Unnamed component"),
+        element("span", "ss-status-component-state", component.statusLabel)
       );
-    }
-    widget.details.appendChild(componentSection.section);
-
-    if (incidents.length) {
-      const incidentSection = createSection("Incidents");
-      incidents.forEach((incident) => {
-        incidentSection.list.appendChild(
-          createCompactItem({
-            title: incident?.name || "Untitled Incident",
-            meta: `${toTitle(incident?.impact) || "Unknown Impact"} - ${
-              toTitle(incident?.status) || "Unknown"
-            }`,
-            body: truncateText(
-              Array.isArray(incident?.incident_updates)
-                ? incident.incident_updates[0]?.body
-                : "",
-              120
-            ),
-          })
-        );
-      });
-      widget.details.appendChild(incidentSection.section);
-    }
-
-    if (maintenances.length) {
-      const maintenanceSection = createSection("Maintenances");
-      maintenances.forEach((maintenance) => {
-        maintenanceSection.list.appendChild(
-          createCompactItem({
-            title: maintenance?.name || "Scheduled Maintenance",
-            meta: toTitle(maintenance?.status) || "Scheduled",
-          })
-        );
-      });
-      widget.details.appendChild(maintenanceSection.section);
-    }
-
-    widget.details.appendChild(createLink());
+      list.appendChild(item);
+    });
+    section.append(heading, list);
+    root.appendChild(section);
   };
 
-  const initStatusWidget = () => {
-    const widget = createWidgetElements();
-    const { root, toggle, details } = widget;
-
-    const host = document.querySelector("[data-status-slot]");
-    const inlineMode =
-      host?.dataset?.statusSlotMode === "inline" ||
-      Boolean(host?.closest("#app-footer"));
-
-    if (host) {
-      host.appendChild(root);
-      root.dataset.layout = inlineMode ? "inline" : "embedded";
+  const appendEventSection = (root, title, items, kind) => {
+    const section = element("section", "ss-status-section");
+    const heading = element("div", "ss-status-section-head");
+    heading.append(element("h3", "", title), element("span", "", String(items.length)));
+    section.appendChild(heading);
+    if (!items.length) {
+      section.appendChild(element("p", "ss-status-empty", kind === "incident" ? "No active incidents reported." : "No active maintenance windows reported."));
     } else {
-      document.body.appendChild(root);
+      items.forEach((item) => {
+        const update = latestUpdate(item);
+        const card = element("article", "ss-status-event");
+        card.append(
+          element("h4", "", item.name || (kind === "incident" ? "Untitled incident" : "Scheduled maintenance")),
+          element("p", "", truncate(update?.body || "No additional detail is available."))
+        );
+        const meta = element("div", "ss-status-event-meta");
+        meta.append(element("span", "", String(item.status || "unknown").replaceAll("_", " ")), element("span", "", formatRelative(item.updated_at || update?.created_at || item.created_at)));
+        card.appendChild(meta);
+        section.appendChild(card);
+      });
+    }
+    root.appendChild(section);
+  };
+
+  const render = (widget, snapshot, closeDetails) => {
+    const summary = snapshot?.data;
+    const meta = setSummaryState(widget, summary);
+    widget.root.dataset.stale = String(Boolean(snapshot?.stale));
+    widget.details.innerHTML = "";
+    const close = appendHeader(widget, summary?.status?.description || meta.description, snapshot);
+    close.addEventListener("click", closeDetails);
+
+    if (snapshot.stale) {
+      const stale = element("div", "ss-status-stale");
+      stale.append(element("span", "", "!"), element("span", "", "Live refresh failed. Showing the last successful in-memory state."));
+      widget.details.appendChild(stale);
     }
 
-    let isPinned = false;
-    let isHovered = false;
-    let hasFocus = false;
-    let lastSuccessfulSummary = null;
+    const components = (Array.isArray(summary?.components) ? summary.components : [])
+      .filter((component) => !component?.group)
+      .map(normalizeComponent);
+    const incidents = activeIncidents(summary?.incidents);
+    const maintenances = activeMaintenances(summary?.scheduled_maintenances);
+    appendStats(widget, components, incidents, maintenances, snapshot);
+
+    const scroll = element("div", "ss-status-scroll");
+    if (summary) {
+      groupComponents(summary.components).forEach((group) => appendComponentGroup(scroll, group));
+    } else {
+      scroll.appendChild(element("p", "ss-status-empty", "The read-only Atlassian Statuspage feed could not be reached. No local or fabricated operational state is substituted."));
+    }
+    appendEventSection(scroll, "Active incidents", incidents, "incident");
+    appendEventSection(scroll, "Scheduled maintenance", maintenances, "maintenance");
+    widget.details.append(scroll, createActions());
+  };
+
+  const fetchJson = async (url) => {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    try {
+      const response = await fetch(url, {
+        signal: controller.signal,
+        cache: "no-store",
+        credentials: "omit",
+        headers: { Accept: "application/json" },
+      });
+      if (!response.ok) throw new Error(`Status fetch failed (${response.status})`);
+      return await response.json();
+    } finally {
+      window.clearTimeout(timeout);
+    }
+  };
+
+  const init = () => {
+    const host = document.querySelector("[data-status-slot][data-status-slot-mode='inline']") || document.querySelector("#app-footer [data-status-slot]");
+    if (!host) return;
+    const footer = host.closest("#app-footer");
+    const widget = createWidget();
+    host.appendChild(widget.root);
+
+    let pinned = false;
+    let hovered = false;
+    let focused = false;
+    let lastSuccessfulData = null;
+    let lastSuccessfulLatency = null;
+    let inFlight = null;
 
     const setExpanded = (expanded) => {
-      const isExpanded = Boolean(expanded);
-      toggle.setAttribute("aria-expanded", String(isExpanded));
-      details.hidden = !isExpanded;
-      root.dataset.expanded = String(isExpanded);
+      const next = Boolean(expanded);
+      widget.root.dataset.expanded = String(next);
+      widget.toggle.setAttribute("aria-expanded", String(next));
+      widget.toggle.setAttribute("aria-label", `${next ? "Close" : "Open"} complete StreamSuites service status`);
+      widget.details.hidden = !next;
+      widget.icon.src = next ? "/assets/icons/ui/cross.svg" : "/assets/icons/ui/plus.svg";
+      footer?.classList.toggle("ss-status-details-visible", next);
+    };
+    const syncExpanded = () => setExpanded(pinned || hovered || focused);
+    const closeDetails = () => {
+      pinned = false;
+      hovered = false;
+      focused = false;
+      setExpanded(false);
     };
 
-    const syncExpandedState = () => {
-      setExpanded(isPinned || isHovered || hasFocus);
-    };
-
-    toggle.addEventListener("click", () => {
-      isPinned = !isPinned;
-      syncExpandedState();
+    widget.toggle.addEventListener("click", () => {
+      pinned = !pinned;
+      syncExpanded();
     });
-
-    root.addEventListener("mouseenter", () => {
-      isHovered = true;
-      syncExpandedState();
-    });
-
-    root.addEventListener("mouseleave", () => {
-      isHovered = false;
-      syncExpandedState();
-    });
-
-    root.addEventListener("focusin", () => {
-      hasFocus = true;
-      syncExpandedState();
-    });
-
-    root.addEventListener("focusout", () => {
-      window.requestAnimationFrame(() => {
-        hasFocus = root.contains(document.activeElement);
-        syncExpandedState();
-      });
-    });
-
-    root.addEventListener("keydown", (event) => {
+    widget.root.addEventListener("mouseenter", () => { hovered = true; syncExpanded(); });
+    widget.root.addEventListener("mouseleave", () => { hovered = false; syncExpanded(); });
+    widget.root.addEventListener("focusin", () => { focused = true; syncExpanded(); });
+    widget.root.addEventListener("focusout", () => window.requestAnimationFrame(() => {
+      focused = widget.root.contains(document.activeElement);
+      syncExpanded();
+    }));
+    widget.root.addEventListener("keydown", (event) => {
       if (event.key !== "Escape") return;
-      isPinned = false;
-      isHovered = false;
-      hasFocus = false;
-      syncExpandedState();
-      toggle.focus();
+      closeDetails();
+      widget.toggle.focus();
     });
-
     document.addEventListener("pointerdown", (event) => {
-      if (!isPinned) return;
-      if (root.contains(event.target)) return;
-      isPinned = false;
-      syncExpandedState();
+      if (!pinned || widget.root.contains(event.target)) return;
+      pinned = false;
+      syncExpanded();
     });
 
-    const fetchStatus = async () => {
-      const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), 8000);
-
-      try {
-        const response = await fetch(API_URL, {
-          signal: controller.signal,
-          cache: "no-store",
-          timeoutMs: 0,
-          headers: { Accept: "application/json" },
-        });
-        if (!response.ok) throw new Error(`Status fetch failed (${response.status})`);
-
-        const summary = await response.json();
-        lastSuccessfulSummary = summary;
-        renderSummary(widget, summary, { stale: false });
-      } catch (error) {
-        if (lastSuccessfulSummary) {
-          renderSummary(widget, lastSuccessfulSummary, { stale: true });
-          return;
-        }
-        renderUnavailable(widget);
-      } finally {
-        clearTimeout(timeout);
-      }
+    const refresh = () => {
+      if (inFlight) return inFlight;
+      const started = performance.now();
+      inFlight = Promise.allSettled([
+        fetchJson(ENDPOINTS.summary),
+        fetchJson(ENDPOINTS.incidents),
+        fetchJson(ENDPOINTS.maintenances),
+      ]).then((results) => {
+        if (results[0].status !== "fulfilled") throw results[0].reason;
+        const data = { ...results[0].value };
+        if (Array.isArray(results[1].value?.incidents)) data.incidents = results[1].value.incidents;
+        if (Array.isArray(results[2].value?.scheduled_maintenances)) data.scheduled_maintenances = results[2].value.scheduled_maintenances;
+        if (!Array.isArray(data.incidents)) data.incidents = [];
+        if (!Array.isArray(data.scheduled_maintenances)) data.scheduled_maintenances = [];
+        lastSuccessfulData = data;
+        lastSuccessfulLatency = Math.max(0, Math.round(performance.now() - started));
+        render(widget, { data, live: true, stale: false, checkedAt: new Date().toISOString(), latencyMs: lastSuccessfulLatency }, closeDetails);
+      }).catch(() => {
+        render(widget, {
+          data: lastSuccessfulData,
+          live: false,
+          stale: Boolean(lastSuccessfulData),
+          checkedAt: new Date().toISOString(),
+          latencyMs: lastSuccessfulLatency,
+        }, closeDetails);
+      }).finally(() => { inFlight = null; });
+      return inFlight;
     };
 
-    fetchStatus();
-    window.setInterval(fetchStatus, POLL_INTERVAL_MS);
-
+    void refresh();
+    window.setInterval(refresh, POLL_INTERVAL_MS);
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") {
-        fetchStatus();
-      }
+      if (document.visibilityState === "visible") void refresh();
     });
   };
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initStatusWidget, { once: true });
-  } else {
-    initStatusWidget();
-  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
+  else init();
 })();

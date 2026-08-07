@@ -11,6 +11,7 @@ Admin-facing StreamSuites surface deployed to Cloudflare Pages at `https://admin
 - This repo consumes runtime exports for visibility and uses Auth API/runtime endpoints for privileged operations; it does not own runtime execution.
 - The authenticated Admin shell includes `/studio` for Runtime/Auth-owned StreamSuites Studio closed-ALPHA tester access management; the Dashboard does not own Studio grants or capacity.
 - Cloudflare deep-link handling now avoids invalid wildcard-to-shell rewrites. The route manifests use exact admin shell paths plus a single dynamic `/users/:user_code` placeholder, which Cloudflare/Wrangler accepts without discarding the rules as loop candidates.
+- The existing Admin footer status slot remains inline inside `#app-footer`. Its upgraded panel reads Atlassian Statuspage public endpoints only and now presents all grouped components, active incidents, maintenance, freshness, response latency, stale state, the branded Public `/status` destination, and the explicit external Atlassian page.
 
 ## Studio-first operator design system
 
@@ -25,6 +26,7 @@ Admin-facing StreamSuites surface deployed to Cloudflare Pages at `https://admin
 - This repo is the admin/operator web shell, not the runtime itself.
 - Admin access is privileged, but runtime execution, Auth decisions, version/build ownership, and exported state remain runtime-owned in `StreamSuites`.
 - The dashboard is allowed to call privileged runtime/Auth endpoints, yet it still consumes those contracts rather than redefining them.
+- The footer status widget is presentation-only. It performs bounded public GET reads and neither calls the Statuspage Manage API nor changes Runtime/Auth synchronization, thresholds, credentials, routes, or version authority.
 - Studio grants, the 25 active invited non-admin tester cap, automatic admin eligibility, eligibility checks, audit data, and access decisions remain Runtime/Auth-owned. Admin accounts do not consume invited tester slots.
 - Runtime-exported version/build files are mirrored under `docs/runtime/exports/`, while published state snapshots land under `docs/shared/state/`.
 
@@ -204,6 +206,7 @@ StreamSuites-Dashboard/
 │   │   ├── studio-access-api.js
 │   │   ├── studio.js
 │   │   ├── state.js
+│   │   ├── status-widget.js
 │   │   ├── triggers.js
 │   │   ├── turnstile-inline.js
 │   │   ├── user-detail.js
@@ -289,6 +292,7 @@ StreamSuites-Dashboard/
 │   ├── public-identities-admin-controls.test.mjs
 │   ├── rumble-challenge-session-posture.test.mjs
 │   ├── studio-access-admin.test.mjs
+│   ├── status-widget.test.mjs
 │   └── triggers-runtime-authority.test.mjs
 ├── shared/
 │   └── state/

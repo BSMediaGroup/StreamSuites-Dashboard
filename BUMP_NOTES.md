@@ -6,6 +6,22 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.4-alpha / PENDING VER= 0.5.5-alpha
 
+### 2026-08-08 - Complete inline Admin service-status panel
+
+#### Technical notes
+
+- Upgraded `docs/js/status-widget.js` and `docs/css/status-widget.css` to the approved complete service-health information model while preserving the existing `#app-footer` / `[data-status-slot][data-status-slot-mode="inline"]` mount in both root and `docs/` shell entry points. The Admin trigger remains an inline status pill; Public's floating compact-square placement was not imported into the operator shell.
+- The detailed panel now shows every Statuspage component in Statuspage position order and preserves Statuspage-supplied groups where present, with semantic Core services, Product surfaces, Delivery & edge, and External dependencies groups otherwise. Operational, degraded, partial outage, major/critical outage, maintenance, and unavailable states have distinct labelled colour treatment.
+- Added active incidents, scheduled maintenance, freshness, response latency, component/attention/incident counts, an explicit stale last-successful-state notice, a truthful unavailable first-read state, and plus/cross controls using the existing UI assets. Hover, keyboard focus, click pinning, outside click, Escape close, mobile containment, and reduced motion are retained.
+- The widget reads only Atlassian's public `summary.json`, `incidents.json`, and `scheduled-maintenances.json` endpoints with `cache: no-store`, 8-second bounded reads, 60-second polling, visible-page refresh, and in-memory stale retention. It adds no Statuspage Manage API request, write method, credential, local status authority, Runtime/Auth change, version/build change, route change, dependency, deployment, commit, or remote mutation.
+- The primary panel action now opens `https://streamsuites.app/status`; the secondary action retains `https://streamsuites.statuspage.io/`. Existing Admin footer metadata, app-status pill, Auth gate, routes, notifications, and shell overflow structure remain intact.
+- The existing subdued footer remains unchanged while collapsed; opening the detailed status panel temporarily restores full footer opacity so the overlay remains opaque and legible over Admin content.
+- Added `tests/status-widget.test.mjs` for inline mount parity, complete components/groups/incidents/maintenance information, stale state, latency, colour mapping, interactions, action targets, public-read-only endpoints, polling/timeout behavior, and absence of Manage API/write/demo paths.
+
+#### Human-readable summary
+
+The Admin footer keeps the same compact inline placement, but its status panel now provides the same complete service picture as Public and links first to the new branded StreamSuites status center.
+
 ### 2026-08-01 - Unified Admin icon branding
 
 #### Technical notes
