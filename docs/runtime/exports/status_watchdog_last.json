@@ -1,0 +1,360 @@
+{
+  "components": {
+    "admin_dashboard": {
+      "component_id": "jnd29jsl8w7b",
+      "computed_status": "operational",
+      "consecutive_failures": 0,
+      "consecutive_successes": 1,
+      "last_written_status": null,
+      "monitor_state": "active",
+      "notes": null,
+      "probes": [
+        {
+          "checked_at": "2026-08-08T18:38:45.933950Z",
+          "error": null,
+          "latency_ms": 984,
+          "name": "admin_home",
+          "ok": true,
+          "status_code": 200
+        }
+      ],
+      "write_result": "disabled",
+      "writer_owner": "watchdog"
+    },
+    "alerts_notifications": {
+      "component_id": "qbczblv2hgv8",
+      "monitor_state": "monitor_unavailable",
+      "notes": "Deferred; no safe delivery canary exists.",
+      "writer_owner": "manual"
+    },
+    "authentication_accounts_sessions": {
+      "component_id": "tb383cr2p92n",
+      "computed_status": "operational",
+      "consecutive_failures": 0,
+      "consecutive_successes": 1,
+      "last_written_status": null,
+      "monitor_state": "active",
+      "notes": null,
+      "probes": [
+        {
+          "checked_at": "2026-08-08T18:38:41.186303Z",
+          "error": null,
+          "latency_ms": 344,
+          "name": "core_api_health",
+          "ok": true,
+          "status_code": 200
+        }
+      ],
+      "write_result": "disabled",
+      "writer_owner": "watchdog"
+    },
+    "automation_trigger_services": {
+      "component_id": "3xjjgpbydbbf",
+      "monitor_state": "monitor_unavailable",
+      "notes": "Deferred; no non-destructive trigger execution canary exists.",
+      "writer_owner": "manual"
+    },
+    "browser_studio": {
+      "component_id": "3qsdkc52dgt5",
+      "computed_status": "operational",
+      "consecutive_failures": 0,
+      "consecutive_successes": 1,
+      "last_written_status": null,
+      "monitor_state": "active",
+      "notes": "Black-box shell reachability only; not media readiness.",
+      "probes": [
+        {
+          "checked_at": "2026-08-08T18:38:38.604363Z",
+          "error": null,
+          "latency_ms": 1219,
+          "name": "studio_home",
+          "ok": true,
+          "status_code": 200
+        }
+      ],
+      "write_result": "disabled",
+      "writer_owner": "watchdog"
+    },
+    "cloudflare_pages": {
+      "component_id": "n1lw27451j6d",
+      "monitor_state": "vendor_managed",
+      "notes": "Owned by the Atlassian Cloudflare integration; never written here.",
+      "writer_owner": "vendor"
+    },
+    "creator_dashboard": {
+      "component_id": "5wm11qq4b7w9",
+      "computed_status": "operational",
+      "consecutive_failures": 0,
+      "consecutive_successes": 1,
+      "last_written_status": null,
+      "monitor_state": "active",
+      "notes": null,
+      "probes": [
+        {
+          "checked_at": "2026-08-08T18:38:44.955690Z",
+          "error": null,
+          "latency_ms": 1141,
+          "name": "creator_home",
+          "ok": true,
+          "status_code": 200
+        }
+      ],
+      "write_result": "disabled",
+      "writer_owner": "watchdog"
+    },
+    "developer_console_documentation": {
+      "component_id": "8x9n41kfjtc8",
+      "computed_status": "operational",
+      "consecutive_failures": 0,
+      "consecutive_successes": 1,
+      "last_written_status": null,
+      "monitor_state": "active",
+      "notes": null,
+      "probes": [
+        {
+          "checked_at": "2026-08-08T18:38:47.137408Z",
+          "error": null,
+          "latency_ms": 1203,
+          "name": "developer_console",
+          "ok": true,
+          "status_code": 200
+        },
+        {
+          "checked_at": "2026-08-08T18:38:48.337463Z",
+          "error": null,
+          "latency_ms": 1188,
+          "name": "documentation",
+          "ok": true,
+          "status_code": 200
+        }
+      ],
+      "write_result": "disabled",
+      "writer_owner": "watchdog"
+    },
+    "downloads_update_distribution": {
+      "component_id": "p00vypwhfhx3",
+      "computed_status": "operational",
+      "consecutive_failures": 0,
+      "consecutive_successes": 1,
+      "last_written_status": null,
+      "monitor_state": "active",
+      "notes": "Checks the fail-closed catalog surface; no unavailable binary is implied.",
+      "probes": [
+        {
+          "checked_at": "2026-08-08T18:38:48.710706Z",
+          "error": null,
+          "latency_ms": 375,
+          "name": "downloads",
+          "ok": true,
+          "status_code": 200
+        }
+      ],
+      "write_result": "disabled",
+      "writer_owner": "watchdog"
+    },
+    "github_git_operations": {
+      "component_id": "gd23vgnp3n89",
+      "monitor_state": "vendor_managed",
+      "notes": "Owned by the Atlassian GitHub integration; never written here.",
+      "writer_owner": "vendor"
+    },
+    "platform_integrations_live_chat": {
+      "component_id": "6ww27z4z9vj8",
+      "monitor_state": "monitor_unavailable",
+      "notes": "Deferred; provider canaries would require credentials and provider-specific contracts.",
+      "writer_owner": "manual"
+    },
+    "public_apis_exports_version_registry": {
+      "component_id": "0xm0hsy3byjj",
+      "computed_status": "operational",
+      "consecutive_failures": 0,
+      "consecutive_successes": 1,
+      "last_written_status": null,
+      "monitor_state": "active",
+      "notes": null,
+      "probes": [
+        {
+          "checked_at": "2026-08-08T18:38:41.522234Z",
+          "error": null,
+          "latency_ms": 328,
+          "name": "core_api_health",
+          "ok": true,
+          "status_code": 200
+        },
+        {
+          "checked_at": "2026-08-08T18:38:41.860897Z",
+          "error": null,
+          "latency_ms": 344,
+          "name": "public_version_registry",
+          "ok": true,
+          "status_code": 200
+        }
+      ],
+      "write_result": "disabled",
+      "writer_owner": "watchdog"
+    },
+    "public_profiles_community_artifacts": {
+      "component_id": "rdb3pmbvr4bv",
+      "computed_status": "operational",
+      "consecutive_failures": 0,
+      "consecutive_successes": 1,
+      "last_written_status": null,
+      "monitor_state": "active",
+      "notes": "Foundation checks public community and a published artifact; profile hydration remains unsynthesized.",
+      "probes": [
+        {
+          "checked_at": "2026-08-08T18:38:43.481383Z",
+          "error": null,
+          "latency_ms": 250,
+          "name": "community",
+          "ok": true,
+          "status_code": 200
+        },
+        {
+          "checked_at": "2026-08-08T18:38:43.810189Z",
+          "error": null,
+          "latency_ms": 328,
+          "name": "public_version_artifact",
+          "ok": true,
+          "status_code": 200
+        }
+      ],
+      "write_result": "disabled",
+      "writer_owner": "watchdog"
+    },
+    "public_website_status_center": {
+      "component_id": "zx07yy34tyvl",
+      "computed_status": "operational",
+      "consecutive_failures": 0,
+      "consecutive_successes": 1,
+      "last_written_status": null,
+      "monitor_state": "active",
+      "notes": null,
+      "probes": [
+        {
+          "checked_at": "2026-08-08T18:38:43.024597Z",
+          "error": null,
+          "latency_ms": 1156,
+          "name": "public_home",
+          "ok": true,
+          "status_code": 200
+        },
+        {
+          "checked_at": "2026-08-08T18:38:43.231486Z",
+          "error": null,
+          "latency_ms": 219,
+          "name": "status_center",
+          "ok": true,
+          "status_code": 200
+        }
+      ],
+      "write_result": "disabled",
+      "writer_owner": "watchdog"
+    },
+    "realtime_media_guest_connections": {
+      "component_id": "b6k38lrqx93f",
+      "monitor_state": "monitor_unavailable",
+      "notes": "Deferred until a safe participant and RealtimeKit readiness transaction exists.",
+      "writer_owner": "manual"
+    },
+    "rooms_invitations": {
+      "component_id": "4vrh4mg9l4hn",
+      "monitor_state": "monitor_unavailable",
+      "notes": "Deferred; creation, invitation redemption, and cleanup require a dedicated synthetic identity contract.",
+      "writer_owner": "manual"
+    },
+    "streaming_destinations_credential_delivery": {
+      "component_id": "4fp296vdg5w7",
+      "monitor_state": "monitor_unavailable",
+      "notes": "Deferred; no non-destructive credential lease canary exists.",
+      "writer_owner": "manual"
+    },
+    "stripe_api": {
+      "component_id": "5qbjrf4hq5nn",
+      "monitor_state": "vendor_managed",
+      "notes": "Owned by the Atlassian Stripe integration; never written here.",
+      "writer_owner": "vendor"
+    },
+    "studio_for_obs_connected_services": {
+      "component_id": "94cn19vph28j",
+      "computed_status": "operational",
+      "consecutive_failures": 0,
+      "consecutive_successes": 1,
+      "last_written_status": null,
+      "monitor_state": "active",
+      "notes": "Proves Auth/API health and the OBS auth boundary, not a receiver/media transaction.",
+      "probes": [
+        {
+          "checked_at": "2026-08-08T18:38:40.510961Z",
+          "error": null,
+          "latency_ms": 344,
+          "name": "core_api_health",
+          "ok": true,
+          "status_code": 200
+        },
+        {
+          "checked_at": "2026-08-08T18:38:40.846659Z",
+          "error": null,
+          "latency_ms": 328,
+          "name": "obs_auth_boundary",
+          "ok": true,
+          "status_code": 401
+        }
+      ],
+      "write_result": "disabled",
+      "writer_owner": "watchdog"
+    },
+    "studioapp_connected_services": {
+      "component_id": "q7435t6bd41x",
+      "computed_status": "operational",
+      "consecutive_failures": 0,
+      "consecutive_successes": 1,
+      "last_written_status": null,
+      "monitor_state": "active",
+      "notes": "Proves Auth/API health and the native-client auth boundary, not a signed-in room workflow.",
+      "probes": [
+        {
+          "checked_at": "2026-08-08T18:38:39.843155Z",
+          "error": null,
+          "latency_ms": 1234,
+          "name": "core_api_health",
+          "ok": true,
+          "status_code": 200
+        },
+        {
+          "checked_at": "2026-08-08T18:38:40.178034Z",
+          "error": null,
+          "latency_ms": 328,
+          "name": "studioapp_auth_boundary",
+          "ok": true,
+          "status_code": 401
+        }
+      ],
+      "write_result": "disabled",
+      "writer_owner": "watchdog"
+    },
+    "transactional_email_delivery": {
+      "component_id": "8zfbmn6ynv99",
+      "monitor_state": "monitor_unavailable",
+      "notes": "Deferred; no safe non-spamming delivery canary exists.",
+      "writer_owner": "manual"
+    }
+  },
+  "enabled": true,
+  "gates": {
+    "dry_run": true,
+    "heartbeats": false,
+    "metrics": false,
+    "statuspage_writes": false
+  },
+  "generated_at": "2026-08-08T18:38:48.710706Z",
+  "last_completed_probe_cycle": "2026-08-08T18:38:37.397735Z",
+  "last_error": null,
+  "last_heartbeat_at": null,
+  "last_heartbeat_result": "disabled",
+  "metrics": {
+    "core_api_response_time": "disabled",
+    "studio_room_readiness": "deferred"
+  },
+  "version": "status-watchdog-diagnostic-v1"
+}
