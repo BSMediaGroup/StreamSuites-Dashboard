@@ -6,6 +6,7 @@
     summary: `${API_BASE}/summary.json`,
     incidents: `${API_BASE}/incidents.json`,
     maintenances: `${API_BASE}/scheduled-maintenances.json`,
+    diagnostics: "https://api.streamsuites.app/api/public/status/diagnostics",
   });
   const PRIMARY_STATUS_URL = "https://streamsuites.app/status";
   const ATLASSIAN_STATUS_URL = "https://streamsuites.statuspage.io/";
@@ -198,13 +199,59 @@
       [String(components.length), "Components"],
       [String(components.length - operational), "Attention"],
       [String(incidents.length), "Incidents"],
-      [snapshot.latencyMs == null ? "—" : `${snapshot.latencyMs}ms`, "Response"],
+      [snapshot.latencyMs == null ? "—" : `${snapshot.latencyMs}ms`, "Feed latency"],
     ]) {
       const item = element("div");
       item.append(element("strong", "", value), element("span", "", label));
       stats.appendChild(item);
     }
     widget.details.appendChild(stats);
+  };
+
+  const appendMetrics = (root, snapshot) => {
+    const metrics = snapshot?.diagnostics?.metrics;
+    const core = metrics?.core_api_response_time;
+    const studio = metrics?.studio_room_readiness;
+    const stale = Boolean(snapshot?.diagnosticsStale);
+    const coreValue = core?.value_ms;
+    const coreObserved = core?.state === "observed" && coreValue != null && Number.isFinite(Number(coreValue)) && Number(coreValue) >= 0;
+    const studioValue = studio?.value;
+    const studioObserved = studio?.state === "observed" && studioValue != null && Number.isFinite(Number(studioValue));
+    const studioDeferred = studio?.state === "deferred";
+    const section = element("section", "ss-status-section ss-status-metrics");
+    const heading = element("div", "ss-status-section-head");
+    heading.append(element("h3", "", "Atlassian custom metrics"), element("span", "", "2 metrics"));
+    const source = element("p", "ss-status-metrics-source", "Sanitized Runtime/Auth projection · read only");
+    const grid = element("div", "ss-status-metrics-grid");
+
+    const createCard = ({ key, title, value, state, detail }) => {
+      const card = element("article", "ss-status-metric");
+      card.dataset.metric = key;
+      card.dataset.state = state;
+      const head = element("div", "ss-status-metric-head");
+      head.append(element("h4", "", title), element("span", "ss-status-metric-state", state === "observed" ? "Observed" : state === "stale" ? "Stale reading" : state === "deferred" ? "Deferred" : "Unavailable"));
+      card.append(head, element("strong", "ss-status-metric-value", value), element("p", "ss-status-metric-detail", detail));
+      return card;
+    };
+
+    grid.append(
+      createCard({
+        key: "core-api-response-time",
+        title: "Core API response time",
+        value: coreObserved ? `${Math.round(Number(coreValue))} ms` : "Unavailable",
+        state: coreObserved ? (stale ? "stale" : "observed") : "unavailable",
+        detail: coreObserved ? `Measured ${formatRelative(core.last_checked)}.` : core?.state === "awaiting_measured_data" ? "Awaiting a measured Core API observation." : "No measured Core API value is available.",
+      }),
+      createCard({
+        key: "studio-room-readiness",
+        title: "Studio Room Readiness",
+        value: studioDeferred ? "Deferred" : studioObserved ? String(studioValue) : "Unavailable",
+        state: studioDeferred ? "deferred" : studioObserved ? (stale ? "stale" : "observed") : "unavailable",
+        detail: studioDeferred ? truncate(studio.reason || "A genuine Studio room readiness transaction is not available yet.", 170) : studioObserved ? "Latest measured readiness value." : "No genuine Studio room readiness observation is available.",
+      })
+    );
+    section.append(heading, source, grid);
+    root.appendChild(section);
   };
 
   const appendComponentGroup = (root, group) => {
@@ -273,6 +320,7 @@
     appendStats(widget, components, incidents, maintenances, snapshot);
 
     const scroll = element("div", "ss-status-scroll");
+    appendMetrics(scroll, snapshot);
     if (summary) {
       groupComponents(summary.components).forEach((group) => appendComponentGroup(scroll, group));
     } else {
@@ -312,6 +360,7 @@
     let focused = false;
     let lastSuccessfulData = null;
     let lastSuccessfulLatency = null;
+    let lastSuccessfulDiagnostics = null;
     let inFlight = null;
 
     const setExpanded = (expanded) => {
@@ -360,6 +409,7 @@
         fetchJson(ENDPOINTS.summary),
         fetchJson(ENDPOINTS.incidents),
         fetchJson(ENDPOINTS.maintenances),
+        fetchJson(ENDPOINTS.diagnostics),
       ]).then((results) => {
         if (results[0].status !== "fulfilled") throw results[0].reason;
         const data = { ...results[0].value };
@@ -367,12 +417,21 @@
         if (Array.isArray(results[2].value?.scheduled_maintenances)) data.scheduled_maintenances = results[2].value.scheduled_maintenances;
         if (!Array.isArray(data.incidents)) data.incidents = [];
         if (!Array.isArray(data.scheduled_maintenances)) data.scheduled_maintenances = [];
+        const diagnosticsResponse = results[3].status === "fulfilled" ? results[3].value : null;
+        const liveDiagnostics = diagnosticsResponse?.available && diagnosticsResponse?.diagnostics
+          ? diagnosticsResponse.diagnostics
+          : null;
+        if (liveDiagnostics) lastSuccessfulDiagnostics = liveDiagnostics;
+        const diagnostics = liveDiagnostics || lastSuccessfulDiagnostics;
+        const diagnosticsStale = Boolean(diagnostics && (!liveDiagnostics || diagnosticsResponse?.stale));
         lastSuccessfulData = data;
         lastSuccessfulLatency = Math.max(0, Math.round(performance.now() - started));
-        render(widget, { data, live: true, stale: false, checkedAt: new Date().toISOString(), latencyMs: lastSuccessfulLatency }, closeDetails);
+        render(widget, { data, diagnostics, diagnosticsStale, live: true, stale: false, checkedAt: new Date().toISOString(), latencyMs: lastSuccessfulLatency }, closeDetails);
       }).catch(() => {
         render(widget, {
           data: lastSuccessfulData,
+          diagnostics: lastSuccessfulDiagnostics,
+          diagnosticsStale: Boolean(lastSuccessfulDiagnostics),
           live: false,
           stale: Boolean(lastSuccessfulData),
           checkedAt: new Date().toISOString(),

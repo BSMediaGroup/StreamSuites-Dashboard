@@ -6,6 +6,18 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.4-alpha / PENDING VER= 0.5.5-alpha
 
+### 2026-08-09 - Expanded Admin widget custom metrics
+
+#### Technical notes
+
+- Added the two configured Atlassian custom metrics to the existing fully expanded Admin footer widget. Core API response time renders only a finite measured value; Studio Room Readiness renders the Runtime/Auth projection's explicit deferred state and genuine-transaction reason.
+- Added an optional bounded read of `GET https://api.streamsuites.app/api/public/status/diagnostics` alongside the existing public Atlassian reads. A diagnostics failure does not fail, replace, or reinterpret official Atlassian status; an in-memory prior reading is labelled stale, while a first-read failure yields two unavailable cards.
+- Clarified the existing widget request timing as `Feed latency`, added responsive metric-card presentation, and extended the focused source gate for the fixed projection keys, fail-soft behavior, and absence of Statuspage Manage API credentials or write methods. No route, component ID, Runtime/Auth source, version/build value, dependency, deployment configuration, or file was added or removed.
+
+#### Human-readable summary
+
+The fully expanded Admin status widget now includes Core API response time and Studio Room Readiness, with clear measured, stale, deferred, and unavailable states instead of guesses.
+
 ### 2026-08-08 - Complete inline Admin service-status panel
 
 #### Technical notes

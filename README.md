@@ -11,7 +11,7 @@ Admin-facing StreamSuites surface deployed to Cloudflare Pages at `https://admin
 - This repo consumes runtime exports for visibility and uses Auth API/runtime endpoints for privileged operations; it does not own runtime execution.
 - The authenticated Admin shell includes `/studio` for Runtime/Auth-owned StreamSuites Studio closed-ALPHA tester access management; the Dashboard does not own Studio grants or capacity.
 - Cloudflare deep-link handling now avoids invalid wildcard-to-shell rewrites. The route manifests use exact admin shell paths plus a single dynamic `/users/:user_code` placeholder, which Cloudflare/Wrangler accepts without discarding the rules as loop candidates.
-- The existing Admin footer status slot remains inline inside `#app-footer`. Its upgraded panel reads Atlassian Statuspage public endpoints only and now presents all grouped components, active incidents, maintenance, freshness, response latency, stale state, the branded Public `/status` destination, and the explicit external Atlassian page.
+- The existing Admin footer status slot remains inline inside `#app-footer`. Its upgraded panel keeps Atlassian Statuspage public reads as official state and presents all grouped components, active incidents, maintenance, freshness, feed latency, stale state, the branded Public `/status` destination, and the explicit external Atlassian page. When fully expanded it also presents the two configured Atlassian custom metrics from Runtime/Auth's sanitized public diagnostics projection: measured Core API response time and explicitly deferred Studio Room Readiness.
 
 ## Studio-first operator design system
 
@@ -26,7 +26,7 @@ Admin-facing StreamSuites surface deployed to Cloudflare Pages at `https://admin
 - This repo is the admin/operator web shell, not the runtime itself.
 - Admin access is privileged, but runtime execution, Auth decisions, version/build ownership, and exported state remain runtime-owned in `StreamSuites`.
 - The dashboard is allowed to call privileged runtime/Auth endpoints, yet it still consumes those contracts rather than redefining them.
-- The footer status widget is presentation-only. It performs bounded public GET reads and neither calls the Statuspage Manage API nor changes Runtime/Auth synchronization, thresholds, credentials, routes, or version authority.
+- The footer status widget is presentation-only. It performs bounded public GET reads against Atlassian's Status API and Runtime/Auth's sanitized status diagnostics projection; it neither calls the Statuspage Manage API nor changes Runtime/Auth synchronization, thresholds, credentials, routes, or version authority. Missing diagnostics leave official Atlassian state intact and make the two metric cards unavailable rather than inferred.
 - Studio grants, the 25 active invited non-admin tester cap, automatic admin eligibility, eligibility checks, audit data, and access decisions remain Runtime/Auth-owned. Admin accounts do not consume invited tester slots.
 - Runtime-exported version/build files are mirrored under `docs/runtime/exports/`, while published state snapshots land under `docs/shared/state/`.
 

@@ -183,6 +183,20 @@
 }
 .ss-status-section-head h3 { margin: 0; color: #b7c4d0; font: 500 8px/1.2 "IBM Plex Mono", monospace; letter-spacing: .08em; text-transform: uppercase; }
 .ss-status-section-head span { color: #66798b; font: 8px/1.2 "IBM Plex Mono", monospace; }
+.ss-status-metrics-source { margin: -1px 0 9px; color: #718394; font: 8px/1.45 "IBM Plex Mono", monospace; }
+.ss-status-metrics-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.ss-status-metric { min-width: 0; padding: 11px; border: 1px solid rgba(153,184,215,.11); border-radius: 10px; background: linear-gradient(145deg, rgba(38,62,84,.13), rgba(255,255,255,.012)); }
+.ss-status-metric[data-state="observed"] { border-color: rgba(98,222,162,.19); }
+.ss-status-metric[data-state="deferred"],
+.ss-status-metric[data-state="stale"] { border-color: rgba(242,184,75,.18); }
+.ss-status-metric-head { display: flex; gap: 8px; align-items: flex-start; justify-content: space-between; }
+.ss-status-metric-head h4 { margin: 0; color: #cbd7e1; font-size: 10px; font-weight: 600; line-height: 1.25; }
+.ss-status-metric-state { flex: 0 0 auto; color: #8294a5; font: 7px/1.2 "IBM Plex Mono", monospace; letter-spacing: .04em; text-transform: uppercase; }
+.ss-status-metric[data-state="observed"] .ss-status-metric-state { color: #74dca6; }
+.ss-status-metric[data-state="deferred"] .ss-status-metric-state,
+.ss-status-metric[data-state="stale"] .ss-status-metric-state { color: #d7b36f; }
+.ss-status-metric-value { display: block; margin-top: 11px; color: #fff; font: 600 18px/1 "Tektur", sans-serif; }
+.ss-status-metric-detail { margin: 7px 0 0; color: #77899a; font-size: 8px; line-height: 1.45; }
 .ss-status-list { display: grid; gap: 3px; margin: 0; padding: 0; list-style: none; }
 
 .ss-status-component {
@@ -223,6 +237,10 @@
   .ss-status-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ss-status-stats > div:nth-child(3) { border-top: 1px solid rgba(153,184,215,.1); border-left: 0; }
   .ss-status-stats > div:nth-child(4) { border-top: 1px solid rgba(153,184,215,.1); }
+}
+
+@media (max-width: 420px) {
+  .ss-status-metrics-grid { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {

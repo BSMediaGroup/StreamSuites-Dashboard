@@ -27,6 +27,15 @@ test("Admin detailed panel exposes the complete public-read information contract
   assert.match(script, /lastSuccessfulData/);
   assert.match(script, /stale:\s*Boolean\(lastSuccessfulData\)/);
   assert.match(script, /latencyMs/);
+  assert.match(script, /Feed latency/);
+  assert.match(script, /Atlassian custom metrics/);
+  assert.match(script, /Core API response time/);
+  assert.match(script, /Studio Room Readiness/);
+  assert.match(script, /core_api_response_time/);
+  assert.match(script, /studio_room_readiness/);
+  assert.match(script, /diagnosticsStale/);
+  assert.match(script, /Number\(coreValue\) >= 0/);
+  assert.match(script, /Sanitized Runtime\/Auth projection/);
   assert.match(script, /Full StreamSuites status/);
   assert.match(script, /ss-status-details-visible/);
   assert.match(script, /https:\/\/streamsuites\.app\/status/);
@@ -39,12 +48,13 @@ test("Admin detailed panel exposes the complete public-read information contract
   assert.match(script, /pointerdown/);
 });
 
-test("Admin status reads only public Atlassian endpoints with bounded polling", () => {
+test("Admin status reads only bounded public Atlassian and Runtime diagnostics endpoints", () => {
   const script = read("docs/js/status-widget.js");
   assert.match(script, /v0hwlmly3pd2\.statuspage\.io\/api\/v2/);
   assert.match(script, /summary\.json/);
   assert.match(script, /incidents\.json/);
   assert.match(script, /scheduled-maintenances\.json/);
+  assert.match(script, /api\.streamsuites\.app\/api\/public\/status\/diagnostics/);
   assert.match(script, /cache:\s*"no-store"/);
   assert.match(script, /REQUEST_TIMEOUT_MS\s*=\s*8000/);
   assert.match(script, /POLL_INTERVAL_MS\s*=\s*60000/);
@@ -60,4 +70,6 @@ test("Admin status colours distinguish operational, degraded, partial, critical,
   assert.match(css, /data-layout="inline"|data-layout='inline'|\.ss-status-indicator/);
   assert.match(css, /@media \(max-width:\s*680px\)/);
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)/);
+  assert.match(css, /\.ss-status-metrics-grid/);
+  assert.match(css, /\.ss-status-metric\[data-state="deferred"\]/);
 });
