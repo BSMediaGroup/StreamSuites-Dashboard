@@ -1,0 +1,1261 @@
+{
+  "components": {
+    "admin_dashboard": {
+      "component_id": "jnd29jsl8w7b",
+      "component_key": "admin_dashboard",
+      "coverage": "implemented",
+      "data_quality": "observed",
+      "description": "Administrative dashboard availability.",
+      "direct_stale": false,
+      "direct_state": "operational",
+      "display_name": "Admin Dashboard",
+      "group_key": "web_audience_surfaces",
+      "history": {
+        "24h": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T19:20:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 969,
+              "sample_count": 1,
+              "state": "operational",
+              "success_count": 1
+            },
+            {
+              "at": "2026-08-08T19:45:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 937,
+              "sample_count": 1,
+              "state": "operational",
+              "success_count": 1
+            }
+          ],
+          "sample_count": 2
+        },
+        "30d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 953,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            }
+          ],
+          "sample_count": 2
+        },
+        "7d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 953,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            }
+          ],
+          "sample_count": 2
+        }
+      },
+      "last_checked": "2026-08-08T19:46:28.758441Z",
+      "last_error_category": null,
+      "last_failure": null,
+      "last_success": "2026-08-08T19:46:28.758441Z",
+      "latency_ms": 937,
+      "monitor_mode": "external_black_box",
+      "owner": "watchdog"
+    },
+    "alerts_notifications": {
+      "component_id": "qbczblv2hgv8",
+      "component_key": "alerts_notifications",
+      "coverage": "deferred",
+      "data_quality": "deferred",
+      "description": "Alert evaluation and notification delivery.",
+      "direct_stale": false,
+      "direct_state": null,
+      "display_name": "Alerts & Notifications",
+      "group_key": "core_platform",
+      "history": {
+        "24h": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        },
+        "30d": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        },
+        "7d": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        }
+      },
+      "last_checked": null,
+      "last_error_category": null,
+      "last_failure": null,
+      "last_success": null,
+      "latency_ms": null,
+      "monitor_mode": "deferred",
+      "owner": "manual_deferred"
+    },
+    "authentication_accounts_sessions": {
+      "component_id": "tb383cr2p92n",
+      "component_key": "authentication_accounts_sessions",
+      "coverage": "implemented",
+      "data_quality": "observed",
+      "description": "Core authentication, account, and managed-session readiness.",
+      "direct_stale": false,
+      "direct_state": "operational",
+      "display_name": "Authentication, Accounts & Sessions",
+      "group_key": "core_platform",
+      "history": {
+        "24h": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T19:20:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 344,
+              "sample_count": 1,
+              "state": "operational",
+              "success_count": 1
+            },
+            {
+              "at": "2026-08-08T19:45:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 344,
+              "sample_count": 1,
+              "state": "operational",
+              "success_count": 1
+            }
+          ],
+          "sample_count": 2
+        },
+        "30d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 344,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            }
+          ],
+          "sample_count": 2
+        },
+        "7d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 344,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            }
+          ],
+          "sample_count": 2
+        }
+      },
+      "last_checked": "2026-08-08T19:46:28.758441Z",
+      "last_error_category": null,
+      "last_failure": null,
+      "last_success": "2026-08-08T19:46:28.758441Z",
+      "latency_ms": 344,
+      "monitor_mode": "direct_diagnostic",
+      "owner": "watchdog"
+    },
+    "automation_trigger_services": {
+      "component_id": "3xjjgpbydbbf",
+      "component_key": "automation_trigger_services",
+      "coverage": "deferred",
+      "data_quality": "deferred",
+      "description": "Creator-scoped automation and trigger execution.",
+      "direct_stale": false,
+      "direct_state": null,
+      "display_name": "Automation & Trigger Services",
+      "group_key": "core_platform",
+      "history": {
+        "24h": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        },
+        "30d": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        },
+        "7d": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        }
+      },
+      "last_checked": null,
+      "last_error_category": null,
+      "last_failure": null,
+      "last_success": null,
+      "latency_ms": null,
+      "monitor_mode": "deferred",
+      "owner": "manual_deferred"
+    },
+    "browser_studio": {
+      "component_id": "3qsdkc52dgt5",
+      "component_key": "browser_studio",
+      "coverage": "implemented",
+      "data_quality": "observed",
+      "description": "Browser studio shell reachability.",
+      "direct_stale": false,
+      "direct_state": "operational",
+      "display_name": "Browser Studio",
+      "group_key": "production_products",
+      "history": {
+        "24h": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T19:20:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 1094,
+              "sample_count": 1,
+              "state": "operational",
+              "success_count": 1
+            },
+            {
+              "at": "2026-08-08T19:45:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 1078,
+              "sample_count": 1,
+              "state": "operational",
+              "success_count": 1
+            }
+          ],
+          "sample_count": 2
+        },
+        "30d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 1086,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            }
+          ],
+          "sample_count": 2
+        },
+        "7d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 1086,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            }
+          ],
+          "sample_count": 2
+        }
+      },
+      "last_checked": "2026-08-08T19:46:28.758441Z",
+      "last_error_category": null,
+      "last_failure": null,
+      "last_success": "2026-08-08T19:46:28.758441Z",
+      "latency_ms": 1078,
+      "monitor_mode": "external_black_box",
+      "owner": "watchdog"
+    },
+    "cloudflare_pages": {
+      "component_id": "n1lw27451j6d",
+      "component_key": "cloudflare_pages",
+      "coverage": "vendor_managed",
+      "data_quality": "vendor_managed",
+      "description": "Cloudflare-managed Pages delivery state.",
+      "direct_stale": false,
+      "direct_state": null,
+      "display_name": "Cloudflare Pages",
+      "group_key": "external_dependencies",
+      "history": {
+        "24h": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        },
+        "30d": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        },
+        "7d": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        }
+      },
+      "last_checked": null,
+      "last_error_category": null,
+      "last_failure": null,
+      "last_success": null,
+      "latency_ms": null,
+      "monitor_mode": "external_provider",
+      "owner": "atlassian_third_party"
+    },
+    "creator_dashboard": {
+      "component_id": "5wm11qq4b7w9",
+      "component_key": "creator_dashboard",
+      "coverage": "implemented",
+      "data_quality": "observed",
+      "description": "Creator-facing dashboard availability.",
+      "direct_stale": false,
+      "direct_state": "operational",
+      "display_name": "Creator Dashboard",
+      "group_key": "web_audience_surfaces",
+      "history": {
+        "24h": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T19:20:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 1141,
+              "sample_count": 1,
+              "state": "operational",
+              "success_count": 1
+            },
+            {
+              "at": "2026-08-08T19:45:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 1141,
+              "sample_count": 1,
+              "state": "operational",
+              "success_count": 1
+            }
+          ],
+          "sample_count": 2
+        },
+        "30d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 1141,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            }
+          ],
+          "sample_count": 2
+        },
+        "7d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 1141,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            }
+          ],
+          "sample_count": 2
+        }
+      },
+      "last_checked": "2026-08-08T19:46:28.758441Z",
+      "last_error_category": null,
+      "last_failure": null,
+      "last_success": "2026-08-08T19:46:28.758441Z",
+      "latency_ms": 1141,
+      "monitor_mode": "external_black_box",
+      "owner": "watchdog"
+    },
+    "developer_console_documentation": {
+      "component_id": "8x9n41kfjtc8",
+      "component_key": "developer_console_documentation",
+      "coverage": "implemented",
+      "data_quality": "observed",
+      "description": "Developer console and shipped-reality documentation.",
+      "direct_stale": false,
+      "direct_state": "operational",
+      "display_name": "Developer Console & Documentation",
+      "group_key": "web_audience_surfaces",
+      "history": {
+        "24h": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T19:20:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 1046,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            },
+            {
+              "at": "2026-08-08T19:45:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 1054,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            }
+          ],
+          "sample_count": 4
+        },
+        "30d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 1050,
+              "sample_count": 4,
+              "state": "operational",
+              "success_count": 4
+            }
+          ],
+          "sample_count": 4
+        },
+        "7d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 1050,
+              "sample_count": 4,
+              "state": "operational",
+              "success_count": 4
+            }
+          ],
+          "sample_count": 4
+        }
+      },
+      "last_checked": "2026-08-08T19:46:28.758441Z",
+      "last_error_category": null,
+      "last_failure": null,
+      "last_success": "2026-08-08T19:46:28.758441Z",
+      "latency_ms": 1054,
+      "monitor_mode": "external_black_box",
+      "owner": "watchdog"
+    },
+    "downloads_update_distribution": {
+      "component_id": "p00vypwhfhx3",
+      "component_key": "downloads_update_distribution",
+      "coverage": "implemented",
+      "data_quality": "observed",
+      "description": "Fail-closed download catalog and update distribution surface.",
+      "direct_stale": false,
+      "direct_state": "operational",
+      "display_name": "Downloads & Update Distribution",
+      "group_key": "web_audience_surfaces",
+      "history": {
+        "24h": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T19:20:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 187,
+              "sample_count": 1,
+              "state": "operational",
+              "success_count": 1
+            },
+            {
+              "at": "2026-08-08T19:45:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 187,
+              "sample_count": 1,
+              "state": "operational",
+              "success_count": 1
+            }
+          ],
+          "sample_count": 2
+        },
+        "30d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 187,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            }
+          ],
+          "sample_count": 2
+        },
+        "7d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 187,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            }
+          ],
+          "sample_count": 2
+        }
+      },
+      "last_checked": "2026-08-08T19:46:28.758441Z",
+      "last_error_category": null,
+      "last_failure": null,
+      "last_success": "2026-08-08T19:46:28.758441Z",
+      "latency_ms": 187,
+      "monitor_mode": "external_black_box",
+      "owner": "watchdog"
+    },
+    "github_git_operations": {
+      "component_id": "gd23vgnp3n89",
+      "component_key": "github_git_operations",
+      "coverage": "vendor_managed",
+      "data_quality": "vendor_managed",
+      "description": "GitHub-managed Git operations state.",
+      "direct_stale": false,
+      "direct_state": null,
+      "display_name": "GitHub Git Operations",
+      "group_key": "external_dependencies",
+      "history": {
+        "24h": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        },
+        "30d": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        },
+        "7d": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        }
+      },
+      "last_checked": null,
+      "last_error_category": null,
+      "last_failure": null,
+      "last_success": null,
+      "latency_ms": null,
+      "monitor_mode": "external_provider",
+      "owner": "atlassian_third_party"
+    },
+    "platform_integrations_live_chat": {
+      "component_id": "6ww27z4z9vj8",
+      "component_key": "platform_integrations_live_chat",
+      "coverage": "deferred",
+      "data_quality": "deferred",
+      "description": "External platform integration and live-chat services.",
+      "direct_stale": false,
+      "direct_state": null,
+      "display_name": "Platform Integrations & Live Chat",
+      "group_key": "core_platform",
+      "history": {
+        "24h": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        },
+        "30d": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        },
+        "7d": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        }
+      },
+      "last_checked": null,
+      "last_error_category": null,
+      "last_failure": null,
+      "last_success": null,
+      "latency_ms": null,
+      "monitor_mode": "deferred",
+      "owner": "manual_deferred"
+    },
+    "public_apis_exports_version_registry": {
+      "component_id": "0xm0hsy3byjj",
+      "component_key": "public_apis_exports_version_registry",
+      "coverage": "implemented",
+      "data_quality": "observed",
+      "description": "Public Runtime APIs, published exports, and canonical version registry.",
+      "direct_stale": false,
+      "direct_state": "operational",
+      "display_name": "Public APIs, Exports & Version Registry",
+      "group_key": "core_platform",
+      "history": {
+        "24h": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T19:20:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 328,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            },
+            {
+              "at": "2026-08-08T19:45:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 336,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            }
+          ],
+          "sample_count": 4
+        },
+        "30d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 332,
+              "sample_count": 4,
+              "state": "operational",
+              "success_count": 4
+            }
+          ],
+          "sample_count": 4
+        },
+        "7d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 332,
+              "sample_count": 4,
+              "state": "operational",
+              "success_count": 4
+            }
+          ],
+          "sample_count": 4
+        }
+      },
+      "last_checked": "2026-08-08T19:46:28.758441Z",
+      "last_error_category": null,
+      "last_failure": null,
+      "last_success": "2026-08-08T19:46:28.758441Z",
+      "latency_ms": 336,
+      "monitor_mode": "direct_diagnostic",
+      "owner": "watchdog"
+    },
+    "public_profiles_community_artifacts": {
+      "component_id": "rdb3pmbvr4bv",
+      "component_key": "public_profiles_community_artifacts",
+      "coverage": "implemented",
+      "data_quality": "observed",
+      "description": "Public profiles, community discovery, and published artifacts.",
+      "direct_stale": false,
+      "direct_state": "operational",
+      "display_name": "Public Profiles, Community & Artifacts",
+      "group_key": "web_audience_surfaces",
+      "history": {
+        "24h": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T19:20:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 188,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            },
+            {
+              "at": "2026-08-08T19:45:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 180,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            }
+          ],
+          "sample_count": 4
+        },
+        "30d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 184,
+              "sample_count": 4,
+              "state": "operational",
+              "success_count": 4
+            }
+          ],
+          "sample_count": 4
+        },
+        "7d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 184,
+              "sample_count": 4,
+              "state": "operational",
+              "success_count": 4
+            }
+          ],
+          "sample_count": 4
+        }
+      },
+      "last_checked": "2026-08-08T19:46:28.758441Z",
+      "last_error_category": null,
+      "last_failure": null,
+      "last_success": "2026-08-08T19:46:28.758441Z",
+      "latency_ms": 180,
+      "monitor_mode": "external_black_box",
+      "owner": "watchdog"
+    },
+    "public_website_status_center": {
+      "component_id": "zx07yy34tyvl",
+      "component_key": "public_website_status_center",
+      "coverage": "implemented",
+      "data_quality": "observed",
+      "description": "Public website and this Status Center.",
+      "direct_stale": false,
+      "direct_state": "operational",
+      "display_name": "Public Website & Status Center",
+      "group_key": "web_audience_surfaces",
+      "history": {
+        "24h": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T19:20:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 664,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            },
+            {
+              "at": "2026-08-08T19:45:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 656,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            }
+          ],
+          "sample_count": 4
+        },
+        "30d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 660,
+              "sample_count": 4,
+              "state": "operational",
+              "success_count": 4
+            }
+          ],
+          "sample_count": 4
+        },
+        "7d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 660,
+              "sample_count": 4,
+              "state": "operational",
+              "success_count": 4
+            }
+          ],
+          "sample_count": 4
+        }
+      },
+      "last_checked": "2026-08-08T19:46:28.758441Z",
+      "last_error_category": null,
+      "last_failure": null,
+      "last_success": "2026-08-08T19:46:28.758441Z",
+      "latency_ms": 656,
+      "monitor_mode": "external_black_box",
+      "owner": "watchdog"
+    },
+    "realtime_media_guest_connections": {
+      "component_id": "b6k38lrqx93f",
+      "component_key": "realtime_media_guest_connections",
+      "coverage": "deferred",
+      "data_quality": "deferred",
+      "description": "Realtime media and guest connection readiness.",
+      "direct_stale": false,
+      "direct_state": null,
+      "display_name": "Realtime Media & Guest Connections",
+      "group_key": "production_products",
+      "history": {
+        "24h": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        },
+        "30d": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        },
+        "7d": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        }
+      },
+      "last_checked": null,
+      "last_error_category": null,
+      "last_failure": null,
+      "last_success": null,
+      "latency_ms": null,
+      "monitor_mode": "deferred",
+      "owner": "manual_deferred"
+    },
+    "rooms_invitations": {
+      "component_id": "4vrh4mg9l4hn",
+      "component_key": "rooms_invitations",
+      "coverage": "deferred",
+      "data_quality": "deferred",
+      "description": "Studio room and invitation authority.",
+      "direct_stale": false,
+      "direct_state": null,
+      "display_name": "Rooms & Invitations",
+      "group_key": "core_platform",
+      "history": {
+        "24h": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        },
+        "30d": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        },
+        "7d": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        }
+      },
+      "last_checked": null,
+      "last_error_category": null,
+      "last_failure": null,
+      "last_success": null,
+      "latency_ms": null,
+      "monitor_mode": "deferred",
+      "owner": "manual_deferred"
+    },
+    "streaming_destinations_credential_delivery": {
+      "component_id": "4fp296vdg5w7",
+      "component_key": "streaming_destinations_credential_delivery",
+      "coverage": "deferred",
+      "data_quality": "deferred",
+      "description": "Destination readiness and secure credential delivery.",
+      "direct_stale": false,
+      "direct_state": null,
+      "display_name": "Streaming Destinations & Credential Delivery",
+      "group_key": "production_products",
+      "history": {
+        "24h": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        },
+        "30d": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        },
+        "7d": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        }
+      },
+      "last_checked": null,
+      "last_error_category": null,
+      "last_failure": null,
+      "last_success": null,
+      "latency_ms": null,
+      "monitor_mode": "deferred",
+      "owner": "manual_deferred"
+    },
+    "stripe_api": {
+      "component_id": "5qbjrf4hq5nn",
+      "component_key": "stripe_api",
+      "coverage": "vendor_managed",
+      "data_quality": "vendor_managed",
+      "description": "Stripe-managed payment API state.",
+      "direct_stale": false,
+      "direct_state": null,
+      "display_name": "Stripe API",
+      "group_key": "external_dependencies",
+      "history": {
+        "24h": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        },
+        "30d": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        },
+        "7d": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        }
+      },
+      "last_checked": null,
+      "last_error_category": null,
+      "last_failure": null,
+      "last_success": null,
+      "latency_ms": null,
+      "monitor_mode": "external_provider",
+      "owner": "atlassian_third_party"
+    },
+    "studio_for_obs_connected_services": {
+      "component_id": "94cn19vph28j",
+      "component_key": "studio_for_obs_connected_services",
+      "coverage": "implemented",
+      "data_quality": "observed",
+      "description": "OBS integration access to its Runtime/Auth boundary.",
+      "direct_stale": false,
+      "direct_state": "operational",
+      "display_name": "Studio for OBS Connected Services",
+      "group_key": "production_products",
+      "history": {
+        "24h": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T19:20:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 336,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            },
+            {
+              "at": "2026-08-08T19:45:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 336,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            }
+          ],
+          "sample_count": 4
+        },
+        "30d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 336,
+              "sample_count": 4,
+              "state": "operational",
+              "success_count": 4
+            }
+          ],
+          "sample_count": 4
+        },
+        "7d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 336,
+              "sample_count": 4,
+              "state": "operational",
+              "success_count": 4
+            }
+          ],
+          "sample_count": 4
+        }
+      },
+      "last_checked": "2026-08-08T19:46:28.758441Z",
+      "last_error_category": null,
+      "last_failure": null,
+      "last_success": "2026-08-08T19:46:28.758441Z",
+      "latency_ms": 336,
+      "monitor_mode": "safe_authority_boundary",
+      "owner": "watchdog"
+    },
+    "studioapp_connected_services": {
+      "component_id": "q7435t6bd41x",
+      "component_key": "studioapp_connected_services",
+      "coverage": "implemented",
+      "data_quality": "observed",
+      "description": "Native StudioApp access to its Runtime/Auth boundary.",
+      "direct_stale": false,
+      "direct_state": "operational",
+      "display_name": "StudioApp Connected Services",
+      "group_key": "production_products",
+      "history": {
+        "24h": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T19:20:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 774,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            },
+            {
+              "at": "2026-08-08T19:45:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 782,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            }
+          ],
+          "sample_count": 4
+        },
+        "30d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 778,
+              "sample_count": 4,
+              "state": "operational",
+              "success_count": 4
+            }
+          ],
+          "sample_count": 4
+        },
+        "7d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 778,
+              "sample_count": 4,
+              "state": "operational",
+              "success_count": 4
+            }
+          ],
+          "sample_count": 4
+        }
+      },
+      "last_checked": "2026-08-08T19:46:28.758441Z",
+      "last_error_category": null,
+      "last_failure": null,
+      "last_success": "2026-08-08T19:46:28.758441Z",
+      "latency_ms": 782,
+      "monitor_mode": "safe_authority_boundary",
+      "owner": "watchdog"
+    },
+    "transactional_email_delivery": {
+      "component_id": "8zfbmn6ynv99",
+      "component_key": "transactional_email_delivery",
+      "coverage": "deferred",
+      "data_quality": "deferred",
+      "description": "Transactional email delivery.",
+      "direct_stale": false,
+      "direct_state": null,
+      "display_name": "Transactional Email Delivery",
+      "group_key": "external_dependencies",
+      "history": {
+        "24h": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        },
+        "30d": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        },
+        "7d": {
+          "availability_percent": null,
+          "buckets": [],
+          "sample_count": 0
+        }
+      },
+      "last_checked": null,
+      "last_error_category": null,
+      "last_failure": null,
+      "last_success": null,
+      "latency_ms": null,
+      "monitor_mode": "deferred",
+      "owner": "manual_deferred"
+    }
+  },
+  "coverage": {
+    "deferred_manual": 7,
+    "implemented": 11,
+    "total": 21,
+    "vendor_managed": 3
+  },
+  "freshness": {
+    "age_seconds": 10,
+    "max_age_seconds": 240,
+    "state": "fresh"
+  },
+  "generated_at": "2026-08-08T19:46:39.295636Z",
+  "heartbeat": {
+    "last_accepted_at": null,
+    "state": "unavailable"
+  },
+  "metrics": {
+    "core_api_response_time": {
+      "history": {
+        "24h": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T19:20:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 344,
+              "sample_count": 1,
+              "state": "operational",
+              "success_count": 1
+            },
+            {
+              "at": "2026-08-08T19:45:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 344,
+              "sample_count": 1,
+              "state": "operational",
+              "success_count": 1
+            }
+          ],
+          "sample_count": 2
+        },
+        "30d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 344,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            }
+          ],
+          "sample_count": 2
+        },
+        "7d": {
+          "availability_percent": 100.0,
+          "buckets": [
+            {
+              "at": "2026-08-08T00:00:00Z",
+              "availability_percent": 100.0,
+              "failure_count": 0,
+              "latency_ms": 344,
+              "sample_count": 2,
+              "state": "operational",
+              "success_count": 2
+            }
+          ],
+          "sample_count": 2
+        }
+      },
+      "last_checked": "2026-08-08T19:46:28.758441Z",
+      "last_successful_submission": null,
+      "metric_id": "pp5z548msg40",
+      "state": "observed",
+      "value_ms": 344
+    },
+    "studio_room_readiness": {
+      "metric_id": "xz42g5v44kxv",
+      "reason": "No genuine Studio room and RealtimeKit readiness transaction exists; homepage latency is not a substitute.",
+      "state": "deferred",
+      "value": null
+    }
+  },
+  "schema_version": "status-watchdog-public-v1",
+  "source": "streamsuites-independent-watchdog",
+  "watchdog": {
+    "history": "available",
+    "last_cycle_at": "2026-08-08T19:46:28.758441Z"
+  }
+}

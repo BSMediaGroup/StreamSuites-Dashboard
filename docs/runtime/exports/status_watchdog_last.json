@@ -4,15 +4,15 @@
       "component_id": "jnd29jsl8w7b",
       "computed_status": "operational",
       "consecutive_failures": 0,
-      "consecutive_successes": 1,
+      "consecutive_successes": 3,
       "last_written_status": null,
       "monitor_state": "active",
       "notes": null,
       "probes": [
         {
-          "checked_at": "2026-08-08T18:38:45.933950Z",
+          "checked_at": "2026-08-08T19:46:36.944540Z",
           "error": null,
-          "latency_ms": 984,
+          "latency_ms": 937,
           "name": "admin_home",
           "ok": true,
           "status_code": 200
@@ -31,13 +31,13 @@
       "component_id": "tb383cr2p92n",
       "computed_status": "operational",
       "consecutive_failures": 0,
-      "consecutive_successes": 1,
+      "consecutive_successes": 3,
       "last_written_status": null,
       "monitor_state": "active",
       "notes": null,
       "probes": [
         {
-          "checked_at": "2026-08-08T18:38:41.186303Z",
+          "checked_at": "2026-08-08T19:46:32.448330Z",
           "error": null,
           "latency_ms": 344,
           "name": "core_api_health",
@@ -58,15 +58,15 @@
       "component_id": "3qsdkc52dgt5",
       "computed_status": "operational",
       "consecutive_failures": 0,
-      "consecutive_successes": 1,
+      "consecutive_successes": 3,
       "last_written_status": null,
       "monitor_state": "active",
       "notes": "Black-box shell reachability only; not media readiness.",
       "probes": [
         {
-          "checked_at": "2026-08-08T18:38:38.604363Z",
+          "checked_at": "2026-08-08T19:46:29.835924Z",
           "error": null,
-          "latency_ms": 1219,
+          "latency_ms": 1078,
           "name": "studio_home",
           "ok": true,
           "status_code": 200
@@ -85,13 +85,13 @@
       "component_id": "5wm11qq4b7w9",
       "computed_status": "operational",
       "consecutive_failures": 0,
-      "consecutive_successes": 1,
+      "consecutive_successes": 3,
       "last_written_status": null,
       "monitor_state": "active",
       "notes": null,
       "probes": [
         {
-          "checked_at": "2026-08-08T18:38:44.955690Z",
+          "checked_at": "2026-08-08T19:46:35.987632Z",
           "error": null,
           "latency_ms": 1141,
           "name": "creator_home",
@@ -106,23 +106,23 @@
       "component_id": "8x9n41kfjtc8",
       "computed_status": "operational",
       "consecutive_failures": 0,
-      "consecutive_successes": 1,
+      "consecutive_successes": 3,
       "last_written_status": null,
       "monitor_state": "active",
       "notes": null,
       "probes": [
         {
-          "checked_at": "2026-08-08T18:38:47.137408Z",
+          "checked_at": "2026-08-08T19:46:37.997679Z",
           "error": null,
-          "latency_ms": 1203,
+          "latency_ms": 1047,
           "name": "developer_console",
           "ok": true,
           "status_code": 200
         },
         {
-          "checked_at": "2026-08-08T18:38:48.337463Z",
+          "checked_at": "2026-08-08T19:46:39.066691Z",
           "error": null,
-          "latency_ms": 1188,
+          "latency_ms": 1062,
           "name": "documentation",
           "ok": true,
           "status_code": 200
@@ -135,15 +135,15 @@
       "component_id": "p00vypwhfhx3",
       "computed_status": "operational",
       "consecutive_failures": 0,
-      "consecutive_successes": 1,
+      "consecutive_successes": 3,
       "last_written_status": null,
       "monitor_state": "active",
       "notes": "Checks the fail-closed catalog surface; no unavailable binary is implied.",
       "probes": [
         {
-          "checked_at": "2026-08-08T18:38:48.710706Z",
+          "checked_at": "2026-08-08T19:46:39.270019Z",
           "error": null,
-          "latency_ms": 375,
+          "latency_ms": 187,
           "name": "downloads",
           "ok": true,
           "status_code": 200
@@ -168,23 +168,23 @@
       "component_id": "0xm0hsy3byjj",
       "computed_status": "operational",
       "consecutive_failures": 0,
-      "consecutive_successes": 1,
+      "consecutive_successes": 3,
       "last_written_status": null,
       "monitor_state": "active",
       "notes": null,
       "probes": [
         {
-          "checked_at": "2026-08-08T18:38:41.522234Z",
+          "checked_at": "2026-08-08T19:46:32.798653Z",
           "error": null,
-          "latency_ms": 328,
+          "latency_ms": 343,
           "name": "core_api_health",
           "ok": true,
           "status_code": 200
         },
         {
-          "checked_at": "2026-08-08T18:38:41.860897Z",
+          "checked_at": "2026-08-08T19:46:33.132911Z",
           "error": null,
-          "latency_ms": 344,
+          "latency_ms": 329,
           "name": "public_version_registry",
           "ok": true,
           "status_code": 200
@@ -197,23 +197,23 @@
       "component_id": "rdb3pmbvr4bv",
       "computed_status": "operational",
       "consecutive_failures": 0,
-      "consecutive_successes": 1,
+      "consecutive_successes": 3,
       "last_written_status": null,
       "monitor_state": "active",
       "notes": "Foundation checks public community and a published artifact; profile hydration remains unsynthesized.",
       "probes": [
         {
-          "checked_at": "2026-08-08T18:38:43.481383Z",
+          "checked_at": "2026-08-08T19:46:34.645666Z",
           "error": null,
-          "latency_ms": 250,
+          "latency_ms": 172,
           "name": "community",
           "ok": true,
           "status_code": 200
         },
         {
-          "checked_at": "2026-08-08T18:38:43.810189Z",
+          "checked_at": "2026-08-08T19:46:34.834655Z",
           "error": null,
-          "latency_ms": 328,
+          "latency_ms": 188,
           "name": "public_version_artifact",
           "ok": true,
           "status_code": 200
@@ -226,23 +226,23 @@
       "component_id": "zx07yy34tyvl",
       "computed_status": "operational",
       "consecutive_failures": 0,
-      "consecutive_successes": 1,
+      "consecutive_successes": 3,
       "last_written_status": null,
       "monitor_state": "active",
       "notes": null,
       "probes": [
         {
-          "checked_at": "2026-08-08T18:38:43.024597Z",
+          "checked_at": "2026-08-08T19:46:34.265229Z",
           "error": null,
-          "latency_ms": 1156,
+          "latency_ms": 1125,
           "name": "public_home",
           "ok": true,
           "status_code": 200
         },
         {
-          "checked_at": "2026-08-08T18:38:43.231486Z",
+          "checked_at": "2026-08-08T19:46:34.454299Z",
           "error": null,
-          "latency_ms": 219,
+          "latency_ms": 188,
           "name": "status_center",
           "ok": true,
           "status_code": 200
@@ -279,13 +279,13 @@
       "component_id": "94cn19vph28j",
       "computed_status": "operational",
       "consecutive_failures": 0,
-      "consecutive_successes": 1,
+      "consecutive_successes": 3,
       "last_written_status": null,
       "monitor_state": "active",
       "notes": "Proves Auth/API health and the OBS auth boundary, not a receiver/media transaction.",
       "probes": [
         {
-          "checked_at": "2026-08-08T18:38:40.510961Z",
+          "checked_at": "2026-08-08T19:46:31.768630Z",
           "error": null,
           "latency_ms": 344,
           "name": "core_api_health",
@@ -293,7 +293,7 @@
           "status_code": 200
         },
         {
-          "checked_at": "2026-08-08T18:38:40.846659Z",
+          "checked_at": "2026-08-08T19:46:32.094549Z",
           "error": null,
           "latency_ms": 328,
           "name": "obs_auth_boundary",
@@ -308,23 +308,23 @@
       "component_id": "q7435t6bd41x",
       "computed_status": "operational",
       "consecutive_failures": 0,
-      "consecutive_successes": 1,
+      "consecutive_successes": 3,
       "last_written_status": null,
       "monitor_state": "active",
       "notes": "Proves Auth/API health and the native-client auth boundary, not a signed-in room workflow.",
       "probes": [
         {
-          "checked_at": "2026-08-08T18:38:39.843155Z",
+          "checked_at": "2026-08-08T19:46:31.071199Z",
           "error": null,
-          "latency_ms": 1234,
+          "latency_ms": 1219,
           "name": "core_api_health",
           "ok": true,
           "status_code": 200
         },
         {
-          "checked_at": "2026-08-08T18:38:40.178034Z",
+          "checked_at": "2026-08-08T19:46:31.404517Z",
           "error": null,
-          "latency_ms": 328,
+          "latency_ms": 344,
           "name": "studioapp_auth_boundary",
           "ok": true,
           "status_code": 401
@@ -347,8 +347,8 @@
     "metrics": false,
     "statuspage_writes": false
   },
-  "generated_at": "2026-08-08T18:38:48.710706Z",
-  "last_completed_probe_cycle": "2026-08-08T18:38:37.397735Z",
+  "generated_at": "2026-08-08T19:46:39.284785Z",
+  "last_completed_probe_cycle": "2026-08-08T19:46:28.758441Z",
   "last_error": null,
   "last_heartbeat_at": null,
   "last_heartbeat_result": "disabled",
