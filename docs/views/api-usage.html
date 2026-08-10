@@ -48,8 +48,25 @@
         <div><strong>Generated:</strong> <span id="api-usage-generated-at">--</span></div>
       </div>
 
-      <div id="api-usage-chart-panel" class="ss-panel api-usage-chart-panel" style="padding:16px;">
+      <div id="api-usage-chart-panel" class="ss-panel api-usage-chart-panel">
+        <div class="api-usage-chart-head">
+          <div id="api-usage-chart-legend" class="api-usage-chart-legend" aria-label="Chart legend">
+            <span class="api-usage-legend-item">
+              <span class="api-usage-legend-swatch requests"></span>
+              <span>Requests/sec</span>
+            </span>
+            <span class="api-usage-legend-item">
+              <span class="api-usage-legend-swatch errors"></span>
+              <span>Errors/sec</span>
+            </span>
+          </div>
+          <div id="api-usage-chart-current" class="api-usage-chart-current" aria-live="polite">
+            <span>Current</span><strong>-- req/s</strong>
+            <span>Error rate</span><span>--</span>
+          </div>
+        </div>
         <canvas id="api-usage-chart" class="api-usage-chart-canvas" aria-label="API usage chart"></canvas>
+        <div id="api-usage-chart-tooltip" class="api-usage-chart-tooltip hidden"></div>
         <div id="api-usage-empty" class="ss-empty hidden" style="margin-top:12px;">
           No data yet.
         </div>

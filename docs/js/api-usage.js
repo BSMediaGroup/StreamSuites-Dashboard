@@ -46,7 +46,10 @@
     destroyed: false,
     lastFetchedAt: null,
     chartModel: null,
-    hoverIndex: null
+    hoverIndex: null,
+    previousChart: null,
+    chartAnimationFrame: null,
+    hasRevealedChart: false
   };
 
   const el = {
@@ -62,6 +65,7 @@
     empty: null,
     chartLegend: null,
     chartTooltip: null,
+    chartCurrent: null,
     endpointHealth: null,
     authSignals: null,
     tierSurface: null,
@@ -257,12 +261,23 @@
 
   function normalizeSeries(series) {
     if (!Array.isArray(series)) return [];
-    return series
-      .map((point) => ({
-        ts: Number(point?.ts ?? point?.timestamp ?? 0),
-        count: Number(point?.count ?? point?.value ?? 0)
-      }))
-      .filter((point) => Number.isFinite(point.ts) && Number.isFinite(point.count));
+    const normalized = series
+      .map((point) => {
+        const rawTimestamp = point?.ts ?? point?.timestamp;
+        const rawCount = point?.count ?? point?.value;
+        const numericTimestamp = Number(rawTimestamp);
+        const parsedTimestamp = Number.isFinite(numericTimestamp)
+          ? numericTimestamp
+          : Date.parse(String(rawTimestamp || ""));
+        if (rawCount === null || rawCount === undefined || rawCount === "") return null;
+        const count = Number(rawCount);
+        if (!Number.isFinite(parsedTimestamp) || !Number.isFinite(count)) return null;
+        return { ts: parsedTimestamp, count };
+      })
+      .filter(Boolean)
+      .sort((left, right) => left.ts - right.ts);
+
+    return normalized.filter((point, index) => index === normalized.length - 1 || point.ts !== normalized[index + 1].ts);
   }
 
   function resolveChartPayload(bundle) {
@@ -303,6 +318,44 @@
       el.chartTooltip.className = "api-usage-chart-tooltip hidden";
       el.panel.appendChild(el.chartTooltip);
     }
+
+    if (!el.chartCurrent) {
+      el.chartCurrent = document.createElement("div");
+      el.chartCurrent.id = "api-usage-chart-current";
+      el.chartCurrent.className = "api-usage-chart-current";
+      el.chartCurrent.setAttribute("aria-live", "polite");
+      el.chartCurrent.innerHTML = "<span>Current</span><strong>-- req/s</strong><span>Error rate</span><span>--</span>";
+      el.chartLegend.insertAdjacentElement("afterend", el.chartCurrent);
+    }
+  }
+
+  function buildAlignedChart(chart) {
+    const requestByTimestamp = new Map(chart.requests.map((point) => [point.ts, point.count]));
+    const errorByTimestamp = new Map(chart.errors.map((point) => [point.ts, point.count]));
+    const timestamps = [...new Set([...requestByTimestamp.keys(), ...errorByTimestamp.keys()])]
+      .sort((left, right) => left - right);
+    return {
+      points: timestamps.map((ts) => ({
+        ts,
+        requests: requestByTimestamp.has(ts) ? requestByTimestamp.get(ts) : null,
+        errors: errorByTimestamp.has(ts) ? errorByTimestamp.get(ts) : null
+      }))
+    };
+  }
+
+  function updateChartCurrent(points) {
+    if (!el.chartCurrent) return;
+    const requestPoint = [...points].reverse().find((point) => Number.isFinite(point.requests));
+    const errorPoint = [...points].reverse().find((point) => Number.isFinite(point.errors));
+    const requestsPerSec = requestPoint?.requests;
+    const errorsPerSec = errorPoint?.errors;
+    const errorRate = Number.isFinite(requestsPerSec) && requestsPerSec > 0 && Number.isFinite(errorsPerSec)
+      ? errorsPerSec / requestsPerSec
+      : null;
+    el.chartCurrent.innerHTML = `
+      <span>Current</span><strong>${escapeHtml(Number.isFinite(requestsPerSec) ? `${formatDecimal(requestsPerSec, requestsPerSec >= 10 ? 0 : 2)} req/s` : "--")}</strong>
+      <span>Error rate</span><span>${escapeHtml(Number.isFinite(errorRate) ? formatPercent(errorRate) : "--")}</span>
+    `;
   }
 
   function hideChartTooltip() {
@@ -321,23 +374,24 @@
       return;
     }
 
-    const requestPoint = model.requests[index];
-    const errorPoint = model.errors[index];
-    const requestsPerSec = Number(requestPoint?.count ?? 0);
-    const errorsPerSec = Number(errorPoint?.count ?? 0);
-    const rpm = requestsPerSec * 60;
-    const errorRate = requestsPerSec > 0 ? errorsPerSec / requestsPerSec : 0;
-    const timestamp = requestPoint?.ts || errorPoint?.ts || null;
+    const point = model.points[index];
+    const requestsPerSec = point?.requests;
+    const errorsPerSec = point?.errors;
+    const rpm = Number.isFinite(requestsPerSec) ? requestsPerSec * 60 : null;
+    const errorRate = Number.isFinite(requestsPerSec) && requestsPerSec > 0 && Number.isFinite(errorsPerSec)
+      ? errorsPerSec / requestsPerSec
+      : null;
+    const timestamp = point?.ts || null;
 
     el.chartTooltip.innerHTML = `
       <div class="api-usage-tooltip-time">${escapeHtml(formatTimestamp(timestamp))}</div>
       <div class="api-usage-tooltip-grid">
         <span class="api-usage-tooltip-label">RPM</span>
-        <span class="api-usage-tooltip-value">${escapeHtml(formatDecimal(rpm, rpm >= 10 ? 0 : 2))}</span>
+        <span class="api-usage-tooltip-value">${escapeHtml(Number.isFinite(rpm) ? formatDecimal(rpm, rpm >= 10 ? 0 : 2) : "--")}</span>
         <span class="api-usage-tooltip-label">Error Rate</span>
-        <span class="api-usage-tooltip-value">${escapeHtml(formatPercent(errorRate))}</span>
+        <span class="api-usage-tooltip-value">${escapeHtml(Number.isFinite(errorRate) ? formatPercent(errorRate) : "--")}</span>
         <span class="api-usage-tooltip-label">Errors/sec</span>
-        <span class="api-usage-tooltip-value">${escapeHtml(formatDecimal(errorsPerSec, errorsPerSec >= 10 ? 0 : 2))}</span>
+        <span class="api-usage-tooltip-value">${escapeHtml(Number.isFinite(errorsPerSec) ? formatDecimal(errorsPerSec, errorsPerSec >= 10 ? 0 : 2) : "--")}</span>
       </div>
     `;
     el.chartTooltip.classList.remove("hidden");
@@ -376,10 +430,15 @@
     renderChartTooltip(event.clientX, event.clientY, index);
   }
 
-  function drawChart(bundle) {
+  function drawChart(bundle, options = {}) {
     if (!el.canvas) return;
     const ctx = el.canvas.getContext("2d");
     if (!ctx) return;
+
+    if (state.chartAnimationFrame) {
+      cancelAnimationFrame(state.chartAnimationFrame);
+      state.chartAnimationFrame = null;
+    }
 
     const containerWidth = el.canvas.clientWidth || 600;
     const containerHeight = el.canvas.clientHeight || 260;
@@ -388,87 +447,155 @@
     el.canvas.height = Math.max(1, Math.floor(containerHeight * dpr));
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    ctx.clearRect(0, 0, containerWidth, containerHeight);
-
     const padding = { top: 18, right: 22, bottom: 30, left: 52 };
     const width = Math.max(1, containerWidth - padding.left - padding.right);
     const height = Math.max(1, containerHeight - padding.top - padding.bottom);
 
-    ctx.strokeStyle = "rgba(255,255,255,0.12)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(padding.left, padding.top);
-    ctx.lineTo(padding.left, padding.top + height);
-    ctx.lineTo(padding.left + width, padding.top + height);
-    ctx.stroke();
-
     if (!bundle) {
+      ctx.clearRect(0, 0, containerWidth, containerHeight);
       state.chartModel = null;
+      state.previousChart = null;
       hideChartTooltip();
       renderEmptyState(true);
+      updateChartCurrent([]);
       return;
     }
 
-    const chart = resolveChartPayload(bundle);
-    const requests = chart.requests;
-    const errors = chart.errors;
-    const pointCount = Math.max(requests.length, errors.length);
-    const combined = requests.concat(errors);
-    const maxValue = Math.max(1, ...combined.map((point) => point.count));
-
-    renderEmptyState(combined.length === 0 || combined.every((point) => point.count === 0));
-
-    const yTicks = 4;
-    ctx.font = "11px system-ui, -apple-system, sans-serif";
-    ctx.fillStyle = "rgba(255,255,255,0.62)";
-    for (let i = 0; i <= yTicks; i += 1) {
-      const ratio = i / yTicks;
-      const y = padding.top + height - ratio * height;
-      const value = maxValue * ratio;
-      ctx.strokeStyle = i === 0 ? "rgba(255,255,255,0.16)" : "rgba(255,255,255,0.06)";
-      ctx.beginPath();
-      ctx.moveTo(padding.left, y);
-      ctx.lineTo(padding.left + width, y);
-      ctx.stroke();
-      ctx.fillText(formatDecimal(value, value >= 10 ? 0 : 2), 8, y + 3);
-    }
-
+    const nextChart = buildAlignedChart(resolveChartPayload(bundle));
+    const values = nextChart.points.flatMap((point) => [point.requests, point.errors]).filter(Number.isFinite);
+    const pointCount = nextChart.points.length;
+    const maxValue = Math.max(1, ...values);
     const step = pointCount > 1 ? width / (pointCount - 1) : width;
+    const previousByTimestamp = new Map((state.previousChart?.points || []).map((point) => [point.ts, point]));
+    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true;
+    const isInitialReveal = !state.hasRevealedChart && values.length > 0;
+    const duration = reduceMotion ? 0 : isInitialReveal ? 360 : options.trigger === "poll" ? 150 : 0;
 
-    function mapY(value) {
-      return padding.top + height - (value / maxValue) * height;
+    renderEmptyState(values.length === 0);
+    updateChartCurrent(nextChart.points);
+
+    function interpolateValue(point, key, progress) {
+      const nextValue = point[key];
+      const previousValue = previousByTimestamp.get(point.ts)?.[key];
+      if (!Number.isFinite(nextValue) || !Number.isFinite(previousValue)) return nextValue;
+      return previousValue + (nextValue - previousValue) * progress;
     }
 
-    function drawSeries(series, color) {
-      if (!series.length) return;
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      series.forEach((point, index) => {
-        const x = padding.left + step * index;
-        const y = mapY(point.count);
-        if (index === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+    function drawSmoothSeries(points, key, color, fillColor) {
+      const segments = [];
+      let segment = [];
+      points.forEach((point, index) => {
+        const value = point[key];
+        if (!Number.isFinite(value)) {
+          if (segment.length) segments.push(segment);
+          segment = [];
+          return;
+        }
+        segment.push({ x: padding.left + step * index, y: padding.top + height - (value / maxValue) * height });
       });
-      ctx.stroke();
+      if (segment.length) segments.push(segment);
+
+      segments.forEach((items) => {
+        if (items.length > 1 && fillColor) {
+          const gradient = ctx.createLinearGradient(0, padding.top, 0, padding.top + height);
+          gradient.addColorStop(0, fillColor);
+          gradient.addColorStop(1, "rgba(66, 111, 153, 0)");
+          ctx.beginPath();
+          ctx.moveTo(items[0].x, padding.top + height);
+          ctx.lineTo(items[0].x, items[0].y);
+          for (let index = 1; index < items.length; index += 1) {
+            const previous = items[index - 1];
+            const current = items[index];
+            const midpoint = (previous.x + current.x) / 2;
+            ctx.bezierCurveTo(midpoint, previous.y, midpoint, current.y, current.x, current.y);
+          }
+          ctx.lineTo(items[items.length - 1].x, padding.top + height);
+          ctx.closePath();
+          ctx.fillStyle = gradient;
+          ctx.fill();
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(items[0].x, items[0].y);
+        for (let index = 1; index < items.length; index += 1) {
+          const previous = items[index - 1];
+          const current = items[index];
+          const midpoint = (previous.x + current.x) / 2;
+          ctx.bezierCurveTo(midpoint, previous.y, midpoint, current.y, current.x, current.y);
+        }
+        ctx.strokeStyle = color;
+        ctx.lineWidth = key === "requests" ? 2.25 : 1.6;
+        ctx.stroke();
+
+        const current = items[items.length - 1];
+        ctx.beginPath();
+        ctx.arc(current.x, current.y, key === "requests" ? 3.6 : 3, 0, Math.PI * 2);
+        ctx.fillStyle = "#080c11";
+        ctx.fill();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
     }
 
-    const seriesColors = {
-      requests: "#59d4ff",
-      errors: "#ff9a78"
-    };
+    function renderFrame(progress) {
+      ctx.clearRect(0, 0, containerWidth, containerHeight);
+      ctx.strokeStyle = "rgba(190, 207, 226, 0.12)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padding.left, padding.top);
+      ctx.lineTo(padding.left, padding.top + height);
+      ctx.lineTo(padding.left + width, padding.top + height);
+      ctx.stroke();
 
-    drawSeries(requests, seriesColors.requests);
-    drawSeries(errors, seriesColors.errors);
+      const yTicks = 4;
+      ctx.font = '10px "IBM Plex Mono", ui-monospace, monospace';
+      ctx.fillStyle = "rgba(190,207,226,0.56)";
+      for (let index = 0; index <= yTicks; index += 1) {
+        const ratio = index / yTicks;
+        const y = padding.top + height - ratio * height;
+        const value = maxValue * ratio;
+        ctx.strokeStyle = index === 0 ? "rgba(190,207,226,0.13)" : "rgba(190,207,226,0.055)";
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(padding.left + width, y);
+        ctx.stroke();
+        ctx.fillText(formatDecimal(value, value >= 10 ? 0 : 2), 8, y + 3);
+      }
 
-    state.chartModel = {
-      padding,
-      width,
-      step,
-      pointCount,
-      requests,
-      errors
-    };
+      const points = nextChart.points.map((point) => ({
+        ts: point.ts,
+        requests: interpolateValue(point, "requests", progress),
+        errors: interpolateValue(point, "errors", progress)
+      }));
+      ctx.save();
+      if (isInitialReveal && progress < 1) {
+        ctx.beginPath();
+        ctx.rect(padding.left, padding.top - 4, Math.max(1, width * progress), height + 8);
+        ctx.clip();
+      }
+      drawSmoothSeries(points, "requests", "#7eb4df", "rgba(82, 143, 194, 0.20)");
+      drawSmoothSeries(points, "errors", "#d99379", null);
+      ctx.restore();
+
+      state.chartModel = { padding, width, step, pointCount, points: nextChart.points };
+    }
+
+    if (duration <= 0) {
+      renderFrame(1);
+    } else {
+      const startedAt = performance.now();
+      const tick = (now) => {
+        const progress = Math.min(1, (now - startedAt) / duration);
+        renderFrame(1 - Math.pow(1 - progress, 3));
+        if (progress < 1) state.chartAnimationFrame = requestAnimationFrame(tick);
+        else state.chartAnimationFrame = null;
+      };
+      state.chartAnimationFrame = requestAnimationFrame(tick);
+    }
+
+    state.previousChart = nextChart;
+    if (values.length) state.hasRevealedChart = true;
   }
 
   function renderEmptyState(show) {
@@ -1033,7 +1160,7 @@
         );
         setBanner("", false);
 
-        drawChart(payload);
+        drawChart(payload, { trigger });
         renderAllSections(payload);
       } catch (err) {
         state.online = false;
@@ -1083,6 +1210,7 @@
     el.empty = $("api-usage-empty");
     el.chartLegend = $("api-usage-chart-legend");
     el.chartTooltip = $("api-usage-chart-tooltip");
+    el.chartCurrent = $("api-usage-chart-current");
     el.endpointHealth = $("api-usage-endpoint-health");
     el.authSignals = $("api-usage-auth-signals");
     el.tierSurface = $("api-usage-tier-surface");
@@ -1141,6 +1269,11 @@
     if (state.resizeObserver) {
       state.resizeObserver.disconnect();
       state.resizeObserver = null;
+    }
+
+    if (state.chartAnimationFrame) {
+      cancelAnimationFrame(state.chartAnimationFrame);
+      state.chartAnimationFrame = null;
     }
   }
 

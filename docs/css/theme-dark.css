@@ -34,25 +34,25 @@
    ---------------------------------------------------------------------- */
 
 :root {
-  --bg-root: #0e0f12;
-  --bg-panel: #14161b;
-  --bg-panel-alt: #1b1e24;
-  --bg-hover: #222632;
+  --bg-root: #06080b;
+  --bg-panel: #0c1015;
+  --bg-panel-alt: #11161d;
+  --bg-hover: #171d25;
 
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.16);
+  --border-subtle: rgba(190, 207, 226, 0.10);
+  --border-strong: rgba(196, 214, 235, 0.19);
 
-  --text-primary: #e6e8eb;
-  --text-secondary: #a9adb5;
-  --text-muted: #6e737c;
+  --text-primary: #e9edf2;
+  --text-secondary: #a5adb8;
+  --text-muted: #717b88;
 
-  --accent-primary: #8cc736; /* StreamSuites green */
+  --accent-primary: #7396bd;
   --accent-warning: #e1ac1e;
   --accent-danger: #d9534f;
   --accent-info: #5bc0de;
 
-  --glow-soft: rgba(140, 199, 54, 0.25);
-  --glow-hard: rgba(140, 199, 54, 0.45);
+  --glow-soft: rgba(92, 135, 180, 0.13);
+  --glow-hard: rgba(92, 135, 180, 0.22);
 
   --radius-sm: 4px;
   --radius-md: 8px;
@@ -61,15 +61,15 @@
   /* ------------------------------------------------------------
      ADDITIVE: Dashboard requested overrides
      ------------------------------------------------------------ */
-  --accent-shell: #5a9cff;
-  --accent-shell-strong: #a4cbff;
-  --accent-shell-soft: rgba(90, 156, 255, 0.18);
-  --accent-shell-glow: rgba(90, 156, 255, 0.34);
-  --accent-shell-rgb: 90, 156, 255;
-  --accent-shell-strong-rgb: 164, 203, 255;
-  --accent-shell-deep-rgb: 38, 92, 168;
-  --link-color: #a4cbff;
-  --link-accent: #5a9cff;
+  --accent-shell: #7298c1;
+  --accent-shell-strong: #b6cce4;
+  --accent-shell-soft: rgba(114, 152, 193, 0.15);
+  --accent-shell-glow: rgba(74, 112, 154, 0.20);
+  --accent-shell-rgb: 114, 152, 193;
+  --accent-shell-strong-rgb: 182, 204, 228;
+  --accent-shell-deep-rgb: 55, 80, 108;
+  --link-color: #a9c3df;
+  --link-accent: #7da2c8;
   --status-active: #84C642;
   --status-idle: #DF2323;
   --date-picker-indicator-filter: brightness(0) saturate(100%) invert(90%) sepia(7%) saturate(177%) hue-rotate(180deg) brightness(95%) contrast(91%);

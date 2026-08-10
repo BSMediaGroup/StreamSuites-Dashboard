@@ -15,7 +15,8 @@ Admin-facing StreamSuites surface deployed to Cloudflare Pages at `https://admin
 
 ## Studio-first operator design system
 
-- `docs/css/studio-first-system.css` is staged into the root Pages artifact and loads last for the canonical shell, compatibility shell, 404, login, and auth-success surfaces. It retains the Admin Dashboard's existing dark muted graphite/blue palette while refining typography, dense tables, forms, dialogs, severity/status chips, destructive emphasis, focus rings, narrow table containment, and reduced-motion behavior.
+- `docs/css/studio-first-system.css` is staged into the root Pages artifact and loads last for the canonical shell, compatibility shell, 404, login, and auth-success surfaces. It now consolidates the Dashboard into a near-black, low-glow operator system with restrained steel-blue emphasis, neutral OAuth controls, consistent cards/forms/tables/dialogs, narrow-screen containment, and reduced-motion behavior.
+- `/api-usage` keeps the existing Runtime/Auth endpoint and polling/window contracts while rendering timestamp-aligned request/error series without zero-filling missing samples. Its canvas includes a subtle request gradient, current-point markers, truthful tooltips, one initial reveal, and short non-replaying live interpolation.
 - Tektur is limited to product identity and major operator titles, Geist Sans covers dense navigation, controls, forms, tables, and dialogs, and IBM Plex Mono covers version/build data, statuses, permissions, IDs, timestamps, and telemetry. The repo-local sources are `docs/assets/fonts/Tektur-VariableFont_wdth,wght.ttf`, `docs/assets/fonts/Geist-{Light,Regular,Medium,SemiBold,Bold,ExtraBold}.ttf`, and `docs/assets/fonts/mono/IBMPlexMono-{Light,Regular,Medium,SemiBold,Bold}.ttf`.
 - Font hashes match the approved read-only Public sources. Genuine Geist and IBM Plex Mono licenses remain at `docs/assets/fonts/GEISTMONOOFL.txt` and `docs/assets/fonts/mono/IBMPLEXMONOOFL.txt`; a genuine local Tektur license file remains unavailable and blocks publication of that font.
 - Operator metadata now describes the Dashboard as the privileged Runtime/Auth client across Studio access, accounts, permissions, alerts, audit, telemetry, and system status. Authentication, CSRF assumptions, privileged endpoints, confirmations, tables, charts, filters, pagination, routes, version authority, and exports are unchanged.
@@ -278,6 +279,7 @@ StreamSuites-Dashboard/
 │   └── platform/
 ├── tests/
 │   ├── admin-auth-turnstile.test.mjs
+│   ├── admin-visual-polish.test.mjs
 │   ├── analytics-map-fullscreen-polish.test.mjs
 │   ├── analytics-map-project-markers.test.mjs
 │   ├── location-cover-images.test.mjs

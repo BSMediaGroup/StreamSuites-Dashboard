@@ -6,6 +6,19 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.4-alpha / PENDING VER= 0.5.5-alpha
 
+### 2026-08-10 - Unified Admin operator shell, authentication, and API telemetry presentation
+
+#### Technical notes
+
+- Consolidated the final Admin style layer around a near-black neutral shell, muted steel-blue emphasis, calmer navigation, consistent panels/forms/tables/modals, restrained focus and destructive states, and responsive narrow-screen containment. Existing routes, permissions, auth wiring, Runtime/Auth requests, status semantics, and data controls are unchanged.
+- Unified the standalone and in-shell login experiences around the existing Admin icon, one neutral treatment for all five OAuth providers, clearer dark form/Turnstile surfaces, and compact mobile layout without changing provider, redirect, session, or challenge behavior.
+- Rebuilt the existing API Usage canvas renderer around timestamp-aligned series that skip missing samples instead of inventing zeroes. Added a subtle request fill, smooth segmented lines, current values and endpoint markers, truthful missing-value tooltips, a one-time initial reveal, reduced-motion support, and 150 ms interpolation for matching live samples without replaying the full chart or resetting the selected window.
+- Added focused visual/auth/chart source tests. No route, endpoint, auth contract, Runtime/Auth authority, version/build value, deployment configuration, asset, or production state was changed.
+
+#### Human-readable summary
+
+The Admin Dashboard and login now feel like one deliberate dark operator product, and API Usage has a calmer live chart that communicates real gaps instead of drawing synthetic data.
+
 ### 2026-08-10 - Runtime-safe Alerts control center and System Status experience
 
 #### Technical notes

@@ -33,8 +33,8 @@
   <link rel="stylesheet" href="../css/status-widget.css" />
   <link rel="stylesheet" href="../css/studio-first-system.css" />
 </head>
-<body>
-  <main style="min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 32px;">
+<body class="admin-auth-page">
+  <main class="admin-auth-page-main">
     <div class="admin-auth-card glass-card">
       <h2 class="admin-auth-title">
         <img
@@ -47,7 +47,7 @@
       <p class="muted">Use your StreamSuites account to access the admin dashboard.</p>
       <p id="admin-login-reason" class="muted"></p>
       <div class="admin-auth-providers">
-        <button class="ss-btn ss-btn-primary" data-admin-auth-provider="google">
+        <button class="ss-btn ss-btn-secondary admin-auth-provider-button" data-admin-auth-provider="google">
           <img
             class="admin-auth-provider-icon"
             src="../assets/icons/google.svg"
@@ -56,7 +56,7 @@
           />
           <span>Continue with Google</span>
         </button>
-        <button class="ss-btn ss-btn-secondary" data-admin-auth-provider="github">
+        <button class="ss-btn ss-btn-secondary admin-auth-provider-button" data-admin-auth-provider="github">
           <img
             class="admin-auth-provider-icon"
             src="../assets/icons/github.svg"
@@ -65,7 +65,7 @@
           />
           <span>Continue with GitHub</span>
         </button>
-        <button class="ss-btn ss-btn-secondary" data-admin-auth-provider="discord">
+        <button class="ss-btn ss-btn-secondary admin-auth-provider-button" data-admin-auth-provider="discord">
           <img
             class="admin-auth-provider-icon"
             src="../assets/icons/discord.svg"
@@ -74,7 +74,7 @@
           />
           <span>Continue with Discord</span>
         </button>
-        <button class="ss-btn ss-btn-secondary" data-admin-auth-provider="x">
+        <button class="ss-btn ss-btn-secondary admin-auth-provider-button" data-admin-auth-provider="x">
           <img
             class="admin-auth-provider-icon"
             src="../assets/icons/x.svg"
@@ -83,7 +83,7 @@
           />
           <span>Continue with X</span>
         </button>
-        <button class="ss-btn ss-btn-secondary" data-admin-auth-provider="twitch">
+        <button class="ss-btn ss-btn-secondary admin-auth-provider-button" data-admin-auth-provider="twitch">
           <img
             class="admin-auth-provider-icon"
             src="../assets/icons/twitch.svg"
