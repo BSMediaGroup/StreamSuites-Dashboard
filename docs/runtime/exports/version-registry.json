@@ -1,6 +1,6 @@
 {
   "schema_version": "version-registry-public-v1",
-  "generated_at": "2026-08-05T09:57:18Z",
+  "generated_at": "2026-08-10T12:38:52Z",
   "system_semantic_version": "0.5.4-alpha",
   "ecosystem_revision": 26,
   "latest_ecosystem_build_id": "2026.08.05+002",
@@ -8,14 +8,14 @@
     {
       "component_id": "alerts-windows",
       "display_name": "StreamSuites Alerts Client",
-      "version_policy": "deferred_product_semantic",
-      "semantic_version_status": "deferred",
-      "semantic_version": null,
-      "state": "deferred",
+      "version_policy": "independent_product_semantic",
+      "semantic_version_status": "initialized",
+      "semantic_version": "0.2.6-alpha",
+      "state": "ready",
       "last_build": null,
       "last_deployment": null,
       "last_publication": null,
-      "compatibility": "Existing executable metadata is not promoted to a registry semantic baseline."
+      "compatibility": "Independent Windows Alerts product; Runtime/System compatibility remains a separate projection."
     },
     {
       "component_id": "creator-web",
