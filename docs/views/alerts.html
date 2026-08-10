@@ -7,7 +7,7 @@
     <div class="ss-alerts-header-copy">
       <span class="ss-chip ss-alerts-header-chip">Admin alerting</span>
       <h1 class="ss-title">Alerts</h1>
-      <span class="ss-subtitle">Configure what triggers notifications, where they go, and how each alert will read before you save it.</span>
+      <span class="ss-subtitle">Operate system notifications, routing rules, delivery targets, tests, and history from one Runtime-backed control center.</span>
     </div>
   </div>
   <div class="ss-header-right ss-alerts-header-right">
@@ -25,10 +25,9 @@
     <div class="ss-panel-body ss-alerts-hero-body">
       <div class="ss-alerts-hero-main">
         <div class="ss-alerts-hero-copy">
-          <h2>Alert health and working copy</h2>
+          <h2>Alerts control center</h2>
           <p class="muted">
-            Review overall alert health, keep track of unsaved changes, and move between backend sync, rule editing,
-            delivery defaults, and recent activity from one dedicated view.
+            Runtime/Auth owns every rule and delivery record. Ordinary actions persist directly; whole-configuration replacement is reserved for reviewed imports.
           </p>
         </div>
 
@@ -65,21 +64,25 @@
         <section class="ss-alerts-actions-card" aria-labelledby="analytics-alerts-persistence-title">
           <div class="ss-alerts-section-heading">
             <div>
-              <h3 id="analytics-alerts-persistence-title">Change management</h3>
-              <p class="muted">Keep working in a draft, then save it to the backend when you are ready.</p>
+              <h3 id="analytics-alerts-persistence-title">Backup and import</h3>
+              <p class="muted">Export anytime. Applying an import requires the backend revision you reviewed and never silently overwrites a newer ruleset.</p>
             </div>
           </div>
           <div class="ss-alerts-actions-grid ss-analytics-alerts-header-actions">
             <button type="button" id="analytics-alerts-config-reload" class="ss-btn ss-btn-secondary ss-btn-small">Reload backend copy</button>
             <button type="button" id="analytics-alerts-config-export" class="ss-btn ss-btn-secondary ss-btn-small">Export backup</button>
             <button type="button" id="analytics-alerts-config-import" class="ss-btn ss-btn-secondary ss-btn-small">Import backup</button>
-            <button type="button" id="analytics-alerts-config-save" class="ss-btn ss-btn-primary ss-btn-small">Save changes</button>
+            <button type="button" id="analytics-alerts-config-save" class="ss-btn ss-btn-primary ss-btn-small" disabled>Apply imported configuration</button>
             <input type="file" id="analytics-alerts-config-import-file" accept="application/json,.json" class="hidden" />
           </div>
           <dl class="ss-alerts-config-list">
             <div class="ss-alerts-config-row">
               <dt>Schema</dt>
               <dd id="analytics-alerts-config-schema">--</dd>
+            </div>
+            <div class="ss-alerts-config-row">
+              <dt>Revision</dt>
+              <dd id="analytics-alerts-config-revision" class="ss-alerts-config-revision">--</dd>
             </div>
             <div class="ss-alerts-config-row">
               <dt>Source</dt>
@@ -106,6 +109,30 @@
           </p>
         </section>
       </aside>
+    </div>
+  </section>
+
+  <nav class="ss-alerts-section-nav" aria-label="Alerts page sections">
+    <a href="#alerts-system-status-section">System Status</a>
+    <a href="#alerts-rules-section">Rules</a>
+    <a href="#alerts-preferences-section">Delivery defaults</a>
+    <a href="#alerts-targets-section">Targets</a>
+    <a href="#alerts-history-section">History</a>
+  </nav>
+
+  <section id="alerts-system-status-section" class="ss-panel ss-alerts-system-status-panel" aria-labelledby="analytics-alerts-system-status-title">
+    <div class="ss-panel-body ss-alerts-system-status-body">
+      <div class="ss-alerts-system-status-copy">
+        <span class="ss-chip ss-alerts-system-status-kicker">Canonical system notifications</span>
+        <h2 id="analytics-alerts-system-status-title">System Status alerts</h2>
+        <p>Primary watchdog transitions enter the normal Runtime alert pipeline. When Runtime is reachable, the same delivery record can route Windows Alerts and Pushover. The Cloudflare dead-man Worker uses direct Pushover only as an emergency fallback, then replays the event to Runtime without sending Pushover twice.</p>
+        <p class="muted">Windows delivery uses the existing authenticated SSE stream and is available only when Runtime/Auth can accept and publish the alert.</p>
+      </div>
+      <div class="ss-alerts-system-status-metrics" aria-live="polite">
+        <article><span>Routing rules</span><strong id="analytics-alerts-system-rule-count">0</strong><small id="analytics-alerts-system-rule-detail">Loading status rules</small></article>
+        <article><span>Latest event</span><strong id="analytics-alerts-system-latest">--</strong><small id="analytics-alerts-system-latest-detail">No status history loaded</small></article>
+        <article><span>Delivery path</span><strong>Runtime first</strong><small>Dead-man Pushover fallback is replay-safe</small></article>
+      </div>
     </div>
   </section>
 
@@ -451,7 +478,7 @@
           </fieldset>
 
           <div class="ss-analytics-alerts-form-actions">
-            <button type="submit" id="analytics-alerts-preferences-save" class="ss-btn ss-btn-secondary">Stage default changes</button>
+            <button type="submit" id="analytics-alerts-preferences-save" class="ss-btn ss-btn-secondary">Save delivery settings</button>
           </div>
         </form>
       </div>
@@ -461,7 +488,7 @@
       <summary class="ss-panel-header ss-alerts-collapsible-summary" aria-labelledby="analytics-alerts-test-title">
         <div class="ss-panel-header-main ss-alerts-collapsible-summary-copy">
           <h2 id="analytics-alerts-test-title">Send test notification</h2>
-          <p id="analytics-alerts-test-summary-detail" class="muted">Trigger a safe admin test through the existing backend endpoint and confirm where it lands.</p>
+          <p id="analytics-alerts-test-summary-detail" class="muted">Trigger a safe, test-labelled notification through the existing backend endpoint. This never changes real monitor state.</p>
         </div>
         <div class="ss-alerts-collapsible-summary-meta">
           <span id="analytics-alerts-test-summary-meta" class="ss-chip ss-chip-muted">Safe backend test</span>
@@ -570,6 +597,32 @@
         </div>
         <div class="ss-analytics-alerts-header-actions">
           <span id="analytics-alerts-history-summary" class="ss-chip ss-chip-muted">Latest 250 entries</span>
+          <label class="ss-analytics-alerts-filter">
+            <span class="muted">Event family</span>
+            <select id="analytics-alerts-history-family-filter">
+              <option value="">All events</option>
+              <option value="system_status">System Status only</option>
+              <option value="other">Other alerts</option>
+            </select>
+          </label>
+          <label class="ss-analytics-alerts-filter">
+            <span class="muted">Severity</span>
+            <select id="analytics-alerts-history-severity-filter">
+              <option value="">All severities</option>
+              <option value="info">Info</option>
+              <option value="warning">Warning</option>
+              <option value="error">Error</option>
+              <option value="critical">Critical</option>
+            </select>
+          </label>
+          <label class="ss-analytics-alerts-filter">
+            <span class="muted">Destination</span>
+            <select id="analytics-alerts-history-destination-filter">
+              <option value="">All destinations</option>
+              <option value="windows_client">Windows client</option>
+              <option value="pushover">Pushover</option>
+            </select>
+          </label>
           <div class="ss-alerts-collection-controls" aria-label="Recent alert activity display controls">
             <div id="analytics-alerts-history-view-toggle" class="ss-alerts-view-toggle" role="group" aria-label="Choose how recent alert activity is displayed">
               <button type="button" id="analytics-alerts-history-view-list" class="ss-alerts-view-toggle-button" data-layout-target="history" data-layout-view="list" aria-pressed="false">List</button>

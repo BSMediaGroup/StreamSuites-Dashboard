@@ -18,6 +18,167 @@
   color: var(--text-primary);
 }
 
+/* Alerts operational control-center milestone. */
+.ss-alerts-main {
+  --alerts-accent: #63b6ff;
+  --alerts-cyan: #51e0d2;
+  --alerts-panel: rgba(13, 20, 33, 0.92);
+  background:
+    radial-gradient(circle at 88% 2%, rgba(52, 126, 207, 0.14), transparent 30rem),
+    radial-gradient(circle at 12% 24%, rgba(44, 190, 174, 0.08), transparent 28rem);
+}
+
+.ss-alerts-section-nav {
+  position: sticky;
+  top: 0.75rem;
+  z-index: 8;
+  display: flex;
+  gap: 0.45rem;
+  width: max-content;
+  max-width: 100%;
+  margin: 0 auto 1rem;
+  padding: 0.42rem;
+  overflow-x: auto;
+  border: 1px solid rgba(128, 170, 220, 0.18);
+  border-radius: 999px;
+  background: rgba(8, 13, 23, 0.9);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(14px);
+}
+
+.ss-alerts-section-nav a {
+  flex: 0 0 auto;
+  padding: 0.45rem 0.78rem;
+  border-radius: 999px;
+  color: var(--ss-text-muted, #9aabc2);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ss-alerts-section-nav a:hover,
+.ss-alerts-section-nav a:focus-visible {
+  color: #eaf6ff;
+  background: rgba(99, 182, 255, 0.13);
+  outline: none;
+}
+
+.ss-alerts-system-status-panel {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(77, 185, 218, 0.3);
+  background: linear-gradient(135deg, rgba(12, 27, 43, 0.97), rgba(10, 17, 29, 0.97));
+}
+
+.ss-alerts-system-status-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: linear-gradient(#66c4ff, #48dec7);
+}
+
+.ss-alerts-system-status-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(20rem, 0.8fr);
+  gap: clamp(1rem, 3vw, 2.5rem);
+  align-items: center;
+}
+
+.ss-alerts-system-status-copy h2 {
+  margin: 0.65rem 0 0.5rem;
+}
+
+.ss-alerts-system-status-copy p {
+  max-width: 72ch;
+}
+
+.ss-alerts-system-status-kicker {
+  color: #9fe7ff;
+  border-color: rgba(100, 198, 238, 0.3);
+  background: rgba(64, 167, 214, 0.11);
+}
+
+.ss-alerts-system-status-metrics {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.ss-alerts-system-status-metrics article {
+  display: grid;
+  grid-template-columns: minmax(7.5rem, auto) 1fr;
+  gap: 0.12rem 0.75rem;
+  align-items: baseline;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid rgba(118, 175, 211, 0.16);
+  border-radius: 0.75rem;
+  background: rgba(4, 10, 19, 0.48);
+}
+
+.ss-alerts-system-status-metrics span,
+.ss-alerts-system-status-metrics small {
+  color: var(--ss-text-muted, #91a2b9);
+}
+
+.ss-alerts-system-status-metrics strong {
+  justify-self: end;
+  color: #edf8ff;
+}
+
+.ss-alerts-system-status-metrics small {
+  grid-column: 1 / -1;
+}
+
+.ss-analytics-alerts-rule-card.is-system-status,
+.ss-analytics-alerts-history-card.is-system-status {
+  border-color: rgba(88, 186, 224, 0.32);
+  background: linear-gradient(145deg, rgba(18, 36, 54, 0.72), rgba(12, 20, 33, 0.94));
+  box-shadow: inset 3px 0 0 rgba(81, 224, 210, 0.62);
+}
+
+.ss-alerts-status-history-context {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.75rem;
+  margin-top: 0.7rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.65rem;
+  color: #b8cbe0;
+  background: rgba(50, 132, 169, 0.1);
+  font-size: 0.8rem;
+}
+
+.ss-alerts-status-history-context a {
+  margin-left: auto;
+  color: #78d7ff;
+}
+
+@media (max-width: 860px) {
+  .ss-alerts-system-status-body {
+    grid-template-columns: 1fr;
+  }
+
+  .ss-alerts-section-nav {
+    margin-inline: 0;
+    border-radius: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .ss-alerts-system-status-metrics article {
+    grid-template-columns: 1fr;
+  }
+
+  .ss-alerts-system-status-metrics strong {
+    justify-self: start;
+  }
+
+  .ss-alerts-status-history-context a {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
 .ss-header {
   display: flex;
   justify-content: space-between;
@@ -2612,6 +2773,13 @@ button.ss-public-identity-chip:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.ss-alerts-config-revision {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .ss-alerts-layout {

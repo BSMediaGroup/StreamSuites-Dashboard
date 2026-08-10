@@ -20,19 +20,6 @@
       trigger_type: "page_visit"
     }
   ]);
-  const PROTECTED_ALERT_RULE_IDS = Object.freeze([
-    "e8eaaca5-95bf-4f1c-a195-54b3d96f2955",
-    "dc_a9ed791a-37a6-4413-b150-25b80f2bb6f5",
-    "91ea53a8-6bbc-4b5f-ad3d-2ca30873681a",
-    "7e05557e-4232-4bed-b909-eb3f7a42f4de",
-    "648ec5a6-a6f7-475f-9174-d3a853ef8934",
-    "59eab606-b99a-44ad-b6a6-4118012945c3",
-    "38413d8f-cc2d-41c9-a52c-2f53fa3c8188",
-    "2dbfad16-b9d8-4543-90e3-fec2a362fc59",
-    "2ca9049b-e25a-4a5f-860a-192b8b5d1f43",
-    "219c641f-545a-4e9f-b3e4-e10b51ea3a42",
-    "05d097bf-dfc6-4902-93f4-2fe7e3056724"
-  ]);
   const DEFAULT_RULES_PAGE_SIZE = 10;
   const RULES_PAGE_SIZE_OPTIONS = Object.freeze([5, 10, 20, 50]);
   const HISTORY_LIMIT = 250;
@@ -57,7 +44,13 @@
     "user_type",
     "admin_only",
     "surface",
-    "destination_type"
+    "destination_type",
+    "status_scope",
+    "status_change_kind",
+    "status_source",
+    "component_key",
+    "component_id",
+    "current_status"
   ];
   const SCOPE_FIELD_CONFIG = {
     page_path: { label: "Page path", kind: "text", placeholder: "/about.html" },
@@ -67,7 +60,13 @@
     user_type: { label: "User type", kind: "select" },
     admin_only: { label: "Admin only", kind: "checkbox" },
     surface: { label: "Surfaces", kind: "multi-checkbox" },
-    destination_type: { label: "Destination type", kind: "select" }
+    destination_type: { label: "Destination type", kind: "select" },
+    status_scope: { label: "Status scope", kind: "select" },
+    status_change_kind: { label: "Change kind", kind: "select" },
+    status_source: { label: "Status source", kind: "select" },
+    component_key: { label: "Component key", kind: "text", placeholder: "authentication_accounts_sessions" },
+    component_id: { label: "Component ID", kind: "text", placeholder: "tb383cr2p92n" },
+    current_status: { label: "Current status", kind: "select" }
   };
   const TEMPLATE_CATEGORY_ORDER = [
     "General / Event",
@@ -75,6 +74,7 @@
     "Request / Page",
     "Session / Client",
     "Geo",
+    "System / Status",
     "Destination / Delivery",
     "Timing",
     "Other"
@@ -85,6 +85,7 @@
     "Request / Page": "Page, route, origin, and referrer context.",
     "Session / Client": "Browser, device, and client environment.",
     Geo: "Country, region, and city details from the request.",
+    "System / Status": "Component, overall-state, and monitor failover context.",
     "Destination / Delivery": "Where the alert is routed.",
     Timing: "Timestamps, counts, and rule timing values.",
     Other: "Additional runtime-provided context."
@@ -311,6 +312,9 @@
     configuration: null,
     lastSavedConfigurationHash: "",
     lastImportedSummary: "",
+    importStaged: false,
+    importAllowsDeletions: false,
+    importDiff: null,
     preferences: null,
     rules: [],
     targets: [],
@@ -325,6 +329,11 @@
     historyView: "gallery",
     historyPageSize: DEFAULT_HISTORY_PAGE_SIZE,
     historyPage: 1,
+    historyFilters: {
+      family: "",
+      severity: "",
+      destination: ""
+    },
     loadToken: 0,
     ruleScopePassthrough: {},
     targetFilters: {
@@ -356,6 +365,7 @@
     configState: null,
     configDetail: null,
     configSchema: null,
+    configRevision: null,
     configSource: null,
     configSynced: null,
     configImported: null,
@@ -448,6 +458,9 @@
     historyEmpty: null,
     historyPagination: null,
     historySummary: null,
+    historyFamilyFilter: null,
+    historySeverityFilter: null,
+    historyDestinationFilter: null,
     historyViewToggle: null,
     historyPageSize: null,
     preferencesSummaryMeta: null,
@@ -1063,6 +1076,14 @@
       Object.keys(SURFACE_LABELS).forEach((item) => options.add(item));
     } else if (field === "destination_type") {
       getDestinationKeys().forEach((item) => options.add(item));
+    } else if (field === "status_scope") {
+      ["component", "overall", "monitor"].forEach((item) => options.add(item));
+    } else if (field === "status_change_kind") {
+      ["degraded", "outage", "recovery", "failover", "monitor_recovery", "unknown"].forEach((item) => options.add(item));
+    } else if (field === "status_source") {
+      ["primary_watchdog", "deadman_worker"].forEach((item) => options.add(item));
+    } else if (field === "current_status") {
+      ["operational", "degraded_performance", "partial_outage", "major_outage", "unknown", "stale"].forEach((item) => options.add(item));
     }
     collectObservedScopeValues(field).forEach((item) => options.add(String(item).toLowerCase()));
     if (field === "surface" && Array.isArray(currentValue)) {
@@ -1091,7 +1112,13 @@
     let defaults = {};
     let autoEnable = false;
 
-    if (projectForEventMeta(meta) === "danielclancy") {
+    if (key === "system_status_change") {
+      recommended = ["status_scope", "status_change_kind", "component_key", "current_status"];
+      helper = "Route all meaningful status transitions, or narrow the rule to overall state, one component, outages, or recoveries.";
+    } else if (key === "system_monitor_state") {
+      recommended = ["status_change_kind", "status_source"];
+      helper = "Monitor-state rules cover dead-man failover and primary-watchdog recovery without changing Statuspage ownership.";
+    } else if (projectForEventMeta(meta) === "danielclancy") {
       recommended = ["surface", "route", "destination_type"];
       helper = "DanielClancy alert rules usually scope to DanielClancy.net or DanielClancy Admin before choosing destinations.";
       const surfaces = Array.isArray(meta?.surface_defaults) ? meta.surface_defaults.filter(Boolean) : [];
@@ -1516,7 +1543,7 @@
     }
   }
 
-  function validateConfigurationSnapshotForSave(snapshot) {
+  function validateConfigurationSnapshotForSave(snapshot, { allowDeletions = false } = {}) {
     const incomingRules = Array.isArray(snapshot?.rules) ? snapshot.rules : [];
     const canonicalRules = Array.isArray(state.configuration?.rules) ? state.configuration.rules : [];
     if (!canonicalRules.length) return;
@@ -1528,19 +1555,16 @@
     if (hasIncomingDanielClancy && !hasIncomingStreamSuites && canonicalStreamSuitesRules.length) {
       throw new Error("DanielClancy-only alert saves cannot replace the canonical StreamSuites rule list.");
     }
-    if (incomingRules.length < canonicalRules.length) {
+    if (incomingRules.length < canonicalRules.length && !allowDeletions) {
       throw new Error("Alert save would drop existing canonical rules. Reload, merge by rule ID, and save the full configuration.");
     }
-    assertRuleIdsPreserved(
-      ruleIdSet(canonicalStreamSuitesRules),
-      incomingIds,
-      "Alert save would drop existing StreamSuites rule IDs"
-    );
-    assertRuleIdsPreserved(
-      new Set(PROTECTED_ALERT_RULE_IDS.filter((id) => canonicalRules.some((rule) => String(rule?.id || "").trim() === id))),
-      incomingIds,
-      "Alert save would drop protected minimum rule IDs"
-    );
+    if (!allowDeletions) {
+      assertRuleIdsPreserved(
+        ruleIdSet(canonicalStreamSuitesRules),
+        incomingIds,
+        "Alert save would drop existing StreamSuites rule IDs"
+      );
+    }
   }
 
   function getConfigurationHash() {
@@ -1548,22 +1572,22 @@
   }
 
   function hasUnsavedChanges() {
-    return !!state.lastSavedConfigurationHash && state.lastSavedConfigurationHash !== getConfigurationHash();
+    return state.importStaged === true;
   }
 
   function updateDirtyStateUi() {
     const dirty = hasUnsavedChanges();
     if (el.dirtyIndicator) {
-      el.dirtyIndicator.textContent = dirty ? "Unsaved changes" : "Synced";
+      el.dirtyIndicator.textContent = dirty ? "Import staged" : "Synced";
       el.dirtyIndicator.classList.toggle("is-dirty", dirty);
     }
     if (el.configState) {
-      el.configState.textContent = dirty ? "Unsaved edits" : "Synced";
+      el.configState.textContent = dirty ? "Imported configuration staged" : "Synced";
     }
     if (el.configDetail) {
       el.configDetail.textContent = dirty
-        ? "Reloading will discard the current draft until you save it."
-        : "Working copy matches the backend configuration.";
+        ? "Review the imported full-configuration diff before applying it."
+        : "Ordinary rule and preference actions persist immediately.";
     }
     if (el.configWorkingRules) {
       el.configWorkingRules.textContent = `${state.rules.length} rule${state.rules.length === 1 ? "" : "s"}`;
@@ -1591,8 +1615,12 @@
     if (syncCleanState) {
       state.lastSavedConfigurationHash = getConfigurationHash();
       state.lastImportedSummary = "";
+      state.importStaged = false;
+      state.importAllowsDeletions = false;
+      state.importDiff = null;
     } else if (importedSummary) {
       state.lastImportedSummary = importedSummary;
+      state.importStaged = true;
     }
     updateDirtyStateUi();
   }
@@ -1610,10 +1638,12 @@
     if (!Array.isArray(configuration.rules)) {
       throw new Error("Imported ruleset is missing a rules array.");
     }
+    const includesPreferences = Object.prototype.hasOwnProperty.call(configuration, "preferences");
     const normalized = {
       schema_version: String(configuration.schema_version || payload.schema_version || state.configuration?.schema_version || "alerts.v2").trim() || "alerts.v2",
       source: String(configuration.source || payload.source || "import").trim() || "import",
-      preferences: normalizePreferences(configuration.preferences),
+      preferences: includesPreferences ? normalizePreferences(configuration.preferences) : null,
+      includes_preferences: includesPreferences,
       rules: configuration.rules.map((rule, index) => normalizeRuleForEditor(rule, index))
     };
     const seenIds = new Set();
@@ -1624,28 +1654,6 @@
       seenIds.add(rule.id);
     });
     return normalized;
-  }
-
-  function mergeImportedConfigurationIntoCurrent(configuration) {
-    const currentRules = Array.isArray(state.rules) ? state.rules.map((rule) => normalizeRuleForEditor(rule, 0)) : [];
-    const mergedRules = currentRules.slice();
-    const indexById = new Map(mergedRules.map((rule, index) => [rule.id, index]));
-    configuration.rules.forEach((rule) => {
-      const normalized = normalizeRuleForEditor(rule, mergedRules.length);
-      if (indexById.has(normalized.id)) {
-        mergedRules.splice(indexById.get(normalized.id), 1, normalized);
-      } else {
-        indexById.set(normalized.id, mergedRules.length);
-        mergedRules.push(normalized);
-      }
-    });
-    const merged = {
-      ...configuration,
-      preferences: normalizePreferences(configuration.preferences || state.preferences),
-      rules: mergedRules
-    };
-    validateConfigurationSnapshotForSave(merged);
-    return merged;
   }
 
   function renderSelectOptions(selectEl, items, getValue, getLabel, emptyLabel = "") {
@@ -1696,6 +1704,18 @@
     if (el.summarySubscribers) {
       el.summarySubscribers.textContent = `${Number(settings?.active_stream_subscribers) || 0} live subscribers`;
     }
+    const systemRules = state.rules.filter((rule) => ["system_status_change", "system_monitor_state"].includes(rule?.event_type));
+    const enabledSystemRules = systemRules.filter((rule) => rule?.enabled !== false).length;
+    const latestSystemEvent = state.history.find((entry) => ["system_status_change", "system_monitor_state"].includes(entry?.event_type));
+    if (el.systemRuleCount) el.systemRuleCount.textContent = String(systemRules.length);
+    if (el.systemRuleDetail) el.systemRuleDetail.textContent = `${enabledSystemRules} enabled; Windows and Pushover are rule-controlled`;
+    if (el.systemLatest) el.systemLatest.textContent = latestSystemEvent ? labelize(latestSystemEvent.event_type) : "No events";
+    if (el.systemLatestDetail) {
+      const payload = latestSystemEvent?.payload_snapshot || {};
+      el.systemLatestDetail.textContent = latestSystemEvent
+        ? `${payload.component_name || labelize(payload.status_source || "system")} · ${payload.status_change_kind ? labelize(payload.status_change_kind) : severityLabel(latestSystemEvent.severity)}`
+        : "Status delivery history will appear here";
+    }
   }
 
   function renderCollapsibleSummaries() {
@@ -1737,6 +1757,11 @@
   function renderPersistenceMeta() {
     if (el.configSchema) {
       el.configSchema.textContent = state.configuration?.schema_version || "--";
+    }
+    if (el.configRevision) {
+      const revision = String(state.configuration?.configuration_revision || "").trim();
+      el.configRevision.textContent = revision || "--";
+      el.configRevision.title = revision;
     }
     if (el.configSource) {
       el.configSource.textContent = state.configuration?.source
@@ -2566,6 +2591,9 @@
     if (el.ruleFormTitle) {
       el.ruleFormTitle.textContent = isEditing ? "Edit rule" : "Create rule";
     }
+    if (el.ruleSave) {
+      el.ruleSave.textContent = isEditing ? "Save rule" : "Create rule";
+    }
     el.ruleCancel?.classList.toggle("hidden", !isEditing);
   }
 
@@ -2771,6 +2799,7 @@
       .map((rule) => {
         const eventMeta = getEventMeta(rule.event_type);
         const isActive = state.activeRuleId === rule.id;
+        const isSystemStatus = ["system_status_change", "system_monitor_state"].includes(rule.event_type);
         const severity = severityTone(rule.severity);
         const destinations = (Array.isArray(rule.destinations) ? rule.destinations : [])
           .map((item) => renderDestinationChip(item, "ss-alerts-destination-chip"))
@@ -2778,7 +2807,7 @@
         const scopeSummary = formatScopeSummary(rule.scope);
         return `
           <article
-            class="ss-analytics-alerts-rule-card ss-alerts-rule-card--severity-${escapeHtml(severity)}${rule.enabled ? "" : " is-disabled"}${isActive ? " is-active" : ""}"
+            class="ss-analytics-alerts-rule-card ss-alerts-rule-card--severity-${escapeHtml(severity)}${rule.enabled ? "" : " is-disabled"}${isActive ? " is-active" : ""}${isSystemStatus ? " is-system-status" : ""}"
             data-rule-card-id="${escapeHtml(rule.id)}"
             role="button"
             tabindex="0"
@@ -2792,6 +2821,8 @@
                   ${renderChip(severityLabel(rule.severity), { extraClasses: `ss-alerts-rule-severity-chip ss-alerts-rule-severity-chip--${escapeHtml(severity)} ss-alerts-compact-chip` })}
                   ${renderChip(labelize(rule.threshold_type), { extraClasses: "ss-alerts-compact-chip" })}
                   ${renderChip(rule.enabled ? "Enabled" : "Disabled", { extraClasses: "ss-alerts-compact-chip" })}
+                  ${isSystemStatus ? renderChip("System Status", { tone: "info", extraClasses: "ss-alerts-compact-chip" }) : ""}
+                  ${rule.protected ? renderChip("Runtime protected", { tone: "warning", extraClasses: "ss-alerts-compact-chip" }) : ""}
                   ${isActive ? renderChip("Editing below", { tone: "warning", extraClasses: "ss-alerts-compact-chip" }) : ""}
                 </div>
               </div>
@@ -2800,7 +2831,7 @@
                   ${rule.enabled ? "Disable" : "Enable"}
                 </button>
                 <button type="button" class="ss-btn ss-btn-small ss-alerts-rule-action ss-alerts-rule-action-edit" data-rule-action="edit" data-rule-id="${escapeHtml(rule.id)}">Edit</button>
-                <button type="button" class="ss-btn ss-btn-small ss-alerts-rule-action ss-alerts-rule-action-delete" data-rule-action="delete" data-rule-id="${escapeHtml(rule.id)}">Delete</button>
+                <button type="button" class="ss-btn ss-btn-small ss-alerts-rule-action ss-alerts-rule-action-delete" data-rule-action="delete" data-rule-id="${escapeHtml(rule.id)}" ${rule.protected ? "disabled title=\"Protected by Runtime/Auth\"" : ""}>Delete</button>
               </div>
             </div>
             ${destinations ? `<div class="ss-analytics-alerts-rule-chips">${destinations}</div>` : ""}
@@ -2906,7 +2937,18 @@
 
   function renderHistoryList() {
     if (!el.historyList || !el.historyEmpty) return;
-    const limitedHistory = Array.isArray(state.history) ? state.history.slice(0, HISTORY_LIMIT) : [];
+    const systemTypes = new Set(["system_status_change", "system_monitor_state"]);
+    const limitedHistory = (Array.isArray(state.history) ? state.history : [])
+      .filter((entry) => {
+        const isSystemStatus = systemTypes.has(String(entry?.event_type || ""));
+        if (state.historyFilters.family === "system_status" && !isSystemStatus) return false;
+        if (state.historyFilters.family === "other" && isSystemStatus) return false;
+        if (state.historyFilters.severity && String(entry?.severity || "").toLowerCase() !== state.historyFilters.severity) return false;
+        const destinations = Array.isArray(entry?.destinations_targeted) ? entry.destinations_targeted : [];
+        if (state.historyFilters.destination && !destinations.includes(state.historyFilters.destination)) return false;
+        return true;
+      })
+      .slice(0, HISTORY_LIMIT);
     const pageInfo = paginateItems(limitedHistory, state.historyPage, state.historyPageSize);
     state.historyPage = pageInfo.currentPage;
     el.historyList.classList.toggle("is-gallery", state.historyView === "gallery");
@@ -2947,6 +2989,16 @@
         const surfaceContext = renderAlertSurfaceContext(entry);
         const locationLabel = buildAlertLocationLabel(entry, { includeCountryWithCity: true });
         const pageContext = renderAlertPageContext(entry);
+        const statusPayload = entry?.payload_snapshot || {};
+        const isSystemStatus = ["system_status_change", "system_monitor_state"].includes(entry?.event_type);
+        const statusContext = isSystemStatus
+          ? `<div class="ss-alerts-status-history-context">
+              <span>${escapeHtml(statusPayload.component_name || statusPayload.status_scope || "Status monitor")}</span>
+              <span>${escapeHtml(statusPayload.previous_status || "--")} &rarr; ${escapeHtml(statusPayload.current_status || statusPayload.status_change_kind || "--")}</span>
+              <span>${escapeHtml(labelize(statusPayload.status_source || "system"))}</span>
+              ${statusPayload.status_url ? `<a href="${escapeHtml(statusPayload.status_url)}" target="_blank" rel="noopener noreferrer">Open status</a>` : ""}
+            </div>`
+          : "";
         const clientIp = normalizeClientIp(
           entry?.metadata?.template_context?.client_ip
           || entry?.payload_snapshot?.client_ip
@@ -2955,7 +3007,7 @@
         const scopeSummary = entry?.metadata?.scope_summary
           || formatScopeSummary(entry?.metadata?.effective_scope || entry?.metadata?.rule_scope || {});
         return `
-          <article class="ss-analytics-alerts-history-card ss-alerts-history-card--severity-${escapeHtml(severity)}${entry.suppressed_reason ? " is-suppressed" : ""}">
+          <article class="ss-analytics-alerts-history-card ss-alerts-history-card--severity-${escapeHtml(severity)}${entry.suppressed_reason ? " is-suppressed" : ""}${isSystemStatus ? " is-system-status" : ""}">
             <div class="ss-analytics-alerts-history-header">
               <div>
                 <h4 class="ss-analytics-alerts-history-title">${renderAlertTextHtml(entry.title || labelize(entry.event_type), {
@@ -2977,13 +3029,14 @@
             ${destinations ? `<div class="ss-analytics-alerts-history-chips">${destinations}</div>` : ""}
             ${surfaceContext}
             ${pageContext}
+            ${statusContext}
             ${locationLabel ? `<p class="ss-analytics-alerts-history-context">Location: ${escapeHtml(locationLabel)}</p>` : ""}
             ${clientIp ? `<p class="ss-analytics-alerts-history-context">Client IP: ${escapeHtml(clientIp)}</p>` : ""}
             ${scopeSummary ? `<p class="ss-analytics-alerts-history-context">Scope: ${escapeHtml(scopeSummary)}</p>` : ""}
             <div class="ss-analytics-alerts-history-meta">
               <span>Triggered: ${escapeHtml(formatTimestamp(entry.triggered_at))}</span>
               ${entry.suppressed_reason ? `<span>Suppression: ${escapeHtml(labelize(entry.suppressed_reason))}</span>` : ""}
-              ${entry.rule_id ? `<span>Rule: ${escapeHtml(entry.rule_id)}</span>` : ""}
+              ${entry.rule_id ? `<span>Rule: ${escapeHtml(entry.rule_name ? `${entry.rule_name} (${entry.rule_id})` : entry.rule_id)}</span>` : ""}
             </div>
           </article>
         `;
@@ -3336,21 +3389,24 @@
   async function handlePreferencesSubmit(event) {
     event.preventDefault();
     clearBanner();
-    state.preferences = normalizePreferences(readPreferencesPayload());
-    renderPreferencesForm();
-    renderSummary();
-    renderCollapsibleSummaries();
-    renderPersistenceMeta();
-    setStatus("Default delivery settings updated in the draft");
-    setBanner("Default delivery changes are staged locally. Use Save changes to persist them to the backend.", "success");
+    setStatus("Saving delivery settings...");
+    if (el.preferencesSave) el.preferencesSave.disabled = true;
+    try {
+      const response = await window.StreamSuitesApi.updateAdminAlertPreferences(readPreferencesPayload());
+      state.preferences = normalizePreferences(response?.preferences || response);
+      setStatus("Delivery settings saved");
+      setBanner("Delivery defaults and quiet hours were saved without changing any rules.", "success");
+      await loadAlerting({ forceRefresh: true, withLoader: false });
+    } catch (err) {
+      setStatus("Delivery settings save failed");
+      setBanner(err?.message || "Unable to save delivery settings.");
+    } finally {
+      if (el.preferencesSave) el.preferencesSave.disabled = false;
+    }
   }
 
   function handlePreferencesDraftChange() {
-    state.preferences = normalizePreferences(readPreferencesPayload());
-    renderSummary();
-    renderCollapsibleSummaries();
-    renderPersistenceMeta();
-    setStatus(hasUnsavedChanges() ? "Default delivery changes pending" : "Alerts synced");
+    setStatus("Delivery settings ready to save");
   }
 
   async function handleRuleSubmit(event) {
@@ -3358,24 +3414,20 @@
     clearBanner();
     try {
       const payload = collectRulePayload();
-      const index = state.rules.findIndex((item) => item.id === payload.id);
-      if (index >= 0) {
-        state.rules.splice(index, 1, payload);
-        ensureRulesPageForRule(payload.id);
-      } else {
-        state.rules.unshift(payload);
-        state.rulesPage = 1;
-      }
+      const editingRuleId = state.activeRuleId;
+      setStatus(editingRuleId ? "Saving rule..." : "Creating rule...");
+      if (el.ruleSave) el.ruleSave.disabled = true;
+      if (editingRuleId) await window.StreamSuitesApi.updateAdminAlertRule(editingRuleId, payload);
+      else await window.StreamSuitesApi.createAdminAlertRule(payload);
       populateRuleForm(null);
-      renderRulesList();
-      renderTestRuleOptions();
-      renderSummary();
-      renderPersistenceMeta();
-      setStatus(index >= 0 ? "Rule updated in the draft" : "Rule added to the draft");
-      setBanner("Rule changes are staged locally. Use Save changes to persist them to the backend.", "success");
+      setStatus(editingRuleId ? "Rule saved" : "Rule created");
+      setBanner(editingRuleId ? "Only the selected rule was updated." : "The new rule was created without replacing the ruleset.", "success");
+      await loadAlerting({ forceRefresh: true, withLoader: false });
     } catch (err) {
-      setStatus("Rule draft failed");
-      setBanner(err?.message || "Unable to stage alert rule changes.");
+      setStatus("Rule save failed");
+      setBanner(err?.message || "Unable to save the alert rule.");
+    } finally {
+      if (el.ruleSave) el.ruleSave.disabled = false;
     }
   }
 
@@ -3399,6 +3451,29 @@
         metric_value: Number(String(el.testMetricValue?.value || "9999").trim()) || 9999,
         force: el.testForce?.checked === true
       };
+      if (payload.event_type === "system_status_change") {
+        payload.payload = {
+          status_scope: "component",
+          status_change_kind: "outage",
+          status_source: "primary_watchdog",
+          component_id: "test-component",
+          component_key: "test_component",
+          component_name: "Test status component",
+          previous_status: "operational",
+          current_status: "major_outage",
+          overall_state: "major_outage",
+          observation_freshness: "test",
+          status_url: "https://streamsuites.app/status"
+        };
+      } else if (payload.event_type === "system_monitor_state") {
+        payload.payload = {
+          status_scope: "monitor",
+          status_change_kind: "failover",
+          status_source: "deadman_worker",
+          observation_freshness: "test",
+          status_url: "https://streamsuites.app/status"
+        };
+      }
       if (selectedDestinations.length) {
         payload.destinations = selectedDestinations;
       }
@@ -3415,7 +3490,7 @@
     }
   }
 
-  function handleRulesListClick(event) {
+  async function handleRulesListClick(event) {
     const button = event.target.closest("[data-rule-action][data-rule-id]");
     if (button instanceof HTMLButtonElement) {
       const ruleId = String(button.getAttribute("data-rule-id") || "").trim();
@@ -3433,32 +3508,29 @@
           return;
         }
         if (action === "toggle") {
-          rule.enabled = !rule.enabled;
-          renderRulesList();
-          renderSummary();
-          renderPersistenceMeta();
-          setStatus("Rule status updated in the draft");
-          setBanner("Rule status is staged locally. Use Save changes to persist it to the backend.", "success");
+          button.disabled = true;
+          await window.StreamSuitesApi.setAdminAlertRuleEnabled(ruleId, !rule.enabled);
+          setStatus(rule.enabled ? "Rule disabled" : "Rule enabled");
+          await loadAlerting({ forceRefresh: true, withLoader: false });
           return;
         }
         if (action === "delete") {
+          if (rule.protected === true) {
+            throw new Error(rule.protection_reason || "This legacy canonical rule is protected by Runtime/Auth.");
+          }
           if (!window.confirm(`Delete alert rule "${rule.name || rule.event_type}"?`)) {
             return;
           }
-          state.rules = state.rules.filter((item) => item.id !== ruleId);
-          if (state.activeRuleId === ruleId) {
-            populateRuleForm(null);
-          }
-          renderRulesList();
-          renderTestRuleOptions();
-          renderSummary();
-          renderPersistenceMeta();
-          setStatus("Rule removed from the draft");
-          setBanner("Rule removal is staged locally. Use Save changes to persist it to the backend.", "success");
+          button.disabled = true;
+          await window.StreamSuitesApi.deleteAdminAlertRule(ruleId);
+          if (state.activeRuleId === ruleId) populateRuleForm(null);
+          setStatus("Rule deleted");
+          setBanner("Only the selected rule was deleted.", "success");
+          await loadAlerting({ forceRefresh: true, withLoader: false });
         }
       } catch (err) {
         setStatus("Rule action failed");
-        setBanner(err?.message || "Unable to update working-copy rule.");
+        setBanner(err?.message || "Unable to update the rule.");
       }
       return;
     }
@@ -3519,6 +3591,14 @@
     const nextSize = normalizePageSize(event.target?.value, HISTORY_PAGE_SIZE_OPTIONS, DEFAULT_HISTORY_PAGE_SIZE);
     if (state.historyPageSize === nextSize) return;
     state.historyPageSize = nextSize;
+    state.historyPage = 1;
+    renderHistoryList();
+  }
+
+  function handleHistoryFilterChange() {
+    state.historyFilters.family = String(el.historyFamilyFilter?.value || "").trim();
+    state.historyFilters.severity = String(el.historySeverityFilter?.value || "").trim().toLowerCase();
+    state.historyFilters.destination = String(el.historyDestinationFilter?.value || "").trim();
     state.historyPage = 1;
     renderHistoryList();
   }
@@ -3733,8 +3813,12 @@
     if (el.configSave) el.configSave.disabled = true;
     try {
       const snapshot = buildConfigurationSnapshot();
-      validateConfigurationSnapshotForSave(snapshot);
-      const response = await window.StreamSuitesApi.updateAdminAlertConfiguration(snapshot);
+      validateConfigurationSnapshotForSave(snapshot, { allowDeletions: state.importAllowsDeletions });
+      const response = await window.StreamSuitesApi.updateAdminAlertConfiguration({
+        configuration: snapshot,
+        expected_revision: state.configuration?.configuration_revision,
+        operator_confirmed_rule_delete: state.importAllowsDeletions === true
+      });
       const configuration = response?.configuration && typeof response.configuration === "object"
         ? response.configuration
         : response;
@@ -3747,8 +3831,13 @@
       setBanner("Alert draft saved to the backend successfully.", "success");
       await loadAlerting({ forceRefresh: true, withLoader: false });
     } catch (err) {
-      setStatus("Alert save failed");
-      setBanner(err?.message || "Unable to save the alert draft to the backend.");
+      if (err?.status === 409) {
+        setStatus("Imported configuration is stale");
+        setBanner("The backend configuration changed after this import was staged. Nothing was overwritten; reload and review the import again.");
+      } else {
+        setStatus("Alert save failed");
+        setBanner(err?.message || "Unable to apply the imported configuration.");
+      }
     } finally {
       updateDirtyStateUi();
     }
@@ -3797,20 +3886,41 @@
       const text = await file.text();
       const parsed = JSON.parse(text);
       const configuration = normalizeImportedConfigurationDocument(parsed);
-      const mergedConfiguration = mergeImportedConfigurationIntoCurrent(configuration);
-      const summary = `${file.name}: ${configuration.rules.length} imported rule${configuration.rules.length === 1 ? "" : "s"}, ${mergedConfiguration.rules.length} total rule${mergedConfiguration.rules.length === 1 ? "" : "s"}, timezone ${mergedConfiguration.preferences.timezone || "UTC"}`;
-      if (!window.confirm(`Stage imported ruleset?\n\n${summary}\n\nUse Save changes to persist it to the backend. DanielClancy-only imports are merged by rule ID and must not replace StreamSuites rules.`)) {
+      const canonicalRules = Array.isArray(state.configuration?.rules) ? state.configuration.rules : [];
+      const canonicalById = new Map(canonicalRules.map((rule) => [String(rule?.id || ""), rule]));
+      const incomingById = new Map(configuration.rules.map((rule) => [String(rule?.id || ""), rule]));
+      const added = configuration.rules.filter((rule) => !canonicalById.has(String(rule.id))).length;
+      const removed = canonicalRules.filter((rule) => !incomingById.has(String(rule.id))).length;
+      const updated = configuration.rules.filter((rule) => {
+        const prior = canonicalById.get(String(rule.id));
+        return prior && stableSerialize(normalizeRuleForEditor(prior, 0)) !== stableSerialize(rule);
+      }).length;
+      const preferencesIncluded = configuration.includes_preferences === true;
+      const stagedConfiguration = {
+        ...configuration,
+        configuration_revision: state.configuration?.configuration_revision,
+        preferences: preferencesIncluded ? configuration.preferences : normalizePreferences(state.preferences)
+      };
+      const summary = `${file.name}: ${added} added, ${updated} updated, ${removed} removed; preferences ${preferencesIncluded ? "included" : "preserved"}.`;
+      if (!window.confirm(`Stage imported full configuration?\n\n${summary}\n\nNo backend data changes until Apply imported configuration is pressed.`)) {
         input.value = "";
         setStatus("Import cancelled");
         return;
       }
+      if (removed > 0 && !window.confirm(`This import removes ${removed} existing rule${removed === 1 ? "" : "s"}. Confirm explicit rule deletion?`)) {
+        input.value = "";
+        setStatus("Import cancelled");
+        return;
+      }
+      state.importAllowsDeletions = removed > 0;
+      state.importDiff = { added, updated, removed, preferencesIncluded };
       setWorkingConfiguration({
-        ...mergedConfiguration,
+        ...stagedConfiguration,
         exported_at: state.configuration?.exported_at || state.settings?.generated_at || null
       }, { importedSummary: summary });
       renderAll();
       setStatus("Alert backup imported into draft");
-      setBanner("Imported alert draft staged locally. Review it, then use Save changes to persist it.", "success");
+      setBanner("Imported full configuration staged locally. Review the diff, then apply it with revision protection.", "success");
     } catch (err) {
       setStatus("Alert import failed");
       setBanner(err?.message || "Unable to import the alert backup JSON.");
@@ -3872,6 +3982,9 @@
     el.targetsTypeFilter?.addEventListener("change", handleTargetFilterChange);
     el.targetsStatusFilter?.addEventListener("change", handleTargetFilterChange);
     el.historyRefresh?.addEventListener("click", handleRefreshAll);
+    el.historyFamilyFilter?.addEventListener("change", handleHistoryFilterChange);
+    el.historySeverityFilter?.addEventListener("change", handleHistoryFilterChange);
+    el.historyDestinationFilter?.addEventListener("change", handleHistoryFilterChange);
     el.historyViewToggle?.addEventListener("click", handleLayoutToggle);
     el.historyPageSize?.addEventListener("change", handleHistoryPageSizeChange);
     el.historyPagination?.addEventListener("click", handlePaginationClick);
@@ -3925,6 +4038,9 @@
     el.targetsTypeFilter?.removeEventListener("change", handleTargetFilterChange);
     el.targetsStatusFilter?.removeEventListener("change", handleTargetFilterChange);
     el.historyRefresh?.removeEventListener("click", handleRefreshAll);
+    el.historyFamilyFilter?.removeEventListener("change", handleHistoryFilterChange);
+    el.historySeverityFilter?.removeEventListener("change", handleHistoryFilterChange);
+    el.historyDestinationFilter?.removeEventListener("change", handleHistoryFilterChange);
     el.historyViewToggle?.removeEventListener("click", handleLayoutToggle);
     el.historyPageSize?.removeEventListener("change", handleHistoryPageSizeChange);
     el.historyPagination?.removeEventListener("click", handlePaginationClick);
@@ -3946,6 +4062,7 @@
     el.configState = $("analytics-alerts-config-state");
     el.configDetail = $("analytics-alerts-config-detail");
     el.configSchema = $("analytics-alerts-config-schema");
+    el.configRevision = $("analytics-alerts-config-revision");
     el.configSource = $("analytics-alerts-config-source");
     el.configSynced = $("analytics-alerts-config-synced");
     el.configImported = $("analytics-alerts-config-imported");
@@ -3959,6 +4076,10 @@
     el.summaryTargetsEnabled = $("analytics-alerts-summary-targets-enabled");
     el.summaryHistory = $("analytics-alerts-summary-history");
     el.summarySubscribers = $("analytics-alerts-summary-subscribers");
+    el.systemRuleCount = $("analytics-alerts-system-rule-count");
+    el.systemRuleDetail = $("analytics-alerts-system-rule-detail");
+    el.systemLatest = $("analytics-alerts-system-latest");
+    el.systemLatestDetail = $("analytics-alerts-system-latest-detail");
     el.preferencesForm = $("analytics-alerts-preferences-form");
     el.masterEnabled = $("analytics-alerts-master-enabled");
     el.quietHoursEnabled = $("analytics-alerts-quiet-hours-enabled");
@@ -4038,6 +4159,9 @@
     el.historyEmpty = $("analytics-alerts-history-empty");
     el.historyPagination = $("analytics-alerts-history-pagination");
     el.historySummary = $("analytics-alerts-history-summary");
+    el.historyFamilyFilter = $("analytics-alerts-history-family-filter");
+    el.historySeverityFilter = $("analytics-alerts-history-severity-filter");
+    el.historyDestinationFilter = $("analytics-alerts-history-destination-filter");
     el.historyViewToggle = $("analytics-alerts-history-view-toggle");
     el.historyPageSize = $("analytics-alerts-history-page-size");
     el.preferencesSummaryMeta = $("analytics-alerts-preferences-summary-meta");

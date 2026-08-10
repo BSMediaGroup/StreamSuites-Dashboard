@@ -41,25 +41,37 @@ test("DanielClancy rule IDs and saves are namespace-safe", () => {
   assert.match(alertsJs, /project: sourceNamespace/);
 });
 
-test("DanielClancy imports are messaged as additive, not replacement authority", () => {
-  assert.match(alertsJs, /mergeImportedConfigurationIntoCurrent/);
-  assert.match(alertsJs, /DanielClancy-only imports are merged by rule ID and must not replace StreamSuites rules/);
-  assert.match(alertsHtml, /Save changes/);
-  assert.match(alertsJs, /const snapshot = buildConfigurationSnapshot\(\);/);
-  assert.match(alertsJs, /validateConfigurationSnapshotForSave\(snapshot\)/);
-  assert.match(alertsJs, /updateAdminAlertConfiguration\(snapshot\)/);
+test("ordinary alert edits use granular APIs and preserve unrelated configuration", () => {
+  assert.match(alertsJs, /updateAdminAlertPreferences\(readPreferencesPayload\(\)\)/);
+  assert.match(alertsJs, /updateAdminAlertRule\(editingRuleId, payload\)/);
+  assert.match(alertsJs, /createAdminAlertRule\(payload\)/);
+  assert.match(alertsJs, /setAdminAlertRuleEnabled\(ruleId, !rule\.enabled\)/);
+  assert.match(alertsJs, /deleteAdminAlertRule\(ruleId\)/);
+  assert.match(alertsHtml, /Save delivery settings/);
+  assert.equal([...alertsJs.matchAll(/updateAdminAlertConfiguration\(/g)].length, 1);
 });
 
-test("Dashboard blocks partial or DanielClancy-only destructive saves", () => {
+test("full configuration apply is reserved for a staged import", () => {
   assert.match(alertsJs, /function validateConfigurationSnapshotForSave/);
-  assert.match(alertsJs, /DanielClancy-only alert saves cannot replace the canonical StreamSuites rule list\./);
-  assert.match(alertsJs, /Alert save would drop existing canonical rules\./);
-  assert.match(alertsJs, /Alert save would drop existing StreamSuites rule IDs/);
+  assert.match(alertsHtml, /Apply imported configuration/);
+  assert.match(alertsJs, /expected_revision: state\.configuration\?\.configuration_revision/);
+  assert.match(alertsJs, /operator_confirmed_rule_delete: state\.importAllowsDeletions === true/);
+  assert.match(alertsJs, /The backend configuration changed after this import was staged\. Nothing was overwritten/);
+  assert.match(alertsJs, /preferences \$\{preferencesIncluded \? "included" : "preserved"\}/);
 });
 
-test("Dashboard preserves protected minimum rule IDs", () => {
-  assert.match(alertsJs, /PROTECTED_ALERT_RULE_IDS/);
-  assert.match(alertsJs, /e8eaaca5-95bf-4f1c-a195-54b3d96f2955/);
-  assert.match(alertsJs, /05d097bf-dfc6-4902-93f4-2fe7e3056724/);
-  assert.match(alertsJs, /Alert save would drop protected minimum rule IDs/);
+test("Runtime protection metadata and System Status context drive the alert UI", () => {
+  assert.doesNotMatch(alertsJs, /PROTECTED_ALERT_RULE_IDS/);
+  assert.match(alertsJs, /rule\.protected/);
+  assert.match(alertsHtml, /System Status alerts/);
+  assert.match(alertsHtml, /Primary watchdog transitions enter the normal Runtime alert pipeline/);
+  assert.match(alertsJs, /system_status_change/);
+  assert.match(alertsJs, /system_monitor_state/);
+  assert.match(alertsJs, /status_source/);
+  assert.match(alertsJs, /status_change_kind/);
+  assert.match(alertsJs, /component_key/);
+  assert.match(alertsJs, /System \/ Status/);
+  assert.match(alertsHtml, /analytics-alerts-history-family-filter/);
+  assert.match(alertsHtml, /System Status only/);
+  assert.match(alertsJs, /state\.historyFilters\.family/);
 });

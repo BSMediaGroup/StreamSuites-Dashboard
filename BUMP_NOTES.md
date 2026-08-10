@@ -6,6 +6,20 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.4-alpha / PENDING VER= 0.5.5-alpha
 
+### 2026-08-10 - Runtime-safe Alerts control center and System Status experience
+
+#### Technical notes
+
+- Reworked ordinary rule create/edit/enable/delete and delivery-preference saves to use their granular Runtime/Auth endpoints. The only remaining whole-configuration mutation is the explicit imported-configuration apply path; it carries the reviewed backend revision, reports a non-overwriting 409 conflict, summarizes added/updated/removed rules and preference inclusion, and requires explicit deletion confirmation.
+- Removed the Dashboard copy of protected rule UUIDs. Rule protection now comes from Runtime/Auth `protected` and `protection_reason` metadata, so normal UI integrity no longer depends on frontend magic IDs; the backend retains any genuine legacy protection.
+- Materially redesigned the Alerts main body with a compact operational hero, secondary backup/import metadata, sticky in-page section navigation, dedicated canonical System Status summary, stronger master/detail rule workspace, status-accented rule/history cards, improved delivery channels, compact preference/test operations, responsive layouts, reduced-motion handling, and explicit persisted-action wording.
+- Added System Status event types, scoped filters, template context, safe test previews, source/transition/status-link history context, and event-family/severity/destination history filters while preserving existing analytics location/page richness and Runtime/Auth authority.
+- Extended focused alert source-contract tests for granular APIs, imported revision protection, backend protection metadata, status event context, and status-history filtering. No production API mutation, live Pushover, deploy, version/build change, or file creation/removal occurred.
+
+#### Human-readable summary
+
+Alerts is now a clearer operational control center: everyday changes save only the selected rule or delivery setting, System Status events are first-class, and full backup imports are reviewable and conflict-safe.
+
 ### 2026-08-09 - Expanded Admin widget custom metrics
 
 #### Technical notes
