@@ -1,7 +1,7 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-08-12T16:26:33.967629Z",
-  "server_generated_at": "2026-08-12T16:26:33.967629Z",
+  "generated_at": "2026-08-12T16:31:30.618300Z",
+  "server_generated_at": "2026-08-12T16:31:30.618300Z",
   "enabled": false,
   "state": "paused",
   "reason": "livestream_bot_phase_paused",
@@ -367,7 +367,7 @@
     "runtime_control_health_status": "not_checked_by_registry",
     "live_worker_registry_count": 0,
     "live_trace_count": 0,
-    "export_snapshot_age_seconds": 26,
+    "export_snapshot_age_seconds": 296,
     "stale_export_ignored": false
   }
 }
