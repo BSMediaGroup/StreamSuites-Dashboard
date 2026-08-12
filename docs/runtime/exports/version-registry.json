@@ -1,9 +1,9 @@
 {
   "schema_version": "version-registry-public-v1",
-  "generated_at": "2026-08-10T12:38:52Z",
+  "generated_at": "2026-07-27T00:00:00Z",
   "system_semantic_version": "0.5.4-alpha",
-  "ecosystem_revision": 26,
-  "latest_ecosystem_build_id": "2026.08.05+002",
+  "ecosystem_revision": 0,
+  "latest_ecosystem_build_id": null,
   "components": [
     {
       "component_id": "alerts-windows",
@@ -132,15 +132,7 @@
       "semantic_version_status": "initialized",
       "semantic_version": "0.5.4-alpha",
       "state": "ready",
-      "last_build": {
-        "event_id": "vre_67360a94ddeb67fb944ac282",
-        "event_type": "code_build",
-        "received_at": "2026-08-05T09:57:18Z",
-        "source_sha": "05127910458b",
-        "ecosystem_revision": 26,
-        "build_id": "2026.08.05+002",
-        "component_build_sequence": 26
-      },
+      "last_build": null,
       "last_deployment": null,
       "last_publication": null,
       "compatibility": "Canonical Runtime/Auth system authority; legacy version export remains supported during migration."
