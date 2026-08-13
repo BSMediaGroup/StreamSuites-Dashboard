@@ -17,8 +17,8 @@ Admin-facing StreamSuites surface deployed to Cloudflare Pages at `https://admin
 
 - `docs/css/studio-first-system.css` is staged into the root Pages artifact and loads last for the canonical shell, compatibility shell, 404, login, and auth-success surfaces. It now consolidates the Dashboard into a near-black, low-glow operator system with restrained steel-blue emphasis, neutral OAuth controls, consistent cards/forms/tables/dialogs, narrow-screen containment, and reduced-motion behavior.
 - `/api-usage` keeps the existing Runtime/Auth endpoint and polling/window contracts while rendering timestamp-aligned request/error series without zero-filling missing samples. Its canvas includes a subtle request gradient, current-point markers, truthful tooltips, one initial reveal, and short non-replaying live interpolation.
-- Tektur is limited to product identity and major operator titles, Geist Sans covers dense navigation, controls, forms, tables, and dialogs, and IBM Plex Mono covers version/build data, statuses, permissions, IDs, timestamps, and telemetry. The repo-local sources are `docs/assets/fonts/Tektur-VariableFont_wdth,wght.ttf`, `docs/assets/fonts/Geist-{Light,Regular,Medium,SemiBold,Bold,ExtraBold}.ttf`, and `docs/assets/fonts/mono/IBMPlexMono-{Light,Regular,Medium,SemiBold,Bold}.ttf`.
-- Font hashes match the approved read-only Public sources. Genuine Geist and IBM Plex Mono licenses remain at `docs/assets/fonts/GEISTMONOOFL.txt` and `docs/assets/fonts/mono/IBMPLEXMONOOFL.txt`; a genuine local Tektur license file remains unavailable and blocks publication of that font.
+- Tektur is limited to product identity and major operator titles, Blinker covers dense navigation, controls, forms, tables, and dialogs, retained Geist Sans preserves existing non-display headings and display fallbacks, and IBM Plex Mono covers version/build data, statuses, permissions, IDs, timestamps, and telemetry. The served Blinker sources are `docs/assets/fonts/body/Blinker-{Thin,ExtraLight,Light,Regular,SemiBold,Bold,ExtraBold,Black}.ttf` at fixed weights 100/200/300/400/600/700/800/900.
+- Font hashes match the approved Public sources. The Blinker license is `docs/assets/fonts/body/BLINKEROFL.txt`; genuine Geist and IBM Plex Mono licenses remain at `docs/assets/fonts/GEISTMONOOFL.txt` and `docs/assets/fonts/mono/IBMPLEXMONOOFL.txt`. A genuine local Tektur license file remains unavailable and blocks publication of that font.
 - Operator metadata now describes the Dashboard as the privileged Runtime/Auth client across Studio access, accounts, permissions, alerts, audit, telemetry, and system status. Authentication, CSRF assumptions, privileged endpoints, confirmations, tables, charts, filters, pagination, routes, version authority, and exports are unchanged.
 - The new stylesheet is listed in the repository tree below. Existing validation uses `node --test tests/*.test.mjs` and `powershell -File scripts/build-pages-artifact.ps1`.
 
@@ -153,6 +153,8 @@ StreamSuites-Dashboard/
 │   ├── assets/
 │   │   ├── analytics/
 │   │   │   └── location-covers/
+│   │   ├── fonts/
+│   │   │   └── body/               # Blinker fixed 100/200/300/400/600/700/800/900 faces
 │   │   ├── icons/
 │   │   │   └── adcon.webp
 │   │   ├── logos/

@@ -6,6 +6,17 @@ Packaged / released and no longer the active pending bucket. Preserve new notes 
 
 ## CURRENT VER= 0.5.4-alpha / PENDING VER= 0.5.5-alpha
 
+### 2026-08-14 - Blinker body typography
+
+#### Technical notes
+
+- Registered the local Dashboard-served Blinker faces in `docs/css/studio-first-system.css` at fixed weights 100/200/300/400/600/700/800/900 with `font-display: swap`. The centralized Admin body/UI token, legacy static body aliases, status widget, and root/`docs` compatibility shells now resolve `/assets/fonts/body/` Blinker files from the existing `docs/` Pages asset root.
+- Preserved Tektur product/title roles, Geist Sans non-display headings and display fallbacks, IBM Plex Mono technical roles, existing 500 declarations, routes, layout, auth/API behavior, and Runtime/Auth authority. No version change, deployment, commit, or push was performed.
+
+#### Human-readable summary
+
+Admin body copy and controls now use the bundled Blinker family, while headings, titles, and technical data keep their established typography.
+
 ### 2026-08-10 - Unified Admin operator shell, authentication, and API telemetry presentation
 
 #### Technical notes
