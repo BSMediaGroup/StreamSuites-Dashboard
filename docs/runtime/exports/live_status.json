@@ -1,6 +1,6 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-08-05T11:55:18.518136Z",
+  "generated_at": "2026-09-12T13:43:02.194352Z",
   "provider_priority": [
     "kick",
     "rumble",
@@ -14,8 +14,8 @@
       "stale_after_seconds": 120,
       "batch_size": 50,
       "creators_configured": 0,
-      "last_refresh_started_at": "2026-08-05T11:55:18.226675Z",
-      "last_refresh_completed_at": "2026-08-05T11:55:18.226675Z",
+      "last_refresh_started_at": "2026-09-12T13:42:58.887436Z",
+      "last_refresh_completed_at": "2026-09-12T13:42:58.887436Z",
       "last_error": null
     },
     {
@@ -24,8 +24,8 @@
       "stale_after_seconds": 180,
       "batch_size": 25,
       "creators_configured": 1,
-      "last_refresh_started_at": "2026-08-05T11:54:53.036990Z",
-      "last_refresh_completed_at": "2026-08-05T11:54:55.437431Z",
+      "last_refresh_started_at": "2026-09-12T13:41:57.638542Z",
+      "last_refresh_completed_at": "2026-09-12T13:42:16.267357Z",
       "last_error": null
     },
     {
@@ -34,8 +34,8 @@
       "stale_after_seconds": 90,
       "batch_size": 100,
       "creators_configured": 1,
-      "last_refresh_started_at": "2026-08-05T11:55:18.518136Z",
-      "last_refresh_completed_at": "2026-08-05T11:55:18.518136Z",
+      "last_refresh_started_at": "2026-09-12T13:43:02.194352Z",
+      "last_refresh_completed_at": "2026-09-12T13:43:02.194352Z",
       "last_error": null
     },
     {
@@ -44,8 +44,8 @@
       "stale_after_seconds": 150,
       "batch_size": 50,
       "creators_configured": 1,
-      "last_refresh_started_at": "2026-08-05T11:54:33.323202Z",
-      "last_refresh_completed_at": "2026-08-05T11:54:33.636600Z",
+      "last_refresh_started_at": "2026-09-12T13:42:46.300788Z",
+      "last_refresh_completed_at": "2026-09-12T13:42:46.421234Z",
       "last_error": null
     }
   ],
@@ -56,7 +56,7 @@
       "is_live": false,
       "active_provider": null,
       "active_status": null,
-      "last_checked_at": "2026-08-05T11:55:18.518136Z",
+      "last_checked_at": "2026-09-12T13:43:02.194352Z",
       "freshness": "fresh",
       "stale": false,
       "checked_provider_count": 3,
@@ -83,7 +83,7 @@
           "started_at": null,
           "scheduled_at": null,
           "ended_at": null,
-          "last_checked_at": "2026-08-05T11:54:53.036990Z",
+          "last_checked_at": "2026-09-12T13:41:57.638542Z",
           "next_allowed_check_at": null,
           "stale": false,
           "freshness": "fresh",
@@ -117,7 +117,7 @@
           "started_at": null,
           "scheduled_at": null,
           "ended_at": null,
-          "last_checked_at": "2026-08-05T11:55:18.518136Z",
+          "last_checked_at": "2026-09-12T13:43:02.194352Z",
           "next_allowed_check_at": null,
           "stale": false,
           "freshness": "fresh",
@@ -151,7 +151,7 @@
           "started_at": null,
           "scheduled_at": null,
           "ended_at": null,
-          "last_checked_at": "2026-08-05T11:54:33.323202Z",
+          "last_checked_at": "2026-09-12T13:42:46.300788Z",
           "next_allowed_check_at": null,
           "stale": false,
           "freshness": "fresh",

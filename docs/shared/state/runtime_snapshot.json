@@ -1,11 +1,11 @@
 {
   "schema_version": "v1",
-  "generated_at": "2026-08-05T11:55:28.221050Z",
-  "heartbeat": "2026-08-05T11:55:28.221050Z",
+  "generated_at": "2026-09-12T13:43:01.420349Z",
+  "heartbeat": "2026-09-12T13:43:01.420349Z",
   "runtime": {
-    "project": "StreamSuites\u2122 Runtime",
+    "project": "StreamSuites™ Runtime",
     "version": "0.5.4-alpha",
-    "build": "2026.08.05+001"
+    "build": "2026.08.21+001"
   },
   "system": {
     "platform_polling_enabled": {
@@ -58,6 +58,17 @@
       "synthetic": {
         "enabled": true
       }
+    },
+    "livestream_bots": {
+      "enabled": false,
+      "state": "paused",
+      "reason": "livestream_bot_phase_paused",
+      "providers": [
+        "kick",
+        "rumble",
+        "twitch",
+        "youtube"
+      ]
     }
   },
   "jobs": [
@@ -107,11 +118,11 @@
       "name": "kick",
       "platform": "kick",
       "enabled": true,
-      "paused": false,
+      "paused": true,
       "telemetry_enabled": true,
-      "state": "active",
-      "status": "inactive",
-      "paused_reason": null,
+      "state": "paused",
+      "status": "paused",
+      "paused_reason": "livestream_bot_phase_paused",
       "last_heartbeat": null,
       "last_success_ts": null,
       "last_event_ts": null,
@@ -151,11 +162,11 @@
       "name": "rumble",
       "platform": "rumble",
       "enabled": true,
-      "paused": false,
+      "paused": true,
       "telemetry_enabled": true,
-      "state": "active",
-      "status": "inactive",
-      "paused_reason": null,
+      "state": "paused",
+      "status": "paused",
+      "paused_reason": "livestream_bot_phase_paused",
       "last_heartbeat": null,
       "last_success_ts": null,
       "last_event_ts": null,
@@ -166,18 +177,18 @@
         "actions": 0,
         "actions_failed": 0
       },
-      "replay_supported": true,
-      "overlay_supported": true
+      "replay_supported": false,
+      "overlay_supported": false
     },
     {
       "name": "twitch",
       "platform": "twitch",
       "enabled": true,
-      "paused": false,
+      "paused": true,
       "telemetry_enabled": true,
-      "state": "active",
-      "status": "inactive",
-      "paused_reason": null,
+      "state": "paused",
+      "status": "paused",
+      "paused_reason": "livestream_bot_phase_paused",
       "last_heartbeat": null,
       "last_success_ts": null,
       "last_event_ts": null,
@@ -188,8 +199,8 @@
         "actions": 0,
         "actions_failed": 0
       },
-      "replay_supported": true,
-      "overlay_supported": true
+      "replay_supported": false,
+      "overlay_supported": false
     },
     {
       "name": "twitter",
@@ -217,11 +228,11 @@
       "name": "youtube",
       "platform": "youtube",
       "enabled": true,
-      "paused": false,
+      "paused": true,
       "telemetry_enabled": true,
-      "state": "active",
-      "status": "inactive",
-      "paused_reason": null,
+      "state": "paused",
+      "status": "paused",
+      "paused_reason": "livestream_bot_phase_paused",
       "last_heartbeat": null,
       "last_success_ts": null,
       "last_event_ts": null,
@@ -232,8 +243,8 @@
         "actions": 0,
         "actions_failed": 0
       },
-      "replay_supported": true,
-      "overlay_supported": true
+      "replay_supported": false,
+      "overlay_supported": false
     }
   ],
   "creators": [
@@ -249,7 +260,7 @@
         "twitter": true,
         "discord": true
       },
-      "last_heartbeat": "2026-08-05T11:55:26.477355Z",
+      "last_heartbeat": "2026-09-12T13:42:54.679922Z",
       "error": null,
       "live_status": {
         "creator_id": "As5TyU",
@@ -257,7 +268,7 @@
         "is_live": false,
         "active_provider": null,
         "active_status": null,
-        "last_checked_at": "2026-08-05T11:55:18.518136Z",
+        "last_checked_at": "2026-09-12T13:42:46.300788Z",
         "freshness": "fresh",
         "stale": false,
         "checked_provider_count": 3,
@@ -284,7 +295,7 @@
             "started_at": null,
             "scheduled_at": null,
             "ended_at": null,
-            "last_checked_at": "2026-08-05T11:54:53.036990Z",
+            "last_checked_at": "2026-09-12T13:41:57.638542Z",
             "next_allowed_check_at": null,
             "stale": false,
             "freshness": "fresh",
@@ -318,7 +329,7 @@
             "started_at": null,
             "scheduled_at": null,
             "ended_at": null,
-            "last_checked_at": "2026-08-05T11:55:18.518136Z",
+            "last_checked_at": "2026-09-12T13:42:17.152241Z",
             "next_allowed_check_at": null,
             "stale": false,
             "freshness": "fresh",
@@ -352,7 +363,7 @@
             "started_at": null,
             "scheduled_at": null,
             "ended_at": null,
-            "last_checked_at": "2026-08-05T11:54:33.323202Z",
+            "last_checked_at": "2026-09-12T13:42:46.300788Z",
             "next_allowed_check_at": null,
             "stale": false,
             "freshness": "fresh",
@@ -374,7 +385,7 @@
   "rumble_chat": null,
   "live_status": {
     "schema_version": "v1",
-    "generated_at": "2026-08-05T11:55:18.518136Z",
+    "generated_at": "2026-09-12T13:42:58.887436Z",
     "provider_priority": [
       "kick",
       "rumble",
@@ -388,8 +399,8 @@
         "stale_after_seconds": 120,
         "batch_size": 50,
         "creators_configured": 0,
-        "last_refresh_started_at": "2026-08-05T11:55:18.226675Z",
-        "last_refresh_completed_at": "2026-08-05T11:55:18.226675Z",
+        "last_refresh_started_at": "2026-09-12T13:42:58.887436Z",
+        "last_refresh_completed_at": "2026-09-12T13:42:58.887436Z",
         "last_error": null
       },
       {
@@ -398,8 +409,8 @@
         "stale_after_seconds": 180,
         "batch_size": 25,
         "creators_configured": 1,
-        "last_refresh_started_at": "2026-08-05T11:54:53.036990Z",
-        "last_refresh_completed_at": "2026-08-05T11:54:55.437431Z",
+        "last_refresh_started_at": "2026-09-12T13:41:57.638542Z",
+        "last_refresh_completed_at": "2026-09-12T13:42:16.267357Z",
         "last_error": null
       },
       {
@@ -408,8 +419,8 @@
         "stale_after_seconds": 90,
         "batch_size": 100,
         "creators_configured": 1,
-        "last_refresh_started_at": "2026-08-05T11:55:18.518136Z",
-        "last_refresh_completed_at": "2026-08-05T11:55:18.518136Z",
+        "last_refresh_started_at": "2026-09-12T13:42:17.152241Z",
+        "last_refresh_completed_at": "2026-09-12T13:42:17.152241Z",
         "last_error": null
       },
       {
@@ -418,8 +429,8 @@
         "stale_after_seconds": 150,
         "batch_size": 50,
         "creators_configured": 1,
-        "last_refresh_started_at": "2026-08-05T11:54:33.323202Z",
-        "last_refresh_completed_at": "2026-08-05T11:54:33.636600Z",
+        "last_refresh_started_at": "2026-09-12T13:42:46.300788Z",
+        "last_refresh_completed_at": "2026-09-12T13:42:46.421234Z",
         "last_error": null
       }
     ],
@@ -430,7 +441,7 @@
         "is_live": false,
         "active_provider": null,
         "active_status": null,
-        "last_checked_at": "2026-08-05T11:55:18.518136Z",
+        "last_checked_at": "2026-09-12T13:42:46.300788Z",
         "freshness": "fresh",
         "stale": false,
         "checked_provider_count": 3,
@@ -457,7 +468,7 @@
             "started_at": null,
             "scheduled_at": null,
             "ended_at": null,
-            "last_checked_at": "2026-08-05T11:54:53.036990Z",
+            "last_checked_at": "2026-09-12T13:41:57.638542Z",
             "next_allowed_check_at": null,
             "stale": false,
             "freshness": "fresh",
@@ -491,7 +502,7 @@
             "started_at": null,
             "scheduled_at": null,
             "ended_at": null,
-            "last_checked_at": "2026-08-05T11:55:18.518136Z",
+            "last_checked_at": "2026-09-12T13:42:17.152241Z",
             "next_allowed_check_at": null,
             "stale": false,
             "freshness": "fresh",
@@ -525,7 +536,7 @@
             "started_at": null,
             "scheduled_at": null,
             "ended_at": null,
-            "last_checked_at": "2026-08-05T11:54:33.323202Z",
+            "last_checked_at": "2026-09-12T13:42:46.300788Z",
             "next_allowed_check_at": null,
             "stale": false,
             "freshness": "fresh",
